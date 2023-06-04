@@ -17,7 +17,6 @@ customApi = client.CustomObjectsApi(client.ApiClient())
 @kopf.on.update('runs.codeflare.dev', field='spec')
 def create_run(name, spec, patch, **kwargs):
     application_name = spec['application']
-    options = spec['options']
 
     logging.info(f"Run for application: {application_name}")
 
@@ -31,21 +30,28 @@ def create_run(name, spec, patch, **kwargs):
         
     application_namespace = application['metadata']['annotations']['codeflare.dev/namespace']
     logging.info(f"Targeting application_namespace: {application_namespace}")
-    
+
+    if 'options' in spec:
+        command_line_options = spec['options']
+    elif 'options' in application['spec']:
+        command_line_options = application['spec']['options']
+    else:
+        command_line_options = ""
+
     try:
         api = application['spec']['api']
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
         if api == "ray":
-            create_run_ray(application, application_namespace, name, spec, patch)
+            create_run_ray(application, application_namespace, name, spec, command_line_options, patch)
         elif api == "torch":
-            create_run_torch(application, application_namespace, name, spec, patch)
+            create_run_torch(application, application_namespace, name, spec, command_line_options, patch)
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application {application_name}.")
     except Exception as e:
         raise kopf.PermanentError(f"Error handling run creation. {str(e)}")
 
-def create_run_ray(application, application_namespace, name, spec, patch):
+def create_run_ray(application, application_namespace, name, spec, command_line_options, patch):
     logging.info(f"Handling Ray Run: {application['metadata']['name']}")
     pass
 
@@ -70,7 +76,7 @@ def create_workdir_volumes(name, namespace):
 
     return name
 
-def create_run_torch(application, application_namespace, name, spec, patch):
+def create_run_torch(application, application_namespace, name, spec, command_line_options, patch):
     logging.info(f"Handling Torch Run: {application['metadata']['name']}")
     image = application['spec']['image']
     repo = application['spec']['repo']
@@ -125,7 +131,7 @@ def create_run_torch(application, application_namespace, name, spec, patch):
     subPath = os.path.join(workdir_base, cloned_subPath)
     logging.info(f"Torchx subPath={subPath}")
 
-    out = subprocess.run(["/src/torchx.sh", name, subPath, image, scheduler_args, script, resources, volumes, base64.b64encode(env_run_arg.encode('ascii'))],
+    out = subprocess.run(["/src/torchx.sh", name, subPath, image, scheduler_args, script, resources, volumes, base64.b64encode(command_line_options.encode('ascii')), base64.b64encode(env_run_arg.encode('ascii'))],
                          capture_output=True)
 
     logging.info(f"Torchx run output {out}")

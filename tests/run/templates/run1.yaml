@@ -4,5 +4,5 @@ metadata:
   name: rrr
 spec:
   application: example-lightning
-  options: momo
+  options: "--max_epochs 1"
   
