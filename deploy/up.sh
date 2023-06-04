@@ -8,6 +8,6 @@ wait
 "$SCRIPTDIR"/build.sh
 
 echo "$(tput setaf 2)Booting CodeFlare$(tput sgr0)"
-helm install $PLA platform/deploy && \
+helm install $PLA platform/deploy --set controllers.run.image=$RUN_IMAGE && \
     helm install $IBM ibm && \
     helm install $RUN tests/run

@@ -32,6 +32,13 @@ spec:
                   type: string
                 repo:
                   type: string
+                repoSecret:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
                 env:
                   type: object
                   additionalProperties:
@@ -84,7 +91,7 @@ spec:
           jsonPath: .metadata.creationTimestamp
 
   # either Namespaced or Cluster
-  scope: Namespaced
+  scope: Cluster
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>
     plural: applications

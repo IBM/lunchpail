@@ -1,5 +1,7 @@
 controllers:
   namespace: codeflare-system
+  run:
+    image: codeflare-run-controller:dev
 
 workdir:
   fs: nfs

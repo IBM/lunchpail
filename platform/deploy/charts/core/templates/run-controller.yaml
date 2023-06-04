@@ -21,7 +21,7 @@ spec:
         {{- include "volume.workdir.nfs" . | indent 8 }}
       containers:
       - name: run
-        image: codeflare-run-controller:dev
+        image: {{ .Values.controllers.run.image }}
         env:
           - name: WORKDIR
             value: /workdir

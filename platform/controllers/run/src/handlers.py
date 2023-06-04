@@ -19,15 +19,16 @@ def create_run(name, spec, patch, **kwargs):
     application_name = spec['application']
     options = spec['options']
 
-    application_namespace = f"application-{application_name}"
-
     logging.info(f"Run for application: {application_name}")
 
     try:
-        application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=f"{application_namespace}")
+        application = customApi.get_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name)
     except ApiException as e:
         raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
+    application_namespace = application['metadata']['annotations']['codeflare.dev/namespace']
+    logging.info(f"Targeting application_namespace: {application_namespace}")
+    
     try:
         api = application['spec']['api']
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
@@ -75,12 +76,14 @@ def create_run_torch(application, application_namespace, name, spec, patch):
     namespace = f"namespace={application_namespace}"
     image_repo = f",image_repo={os.path.dirname(image)}"
 
-    try:
-        repo_secret = v1Api.read_namespaced_secret(name="github", namespace=application_namespace)
-        user_b64 = repo_secret.data['user']
-        pat_b64 = repo_secret.data['pat']
-    except ApiException as e:
-        raise kopf.PermanentError(f"Missing github secret. {str(e)}")
+    if 'repoSecret' in application['spec']:
+        try:
+            repo_secret_spec = application['spec']['repoSecret']
+            repo_secret = v1Api.read_namespaced_secret(name=repo_secret_spec['name'], namespace=repo_secret_spec['namespace'])
+            user_b64 = repo_secret.data['user']
+            pat_b64 = repo_secret.data['pat']
+        except Exception as e:
+            raise kopf.PermanentError(f"Error processing repo secret. {str(e)}")
     
     #coscheduler = "coscheduler_name=scheduler-plugins-scheduler"
     coscheduler = "" # TODO

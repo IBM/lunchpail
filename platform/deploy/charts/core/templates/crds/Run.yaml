@@ -59,7 +59,7 @@ spec:
           jsonPath: .metadata.creationTimestamp
 
   # either Namespaced or Cluster
-  scope: Namespaced
+  scope: Cluster
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>
     plural: runs

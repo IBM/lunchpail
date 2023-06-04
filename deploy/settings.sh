@@ -1,8 +1,10 @@
-PLA=$(grep name platform/deploy/Chart.yaml | awk '{print $2}')
-IBM=$(grep name ibm/Chart.yaml | awk '{print $2}')
-RUN=$(grep name tests/run/Chart.yaml | awk '{print $2}')
+#!/usr/bin/env bash
 
-RUN_IMAGE=codeflare-run-controller:dev
+SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+
+PLA=$(grep name "$SCRIPTDIR"/../platform/deploy/Chart.yaml | awk '{print $2}')
+IBM=$(grep name "$SCRIPTDIR"/../ibm/Chart.yaml | awk '{print $2}')
+RUN=$(grep name "$SCRIPTDIR"/../tests/run/Chart.yaml | awk '{print $2}')
 
 # for local testing
 LOCAL_CLUSTER_NAME=codeflare-platform
@@ -14,4 +16,12 @@ do
     esac
 done
 shift $((OPTIND-1))
+
+if [[ -z "$NO_KIND" ]]; then
+    VERSION=dev
+else
+    VERSION=0.0.1 # FIXME
+    # IMAGE_REPO= # FIXME
+fi
+
 
