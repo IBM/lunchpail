@@ -1,0 +1,97 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: applications.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      subresources:
+        # enables the status subresource
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                api:
+                  type: string
+                  enum:
+                    - ray
+                    - torch
+                image:
+                  type: string
+                repo:
+                  type: string
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
+                imagePullSecret:
+                  type: string
+                command:
+                  type: string
+                options:
+                  type: string
+                minCpu:
+                  x-kubernetes-int-or-string: true
+                  pattern: '^\d+m?$'
+                minMemory:
+                  type: string
+                  pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                minGpu:
+                  type: number
+              required:
+                - api
+                - image
+                - command
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - Queued
+                    - Running
+                    - Completed
+                    - Failed
+                    
+      additionalPrinterColumns:
+        - name: API
+          type: string
+          description: The distributed API this application uses
+          jsonPath: .spec.api
+        - name: Image
+          type: string
+          description: The base image this application uses
+          jsonPath: .spec.image
+        - name: Command
+          type: string
+          description: The command line prefix used to run this application
+          jsonPath: .spec.command
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: applications
+    # singular name to be used as an alias on the CLI and for display
+    singular: application
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: Application
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - app

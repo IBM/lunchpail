@@ -1,0 +1,7 @@
+controllers:
+  namespace: codeflare-system
+
+workdir:
+  fs: nfs
+  size: 10Gi
+  clusterIP: 10.96.244.176
