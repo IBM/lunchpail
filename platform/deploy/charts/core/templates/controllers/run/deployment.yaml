@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-run-controller
+  namespace: {{ .Values.controllers.namespace }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      application: codeflare-run-controller
+  template:
+    metadata:
+      labels:
+        application: codeflare-run-controller
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      serviceAccountName: codeflare-run-controller-account
+      volumes:
+        {{- include "volume.workdir.nfs" . | indent 8 }}
+      containers:
+      - name: controller
+        image: {{ .Values.controllers.run.image }}
+        env:
+          - name: WORKDIR
+            value: /workdir
+          - name: WORKDIR_PVC
+            value: workdir
+        volumeMounts:
+        - name: workdir
+          mountPath: /workdir

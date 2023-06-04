@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: codeflare-run-controller
+  name: codeflare-application-controller
   namespace: {{ .Values.controllers.namespace }}
 spec:
   replicas: 1
@@ -9,19 +9,19 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      application: codeflare-run-controller
+      application: codeflare-application-controller
   template:
     metadata:
       labels:
-        application: codeflare-run-controller
+        application: codeflare-application-controller
     spec:
-      terminationGracePeriodSeconds: 0
-      serviceAccountName: codeflare-run-controller-account
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      serviceAccountName: codeflare-application-controller-account
       volumes:
         {{- include "volume.workdir.nfs" . | indent 8 }}
       containers:
-      - name: run
-        image: {{ .Values.controllers.run.image }}
+      - name: controller
+        image: {{ .Values.controllers.application.image }}
         env:
           - name: WORKDIR
             value: /workdir

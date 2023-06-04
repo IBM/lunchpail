@@ -1,7 +1,11 @@
+terminationGracePeriodSeconds: 0
+
 controllers:
   namespace: codeflare-system
   run:
     image: codeflare-run-controller:dev
+  application:
+    image: codeflare-application-controller:dev
 
 workdir:
   fs: nfs

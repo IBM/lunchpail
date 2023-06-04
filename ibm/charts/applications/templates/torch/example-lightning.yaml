@@ -2,8 +2,6 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: example-lightning
-  annotations:
-    codeflare.dev/namespace: {{ .Values.namespace }}
 spec:
   api: torch
   image: ghcr.io/project-codeflare/lightning:0.0.6

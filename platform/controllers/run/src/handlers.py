@@ -26,6 +26,9 @@ def create_run(name, spec, patch, **kwargs):
     except ApiException as e:
         raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
+    if not 'codeflare.dev/namespace' in application['metadata']['annotations']:
+        raise Exception(f"Application {application_name} not yet configured")
+        
     application_namespace = application['metadata']['annotations']['codeflare.dev/namespace']
     logging.info(f"Targeting application_namespace: {application_namespace}")
     
