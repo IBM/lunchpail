@@ -61,8 +61,8 @@ def create_run_torch(v1Api, application, application_namespace, name, spec, comm
     script = re.sub(r"^python\d+ ", "", command)
 
     rando = ''.join(random.choice(string.ascii_lowercase) for i in range(12))
-    workdir_base =  f"{name}-{rando}"
-    workdir = os.path.join(os.environ.get("WORKDIR"), workdir_base)
+    run_id =  f"torch-{name}-{rando}"
+    workdir = os.path.join(os.environ.get("WORKDIR"), run_id)
     clone_out = subprocess.run(["/src/clone.sh", name, workdir, repo, user_b64, pat_b64], capture_output=True)
     if clone_out.returncode != 0:
         raise PermanentError(f"Failed to clone workdir. {clone_out.stderr.decode('utf-8')}")
@@ -75,12 +75,12 @@ def create_run_torch(v1Api, application, application_namespace, name, spec, comm
     env_comma_separated = ",".join([f"{kv[0]}={kv[1]}" for kv in env.items()])
     env_run_arg = f"--env {env_comma_separated}" if len(env_comma_separated) > 0 else ""
 
-    workdir_pvc_name = create_workdir_volumes(v1Api, workdir_base, application_namespace)
+    workdir_pvc_name = create_workdir_volumes(v1Api, run_id, application_namespace)
     volumes = f"type=volume,src={workdir_pvc_name},dst=/workdir,readonly"
 
     scheduler_args = f"{namespace}{image_repo}{coscheduler}{network}"
 
-    subPath = os.path.join(workdir_base, cloned_subPath)
+    subPath = os.path.join(run_id, cloned_subPath)
     logging.info(f"Torchx subPath={subPath}")
 
     gpus = run_size_config['gpu']
@@ -89,21 +89,26 @@ def create_run_torch(v1Api, application, application_namespace, name, spec, comm
     nprocs = run_size_config['workers']
     nprocs_per_node = 1 if gpus == 0 else gpus
     
-    out = subprocess.run([
+    torchx_out = subprocess.run([
         "/src/torchx.sh",
         name, # $1
-        subPath, # $2
-        image, # $3
-        str(nprocs), # $4
-        str(nprocs_per_node), # $5
-        str(gpus), # $6
-        str(cpus), # $7
-        str(memory), # $8
-        scheduler_args, # $9
-        script, # $10
-        volumes, # $11
+        run_id, # $2
+        subPath, # $3
+        image, # $4
+        str(nprocs), # $5
+        str(nprocs_per_node), # $6
+        str(gpus), # $7
+        str(cpus), # $8
+        str(memory), # $9
+        scheduler_args, # $10
+        script, # $11
+        volumes, # $12
         base64.b64encode(command_line_options.encode('ascii')),
         base64.b64encode(env_run_arg.encode('ascii'))
     ], capture_output=True)
 
-    logging.info(f"Torchx run output {out}")
+    if torchx_out.returncode != 0:
+        raise PermanentError(f"Failed to launch via torchx. {torchx_out.stderr.decode('utf-8')}")
+
+    head_pod_name = torchx_out.stdout.decode('utf-8')
+    logging.info(f"Torchx run head_pod_name={head_pod_name}")
