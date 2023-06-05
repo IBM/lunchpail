@@ -22,5 +22,5 @@ kubectl get pod -n codeflare-system -w
 
 To track the sample Run:
 ```shell
-k get pod -n codeflare-application-example-lightning -w
+kubectl get pod -n codeflare-application-example-lightning -w
 ```
