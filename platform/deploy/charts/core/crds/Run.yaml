@@ -34,6 +34,10 @@ spec:
                     - low
                     - normal
                     - high
+                workers:
+                  type: number
+                supportsGpu:
+                  type: boolean
                 size:
                   type: string
                   enum:

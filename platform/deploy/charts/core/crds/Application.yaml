@@ -28,6 +28,15 @@ spec:
                   enum:
                     - ray
                     - torch
+                size:
+                  type: string
+                  enum:
+                    - xs
+                    - sm
+                    - md
+                    - lg
+                    - xl
+                    - xxl
                 image:
                   type: string
                 repo:
@@ -49,14 +58,11 @@ spec:
                   type: string
                 options:
                   type: string
-                minCpu:
-                  x-kubernetes-int-or-string: true
-                  pattern: '^\d+m?$'
                 minMemory:
                   type: string
                   pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                minGpu:
-                  type: number
+                supportsGpu:
+                  type: boolean
               required:
                 - api
                 - image

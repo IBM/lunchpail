@@ -1,0 +1,125 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: runsizeconfigurations.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # either Namespaced or Cluster
+  scope: Cluster
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: runsizeconfigurations
+    # singular name to be used as an alias on the CLI and for display
+    singular: runsizeconfiguration
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: RunSizeConfiguration
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - rsc
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: ["config"]
+              properties:
+                priority:
+                  type: number
+                config:
+                  type: object
+                  required: ["xs", "sm", "md", "lg", "xl", "xxl"]
+                  properties:
+                    xs:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    sm:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    md:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    lg:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    xl:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    xxl:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number

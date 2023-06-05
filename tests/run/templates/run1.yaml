@@ -5,4 +5,6 @@ metadata:
 spec:
   application: example-lightning
   options: "--max_epochs 1"
+  size: xs
+  supportsGpu: false
   

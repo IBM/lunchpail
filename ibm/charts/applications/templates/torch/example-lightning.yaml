@@ -10,3 +10,5 @@ spec:
     name: github-ibm-com-ai-foundation
     namespace: codeflare-ibm-internal
   command: python3 lightning_ddp_example.py
+  size: sm
+  supportsGpu: true

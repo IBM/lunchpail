@@ -20,16 +20,47 @@ def create_run(name, spec, patch, **kwargs):
 
     logging.info(f"Run for application: {application_name}")
 
+    #try:
+    #    run = customApi.get_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name)
+    #except ApiException as e:
+    #    raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
+
     try:
         application = customApi.get_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name)
     except ApiException as e:
         raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
     if not 'codeflare.dev/namespace' in application['metadata']['annotations']:
-        raise Exception(f"Application {application_name} not yet configured")
+        raise kopf.TemporaryError(f"Application {application_name} not yet configured", delay=3)
         
     application_namespace = application['metadata']['annotations']['codeflare.dev/namespace']
     logging.info(f"Targeting application_namespace: {application_namespace}")
+
+    if 'size' in spec:
+        size = spec['size']
+    elif 'size' in application['spec']:
+        size = application['spec']['size']
+    else:
+        size = "sm"
+    
+    try:
+        items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
+        run_size_config = sorted(items,
+                                 key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
+    except ApiException as e:
+        logging.info(f"RunSizeConfiguration policy not found")
+        run_size_config = {"cpu": 1, "memory": "1Gi", "gpu": 1, "workers": 1}
+
+    if not 'supportsGpu' in spec or not 'supportsGpu' in application['spec'] or spec['supportsGpu'] == False or application['spec']['supportsGpu'] == False:
+        logging.info(f"Disabling GPU for this run")
+        run_size_config['gpu'] = 0
+
+    if 'workers' in spec:
+        run_size_config['workers'] = spec['workers']
+    elif 'workers' in application['spec']:
+        run_size_config['workers'] = application['spec']['workers']
+
+    logging.info(f"Using run_size_config={str(run_size_config)}")
 
     if 'options' in spec:
         command_line_options = spec['options']
@@ -43,15 +74,15 @@ def create_run(name, spec, patch, **kwargs):
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
         if api == "ray":
-            create_run_ray(application, application_namespace, name, spec, command_line_options, patch)
+            create_run_ray(application, application_namespace, name, spec, command_line_options, run_size_config, patch)
         elif api == "torch":
-            create_run_torch(application, application_namespace, name, spec, command_line_options, patch)
+            create_run_torch(application, application_namespace, name, spec, command_line_options, run_size_config, patch)
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application {application_name}.")
     except Exception as e:
         raise kopf.PermanentError(f"Error handling run creation. {str(e)}")
 
-def create_run_ray(application, application_namespace, name, spec, command_line_options, patch):
+def create_run_ray(application, application_namespace, name, spec, command_line_options, run_size_config, patch):
     logging.info(f"Handling Ray Run: {application['metadata']['name']}")
     pass
 
@@ -76,7 +107,7 @@ def create_workdir_volumes(name, namespace):
 
     return name
 
-def create_run_torch(application, application_namespace, name, spec, command_line_options, patch):
+def create_run_torch(application, application_namespace, name, spec, command_line_options, run_size_config, patch):
     logging.info(f"Handling Torch Run: {application['metadata']['name']}")
     image = application['spec']['image']
     repo = application['spec']['repo']
@@ -125,13 +156,32 @@ def create_run_torch(application, application_namespace, name, spec, command_lin
     workdir_pvc_name = create_workdir_volumes(workdir_base, application_namespace)
     volumes = f"type=volume,src={workdir_pvc_name},dst=/workdir,readonly"
 
-    resources = f"{nnodes}x{nprocs_per_node}"
     scheduler_args = f"{namespace}{image_repo}{coscheduler}{network}"
 
     subPath = os.path.join(workdir_base, cloned_subPath)
     logging.info(f"Torchx subPath={subPath}")
 
-    out = subprocess.run(["/src/torchx.sh", name, subPath, image, scheduler_args, script, resources, volumes, base64.b64encode(command_line_options.encode('ascii')), base64.b64encode(env_run_arg.encode('ascii'))],
-                         capture_output=True)
+    gpus = run_size_config['gpu']
+    cpus = run_size_config['cpu']
+    memory = run_size_config['memory']
+    nprocs = run_size_config['workers']
+    nprocs_per_node = 1 if gpus == 0 else gpus
+    
+    out = subprocess.run([
+        "/src/torchx.sh",
+        name, # $1
+        subPath, # $2
+        image, # $3
+        str(nprocs), # $4
+        str(nprocs_per_node), # $5
+        str(gpus), # $6
+        str(cpus), # $7
+        str(memory), # $8
+        scheduler_args, # $9
+        script, # $10
+        volumes, # $11
+        base64.b64encode(command_line_options.encode('ascii')),
+        base64.b64encode(env_run_arg.encode('ascii'))
+    ], capture_output=True)
 
     logging.info(f"Torchx run output {out}")

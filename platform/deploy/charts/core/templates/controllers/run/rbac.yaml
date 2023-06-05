@@ -24,6 +24,9 @@ rules:
     verbs: [get,create]
 
   - apiGroups: [codeflare.dev]
+    resources: [runsizeconfigurations]
+    verbs: [list]
+  - apiGroups: [codeflare.dev]
     resources: [runs, applications]
     verbs: [list, watch, patch, get]
     

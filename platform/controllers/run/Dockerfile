@@ -9,7 +9,7 @@ FROM python:3.10-slim
 #        ssh-keyscan github.ibm.com >> ~/.ssh/known_hosts && \
 
 
-RUN apt update && apt install -y build-essential ca-certificates curl git ssh && \
+RUN apt update && apt install -y bc build-essential ca-certificates curl git && \
         if [[ $(uname -m) = aarch64 ]]; then ARCH=arm64; else ARCH=amd64; fi && \
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/$ARCH/kubectl" && \
         chmod +x kubectl && \
