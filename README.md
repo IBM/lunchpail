@@ -11,3 +11,16 @@ For local development, make sure you have Docker running, and [Kind](https://kin
 # Tear it down
 ./hack/down.sh
 ```
+
+## Tracking the resources
+
+To track the controllers:
+
+```shell
+kubectl get pod -n codeflare-system -w
+```
+
+To track the sample Run:
+```shell
+k get pod -n codeflare-application-example-lightning -w
+```
