@@ -1,5 +1,10 @@
 # CodeFlare Platform
 
+## Setting up IBM Internal Secrets
+
+The examples require access to github.ibm.com. Please consult
+[hack/secrets.sh.template](hack/secrets.sh.template).
+
 ## Getting Started (Local Development)
 
 For local development, make sure you have Docker running, and [Kind](https://kind.sigs.k8s.io/) installed (`brew install kind`).

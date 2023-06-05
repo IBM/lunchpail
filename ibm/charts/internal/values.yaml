@@ -1,1 +1,6 @@
 namespace: codeflare-ibm-internal
+
+github_ibm_com:
+  secret:
+    user: xxx
+    pat: yyy
