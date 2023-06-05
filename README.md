@@ -3,7 +3,7 @@
 ## Setting up IBM Internal Secrets
 
 The examples require access to github.ibm.com. Please consult
-[hack/secrets.sh.template](hack/secrets.sh.template).
+[hack/my.secrets.sh.template](hack/my.secrets.sh.template).
 
 ## Getting Started (Local Development)
 
