@@ -6,8 +6,8 @@ For local development, make sure you have Docker running, and [Kind](https://kin
 
 ```shell
 # Bring the platform up
-./deploy/up.sh
+./hack/up.sh
 
 # Tear it down
-./deploy/down.sh
+./hack/down.sh
 ```
