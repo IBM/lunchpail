@@ -2,8 +2,10 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
   name: rrr
+  namespace: codeflare-ibm-examples
 spec:
-  application: example-lightning
+  application:
+    name: example-lightning
   options: "--max_epochs 1"
   size: xs
   supportsGpu: false

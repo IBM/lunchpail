@@ -18,15 +18,19 @@ rules:
     # to find the torchx head pod
   - apiGroups: [""]
     resources: [pods]
-    verbs: [list]
+    verbs: [list, delete]
 
   - apiGroups: [""]
-    resources: [persistentvolumeclaims, events]
+    resources: [events]
     verbs: [create]
 
   - apiGroups: [""]
+    resources: [persistentvolumeclaims]
+    verbs: [create, delete]
+
+  - apiGroups: [""]
     resources: [persistentvolumes]
-    verbs: [get,create]
+    verbs: [get,create,delete]
 
   - apiGroups: [codeflare.dev]
     resources: [runsizeconfigurations]

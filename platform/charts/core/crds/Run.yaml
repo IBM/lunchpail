@@ -21,7 +21,13 @@ spec:
               type: object
               properties:
                 application:
-                  type: string
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
                 options:
                   type: string
                 env:
@@ -53,7 +59,7 @@ spec:
         - name: Application
           type: string
           description: The application definition being run
-          jsonPath: .spec.application
+          jsonPath: .spec.application.name
         - name: Options
           type: string
           description: Addition command line options
@@ -63,7 +69,7 @@ spec:
           jsonPath: .metadata.creationTimestamp
 
   # either Namespaced or Cluster
-  scope: Cluster
+  scope: Namespaced
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>
     plural: runs

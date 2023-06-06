@@ -8,18 +8,18 @@ import subprocess
 from kubernetes import client
 from kopf import PermanentError
 
-def create_workdir_volumes(v1Api, name, namespace):
+def create_workdir_volumes(v1Api, name, namespace, labels):
     pv_name = os.environ.get("WORKDIR_PVC")
 
     pv = v1Api.read_persistent_volume(name=pv_name)
-    pv_body = client.V1PersistentVolume(metadata=client.V1ObjectMeta(name=name),
+    pv_body = client.V1PersistentVolume(metadata=client.V1ObjectMeta(name=name, labels=labels),
                                         spec=client.V1PersistentVolumeSpec(capacity=pv.spec.capacity,
                                                                            access_modes=pv.spec.access_modes,
                                                                            mount_options=pv.spec.mount_options,
                                                                            nfs=pv.spec.nfs))
     v1Api.create_persistent_volume(pv_body)
 
-    body = client.V1PersistentVolumeClaim(metadata=client.V1ObjectMeta(name=name, namespace=namespace),
+    body = client.V1PersistentVolumeClaim(metadata=client.V1ObjectMeta(name=name, namespace=namespace, labels=labels),
                                           spec=client.V1PersistentVolumeClaimSpec(volume_name=name,
                                                                                   storage_class_name="",
                                                                                   access_modes=pv.spec.access_modes,
@@ -75,7 +75,12 @@ def create_run_torch(v1Api, application, application_namespace, name, spec, comm
     env_comma_separated = ",".join([f"{kv[0]}={kv[1]}" for kv in env.items()])
     env_run_arg = f"--env {env_comma_separated}" if len(env_comma_separated) > 0 else ""
 
-    workdir_pvc_name = create_workdir_volumes(v1Api, run_id, application_namespace)
+    patch.metadata.labels['app.kubernetes.io/instance'] = run_id
+    # patch.metadata.annotations['codeflare.dev/namespace'] = application_namespace
+
+    labels = {"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/instance": run_id}
+    
+    workdir_pvc_name = create_workdir_volumes(v1Api, run_id, application_namespace, labels)
     volumes = f"type=volume,src={workdir_pvc_name},dst=/workdir,readonly"
 
     scheduler_args = f"{namespace}{image_repo}{coscheduler}{network}"
