@@ -6,7 +6,7 @@ metadata:
 spec:
   api: ray
   image: rayproject/ray:2.1.0-py38
-  repo: https://github.ibm.com/ai-foundation/foundation-model-stack/tree/main/examples/src/ddp_example
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/main/ibm/charts/applications/templates/examples/ray
   repoSecret:
     name: github-ibm-com-ai-foundation
     namespace: codeflare-ibm-internal
