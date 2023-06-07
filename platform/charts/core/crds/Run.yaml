@@ -60,10 +60,10 @@ spec:
           type: string
           description: The application definition being run
           jsonPath: .spec.application.name
-        - name: Options
-          type: string
-          description: Addition command line options
-          jsonPath: .spec.options
+        #- name: Options
+        #  type: string
+        #  description: Addition command line options
+        #  jsonPath: .spec.options
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
