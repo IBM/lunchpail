@@ -1,0 +1,17 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: example-ray-qiskit
+  namespace: {{ .Values.namespace.examples }}
+spec:
+  api: ray
+  image: rayproject/ray:2.1.0-py38
+  repo: https://github.ibm.com/ai-foundation/foundation-model-stack/tree/main/examples/src/ddp_example
+  repoSecret:
+    name: github-ibm-com-ai-foundation
+    namespace: codeflare-ibm-internal
+  command: python3 main.py
+  size: sm
+  supportsGpu: false
+  requirements:
+    - qiskit==0.37.0
