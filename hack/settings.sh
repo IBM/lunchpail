@@ -6,8 +6,13 @@ PLA=$(grep name "$SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}')
 IBM=$(grep name "$SCRIPTDIR"/../ibm/Chart.yaml | awk '{print $2}')
 RUN=$(grep name "$SCRIPTDIR"/../tests/run/Chart.yaml | awk '{print $2}')
 
+ARCH=${ARCH-$(uname -m)}
+
 # for local testing
-LOCAL_CLUSTER_NAME=codeflare-platform
+CLUSTER_NAME=${CLUSTER_NAME-codeflare-platform}
+
+export KUBECTL="kubectl --context kind-${CLUSTER_NAME}"
+export HELM="helm --kube-context kind-${CLUSTER_NAME}"
 
 while getopts "k:" opt
 do

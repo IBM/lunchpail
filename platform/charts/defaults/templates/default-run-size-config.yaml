@@ -8,30 +8,30 @@ spec:
     xs:
       workers: 1
       cpu: 1
-      memory: 1Gi
+      memory: 4Gi
       gpu: 1
     sm:
       workers: 2
       cpu: 1
-      memory: 4Gi
+      memory: 8Gi
       gpu: 1
     md:
       workers: 4
       cpu: 2
-      memory: 6Gi
+      memory: 16Gi
       gpu: 1
     lg:
       workers: 8
       cpu: 4
-      memory: 10Gi
+      memory: 32Gi
       gpu: 1
     xl:
       workers: 20
       cpu: 4
-      memory: 30Gi
+      memory: 48Gi
       gpu: 1
     xxl:
       workers: 40
       cpu: 8
-      memory: 60Gi
+      memory: 64Gi
       gpu: 1

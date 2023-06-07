@@ -36,7 +36,7 @@ echo "Writing torchx dryrun to $DRY" 1>&2
 # about to launch is running. Below, we will do a `wait` that
 # subprocess. We need to launch this first, before doing the `kubectl
 # apply` to avoid a race window.
-kubectl wait -l app.kubernetes.io/instance=$run_id --for=condition=Running --timeout=-1s &
+kubectl wait pod -l app.kubernetes.io/instance=$run_id --for=condition=Running --timeout=-1s &
 
 # Run torchx in dry-run mode, so that we can hack it a bit.
 torchx run --dryrun \

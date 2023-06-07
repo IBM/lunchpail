@@ -32,6 +32,10 @@ rules:
     resources: [persistentvolumes]
     verbs: [get,create,delete]
 
+  - apiGroups: [ray.io]
+    resources: [rayclusters,rayjobs]
+    verbs: [list,get,create,delete]
+
   - apiGroups: [codeflare.dev]
     resources: [runsizeconfigurations]
     verbs: [list]

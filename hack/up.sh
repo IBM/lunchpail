@@ -8,7 +8,11 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 wait
 "$SCRIPTDIR"/build.sh
 
-echo "$(tput setaf 2)Booting CodeFlare$(tput sgr0)"
-helm install $PLA platform && \
-    helm install $IBM ibm $HELM_SECRETS && \
-    helm install $RUN tests/run
+# WARNING: the silly KubeRay chart doesn't give us a good way to
+# specify a namespace to use as a subchart; it will thus, for now, run
+# in the default namespace
+
+echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
+$HELM install $PLA platform --set global.arch=$ARCH && \
+    $HELM install $IBM ibm $HELM_SECRETS --set global.arch=$ARCH && \
+    $HELM install $RUN tests/run --set global.arch=$ARCH

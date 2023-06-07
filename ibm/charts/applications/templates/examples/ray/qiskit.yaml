@@ -5,7 +5,13 @@ metadata:
   namespace: {{ .Values.namespace.examples }}
 spec:
   api: ray
+
+  {{- if or (eq .Values.global.arch "arm64") (eq .Values.global.arch "aarch64") }}
+  image: rayproject/ray:2.3.0-py38-aarch64
+  {{- else }}
   image: rayproject/ray:2.1.0-py38
+  {{- end }}
+
   repo: https://github.ibm.com/nickm/codeflare-platform/tree/main/ibm/charts/applications/templates/examples/ray
   repoSecret:
     name: github-ibm-com-ai-foundation

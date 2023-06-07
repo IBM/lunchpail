@@ -14,7 +14,7 @@ function build {
 function push {
     local image=$1
     if [[ -z "$NO_KIND" ]]; then
-        kind load docker-image -n $LOCAL_CLUSTER_NAME $image
+        kind load docker-image -n $CLUSTER_NAME $image
     else
         echo "!!TODO push to remote container registry"
         exit 1
