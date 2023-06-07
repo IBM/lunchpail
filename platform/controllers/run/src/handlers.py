@@ -10,6 +10,7 @@ config.load_incluster_config()
 v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
+# Clean up any of our managed bits when a Run is deleted.
 @kopf.on.delete('runs.codeflare.dev')
 def delete_run(name, namespace, labels, **kwargs):
     logging.info(f"Handling run delete run={name} labels={labels}")
@@ -31,21 +32,10 @@ def delete_run(name, namespace, labels, **kwargs):
         except ApiException as e:
             error = e
 
-    if error is None:
-        try:
-            v1Api.delete_namespaced_persistent_volume_claim(run_id, namespace)
-        except ApiException as e:
-            error = e
-            
-    if error is None:
-        try:
-            v1Api.delete_persistent_volume(run_id)
-        except ApiException as e:
-            error = e
-
     if error is not None:
         raise kopf.PermanentError(f"Error deleting run resources run={name}. {str(error)}")
 
+# A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
 @kopf.on.update('runs.codeflare.dev', field='spec')
 def create_run(name, namespace, spec, patch, **kwargs):
