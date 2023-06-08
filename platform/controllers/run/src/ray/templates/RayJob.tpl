@@ -1,0 +1,107 @@
+{{- define "ray.io/RayJob" }}
+apiVersion: ray.io/v1alpha1
+kind: RayJob
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: ray
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  jobId: {{ .Release.Name }}
+  entrypoint: {{ .Values.entrypoint }}
+  shutdownAfterJobFinishes: true
+  ttlSecondsAfterFinished: 30 # give some time for the log aggregator to catch up
+  # runtimeEnv decoded to '{
+  #    "pip": [
+  #        "requests==2.26.0",
+  #        "pendulum==2.1.2"
+  #    ],
+  #    "env_vars": {
+  #        "counter_name": "test_counter"
+  #    }
+  #}'
+  runtimeEnv: {{ .Values.runtimeEnv }}
+  rayClusterSpec:
+    rayVersion: '2.1.0' # should match the Ray version in the image of the containers
+    # Ray head pod template
+    headGroupSpec:
+      # The `rayStartParams` are used to configure the `ray start` command.
+      # See https://github.com/ray-project/kuberay/blob/master/docs/guidance/rayStartParams.md for the default settings of `rayStartParams` in KubeRay.
+      # See https://docs.ray.io/en/latest/cluster/cli.html#ray-start for all available options in `rayStartParams`.
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+      #pod template
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: {{ .Values.image }}
+              ports:
+                - containerPort: 6379
+                  name: gcs-server
+                - containerPort: 8265 # Ray dashboard
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+                - containerPort: 8000
+                  name: serve
+              resources:
+                limits:
+                  cpu: {{ .Values.workers.cpu }}
+                  memory: {{ .Values.workers.memory }}
+                requests:
+                  cpu: {{ .Values.workers.cpu }}
+                  memory: {{ .Values.workers.memory }}
+
+              # working directory spec
+              workingDir: /workdir
+              volumeMounts:
+                - mountPath: /workdir
+                  subPath: {{ .Values.subPath }}
+                  name: workdir
+          volumes:
+            # You set volumes at the Pod level, then mount them into containers inside that Pod
+            - name: workdir
+              nfs:
+                server: {{ .Values.workdir.clusterIP }}
+                path: /
+    workerGroupSpecs:
+      # the pod replicas in this group typed worker
+      - replicas: {{ .Values.workers.count }}
+        minReplicas: {{ .Values.workers.count }}
+        maxReplicas: {{ .Values.workers.count }}
+        # logical group name, for this called small-group, also can be functional
+        groupName: group
+        # The `rayStartParams` are used to configure the `ray start` command.
+        # See https://github.com/ray-project/kuberay/blob/master/docs/guidance/rayStartParams.md for the default settings of `rayStartParams` in KubeRay.
+        # See https://docs.ray.io/en/latest/cluster/cli.html#ray-start for all available options in `rayStartParams`.
+        rayStartParams: {}
+        #pod template
+        template:
+          spec:
+            volumes:
+              # You set volumes at the Pod level, then mount them into containers inside that Pod
+              - name: workdir
+                nfs:
+                  server: {{ .Values.workdir.clusterIP }}
+                  path: /
+            containers:
+              - name: ray-worker # must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc'
+                image: {{ .Values.image }}
+                lifecycle:
+                  preStop:
+                    exec:
+                      command: [ "/bin/sh","-c","ray stop" ]
+                resources:
+                  limits:
+                    cpu: {{ .Values.workers.cpu }}
+                  requests:
+                    cpu: {{ .Values.workers.memory }}
+                workingDir: /workdir
+                volumeMounts:
+                    - mountPath: /workdir
+                      subPath: {{ .Values.subPath }}
+                      name: workdir
+{{- end }}
