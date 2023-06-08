@@ -25,7 +25,7 @@ To track the controllers:
 kubectl get pod -n codeflare-system -w
 ```
 
-To track the sample Run:
+To track the sample Runs:
 ```shell
-kubectl get pod -n codeflare-application-example-lightning -w
+kubectl get pod -n codeflare-ibm-examples -w
 ```
