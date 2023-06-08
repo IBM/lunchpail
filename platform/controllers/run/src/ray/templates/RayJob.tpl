@@ -47,6 +47,7 @@ spec:
                   name: client
                 - containerPort: 8000
                   name: serve
+              {{- include "ray.io/RayJob.workdir.volumeMount" . | indent 14 }}
               resources:
                 limits:
                   cpu: {{ .Values.workers.cpu }}
@@ -54,19 +55,9 @@ spec:
                 requests:
                   cpu: {{ .Values.workers.cpu }}
                   memory: {{ .Values.workers.memory }}
-
-              # working directory spec
-              workingDir: /workdir
-              volumeMounts:
-                - mountPath: /workdir
-                  subPath: {{ .Values.subPath }}
-                  name: workdir
           volumes:
             # You set volumes at the Pod level, then mount them into containers inside that Pod
-            - name: workdir
-              nfs:
-                server: {{ .Values.workdir.clusterIP }}
-                path: /
+            {{- include "ray.io/RayJob.workdir.volume" . | indent 12 }}
     workerGroupSpecs:
       # the pod replicas in this group typed worker
       - replicas: {{ .Values.workers.count }}
@@ -83,13 +74,11 @@ spec:
           spec:
             volumes:
               # You set volumes at the Pod level, then mount them into containers inside that Pod
-              - name: workdir
-                nfs:
-                  server: {{ .Values.workdir.clusterIP }}
-                  path: /
+            {{- include "ray.io/RayJob.workdir.volume" . | indent 12 }}
             containers:
               - name: ray-worker # must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc'
                 image: {{ .Values.image }}
+                {{- include "ray.io/RayJob.workdir.volumeMount" . | indent 16 }}
                 lifecycle:
                   preStop:
                     exec:
@@ -99,9 +88,4 @@ spec:
                     cpu: {{ .Values.workers.cpu }}
                   requests:
                     cpu: {{ .Values.workers.memory }}
-                workingDir: /workdir
-                volumeMounts:
-                    - mountPath: /workdir
-                      subPath: {{ .Values.subPath }}
-                      name: workdir
 {{- end }}
