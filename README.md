@@ -27,5 +27,5 @@ kubectl get pod -n codeflare-system -w
 
 To track the sample Runs:
 ```shell
-kubectl get pod -n codeflare-ibm-examples -w
+kubectl get pod -n codeflare-watsonxai-examples -w
 ```

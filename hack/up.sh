@@ -14,5 +14,5 @@ wait
 
 echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
 $HELM install $PLA platform --set global.arch=$ARCH && \
-    $HELM install $IBM ibm $HELM_SECRETS --set global.arch=$ARCH && \
+    $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH && \
     $HELM install $RUN tests/run --set global.arch=$ARCH

@@ -2,7 +2,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
   name: lightning
-  namespace: codeflare-ibm-examples
+  namespace: codeflare-watsonxai-examples
 spec:
   application:
     name: example-torch-lightning

@@ -3,7 +3,7 @@
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 PLA=$(grep name "$SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}')
-IBM=$(grep name "$SCRIPTDIR"/../ibm/Chart.yaml | awk '{print $2}')
+IBM=$(grep name "$SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}')
 RUN=$(grep name "$SCRIPTDIR"/../tests/run/Chart.yaml | awk '{print $2}')
 
 ARCH=${ARCH-$(uname -m)}

@@ -2,7 +2,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
   name: qiskit
-  namespace: codeflare-ibm-examples
+  namespace: codeflare-watsonxai-examples
 spec:
   workers: 0
   application:
