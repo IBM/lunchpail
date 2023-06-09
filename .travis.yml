@@ -1,0 +1,7 @@
+language: bash
+
+env:
+  - SCRIPT=run-controller.sh
+
+before_install: ./tests/travis/setup.sh
+script: bash -c ./tests/kind/$SCRIPT

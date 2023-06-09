@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
-SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+set -e
+set -o pipefail
 
-PLA=$(grep name "$SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}')
-IBM=$(grep name "$SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}')
-RUN=$(grep name "$SCRIPTDIR"/../tests/run/Chart.yaml | awk '{print $2}')
+SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
+
+PLA=$(grep name "$SETTINGS_SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}')
+IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}')
+RUN=$(grep name "$SETTINGS_SCRIPTDIR"/../tests/run/Chart.yaml | awk '{print $2}')
 
 ARCH=${ARCH-$(uname -m)}
 
@@ -14,9 +17,10 @@ CLUSTER_NAME=${CLUSTER_NAME-codeflare-platform}
 export KUBECTL="kubectl --context kind-${CLUSTER_NAME}"
 export HELM="helm --kube-context kind-${CLUSTER_NAME}"
 
-while getopts "k:" opt
+while getopts "tk:" opt
 do
     case $opt in
+        t) RUNNING_TESTS=true; continue;;
         k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
     esac
 done

@@ -1,5 +1,7 @@
 # CodeFlare Platform
 
+[![Build Status](https://travis.ibm.com/cloud-computer/codeflare-platform.svg?token=q3a78CA7yxKpNpK2nBqK&branch=main)](https://travis.ibm.com/cloud-computer/codeflare-platform)
+
 ## Setting up IBM Internal Secrets
 
 The examples require access to github.ibm.com. Please consult
