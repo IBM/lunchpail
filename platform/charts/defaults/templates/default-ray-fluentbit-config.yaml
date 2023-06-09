@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-ray-fluentbit-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: fluentbit
+    app.kubernetes.io/part-of: codeflare.dev
+data:
+  priority: "100"
+  fluent-bit.conf: |
+    [INPUT]
+        Name tail
+        Path /tmp/ray/session_latest/logs/*
+        Tag ray
+        Path_Key true
+        Refresh_Interval 5
+    [OUTPUT]
+        Name stdout
+        Match *

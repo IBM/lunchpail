@@ -9,6 +9,12 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: codeflare.dev
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha
+      controller: true
+      kind: Run
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
 spec:
   resources:
     Items: []
@@ -16,4 +22,10 @@ spec:
       - replicas: 1
         generictemplate:
           {{ include "ray.io/RayJob" . | indent 10 }}
+      - replicas: 1
+        generictemplate:
+          {{ include "ray.io/RayJob.logging.configmap.debug" . | indent 10 }}
+      - replicas: 1
+        generictemplate:
+          {{ include "ray.io/RayJob.logging.configmap.app" . | indent 10 }}
 {{- end }}

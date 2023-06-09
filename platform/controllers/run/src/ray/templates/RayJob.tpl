@@ -12,7 +12,7 @@ spec:
   jobId: {{ .Release.Name }}
   entrypoint: {{ .Values.entrypoint }}
   shutdownAfterJobFinishes: true
-  ttlSecondsAfterFinished: 30 # give some time for the log aggregator to catch up
+  ttlSecondsAfterFinished: 604800 # one week
   # runtimeEnv decoded to '{
   #    "pip": [
   #        "requests==2.26.0",
@@ -35,6 +35,10 @@ spec:
       #pod template
       template:
         spec:
+          volumes:
+            # You set volumes at the Pod level, then mount them into containers inside that Pod
+            {{- include "ray.io/RayJob.workdir.volume" . | indent 12 }}
+            {{- include "ray.io/RayJob.logging.volumes" . | indent 12 }}
           containers:
             - name: ray-head
               image: {{ .Values.image }}
@@ -47,17 +51,13 @@ spec:
                   name: client
                 - containerPort: 8000
                   name: serve
-              {{- include "ray.io/RayJob.workdir.volumeMount" . | indent 14 }}
-              resources:
-                limits:
-                  cpu: {{ .Values.workers.cpu }}
-                  memory: {{ .Values.workers.memory }}
-                requests:
-                  cpu: {{ .Values.workers.cpu }}
-                  memory: {{ .Values.workers.memory }}
-          volumes:
-            # You set volumes at the Pod level, then mount them into containers inside that Pod
-            {{- include "ray.io/RayJob.workdir.volume" . | indent 12 }}
+              {{- include "ray.io/RayJob.resources" . | indent 14 }}
+              {{- include "ray.io/RayJob.workdir.path" . | indent 14 }}
+
+              volumeMounts:
+                {{- include "ray.io/RayJob.workdir.volumeMount" . | indent 16 }}
+                {{- include "ray.io/RayJob.logging.volumeMounts" . | indent 16 }}
+            {{- include "ray.io/RayJob.logging.container" . | indent 12 }}
     workerGroupSpecs:
       # the pod replicas in this group typed worker
       - replicas: {{ .Values.workers.count }}
@@ -73,19 +73,19 @@ spec:
         template:
           spec:
             volumes:
-              # You set volumes at the Pod level, then mount them into containers inside that Pod
+            # You set volumes at the Pod level, then mount them into containers inside that Pod
             {{- include "ray.io/RayJob.workdir.volume" . | indent 12 }}
+
             containers:
               - name: ray-worker # must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc'
                 image: {{ .Values.image }}
-                {{- include "ray.io/RayJob.workdir.volumeMount" . | indent 16 }}
                 lifecycle:
                   preStop:
                     exec:
                       command: [ "/bin/sh","-c","ray stop" ]
-                resources:
-                  limits:
-                    cpu: {{ .Values.workers.cpu }}
-                  requests:
-                    cpu: {{ .Values.workers.memory }}
+                {{- include "ray.io/RayJob.resources" . | indent 16 }}
+                {{- include "ray.io/RayJob.workdir.path" . | indent 16 }}
+
+                volumeMounts:
+                  {{- include "ray.io/RayJob.workdir.volumeMount" . | indent 18 }}
 {{- end }}

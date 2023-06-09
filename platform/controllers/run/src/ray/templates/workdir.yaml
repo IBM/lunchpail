@@ -1,10 +1,12 @@
+{{- define "ray.io/RayJob.workdir.path" }}
+workingDir: /workdir
+{{- end }}
+
 {{- define "ray.io/RayJob.workdir.volumeMount" }}
 # working directory spec, which includes a volumeMOunt
-workingDir: /workdir
-volumeMounts:
-  - mountPath: /workdir
-    subPath: {{ .Values.subPath }}
-    name: workdir
+- mountPath: /workdir
+  subPath: {{ .Values.subPath }}
+  name: workdir
 {{- end }}
 
 {{- define "ray.io/RayJob.workdir.volume" }}

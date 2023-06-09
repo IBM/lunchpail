@@ -6,18 +6,19 @@ set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
-name="$1"
-namespace="$2"
-run_id="$3"
-image="$4"
-entrypoint="$5"
-subPath="$6"
-nWorkers="$7"
-cpu="$8"
-memory="$9"
-gpu="${10}"
-runtimeEnv="${11}"
-#requirements="${12}"
+uid="$1"
+name="$2"
+namespace="$3"
+run_id="$4"
+image="$5"
+entrypoint="$6"
+subPath="$7"
+nWorkers="$8"
+cpu="$9"
+memory="${10}"
+gpu="${11}"
+runtimeEnv="${12}"
+loggingPolicy="${13}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -29,8 +30,12 @@ echo "Dry running to $DRY"
 # apply` to avoid a race window.
 kubectl wait pod -l app.kubernetes.io/instance=$run_id --for=condition=Running --timeout=-1s &
 
-helm install --dry-run $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
+cm_file=$(mktemp)
+echo -n $loggingPolicy | base64 -d > $cm_file
+
+helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set kind=job \
+     --set uid=$uid \
      --set name=$name \
      --set image=$image \
      --set namespace=$namespace \
@@ -42,11 +47,14 @@ helm install --dry-run $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set workers.gpu=$gpu \
      --set runtimeEnv=$runtimeEnv \
      --set workdir.clusterIP=$WORKDIR_SERVER \
+     --set fluentbit.configmap_name=$run_id \
+     --set-file fluentbit.configmap=$cm_file \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
 kubectl apply -f $DRY
 # rm $DRY
+rm $cm_file
 
 # Get and emit the head pod name; it will be the "return value" of
 # this script. Take care not to emit anything else on stdout in this

@@ -7,8 +7,9 @@ from kopf import PermanentError
 
 from clone import clone
 from run_id import alloc_run_id
+from logging_policy import get_logging_policy
 
-def create_run_ray(v1Api, application, namespace: str, name: str, spec, command_line_options, run_size_config, patch):
+def create_run_ray(v1Api, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
     logging.info(f"Handling Ray Run: {application['metadata']['name']}")
 
     image = application['spec']['image']
@@ -27,9 +28,13 @@ def create_run_ray(v1Api, application, namespace: str, name: str, spec, command_
     memory = run_size_config['memory']
     nWorkers = run_size_config['workers']
 
+    logging_policy = get_logging_policy(v1Api)
+    logging.info(f"Using logging_policy={str(logging_policy)}")
+    
     logging.info(f"About to call out to ray run_id={run_id} subPath={subPath}")
     ray_out = subprocess.run([
         "/src/ray.sh",
+        uid,
         name,
         namespace,
         run_id,
@@ -40,7 +45,8 @@ def create_run_ray(v1Api, application, namespace: str, name: str, spec, command_
         str(cpu),
         str(memory),
         str(gpu),
-        base64.b64encode(json.dumps(runtimeEnv).encode('ascii'))
+        base64.b64encode(json.dumps(runtimeEnv).encode('ascii')),
+        base64.b64encode(logging_policy.encode('ascii'))
     ], capture_output=True)
     logging.info(f"Ray callout done with returncode={ray_out.returncode}")
 
