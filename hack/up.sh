@@ -19,7 +19,3 @@ wait
 echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
 $HELM install $PLA platform --set global.arch=$ARCH
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH
-
-if [[ -z $RUNNING_TESTS ]]; then
-    $KUBECTL get run --show-kind -n codeflare-watsonxai-examples --watch & $KUBECTL get pod --show-kind -n codeflare-system --watch
-fi

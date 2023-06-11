@@ -49,6 +49,6 @@ function waitForIt {
 }
 
 up
-"$SCRIPTDIR"/deploy-tests.sh
+"$SCRIPTDIR"/deploy-tests.sh &
 waitForIt app.kubernetes.io/name=lightning codeflare-watsonxai-examples 'Trainable params'
 waitForIt app.kubernetes.io/name=kuberay codeflare-watsonxai-examples 'eigenvalue'

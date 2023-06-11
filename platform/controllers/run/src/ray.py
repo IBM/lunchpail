@@ -53,5 +53,6 @@ def create_run_ray(v1Api, application, namespace: str, uid: str, name: str, spec
     if ray_out.returncode != 0:
         raise PermanentError(f"Failed to launch via ray. {ray_out.stderr.decode('utf-8')}")
     else:
-        logging.info(f"Ray out {ray_out.stdout.decode('utf-8')}")
-        logging.info(f"Ray err {ray_out.stderr.decode('utf-8')}")
+        head_pod_name = ray_out.stdout.decode('utf-8')
+        logging.info(f"Ray run head_pod_name={head_pod_name}")
+        return head_pod_name

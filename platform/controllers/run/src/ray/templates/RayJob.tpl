@@ -12,7 +12,7 @@ spec:
   jobId: {{ .Release.Name }}
   entrypoint: {{ .Values.entrypoint }}
   shutdownAfterJobFinishes: true
-  ttlSecondsAfterFinished: 604800 # one week
+  ttlSecondsAfterFinished: 10
   # runtimeEnv decoded to '{
   #    "pip": [
   #        "requests==2.26.0",
@@ -34,6 +34,11 @@ spec:
         dashboard-host: '0.0.0.0'
       #pod template
       template:
+        metadata:
+          labels:
+            app.kubernetes.io/managed-by: codeflare.dev
+            app.kubernetes.io/part-of: {{ .Values.name }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
         spec:
           volumes:
             # You set volumes at the Pod level, then mount them into containers inside that Pod
@@ -71,6 +76,11 @@ spec:
         rayStartParams: {}
         #pod template
         template:
+          metadata:
+            labels:
+              app.kubernetes.io/managed-by: codeflare.dev
+              app.kubernetes.io/part-of: {{ .Values.name }}
+              app.kubernetes.io/instance: {{ .Release.Name }}
           spec:
             volumes:
             # You set volumes at the Pod level, then mount them into containers inside that Pod

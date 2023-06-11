@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: codeflare.dev
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha
+    - apiVersion: codeflare.dev/v1alpha1
       controller: true
       kind: Run
       name: {{ .Values.name }}

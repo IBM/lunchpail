@@ -55,6 +55,10 @@ spec:
                     - xxl
               required:
                 - application
+      # subresources for the custom resource
+      subresources:
+        # enables the status subresource
+        status: {}
       additionalPrinterColumns:
         - name: Application
           type: string
@@ -64,6 +68,15 @@ spec:
         #  type: string
         #  description: Addition command line options
         #  jsonPath: .spec.options
+        - name: Status
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+        - name: Epoch
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch"
+        - name: Progress
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch-progress"
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp

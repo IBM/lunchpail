@@ -14,14 +14,6 @@ def create_run_torch(v1Api, application, namespace: str, uid: str, name: str, sp
     image = application['spec']['image']
     command = application['spec']['command']
 
-    image_repo = f",image_repo={os.path.dirname(image)}"
-
-    #coscheduler = "coscheduler_name=scheduler-plugins-scheduler"
-    coscheduler = "" # TODO
-
-    # multinic = api_instance.get_cluster_custom_object(group="k8s.cni.cncf.io", version="v1", plural="network-attachment-definitions") # TODO
-    network = ""
-
     component = "dist.ddp"
 
     nnodes = 1
@@ -44,7 +36,12 @@ def create_run_torch(v1Api, application, namespace: str, uid: str, name: str, sp
     # for now, we will handle nfs mounting of the workdir in torchx.sh
     volumes = ""
 
-    scheduler_args = f"namespace={namespace}{image_repo}{coscheduler}{network}"
+    # TODO multinic = api_instance.get_cluster_custom_object(group="k8s.cni.cncf.io", version="v1", plural="network-attachment-definitions") # TODO
+    scheduler_args = ",".join([
+        f"namespace={namespace}",
+        f"image_repo={os.path.dirname(image)}"
+        # "coscheduler_name=scheduler-plugins-scheduler"
+        ])
 
     cloned_subPath = clone(v1Api, application, name, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
@@ -58,18 +55,20 @@ def create_run_torch(v1Api, application, namespace: str, uid: str, name: str, sp
     
     torchx_out = subprocess.run([
         "/src/torchx.sh",
-        name, # $1
-        run_id, # $2
-        subPath, # $3
-        image, # $4
-        str(nprocs), # $5
-        str(nprocs_per_node), # $6
-        str(gpus), # $7
-        str(cpus), # $8
-        str(memory), # $9
-        scheduler_args, # $10
-        script, # $11
-        volumes, # $12
+        uid, # $1
+        name, # $2
+        namespace, # $3
+        run_id, # $4
+        subPath, # $5
+        image, # $6
+        str(nprocs), # $7
+        str(nprocs_per_node), # $8
+        str(gpus), # $9
+        str(cpus), # $10
+        str(memory), # $11
+        scheduler_args, # $12
+        script, # $13
+        volumes, # $14
         base64.b64encode(command_line_options.encode('ascii')),
         base64.b64encode(env_run_arg.encode('ascii'))
     ], capture_output=True)
@@ -79,3 +78,4 @@ def create_run_torch(v1Api, application, namespace: str, uid: str, name: str, sp
 
     head_pod_name = torchx_out.stdout.decode('utf-8')
     logging.info(f"Torchx run head_pod_name={head_pod_name}")
+    return head_pod_name

@@ -78,8 +78,10 @@ data:
   fluent-bit.conf: |
     [INPUT]
         Name tail
+        Key logline
+        Read_from_Head true
         Path {{ print "/tmp/ray/session_latest/logs/*" .Release.Name "*" }}
-        Refresh_Interval 1
+        Refresh_Interval 5
     [OUTPUT]
         Name stdout
         Match *

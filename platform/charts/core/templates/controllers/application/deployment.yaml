@@ -3,17 +3,22 @@ kind: Deployment
 metadata:
   name: codeflare-application-controller
   namespace: {{ .Values.controllers.namespace }}
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/component: run-controller
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      application: codeflare-application-controller
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: application-controller
   template:
     metadata:
       labels:
-        application: codeflare-application-controller
+        app.kubernetes.io/part-of: codeflare.dev
+        app.kubernetes.io/component: application-controller
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: codeflare-application-controller-account
