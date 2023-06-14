@@ -106,3 +106,29 @@ def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
         resp = customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
     except ApiException as e:
         logging.error(f"Error patching Run on Pod delete run_name={run_name}. {str(e)}")
+
+# Watch pod events so we can capture pod scheduling, image pull, etc. status updates and associate them with a Run
+@kopf.on.create('events', field="involvedObject.kind", value="Pod")
+@kopf.on.update('events', field="involvedObject.kind", value="Pod")
+def on_pod_event(name: str, namespace: str, body, **kwargs):
+    try:
+        if "reason" in body and "component" in body["source"] and body["source"]["component"] != "kopf":
+            pod_name = body["involvedObject"]["name"]
+            logging.info(f"Pod event for pod_name={pod_name} {body}")
+            pod = v1Api.read_namespaced_pod(pod_name, namespace)
+            pod_labels = pod.metadata.labels
+            if "app.kubernetes.io/managed-by" in pod_labels and pod_labels["app.kubernetes.io/managed-by"] == "codeflare.dev" and "app.kubernetes.io/part-of" in pod_labels:
+                phase = body["reason"]
+                run_name = pod_labels["app.kubernetes.io/part-of"]
+                logging.info(f"Pod event for run_name={run_name} phase={phase} {body}")
+
+                patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+                try:
+                    customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+                except ApiException as e:
+                    logging.error(f"Error patching Run on pod event run_name={run_name} phase={phase}. {str(e)}")
+        else:
+            logging.info(f"Dropping event {body}")
+
+    except Exception as e:
+        logging.error(f"Error handling pod event name={name} namespace={namespace}. {e}")
