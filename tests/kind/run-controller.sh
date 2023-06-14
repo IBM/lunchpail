@@ -21,9 +21,10 @@ function up {
 }
 
 function waitForIt {
-    local selector=$1
-    local ns=$2
-    local done="$3"
+    local name=$1
+    local selector=$2
+    local ns=$3
+    local done="$4"
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
@@ -32,6 +33,8 @@ function waitForIt {
     echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector$(tput sgr0)" 1>&2
     while true; do
         $KUBECTL -n $ns wait pod -l $selector --for=condition=Ready --timeout=-1s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+
+        $KUBECTL -n $ns wait pod -l $selector --for=condition=Complete --timeout=1s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
         sleep 4
     done
 
@@ -45,10 +48,14 @@ function waitForIt {
         sleep 4
     done
 
-    echo "✅ PASS run-controller test $selector"
+    echo "✅ PASS run-controller run test $selector"
+
+    $KUBECTL delete run $name -n $ns
+    echo "✅ PASS run-controller delete test $selector"
 }
 
 up
 "$SCRIPTDIR"/deploy-tests.sh &
-waitForIt app.kubernetes.io/name=lightning codeflare-watsonxai-examples 'Trainable params'
-waitForIt app.kubernetes.io/name=kuberay codeflare-watsonxai-examples 'eigenvalue'
+$KUBECTL get pod --show-kind -n codeflare-system --watch &
+waitForIt lightning app.kubernetes.io/name=lightning codeflare-watsonxai-examples 'Trainable params'
+waitForIt qiskit app.kubernetes.io/name=kuberay codeflare-watsonxai-examples 'eigenvalue'

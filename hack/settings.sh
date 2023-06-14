@@ -7,7 +7,6 @@ SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
 
 PLA=$(grep name "$SETTINGS_SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}')
 IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}')
-RUN=$(grep name "$SETTINGS_SCRIPTDIR"/../tests/run/Chart.yaml | awk '{print $2}')
 
 ARCH=${ARCH-$(uname -m)}
 

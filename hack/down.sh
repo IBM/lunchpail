@@ -4,7 +4,6 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
 echo "$(tput setaf 2)Shutting down CodeFlare$(tput sgr0)"
-($HELM ls | grep -q $RUN) && $HELM delete --wait $RUN
 ($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM
 ($HELM ls | grep -q $PLA) && $HELM delete --wait $PLA
 

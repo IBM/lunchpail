@@ -12,7 +12,7 @@ spec:
   jobId: {{ .Release.Name }}
   entrypoint: {{ .Values.entrypoint }}
   shutdownAfterJobFinishes: true
-  ttlSecondsAfterFinished: 10
+  ttlSecondsAfterFinished: 100 # give some time for tests
   # runtimeEnv decoded to '{
   #    "pip": [
   #        "requests==2.26.0",

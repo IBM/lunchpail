@@ -1,5 +1,7 @@
 import kopf
 import logging
+from asyncio import create_task, shield
+
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
@@ -12,31 +14,6 @@ from torch import create_run_torch
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
-
-# Clean up any of our managed bits when a Run is deleted.
-@kopf.on.delete('runs.codeflare.dev')
-def delete_run(name, namespace, labels, **kwargs):
-    logging.info(f"Handling run delete run={name} labels={labels}")
-    error = None
-
-    try:
-        run_id = labels['app.kubernetes.io/instance']
-        logging.info(f"Handling run delete run_id={run_id}")
-        #        namespace = annotations['codeflare.dev/namespace']
-        #        logging.info(f"Handling run delete namespace={namespace}")
-    except Exception as e:
-        error = e
-
-    if error is None:
-        try:
-            pods = v1Api.list_namespaced_pod(namespace, label_selector=f"app.kubernetes.io/instance={run_id}").items
-            for pod in pods:
-                v1Api.delete_namespaced_pod(pod.metadata.name, namespace)
-        except ApiException as e:
-            error = e
-
-    if error is not None:
-        logging.error(f"Error deleting run resources run={name}. {str(error)}")
 
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
@@ -74,7 +51,7 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 
         if head_pod_name is not None:
-            track_logs(v1Api, customApi, name, head_pod_name, namespace, api, patch)
+            shield(create_task(track_logs(v1Api, customApi, name, head_pod_name, namespace, api, patch)))
 
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
