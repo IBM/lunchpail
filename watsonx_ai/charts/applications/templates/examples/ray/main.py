@@ -13,6 +13,21 @@ import sys
 print(sys.argv[1:])
 
 @ray.remote
+class Counter:
+    def __init__(self):
+        self.value = 0
+
+    def increment(self):
+        self.value += 1
+        return self.value
+
+    def get_counter(self):
+        return self.value
+
+    def progress(self, N):
+        return f"{round((self.value / N) * 100)}%"
+
+@ray.remote
 def prep_problem():
     """Prepare demo problem."""
     op = (
@@ -31,7 +46,7 @@ def prep_problem():
     return (op, var_form, initial_state)
 
 @ray.remote
-def optimize(problem):
+def optimize(problem, number_of_trials, counter):
     """Optimization demo routine."""
     backend = QasmSimulatorPy()
     
@@ -48,6 +63,9 @@ def optimize(problem):
         initial_point=init_point
     )
     result = vqe.compute_minimum_eigenvalue(op)
+
+    counter.increment.remote()
+    print(f"Epoch 0: {ray.get(counter.progress.remote(number_of_trials))}")
     
     print(f"Optimization result:")
     print(f" - eigenvalue: {result.eigenvalue}")
@@ -65,11 +83,16 @@ def analyze(results):
 if __name__ == "__main__":
     with ray.init():
         number_of_trials = 30
+
+        # Create an actor from this class.
+        counter = Counter.remote()
         
         workflow_graph = analyze.remote(
             results=ray.get([
                 optimize.remote(
-                    problem=prep_problem.remote()
+                    problem=prep_problem.remote(),
+                    number_of_trials=number_of_trials,
+                    counter=counter
                 )
                 for _ in range(number_of_trials)
             ])
