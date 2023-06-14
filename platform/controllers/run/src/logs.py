@@ -1,5 +1,6 @@
 import re
 import logging
+from multiprocessing import Process
 from typing import Any, Dict, Iterable
 
 def get_logs(v1Api, args: Dict[str, Any], tail: bool) -> Iterable[str]:
@@ -12,7 +13,7 @@ def get_logs(v1Api, args: Dict[str, Any], tail: bool) -> Iterable[str]:
         iterator = split_lines(resp)
     return iterator   
 
-def track_logs(v1Api, customApi, run_name: str, pod_name: str, namespace: str, api: str, patch):
+def track_logs_async(v1Api, customApi, run_name: str, pod_name: str, namespace: str, api: str, patch):
     try:
         log_args : Dict[str, Any] = {
             "name": pod_name,
@@ -41,3 +42,6 @@ def track_logs(v1Api, customApi, run_name: str, pod_name: str, namespace: str, a
                 #patch.metadata.annotations['codeflare.dev/epoch-progress'] = epoch_progress
             except Exception as e:
                 logging.error(f"Error patching log update {e}")
+
+def track_logs(v1Api, customApi, run_name: str, pod_name: str, namespace: str, api: str, patch):
+    Process(track_logs_async(v1Api, customApi, run_name, pod_name, namespace, api, patch)).start()

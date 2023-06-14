@@ -1,6 +1,5 @@
 import kopf
 import logging
-from asyncio import create_task, shield
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
@@ -51,7 +50,7 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 
         if head_pod_name is not None:
-            shield(create_task(track_logs(v1Api, customApi, name, head_pod_name, namespace, api, patch)))
+            track_logs(v1Api, customApi, name, head_pod_name, namespace, api, patch)
 
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
