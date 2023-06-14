@@ -19,3 +19,9 @@ wait
 echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
 $HELM install $PLA platform --set global.arch=$ARCH
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH
+
+echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
+$KUBECTL get pod --show-kind -n codeflare-system --watch &
+watch=$!
+$KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev -n codeflare-system --for=condition=ready --timeout=-1s
+kill $watch 2> /dev/null
