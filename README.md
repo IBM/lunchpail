@@ -41,10 +41,10 @@ For local development, make sure you have Docker running, and [Kind](https://kin
 
 ### Submitting Example Runs
 
-Test Run resource specs are located in [tests/runs](tests/runs). If
-you can to stand them all up, you can use
-`./tests/kind/deploy-tests.sh`. Or you can individually `kubectl apply
--f` particular runs located within the `tests/runs` directory.
+Test Run resource specs are located in [tests/runs](tests/runs). To
+stand them all up, you can use `./tests/kind/deploy-tests.sh`. Or you
+can individually `kubectl apply -f` particular runs located within the
+`tests/runs` directory.
 
 The [`deploy-tests.sh`](./tests/kind/deploy-tests.sh) script is
 convenient, in that it will also do a `kubectl get --watch` on the
