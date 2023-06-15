@@ -9,7 +9,7 @@ from clone import clone
 from run_id import alloc_run_id
 from logging_policy import get_logging_policy
 
-def create_run_ray(v1Api, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
+def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
     logging.info(f"Handling Ray Run: {application['metadata']['name']}")
 
     image = application['spec']['image']
@@ -20,7 +20,7 @@ def create_run_ray(v1Api, application, namespace: str, uid: str, name: str, spec
     runtimeEnv = { "env_vars": env, "pip": requirements }
 
     run_id, workdir = alloc_run_id("ray", name)
-    cloned_subPath = clone(v1Api, application, name, workdir)
+    cloned_subPath = clone(v1Api, customApi, application, name, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
 
     gpu = run_size_config['gpu']

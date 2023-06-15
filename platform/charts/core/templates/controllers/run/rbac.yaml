@@ -53,7 +53,7 @@ rules:
     verbs: [list,get,create,delete]
 
   - apiGroups: [codeflare.dev]
-    resources: [runsizeconfigurations]
+    resources: [platformreposecrets,runsizeconfigurations]
     verbs: [list]
   - apiGroups: [codeflare.dev]
     resources: [runs, runs/status, applications]

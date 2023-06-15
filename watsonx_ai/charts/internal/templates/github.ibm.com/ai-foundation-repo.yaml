@@ -1,0 +1,10 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: PlatformRepoSecret
+metadata:
+  name: {{ .Values.github_ibm_com.secret.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  repo: https://github.ibm.com
+  secret:
+    name: {{ .Values.github_ibm_com.secret.name }}
+    namespace: {{ .Values.namespace }}

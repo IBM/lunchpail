@@ -43,9 +43,9 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
         if api == "ray":
-            head_pod_name = create_run_ray(v1Api, application, namespace, uid, name, spec, command_line_options, run_size_config, patch)
+            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, patch)
         elif api == "torch":
-            head_pod_name = create_run_torch(v1Api, application, namespace, uid, name, spec, command_line_options, run_size_config, patch)
+            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, patch)
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 

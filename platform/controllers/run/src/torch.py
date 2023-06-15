@@ -9,7 +9,7 @@ from kopf import PermanentError
 from clone import clone
 from run_id import alloc_run_id
 
-def create_run_torch(v1Api, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
+def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
     logging.info(f"Handling Torch Run: {application['metadata']['name']}")
     image = application['spec']['image']
     command = application['spec']['command']
@@ -43,7 +43,7 @@ def create_run_torch(v1Api, application, namespace: str, uid: str, name: str, sp
         # "coscheduler_name=scheduler-plugins-scheduler"
         ])
 
-    cloned_subPath = clone(v1Api, application, name, workdir)
+    cloned_subPath = clone(v1Api, customApi, application, name, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
     logging.info(f"Torchx subPath={subPath}")
 
