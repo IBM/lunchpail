@@ -68,6 +68,9 @@ spec:
         #  type: string
         #  description: Addition command line options
         #  jsonPath: .spec.options
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
         - name: Status
           type: string
           jsonPath: ".metadata.annotations.codeflare\\.dev/status"
@@ -77,9 +80,6 @@ spec:
         - name: Progress
           type: string
           jsonPath: ".metadata.annotations.codeflare\\.dev/epoch-progress"
-        - name: Age
-          type: date
-          jsonPath: .metadata.creationTimestamp
 
   # either Namespaced or Cluster
   scope: Namespaced
