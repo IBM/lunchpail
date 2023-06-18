@@ -17,8 +17,9 @@ nWorkers="$8"
 cpu="$9"
 memory="${10}"
 gpu="${11}"
-runtimeEnv="${12}"
-loggingPolicy="${13}"
+datasets="${12}"
+runtimeEnv="${13}"
+loggingPolicy="${14}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -49,11 +50,12 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set workdir.clusterIP=$WORKDIR_SERVER \
      --set fluentbit.configmap_name=$run_id \
      --set-file fluentbit.configmap=$cm_file \
+     --set datasets=$datasets \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
 kubectl apply -f $DRY 1>&2
-rm $DRY
+#rm $DRY
 rm $cm_file
 
 # Wait for the job to be running. See the `kubectl wait` above. Here,

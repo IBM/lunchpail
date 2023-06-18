@@ -14,10 +14,12 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
 
     image = application['spec']['image']
     command = application['spec']['command']
-    requirements = application['spec']['requirements']
-    env = application['spec']['env'] if 'env' in application['spec'] else {}
 
-    runtimeEnv = { "env_vars": env, "pip": requirements }
+    runtimeEnv = {}
+    if 'requirements' in application['spec']:
+        runtimeEnv["pip"] = application['spec']['requirements']
+    if 'env' in application['spec']:
+        runtimeEnv["env_vars"] = application['spec']['env']
 
     run_id, workdir = alloc_run_id("ray", name)
     cloned_subPath = clone(v1Api, customApi, application, name, workdir)
@@ -32,23 +34,27 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
     logging.info(f"Using logging_policy={str(logging_policy)}")
     
     logging.info(f"About to call out to ray run_id={run_id} subPath={subPath}")
-    ray_out = subprocess.run([
-        "/src/ray.sh",
-        uid,
-        name,
-        namespace,
-        run_id,
-        image,
-        command,
-        subPath,
-        str(nWorkers),
-        str(cpu),
-        str(memory),
-        str(gpu),
-        base64.b64encode(json.dumps(runtimeEnv).encode('ascii')),
-        base64.b64encode(logging_policy.encode('ascii'))
-    ], capture_output=True)
-    logging.info(f"Ray callout done with returncode={ray_out.returncode}")
+    try:
+        ray_out = subprocess.run([
+            "/src/ray.sh",
+            uid,
+            name,
+            namespace,
+            run_id,
+            image,
+            command,
+            subPath,
+            str(nWorkers),
+            str(cpu),
+            str(memory),
+            str(gpu),
+            base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
+            base64.b64encode(json.dumps(runtimeEnv).encode('ascii')),
+            base64.b64encode(logging_policy.encode('ascii'))
+        ], capture_output=True)
+        logging.info(f"Ray callout done for name={name} with returncode={ray_out.returncode}")
+    except Exception as e:
+        raise PermanentError(f"Failed to launch via ray. {ray_out.stderr.decode('utf-8')}")
 
     if ray_out.returncode != 0:
         raise PermanentError(f"Failed to launch via ray. {ray_out.stderr.decode('utf-8')}")

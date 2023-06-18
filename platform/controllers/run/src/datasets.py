@@ -19,4 +19,4 @@ def prepare_dataset_labels(customApi, run_namespace: str, application):
 
             idx = idx + 1
 
-        return "\n".join(datasets)
+        return "\n".join(datasets) + "\n"

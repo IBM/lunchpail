@@ -63,5 +63,6 @@ waitForIt qiskit app.kubernetes.io/name=kuberay codeflare-watsonxai-examples 'ei
 
 # dataset tests; TODO move somewhere else?
 waitForIt test1 app.kubernetes.io/name=test1 codeflare-test 'PASS'
+waitForIt test2 app.kubernetes.io/name=kuberay codeflare-test 'PASS'
 
 ("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
