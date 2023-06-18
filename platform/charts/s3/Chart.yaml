@@ -1,0 +1,10 @@
+apiVersion: v1
+name: codeflare-s3
+description: Deploys S3 Server that runs as part of CodeFlare
+type: application
+
+# Chart version.
+version: 0.0.1
+
+# CodeFlare version.
+appVersion: "latest"

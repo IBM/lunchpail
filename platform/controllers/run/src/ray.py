@@ -9,7 +9,7 @@ from clone import clone
 from run_id import alloc_run_id
 from logging_policy import get_logging_policy
 
-def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
+def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, dataset_labels, patch):
     logging.info(f"Handling Ray Run: {application['metadata']['name']}")
 
     image = application['spec']['image']

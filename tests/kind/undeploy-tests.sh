@@ -7,4 +7,4 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/../../hack/settings.sh
 
 echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH$(tput sgr0)"
-$KUBECTL delete --recursive -f tests/runs
+$HELM delete codeflare-tests --wait

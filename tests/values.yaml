@@ -1,0 +1,9 @@
+namespace: codeflare-test
+
+datashim:
+  apiVersion: com.ie.ibm.hpsys/v1alpha1
+
+datasets:
+  s3:
+    secret:
+      name: test-dataset-s3

@@ -9,7 +9,7 @@ from kopf import PermanentError
 from clone import clone
 from run_id import alloc_run_id
 
-def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, patch):
+def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, dataset_labels, patch):
     logging.info(f"Handling Torch Run: {application['metadata']['name']}")
     image = application['spec']['image']
     command = application['spec']['command']
@@ -69,6 +69,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
         scheduler_args, # $12
         script, # $13
         volumes, # $14
+        base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "", # $15
         base64.b64encode(command_line_options.encode('ascii')),
         base64.b64encode(env_run_arg.encode('ascii'))
     ], capture_output=True)

@@ -17,7 +17,7 @@ wait
 # in the default namespace
 
 echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
-$HELM install $PLA platform --set global.arch=$ARCH
+$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH
 
 echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"

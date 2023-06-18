@@ -52,6 +52,10 @@ rules:
     resources: [rayclusters,rayjobs]
     verbs: [list,get,create,delete]
 
+  - apiGroups: [com.ie.ibm.hpsys]
+    resources: [datasets]
+    verbs: [get]
+
   - apiGroups: [codeflare.dev]
     resources: [platformreposecrets,runsizeconfigurations]
     verbs: [list]

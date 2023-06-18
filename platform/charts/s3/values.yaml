@@ -1,0 +1,14 @@
+name: codeflare-s3
+
+emptyDir:
+  sizeLimit: 1Gi
+
+global:
+  s3AccessKey: xxx
+  s3SecretKey: yyy
+  buckets:
+    test: zzz
+
+images:
+  server: bitnami/minio:2023.4.20
+  client: bitnami/minio-client:2023.4.12

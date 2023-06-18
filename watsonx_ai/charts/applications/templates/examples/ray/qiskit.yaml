@@ -14,7 +14,7 @@ spec:
 
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/examples/ray
   command: python3 main.py
-  size: sm
+  size: xs
   supportsGpu: false
   requirements:
     - qiskit==0.37.0

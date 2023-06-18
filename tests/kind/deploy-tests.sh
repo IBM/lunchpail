@@ -4,9 +4,10 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+. "$SCRIPTDIR"/../../hack/secrets.sh
 . "$SCRIPTDIR"/../../hack/settings.sh
 
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0)"
-$KUBECTL apply --recursive -f tests/runs
+$HELM install codeflare-tests tests $HELM_SECRETS
 
-$KUBECTL get run -n codeflare-watsonxai-examples --watch
+$KUBECTL get run --all-namespaces --watch

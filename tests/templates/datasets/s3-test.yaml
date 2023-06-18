@@ -1,0 +1,11 @@
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: test-dataset-s3
+  namespace: {{ .Values.namespace }}
+spec:
+  local:
+    type: "COS"
+    secret-name: {{ .Values.datasets.s3.secret.name }}
+    secret-namespace: {{ .Values.namespace }}
+    readonly: "true" # default is false

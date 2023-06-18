@@ -19,8 +19,9 @@ memory="${11}"
 scheduler_args="${12}"
 script="${13}"
 volumes="${14}"
-command_line_options="$(echo -n ${15} | base64 -d)"
-env=$(echo -n ${16} | base64 -d)
+datasets="$(echo -n ${15} | base64 -d )"
+command_line_options="$(echo -n ${16} | base64 -d)"
+env=$(echo -n ${17} | base64 -d)
 
 scheduler=kubernetes_mcad
 component=dist.ddp
@@ -59,7 +60,7 @@ torchx run --dryrun \
        $env \
        -- $command_line_options \
     | awk '$0=="=== SCHEDULER REQUEST ===" {on=1} on==2 { print $0 } on==1{on=2}' \
-    | awk -v name=$name -v uid=$uid -f "$SCRIPTDIR"/add-labels-and-owner.awk \
+    | awk -v name=$name -v uid=$uid -f "$SCRIPTDIR"/add-labels-and-owner.awk "$datasets" \
     | sed "s/main-pg/pg/" \
     | sed -E "s/main-[a-zA-Z0-9]+/$run_id/g" \
     | sed -E "s#app.kubernetes.io/name: main#app.kubernetes.io/name: ${name}#" \

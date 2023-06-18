@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}
+  namespace: codeflare-system
+  labels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: s3
+data:
+  TEST_BUCKET: {{ .Values.global.buckets.test }}
+  S3_ENDPOINT: {{ print "http://" .Values.name ":9000" }}
+  USE_MINIO_EXTENSIONS: "true"

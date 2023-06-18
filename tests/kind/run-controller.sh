@@ -30,11 +30,11 @@ function waitForIt {
 
     # ($KUBECTL -n $ns wait pod -l $selector --for=condition=Completed --timeout=-1s && pkill $$)
 
-    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector$(tput sgr0)" 1>&2
+    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
     while true; do
-        $KUBECTL -n $ns wait pod -l $selector --for=condition=Ready --timeout=-1s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+        $KUBECTL -n $ns wait pod -l $selector --for=condition=Ready --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
 
-        $KUBECTL -n $ns wait pod -l $selector --for=condition=Complete --timeout=1s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+        $KUBECTL -n $ns wait pod -l $selector --for=condition=Ready=false --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
         sleep 4
     done
 
@@ -54,8 +54,14 @@ function waitForIt {
     echo "✅ PASS run-controller delete test $selector"
 }
 
+("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
 up
 "$SCRIPTDIR"/deploy-tests.sh &
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
 waitForIt lightning app.kubernetes.io/name=lightning codeflare-watsonxai-examples 'Trainable params'
 waitForIt qiskit app.kubernetes.io/name=kuberay codeflare-watsonxai-examples 'eigenvalue'
+
+# dataset tests; TODO move somewhere else?
+waitForIt test1 app.kubernetes.io/name=test1 codeflare-test 'PASS'
+
+("$SCRIPTDIR"/undeploy-tests.sh || exit 0)

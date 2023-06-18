@@ -43,6 +43,7 @@ spec:
                   type: string
                 repoSecret:
                   type: object
+                  required: [name]
                   properties:
                     name:
                       type: string
@@ -67,6 +68,16 @@ spec:
                   pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                 supportsGpu:
                   type: boolean
+                inputs:
+                  type: array
+                  items:
+                    type: object
+                    required: [name]
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
               required:
                 - api
                 - image

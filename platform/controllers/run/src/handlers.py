@@ -6,6 +6,7 @@ from kubernetes.client.rest import ApiException
 
 from logs import track_logs
 from run_size import run_size
+from datasets import prepare_dataset_labels
 
 from ray import create_run_ray
 from torch import create_run_torch
@@ -38,14 +39,18 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
     else:
         command_line_options = ""
 
+    dataset_labels = prepare_dataset_labels(customApi, namespace, application)
+    if dataset_labels is not None:
+        logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
+
     try:
         api = application['spec']['api']
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
         if api == "ray":
-            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, patch)
+            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "torch":
-            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, patch)
+            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 
