@@ -1,0 +1,15 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test1
+  namespace: {{ .Values.namespace }}
+spec:
+  api: torch
+  image: ghcr.io/project-codeflare/lightning:0.0.6
+  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/applications/test1
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/datasim/tests/templates/applications/test1
+  command: python3 main.py
+  size: xs
+  inputs:
+    - name: test-dataset-s3
+      namespace: {{ .Values.namespace }}

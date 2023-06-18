@@ -1,0 +1,9 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: test2
+  namespace: {{ .Values.namespace }}
+spec:
+  application:
+    name: test2
+  workers: 0
