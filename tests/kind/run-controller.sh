@@ -22,9 +22,9 @@ function up {
 
 function waitForIt {
     local name=$1
-    local selector=$2
-    local ns=$3
-    local done="$4"
+    local selector=app.kubernetes.io/part-of=$name
+    local ns=$2
+    local done="$3"
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
@@ -40,7 +40,7 @@ function waitForIt {
 
     echo "$(tput setaf 2)🧪 Checking job output app=$selector$(tput sgr0)" 1>&2
     while true; do
-        $KUBECTL -n $ns logs --all-containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting... $selector$(tput sgr0)"
+        $KUBECTL -n $ns logs --all-containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output... $selector$(tput sgr0)"
 
         if [[ -n $DEBUG ]]; then
             $KUBECTL -n $ns logs --all-containers -l $selector --tail=4 # print out the last few lines to help with debugging
@@ -58,11 +58,11 @@ function waitForIt {
 up
 "$SCRIPTDIR"/deploy-tests.sh &
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
-waitForIt lightning app.kubernetes.io/name=lightning codeflare-watsonxai-examples 'Trainable params'
-waitForIt qiskit app.kubernetes.io/name=kuberay codeflare-watsonxai-examples 'eigenvalue'
+waitForIt lightning codeflare-watsonxai-examples 'Trainable params'
+waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue'
 
 # dataset tests; TODO move somewhere else?
-waitForIt test1 app.kubernetes.io/name=test1 codeflare-test 'PASS'
-waitForIt test2 app.kubernetes.io/name=kuberay codeflare-test 'PASS'
+waitForIt test1 codeflare-test 'PASS'
+waitForIt test2 codeflare-test 'PASS'
 
 ("$SCRIPTDIR"/undeploy-tests.sh || exit 0)

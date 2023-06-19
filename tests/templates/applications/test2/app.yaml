@@ -10,8 +10,7 @@ spec:
   {{- else }}
   image: rayproject/ray:2.1.0-py38
   {{- end }}
-  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/applications/test1
-  repo: https://github.ibm.com/nickm/codeflare-platform/tree/datasim/tests/templates/applications/test2
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test2
   command: python3 main.py
   size: xs
   inputs:
