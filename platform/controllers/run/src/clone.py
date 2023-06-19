@@ -1,6 +1,7 @@
 import re
 import logging
 import subprocess
+from kopf import PermanentError
 
 def fetch_secret(v1Api, name: str, namespace: str):
     repo_secret = v1Api.read_namespaced_secret(name, namespace)
