@@ -22,18 +22,22 @@ for your users. It is relatively lightweight, and runs fine in
 
 ### How the Platform Helps with Defining and Running Jobs
 
-- **The Applications**: an application owner can define its properties,
-  e.g. base image, minimal resource requirements, and the schema of
-  its command line. Sizing constraints are expressed in terms of
-  "tee-shirt sizing". [Example Ray
+- **The Applications**: the Platform allows application owners to
+  capture what it takes to fire off run of their apps; e.g. base
+  image, minimal resource requirements, and the schema of its command
+  line. Sizing constraints are expressed in terms of "tee-shirt
+  sizing". [Example Ray
   Application.yaml](watsonx_ai/charts/applications/templates/examples/ray/qiskit.yaml)
   **|** [Example Torch
   Application.yaml](watsonx_ai/charts/applications/templates/examples/torch/lightning.yaml)
 - **The DataSets**: application owners may associate one or more input
-  data sets with their application specification. [Example
+  data sets with their application specification. The Platform takes
+  care of managing all of the Kubernetes details (volumes, mounts, claims,
+  etc.) [Example
   DataSet.yaml](https://github.ibm.com/nickm/codeflare-platform/blob/rm/tests/templates/datasets/s3-test.yaml)
-- **The Runs**: an application user points to the Application resource
-  they wish to execute. [Example Ray
+- **The Jobs/Runs**: an application user points to the Application
+  resource they wish to execute, optionally overriding application
+  defaults such as command line options. [Example Ray
   Run.yaml](tests/runs/watsonx_ai/ray/qiskit.yaml) **|** [Example
   Torch Application.yaml](tests/runs/watsonx_ai/torch/lightning.yaml)
 - [TODO] Images
@@ -45,47 +49,22 @@ for your users. It is relatively lightweight, and runs fine in
 - **RunSizeConfiguration**: instances of this kind allow admins to
   define a mapping from tee shirt sizes to physical size constraints
   on the cluster.
+  
+## Technologies Employed
+
+The CodeFlare Platform brings together a number of popular
+technologies, and links them together with some new data types and
+controller logic. The existing technologies employed include (in
+alphabetical order):
+
+- [Datashim](https://github.com/datashim-io/datashim)
+- [Fluentbit](https://fluentbit.io/)
+- [KubeRay](https://github.com/ray-project/kuberay)
+- [Kubernetes Co-scheduler](https://github.com/kubernetes-sigs/scheduler-plugins)
+- [Multi-cluster App Dispatcher](https://github.com/project-codeflare/multi-cluster-app-dispatcher)
+- [TorchX](https://pytorch.org/torchx/latest/)
 
 ## Getting Started
 
-### Local Development using Kind
-
-For local development, make sure you have Docker running, and
-[Kind](https://kind.sigs.k8s.io/) installed (`brew install kind`).
-
-```shell
-# Bring the platform up
-./hack/up.sh
-
-# Tear it down
-./hack/down.sh
-```
-
-### Setting up IBM Internal Secrets
-
-The example applications are defined to keep their source in
-github.ibm.com. Thus, running these currently requires that the
-CodeFlare controllers have access to github.ibm.com. Please consult
-[hack/my.secrets.sh.template](hack/my.secrets.sh.template) to set up
-the required secret.
-
-### Submitting Example Runs
-
-Test Run resource specs are located in [tests/runs](tests/runs). To
-stand them all up, you can use `./tests/kind/deploy-tests.sh`. Or you
-can individually `kubectl apply -f` particular runs located within the
-`tests/runs` directory.
-
-The [`deploy-tests.sh`](./tests/kind/deploy-tests.sh) script is
-convenient, in that it will also do a `kubectl get --watch` on the
-test runs. Though you can also do this on your own, as it is really
-just a simple watching get.
-
-## Debugging the Controllers
-
-The controllers will be visible in logs and events associated with
-these resources:
-
-```shell
-kubectl get pod -n codeflare-system -w
-```
+To get started with contributing the Platform, see the
+[docs/development.md](Platform Developer Documentation).
