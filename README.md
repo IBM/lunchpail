@@ -67,4 +67,4 @@ alphabetical order):
 ## Getting Started
 
 To get started with contributing the Platform, see the
-[docs/development.md](Platform Developer Documentation).
+[Platform Developer Documentation](docs/development.md).
