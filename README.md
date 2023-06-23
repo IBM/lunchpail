@@ -20,24 +20,23 @@ technologies](#technologies-employed).
 
 ## High-level Resource API
 
-- **Applications**: the Platform allows application owners to
-  capture what it takes to fire off run of their apps; e.g. base
-  image, minimal resource requirements, and the schema of its command
-  line. Sizing constraints are expressed in terms of "tee-shirt
-  sizing". [Example Ray
-  Application.yaml](watsonx_ai/charts/applications/templates/examples/ray/qiskit.yaml)
-  **|** [Example Torch
+- **Applications**: The Platform allows an application owner to write
+  a simple declarative specification. They can be simple, because
+  **every application fits into an archetype**: *Ray* versus *Torch*
+  versus *WorkFlow* versus *WorkQueue*. The Platform takes care of
+  interpreting how to execute instances of these archetypes.  [Example Torch
   Application.yaml](watsonx_ai/charts/applications/templates/examples/torch/lightning.yaml)
-- **DataSets**: application owners may associate one or more input
+- **DataSets**: An application spec may associate one or more input
   data sets with their application specification. The Platform takes
   care of managing all of the Kubernetes details (volumes, mounts, claims,
   etc.) [Example
   DataSet.yaml](https://github.ibm.com/nickm/codeflare-platform/blob/rm/tests/templates/datasets/s3-test.yaml)
-- **Jobs/Runs**: an application user points to the Application
-  resource they wish to execute, optionally overriding application
-  defaults such as command line options. [Example Ray
+- **Jobs/Runs**: An application *user* specs their run by pointing to
+  the Application resource they wish to execute, and optionally
+  overriding application defaults such as command line
+  options. [Example Ray
   Run.yaml](tests/runs/watsonx_ai/ray/qiskit.yaml) **|** [Example
-  Torch Application.yaml](tests/runs/watsonx_ai/torch/lightning.yaml)
+  Torch Run.yaml](tests/runs/watsonx_ai/torch/lightning.yaml)
 - [TODO] Images
 
 <a name="policy-types">
