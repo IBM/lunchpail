@@ -10,6 +10,8 @@ a set of Kubernetes [**resource types**](#resource-types) managed by a
 collection of Kubernetes **controllers** that operate under a defined
 set of [**policies**](#policy-types).
 
+<img src="docs/codeflare-platform-architecture.png" alt="CodeFlare Architecture" align="right" width="450">
+
 Architecturally, the CodeFlare Platform is a [Helm
 chart](https://helm.sh). Via [Helm
 dependencies](https://helm.sh/docs/helm/helm_dependency/), you can
