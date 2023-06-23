@@ -2,11 +2,17 @@
 
 [![Build Status](https://travis.ibm.com/cloud-computer/codeflare-platform.svg?token=q3a78CA7yxKpNpK2nBqK&branch=main)](https://travis.ibm.com/cloud-computer/codeflare-platform)
 
-The Codeflare Platform helps users and operators with running
-large-scale jobs on a multi-tenant Kubernetes cluster. It consists of
-a set of high-level [**resource types**](#resource-types) managed by a
-collection of Kubernetes **controllers** that operate under a defined
-set of high-level [**policies**](#policy-types).
+The [CodeFlare](https://codeflare.dev) Platform helps users and
+operators with running large-scale jobs on a multi-tenant Kubernetes
+cluster. It consists of a set of high-level [**resource
+types**](#resource-types) managed by a collection of Kubernetes
+**controllers** that operate under a defined set of high-level
+[**policies**](#policy-types).
+
+The CodeFlare Run Controller acts as a compiler, lowering the
+high-level user-facing APIs to a set of lower level constructs which
+are in turn [managed by a suite of open source
+technologies](#technologies-employed).
 
 <img src="docs/codeflare-platform-architecture.png" alt="CodeFlare Architecture" align="right" width="450">
 
