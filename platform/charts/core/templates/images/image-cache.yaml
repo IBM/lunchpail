@@ -1,0 +1,19 @@
+apiVersion: kubefledged.io/v1alpha2
+kind: ImageCache
+metadata:
+  # Name of the image cache. A cluster can have multiple image cache objects
+  name: {{ .Values.image_cache.name }}
+  namespace: {{ .Values.image_cache.namespace }}
+  # The kubernetes namespace to be used for this image cache. You can choose a different namepace as per your preference
+  labels:
+    app: kubefledged
+    kubefledged: imagecache
+    app.kubernetes.io/component: imagecache
+    app.kubernetes.io/part-of: codeflare.dev
+spec:
+  # The "cacheSpec" field allows a user to define a list of images and onto which worker nodes those images should be cached (i.e. pre-pulled).
+  cacheSpec:
+    # Specifies a list of images (nginx:1.23.1) with no node selector, hence these images will be cached in all the nodes in the cluster
+    - images: []
+  # Specifies a list of image pull secrets to pull images from private repositories into the cache
+  imagePullSecrets: []

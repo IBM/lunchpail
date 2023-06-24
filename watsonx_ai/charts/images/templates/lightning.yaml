@@ -1,0 +1,7 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Image
+metadata:
+  name: lightning
+  namespace: {{ .Values.namespace }}
+spec:
+  image: ghcr.io/project-codeflare/lightning:0.0.6

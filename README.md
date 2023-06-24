@@ -37,7 +37,11 @@ technologies](#technologies-employed).
   options. [Example Ray
   Run.yaml](tests/runs/watsonx_ai/ray/qiskit.yaml) **|** [Example
   Torch Run.yaml](tests/runs/watsonx_ai/torch/lightning.yaml)
-- [TODO] Images
+- **Images**: By defining a catalog of images, the Platform can
+  facilitate prefetching them, to avoid large image pull lags when
+  running jobs. This also helps to consolidate image pull
+  secrets. [Example
+  Image.yaml](watsonx_ai/charts/images/templates/lightning.yaml)
 
 <a name="policy-types">
 
@@ -56,6 +60,7 @@ alphabetical order):
 
 - [Datashim](https://github.com/datashim-io/datashim)
 - [Fluentbit](https://fluentbit.io/)
+- [Kube-Fledged](https://github.com/senthilrch/kube-fledged)
 - [KubeRay](https://github.com/ray-project/kuberay)
 - [Kubernetes Co-scheduler](https://github.com/kubernetes-sigs/scheduler-plugins)
 - [Multi-cluster App Dispatcher](https://github.com/project-codeflare/multi-cluster-app-dispatcher)

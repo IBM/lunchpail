@@ -17,3 +17,7 @@ dependencies:
 - name: fluent-bit
   version: 0.30.4
   repository: https://fluent.github.io/helm-charts
+
+- name: kube-fledged
+  version: 0.10.0
+  repository: https://senthilrch.github.io/kubefledged-charts

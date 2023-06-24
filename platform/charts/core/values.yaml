@@ -1,11 +1,17 @@
 terminationGracePeriodSeconds: 0
 
+image_cache:
+  name: codeflare-image-cache
+  namespace: codeflare-system
+
 controllers:
   namespace: codeflare-system
   run:
     image: codeflare-run-controller:dev
   application:
     image: codeflare-application-controller:dev
+  image:
+    image: codeflare-image-controller:dev
 
 workdir:
   fs: nfs
