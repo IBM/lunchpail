@@ -1,0 +1,3 @@
+torch==1.11.0
+torchvision
+mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.11.0/index.html
