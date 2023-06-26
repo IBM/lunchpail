@@ -12,12 +12,12 @@ def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spe
                 size = run_spec['input']
             else:
                 size = sizeof(input)
-            logging.info(f"Using dataset size={size}")
 
             input_name = input["sizes"][size]
             input_namespace = input["namespace"] if "namespace" in input else run_namespace
             input_useas = input["useas"] if "useas" in input else "mount"
 
+            logging.info(f"Fetching dataset size={size} input_name={input_name} input_namespace={input_namespace} input_useas={input_useas}")
             dataset = customApi.get_namespaced_custom_object(group="com.ie.ibm.hpsys", version="v1alpha1", plural="datasets", name=input_name, namespace=input_namespace)
             if dataset is None:
                 raise kopf.PermanentError(f"Unable to find input DataSet name={input_name} namespace={input_namespace}")

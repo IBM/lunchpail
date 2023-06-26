@@ -1,3 +1,4 @@
+{{ if or (not .Values.app) (eq .Values.app "examples") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
@@ -7,4 +8,4 @@ spec:
   workers: 0
   application:
     name: example-ray-qiskit
-  
+{{ end }}

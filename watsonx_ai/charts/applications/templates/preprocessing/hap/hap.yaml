@@ -1,0 +1,19 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: hap
+  namespace: {{ .Values.namespace.preprocessing }}
+spec:
+  api: ray
+  image: ghcr.io/project-codeflare/ray22:0.0.1
+#  repo: https://github.ibm.com/tmhoangt/foundation-model-stack/tree/RHODS_pipeline/src/llm/rhods/python/ods-automated-hap
+  repo: https://github.ibm.com/nickm/foundation-model-stack-1/tree/hap-mem/src/llm/rhods/python/ods-automated-hap
+  command: python3 hap_driver.py --input_folder=/mnt/datasets/hap-xs --models_folder=/mnt/datasets/hap-xs/hap-models
+  supportsGpu: true
+  inputs:
+    - useas: mount
+      sizes:
+        xs: hap-xs
+#    - useas: mount
+#      sizes:
+#        xs: hap-models

@@ -1,0 +1,14 @@
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: hap-xs
+  namespace: codeflare-watsonxai-preprocessing
+spec:
+  local:
+    type: "COS"
+    endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+    secret-name: hap-secret
+    secret-namespace: codeflare-watsonxai-preprocessing
+    readonly: "true" # default is false
+    bucket: "hap-xs"
+    

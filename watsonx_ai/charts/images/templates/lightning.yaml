@@ -4,4 +4,4 @@ metadata:
   name: lightning
   namespace: {{ .Values.namespace }}
 spec:
-  image: ghcr.io/project-codeflare/lightning:0.0.6
+  image: {{ print "ghcr.io/project-codeflare/lightning:" .Values.versions.lightning }}

@@ -1,0 +1,14 @@
+{{ if or (not .Values.app) (eq .Values.app "hap") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: hap-test
+  namespace: codeflare-watsonxai-preprocessing
+spec:
+  workers: 0
+  application:
+    name: hap
+  size: sm
+  supportsGpu: false
+  options: "--cpus_per_actor 1 -b 8 --output_folder=/tmp --checkpoint_folder=/tmp"
+{{ end }}

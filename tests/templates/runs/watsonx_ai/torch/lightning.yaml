@@ -1,3 +1,4 @@
+{{ if or (not .Values.app) (eq .Values.app "examples") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
@@ -9,4 +10,4 @@ spec:
   options: "--max_epochs 1"
   size: xs
   supportsGpu: false
-  
+{{ end }}

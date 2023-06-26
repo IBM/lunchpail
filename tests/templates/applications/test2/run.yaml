@@ -1,3 +1,4 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
@@ -7,3 +8,4 @@ spec:
   application:
     name: test2
   workers: 0
+{{ end }}

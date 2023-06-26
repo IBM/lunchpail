@@ -1,1 +1,5 @@
 namespace: codeflare-watsonxai-images
+
+versions:
+  ray22: 0.0.1
+  lightning: 0.0.6

@@ -13,7 +13,10 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
     logging.info(f"Handling Ray Run: {application['metadata']['name']}")
 
     image = application['spec']['image']
+
     command = application['spec']['command']
+    entrypoint = f"{command} {command_line_options}"
+    logging.info(f"Ray entrypoint for name={name} entrypoint={entrypoint}")
 
     runtimeEnv = {}
     if 'requirements' in application['spec']:
@@ -42,7 +45,7 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
             namespace,
             run_id,
             image,
-            command,
+            entrypoint,
             subPath,
             str(nWorkers),
             str(cpu),
