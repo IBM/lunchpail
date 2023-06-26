@@ -78,6 +78,9 @@ spec:
                         type: string
                       namespace:
                         type: string
+                      useas:
+                        type: string
+                        enum: [mount,configmap]
               required:
                 - api
                 - image

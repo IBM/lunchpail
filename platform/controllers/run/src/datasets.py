@@ -8,6 +8,7 @@ def prepare_dataset_labels(customApi, run_namespace: str, application):
         for input in application["spec"]["inputs"]:
             input_name = input["name"]
             input_namespace = input["namespace"] if "namespace" in input else run_namespace
+            input_useas = input["useas"] if "useas" in input else "mount"
 
             dataset = customApi.get_namespaced_custom_object(group="com.ie.ibm.hpsys", version="v1alpha1", plural="datasets", name=input_name, namespace=input_namespace)
             if dataset is None:
@@ -15,7 +16,7 @@ def prepare_dataset_labels(customApi, run_namespace: str, application):
 
             logging.info(f"Preparing dataset label idx={idx} input_name={input_name}")
             datasets.append(f"dataset.{str(idx)}.id: {input_name}")
-            datasets.append(f"dataset.{str(idx)}.useas: mount")
+            datasets.append(f"dataset.{str(idx)}.useas: {input_useas}")
 
             idx = idx + 1
 
