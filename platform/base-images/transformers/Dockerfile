@@ -1,4 +1,4 @@
-FROM ghcr.io/project-codeflare/pyarrow:0.0.4
+FROM ghcr.io/project-codeflare/pyarrow:0.0.6
 
 ENV \
     DEBIAN_FRONTEND="noninteractive" \
