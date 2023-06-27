@@ -19,6 +19,7 @@ spec:
           properties:
             spec:
               type: object
+              required: [application]
               properties:
                 application:
                   type: object
@@ -46,15 +47,10 @@ spec:
                   type: boolean
                 size:
                   type: string
-                  enum:
-                    - xs
-                    - sm
-                    - md
-                    - lg
-                    - xl
-                    - xxl
-              required:
-                - application
+                  enum: [xs,sm,md,lg,xl,xxl]
+                input:
+                  type: string
+                  enum: [xs,sm,md,lg,xl,xxl]
       # subresources for the custom resource
       subresources:
         # enables the status subresource

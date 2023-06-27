@@ -29,7 +29,7 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
     except ApiException as e:
         raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
-    run_size_config = run_size(customApi, spec, application)
+    run_size_config = run_size(customApi, name, spec, application)
     logging.info(f"Using run_size_config={str(run_size_config)}")
 
     if 'options' in spec:
@@ -39,7 +39,7 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
     else:
         command_line_options = ""
 
-    dataset_labels = prepare_dataset_labels(customApi, namespace, application)
+    dataset_labels = prepare_dataset_labels(customApi, name, namespace, spec, application)
     if dataset_labels is not None:
         logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
 

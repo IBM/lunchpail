@@ -12,7 +12,6 @@ spec:
   {{- end }}
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test2
   command: python3 main.py
-  size: xs
   inputs:
-    - name: test-dataset-s3
-      namespace: {{ .Values.namespace }}
+    - sizes:
+        xs: test-dataset-s3

@@ -1,12 +1,20 @@
 import logging
 from kopf import PermanentError
 
-def prepare_dataset_labels(customApi, run_namespace: str, application):
+from run_size import sizeof
+
+def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spec, application):
     if "inputs" in application["spec"]:
         idx = 0
         datasets = []
         for input in application["spec"]["inputs"]:
-            input_name = input["name"]
+            if 'input' in run_spec:
+                size = run_spec['input']
+            else:
+                size = sizeof(input)
+            logging.info(f"Using dataset size={size}")
+
+            input_name = input["sizes"][size]
             input_namespace = input["namespace"] if "namespace" in input else run_namespace
             input_useas = input["useas"] if "useas" in input else "mount"
 

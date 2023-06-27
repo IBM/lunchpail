@@ -28,15 +28,6 @@ spec:
                   enum:
                     - ray
                     - torch
-                size:
-                  type: string
-                  enum:
-                    - xs
-                    - sm
-                    - md
-                    - lg
-                    - xl
-                    - xxl
                 image:
                   type: string
                 repo:
@@ -72,15 +63,31 @@ spec:
                   type: array
                   items:
                     type: object
-                    required: [name]
+                    required: [sizes]
                     properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
                       useas:
                         type: string
                         enum: [mount,configmap]
+                      namespace:
+                        type: string
+                      defaultSize:
+                        type: string
+                        enum: [xs,sm,md,lg,xl,xxl]
+                      sizes:
+                        type: object
+                        properties:
+                          xs:
+                            type: string
+                          sm:
+                            type: string
+                          md:
+                            type: string
+                          lg:
+                            type: string
+                          xl:
+                            type: string
+                          xxl:
+                            type: string
               required:
                 - api
                 - image

@@ -8,5 +8,9 @@ spec:
   image: ghcr.io/project-codeflare/lightning:0.0.6
   repo: https://github.ibm.com/ai-foundation/foundation-model-stack/tree/main/examples/src/ddp_example
   command: python3 lightning_ddp_example.py
-  size: sm
   supportsGpu: true
+#  inputs:
+#    - useas: argv
+#      sizes:
+#        sm: small
+#        lg: large

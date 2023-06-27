@@ -8,7 +8,6 @@ spec:
   image: ghcr.io/project-codeflare/lightning:0.0.6
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test1
   command: python3 main.py
-  size: xs
   inputs:
-    - name: test-dataset-s3
-      namespace: {{ .Values.namespace }}
+    - sizes:
+        xs: test-dataset-s3
