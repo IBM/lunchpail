@@ -10,6 +10,7 @@ from datasets import prepare_dataset_labels
 
 from ray import create_run_ray
 from torch import create_run_torch
+from kubeflow import create_run_kubeflow
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
@@ -51,6 +52,8 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
             head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "torch":
             head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)
+        elif api == "kubeflow":
+            head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)            
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 

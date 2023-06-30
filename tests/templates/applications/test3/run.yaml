@@ -1,0 +1,10 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: test3
+  namespace: {{ .Values.namespace }}
+spec:
+  application:
+    name: test3
+{{ end }}

@@ -65,4 +65,7 @@ waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue'
 waitForIt test1 codeflare-test 'PASS'
 waitForIt test2 codeflare-test 'PASS'
 
+# kubeflow tests; TODO move somewhere else?
+waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED'
+
 ("$SCRIPTDIR"/undeploy-tests.sh || exit 0)

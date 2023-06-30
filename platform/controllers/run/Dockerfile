@@ -4,7 +4,6 @@ FROM python:3.10-slim
 #        ssh-keyscan github.com >> ~/.ssh/known_hosts && \
 #        ssh-keyscan github.ibm.com >> ~/.ssh/known_hosts && \
 
-
 RUN apt update && apt install -y bc build-essential ca-certificates curl git && \
         if [[ $(uname -m) = aarch64 ]]; then ARCH=arm64; else ARCH=amd64; fi && \
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/$ARCH/kubectl" && \
@@ -13,7 +12,8 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
         chmod 700 get_helm.sh && \
         ./get_helm.sh && \
-        pip install --no-cache-dir kopf kubernetes codeflare-sdk "torchx[dev]==0.5.0" && \
+        pip install --no-cache-dir kopf kubernetes "torchx[dev]==0.5.0" && \
+        bash -c "python -m venv /usr/local/kfp2 && source /usr/local/kfp2/bin/activate && pip install --no-cache-dir 'kfp==2'" && \
         apt remove -y build-essential ca-certificates curl && \
         rm -rf /var/lib/apt/lists/*
 

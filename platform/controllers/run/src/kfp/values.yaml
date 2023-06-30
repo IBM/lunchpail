@@ -1,0 +1,3 @@
+image:
+  v1: ghcr.io/project-codeflare/kfp18:0.0.1
+  v2: ghcr.io/project-codeflare/kfp2:0.0.1

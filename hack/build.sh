@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -o pipefail
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 

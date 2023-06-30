@@ -1,5 +1,7 @@
 namespace: codeflare-watsonxai-images
 
 versions:
+  kfp2: 0.0.1
+  kfp18: 0.0.1
   ray22: 0.0.1
   lightning: 0.0.6
