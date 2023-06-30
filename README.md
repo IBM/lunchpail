@@ -1,6 +1,6 @@
 # CodeFlare Platform
 
-[![Build Status](https://travis.ibm.com/cloud-computer/codeflare-platform.svg?token=q3a78CA7yxKpNpK2nBqK&branch=main)](https://travis.ibm.com/cloud-computer/codeflare-platform)
+[![Build Status](https://v3.travis.ibm.com/cloud-computer/codeflare-platform.svg?token=Xarp6oK5BSTVsrSknEPZ&branch=main)](https://v3.travis.ibm.com/cloud-computer/codeflare-platform)
 
 The [CodeFlare](https://codeflare.dev) Platform helps users and
 operators with running large-scale jobs on a multi-tenant Kubernetes
