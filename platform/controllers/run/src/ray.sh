@@ -55,7 +55,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
           > $DRY
 
 kubectl apply -f $DRY 1>&2
-#rm $DRY
+rm $DRY
 rm $cm_file
 
 # Wait for the job to be running. See the `kubectl wait` above. Here,
