@@ -13,7 +13,6 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         chmod 700 get_helm.sh && \
         ./get_helm.sh && \
         pip install --no-cache-dir kopf kubernetes "torchx[dev]==0.5.0" && \
-        bash -c "python -m venv /usr/local/kfp2 && source /usr/local/kfp2/bin/activate && pip install --no-cache-dir 'kfp==2'" && \
         apt remove -y build-essential ca-certificates curl && \
         rm -rf /var/lib/apt/lists/*
 
