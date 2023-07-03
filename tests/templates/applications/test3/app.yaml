@@ -6,6 +6,5 @@ metadata:
 spec:
   api: kubeflow
   image: ghcr.io/project-codeflare/kfp2:0.0.1
-#  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test3
-  repo: https://github.ibm.com/nickm/codeflare-platform/tree/kfp/tests/templates/applications/test3
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test3
   command: python3 main.py
