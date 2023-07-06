@@ -54,18 +54,45 @@ function waitForIt {
     echo "✅ PASS run-controller delete test $selector"
 }
 
+function waitForStatus {
+    local name=$1
+    local ns=$2
+    local status=$3
+
+    if [[ -n "$DEBUG" ]]; then set -x; fi
+
+    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
+    while true; do
+        $KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep -q $status && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
+        ($KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep $name || exit 0)
+        sleep 4
+    done
+
+    echo "✅ PASS run-controller run test $name"
+
+    $KUBECTL delete run $name -n $ns
+    echo "✅ PASS run-controller delete test $name"
+}
+
 ("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
 up
-"$SCRIPTDIR"/deploy-tests.sh &
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
-waitForIt lightning codeflare-watsonxai-examples 'Trainable params'
-waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue'
 
-# dataset tests; TODO move somewhere else?
-waitForIt test1 codeflare-test 'PASS'
-waitForIt test2 codeflare-test 'PASS'
+("$SCRIPTDIR"/deploy-tests.sh tests || exit 0) &
+waitForStatus test0 codeflare-test 'Failed' # test app not found
+waitForIt test1 codeflare-test 'PASS' # torch dataset
+waitForIt test2 codeflare-test 'PASS' # ray dataset
+waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow no dataset
+("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
 
-# kubeflow tests; TODO move somewhere else?
-waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED'
+# hap test
+#if [[ -z $CI ]]; then
+    # for now, only test this locally. we don't have hap data working in travis, yet
+#    waitForIt hap-test codeflare-watsonxai-preprocessing 'estimated_memory_footprint'
+#fi
 
+# basic torch and ray tests
+("$SCRIPTDIR"/deploy-tests.sh || exit 0) &
+waitForIt lightning codeflare-watsonxai-examples 'Trainable params' # torch
+waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue' # ray
 ("$SCRIPTDIR"/undeploy-tests.sh || exit 0)

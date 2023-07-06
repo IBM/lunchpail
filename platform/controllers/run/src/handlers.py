@@ -28,10 +28,11 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
     try:
         application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
     except ApiException as e:
+        set_status(name, namespace, 'Failed', patch)
         raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
     run_size_config = run_size(customApi, name, spec, application)
-    logging.info(f"Using run_size_config={str(run_size_config)}")
+    logging.info(f"Using name={name} run_size_config={str(run_size_config)}")
 
     if 'options' in spec:
         command_line_options = spec['options']
