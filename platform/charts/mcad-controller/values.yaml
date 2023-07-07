@@ -2,13 +2,13 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 deploymentName: mcad-controller
-namespace: kube-system
+namespace: codeflare-system
 replicaCount: 1
 loglevel: 4
 
 image:
-  repository: darroyo/mcad-controller
-  tag: quota-management-v1.29.40
+  repository: quay.io/project-codeflare/mcad-controller
+  tag: release-v1.32.0
   pullPolicy: IfNotPresent
 
 crd:
@@ -27,9 +27,9 @@ resources:
   limits:
     cpu: 2000m
     memory: 2048Mi
-  requests:
-    cpu: 2000m
-    memory: 2048Mi
+#  requests:
+#    cpu: 2000m
+#    memory: 2048Mi
 
 imagePullSecret:
   name:
@@ -43,7 +43,7 @@ nodeSelector:
   hostname:
 
 configMap:
-  name: mcad-controller-configmap
+  name:
   quotaEnabled: '"false"'
   multiCluster: false
   dispatcherMode: '"false"'
@@ -60,6 +60,11 @@ coscheduler:
   rbac:
     apiGroup: scheduling.sigs.k8s.io
     resource: podgroups
+
+kuberay:
+  rbac:
+    apiGroup: ray.io
+    resource: rayjobs
 
 quotaManagement:
   rbac:
