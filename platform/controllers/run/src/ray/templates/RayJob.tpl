@@ -39,6 +39,7 @@ spec:
             app.kubernetes.io/managed-by: codeflare.dev
             app.kubernetes.io/part-of: {{ .Values.name }}
             app.kubernetes.io/instance: {{ .Release.Name }}
+            scheduling.x-k8s.io/pod-group: {{ .Release.Name }}
             {{ if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 12 }}
             {{ end }}
@@ -84,6 +85,7 @@ spec:
               app.kubernetes.io/managed-by: codeflare.dev
               app.kubernetes.io/part-of: {{ .Values.name }}
               app.kubernetes.io/instance: {{ .Release.Name }}
+              scheduling.x-k8s.io/pod-group: {{ .Release.Name }}
               {{ if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 14 }}
               {{ end }}

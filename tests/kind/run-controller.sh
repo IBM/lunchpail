@@ -26,6 +26,12 @@ function waitForIt {
     local ns=$2
     local done="$3"
 
+    if [[ "$4" = ray ]]; then
+        local containers="-c job-logs"
+    else
+        local containers="--all-containers"
+    fi
+
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
     # ($KUBECTL -n $ns wait pod -l $selector --for=condition=Completed --timeout=-1s && pkill $$)
@@ -39,12 +45,14 @@ function waitForIt {
     done
 
     echo "$(tput setaf 2)🧪 Checking job output app=$selector$(tput sgr0)" 1>&2
+    idx=0
     while true; do
-        $KUBECTL -n $ns logs --all-containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output... $selector$(tput sgr0)"
+        $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output... $selector$(tput sgr0)"
 
-        if [[ -n $DEBUG ]]; then
-            $KUBECTL -n $ns logs --all-containers -l $selector --tail=4 # print out the last few lines to help with debugging
+        if [[ -n $DEBUG ]] || (( $idx > 10 )); then
+            ($KUBECTL -n $ns logs $containers -l $selector --tail=4 || exit 0) # print out the last few lines to help with debugging
         fi
+        idx=$((idx + 1))
         sleep 4
     done
 
@@ -74,16 +82,39 @@ function waitForStatus {
     echo "✅ PASS run-controller delete test $name"
 }
 
-("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
+function deploy {
+    "$SCRIPTDIR"/deploy-tests.sh $1 || exit 0
+}
+
+function undeploy {
+    [[ -n "$2" ]] && kill $2
+    ("$SCRIPTDIR"/undeploy-tests.sh $1 || exit 0)
+}
+
+undeploy
 up
+
+if [[ -n "$CI" ]]; then
+    $KUBECTL get appwrapper -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
+    $KUBECTL get pod --show-kind -n codeflare-test --watch &
+fi
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
 
-("$SCRIPTDIR"/deploy-tests.sh tests || exit 0) &
+deploy test0 & D=$!
 waitForStatus test0 codeflare-test 'Failed' # test app not found
+undeploy test0 $D
+
+deploy test1 & D=$!
 waitForIt test1 codeflare-test 'PASS' # torch dataset
-waitForIt test2 codeflare-test 'PASS' # ray dataset
+undeploy test1 $D
+
+deploy test2 & D=$!
+waitForIt test2 codeflare-test 'PASS' ray # ray dataset
+undeploy test2 $D
+
+deploy test3 & D=$!
 waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow no dataset
-("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
+undeploy test3 $D
 
 # hap test
 #if [[ -z $CI ]]; then
@@ -92,7 +123,7 @@ waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow
 #fi
 
 # basic torch and ray tests
-("$SCRIPTDIR"/deploy-tests.sh || exit 0) &
+("$SCRIPTDIR"/deploy-tests.sh examples || exit 0) &
 waitForIt lightning codeflare-watsonxai-examples 'Trainable params' # torch
-waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue' # ray
-("$SCRIPTDIR"/undeploy-tests.sh || exit 0)
+waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue' ray # ray
+("$SCRIPTDIR"/undeploy-tests.sh examples || exit 0)

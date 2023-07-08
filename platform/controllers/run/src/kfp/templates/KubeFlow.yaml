@@ -20,4 +20,7 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
+          {{ include "codeflare.dev/KubeFlowPodGroup" . | indent 10 }}
+      - replicas: 1
+        generictemplate:
           {{ include "codeflare.dev/KubeFlowJob" . | indent 10 }}

@@ -63,6 +63,8 @@ torchx run --dryrun \
     | awk -v name=$name -v uid=$uid -f "$SCRIPTDIR"/add-labels-and-owner.awk "$datasets" \
     | sed "s/main-pg/pg/" \
     | sed -E "s/main-[a-zA-Z0-9]+/$run_id/g" \
+    | sed 's#scheduling.sigs.k8s.io/v1alpha1#scheduling.x-k8s.io/v1alpha1#g' \
+    | sed 's#pod-group.scheduling.sigs.k8s.io#scheduling.x-k8s.io/pod-group#g' \
     | sed -E "s#app.kubernetes.io/name: main#app.kubernetes.io/name: ${name}#" \
     | sed -E "s#^([ \t]*)app.kubernetes.io/managed-by: torchx.pytorch.org#\1app.kubernetes.io/managed-by: codeflare.dev\n\1app.kubernetes.io/part-of: ${name}#" \
     | sed -E 's#(python -m torch.distributed.run|torchrun)#export TERM=xterm-256color; cd $_CODEFLARE_WORKDIR; function log() { local status="$1"; local msg="$2"; echo -e "\\x1b[2;1;32m[Job \\x1b[0;32m${status}\\x1b[1;2;32m] \\x1b[0;2;32mpod/$(hostname) ${msg} \\x1b[0;32m$(date -u +%Y-%m-%dT%T.%3NZ)\\x1b[0m" | tee -a /tmp/status.txt ; } ; function active() { if [[ -z "$code" ]]; then log Running "Job is active"; fi; } ;(for i in `seq 1 10`; do active; sleep 4; done) \& poller=$! ; function catch() { local code=$?; kill $poller ; log Failed "Job failed"; sleep 2; exit $code; } ; function bye() { local code=$?; kill $poller ; if [[ $code = 0 ]]; then log Succeeded "Job completed successfully"; fi; sleep 2; } ; trap catch ERR; trap bye EXIT; \1#' \

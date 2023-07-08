@@ -27,6 +27,7 @@ echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
 watch=$!
 $KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev -n codeflare-system --for=condition=ready --timeout=-1s
+$KUBECTL wait pod -l app.kubernetes.io/name=dlf -n default --for=condition=ready --timeout=-1s
 kill $watch 2> /dev/null
 
 "$SCRIPTDIR"/s3-copyin.sh

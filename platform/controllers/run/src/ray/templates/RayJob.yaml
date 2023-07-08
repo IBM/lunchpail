@@ -21,6 +21,9 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
+          {{ include "ray.io/PodGroup" . | indent 10 }}
+      - replicas: 1
+        generictemplate:
           {{ include "ray.io/RayJob" . | indent 10 }}
       - replicas: 1
         generictemplate:

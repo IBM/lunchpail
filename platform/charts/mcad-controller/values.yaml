@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 deploymentName: mcad-controller
-namespace: codeflare-system
+namespace: kube-system
 replicaCount: 1
 loglevel: 4
 
@@ -58,7 +58,7 @@ volumes:
 
 coscheduler:
   rbac:
-    apiGroup: scheduling.sigs.k8s.io
+    apiGroup: scheduling.x-k8s.io
     resource: podgroups
 
 kuberay:
