@@ -5,13 +5,7 @@ metadata:
   namespace: {{ .Values.namespace.examples }}
 spec:
   api: ray
-
-  {{- if or (eq .Values.global.arch "arm64") (eq .Values.global.arch "aarch64") }}
-  image: rayproject/ray:2.3.0-py38-aarch64
-  {{- else }}
-  image: rayproject/ray:2.1.0-py38
-  {{- end }}
-
+  image: ghcr.io/project-codeflare/ray22:0.0.1
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/examples/ray
   command: python3 main.py
   supportsGpu: false
