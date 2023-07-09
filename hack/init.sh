@@ -15,7 +15,7 @@ function create_kind_if_absent {
 function helm_dependency_update {
     # i'm not sure how to manage this without hard-coding the
     # sub-charts that pull in external dependencies
-    helm dependency update platform/charts/core
+    helm dependency update platform/charts/third-party
 }
 
 create_kind_if_absent
