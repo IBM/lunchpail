@@ -75,6 +75,11 @@ torchx run --dryrun \
     | awk -v workdirServer=$WORKDIR_SERVER '{ idx=index($0, "volumes:"); print $0; if (idx > 0) { for (i=1; i<idx; i++) printf " "; print "- name: workdir-volume"; for (i=1; i<idx+2; i++) printf " "; print "nfs:"; for (i=1; i<idx+4; i++) printf " "; print "server:", workdirServer; for (i=1; i<idx+4; i++) printf " "; print "path: /"} }' \
           > $DRY
 
+if [[ ! -s $DRY ]]; then
+    echo "Error: torchx dry-run did not produce any output"
+    rm $DRY
+    exit 1
+fi
 
 # if we ever need to add the subPath to a volume that torchx is managing
   #| awk -v subPath=$subPath '{ print $0; if ($0 ~ /mountPath: \/workdir/) { copy=$0; sub("- ", "  ", copy); sub("mountPath:", "subPath:", copy); sub("/workdir", subPath, copy); print copy; }}' \

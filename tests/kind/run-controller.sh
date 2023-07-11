@@ -112,13 +112,21 @@ deploy test2 & D=$!
 waitForIt test2 codeflare-test 'PASS' ray # ray dataset
 undeploy test2 $D
 
-deploy test3 & D=$!
-waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow no dataset
-undeploy test3 $D
+if [[ -z "$NO_KUBEFLOW" ]]; then
+    deploy test3 & D=$!
+    waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow no dataset
+    undeploy test3 $D
+fi
 
 deploy test4 & D=$!
 waitForIt test4 codeflare-test 'Sequence exited with 0' # sequence no datasets or app overrides
 undeploy test4 $D
+
+if lspci | grep -iq nvidia; then
+    deploy test5 & D=$!
+    waitForIt test5 codeflare-test 'Test PASSED' # simple gpu test
+    undeploy test5 $D
+fi
 
 # hap test
 #if [[ -z $CI ]]; then
@@ -131,3 +139,6 @@ undeploy test4 $D
 waitForIt lightning codeflare-watsonxai-examples 'Trainable params' # torch
 waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue' ray # ray
 ("$SCRIPTDIR"/undeploy-tests.sh examples || exit 0)
+
+echo "Test runs complete"
+exit 0

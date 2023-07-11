@@ -1,0 +1,12 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test5
+  namespace: {{ .Values.namespace }}
+spec:
+  api: torch
+  image: codeflare-gpu1-test:dev
+  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test5
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/kubectl/tests/templates/applications/test5
+  command: python3 main.py
+  supportsGpu: True

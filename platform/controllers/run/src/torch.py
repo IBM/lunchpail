@@ -52,28 +52,32 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     nprocs = run_size_config['workers']
     nprocs_per_node = 1 if gpus == 0 else gpus
 
-    torchx_out = subprocess.run([
-        "/src/torchx.sh",
-        uid, # $1
-        name, # $2
-        namespace, # $3
-        part_of, # $4
-        step, # $5
-        run_id, # $6
-        subPath, # $7
-        image, # $8
-        str(nprocs), # $9
-        str(nprocs_per_node), # $10
-        str(gpus), # $11
-        str(cpus), # $12
-        str(memory), # $13
-        scheduler_args, # $14
-        script, # $15
-        volumes, # $16
-        base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "", # $17
-        base64.b64encode(command_line_options.encode('ascii')),
-        base64.b64encode(env_run_arg.encode('ascii'))
-    ], capture_output=True)
+    try:
+        torchx_out = subprocess.run([
+            "/src/torchx.sh",
+            uid, # $1
+            name, # $2
+            namespace, # $3
+            part_of, # $4
+            step, # $5
+            run_id, # $6
+            subPath, # $7
+            image, # $8
+            str(nprocs), # $9
+            str(nprocs_per_node), # $10
+            str(gpus), # $11
+            str(cpus), # $12
+            str(memory), # $13
+            scheduler_args, # $14
+            script, # $15
+            volumes, # $16
+            base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "", # $17
+            base64.b64encode(command_line_options.encode('ascii')),
+            base64.b64encode(env_run_arg.encode('ascii'))
+        ], capture_output=True)
+        logging.info(f"Torchx callout done for name={name} with returncode={torchx_out.returncode}")
+    except Exception as e:
+        raise PermanentError(f"Failed to launch via torchx. {torchx_out.stderr.decode('utf-8')}")
 
     if torchx_out.returncode != 0:
         raise PermanentError(f"Failed to launch via torchx. {torchx_out.stderr.decode('utf-8')}")

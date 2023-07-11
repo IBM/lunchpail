@@ -7,6 +7,8 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/secrets.sh
 . "$SCRIPTDIR"/settings.sh
 
+CODEFLARE_PREP_INIT=1 "$SCRIPTDIR"/init.sh
+NO_PUSH=1 "$SCRIPTDIR"/build.sh &
 "$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/init.sh
 wait
 
@@ -28,6 +30,10 @@ $KUBECTL get pod --show-kind -n codeflare-system --watch &
 watch=$!
 $KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev -n codeflare-system --for=condition=ready --timeout=-1s
 $KUBECTL wait pod -l app.kubernetes.io/name=dlf -n default --for=condition=ready --timeout=-1s
+$KUBECTL wait pod -l app.kubernetes.io/name=kube-fledged -n default --for=condition=ready --timeout=-1s
+if lspci | grep -iq nvidia; then
+    $KUBECTL wait pod -l app.kubernetes.io/managed-by=gpu-operator --for=condition=ready --timeout=-1s
+fi
 kill $watch 2> /dev/null
 
 "$SCRIPTDIR"/s3-copyin.sh

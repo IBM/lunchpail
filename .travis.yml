@@ -2,6 +2,8 @@ language: bash
 
 env:
   - SCRIPT=run-controller.sh
+  - SCRIPT=gpu.sh
 
 before_install: ./tests/travis/setup.sh
 script: bash -c ./tests/kind/$SCRIPT
+after_script: if [[ -f /tmp/gpu-config.json ]]; then ./hack/ibmcloud/delete_vm.sh "$(cat /tmp/gpu-config.json)"; fi

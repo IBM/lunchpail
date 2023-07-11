@@ -1,4 +1,4 @@
-{{ if or (not .Values.app) (eq .Values.app "examples") }}
+{{ if or (not .Values.app) (eq .Values.app "examples") (eq .Values.app "watsonxai_lightning") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
@@ -9,5 +9,5 @@ spec:
     name: example-torch-lightning
   options: "--max_epochs 1"
   size: xs
-  supportsGpu: false
+  supportsGpu: {{ .Values.supportsGpu | default false }}
 {{ end }}

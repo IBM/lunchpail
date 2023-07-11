@@ -40,7 +40,11 @@ def run_size(customApi, name: str, spec, application):
         logging.info(f"RunSizeConfiguration policy not found")
         run_size_config = {"cpu": 1, "memory": "1Gi", "gpu": 1, "workers": 1}
 
-    if not 'supportsGpu' in spec or not 'supportsGpu' in application['spec'] or spec['supportsGpu'] == False or application['spec']['supportsGpu'] == False:
+    runAskedForGpu = 'supportsGpu' in spec and spec['supportsGpu'] == True
+    runDisabledGpu = 'supportsGpu' in spec and spec['supportsGpu'] == False
+    appSupportsGpu = 'supportsGpu' in application['spec'] and application['spec']['supportsGpu'] == True
+    if not appSupportsGpu or not runAskedForGpu or runDisabledGpu:
+        # then the application or run asked for a gpu; check to see if the run overrides this
         logging.info(f"Disabling GPU for this run")
         run_size_config['gpu'] = 0
 

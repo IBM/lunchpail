@@ -15,12 +15,14 @@ function build {
 }
 
 function push {
-    local image=$1
-    if [[ -z "$NO_KIND" ]]; then
-        kind load docker-image -n $CLUSTER_NAME $image
-    else
-        echo "!!TODO push to remote container registry"
-        exit 1
+    if [[ -z "$NO_IMAGE_PUSH" ]]; then
+        local image=$1
+        if [[ -z "$NO_KIND" ]]; then
+            kind load docker-image -n $CLUSTER_NAME $image
+        else
+            echo "!!TODO push to remote container registry"
+            exit 1
+        fi
     fi
 }
 
@@ -45,7 +47,15 @@ function build_components {
     done
 }
 
+function build_test_images {
+    for imageDir in "$SCRIPTDIR"/../tests/base-images/*; do
+        local imageName=$(basename "$imageDir")
+        local image=${IMAGE_REPO}codeflare-${imageName}-test:$VERSION
+        (build "$imageDir" $image ; push $image) &
+    done
+}
+
+build_test_images
 build_controllers
 build_components
 wait
-
