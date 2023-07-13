@@ -116,6 +116,10 @@ deploy test3 & D=$!
 waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow no dataset
 undeploy test3 $D
 
+deploy test4 & D=$!
+waitForIt test4 codeflare-test 'Sequence exited with 0' # sequence no datasets or app overrides
+undeploy test4 $D
+
 # hap test
 #if [[ -z $CI ]]; then
     # for now, only test this locally. we don't have hap data working in travis, yet

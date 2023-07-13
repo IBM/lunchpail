@@ -1,0 +1,11 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test4-step1
+  namespace: {{ .Values.namespace }}
+spec:
+  api: torch
+  image: ghcr.io/project-codeflare/lightning:0.0.6
+  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test4
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/seq/tests/templates/applications/test4
+  command: python3 step1.py

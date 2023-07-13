@@ -1,11 +1,10 @@
-{{- if eq .Values.kind "job" }}
 apiVersion: mcad.ibm.com/v1beta1
 kind: AppWrapper
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
   labels:
-    app.kubernetes.io/component: ray
+    app.kubernetes.io/component: sequence
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
@@ -22,14 +21,4 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
-          {{ include "ray.io/PodGroup" . | indent 10 }}
-      - replicas: 1
-        generictemplate:
-          {{ include "ray.io/RayJob" . | indent 10 }}
-      - replicas: 1
-        generictemplate:
-          {{ include "ray.io/RayJob.logging.configmap.debug" . | indent 10 }}
-      - replicas: 1
-        generictemplate:
-          {{ include "ray.io/RayJob.logging.configmap.app" . | indent 10 }}
-{{- end }}
+          {{ include "codeflare.dev/Sequence" . | indent 10 }}

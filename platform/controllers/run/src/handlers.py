@@ -11,6 +11,7 @@ from datasets import prepare_dataset_labels
 from ray import create_run_ray
 from torch import create_run_torch
 from kubeflow import create_run_kubeflow
+from sequence import create_run_sequence
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
@@ -18,8 +19,14 @@ customApi = client.CustomObjectsApi(client.ApiClient())
 
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
-def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
+def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
     set_status(name, namespace, 'Pending', patch)
+
+    # what top-level run is this part of? this could be this very run,
+    # if it is a top-level run...
+    # also, if part of a sequence, which step are we?
+    part_of = labels['app.kubernetes.io/part-of'] if 'app.kubernetes.io/part-of' in labels else name
+    step = labels['app.kubernetes.io/step'] if 'app.kubernetes.io/step' in labels else '0'
 
     application_name = spec['application']['name']
     application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
@@ -50,11 +57,13 @@ def create_run(name: str, namespace: str, uid: str, spec, patch, **kwargs):
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
         if api == "ray":
-            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "torch":
-            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "kubeflow":
-            head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, dataset_labels, patch)            
+            head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)            
+        elif api == "sequence":
+            head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)            
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 

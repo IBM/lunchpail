@@ -9,9 +9,9 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 echo "$(tput setaf 2)Building CodeFlare$(tput sgr0)"
 
 function build {
-    local controllerDir=$1
+    local dir="$1"
     local image=$2
-    cd $controllerDir && docker build -t $image .
+    cd "$dir" && docker build -t $image .
 }
 
 function push {
@@ -24,10 +24,28 @@ function push {
     fi
 }
 
-for controllerDir in $SCRIPTDIR/../platform/controllers/*; do
-    controller=$(basename $controllerDir)
-    image=${IMAGE_REPO}codeflare-${controller}-controller:$VERSION
-    (build $controllerDir $image ; push $image) &
-done
+function build_controllers {
+    for controllerDir in "$SCRIPTDIR"/../platform/controllers/*; do
+        local controller=$(basename "$controllerDir")
+        local image=${IMAGE_REPO}codeflare-${controller}-controller:$VERSION
+        (build "$controllerDir" $image ; push $image) &
+    done
+}
+
+function build_components {
+    for providerDir in "$SCRIPTDIR"/../platform/components/*; do
+        if [[ -d "$providerDir" ]]; then
+            local provider=$(basename "$providerDir")
+            for componentDir in "$providerDir"/*; do
+                local component=$(basename "$componentDir")
+                local image=${IMAGE_REPO}${provider}-${component}-component:$VERSION
+                (build "$componentDir" $image ; push $image) &
+            done
+        fi
+    done
+}
+
+build_controllers
+build_components
 wait
 

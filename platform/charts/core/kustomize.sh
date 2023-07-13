@@ -13,6 +13,7 @@ if [[ ${1-up} = up ]]; then
     $KUBECTL wait --for condition=established --timeout=60s crd/applications.app.k8s.io
     $KUBECTL apply -k $RSRC
 else
-    $KUBECTL delete -k $RSRC
-    $KUBECTL delete -k $CRDS
+    echo nope
+    $KUBECTL delete -k $RSRC --ignore-not-found
+    $KUBECTL delete -k $CRDS --ignore-not-found
 fi

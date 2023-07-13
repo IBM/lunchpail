@@ -2,17 +2,19 @@
 apiVersion: ray.io/v1alpha1
 kind: RayJob
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name | trunc 30 }}
   namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/component: ray
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
 spec:
   jobId: {{ .Release.Name }}
   entrypoint: {{ .Values.entrypoint }}
   shutdownAfterJobFinishes: true
-  ttlSecondsAfterFinished: 100 # give some time for tests
+  ttlSecondsAfterFinished: 10 # give some time for tests
   # runtimeEnv decoded to '{
   #    "pip": [
   #        "requests==2.26.0",
@@ -37,7 +39,8 @@ spec:
         metadata:
           labels:
             app.kubernetes.io/managed-by: codeflare.dev
-            app.kubernetes.io/part-of: {{ .Values.name }}
+            app.kubernetes.io/part-of: {{ .Values.partOf }}
+            app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
             app.kubernetes.io/instance: {{ .Release.Name }}
             scheduling.x-k8s.io/pod-group: {{ .Release.Name }}
             {{ if .Values.datasets }}
@@ -83,7 +86,8 @@ spec:
           metadata:
             labels:
               app.kubernetes.io/managed-by: codeflare.dev
-              app.kubernetes.io/part-of: {{ .Values.name }}
+              app.kubernetes.io/part-of: {{ .Values.partOf }}
+              app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
               app.kubernetes.io/instance: {{ .Release.Name }}
               scheduling.x-k8s.io/pod-group: {{ .Release.Name }}
               {{ if .Values.datasets }}

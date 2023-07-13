@@ -7,7 +7,7 @@ from kopf import PermanentError
 from clone import clone
 from run_id import alloc_run_id
 
-def create_run_kubeflow(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, dataset_labels, patch):
+def create_run_kubeflow(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, patch):
     logging.info(f"Handling KubeFlow Run: {application['metadata']['name']}")
 
     image = application['spec']['image']

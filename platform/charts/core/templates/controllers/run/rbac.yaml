@@ -25,7 +25,7 @@ rules:
 
     # to find the torchx head pod
   - apiGroups: [""]
-    resources: [pods]
+    resources: [pods,pods/log]
     verbs: [get, list, delete, watch, patch]
 
   - apiGroups: [""]
@@ -35,6 +35,13 @@ rules:
   - apiGroups: [""]
     resources: [pods/log]
     verbs: [get, watch]
+
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [rolebindings,roles]
+    verbs: [get,create,delete]
+  - apiGroups: [""]
+    resources: [serviceaccounts]
+    verbs: [get,create,delete]
     
   - apiGroups: [""]
     resources: [events]
@@ -60,8 +67,11 @@ rules:
     resources: [platformreposecrets,runsizeconfigurations]
     verbs: [list]
   - apiGroups: [codeflare.dev]
-    resources: [runs, runs/status, applications]
+    resources: [runs/status, applications]
     verbs: [list, watch, patch, get]
+  - apiGroups: [codeflare.dev]
+    resources: [runs]
+    verbs: [create, list, watch, patch, get]
     
   - apiGroups: [mcad.ibm.com]
     resources: [appwrappers]
