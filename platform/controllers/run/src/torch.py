@@ -39,7 +39,6 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     # TODO multinic = api_instance.get_cluster_custom_object(group="k8s.cni.cncf.io", version="v1", plural="network-attachment-definitions") # TODO
     scheduler_args = ",".join([
         f"namespace={namespace}",
-        f"image_repo={os.path.dirname(image)}",
         "coscheduler_name=scheduler-plugins-scheduler"
         ])
 
