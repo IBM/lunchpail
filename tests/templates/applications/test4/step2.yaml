@@ -6,6 +6,5 @@ metadata:
 spec:
   api: ray
   image: ghcr.io/project-codeflare/ray22:0.0.1
-  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test4
-  repo: https://github.ibm.com/nickm/codeflare-platform/tree/seq/tests/templates/applications/test4
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test4
   command: python3 step2.py
