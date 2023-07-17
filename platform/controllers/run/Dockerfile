@@ -15,7 +15,7 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         chmod 700 get_helm.sh && \
         ./get_helm.sh && \
         pip install --no-cache-dir kopf kubernetes>=21 && \
-        python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx[dev]==0.5.0' && \
+        python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx[dev]==0.5.0' 'pyyaml==5.3.1' && \
         apt remove -y build-essential ca-certificates curl && \
         rm -rf /var/lib/apt/lists/*
 
