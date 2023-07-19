@@ -38,31 +38,6 @@ def create_run_sequence(v1Api, customApi, application, namespace: str, uid: str,
         ]
 
         out = subprocess.run(args, capture_output=True)
-            
-        # batchV1Api = client.BatchV1Api()
-        # body = client.V1Job(
-        #     metadata=client.V1ObjectMeta(name=name,namespace=namespace),
-        #     spec=client.V1JobSpec(
-        #         completion_mode="Indexed",
-        #         completions=len(application_names),
-        #         parallelism=1,
-        #         ttl_seconds_after_finished=100,
-        #         template=client.V1PodTemplateSpec(
-        #             spec=client.V1PodSpec(
-        #                 restart_policy="OnFailure",
-        #                 containers=[client.V1Container(
-        #                     name="main",
-        #                     image="codeflare-sequence-component:dev",
-        #                     env={
-        #                         "NAME": run_id,
-        #                         "CODEFLARE_APPS_IN_SEQUENCE": ",".join(map(str,application_names))
-        #                     }
-        #                 )]
-        #             )
-        #         )
-        #     )
-        # )
-        #api_response = batchV1Api.create_namespaced_job(namespace, body)
         logging.info(f"fired off sequence rc={out.returncode} name={name} namespace={namespace}")
     except ApiException as e:
         raise PermanentError(f"Failed to launch sequence. {out.stderr.decode('utf-8')}")
