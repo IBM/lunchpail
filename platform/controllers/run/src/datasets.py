@@ -1,7 +1,25 @@
 import logging
+from typing import List, Optional
 from kopf import PermanentError
 
 from run_size import sizeof
+
+def check_exists(customApi, input_name: str, input_namespace: str):
+    dataset = customApi.get_namespaced_custom_object(group="com.ie.ibm.hpsys", version="v1alpha1", plural="datasets", name=input_name, namespace=input_namespace)
+    if dataset is None:
+        raise kopf.PermanentError(f"Unable to find input DataSet name={input_name} namespace={input_namespace}")
+
+def to_string(datasets: List[str]):
+    return "\n".join(datasets) + "\n"
+
+def prepare_dataset_labels_for_workerpool(customApi, dataset: str, namespace: str, dataset_labels: Optional[List[str]]):
+    check_exists(customApi, dataset, namespace)
+
+    datasets = [] if dataset_labels is None else dataset_labels
+    idx = len(datasets)
+    datasets.append(f"dataset.{str(idx)}.id: {dataset}")
+    datasets.append(f"dataset.{str(idx)}.useas: configmap")
+    return to_string(datasets)
 
 def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spec, application):
     if "inputs" in application["spec"]:
@@ -18,9 +36,7 @@ def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spe
             input_useas = input["useas"] if "useas" in input else "mount"
 
             logging.info(f"Fetching dataset size={size} input_name={input_name} input_namespace={input_namespace} input_useas={input_useas}")
-            dataset = customApi.get_namespaced_custom_object(group="com.ie.ibm.hpsys", version="v1alpha1", plural="datasets", name=input_name, namespace=input_namespace)
-            if dataset is None:
-                raise kopf.PermanentError(f"Unable to find input DataSet name={input_name} namespace={input_namespace}")
+            check_exists(customApi, input_name, input_namespace)
 
             logging.info(f"Preparing dataset label idx={idx} input_name={input_name}")
             datasets.append(f"dataset.{str(idx)}.id: {input_name}")
@@ -28,4 +44,4 @@ def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spe
 
             idx = idx + 1
 
-        return "\n".join(datasets) + "\n"
+        return to_string(datasets)

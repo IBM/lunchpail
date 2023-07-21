@@ -1,0 +1,13 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test7
+  namespace: {{ .Values.namespace }}
+spec:
+  api: workqueue
+  image: codeflare-workerpool-worker-alpine-component:dev
+  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test7
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/workqueue/tests/templates/applications/test7
+  command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
+{{- end }}

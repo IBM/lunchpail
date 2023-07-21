@@ -8,7 +8,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
 CODEFLARE_PREP_INIT=1 "$SCRIPTDIR"/init.sh
-NO_PUSH=1 "$SCRIPTDIR"/build.sh &
+NO_IMAGE_PUSH=1 "$SCRIPTDIR"/build.sh &
 "$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/init.sh
 wait
 

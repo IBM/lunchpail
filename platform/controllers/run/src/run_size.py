@@ -18,6 +18,15 @@ def sizeof(inp):
         elif 'xxl' in sizes:
             return 'xxl'
 
+def load_run_size_config(customApi, size: str):
+    try:
+        items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
+        return sorted(items,
+                      key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
+    except ApiException as e:
+        logging.info(f"RunSizeConfiguration policy not found")
+        return {"cpu": 1, "memory": "1Gi", "gpu": 1, "workers": 1}
+
 def run_size(customApi, name: str, spec, application):
     size = "xs" # default
     if 'size' in spec:
@@ -32,13 +41,7 @@ def run_size(customApi, name: str, spec, application):
             size = sizeof(inp)
     logging.info(f"Using size={size} for run={name}")
 
-    try:
-        items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
-        run_size_config = sorted(items,
-                                 key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
-    except ApiException as e:
-        logging.info(f"RunSizeConfiguration policy not found")
-        run_size_config = {"cpu": 1, "memory": "1Gi", "gpu": 1, "workers": 1}
+    run_size_config = load_run_size_config(customApi, size)
 
     runAskedForGpu = 'supportsGpu' in spec and spec['supportsGpu'] == True
     runDisabledGpu = 'supportsGpu' in spec and spec['supportsGpu'] == False

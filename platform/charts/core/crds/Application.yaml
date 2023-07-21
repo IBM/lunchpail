@@ -35,6 +35,7 @@ spec:
                     - spark
                     - kubeflow
                     - sequence
+                    - workqueue
                 image:
                   type: string
                 repo:
@@ -70,6 +71,7 @@ spec:
                   pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                 supportsGpu:
                   type: boolean
+                  default: false
                 inputs:
                   type: array
                   items:

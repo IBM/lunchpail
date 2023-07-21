@@ -1,0 +1,16 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7") }}
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: test7data # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  namespace: {{ .Values.namespace }}
+spec:
+  local:
+    type: "COS"
+    bucket: test7
+    endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+    secret-name: test7data-cfsecret
+    secret-namespace: {{ .Values.namespace }}
+    readonly: "true" # default is false
+    provision: "true"
+{{- end }}

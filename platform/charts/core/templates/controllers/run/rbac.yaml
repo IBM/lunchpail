@@ -84,10 +84,10 @@ rules:
     resources: [platformreposecrets,runsizeconfigurations]
     verbs: [list]
   - apiGroups: [codeflare.dev]
-    resources: [runs/status, applications]
+    resources: [runs/status, workerpools/status]
     verbs: [list, watch, patch, get]
   - apiGroups: [codeflare.dev]
-    resources: [runs]
+    resources: [applications, queues, runs, workerpools]
     verbs: [create, list, watch, patch, get]
     
   - apiGroups: [mcad.ibm.com]

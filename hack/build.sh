@@ -18,6 +18,7 @@ function push {
     if [[ -z "$NO_IMAGE_PUSH" ]]; then
         local image=$1
         if [[ -z "$NO_KIND" ]]; then
+            set -x
             kind load docker-image -n $CLUSTER_NAME $image
         else
             echo "!!TODO push to remote container registry"
