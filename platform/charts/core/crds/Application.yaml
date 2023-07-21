@@ -29,6 +29,7 @@ spec:
                 api:
                   type: string
                   enum:
+                    - shell
                     - ray
                     - torch
                     - kubeflow

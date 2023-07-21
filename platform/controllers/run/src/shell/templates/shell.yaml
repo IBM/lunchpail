@@ -1,0 +1,24 @@
+apiVersion: mcad.ibm.com/v1beta1
+kind: AppWrapper
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: shell
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/managed-by: codeflare.dev
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha1
+      controller: true
+      kind: Run
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
+spec:
+  resources:
+    Items: []
+    GenericItems:
+      - replicas: 1
+        generictemplate:
+          {{ include "codeflare.dev/Shell" . | indent 10 }}

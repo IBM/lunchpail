@@ -1,4 +1,6 @@
 *~
+#*
+*.sh
 *.py
 *.md
 .helmignore

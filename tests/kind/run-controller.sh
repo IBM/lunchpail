@@ -128,6 +128,11 @@ if lspci | grep -iq nvidia; then
     undeploy test5 $D
 fi
 
+deploy test6 & D=$!
+waitForIt test6 codeflare-test 'PASS: Shell Application test6 idx=0 x="xxxx" rest="yyyy zzzz"' # api=shell no datasets
+undeploy test6 $D
+
+
 # hap test
 #if [[ -z $CI ]]; then
     # for now, only test this locally. we don't have hap data working in travis, yet

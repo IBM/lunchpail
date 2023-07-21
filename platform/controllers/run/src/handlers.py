@@ -8,6 +8,7 @@ from logs import track_logs
 from run_size import run_size
 from datasets import prepare_dataset_labels
 
+from shell import create_run_shell
 from ray import create_run_ray
 from torch import create_run_torch
 from kubeflow import create_run_kubeflow
@@ -60,6 +61,8 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
             head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "torch":
             head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+        elif api == "shell":
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "kubeflow":
             head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)            
         elif api == "sequence":
@@ -67,7 +70,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 
-        if head_pod_name is not None:
+        if head_pod_name is not None and len(head_pod_name) > 0:
             track_logs(v1Api, customApi, name, head_pod_name, namespace, api, patch)
 
     except Exception as e:

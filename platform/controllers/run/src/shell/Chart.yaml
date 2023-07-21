@@ -1,0 +1,10 @@
+apiVersion: v1
+name: codeflare-shell
+description: Deploys CodeFlare shell job
+type: application
+
+# Chart version.
+version: 0.0.1
+
+# CodeFlare version.
+appVersion: "latest"

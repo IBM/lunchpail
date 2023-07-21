@@ -1,0 +1,12 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test6
+  namespace: {{ .Values.namespace }}
+spec:
+  api: shell
+  image: ubuntu
+  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test6
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/shell/tests/templates/applications/test6
+  command: ./main.sh
+  supportsGpu: True
