@@ -14,6 +14,7 @@ metadata:
 spec:
   completions: {{ .Values.workers.count }}
   completionMode: Indexed
+  ttlSecondsAfterFinished: 10 # give some time for tests
   template:
     metadata:
       labels:
