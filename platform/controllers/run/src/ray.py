@@ -59,7 +59,7 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
         ], capture_output=True)
         logging.info(f"Ray callout done for name={name} with returncode={ray_out.returncode}")
     except Exception as e:
-        raise PermanentError(f"Failed to launch via ray. {ray_out.stderr.decode('utf-8')}")
+        raise PermanentError(f"Failed to launch via ray. {e}")
 
     if ray_out.returncode != 0:
         raise PermanentError(f"Failed to launch via ray. {ray_out.stderr.decode('utf-8')}")
