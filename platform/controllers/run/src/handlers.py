@@ -98,9 +98,9 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
     patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
     logging.info(f"Handling managed AppWrapper update run_name={run_name} phase={phase}")
     try:
-        resp = customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
     except ApiException as e:
-        raise kopf.PermanentError(f"Error patching Run on AppWrapper update run_name={run_name}. {str(e)}")
+        logging.error(f"Error patching Run on AppWrapper update run_name={run_name}. {str(e)}")
 
 # Watch each managed Pod so that we can update the status of its associated Run
 @kopf.on.field('pods', field='status.phase', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
@@ -110,9 +110,9 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
     patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
     logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
     try:
-        resp = customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
     except ApiException as e:
-        raise kopf.PermanentError(f"Error patching Run on Pod update run_name={run_name}. {str(e)}")
+        logging.error(f"Error patching Run on Pod update run_name={run_name}. {str(e)}")
 
 # Watch each managed Pod for deletion
 @kopf.on.delete('pods', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
