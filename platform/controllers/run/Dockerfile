@@ -17,8 +17,25 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         rm ./get_helm.sh && \
         pip install --no-cache-dir kopf kubernetes>=21 && \
         python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx[dev]==0.5.0' 'pyyaml==5.3.1' && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/ts && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/ray && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/moto && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/numpy && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/scipy && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/scipy.libs && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/numpy.libs && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/sympy && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/mlflow && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/nvidia && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/pandas && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/plotly && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/sklearn && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/botocore && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/fontTools && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/matplotlib && \
+        rm -rf $TORCHX_HOME/lib/python*/site-packages/sqlalchemy && \
         apt remove -y build-essential ca-certificates curl && \
+        apt autoremove -y && \
         rm -rf /var/lib/apt/lists/*
 
 ADD src /src
