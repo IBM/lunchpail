@@ -4,7 +4,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
 # sigh, some components use kustomize, not helm
-("$SCRIPTDIR"/../platform/kustomize.sh down || exit 0)
+("$SCRIPTDIR"/../platform/charts/third-party/kustomize.sh down || exit 0)
 
 echo "$(tput setaf 2)Shutting down CodeFlare$(tput sgr0)"
 ($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM

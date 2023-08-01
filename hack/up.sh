@@ -23,7 +23,7 @@ $HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH
 
 # sigh, some components use kustomize, not helm
-("$SCRIPTDIR"/../platform/kustomize.sh up || exit 0)
+("$SCRIPTDIR"/../platform/charts/third-party/kustomize.sh up || exit 0)
 
 echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
 $KUBECTL get pod --show-kind -n codeflare-system --watch &

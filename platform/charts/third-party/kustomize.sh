@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
+#
 # sigh, kubeflow uses kustomize
+#
+
+set -e
+set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+. "$SCRIPTDIR"/../../../hack/settings.sh
 
 ENV=dev
 CRDS="github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=$KFP_VERSION"
