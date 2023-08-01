@@ -6,6 +6,15 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
+#
+# Goal: Level set the current host, e.g. kind, docker, ...
+#
+# Notes:
+#
+# 1) re: the DEBIAN_FRONTEND=noninteractive below, this is to prevent
+#    ubuntu dialog hang on "Restarting services..."
+#
+
 function karch {
     if [[ $(uname -m) = x86_64 ]]; then
         echo amd64
@@ -30,14 +39,14 @@ function get_docker {
     if ! which docker >& /dev/null; then
         echo "$(tput setaf 2)Installing docker$(tput sgr0)"
         apt_update
-        sudo apt -y install apt-transport-https ca-certificates curl software-properties-common
+        sudo DEBIAN_FRONTEND=noninteractive apt -y install apt-transport-https ca-certificates curl software-properties-common
         sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         sudo apt update
 
         apt-cache policy docker-ce
-        sudo apt -y install docker-ce
+        sudo DEBIAN_FRONTEND=noninteractive apt -y install docker-ce
 
         if [[ $USER != root ]]; then
             sudo usermod -aG docker ${USER}
@@ -73,7 +82,7 @@ function get_kind {
         if lspci | grep -iq nvidia; then
             # we will need a special kind build, for now
             apt_update
-            sudo apt -y install build-essential
+            sudo DEBIAN_FRONTEND=noninteractive apt -y install build-essential
             pushd /tmp
             git clone https://github.com/jacobtomlinson/kind.git
             cd kind
@@ -98,8 +107,8 @@ function get_nvidia {
 		wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
 		sudo dpkg -i cuda-keyring_1.1-1_all.deb
 		rm cuda-keyring_1.1-1_all.deb
-		sudo apt-get update
-		sudo apt-get -y install cuda nvidia-container-runtime jq
+		apt update
+		sudo DEBIAN_FRONTEND=noninteractive apt -y install cuda nvidia-container-runtime jq
 		sudo nvidia-ctk runtime configure
                 cat /etc/docker/daemon.json | jq --arg defaultRuntime nvidia '. + {"default-runtime": $defaultRuntime}' > /tmp/daemon.json
                 sudo mv /tmp/daemon.json /etc/docker/daemon.json
