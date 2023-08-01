@@ -1,3 +1,4 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test4") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
@@ -8,3 +9,4 @@ spec:
   steps:
     - test4-step1
     - test4-step2
+{{- end }}

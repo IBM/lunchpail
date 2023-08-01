@@ -59,6 +59,23 @@ rules:
     resources: [rayclusters,rayjobs]
     verbs: [list,get,create,delete]
 
+    # hmm, sparkoperator needs a lot...
+  - apiGroups: [sparkoperator.k8s.io]
+    resources: [sparkapplications]
+    verbs: [list,get,create,delete]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["*"]
+
   - apiGroups: [com.ie.ibm.hpsys]
     resources: [datasets]
     verbs: [get]

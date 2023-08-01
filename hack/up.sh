@@ -31,7 +31,7 @@ watch=$!
 $KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev -n codeflare-system --for=condition=ready --timeout=-1s
 $KUBECTL wait pod -l app.kubernetes.io/name=dlf -n default --for=condition=ready --timeout=-1s
 $KUBECTL wait pod -l app.kubernetes.io/name=kube-fledged -n default --for=condition=ready --timeout=-1s
-if lspci | grep -iq nvidia; then
+if [[ "$HAS_NVIDIA" = true ]]; then
     $KUBECTL wait pod -l app.kubernetes.io/managed-by=gpu-operator --for=condition=ready --timeout=-1s
 fi
 kill $watch 2> /dev/null

@@ -1,3 +1,4 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test6") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
@@ -9,3 +10,4 @@ spec:
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test6
   command: ./main.sh
   supportsGpu: True
+{{- end }}

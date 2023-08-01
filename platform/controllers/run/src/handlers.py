@@ -11,6 +11,7 @@ from datasets import prepare_dataset_labels
 from shell import create_run_shell
 from ray import create_run_ray
 from torch import create_run_torch
+from spark import create_run_spark
 from kubeflow import create_run_kubeflow
 from sequence import create_run_sequence
 
@@ -31,7 +32,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
 
     application_name = spec['application']['name']
     application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
-    logging.info(f"Run for application={application_name} uid={uid}")
+    logging.info(f"Run for application={application_name} application_namespace={application_namespace} run_uid={uid}")
 
     try:
         application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
@@ -61,6 +62,8 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
             head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "torch":
             head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+        elif api == "spark":
+            head_pod_name = create_run_spark(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)            
         elif api == "shell":
             head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "kubeflow":

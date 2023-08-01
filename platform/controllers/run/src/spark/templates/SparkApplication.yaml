@@ -1,0 +1,28 @@
+apiVersion: mcad.ibm.com/v1beta1
+kind: AppWrapper
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: spark
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/managed-by: codeflare.dev
+  {{- include "codeflare.dev/ownerReferences" . | indent 2 }}
+spec:
+  resources:
+    Items: []
+    GenericItems:
+      - replicas: 1
+        generictemplate:
+          {{- include "codeflare.dev/Spark" . | indent 10 }}
+      - replicas: 1
+        generictemplate:
+          {{- include "codeflare.dev/PodGroup" . | indent 10 }}
+---
+{{- include "codeflare.dev/SparkServiceAccount" . | indent 0 }}
+---
+{{- include "codeflare.dev/SparkRole" . | indent 0 }}
+---
+{{- include "codeflare.dev/SparkRoleBinding" . | indent 0 }}

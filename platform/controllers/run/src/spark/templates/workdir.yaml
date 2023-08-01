@@ -1,0 +1,17 @@
+{{- define "codeflare.dev/workdir.path" }}
+workingDir: /workdir
+{{- end }}
+
+{{- define "codeflare.dev/workdir.volumeMount" }}
+# working directory spec, which includes a volumeMOunt
+- mountPath: /workdir
+  subPath: {{ .Values.subPath }}
+  name: workdir
+{{- end }}
+
+{{- define "codeflare.dev/workdir.volume" }}
+- name: workdir
+  nfs:
+    server: {{ .Values.workdir.clusterIP }}
+    path: /
+{{- end }}

@@ -1,0 +1,59 @@
+{{- define "codeflare.dev/SparkServiceAccount" }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  {{ include "codeflare.dev/ownerReferences" . | indent 2 }}
+{{- end }}
+
+{{- define "codeflare.dev/SparkRole" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  {{ include "codeflare.dev/ownerReferences" . | indent 2 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - '*'
+{{- end }}
+
+{{- define "codeflare.dev/SparkRoleBinding" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  {{ include "codeflare.dev/ownerReferences" . | indent 2 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+{{- end }}

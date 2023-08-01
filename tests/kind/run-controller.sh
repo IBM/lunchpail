@@ -132,6 +132,10 @@ deploy test6 & D=$!
 waitForIt test6 codeflare-test 'PASS: Shell Application test6 idx=0 x="xxxx" rest="yyyy zzzz"' # api=shell no datasets
 undeploy test6 $D
 
+deploy test8 & D=$!
+waitForIt test8 codeflare-test 'Pi is roughly 3' # api=spark no datasets
+undeploy test8 $D
+
 
 # hap test
 #if [[ -z $CI ]]; then

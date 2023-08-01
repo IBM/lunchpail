@@ -1,0 +1,13 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test8") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test8
+  namespace: {{ .Values.namespace }}
+spec:
+  api: spark
+  #image: gcr.io/spark-operator/spark-py:v3.1.1 # warning: :( no arm64 builds here
+  image: apache/spark-py:v3.4.0 # :) apache seems to have both amd64 and arm64 builds
+  repo: https://github.com/apache/spark/tree/master/examples/src/main/python
+  command: python3 pi.py
+{{- end }}

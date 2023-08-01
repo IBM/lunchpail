@@ -1,3 +1,4 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test4") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
@@ -8,3 +9,4 @@ spec:
   image: ghcr.io/project-codeflare/ray22:0.0.1
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test4
   command: python3 step2.py
+{{- end }}

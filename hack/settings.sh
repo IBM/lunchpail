@@ -14,6 +14,12 @@ export KFP_VERSION=2.0.0
 # for local testing
 CLUSTER_NAME=${CLUSTER_NAME-codeflare-platform}
 
+if lspci 2> /dev/null | grep -iq nvidia; then
+    HAS_NVIDIA=true
+else
+    HAS_NVIDIA=false
+fi
+
 export KUBECTL="kubectl --context kind-${CLUSTER_NAME}"
 export HELM="helm --kube-context kind-${CLUSTER_NAME}"
 
