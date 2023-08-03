@@ -24,7 +24,7 @@ function waitForIt {
     local name=$1
     local selector=app.kubernetes.io/part-of=$name
     local ns=$2
-    local done="$3"
+    local dones="$3"
 
     if [[ "$4" = ray ]]; then
         local containers="-c job-logs"
@@ -45,15 +45,20 @@ function waitForIt {
     done
 
     echo "$(tput setaf 2)🧪 Checking job output app=$selector$(tput sgr0)" 1>&2
-    idx=0
-    while true; do
-        $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output... $selector$(tput sgr0)"
+    for done in "${dones[@]}"; do
+        idx=0
+        while true; do
+            $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done... $selector$(tput sgr0)"
 
-        if [[ -n $DEBUG ]] || (( $idx > 10 )); then
-            ($KUBECTL -n $ns logs $containers -l $selector --tail=4 || exit 0) # print out the last few lines to help with debugging
-        fi
-        idx=$((idx + 1))
-        sleep 4
+            if [[ -n $DEBUG ]] || (( $idx > 10 )); then
+                # if we can't find $done in the logs after a few
+                # iterations, start printing out raw logs to help with
+                # debugging
+                ($KUBECTL -n $ns logs $containers -l $selector --tail=4 || exit 0)
+            fi
+            idx=$((idx + 1))
+            sleep 4
+        done
     done
 
     echo "✅ PASS run-controller run test $selector"
@@ -100,53 +105,77 @@ if [[ -n "$CI" ]]; then
 fi
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
 
+# test app not found
 deploy test0 & D=$!
-waitForStatus test0 codeflare-test 'Failed' # test app not found
+expected=('Failed')
+waitForStatus test0 codeflare-test "${expected[@]}"
 undeploy test0 $D
 
+# torch with dataset
 deploy test1 & D=$!
-waitForIt test1 codeflare-test 'PASS' # torch dataset
+expected=('PASS: datashim outer mount is a directory' 'PASS: datashim mount of s3-test is a directory')
+waitForIt test1 codeflare-test "${expected[@]}"
 undeploy test1 $D
 
+# ray with dataset
 deploy test2 & D=$!
-waitForIt test2 codeflare-test 'PASS' ray # ray dataset
+expected=('PASS: datashim outer mount is a directory' 'PASS: datashim mount of s3-test is a directory')
+waitForIt test2 codeflare-test "${expected[@]}" ray
 undeploy test2 $D
 
+# kubeflow no dataset
 if [[ -z "$NO_KUBEFLOW" ]]; then
     deploy test3 & D=$!
-    waitForIt test3 codeflare-test 'Run is finished with state SUCCEEDED' # kubeflow no dataset
+    expected=('Run is finished with state SUCCEEDED')
+    waitForIt test3 codeflare-test "${expected[@]}"
     undeploy test3 $D
 fi
 
+# sequence no datasets or app overrides
 deploy test4 & D=$!
-waitForIt test4 codeflare-test 'Sequence exited with 0' # sequence no datasets or app overrides
+expected=('Sequence exited with 0')
+waitForIt test4 codeflare-test "${expected[@]}"
 undeploy test4 $D
 
+# simple gpu test
 if lspci | grep -iq nvidia; then
     deploy test5 & D=$!
-    waitForIt test5 codeflare-test 'Test PASSED' # simple gpu test
+    expected=('Test PASSED')
+    waitForIt test5 codeflare-test "${expected[@]}"
     undeploy test5 $D
 fi
 
+# api=shell no datasets
 deploy test6 & D=$!
-waitForIt test6 codeflare-test 'PASS: Shell Application test6 idx=0 x="xxxx" rest="yyyy zzzz"' # api=shell no datasets
+expected=('PASS: Shell Application test6 idx=0 x="xxxx" rest="yyyy zzzz"')
+waitForIt test6 codeflare-test "${expected[@]}"
 undeploy test6 $D
 
+# api=spark no datasets
 deploy test8 & D=$!
-waitForIt test8 codeflare-test 'Pi is roughly 3' # api=spark no datasets
+expected=('Pi is roughly 3')
+waitForIt test8 codeflare-test "${expected[@]}"
 undeploy test8 $D
 
+# api=spark with dataset
+deploy test9 & D=$!
+expected=('Pi is roughly 3' 'PASS: datashim outer mount is a directory' 'PASS: datashim mount of s3-test is a directory')
+waitForIt test9 codeflare-test "${expected[@]}"
+undeploy test9 $D
 
 # hap test
 #if [[ -z $CI ]]; then
-    # for now, only test this locally. we don't have hap data working in travis, yet
-#    waitForIt hap-test codeflare-watsonxai-preprocessing 'estimated_memory_footprint'
+# for now, only test this locally. we don't have hap data working in travis, yet
+# expected=('estimated_memory_footprint')
+#    waitForIt hap-test codeflare-watsonxai-preprocessing "${expected[@]}"
 #fi
 
 # basic torch and ray tests
 ("$SCRIPTDIR"/deploy-tests.sh examples || exit 0) &
-waitForIt lightning codeflare-watsonxai-examples 'Trainable params' # torch
-waitForIt qiskit codeflare-watsonxai-examples 'eigenvalue' ray # ray
+expected=('Trainable params')
+waitForIt lightning codeflare-watsonxai-examples "${expected[@]}" # torch
+expected=('eigenvalue')
+waitForIt qiskit codeflare-watsonxai-examples "${expected[@]}" ray # ray
 ("$SCRIPTDIR"/undeploy-tests.sh examples || exit 0)
 
 echo "Test runs complete"

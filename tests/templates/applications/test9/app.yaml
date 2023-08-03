@@ -1,0 +1,17 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test9") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test9
+  namespace: {{ .Values.namespace }}
+spec:
+  api: spark
+  #image: gcr.io/spark-operator/spark-py:v3.1.1 # warning: :( no arm64 builds here
+  image: apache/spark-py:v3.4.0 # :) apache seems to have both amd64 and arm64 builds
+  #repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test1
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/spark-dataset/tests/templates/applications/test9
+  command: python3 pi.py
+  inputs:
+    - sizes:
+        xs: test-dataset-s3
+{{- end }}
