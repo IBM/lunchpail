@@ -1,5 +1,7 @@
 *~
 *.sh
 .DS_Store
+.cache
+node_modules
 /controllers
 /components
