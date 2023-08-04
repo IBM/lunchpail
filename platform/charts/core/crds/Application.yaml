@@ -44,14 +44,6 @@ spec:
                   type: array
                   items:
                     type: string
-                repoSecret:
-                  type: object
-                  required: [name]
-                  properties:
-                    name:
-                      type: string
-                    namespace:
-                      type: string
                 env:
                   type: object
                   additionalProperties:
@@ -60,8 +52,6 @@ spec:
                   type: array
                   items:
                     type: string
-                imagePullSecret:
-                  type: string
                 command:
                   type: string
                 options:

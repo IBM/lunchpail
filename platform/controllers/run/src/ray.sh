@@ -13,15 +13,16 @@ part_of="$4"
 step="$5" # if part of enclosing sequence
 run_id="$6"
 image="$7"
-entrypoint="$8"
-subPath="$9"
-nWorkers="${10}"
-cpu="${11}"
-memory="${12}"
-gpu="${13}"
-datasets="${14}"
-runtimeEnv="${15}"
-loggingPolicy="${16}"
+imagePullSecret="$8"
+entrypoint="$9"
+subPath="${10}"
+nWorkers="${11}"
+cpu="${12}"
+memory="${13}"
+gpu="${14}"
+datasets="${15}"
+runtimeEnv="${16}"
+loggingPolicy="${17}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -43,6 +44,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set partOf=$part_of \
      --set enclosingStep=$step \
      --set image=$image \
+     --set imagePullSecret=$imagePullSecret \
      --set namespace=$namespace \
      --set entrypoint="$entrypoint" \
      --set subPath=$subPath \

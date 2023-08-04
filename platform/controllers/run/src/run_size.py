@@ -1,4 +1,5 @@
 import logging
+from kubernetes.client.rest import ApiException
 
 def sizeof(inp):
     if 'defaultSize' in inp:

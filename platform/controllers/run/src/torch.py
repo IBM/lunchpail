@@ -8,12 +8,15 @@ from kopf import PermanentError
 
 from clone import clone
 from run_id import alloc_run_id
+from image_pull_secret import find_image_pull_secret
 
 def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, patch):
     logging.info(f"Handling Torch Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
-    image = application['spec']['image']
     command = application['spec']['command']
 
+    image = application['spec']['image']
+    imagePullSecret = find_image_pull_secret(v1Api, customApi, image, namespace)
+    
     component = "dist.ddp"
 
     nnodes = 1
@@ -37,10 +40,13 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     volumes = ""
 
     # TODO multinic = api_instance.get_cluster_custom_object(group="k8s.cni.cncf.io", version="v1", plural="network-attachment-definitions") # TODO
-    scheduler_args = ",".join([
+    scheduler_args = [
         f"namespace={namespace}",
-        "coscheduler_name=scheduler-plugins-scheduler"
-        ])
+        "coscheduler_name=scheduler-plugins-scheduler" # TODO keep this in sync somehow with the helm chart, where the name is also specified
+    ]
+
+    if imagePullSecret is not None:
+        scheduler_args.append(f"image_secret={imagePullSecret}")
 
     cloned_subPath = clone(v1Api, customApi, application, name, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
@@ -68,7 +74,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
             str(gpus), # $11
             str(cpus), # $12
             str(memory), # $13
-            scheduler_args, # $14
+            ",".join(scheduler_args), # $14
             script, # $15
             volumes, # $16
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "", # $17
@@ -77,7 +83,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
         ], capture_output=True)
         logging.info(f"Torchx callout done for name={name} with returncode={torchx_out.returncode}")
     except Exception as e:
-        raise PermanentError(f"Failed to launch via torchx. {torchx_out.stderr.decode('utf-8')}")
+        raise PermanentError(f"Failed to launch via torchx. {str(e)}")
 
     if torchx_out.returncode != 0:
         raise PermanentError(f"Failed to launch via torchx. {torchx_out.stderr.decode('utf-8')}")

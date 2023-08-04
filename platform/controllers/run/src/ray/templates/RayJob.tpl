@@ -51,6 +51,12 @@ spec:
             # You set volumes at the Pod level, then mount them into containers inside that Pod
             {{- include "ray.io/RayJob.workdir.volume" . | indent 12 }}
             {{- include "ray.io/RayJob.logging.volumes" . | indent 12 }}
+
+          {{- if .Values.imagePullSecret }}
+          imagePullSecrets:
+            - {{ .Values.imagePullSecret }}
+          {{- end }}
+
           containers:
             - name: ray-head
               image: {{ .Values.image }}

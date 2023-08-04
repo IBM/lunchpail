@@ -81,7 +81,7 @@ rules:
     verbs: [get]
 
   - apiGroups: [codeflare.dev]
-    resources: [platformreposecrets,runsizeconfigurations]
+    resources: [platformreposecrets,platformimagepullsecrets,runsizeconfigurations]
     verbs: [list]
   - apiGroups: [codeflare.dev]
     resources: [runs/status, workerpools/status]
@@ -126,7 +126,7 @@ rules:
 
   - apiGroups: [""]
     resources: [secrets]
-    verbs: [get]
+    verbs: [get,create]
 
   - apiGroups: [""]
     resources: [persistentvolumeclaims, events]

@@ -8,11 +8,13 @@ from kopf import PermanentError
 from clone import clone
 from run_id import alloc_run_id
 from logging_policy import get_logging_policy
+from image_pull_secret import find_image_pull_secret
 
 def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, patch):
     logging.info(f"Handling Ray Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
 
     image = application['spec']['image']
+    imagePullSecret = find_image_pull_secret(v1Api, customApi, image, namespace)
 
     command = application['spec']['command']
     entrypoint = f"{command} {command_line_options}"
@@ -47,6 +49,7 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
             step,
             run_id,
             image,
+            imagePullSecret if imagePullSecret is not None else "",
             entrypoint,
             subPath,
             str(nWorkers),
