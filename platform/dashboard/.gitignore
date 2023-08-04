@@ -1,0 +1,10 @@
+# dependencies
+/node_modules
+
+# misc
+.DS_Store
+.cache/
+.yarn
+
+#app dependencies
+.app/node_modules
