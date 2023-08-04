@@ -3,6 +3,9 @@
 set -e
 set -o pipefail
 
+# in case there are things we want to do differently knowing that we
+# are running a test (e.g. to produce more predictible output);
+# e.g. see 7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
 while getopts "gu" opt
@@ -108,10 +111,11 @@ fi
 $KUBECTL get pod --show-kind -n codeflare-system --watch &
 
 # api=workqueue
-#deploy test7 & D=$!
-#"$SCRIPTDIR"/7/init.sh 1 3 2 test7
-#waitForIt test7 codeflare-test ('Processing /queue/0/inbox/task.1.txt' 'Processing /queue/0/inbox/task.3.txt' 'Processing /queue/0/inbox/task.5.txt' 'Processing /queue/1/inbox/task.2.txt' 'Processing /queue/1/inbox/task.4.txt' 'Processing /queue/1/inbox/task.6.txt')
-#undeploy test7 $D
+deploy test7 & D=$!
+"$SCRIPTDIR"/7/init.sh 1 3 2 test7
+expected=('Processing /queue/0/inbox/task.1.txt' 'Processing /queue/0/inbox/task.3.txt' 'Processing /queue/0/inbox/task.5.txt' 'Processing /queue/1/inbox/task.2.txt' 'Processing /queue/1/inbox/task.4.txt' 'Processing /queue/1/inbox/task.6.txt')
+waitForIt test7 codeflare-test "${expected[@]}"
+undeploy test7 $D
 
 # test app not found
 deploy test0 & D=$!

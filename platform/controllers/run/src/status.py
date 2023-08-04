@@ -5,7 +5,6 @@ from kubernetes.client.rest import ApiException
 # Update the status of a given named resource
 def set_status(name: str, namespace: str, phase: str, patch, status_field = "status"):
     try:
-        logging.info(f"!!!!!!!!!!!!!!!!!!!!")
         logging.info(f"Patching {status_field} name={name} namespace={namespace} phase={phase}")
         patch.metadata.annotations[f"codeflare.dev/{status_field}"] = phase
         # patch.status['phase'] = phase

@@ -22,6 +22,11 @@ fi
 
 echo "Starting rclone get remote=$remote local=$local/$inbox"
 while true; do
+    # Intentionally sleeping at the beginning to give some time for
+    # the worker's inotify to set itself up.
+    # TODO: should the worker drop a "ready" file that we trigger on?
+    sleep 5
+
     rclone --config $config move $PROGRESS --create-empty-src-dirs $remote/$inbox $local/$inbox
 
     new_size=$(ls $local/$inbox | wc -l)
@@ -29,6 +34,4 @@ while true; do
         size=$new_size
         report_size
     fi
-    
-    sleep 5
 done
