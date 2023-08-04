@@ -176,11 +176,10 @@ waitForIt test9 codeflare-test "${expected[@]}"
 undeploy test9 $D
 
 # hap test
-#if [[ -z $CI ]]; then
-# for now, only test this locally. we don't have hap data working in travis, yet
-# expected=('estimated_memory_footprint')
-#    waitForIt hap-test codeflare-watsonxai-preprocessing "${expected[@]}"
-#fi
+deploy hap & D=$!
+expected=('estimated_memory_footprint')
+waitForIt hap codeflare-watsonxai-preprocessing "${expected[@]}"
+undeploy hap $D
 
 # basic torch and ray tests
 ("$SCRIPTDIR"/deploy-tests.sh examples || exit 0) &

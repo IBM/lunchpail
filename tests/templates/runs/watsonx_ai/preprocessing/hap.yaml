@@ -2,7 +2,7 @@
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
-  name: hap-test
+  name: hap
   namespace: codeflare-watsonxai-preprocessing
 spec:
   workers: 0

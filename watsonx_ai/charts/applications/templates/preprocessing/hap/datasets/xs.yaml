@@ -6,9 +6,9 @@ metadata:
 spec:
   local:
     type: "COS"
-    endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+    endpoint: {{ print "https://s3" (.Values.cosDirect | default "") ".us-east.cloud-object-storage.appdomain.cloud" }}
     secret-name: hap-secret
     secret-namespace: codeflare-watsonxai-preprocessing
     readonly: "true" # default is false
-    bucket: "hap-xs"
+    bucket: "cfp-hap-xs"
     
