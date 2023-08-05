@@ -1,5 +1,10 @@
 # CodeFlare Platform Tests
 
+- [./bin](./bin): test scripts
+- [./tests](./tests): this directory contains the test settings for each of the tests
+- [./helm](./helm): the Helm chart to deploy the test Applications, Runs, and Datasets
+- [./base-images](./base-images): Extra base images needed only for test Applications
+
 ## Running Tests
 
 The [test.sh](./tests/bin/test.sh) script is the main
