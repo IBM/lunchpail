@@ -1,4 +1,4 @@
-{{ if or (not .Values.app) (eq .Values.app "examples") }}
+{{ if or (not .Values.app) (eq .Values.app "qiskit") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:

@@ -17,6 +17,6 @@ if which lspci && lspci | grep -iq nvidia; then
 fi
 
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0)"
-$HELM install codeflare-tests tests $HELM_SECRETS --wait --set global.arch=$ARCH $APP $GPU
+$HELM install codeflare-tests "$SCRIPTDIR"/../helm $HELM_SECRETS --wait --set global.arch=$ARCH $APP $GPU
 
 $KUBECTL get run --all-namespaces --watch

@@ -101,93 +101,10 @@ function undeploy {
     ("$SCRIPTDIR"/undeploy-tests.sh $1 || exit 0)
 }
 
-undeploy
-up
-
-if [[ -n "$CI" ]]; then
-    $KUBECTL get appwrapper -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
-    $KUBECTL get pod --show-kind -n codeflare-test --watch &
-fi
-$KUBECTL get pod --show-kind -n codeflare-system --watch &
-
-# api=workqueue
-deploy test7 & D=$!
-"$SCRIPTDIR"/7/init.sh 1 3 2 test7
-expected=('Processing /queue/0/inbox/task.1.txt' 'Processing /queue/0/inbox/task.3.txt' 'Processing /queue/0/inbox/task.5.txt' 'Processing /queue/1/inbox/task.2.txt' 'Processing /queue/1/inbox/task.4.txt' 'Processing /queue/1/inbox/task.6.txt')
-waitForIt test7 codeflare-test "${expected[@]}"
-undeploy test7 $D
-
-# test app not found
-deploy test0 & D=$!
-expected=('Failed')
-waitForStatus test0 codeflare-test "${expected[@]}"
-undeploy test0 $D
-
-# torch with dataset
-deploy test1 & D=$!
-expected=('PASS: datashim outer mount is a directory' 'PASS: datashim mount of s3-test is a directory')
-waitForIt test1 codeflare-test "${expected[@]}"
-undeploy test1 $D
-
-# ray with dataset
-deploy test2 & D=$!
-expected=('PASS: datashim outer mount is a directory' 'PASS: datashim mount of s3-test is a directory')
-waitForIt test2 codeflare-test "${expected[@]}" ray
-undeploy test2 $D
-
-# kubeflow no dataset
-if [[ -z "$NO_KUBEFLOW" ]]; then
-    deploy test3 & D=$!
-    expected=('Run is finished with state SUCCEEDED')
-    waitForIt test3 codeflare-test "${expected[@]}"
-    undeploy test3 $D
-fi
-
-# sequence no datasets or app overrides
-deploy test4 & D=$!
-expected=('Sequence exited with 0')
-waitForIt test4 codeflare-test "${expected[@]}"
-undeploy test4 $D
-
-# simple gpu test
-if lspci | grep -iq nvidia; then
-    deploy test5 & D=$!
-    expected=('Test PASSED')
-    waitForIt test5 codeflare-test "${expected[@]}"
-    undeploy test5 $D
-fi
-
-# api=shell no datasets
-deploy test6 & D=$!
-expected=('PASS: Shell Application test6 idx=0 x="xxxx" rest="yyyy zzzz"')
-waitForIt test6 codeflare-test "${expected[@]}"
-undeploy test6 $D
-
-# api=spark no datasets
-deploy test8 & D=$!
-expected=('Pi is roughly 3')
-waitForIt test8 codeflare-test "${expected[@]}"
-undeploy test8 $D
-
-# api=spark with dataset
-deploy test9 & D=$!
-expected=('Pi is roughly 3' 'PASS: datashim outer mount is a directory' 'PASS: datashim mount of s3-test is a directory')
-waitForIt test9 codeflare-test "${expected[@]}"
-undeploy test9 $D
-
-# hap test
-deploy hap & D=$!
-expected=('estimated_memory_footprint')
-waitForIt hap codeflare-watsonxai-preprocessing "${expected[@]}"
-undeploy hap $D
-
-# basic torch and ray tests
-("$SCRIPTDIR"/deploy-tests.sh examples || exit 0) &
-expected=('Trainable params')
-waitForIt lightning codeflare-watsonxai-examples "${expected[@]}" # torch
-expected=('eigenvalue')
-waitForIt qiskit codeflare-watsonxai-examples "${expected[@]}" ray # ray
-("$SCRIPTDIR"/undeploy-tests.sh examples || exit 0)
-
-echo "Test runs complete"
-exit 0
+function watch {
+    if [[ -n "$CI" ]]; then
+        $KUBECTL get appwrapper -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
+        $KUBECTL get pod --show-kind -n codeflare-test --watch &
+    fi
+    $KUBECTL get pod --show-kind -n codeflare-system --watch &
+}
