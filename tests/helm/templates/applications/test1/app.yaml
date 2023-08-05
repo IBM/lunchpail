@@ -7,7 +7,7 @@ metadata:
 spec:
   api: torch
   image: ghcr.io/project-codeflare/lightning:0.0.6
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test1
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test1
   command: python3 main.py
   inputs:
     - sizes:

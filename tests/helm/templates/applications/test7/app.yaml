@@ -7,6 +7,6 @@ metadata:
 spec:
   api: workqueue
   image: codeflare-workerpool-worker-alpine-component:dev
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test7
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test7
   command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
 {{- end }}

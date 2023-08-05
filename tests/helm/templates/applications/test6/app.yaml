@@ -7,7 +7,7 @@ metadata:
 spec:
   api: shell
   image: ubuntu
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/templates/applications/test6
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test6
   command: ./main.sh
   supportsGpu: True
 {{- end }}

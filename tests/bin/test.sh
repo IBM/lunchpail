@@ -27,16 +27,23 @@ watch
 # test app not found
 for path in "$SCRIPTDIR"/../tests/*
 do
+    if [[ $(basename $path) =~ "README.md" ]]
+    then
+       continue
+    fi
+
     unset api
     unset handler
     unset namespace
     unset testname
     expected=()
 
-    testname=${testname-$(basename $path)}
-
     . "$path"/settings.sh
-    if [[ ${#expected[@]} != 0 ]]; then
+
+    testname=${testname-$(basename $path)}
+    
+    if [[ ${#expected[@]} != 0 ]]
+    then
         deploy $testname & D=$!
 
         if [[ -e "$path"/init.sh ]]; then
