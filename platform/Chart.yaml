@@ -8,3 +8,28 @@ version: 0.0.1
 
 # CodeFlare version.
 appVersion: "latest"
+
+dependencies:
+- name: kuberay-operator
+  version: 0.5.0
+  repository: https://ray-project.github.io/kuberay-helm/
+  condition: ray.enabled
+
+- name: fluent-bit
+  version: 0.30.4
+  repository: https://fluent.github.io/helm-charts
+  condition: ray.enabled
+
+- name: kube-fledged
+  version: 0.10.0
+  repository: https://senthilrch.github.io/kubefledged-charts
+
+- name: gpu-operator
+  version: 23.3.2
+  repository: https://nvidia.github.io/gpu-operator
+  condition: nvidia.enabled
+
+- name: spark-operator
+  version: 1.1.27
+  repository: https://googlecloudplatform.github.io/spark-on-k8s-operator
+  condition: spark.enabled

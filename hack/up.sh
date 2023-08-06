@@ -19,11 +19,17 @@ wait
 # in the default namespace
 
 echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
-$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH
-$HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH
+$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA
+$HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA
 
-# sigh, some components use kustomize, not helm
-("$SCRIPTDIR"/../platform/charts/third-party/kustomize.sh up || exit 0)
+# sigh, some components may use kustomize, not helm
+if [[ -d "$SCRIPTDIR"/../platform/kustomize ]]
+then
+    for kusto in "$SCRIPTDIR"/../platform/kustomize/*.sh
+    do
+        ($kusto up || exit 0)
+    done
+fi
 
 echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
 $KUBECTL get pod --show-kind -n codeflare-system --watch &

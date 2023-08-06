@@ -5,8 +5,8 @@ set -o pipefail
 
 SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
 
-PLA=$(grep name "$SETTINGS_SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}')
-IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}')
+PLA=$(grep name "$SETTINGS_SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}' | head -1)
+IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}' | head -1)
 
 ARCH=${ARCH-$(uname -m)}
 export KFP_VERSION=2.0.0

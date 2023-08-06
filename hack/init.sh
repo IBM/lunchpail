@@ -131,7 +131,7 @@ function create_kind_cluster {
 function update_helm_dependencies {
     # i'm not sure how to manage this without hard-coding the
     # sub-charts that pull in external dependencies
-    helm dependency update "$SCRIPTDIR"/../platform/charts/third-party
+    helm dependency update "$SCRIPTDIR"/../platform
 }
 
 get_kubectl
