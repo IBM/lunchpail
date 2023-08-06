@@ -29,7 +29,7 @@ function waitForIt {
     local name=$1
     local selector=app.kubernetes.io/part-of=$name
     local ns=$2
-    local dones="$3"
+    local dones=("${@:3}") # an array formed from everything from the third argument on... 
 
     if [[ "$4" = ray ]]; then
         local containers="-c job-logs"

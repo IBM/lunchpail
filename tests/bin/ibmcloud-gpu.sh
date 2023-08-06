@@ -2,6 +2,14 @@
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
+while getopts "i" opt
+do
+    case $opt in
+        i) INTERACTIVE=true; continue;; # don't run tests, just stand up and prepare VM
+    esac
+done
+shift $((OPTIND-1))
+
 echo "apikey=$apikey" 1>&2
 echo "resource_group=$resource_group" 1>&2
 echo "vpc_id=$vpc_id" 1>&2
@@ -11,9 +19,15 @@ echo "security_group_id=$security_group_id" 1>&2
 echo "ssh_key=$ssh_key" 1>&2
 
 function cleanup {
-    if [[ -n "$GPU_CONFIG" ]]; then
-        "$SCRIPTDIR"/../../hack/ibmcloud/delete_vm.sh "$GPU_CONFIG"
-        rm -f /tmp/gpu-config.json
+    if [[ -n "$GPU_CONFIG" ]]
+    then
+        if [[ -n "$INTERACTIVE" ]]
+        then
+            echo "apikey=$apikey \"$SCRIPTDIR\"/../../hack/ibmcloud/delete_vm.sh '$GPU_CONFIG'"
+        else
+            "$SCRIPTDIR"/../../hack/ibmcloud/delete_vm.sh "$GPU_CONFIG"
+            rm -f /tmp/gpu-config.json
+        fi
     fi
 }
 
@@ -52,31 +66,34 @@ if [[ -n $apikey ]] && [[ -n $resource_group ]] && [[ -n $vpc_id ]] && [[ -n $ss
     scp -i /tmp/.ssh/gpu_ssh.prv -r /tmp/cfp.tar.gz root@$ip:
 
     # next, log in to the remote host and initialize things; a reboot is needed to finish nvidia gpu driver init
-    echo "Initializing remote host"
+    echo "Initializing remote host" 1>&2
     ssh -t -t -i /tmp/.ssh/gpu_ssh.prv root@$ip "function cleanup { touch /tmp/cleanup1; export apikey=$apikey; ~/cfp/hack/ibmcloud/delete_vm.sh '${GPU_CONFIG}' >& /tmp/delete_vm.out; }; trap cleanup EXIT; export NO_KUBEFLOW=1; mkdir cfp && cd cfp && tar zxf ../cfp.tar.gz && ./hack/init.sh && touch /tmp/untrapped && trap - EXIT; touch /tmp/rebooted; reboot"
     code=$?
     if [[ $code != 0 ]] && [[ $code != 255 ]]; then
         # 255 from reboot
-       echo "Failed to initialize remote host due to exit code $code"
+       echo "Failed to initialize remote host due to exit code $code" 1>&2
        exit $code
     fi
 
     # wait till the host comes back...
     while true; do
-        echo "Waiting for remote host to come back up after reboot"
+        echo "Waiting for remote host to come back up after reboot" 1>&2
         ssh -i /tmp/.ssh/gpu_ssh.prv root@$ip "echo hi" && break
         sleep 1
     done
 
-    echo "Executing tests on remote host"
-    ssh -t -t -i /tmp/.ssh/gpu_ssh.prv root@$ip "function cleanup { export apikey=$apikey; ~/cfp/hack/ibmcloud/delete_vm.sh '${GPU_CONFIG}' >& /tmp/delete_vm.out; exit 0; }; trap cleanup EXIT; export NO_KUBEFLOW=1; sudo sysctl fs.inotify.max_user_instances=8192; cd cfp; ./tests/bin/test.sh; code=$?; echo \"Remote gpu tests finished with code=$code (this message is from the remote host)\"; trap - EXIT; exit $code"
-    code=$?
-    echo "Remote gpu tests finished with code=$code (this message is from the main test/CI host)" 1>&2
+    if [[ -z "$INTERACTIVE" ]]
+    then
+        echo "Executing tests on remote host" 1>&2
+        ssh -t -t -i /tmp/.ssh/gpu_ssh.prv root@$ip "function cleanup { export apikey=$apikey; ~/cfp/hack/ibmcloud/delete_vm.sh '${GPU_CONFIG}' >& /tmp/delete_vm.out; exit 0; }; trap cleanup EXIT; export NO_KUBEFLOW=1; sudo sysctl fs.inotify.max_user_instances=8192; cd cfp; ./tests/bin/test.sh; code=$?; echo \"Remote gpu tests finished with code=$code (this message is from the remote host)\"; trap - EXIT; exit $code"
+        code=$?
+        echo "Remote gpu tests finished with code=$code (this message is from the main test/CI host)" 1>&2
 
-    if [[ $code = 255 ]]; then
-        # ssh errors?
-        exit 0
-    else
-        exit $code
+        if [[ $code = 255 ]]; then
+            # ssh errors?
+            exit 0
+        else
+            exit $code
+        fi
     fi
 fi

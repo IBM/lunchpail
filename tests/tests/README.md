@@ -2,8 +2,8 @@
 
 | Test Name | API      | GPU?/Tested? | Has Dataset? | Expect Failure | Is Real Use Case |
 |-----------|----------|--------------|--------------|----------------|-------------------
-| hap       | ray      |    Yes/No    |     Yes      |                |       Yes        |
-| lightning | torch    |    Yes/No    |              |                |                  |
+| hap       | ray      |    Yes/Yes   |     Yes      |                |       Yes        |
+| lightning | torch    |    Yes/Yes   |              |                |                  |
 | qiskit    | ray      |              |              |                |                  |
 | test0     | n/a      |              |              |      Yes       |                  |
 | test1     | ray      |              |     Yes      |                |                  |

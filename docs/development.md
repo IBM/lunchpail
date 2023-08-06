@@ -21,17 +21,21 @@ CodeFlare controllers have access to github.ibm.com. Please consult
 [hack/my.secrets.sh.template](hack/my.secrets.sh.template) to set up
 the required secret.
 
-### Submitting Example Runs
+### Launching Runs for Manual Testing
 
-Test Run resource specs are located in [tests/runs](tests/runs). To
-stand them all up, you can use `./tests/kind/deploy-tests.sh`. Or you
-can individually `kubectl apply -f` particular runs located within the
-`tests/runs` directory.
+Test Run resource specs are located in
+[tests/helm/applications](tests/helm/applications). To stand them all
+up, you can use `./tests/bin/deploy-tests.sh`, or you can deploy a
+specific test by passing the name of the test as an argument to that
+script.
 
-The [`deploy-tests.sh`](./tests/kind/deploy-tests.sh) script is
-convenient, in that it will also do a `kubectl get --watch` on the
-test runs. Though you can also do this on your own, as it is really
-just a simple watching get.
+### Running Automated Tests
+
+```shell
+./tests/bin/test.sh
+```
+
+This will run through all of the tests.
 
 ## Debugging the Controllers
 
