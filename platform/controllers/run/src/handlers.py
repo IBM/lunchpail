@@ -5,7 +5,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 from logs import track_job_logs
-from status import set_status
+from status import set_status, set_status_immediately
 from run_size import run_size
 from datasets import prepare_dataset_labels, prepare_dataset_labels_for_workerpool
 
@@ -48,7 +48,7 @@ def create_workpool_kopf(name: str, namespace: str, uid: str, labels, spec, patc
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
 def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
-    set_status(name, namespace, 'Pending', patch)
+    set_status_immediately(customApi, name, namespace, 'Pending')
 
     # what top-level run is this part of? this could be this very run,
     # if it is a top-level run...
@@ -206,19 +206,14 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
             if "app.kubernetes.io/managed-by" in pod_labels and pod_labels["app.kubernetes.io/managed-by"] == "codeflare.dev" and "app.kubernetes.io/part-of" in pod_labels:
                 phase = body["reason"]
                 if "app.kubernetes.io/part-of" in pod_labels:
-                    patch = [{"plural": "runs",
-                              "name": pod_labels["app.kubernetes.io/part-of"],
-                              "body": { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
-                              }]
-                    for patch in patches:
-                        name = patch["name"]
-                        body = patch["body"]
-                        plural = patch["plural"]
-                        logging.info(f"Patching from pod event name={name} plural={plural} phase={phase}")
-                        try:
-                            customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural, name=name, namespace=namespace, body=body)
-                        except ApiException as e:
-                            logging.error(f"Error patching Run on pod event run_name={run_name} phase={phase}. {str(e)}")
+                    plural = "runs"
+                    run_name = pod_labels["app.kubernetes.io/part-of"]
+                    patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+                    logging.info(f"Patching from pod event run_name={run_name} plural={plural} phase={phase}")
+                    try:
+                        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural, name=run_name, namespace=namespace, body=patch_body)
+                    except ApiException as e:
+                        logging.error(f"Error patching Run on pod event run_name={run_name} phase={phase}. {str(e)}")
         else:
             logging.info(f"Dropping event {body}")
 

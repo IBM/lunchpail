@@ -12,3 +12,10 @@ def set_status(name: str, namespace: str, phase: str, patch, status_field = "sta
         #resp = customApi.patch_namespaced_custom_object_status(group="codeflare.dev", version="v1alpha1", plural="runs", name=name, namespace=namespace, body=body)
     except ApiException as e:
         raise PermanentError(f"Error patching status name={name} namespace={namespace}. {str(e)}.")
+
+def set_status_immediately(customApi, run_name: str, namespace: str, phase: str):
+    try:
+        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+    except Exception as e:
+        logging.error(f"Error patching Run on pod event run_name={run_name} phase={phase}. {str(e)}")
