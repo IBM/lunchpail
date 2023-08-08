@@ -1,0 +1,12 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test0b") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test0b
+  namespace: {{ .Values.namespace }}
+spec:
+  api: shell
+  image: ubuntu
+  repo: https://github.ibm.com/does/not/exist/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx # expect failure
+  command: python3 main.py
+{{- end }}

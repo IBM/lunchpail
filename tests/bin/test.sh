@@ -27,7 +27,7 @@ watch
 # test app not found
 for path in "$SCRIPTDIR"/../tests/*
 do
-    if [[ $(basename $path) =~ "README.md" ]]
+    if [[ $(basename $path) =~ "README.md" ]] || [[ -n "$1" ]] && [[ $1 != $(basename $path) ]]
     then
        continue
     fi

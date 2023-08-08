@@ -5,7 +5,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 from logs import track_job_logs
-from status import set_status, set_status_immediately
+from status import set_status, set_status_immediately, add_error_condition_to_run
 from run_size import run_size
 from datasets import prepare_dataset_labels, prepare_dataset_labels_for_workerpool
 
@@ -106,6 +106,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
 
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
+        add_error_condition_to_run(customApi, name, namespace, str(e).strip(), patch)
         raise kopf.PermanentError(f"Error handling run creation. {str(e)}")
 
 def plural(component: str):

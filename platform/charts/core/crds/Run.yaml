@@ -76,6 +76,9 @@ spec:
         - name: Progress
           type: string
           jsonPath: ".metadata.annotations.codeflare\\.dev/epoch-progress"
+        - name: Message
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
 
   # either Namespaced or Cluster
   scope: Namespaced

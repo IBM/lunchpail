@@ -75,15 +75,19 @@ function waitForIt {
 function waitForStatus {
     local name=$1
     local ns=$2
-    local status=$3
+    local statuses=("${@:3}") # an array formed from everything from the third argument on... 
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
     echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
-    while true; do
-        $KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep -q $status && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
-        ($KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep $name || exit 0)
-        sleep 4
+    for status in "${statuses[@]}"
+    do
+        while true
+        do
+            $KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
+            ($KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep $name || exit 0)
+            sleep 4
+        done
     done
 
     echo "✅ PASS run-controller run test $name"
