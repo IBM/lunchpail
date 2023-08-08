@@ -23,14 +23,17 @@ fi
 export KUBECTL="kubectl --context kind-${CLUSTER_NAME}"
 export HELM="helm --kube-context kind-${CLUSTER_NAME}"
 
-while getopts "tk:" opt
-do
-    case $opt in
-        t) RUNNING_TESTS=true; continue;;
-        k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
-    esac
-done
-shift $((OPTIND-1))
+if [[ -z "$NO_GETOPTS" ]]
+then
+    while getopts "tk:" opt
+    do
+        case $opt in
+            t) RUNNING_TESTS=true; continue;;
+            k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
+        esac
+    done
+    shift $((OPTIND-1))
+fi
 
 if [[ -z "$NO_KIND" ]]; then
     VERSION=dev
