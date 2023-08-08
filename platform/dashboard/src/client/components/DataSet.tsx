@@ -1,8 +1,8 @@
-import { Component } from "react";
+import { PureComponent } from "react";
 import { Flex, FlexItem } from "@patternfly/react-core";
 import { BoxStyle } from "../style";
 
-export class DataSet extends Component {
+export class DataSet extends PureComponent {
   // ##############################################################
   // DELETE LATER: hard coding DataSet data to see UI
   dataset = Array(30).fill(1);
@@ -10,14 +10,15 @@ export class DataSet extends Component {
   public override render() {
     return (
       <>
-        <Flex>
+        <Flex gap={{ default: 'gapXs' }}>
           {this.dataset.map((_, index) => (
             <FlexItem key={index}>
-              <div style={BoxStyle("pink")}>D{(index += 1)}</div>
+              <div style={BoxStyle("#FC6769")}></div>
             </FlexItem>
           ))}
         </Flex>
-        <text style={{ marginLeft: "40%" }}>DataSet</text>
+
+        <strong>DataSet</strong>
       </>
     );
   }

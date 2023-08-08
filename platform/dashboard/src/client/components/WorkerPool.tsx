@@ -1,5 +1,5 @@
-import { Component } from "react";
-import { Flex, FlexItem } from "@patternfly/react-core";
+import { PureComponent } from "react";
+import { Flex, FlexItem  } from "@patternfly/react-core";
 import { GridLayout } from "./index";
 import { BoxStyle } from "../style";
 
@@ -17,18 +17,18 @@ interface props {
   model: WorkerPoolModel;
 }
 
-export class WorkerPool extends Component<props> {
+export class WorkerPool extends PureComponent<props> {
   public wpLabel() {
     return (
-      <text style={{ marginLeft: "10%" }}>
+      <strong>
         WorkerPool {this.props.model.label}
-      </text>
+      </strong>
     );
   }
 
   public isEmpty(numArr: number[]) {
     if (numArr.length == 0) {
-      return <text>Waiting for queues...</text>;
+      return 'Waiting for queues...';
     }
   }
 
@@ -36,30 +36,35 @@ export class WorkerPool extends Component<props> {
     const inboxArr = this.props.model.sizeInbox;
     // console.log("Worker: ", { inboxArr }); // FOR DEBUGGING
     return (
-      <>
+        <Flex direction={{ default: 'column' }} style={{height:'100%'}}>
         {/* This is the inbox, or "grid" of queues, which come from the particular WorkerPool data */}
-        {this.isEmpty(inboxArr)}
-        <Flex>
-          {inboxArr.map((_, i) => (
+      {this.isEmpty(inboxArr)}
+
+        <FlexItem>
+        <Flex gap={{ default: 'gapXs' }}>
+        {inboxArr.map((_, i) => (
             <GridLayout
+          key={i}
               queueNum={i + 1}
               queueLength={inboxArr[i]}
               queueStatus={this.props.model.status}
             />
           ))}
-        </Flex>
-        <text style={{ marginLeft: "10%" }}>Inbox</text>
-        <br />
+      </Flex>
+        </FlexItem>
+
+<FlexItem>
         {/* This is the grid that contains the particular WorkerPool data */}
-        <Flex style={{ marginTop: "20%" }}>
+        <Flex gap={{ default: 'gapXs' }}>
           {inboxArr.map((_, index) => (
             <FlexItem key={index}>
-              <div style={BoxStyle("lightblue")}>W{(index += 1)}</div>
+              <Flex  alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentCenter' }} style={BoxStyle("#10222D")}><span style={{fontSize: '0.75em'}}>W{(index += 1)}</span></Flex>
             </FlexItem>
           ))}
-        </Flex>
+      </Flex>
+        </FlexItem>
         {this.wpLabel()}
-      </>
+      </Flex>
     );
   }
 }

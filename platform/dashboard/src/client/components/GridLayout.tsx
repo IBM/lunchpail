@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { PureComponent } from "react";
 import { Flex, FlexItem } from "@patternfly/react-core";
 import { Queue } from "./index";
 
@@ -9,21 +9,20 @@ type Props = {
 };
 
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */
-export class GridLayout extends Component<Props> {
+export class GridLayout extends PureComponent<Props> {
   public labelForQueue() {
-    return <p>Q{this.props.queueNum.toString()}</p>;
+    return <div style={{textAlign: 'center', fontSize: '0.75em'}}>W{this.props.queueNum.toString()}</div>;
   }
 
   public isEmpty() {
     if (this.props.queueLength == 0) {
-      return <p> Empty</p>;
+      return <p>Empty</p>;
     }
   }
 
   public override render() {
     return (
-      <>
-        <Flex>
+        <Flex alignSelf={{ default: 'alignSelfFlexEnd' }}>
           {this.isEmpty()}
           <FlexItem>
             <Queue
@@ -33,7 +32,6 @@ export class GridLayout extends Component<Props> {
             {this.labelForQueue()}
           </FlexItem>
         </Flex>
-      </>
     );
   }
 }

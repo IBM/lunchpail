@@ -12,11 +12,8 @@ export function BoxStyle(color?: string) {
   if (color) {
     return {
       backgroundColor: color,
-      right: "auto",
-      left: "auto",
-      bottom: "1rem",
-      padding: "0.25rem",
-      width: "auto",
+      width: "1.375em",
+      height: "1.375em",
       ...hover,
     };
   }

@@ -1,4 +1,5 @@
-import { Component } from "react";
+import { PureComponent } from "react";
+import { Flex } from "@patternfly/react-core";
 import { BoxStyle } from "../style";
 
 type Props = {
@@ -6,7 +7,7 @@ type Props = {
   queueStatus: string;
 };
 
-export class Queue extends Component<Props> {
+export class Queue extends PureComponent<Props> {
   /** Assigning the queue a color depending on the status */
   private cellStatusColor(status: string): string {
     const allStatuses = ["unknown", "pending", "completed", "error", "running"];
@@ -27,14 +28,15 @@ export class Queue extends Component<Props> {
   }
 
   private queueCellLabel(labelNum: number) {
-    const label: string = "Q" + (labelNum + 1);
-    return label;
+    //const label: string = "D" + (labelNum + 1);
+    //return label;
+    return "";
   }
 
   /** Rendering one cell */
   private cell(status: string, labelNum: number) {
-    const color = this.cellStatusColor(status);
-    return <div style={BoxStyle(color)}>{this.queueCellLabel(labelNum)}</div>;
+    //const color = this.cellStatusColor(status);
+    return <div key={labelNum} style={BoxStyle('#FC6769')}>{this.queueCellLabel(labelNum)}</div>;
   }
 
   /** Returns a horizontal array of objects containing cells */
@@ -48,6 +50,6 @@ export class Queue extends Component<Props> {
 
   public override render() {
     const status = this.props.queueStatus;
-    return <div>{this.queue(status)}</div>;
+    return <Flex direction={{ default: 'column' }} gap={{ default: 'gapXs' }}>{this.queue(status)}</Flex>;
   }
 }

@@ -1,4 +1,4 @@
-import { Grid, GridItem } from "@patternfly/react-core";
+import { Flex, FlexItem, Grid, GridItem } from "@patternfly/react-core";
 import { DataSet, WorkerPoolModel, WorkerPool } from "./components";
 
 // ##############################################################
@@ -26,25 +26,20 @@ const allWorkerPools = [randomWP, randomWP2];
 
 export function App() {
   return (
-    <div>
-      <Grid hasGutter span={3} style={{ marginTop: "50px" }}>
+      <Flex alignItems={{default: 'alignItemsFlexEnd'}}>
         {/* In this section a DataSet component will be rendered on the left*/}
-        <GridItem>
-          <div>
+      <FlexItem style={{maxWidth: '8em'}}>
             <DataSet />
-          </div>
-        </GridItem>
-        {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 
+        </FlexItem>
+
+      {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 
             will be rendered in it's own Grid section on the right*/}
         {allWorkerPools.map((w) => (
-          <GridItem>
-            <div>
+            <FlexItem key={w.label}>
               <WorkerPool model={w} />
-            </div>
-          </GridItem>
+          </FlexItem>
         ))}
-      </Grid>
-    </div>
+      </Flex>
   );
 }
 
