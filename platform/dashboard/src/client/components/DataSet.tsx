@@ -9,8 +9,8 @@ export class DataSet extends PureComponent {
 
   public override render() {
     return (
-      <>
-        <Flex gap={{ default: 'gapXs' }}>
+      <Flex  direction={{ default: 'column' }} >
+        <Flex gap={{ default: 'gapXs' }} >
           {this.dataset.map((_, index) => (
             <FlexItem key={index}>
               <div style={BoxStyle("#FC6769")}></div>
@@ -19,7 +19,7 @@ export class DataSet extends PureComponent {
         </Flex>
 
         <strong>DataSet</strong>
-      </>
+      </Flex>
     );
   }
 }

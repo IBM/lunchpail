@@ -58,7 +58,7 @@ export class WorkerPool extends PureComponent<props> {
         <Flex gap={{ default: 'gapXs' }}>
           {inboxArr.map((_, index) => (
             <FlexItem key={index}>
-              <Flex  alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentCenter' }} style={BoxStyle("#10222D")}><span style={{fontSize: '0.75em'}}>W{(index += 1)}</span></Flex>
+              <Flex alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentCenter' }} style={BoxStyle("#10222D")}><span style={{fontSize: '0.75em'}}>W{(index += 1)}</span></Flex>
             </FlexItem>
           ))}
       </Flex>

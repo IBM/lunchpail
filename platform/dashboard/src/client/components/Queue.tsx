@@ -41,11 +41,9 @@ export class Queue extends PureComponent<Props> {
 
   /** Returns a horizontal array of objects containing cells */
   private queue(status: string) {
-    const queue = Array(this.props.queueLength);
-    for (let i = 0; i < this.props.queueLength; i++) {
-      queue.fill(this.cell(status, i));
-    }
-    return queue;
+    return Array(this.props.queueLength)
+      .fill(0)
+      .map((_, idx) => this.cell(status, idx))
   }
 
   public override render() {

@@ -28,17 +28,20 @@ export function App() {
   return (
       <Flex alignItems={{default: 'alignItemsFlexEnd'}}>
         {/* In this section a DataSet component will be rendered on the left*/}
-      <FlexItem style={{maxWidth: '8em'}}>
+      <Flex style={{maxWidth: '8em'}} >
             <DataSet />
-        </FlexItem>
+        </Flex>
 
       {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 
-            will be rendered in it's own Grid section on the right*/}
+          will be rendered in it's own Grid section on the right*/}
+      <Flex flex={{default: 'flex_1'}} alignItems={{default: 'alignItemsFlexEnd'}} flexWrap={{default: 'wrap'}}>
         {allWorkerPools.map((w) => (
             <FlexItem key={w.label}>
               <WorkerPool model={w} />
           </FlexItem>
         ))}
+    </Flex>
+
       </Flex>
   );
 }
