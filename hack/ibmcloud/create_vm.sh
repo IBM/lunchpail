@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-name_suffix=${TRAVIS_BUILD_ID-$USER}
+name_suffix=${TRAVIS_JOB_ID-$USER}
 name="cfp-test-${name_suffix}"
 
 function checkenv {
