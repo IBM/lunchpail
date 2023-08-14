@@ -1,6 +1,7 @@
 import { PureComponent } from "react"
 import { Flex } from "@patternfly/react-core"
-import { BoxStyle } from "../style"
+
+import GridCell from "./GridCell"
 
 type Props = {
   queueLength: number
@@ -36,11 +37,7 @@ export class Queue extends PureComponent<Props> {
   /** Rendering one cell */
   private cell(status: string, labelNum: number) {
     //const color = this.cellStatusColor(status);
-    return (
-      <div key={labelNum} style={BoxStyle("#FC6769")}>
-        {this.queueCellLabel()}
-      </div>
-    )
+    return <GridCell key={labelNum} type="data" />
   }
 
   /** Returns a horizontal array of objects containing cells */

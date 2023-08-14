@@ -1,7 +1,8 @@
 import { PureComponent } from "react"
 import { Flex, FlexItem } from "@patternfly/react-core"
+
+import GridCell from "./GridCell"
 import { GridLayout } from "./index"
-import { BoxStyle } from "../style"
 
 export interface WorkerPoolModel {
   sizeInbox: number[]
@@ -49,12 +50,8 @@ export class WorkerPool extends PureComponent<props> {
           <Flex gap={{ default: "gapXs" }}>
             {inboxArr.map((_, index) => (
               <FlexItem key={index}>
-                <Flex
-                  alignItems={{ default: "alignItemsCenter" }}
-                  justifyContent={{ default: "justifyContentCenter" }}
-                  style={BoxStyle("#10222D")}
-                >
-                  <span style={{ fontSize: "0.75em" }}>W{(index += 1)}</span>
+                <Flex alignItems={{ default: "alignItemsCenter" }} justifyContent={{ default: "justifyContentCenter" }}>
+                  <GridCell type="worker" />
                 </Flex>
               </FlexItem>
             ))}

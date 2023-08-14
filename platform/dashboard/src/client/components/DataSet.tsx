@@ -1,6 +1,7 @@
 import { PureComponent } from "react"
 import { Flex, FlexItem } from "@patternfly/react-core"
-import { BoxStyle } from "../style"
+
+import GridCell from "./GridCell"
 
 export class DataSet extends PureComponent {
   // ##############################################################
@@ -13,7 +14,7 @@ export class DataSet extends PureComponent {
         <Flex gap={{ default: "gapXs" }}>
           {this.dataset.map((_, index) => (
             <FlexItem key={index}>
-              <div style={BoxStyle("#FC6769")}></div>
+              <GridCell type="data" />
             </FlexItem>
           ))}
         </Flex>

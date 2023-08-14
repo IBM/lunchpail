@@ -1,0 +1,23 @@
+.codeflare--grid-cell {
+  width: 1.375em;
+  height: 1.375em;
+
+  &[data-type="data"] {
+    background-color: #fc6769;
+    &:hover {
+      filter: saturate(3);
+    }
+  }
+
+  &[data-type="worker"] {
+    background-color: #10222d;
+    &:hover {
+      filter: brightness(3);
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+    filter: hue-rotate(45deg);
+  }
+}

@@ -31,6 +31,7 @@
     "lint-staged": "^14.0.0",
     "nodemon": "^2.0.20",
     "prettier": "^3.0.1",
+    "sass": "^1.65.1",
     "vite": "^4.0.4"
   },
   "prettier": {
