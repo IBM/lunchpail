@@ -31,6 +31,7 @@ export default class WorkerPool extends PureComponent<props> {
 
   public override render() {
     const inboxArr = this.props.model.sizeInbox
+    const outboxArr = this.props.model.sizeOutbox
     // console.log("Worker: ", { inboxArr }); // FOR DEBUGGING
     return (
       <Flex direction={{ default: "column" }} style={{ height: "100%" }}>
@@ -40,7 +41,13 @@ export default class WorkerPool extends PureComponent<props> {
         <FlexItem>
           <Flex gap={{ default: "gapXs" }}>
             {inboxArr.map((_, i) => (
-              <GridLayout key={i} queueNum={i + 1} queueLength={inboxArr[i]} queueStatus={this.props.model.status} />
+              <GridLayout
+                key={i}
+                queueNum={i + 1}
+                sizeInbox={inboxArr[i]}
+                sizeOutbox={outboxArr[i]}
+                queueStatus={this.props.model.status}
+              />
             ))}
           </Flex>
         </FlexItem>

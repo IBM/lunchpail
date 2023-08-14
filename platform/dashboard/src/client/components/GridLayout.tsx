@@ -5,7 +5,8 @@ import Queue from "./Queue"
 
 type Props = {
   queueNum: number
-  queueLength: number
+  sizeInbox: number
+  sizeOutbox: number
   queueStatus: string
 }
 
@@ -19,7 +20,7 @@ export default class GridLayout extends PureComponent<Props> {
     return (
       <Flex alignSelf={{ default: "alignSelfFlexEnd" }}>
         <FlexItem>
-          <Queue queueStatus={this.props.queueStatus} queueLength={this.props.queueLength} />
+          <Queue sizeInbox={this.props.sizeInbox} sizeOutbox={this.props.sizeOutbox} />
           {this.labelForQueue()}
         </FlexItem>
       </Flex>

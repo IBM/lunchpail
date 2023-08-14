@@ -1,7 +1,7 @@
 import { PureComponent } from "react"
 import { Bullseye, Flex, FlexItem } from "@patternfly/react-core"
 
-import DataSet, { DataSetProps } from "./components/DataSet"
+import DataSet, { Props as DataSetProps } from "./components/DataSet"
 import WorkerPool, { WorkerPoolModel } from "./components/WorkerPool"
 
 // ##############################################################
@@ -39,7 +39,7 @@ type State = {
 export class App extends PureComponent<Props, State> {
   public componentDidMount() {
     this.setState({
-      dataset: randomData,
+      dataset: { inbox: randomData, outbox: randomData },
       workerpools: [randomWP, randomWP2],
     })
   }
@@ -49,8 +49,8 @@ export class App extends PureComponent<Props, State> {
       <Bullseye>
         <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
           {/* In this section a DataSet component will be rendered on the left*/}
-          <Flex style={{ maxWidth: "8em" }}>
-            <DataSet dataset={this.state?.dataset} />
+          <Flex>
+            <DataSet inbox={this.state?.dataset.inbox} outbox={this.state?.dataset.outbox} />
           </Flex>
 
           {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 

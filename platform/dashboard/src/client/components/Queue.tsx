@@ -1,57 +1,31 @@
 import { PureComponent } from "react"
 import { Flex } from "@patternfly/react-core"
 
-import GridCell from "./GridCell"
+import GridCell, { GridTypeData } from "./GridCell"
 
 type Props = {
-  queueLength: number
-  queueStatus: string
+  sizeInbox: number
+  sizeOutbox: number
 }
 
 export default class Queue extends PureComponent<Props> {
-  /** Assigning the queue a color depending on the status */
-  private cellStatusColor(status: string): string {
-    const allStatuses = ["unknown", "pending", "completed", "error", "running"]
-    switch (status) {
-      case allStatuses[0]:
-        return "grey"
-      case allStatuses[1]:
-        return "orange"
-      case allStatuses[2]:
-        return "green"
-      case allStatuses[3]:
-        return "red"
-      case allStatuses[4]:
-        return "yellow"
-      default:
-        return "grey"
-    }
+  /** Render one cell */
+  private cell(cellType: GridTypeData, labelNum: number) {
+    return <GridCell key={labelNum} type={cellType} />
   }
 
-  private queueCellLabel() {
-    //const label: string = "D" + (labelNum + 1);
-    //return label;
-    return ""
-  }
-
-  /** Rendering one cell */
-  private cell(status: string, labelNum: number) {
-    //const color = this.cellStatusColor(status);
-    return <GridCell key={labelNum} type="data" />
-  }
-
-  /** Returns a horizontal array of objects containing cells */
-  private queue(status: string) {
-    return Array(this.props.queueLength)
+  /** @return an array of GridCells */
+  private queue(N: number, cellType: GridTypeData) {
+    return Array(N)
       .fill(0)
-      .map((_, idx) => this.cell(status, idx))
+      .map((_, idx) => this.cell(cellType, idx))
   }
 
   public override render() {
-    const status = this.props.queueStatus
     return (
-      <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
-        {this.queue(status)}
+      <Flex direction={{ default: "columnReverse" }} gap={{ default: "gapXs" }}>
+        {this.queue(this.props.sizeInbox, "inbox")}
+        {this.queue(this.props.sizeOutbox, "outbox")}
       </Flex>
     )
   }

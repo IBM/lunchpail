@@ -2,11 +2,16 @@
   width: 1.375em;
   height: 1.375em;
 
-  &[data-type="data"] {
+  &[data-type="inbox"],
+  &[data-type="outbox"] {
     background-color: #fc6769;
     &:hover {
       filter: saturate(3);
     }
+  }
+
+  &[data-type="outbox"] {
+    filter: grayscale(0.75);
   }
 
   &[data-type="worker"] {
