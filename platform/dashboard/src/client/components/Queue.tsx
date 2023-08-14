@@ -1,42 +1,46 @@
-import { PureComponent } from "react";
-import { Flex } from "@patternfly/react-core";
-import { BoxStyle } from "../style";
+import { PureComponent } from "react"
+import { Flex } from "@patternfly/react-core"
+import { BoxStyle } from "../style"
 
 type Props = {
-  queueLength: number;
-  queueStatus: string;
-};
+  queueLength: number
+  queueStatus: string
+}
 
 export class Queue extends PureComponent<Props> {
   /** Assigning the queue a color depending on the status */
   private cellStatusColor(status: string): string {
-    const allStatuses = ["unknown", "pending", "completed", "error", "running"];
+    const allStatuses = ["unknown", "pending", "completed", "error", "running"]
     switch (status) {
       case allStatuses[0]:
-        return "grey";
+        return "grey"
       case allStatuses[1]:
-        return "orange";
+        return "orange"
       case allStatuses[2]:
-        return "green";
+        return "green"
       case allStatuses[3]:
-        return "red";
+        return "red"
       case allStatuses[4]:
-        return "yellow";
+        return "yellow"
       default:
-        return "grey";
+        return "grey"
     }
   }
 
-  private queueCellLabel(labelNum: number) {
+  private queueCellLabel() {
     //const label: string = "D" + (labelNum + 1);
     //return label;
-    return "";
+    return ""
   }
 
   /** Rendering one cell */
   private cell(status: string, labelNum: number) {
     //const color = this.cellStatusColor(status);
-    return <div key={labelNum} style={BoxStyle('#FC6769')}>{this.queueCellLabel(labelNum)}</div>;
+    return (
+      <div key={labelNum} style={BoxStyle("#FC6769")}>
+        {this.queueCellLabel()}
+      </div>
+    )
   }
 
   /** Returns a horizontal array of objects containing cells */
@@ -47,7 +51,11 @@ export class Queue extends PureComponent<Props> {
   }
 
   public override render() {
-    const status = this.props.queueStatus;
-    return <Flex direction={{ default: 'column' }} gap={{ default: 'gapXs' }}>{this.queue(status)}</Flex>;
+    const status = this.props.queueStatus
+    return (
+      <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+        {this.queue(status)}
+      </Flex>
+    )
   }
 }

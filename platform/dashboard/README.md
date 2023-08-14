@@ -6,10 +6,10 @@
 
 Using the [Vite + Express Starter Kit](https://github.com/szymmis/vite-express#-installation--usage), we can see the dashboard via `http://localhost:3000/` (press `q` key to exit).
 
+In a terminal,
 
-In a terminal, 
 ```
-cd platform/dashboard/ 
+cd platform/dashboard/
 yarn
 yarn dev
 ```

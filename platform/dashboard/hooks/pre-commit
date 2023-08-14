@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if which npx >& /dev/null
+then
+    cd platform/dashboard
+    npx lint-staged
+fi

@@ -1,4 +1,4 @@
-import type * as CSS from "csstype";
+import type * as CSS from "csstype"
 
 // TODO: might have to have the boxes change color depending on state instead of this
 const hover: { [P in CSS.SimplePseudos]?: CSS.Properties } = {
@@ -6,7 +6,7 @@ const hover: { [P in CSS.SimplePseudos]?: CSS.Properties } = {
     backgroundColor: "grey",
     opacity: "0.33",
   },
-};
+}
 
 export function BoxStyle(color?: string) {
   if (color) {
@@ -15,7 +15,7 @@ export function BoxStyle(color?: string) {
       width: "1.375em",
       height: "1.375em",
       ...hover,
-    };
+    }
   }
   return {
     right: "auto",
@@ -24,5 +24,5 @@ export function BoxStyle(color?: string) {
     padding: "0.25rem",
     width: "auto",
     ...hover,
-  };
+  }
 }

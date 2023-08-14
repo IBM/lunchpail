@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
+    "format": "prettier --write '**/*.{scss,css,html,js,json,md,ts,tsx}'",
+    "lint": "eslint . --ext '**/*.{js,ts,tsx}'",
+    "prepare": "cp hooks/* ../../.git/hooks",
     "dev": "nodemon src/server/main.ts -w src/server",
     "start": "NODE_ENV=production ts-node src/server/main.ts",
     "build": "vite build"
@@ -21,8 +24,48 @@
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
     "@vitejs/plugin-react": "^3.0.1",
+    "eslint": "^8.47.0",
+    "lint-staged": "^14.0.0",
     "nodemon": "^2.0.20",
+    "prettier": "^3.0.1",
     "vite": "^4.0.4"
+  },
+  "prettier": {
+    "semi": false,
+    "printWidth": 120
+  },
+  "lint-staged": {
+    "**/*.{scss,css,html,js,json,md,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
+    "**/*.{js,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "eslintIgnore": [
+    ".#*",
+    "*~"
+  ],
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "rules": {
+      "@typescript-eslint/no-unused-vars": "error"
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ]
   }
 }
