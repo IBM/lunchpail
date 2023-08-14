@@ -2,7 +2,7 @@ import { PureComponent } from "react"
 import { Flex, FlexItem } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
-import { GridLayout } from "./index"
+import GridLayout from "./GridLayout"
 
 export interface WorkerPoolModel {
   sizeInbox: number[]
@@ -18,7 +18,7 @@ interface props {
   model: WorkerPoolModel
 }
 
-export class WorkerPool extends PureComponent<props> {
+export default class WorkerPool extends PureComponent<props> {
   public wpLabel() {
     return <strong>WorkerPool {this.props.model.label}</strong>
   }

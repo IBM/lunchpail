@@ -1,5 +1,8 @@
+import { PureComponent } from "react"
 import { Bullseye, Flex, FlexItem } from "@patternfly/react-core"
-import { DataSet, WorkerPoolModel, WorkerPool } from "./components"
+
+import DataSet, { DataSetProps } from "./components/DataSet"
+import WorkerPool, { WorkerPoolModel } from "./components/WorkerPool"
 
 // ##############################################################
 // DELETE LATER: hard coding some WorkerPool data to see UI
@@ -21,30 +24,50 @@ const randomWP2: WorkerPoolModel = {
   numTilesProcessed: 1,
   label: "B",
 }
-const allWorkerPools = [randomWP, randomWP2]
+const randomData = Array(30).fill(1)
 // ##############################################################
 
-export function App() {
-  return (
-    <Bullseye>
-      <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
-        {/* In this section a DataSet component will be rendered on the left*/}
-        <Flex style={{ maxWidth: "8em" }}>
-          <DataSet />
-        </Flex>
+type Props = undefined
+type State = {
+  /** DataSet model */
+  dataset: DataSetProps
 
-        {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 
-          will be rendered in it's own Grid section on the right*/}
-        <Flex flex={{ default: "flex_1" }} alignItems={{ default: "alignItemsFlexEnd" }} flexWrap={{ default: "wrap" }}>
-          {allWorkerPools.map((w) => (
-            <FlexItem key={w.label}>
-              <WorkerPool model={w} />
-            </FlexItem>
-          ))}
-        </Flex>
-      </Flex>
-    </Bullseye>
-  )
+  /** WorkerPool models */
+  workerpools: WorkerPoolModel[]
 }
 
-App.displayName = "Dashboard"
+export class App extends PureComponent<Props, State> {
+  public componentDidMount() {
+    this.setState({
+      dataset: randomData,
+      workerpools: [randomWP, randomWP2],
+    })
+  }
+
+  public render() {
+    return (
+      <Bullseye>
+        <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
+          {/* In this section a DataSet component will be rendered on the left*/}
+          <Flex style={{ maxWidth: "8em" }}>
+            <DataSet dataset={this.state?.dataset} />
+          </Flex>
+
+          {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 
+          will be rendered in it's own Grid section on the right*/}
+          <Flex
+            flex={{ default: "flex_1" }}
+            alignItems={{ default: "alignItemsFlexEnd" }}
+            flexWrap={{ default: "wrap" }}
+          >
+            {this.state?.workerpools?.map((w) => (
+              <FlexItem key={w.label}>
+                <WorkerPool model={w} />
+              </FlexItem>
+            ))}
+          </Flex>
+        </Flex>
+      </Bullseye>
+    )
+  }
+}

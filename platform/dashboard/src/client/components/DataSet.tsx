@@ -3,10 +3,14 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
 
-export class DataSet extends PureComponent {
-  // ##############################################################
-  // DELETE LATER: hard coding DataSet data to see UI
-  dataset = Array(30).fill(1)
+type Props = {
+  dataset: number[]
+}
+
+export default class DataSet extends PureComponent<Props> {
+  private get dataset() {
+    return this.props.dataset || []
+  }
 
   public override render() {
     return (

@@ -8,7 +8,7 @@ type Props = {
   queueStatus: string
 }
 
-export class Queue extends PureComponent<Props> {
+export default class Queue extends PureComponent<Props> {
   /** Assigning the queue a color depending on the status */
   private cellStatusColor(status: string): string {
     const allStatuses = ["unknown", "pending", "completed", "error", "running"]
