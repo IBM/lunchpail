@@ -23,9 +23,9 @@ export default class Queue extends PureComponent<Props> {
 
   public override render() {
     return (
-      <Flex direction={{ default: "columnReverse" }} gap={{ default: "gapXs" }}>
-        {this.queue(this.props.sizeInbox, "inbox")}
+      <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
         {this.queue(this.props.sizeOutbox, "outbox")}
+        {this.queue(this.props.sizeInbox, "inbox")}
       </Flex>
     )
   }

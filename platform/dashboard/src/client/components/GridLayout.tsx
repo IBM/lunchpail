@@ -7,7 +7,6 @@ type Props = {
   queueNum: number
   sizeInbox: number
   sizeOutbox: number
-  queueStatus: string
 }
 
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */

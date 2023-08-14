@@ -7,10 +7,6 @@ import GridLayout from "./GridLayout"
 export interface WorkerPoolModel {
   sizeInbox: number[]
   sizeOutbox: number[]
-  status: string // "unknown" | "pending" | "completed" | "error" | "running"
-  numTiles: number
-  startTime: number
-  numTilesProcessed: number
   label: string
 }
 
@@ -41,13 +37,7 @@ export default class WorkerPool extends PureComponent<props> {
         <FlexItem>
           <Flex gap={{ default: "gapXs" }}>
             {inboxArr.map((_, i) => (
-              <GridLayout
-                key={i}
-                queueNum={i + 1}
-                sizeInbox={inboxArr[i]}
-                sizeOutbox={outboxArr[i]}
-                queueStatus={this.props.model.status}
-              />
+              <GridLayout key={i} queueNum={i + 1} sizeInbox={inboxArr[i]} sizeOutbox={outboxArr[i]} />
             ))}
           </Flex>
         </FlexItem>
