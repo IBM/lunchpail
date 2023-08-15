@@ -1,6 +1,6 @@
 import "./GridCell.scss"
 
-export type GridTypeData = "inbox" | "outbox"
+export type GridTypeData = "inbox" | "outbox" | "processing" | "waiting"
 type GridType = GridTypeData | "worker"
 
 type Props = {

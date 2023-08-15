@@ -3,9 +3,10 @@ import { Flex } from "@patternfly/react-core"
 
 import GridCell, { GridTypeData } from "./GridCell"
 
-type Props = {
+export type Props = {
   sizeInbox: number
   sizeOutbox: number
+  sizeProcessing: number
 }
 
 export default class Queue extends PureComponent<Props> {
@@ -26,6 +27,7 @@ export default class Queue extends PureComponent<Props> {
       <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
         {this.queue(this.props.sizeOutbox, "outbox")}
         {this.queue(this.props.sizeInbox, "inbox")}
+        {this.props.sizeProcessing > 0 ? this.queue(this.props.sizeProcessing, "processing") : this.queue(1, "waiting")}
       </Flex>
     )
   }

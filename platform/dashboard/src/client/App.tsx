@@ -15,13 +15,8 @@ type State = {
 
 export class App extends PureComponent<Props, State> {
   public async componentDidMount() {
-    const datasets = await fetch("/datasets", {
-      method: "GET",
-    }).then((response) => response.json())
-
-    const workerpools = await fetch("/workerpools", {
-      method: "GET",
-    }).then((response) => response.json())
+    const datasets = await fetch("/datasets").then((response) => response.json())
+    const workerpools = await fetch("/workerpools").then((response) => response.json())
 
     this.setState({
       datasets,

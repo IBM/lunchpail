@@ -7,12 +7,14 @@ const app = express()
 // DELETE LATER: hard coding some WorkerPool data to see UI
 const randomWP = {
   sizeInbox: [1, 2, 3, 4, 5],
-  sizeOutbox: Array(2).fill(2),
+  sizeOutbox: Array(5).fill(2),
+  sizeProcessing: [1, 0, 1, 1, 1],
   label: "A",
 }
 const randomWP2 = {
   sizeInbox: [5, 2, 3, 4, 1, 1, 2, 3, 4],
-  sizeOutbox: Array(2).fill(2),
+  sizeOutbox: Array(5).fill(2),
+  sizeProcessing: [0, 1, 1, 1, 1, 1, 0, 1, 0],
   label: "B",
 }
 const randomData = Array(30).fill(1)

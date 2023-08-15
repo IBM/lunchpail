@@ -1,9 +1,14 @@
 .codeflare--grid-cell {
   width: 1.375em;
   height: 1.375em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &[data-type="inbox"],
-  &[data-type="outbox"] {
+  &[data-type="outbox"],
+  &[data-type="processing"],
+  &[data-type="waiting"] {
     background-color: #fc6769;
     &:hover {
       filter: saturate(3);
@@ -12,6 +17,14 @@
 
   &[data-type="outbox"] {
     filter: grayscale(0.75);
+  }
+
+  &[data-type="processing"] {
+    background-color: #2b9af3; //6EC664;
+  }
+
+  &[data-type="waiting"] {
+    background-color: #f4c145;
   }
 
   &[data-type="worker"] {

@@ -3,12 +3,7 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
 import GridLayout from "./GridLayout"
-
-export interface WorkerPoolModel {
-  sizeInbox: number[]
-  sizeOutbox: number[]
-  label: string
-}
+import type WorkerPoolModel from "./WorkerPoolModel"
 
 interface props {
   model: WorkerPoolModel
@@ -28,7 +23,8 @@ export default class WorkerPool extends PureComponent<props> {
   public override render() {
     const inboxArr = this.props.model.sizeInbox
     const outboxArr = this.props.model.sizeOutbox
-    // console.log("Worker: ", { inboxArr }); // FOR DEBUGGING
+    const processingArr = this.props.model.sizeProcessing
+
     return (
       <Flex direction={{ default: "column" }} style={{ height: "100%" }}>
         {/* This is the inbox, or "grid" of queues, which come from the particular WorkerPool data */}
@@ -37,7 +33,13 @@ export default class WorkerPool extends PureComponent<props> {
         <FlexItem>
           <Flex gap={{ default: "gapXs" }}>
             {inboxArr.map((_, i) => (
-              <GridLayout key={i} queueNum={i + 1} sizeInbox={inboxArr[i]} sizeOutbox={outboxArr[i]} />
+              <GridLayout
+                key={i}
+                queueNum={i + 1}
+                sizeProcessing={processingArr[i]}
+                sizeInbox={inboxArr[i]}
+                sizeOutbox={outboxArr[i]}
+              />
             ))}
           </Flex>
         </FlexItem>

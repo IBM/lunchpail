@@ -1,12 +1,10 @@
 import { PureComponent } from "react"
 import { Flex, FlexItem } from "@patternfly/react-core"
 
-import Queue from "./Queue"
+import Queue, { Props as QueueProps } from "./Queue"
 
-type Props = {
+type Props = QueueProps & {
   queueNum: number
-  sizeInbox: number
-  sizeOutbox: number
 }
 
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */
@@ -19,7 +17,11 @@ export default class GridLayout extends PureComponent<Props> {
     return (
       <Flex alignSelf={{ default: "alignSelfFlexEnd" }}>
         <FlexItem>
-          <Queue sizeInbox={this.props.sizeInbox} sizeOutbox={this.props.sizeOutbox} />
+          <Queue
+            sizeInbox={this.props.sizeInbox}
+            sizeOutbox={this.props.sizeOutbox}
+            sizeProcessing={this.props.sizeProcessing}
+          />
           {this.labelForQueue()}
         </FlexItem>
       </Flex>
