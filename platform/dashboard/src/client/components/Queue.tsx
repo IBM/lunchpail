@@ -22,12 +22,21 @@ export default class Queue extends PureComponent<Props> {
       .map((_, idx) => this.cell(cellType, idx))
   }
 
+  /** @return UI to represent processing/waiting */
+  private processing() {
+    if (this.props.sizeProcessing > 0) {
+      return this.queue(this.props.sizeProcessing, "processing")
+    } else {
+      return this.queue(1, "waiting")
+    }
+  }
+
   public override render() {
     return (
       <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
         {this.queue(this.props.sizeOutbox, "outbox")}
         {this.queue(this.props.sizeInbox, "inbox")}
-        {this.props.sizeProcessing > 0 ? this.queue(this.props.sizeProcessing, "processing") : this.queue(1, "waiting")}
+        {this.processing()}
       </Flex>
     )
   }

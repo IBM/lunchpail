@@ -17,11 +17,10 @@ const randomWP2 = {
   sizeProcessing: [0, 1, 1, 1, 1, 1, 0, 1, 0],
   label: "B",
 }
-const randomData = Array(30).fill(1)
 // ##############################################################
 
 app.get("/datasets", (_, res) => {
-  res.json([{ label: "1", inbox: randomData, outbox: randomData }])
+  res.json([{ label: "1", inbox: ~~(Math.random() * 20), outbox: ~~(Math.random() * 10) }])
 })
 
 app.get("/workerpools", (_, res) => {

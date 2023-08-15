@@ -30,13 +30,13 @@ export class App extends PureComponent<Props, State> {
     return (
       <Bullseye>
         <Grid hasGutter style={{ gridTemplateColumns: "10em 1fr 1fr" }}>
-          {this.state?.datasets?.map((dataset) => (
+          {this.state?.datasets?.map((dataset, idx) => (
             <Fragment key={dataset.label}>
-              <GridItem span={1} style={{ justifySelf: "end" }}>
+              <GridItem span={1} style={{ justifySelf: "end", alignSelf: "center" }}>
                 <strong>DataSet {dataset.label}</strong>
               </GridItem>
               <GridItem span={nCols - 1}>
-                <DataSet label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
+                <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
               </GridItem>
             </Fragment>
           ))}
