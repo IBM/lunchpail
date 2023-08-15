@@ -4,6 +4,7 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 import GridCell, { GridTypeData } from "./GridCell"
 
 export type Props = {
+  label: string
   inbox: number[]
   outbox: number[]
 }
@@ -11,7 +12,7 @@ export type Props = {
 export default class DataSet extends PureComponent<Props> {
   private stack(model: Props["inbox"] | Props["outbox"], gridDataType: GridTypeData) {
     return (
-      <Flex gap={{ default: "gapXs" }} style={{ maxWidth: "3em" }}>
+      <Flex gap={{ default: "gapXs" }} style={{ maxWidth: "calc((4px + 1.375em) * 8 - 3px)" }}>
         {(model || []).map((_, index) => (
           <FlexItem key={index}>
             <GridCell type={gridDataType} />
@@ -31,12 +32,11 @@ export default class DataSet extends PureComponent<Props> {
 
   public override render() {
     return (
-      <Flex direction={{ default: "column" }}>
+      <Flex alignItems={{ default: "alignItemsFlexStart" }}>
         <Flex gap={{ default: "gapXs" }}>
           {this.inbox()}
           {this.outbox()}
         </Flex>
-        <strong>DataSet</strong>
       </Flex>
     )
   }

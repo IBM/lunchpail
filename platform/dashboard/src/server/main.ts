@@ -18,11 +18,11 @@ const randomWP2 = {
 const randomData = Array(30).fill(1)
 // ##############################################################
 
-app.get("/dataset", (_, res) => {
-  res.json({ inbox: randomData, outbox: randomData })
+app.get("/datasets", (_, res) => {
+  res.json([{ label: "1", inbox: randomData, outbox: randomData }])
 })
 
-app.get("/workerPools", (_, res) => {
+app.get("/workerpools", (_, res) => {
   res.json([randomWP, randomWP2])
 })
 
