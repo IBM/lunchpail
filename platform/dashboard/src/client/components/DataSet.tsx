@@ -3,7 +3,7 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 
 import GridCell, { GridTypeData } from "./GridCell"
 
-type Props = {
+export type Props = {
   inbox: number[]
   outbox: number[]
 }

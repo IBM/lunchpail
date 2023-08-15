@@ -4,29 +4,6 @@ import { Bullseye, Flex, FlexItem } from "@patternfly/react-core"
 import DataSet, { Props as DataSetProps } from "./components/DataSet"
 import WorkerPool, { WorkerPoolModel } from "./components/WorkerPool"
 
-// ##############################################################
-// DELETE LATER: hard coding some WorkerPool data to see UI
-const randomWP: WorkerPoolModel = {
-  sizeInbox: [1, 2, 3, 4, 5],
-  sizeOutbox: Array(2).fill(2),
-  status: "completed",
-  numTiles: 1,
-  startTime: 1,
-  numTilesProcessed: 1,
-  label: "A",
-}
-const randomWP2: WorkerPoolModel = {
-  sizeInbox: [5, 2, 3, 4, 1, 1, 2, 3, 4],
-  sizeOutbox: Array(2).fill(2),
-  status: "completed",
-  numTiles: 1,
-  startTime: 1,
-  numTilesProcessed: 1,
-  label: "B",
-}
-const randomData = Array(30).fill(1)
-// ##############################################################
-
 type Props = undefined
 type State = {
   /** DataSet model */
@@ -37,10 +14,18 @@ type State = {
 }
 
 export class App extends PureComponent<Props, State> {
-  public componentDidMount() {
+  public async componentDidMount() {
+    const dataset = await fetch("/dataset", {
+      method: "GET",
+    }).then((response) => response.json())
+
+    const workerpools = await fetch("/workerPools", {
+      method: "GET",
+    }).then((response) => response.json())
+
     this.setState({
-      dataset: { inbox: randomData, outbox: randomData },
-      workerpools: [randomWP, randomWP2],
+      dataset,
+      workerpools,
     })
   }
 

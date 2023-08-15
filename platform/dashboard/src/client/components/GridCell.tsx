@@ -4,7 +4,7 @@ export type GridTypeData = "inbox" | "outbox"
 type GridType = GridTypeData | "worker"
 
 type Props = {
-  gridType: GridType
+  type: GridType
 }
 
 export default function GridCell(props: Props) {
