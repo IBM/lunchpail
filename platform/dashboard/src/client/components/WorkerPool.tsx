@@ -7,6 +7,7 @@ import type WorkerPoolModel from "./WorkerPoolModel"
 
 interface props {
   model: WorkerPoolModel
+  datasetIndex: Record<string, number>
 }
 
 export default class WorkerPool extends PureComponent<props> {
@@ -21,9 +22,9 @@ export default class WorkerPool extends PureComponent<props> {
   }
 
   public override render() {
-    const inboxArr = this.props.model.sizeInbox
-    const outboxArr = this.props.model.sizeOutbox
-    const processingArr = this.props.model.sizeProcessing
+    const inboxArr = this.props.model.inbox
+    const outboxArr = this.props.model.outbox
+    const processingArr = this.props.model.processing
 
     return (
       <Flex direction={{ default: "column" }} style={{ height: "100%" }}>
@@ -36,9 +37,10 @@ export default class WorkerPool extends PureComponent<props> {
               <GridLayout
                 key={i}
                 queueNum={i + 1}
-                sizeProcessing={processingArr[i]}
-                sizeInbox={inboxArr[i]}
-                sizeOutbox={outboxArr[i]}
+                processing={processingArr[i]}
+                inbox={inboxArr[i]}
+                outbox={outboxArr[i]}
+                datasetIndex={this.props.datasetIndex}
               />
             ))}
           </Flex>

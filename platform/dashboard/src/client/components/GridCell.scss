@@ -5,22 +5,32 @@
   align-items: center;
   justify-content: center;
 
+  &[data-dataset="0"] {
+    --cell-color: #35caed;
+  }
+  &[data-dataset="1"] {
+    --cell-color: #8476d1;
+  }
+  &[data-dataset="2"] {
+    --cell-color: #ec7a08;
+  }
+
   &[data-type="inbox"],
   &[data-type="outbox"],
   &[data-type="processing"],
   &[data-type="waiting"] {
-    background-color: #35caed; //#fc6769;
+    background-color: var(--cell-color); //#fc6769;
     &:hover {
       filter: saturate(3);
     }
   }
 
   &[data-type="inbox"] {
-    filter: grayscale(0.5) opacity(0.9);
+    filter: grayscale(0.5) brightness(0.8);
   }
 
   &[data-type="outbox"] {
-    filter: grayscale(0.85) opacity(0.9);
+    filter: grayscale(0.75) opacity(0.95);
   }
 
   &[data-type="waiting"] {

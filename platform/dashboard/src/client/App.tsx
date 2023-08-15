@@ -9,6 +9,9 @@ type State = {
   /** DataSet models */
   datasets: DataSetProps[]
 
+  /** Map DataSetProps.label to a dense index */
+  datasetIndex: Record<string, number>
+
   /** WorkerPool models */
   workerpools: WorkerPoolModel[]
 }
@@ -21,6 +24,10 @@ export class App extends PureComponent<Props, State> {
     this.setState({
       datasets,
       workerpools,
+      datasetIndex: datasets.reduce((M, { label }, idx) => {
+        M[label] = idx
+        return M
+      }, {}),
     })
   }
 
@@ -28,11 +35,11 @@ export class App extends PureComponent<Props, State> {
     const nCols = (this.state?.workerpools?.length || 0) + 1
 
     return (
-      <Bullseye>
+      <Bullseye className="codeflare--dashboard">
         <Grid hasGutter style={{ gridTemplateColumns: "10em 1fr 1fr" }}>
           {this.state?.datasets?.map((dataset, idx) => (
             <Fragment key={dataset.label}>
-              <GridItem span={1} style={{ justifySelf: "end", alignSelf: "center" }}>
+              <GridItem span={1} style={{ justifySelf: "end", alignSelf: "start" }}>
                 <strong>DataSet {dataset.label}</strong>
               </GridItem>
               <GridItem span={nCols - 1}>
@@ -49,7 +56,7 @@ export class App extends PureComponent<Props, State> {
             <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
               {this.state?.workerpools?.map((w) => (
                 <FlexItem key={w.label}>
-                  <WorkerPool model={w} />
+                  <WorkerPool model={w} datasetIndex={this.state.datasetIndex} />
                 </FlexItem>
               ))}
             </Flex>

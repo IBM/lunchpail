@@ -18,9 +18,10 @@ export default class GridLayout extends PureComponent<Props> {
       <Flex alignSelf={{ default: "alignSelfFlexEnd" }}>
         <FlexItem>
           <Queue
-            sizeInbox={this.props.sizeInbox}
-            sizeOutbox={this.props.sizeOutbox}
-            sizeProcessing={this.props.sizeProcessing}
+            inbox={this.props.inbox}
+            outbox={this.props.outbox}
+            processing={this.props.processing}
+            datasetIndex={this.props.datasetIndex}
           />
           {this.labelForQueue()}
         </FlexItem>
