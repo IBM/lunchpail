@@ -30,13 +30,13 @@ technologies](#technologies-employed).
   data sets with their application specification. The Platform takes
   care of managing all of the Kubernetes details (volumes, mounts, claims,
   etc.) [Example
-  DataSet.yaml](https://github.ibm.com/nickm/codeflare-platform/blob/rm/tests/templates/datasets/s3-test.yaml)
+  DataSet.yaml](tests/helm/templates/datasets/s3-test.yaml)
 - **Jobs/Runs**: An application *user* specs their run by pointing to
   the Application resource they wish to execute, and optionally
   overriding application defaults such as command line
   options. [Example Ray
-  Run.yaml](tests/runs/watsonx_ai/ray/qiskit.yaml) **|** [Example
-  Torch Run.yaml](tests/runs/watsonx_ai/torch/lightning.yaml)
+  Run.yaml](tests/helm/templates/runs/watsonx_ai/ray/qiskit.yaml) **|** [Example
+  Torch Run.yaml](tests/helm/templates/runs/watsonx_ai/torch/lightning.yaml)
 - **Images**: By defining a catalog of images, the Platform can
   facilitate prefetching them, to avoid large image pull lags when
   running jobs. This also helps to consolidate image pull
