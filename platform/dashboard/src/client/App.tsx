@@ -1,14 +1,16 @@
-import { Fragment, PureComponent } from "react"
+import { PureComponent } from "react"
 import {
   Bullseye,
   Flex,
   FlexItem,
-  Grid,
-  GridItem,
   Switch,
+  Masthead,
+  MastheadMain,
+  MastheadBrand,
+  MastheadContent,
   Toolbar,
-  ToolbarItem,
   ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core"
 
 import DataSet, { Props as DataSetProps } from "./components/DataSet"
@@ -56,50 +58,64 @@ export class App extends PureComponent<Props, State> {
     })
   }
 
-  public render() {
-    const nCols = (this.state?.workerpools?.length || 0) + 1
+  private datasets() {
+    return (
+      <Flex>
+        {this.state?.datasets?.map((dataset, idx) => (
+          <DataSet key={dataset.label} idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
+        ))}
+      </Flex>
+    )
+  }
 
+  private workerpools() {
+    return (
+      <Flex>
+        {this.state?.workerpools?.map((w) => (
+          <FlexItem key={w.label}>
+            <WorkerPool model={w} datasetIndex={this.state.datasetIndex} />
+          </FlexItem>
+        ))}
+      </Flex>
+    )
+  }
+
+  private body() {
+    return (
+      <Bullseye>
+        <Flex direction={{ default: "column" }}>
+          {this.datasets()}
+          {this.workerpools()}
+        </Flex>
+      </Bullseye>
+    )
+  }
+
+  private header() {
+    return (
+      <Masthead>
+        <MastheadMain>
+          <MastheadBrand>Queueless Dashboard</MastheadBrand>
+        </MastheadMain>
+
+        <MastheadContent>
+          <Toolbar>
+            <ToolbarContent>
+              <ToolbarItem align={{ default: "alignRight" }}>
+                <Switch label="Dark Mode" isChecked={this.state?.useDarkMode} onChange={this.toggleDarkMode} />
+              </ToolbarItem>
+            </ToolbarContent>
+          </Toolbar>
+        </MastheadContent>
+      </Masthead>
+    )
+  }
+
+  public render() {
     return (
       <Flex direction={{ default: "column" }} style={{ height: "100%" }}>
-        <FlexItem flex={{ default: "flex_1" }}>
-          <Bullseye className="codeflare--dashboard">
-            <Grid hasGutter style={{ gridTemplateColumns: "10em 1fr 1fr" }}>
-              {this.state?.datasets?.map((dataset, idx) => (
-                <Fragment key={dataset.label}>
-                  <GridItem span={1} style={{ justifySelf: "end", alignSelf: "start" }}>
-                    <strong>DataSet {dataset.label}</strong>
-                    <div className="codeflare--text-xs">Unassigned Work</div>
-                  </GridItem>
-                  <GridItem span={nCols - 1}>
-                    <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
-                  </GridItem>
-                </Fragment>
-              ))}
-
-              {/* For each worker pool below, a 'WorkerPool' and 'Queue' component 
-              will be rendered in it's own Grid section on the right*/}
-              <GridItem span={1} />
-
-              <GridItem span={nCols - 1}>
-                <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
-                  {this.state?.workerpools?.map((w) => (
-                    <FlexItem key={w.label}>
-                      <WorkerPool model={w} datasetIndex={this.state.datasetIndex} />
-                    </FlexItem>
-                  ))}
-                </Flex>
-              </GridItem>
-            </Grid>
-          </Bullseye>
-        </FlexItem>
-
-        <Toolbar>
-          <ToolbarContent>
-            <ToolbarItem align={{ default: "alignRight" }}>
-              <Switch label="Dark Mode" isChecked={this.state?.useDarkMode} onChange={this.toggleDarkMode} />
-            </ToolbarItem>
-          </ToolbarContent>
-        </Toolbar>
+        {this.header()}
+        <FlexItem flex={{ default: "flex_1" }}>{this.body()}</FlexItem>
       </Flex>
     )
   }

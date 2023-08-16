@@ -1,6 +1,8 @@
 .codeflare--grid-cell {
-  width: 1.375em;
-  height: 1.375em;
+  $size: 1.375em;
+
+  width: $size;
+  height: $size;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,16 +22,34 @@
   &[data-dataset="4"] {
     --cell-color: #4cb140;
   }
-
-  &[data-type="worker"],
-  &[data-type="inbox"],
-  &[data-type="outbox"],
-  &[data-type="processing"],
+  &[data-type="worker"] {
+    --cell-color: #002952;
+  }
   &[data-type="waiting"] {
-    background-color: var(--cell-color); //#fc6769;
-    &:hover {
-      filter: saturate(3);
+    --cell-color: #d2d2d2;
+  }
+  &[data-type="placeholder"] {
+    --cell-color: #8a8d90;
+
+    /** This gives an X inside the cell */
+    &:before,
+    &:after {
+      position: absolute;
+      content: " ";
+      height: $size;
+      width: 2px;
+      background-color: #2c0000;
     }
+    &:before {
+      transform: rotate(45deg);
+    }
+    &:after {
+      transform: rotate(-45deg);
+    }
+  }
+
+  & {
+    background-color: var(--cell-color);
   }
 
   &[data-type="inbox"] {
@@ -39,16 +59,10 @@
   &[data-type="outbox"] {
     filter: grayscale(0.8) opacity(0.95);
   }
-
   &[data-type="waiting"] {
-    background-color: #d2d2d2;
     &:hover {
       filter: brightness(0.75);
     }
-  }
-
-  &[data-type="worker"] {
-    background-color: #002952;
   }
 
   &:hover {
