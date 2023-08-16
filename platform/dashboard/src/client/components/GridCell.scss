@@ -6,15 +6,16 @@
   justify-content: center;
 
   &[data-dataset="0"] {
-    --cell-color: #35caed;
+    --cell-color: #009596;
   }
   &[data-dataset="1"] {
-    --cell-color: #8476d1;
+    --cell-color: #5752d1;
   }
   &[data-dataset="2"] {
     --cell-color: #ec7a08;
   }
 
+  &[data-type="worker"],
   &[data-type="inbox"],
   &[data-type="outbox"],
   &[data-type="processing"],
@@ -30,7 +31,7 @@
   }
 
   &[data-type="outbox"] {
-    filter: grayscale(0.75) opacity(0.95);
+    filter: grayscale(0.8) opacity(0.95);
   }
 
   &[data-type="waiting"] {
@@ -42,13 +43,18 @@
 
   &[data-type="worker"] {
     background-color: #002952;
-    &:hover {
-      filter: brightness(3);
-    }
   }
 
   &:hover {
     cursor: pointer;
     filter: hue-rotate(45deg);
+  }
+}
+
+html.pf-v5-theme-dark {
+  .codeflare--grid-cell {
+    &[data-type="worker"] {
+      background-color: #bee1f4;
+    }
   }
 }
