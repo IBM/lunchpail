@@ -31,6 +31,12 @@
   &[data-type="placeholder"] {
     --cell-color: #8a8d90;
 
+    &,
+    &:hover {
+      cursor: unset;
+      filter: opacity(0.375);
+    }
+
     /** This gives an X inside the cell */
     &:before,
     &:after {
