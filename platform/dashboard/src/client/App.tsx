@@ -14,6 +14,8 @@ import {
 import DataSet, { Props as DataSetProps } from "./components/DataSet"
 import WorkerPool, { WorkerPoolModel } from "./components/WorkerPool"
 
+import "./App.scss"
+
 type Props = undefined
 type State = {
   /** UI in dark mode? */
@@ -66,6 +68,7 @@ export class App extends PureComponent<Props, State> {
                 <Fragment key={dataset.label}>
                   <GridItem span={1} style={{ justifySelf: "end", alignSelf: "start" }}>
                     <strong>DataSet {dataset.label}</strong>
+                    <div className="codeflare--text-xs">Unassigned Work</div>
                   </GridItem>
                   <GridItem span={nCols - 1}>
                     <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />

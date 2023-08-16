@@ -3,6 +3,8 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 
 import Queue, { Props as QueueProps } from "./Queue"
 
+import "../App.scss"
+
 type Props = QueueProps & {
   queueNum: number
 }
@@ -10,12 +12,12 @@ type Props = QueueProps & {
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */
 export default class GridLayout extends PureComponent<Props> {
   public labelForQueue() {
-    return <div style={{ textAlign: "center", fontSize: "0.75em" }}>W{this.props.queueNum.toString()}</div>
+    return <div className="codeflare--text-xs codeflare--text-center">W{this.props.queueNum}</div>
   }
 
   public override render() {
     return (
-      <Flex alignSelf={{ default: "alignSelfFlexEnd" }}>
+      <Flex alignSelf={{ default: "alignSelfFlexEnd" }} justifyContent={{ default: "justifyContentCenter" }}>
         <FlexItem>
           <Queue
             inbox={this.props.inbox}

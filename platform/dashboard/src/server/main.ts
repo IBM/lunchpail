@@ -45,9 +45,9 @@ const randomWP2 = {
 
 app.get("/datasets", (_, res) => {
   res.json([
-    { label: ds1, inbox: ~~(Math.random() * 20), outbox: ~~(Math.random() * 10) },
-    { label: ds2, inbox: ~~(Math.random() * 20), outbox: ~~(Math.random() * 10) },
-    { label: ds3, inbox: ~~(Math.random() * 20), outbox: ~~(Math.random() * 10) },
+    { label: ds1, inbox: ~~(Math.random() * 20), outbox: 0 },
+    { label: ds2, inbox: ~~(Math.random() * 20), outbox: 0 },
+    { label: ds3, inbox: ~~(Math.random() * 20), outbox: 0 },
   ])
 })
 
