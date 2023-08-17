@@ -45,3 +45,6 @@ these resources:
 ```shell
 kubectl get pod -n codeflare-system -w
 ```
+
+Some shortcuts scripts to help with tracking the controller logs are
+found in `./hack/logs`.
