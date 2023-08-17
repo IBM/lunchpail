@@ -59,11 +59,13 @@
   }
 
   &[data-type="inbox"] {
-    filter: grayscale(0.5) brightness(0.8);
+    filter: grayscale(0.375) opacity(0.95);
   }
-
   &[data-type="outbox"] {
     filter: grayscale(0.8) opacity(0.95);
+  }
+  &[data-type="processing"] {
+    filter: saturate(3);
   }
   &[data-type="waiting"] {
     &:hover {
@@ -73,14 +75,14 @@
 
   &:hover {
     cursor: pointer;
-    filter: hue-rotate(45deg);
+    filter: saturate(8);
   }
 }
 
 html.pf-v5-theme-dark {
   .codeflare--grid-cell {
     &[data-type="worker"] {
-      background-color: #bee1f4;
+      background-color: #beedf9;
     }
   }
 }
