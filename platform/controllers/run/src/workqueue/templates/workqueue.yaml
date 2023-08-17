@@ -21,4 +21,4 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
-          {{ include "codeflare.dev/WorkQueue" . | indent 10 }}
+          {{ include "codeflare.dev/WorkStealer" . | indent 10 }}

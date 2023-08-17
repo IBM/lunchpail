@@ -11,6 +11,6 @@ spec:
     endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
     secret-name: test7data-cfsecret
     secret-namespace: {{ .Values.namespace }}
-    readonly: "true" # default is false
+    #readonly: "true" # default is false
     provision: "true"
 {{- end }}

@@ -1,0 +1,11 @@
+{{- define "codeflare.dev/containers/workstealer" }}
+- name: workstealer
+  image: codeflare-workstealer-component:dev
+  env:
+    - name: QUEUE
+      value: {{ print "/mnt/datasets/" .Values.dataset }}
+  resources:
+    limits:
+      cpu: 1
+      memory: 4Gi
+{{- end }}

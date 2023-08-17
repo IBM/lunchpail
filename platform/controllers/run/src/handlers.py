@@ -36,7 +36,7 @@ def create_workpool_kopf(name: str, namespace: str, uid: str, labels, spec, patc
         set_status(name, namespace, 'Failed', patch)
         raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
-    dataset_labels = prepare_dataset_labels(customApi, name, namespace, spec, application)
+    dataset_labels = [] # prepare_dataset_labels(customApi, name, namespace, spec, application)
     dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, dataset_labels)
 
     if dataset_labels is not None:
@@ -48,39 +48,39 @@ def create_workpool_kopf(name: str, namespace: str, uid: str, labels, spec, patc
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
 def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
-    set_status_immediately(customApi, name, namespace, 'Pending')
-
-    # what top-level run is this part of? this could be this very run,
-    # if it is a top-level run...
-    # also, if part of a sequence, which step are we?
-    part_of = labels['app.kubernetes.io/part-of'] if 'app.kubernetes.io/part-of' in labels else name
-    step = labels['app.kubernetes.io/step'] if 'app.kubernetes.io/step' in labels else '0'
-
-    application_name = spec['application']['name']
-    application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
-    logging.info(f"Run for application={application_name} application_namespace={application_namespace} run_uid={uid}")
-
     try:
-        application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
-    except ApiException as e:
-        set_status(name, namespace, 'Failed', patch)
-        raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
+        set_status_immediately(customApi, name, namespace, 'Pending')
 
-    run_size_config = run_size(customApi, name, spec, application)
-    logging.info(f"Using name={name} run_size_config={str(run_size_config)}")
+        # what top-level run is this part of? this could be this very run,
+        # if it is a top-level run...
+        # also, if part of a sequence, which step are we?
+        part_of = labels['app.kubernetes.io/part-of'] if 'app.kubernetes.io/part-of' in labels else name
+        step = labels['app.kubernetes.io/step'] if 'app.kubernetes.io/step' in labels else '0'
 
-    if 'options' in spec:
-        command_line_options = spec['options']
-    elif 'options' in application['spec']:
-        command_line_options = application['spec']['options']
-    else:
-        command_line_options = ""
+        application_name = spec['application']['name']
+        application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
+        logging.info(f"Run for application={application_name} application_namespace={application_namespace} run_uid={uid}")
 
-    dataset_labels = prepare_dataset_labels(customApi, name, namespace, spec, application)
-    if dataset_labels is not None:
-        logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
+        try:
+            application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
+        except ApiException as e:
+            set_status(name, namespace, 'Failed', patch)
+            raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
-    try:
+        run_size_config = run_size(customApi, name, spec, application)
+        logging.info(f"Using name={name} run_size_config={str(run_size_config)}")
+
+        if 'options' in spec:
+            command_line_options = spec['options']
+        elif 'options' in application['spec']:
+            command_line_options = application['spec']['options']
+        else:
+            command_line_options = ""
+
+        datasets, dataset_labels = prepare_dataset_labels(customApi, name, namespace, spec, application)
+        if dataset_labels is not None:
+            logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
+
         api = application['spec']['api']
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
@@ -97,7 +97,10 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         elif api == "sequence":
             head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)            
         elif api == "workqueue":
-            head_pod_name = create_run_workqueue(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+            if len(datasets) == 0:
+                raise kopf.PermanentError("Queue Dataset not defined")
+            else:
+                head_pod_name = create_run_workqueue(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, datasets[0], patch)
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 

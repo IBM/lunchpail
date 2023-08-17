@@ -7,6 +7,11 @@ inbox=inbox
 
 mkdir -p $local/$inbox
 
+# signify that we are alive and well
+# TODO clean this up upon exit/failure
+rclone --config $config touch $remote/$inbox/.active
+
+# current number of entries in inbox
 size=0
 
 function report_size {
@@ -27,7 +32,7 @@ while true; do
     # TODO: should the worker drop a "ready" file that we trigger on?
     sleep 5
 
-    rclone --config $config move $PROGRESS --create-empty-src-dirs $remote/$inbox $local/$inbox
+    rclone --config $config --exclude '.active' move $PROGRESS --create-empty-src-dirs $remote/$inbox $local/$inbox
 
     new_size=$(ls $local/$inbox | wc -l)
     if [[ $size != $new_size ]]; then

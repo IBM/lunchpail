@@ -1,0 +1,33 @@
+{{- define "codeflare.dev/WorkStealer" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ print "workstealer-" .Release.Name | trunc 53 }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: workstealer
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: codeflare.dev
+spec:
+  parallelism: 1
+  completions: 1
+  ttlSecondsAfterFinished: 10
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: workstealer
+        app.kubernetes.io/part-of: {{ .Values.partOf }}
+        app.kubernetes.io/name: {{ .Values.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: codeflare.dev
+        {{ if .Values.datasets }}
+{{ .Values.datasets | b64dec | indent 8 }}
+        {{ end }}
+    spec:
+      restartPolicy: OnFailure
+      terminationGracePeriodSeconds: 0
+      containers:
+        {{- include "codeflare.dev/containers/workstealer" . | indent 8 }}
+{{- end }}

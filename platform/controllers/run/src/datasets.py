@@ -24,6 +24,7 @@ def prepare_dataset_labels_for_workerpool(customApi, dataset: str, namespace: st
 def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spec, application):
     if "inputs" in application["spec"]:
         idx = 0
+        labels = []
         datasets = []
         for input in application["spec"]["inputs"]:
             if 'input' in run_spec:
@@ -39,9 +40,12 @@ def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spe
             check_exists(customApi, input_name, input_namespace)
 
             logging.info(f"Preparing dataset label idx={idx} input_name={input_name}")
-            datasets.append(f"dataset.{str(idx)}.id: {input_name}")
-            datasets.append(f"dataset.{str(idx)}.useas: {input_useas}")
+            datasets.append(input_name)
+            labels.append(f"dataset.{str(idx)}.id: {input_name}")
+            labels.append(f"dataset.{str(idx)}.useas: {input_useas}")
 
             idx = idx + 1
 
-        return to_string(datasets)
+        return datasets, to_string(labels)
+
+    return None, None
