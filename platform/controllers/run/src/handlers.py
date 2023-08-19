@@ -17,7 +17,7 @@ from kubeflow import create_run_kubeflow
 from sequence import create_run_sequence
 from workqueue import create_run_workqueue
 
-from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs
+from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
@@ -25,25 +25,32 @@ customApi = client.CustomObjectsApi(client.ApiClient())
 
 # A WorkerPool has been created.
 @kopf.on.create('workerpools.codeflare.dev')
-def create_workpool_kopf(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
-    application_name = spec['application']['name']
-    application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
-    logging.info(f"Run for application={application_name} uid={uid}")
-
+def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
     try:
-        application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
-    except ApiException as e:
+        application_name = spec['application']['name']
+        application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
+        logging.info(f"WorkerPool creation for application={application_name} uid={uid}")
+
+        try:
+            application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
+        except ApiException as e:
+            set_status(name, namespace, 'Failed', patch)
+            raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
+
+        dataset_labels = [] # prepare_dataset_labels(customApi, name, namespace, spec, application)
+        dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, dataset_labels)
+
+        if dataset_labels is not None:
+            logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
+
+        # initial ready count
+        patch.metadata['codeflare.dev/ready'] = '0'
+
+        create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, dataset_labels, patch)
+    except Exception as e:
         set_status(name, namespace, 'Failed', patch)
-        raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
-
-    dataset_labels = [] # prepare_dataset_labels(customApi, name, namespace, spec, application)
-    dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, dataset_labels)
-
-    if dataset_labels is not None:
-        logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
-
-    patch.metadata['codeflare.dev/ready'] = '0'
-    create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, dataset_labels, patch)
+        # add_error_condition_to_run(customApi, name, namespace, str(e).strip(), patch)
+        raise kopf.PermanentError(f"Error handling run creation. {str(e)}")
 
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
@@ -142,7 +149,14 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
     try:
         phase = body['status']['phase']
 
-        if component(labels) == "workerpool":
+        if component(labels) == "workstealer":
+            if phase == "Running":
+                try:
+                    track_workstealer_logs(name, namespace, labels)
+                except Exception as e:
+                    logging.error(f"Error tracking WorkStealer name={name} phase={phase}. {str(e)}")
+            return
+        elif component(labels) == "workerpool":
             # this isn't quite right. we will need to incr and decr as pods come and go...
             try:
                 if phase == "Running":

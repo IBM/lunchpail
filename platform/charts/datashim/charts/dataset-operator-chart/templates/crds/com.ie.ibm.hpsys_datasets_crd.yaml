@@ -78,6 +78,10 @@ spec:
     storage: true
     subresources:
       status: {}
+    additionalPrinterColumns:
+      - name: Unassigned
+        type: string
+        jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
 status:
   acceptedNames:
     kind: ""

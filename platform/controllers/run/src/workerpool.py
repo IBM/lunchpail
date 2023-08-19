@@ -86,19 +86,6 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         set_status(name, namespace, "0", patch, "ready")
         raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {e}")
 
-# e.g. codeflare.dev queue 0 inbox 30
-import re
-def look_for_queue_updates(line: str):
-    logging.info(f"Queue update {line}")
-    m = re.search("^codeflare.dev queue (\d+) (\w+) (\d+)$", line)
-    if m is not None:
-        worker_idx = m.group(1)
-        box_name = m.group(2)
-        queue_depth = m.group(3)
-
-        patch_body = { "metadata": { "annotations": { f"codeflare.dev/{box_name}": queue_depth } } }
-        return patch_body
-
 # A pod that is part of a WorkerPool has been created. We now create a
 # Queue resource to help with accounting.
 def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, annotations, labels, spec, patch):
@@ -136,6 +123,19 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, annota
     customApi.create_namespaced_custom_object("codeflare.dev", "v1alpha1", namespace, "queues", body)
     patch.metadata.labels["codeflare.dev/queue"] = queue_name
 
+# e.g. codeflare.dev queue 0 inbox 30
+import re
+def look_for_queue_updates(line: str):
+    logging.info(f"Queue update {line}")
+    m = re.search("^codeflare.dev queue (\d+) (\w+) (\d+)$", line)
+    if m is not None:
+        worker_idx = m.group(1)
+        box_name = m.group(2)
+        queue_depth = m.group(3)
+
+        patch_body = { "metadata": { "annotations": { f"codeflare.dev/{box_name}": queue_depth } } }
+        return patch_body
+
 from logs import track_logs
 def track_queue_logs(pod_name: str, namespace: str, labels):
     try:
@@ -153,3 +153,28 @@ def track_queue_logs(pod_name: str, namespace: str, labels):
     except Exception as e:
         logging.error(f"Error tracking WorkerPool pod for queue stats pod_name={pod_name} namespace={namespace}. {str(e)}")
             
+# e.g. codeflare.dev queue 0 inbox 30
+def look_for_workstealer_updates(line: str):
+    logging.info(f"Workstealer update {line}")
+    m = re.search("^codeflare.dev unassigned (\d+)$", line)
+    if m is not None:
+        num_unassigned = m.group(1)
+
+        patch_body = { "metadata": { "annotations": { f"codeflare.dev/unassigned": num_unassigned } } }
+        return patch_body
+
+def track_workstealer_logs(pod_name: str, namespace: str, labels):
+    try:
+        if 'dataset.0.id' in labels:
+            dataset_name = labels['dataset.0.id']
+            logging.info(f"Setting up workstealer tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
+
+            try:
+                # intentionally fire and forget (how bad is this?)
+                track_logs(dataset_name, pod_name, namespace, "datasets", look_for_workstealer_updates, None, "com.ie.ibm.hpsys", "v1alpha1")
+            except Exception as e:
+                logging.error(f"Error setting up log tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
+        else:
+            logging.info(f"Skipping workstealer tracking due to missing dataset_name pod_name={pod_name} namespace={namespace}")
+    except Exception as e:
+        logging.error(f"Error tracking WorkerPool pod for workstealer stats pod_name={pod_name} namespace={namespace}. {str(e)}")

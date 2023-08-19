@@ -78,7 +78,7 @@ rules:
 
   - apiGroups: [com.ie.ibm.hpsys]
     resources: [datasets]
-    verbs: [get]
+    verbs: [get, patch]
 
   - apiGroups: [codeflare.dev]
     resources: [platformreposecrets,platformimagepullsecrets,runsizeconfigurations]
