@@ -1,6 +1,8 @@
 import express from "express"
 import ViteExpress from "vite-express"
 
+import type WorkerPoolModel from "../client/components/WorkerPoolModel"
+
 const app = express()
 
 // ##############################################################
@@ -9,13 +11,13 @@ const ds1 = "0"
 const ds2 = "1"
 const ds3 = "2"
 
-const randomWP = {
+const randomWP: WorkerPoolModel = {
   inbox: [{ [ds1]: 1, [ds2]: 3 }, { [ds1]: 2 }, { [ds1]: 3, [ds3]: 1 }, { [ds1]: 4 }, { [ds1]: 5 }],
   outbox: [{ [ds1]: 2 }, { [ds1]: 2, [ds3]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }],
   processing: [{ [ds1]: 1 }, { [ds1]: 0 }, { [ds1]: 1 }, { [ds1]: 1 }, { [ds1]: 1 }],
   label: "A",
 }
-const randomWP2 = {
+const randomWP2: WorkerPoolModel = {
   inbox: [
     { [ds1]: 5 },
     { [ds1]: 2 },

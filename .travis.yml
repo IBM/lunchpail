@@ -3,6 +3,7 @@ language: bash
 env:
   - SCRIPT=test.sh
   - SCRIPT=ibmcloud-gpu.sh
+  - SCRIPT=dashboard.sh
 
 before_install: ./hack/travis/setup.sh
 script: bash -c ./tests/bin/$SCRIPT

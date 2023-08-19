@@ -13,18 +13,21 @@ import {
   ToolbarItem,
 } from "@patternfly/react-core"
 
-import DataSet, { Props as DataSetProps } from "./components/DataSet"
-import WorkerPool, { WorkerPoolModel } from "./components/WorkerPool"
+import DataSet from "./components/DataSet"
+import WorkerPool from "./components/WorkerPool"
+
+import type DataSetModel from "./components/DataSetModel"
+import type WorkerPoolModel from "./components/WorkerPoolModel"
 
 import "./App.scss"
 
-type Props = undefined
+type Props = unknown
 type State = {
   /** UI in dark mode? */
   useDarkMode: boolean
 
   /** DataSet models */
-  datasets: DataSetProps[]
+  datasets: DataSetModel[]
 
   /** Map DataSetProps.label to a dense index */
   datasetIndex: Record<string, number>
@@ -37,24 +40,27 @@ export class App extends PureComponent<Props, State> {
   private readonly toggleDarkMode = () =>
     this.setState((curState) => {
       const useDarkMode = !curState?.useDarkMode
-      if (useDarkMode) document.querySelector("html").classList.add("pf-v5-theme-dark")
-      else document.querySelector("html").classList.remove("pf-v5-theme-dark")
+      if (useDarkMode) document.querySelector("html")?.classList.add("pf-v5-theme-dark")
+      else document.querySelector("html")?.classList.remove("pf-v5-theme-dark")
 
       return { useDarkMode }
     })
 
   public async componentDidMount() {
-    const datasets = await fetch("/datasets").then((response) => response.json())
-    const workerpools = await fetch("/workerpools").then((response) => response.json())
+    const datasets = (await fetch("/datasets").then((response) => response.json())) as DataSetModel[]
+    const workerpools = (await fetch("/workerpools").then((response) => response.json())) as WorkerPoolModel[]
 
     this.setState({
       useDarkMode: true,
       datasets,
       workerpools,
-      datasetIndex: datasets.reduce((M, { label }, idx) => {
-        M[label] = idx
-        return M
-      }, {}),
+      datasetIndex: datasets.reduce(
+        (M, { label }, idx) => {
+          M[label] = idx
+          return M
+        },
+        {} as State["datasetIndex"],
+      ),
     })
   }
 

@@ -5,7 +5,7 @@ type GridType = GridTypeData | "worker"
 
 type Props = {
   type: GridType
-  dataset: number
+  dataset?: number
 }
 
 export default function GridCell(props: Props) {

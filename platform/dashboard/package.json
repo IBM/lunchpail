@@ -7,6 +7,7 @@
     "lint": "eslint . --ext '**/*.{js,ts,tsx}'",
     "prepare": "cp hooks/* ../../.git/hooks",
     "dev": "nodemon src/server/main.ts -w src/server",
+    "test": "tsc --noEmit",
     "start": "NODE_ENV=production ts-node src/server/main.ts",
     "build": "vite build"
   },
@@ -33,7 +34,8 @@
     "nodemon": "^2.0.20",
     "prettier": "^3.0.1",
     "sass": "^1.65.1",
-    "vite": "^4.0.4"
+    "vite": "^4.0.4",
+    "vite-plugin-checker": "^0.6.1"
   },
   "prettier": {
     "semi": false,

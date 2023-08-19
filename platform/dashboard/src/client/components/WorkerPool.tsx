@@ -15,7 +15,7 @@ export default class WorkerPool extends PureComponent<props> {
     return `WorkerPool ${this.props.model.label}`
   }
 
-  public isEmpty(numArr: number[]) {
+  public isEmpty(numArr: unknown[]) {
     if (numArr.length == 0) {
       return "Waiting for queues..."
     }

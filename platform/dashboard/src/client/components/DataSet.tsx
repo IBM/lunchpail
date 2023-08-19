@@ -1,17 +1,15 @@
-import { PureComponent } from "react"
+import { PropsWithChildren, PureComponent } from "react"
 import { Card, CardBody, CardTitle, Flex, FlexItem } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
+import type DataSetModel from "./DataSetModel"
 import GridCell, { GridTypeData } from "./GridCell"
 
-export type Props = {
+type Props = DataSetModel & {
   idx: number
-  label: string
-  inbox: number
-  outbox: number
 }
 
-function Work(props: { label: string; children: ReactElement }) {
+function Work(props: PropsWithChildren<{ label: string }>) {
   return (
     <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
       <SmallLabel>{props.label}</SmallLabel>
