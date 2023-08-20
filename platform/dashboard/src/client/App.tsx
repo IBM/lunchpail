@@ -16,12 +16,16 @@ import {
 import DataSet from "./components/DataSet"
 import WorkerPool from "./components/WorkerPool"
 
+import type Fetcher from "./fetch/index.js"
 import type DataSetModel from "./components/DataSetModel"
 import type WorkerPoolModel from "./components/WorkerPoolModel"
 
 import "./App.scss"
 
-type Props = unknown
+type Props = {
+  fetcher: Fetcher
+}
+
 type State = {
   /** UI in dark mode? */
   useDarkMode: boolean
@@ -37,6 +41,14 @@ type State = {
 }
 
 export class App extends PureComponent<Props, State> {
+  private fetchDataSets() {
+    return this.props.fetcher.datasets()
+  }
+
+  private fetchWorkerPools() {
+    return this.props.fetcher.workerpools()
+  }
+
   private readonly toggleDarkMode = () =>
     this.setState((curState) => {
       const useDarkMode = !curState?.useDarkMode
@@ -47,8 +59,8 @@ export class App extends PureComponent<Props, State> {
     })
 
   public async componentDidMount() {
-    const datasets = (await fetch("/datasets").then((response) => response.json())) as DataSetModel[]
-    const workerpools = (await fetch("/workerpools").then((response) => response.json())) as WorkerPoolModel[]
+    const datasets = await this.fetchDataSets()
+    const workerpools = await this.fetchWorkerPools()
 
     this.setState({
       useDarkMode: true,

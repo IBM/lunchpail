@@ -23,13 +23,13 @@
     --cell-color: #4cb140;
   }
   &[data-type="worker"] {
-    --cell-color: #002952;
+    --cell-color: var(--pf-v5-global--info-color--200);
   }
   &[data-type="waiting"] {
     --cell-color: #d2d2d2;
   }
   &[data-type="placeholder"] {
-    --cell-color: #8a8d90;
+    --cell-color: var(--pf-v5-global--Color--400);
 
     &,
     &:hover {
@@ -82,7 +82,7 @@
 html.pf-v5-theme-dark {
   .codeflare--grid-cell {
     &[data-type="worker"] {
-      background-color: #beedf9;
+      background-color: var(--pf-v5-global--palette--light-blue-100);
     }
   }
 }
