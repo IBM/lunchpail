@@ -14,7 +14,10 @@ function Work(props: PropsWithChildren<{ label: string }>) {
     <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
       <SmallLabel>{props.label}</SmallLabel>
 
-      <Flex gap={{ default: "gapXs" }} style={{ maxWidth: "calc((4px + 1.375em) * 8 - 3px)" }}>
+      <Flex
+        gap={{ default: "gapXs" }}
+        style={{ width: "calc((4px + 1.375em) * 8 - 3px)", minHeight: "5em", alignContent: "flex-start" }}
+      >
         {props.children}
       </Flex>
     </Flex>

@@ -103,6 +103,8 @@ export class App extends PureComponent<Props, State> {
   public componentWillUnmount() {
     this.state?.datasetEvents?.removeEventListener("message", this.onDataSetEvent)
     this.state?.workerpoolEvents?.removeEventListener("message", this.onWorkerPoolEvent)
+    this.state?.datasetEvents?.close()
+    this.state?.workerpoolEvents?.close()
   }
 
   public componentDidMount() {
@@ -114,10 +116,12 @@ export class App extends PureComponent<Props, State> {
     })
 
     // hmm, avoid some races, do this second
-    this.setState({
-      datasetEvents: this.initDataSetStream(),
-      workerpoolEvents: this.initWorkerPoolStream(),
-    })
+    setTimeout(() =>
+      this.setState({
+        datasetEvents: this.initDataSetStream(),
+        workerpoolEvents: this.initWorkerPoolStream(),
+      }),
+    )
   }
 
   private datasets() {
@@ -144,7 +148,7 @@ export class App extends PureComponent<Props, State> {
 
   private body() {
     return (
-      <Bullseye>
+      <Bullseye className="codeflare--body">
         <Flex direction={{ default: "column" }}>
           {this.datasets()}
           {this.workerpools()}

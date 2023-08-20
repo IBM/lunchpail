@@ -39,36 +39,96 @@ const randomWP2: WorkerPoolModel = {
   label: "B",
 }
 
+type Handler = (evt: MessageEvent) => void
+
 export class DemoDataSetEventSource implements EventSourceLike {
-  public addEventListener(evt: "message" | "error", handler: (evt: MessageEvent) => void) {
-    if (evt === "message") {
-      const model: DataSetModel[] = [
-        { label: ds1, inbox: ~~(Math.random() * 20), outbox: 0 },
-        { label: ds2, inbox: ~~(Math.random() * 20), outbox: 0 },
-        { label: ds3, inbox: ~~(Math.random() * 20), outbox: 0 },
-      ]
-      handler(new MessageEvent("dataset", { data: JSON.stringify(model) }))
+  private readonly handlers: Handler[] = []
+
+  private interval: null | ReturnType<typeof setInterval> = null
+
+  public constructor(private readonly intervalMillis = 4000) {}
+
+  private initInterval() {
+    if (!this.interval) {
+      const handlers = this.handlers
+      this.interval = setInterval(
+        (function interval() {
+          const model: DataSetModel[] = [
+            { label: ds1, inbox: ~~(Math.random() * 20), outbox: 0 },
+            { label: ds2, inbox: ~~(Math.random() * 20), outbox: 0 },
+            { label: ds3, inbox: ~~(Math.random() * 20), outbox: 0 },
+          ]
+          handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+          return interval
+        })(), // () means invoke the interval right away
+        this.intervalMillis,
+      )
     }
   }
 
-  public removeEventListener(evt: "message" | "error" /*, handler: (evt: MessageEvent) => void*/) {
+  public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      // TODO
+      this.handlers.push(handler)
+      this.initInterval()
+    }
+  }
+
+  public removeEventListener(evt: "message" | "error", handler: Handler) {
+    if (evt === "message") {
+      const idx = this.handlers.findIndex((_) => _ === handler)
+      if (idx >= 0) {
+        this.handlers.splice(idx, 1)
+      }
+    }
+  }
+
+  public close() {
+    if (this.interval) {
+      clearInterval(this.interval)
     }
   }
 }
 
 export class DemoWorkerPoolEventSource implements EventSourceLike {
-  public addEventListener(evt: "message" | "error", handler: (evt: MessageEvent) => void) {
-    if (evt === "message") {
-      const model: WorkerPoolModel[] = [randomWP, randomWP2]
-      handler(new MessageEvent("dataset", { data: JSON.stringify(model) }))
+  private readonly handlers: Handler[] = []
+
+  private interval: null | ReturnType<typeof setInterval> = null
+
+  public constructor(private readonly intervalMillis = 4000) {}
+
+  private initInterval() {
+    if (!this.interval) {
+      const handlers = this.handlers
+      this.interval = setInterval(
+        (function interval() {
+          const model: WorkerPoolModel[] = [randomWP, randomWP2]
+          handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+          return interval
+        })(), // () means invoke the interval right away
+        this.intervalMillis,
+      )
     }
   }
 
-  public removeEventListener(evt: "message" | "error" /*, handler: (evt: MessageEvent) => void*/) {
+  public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      // TODO
+      this.handlers.push(handler)
+      this.initInterval()
+    }
+  }
+
+  public removeEventListener(evt: "message" | "error", handler: Handler) {
+    if (evt === "message") {
+      const idx = this.handlers.findIndex((_) => _ === handler)
+      if (idx >= 0) {
+        this.handlers.splice(idx, 1)
+      }
+    }
+  }
+
+  public close() {
+    if (this.interval) {
+      clearInterval(this.interval)
     }
   }
 }
