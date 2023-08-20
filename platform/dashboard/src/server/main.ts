@@ -1,5 +1,5 @@
-import express from "express"
 import ViteExpress from "vite-express"
+import express, { Response } from "express"
 
 import type WorkerPoolModel from "../client/components/WorkerPoolModel"
 
@@ -45,16 +45,35 @@ const randomWP2: WorkerPoolModel = {
 }
 // ##############################################################
 
+function initEventSource(res: Response) {
+  res.set({
+    "Cache-Control": "no-cache",
+    "Content-Type": "text/event-stream",
+    Connection: "keep-alive",
+  })
+  res.flushHeaders()
+}
+
+function sendEvent(model: unknown, res: Response) {
+  res.write(`data: ${JSON.stringify(model)}\n\n`)
+}
+
 app.get("/datasets", (_, res) => {
-  res.json([
+  initEventSource(res)
+
+  const model = [
     { label: ds1, inbox: ~~(Math.random() * 20), outbox: 0 },
     { label: ds2, inbox: ~~(Math.random() * 20), outbox: 0 },
     { label: ds3, inbox: ~~(Math.random() * 20), outbox: 0 },
-  ])
+  ]
+  sendEvent(model, res)
 })
 
 app.get("/workerpools", (_, res) => {
-  res.json([randomWP, randomWP2])
+  initEventSource(res)
+
+  const model = [randomWP, randomWP2]
+  sendEvent(model, res)
 })
 
 ViteExpress.listen(app, 3000, () => console.log("Server is listening on port 3000..."))

@@ -16,19 +16,29 @@ import {
 import DataSet from "./components/DataSet"
 import WorkerPool from "./components/WorkerPool"
 
-import type Fetcher from "./fetch/index.js"
+import type EventSourceLike from "./events/EventSourceLike"
 import type DataSetModel from "./components/DataSetModel"
 import type WorkerPoolModel from "./components/WorkerPoolModel"
 
 import "./App.scss"
 
 type Props = {
-  fetcher: Fetcher
+  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
+  datasets: string | EventSourceLike
+
+  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
+  workerpools: string | EventSourceLike
 }
 
 type State = {
   /** UI in dark mode? */
   useDarkMode: boolean
+
+  /** EventSource for DataSets */
+  datasetEvents: EventSourceLike
+
+  /** EventSource for WorkerPools */
+  workerpoolEvents: EventSourceLike
 
   /** DataSet models */
   datasets: DataSetModel[]
@@ -41,14 +51,6 @@ type State = {
 }
 
 export class App extends PureComponent<Props, State> {
-  private fetchDataSets() {
-    return this.props.fetcher.datasets()
-  }
-
-  private fetchWorkerPools() {
-    return this.props.fetcher.workerpools()
-  }
-
   private readonly toggleDarkMode = () =>
     this.setState((curState) => {
       const useDarkMode = !curState?.useDarkMode
@@ -58,21 +60,63 @@ export class App extends PureComponent<Props, State> {
       return { useDarkMode }
     })
 
-  public async componentDidMount() {
-    const datasets = await this.fetchDataSets()
-    const workerpools = await this.fetchWorkerPools()
+  private readonly onDataSetEvent = (revt: Event) => {
+    const evt = revt as MessageEvent
+    const datasets = JSON.parse(evt.data) as DataSetModel[]
+    const datasetIndex = datasets.reduce(
+      (M, { label }, idx) => {
+        M[label] = idx
+        return M
+      },
+      {} as State["datasetIndex"],
+    )
 
+    this.setState({ datasets, datasetIndex })
+  }
+
+  private readonly onWorkerPoolEvent = (revt: Event) => {
+    const evt = revt as MessageEvent
+    const workerpools = JSON.parse(evt.data) as WorkerPoolModel[]
+    this.setState({ workerpools })
+  }
+
+  private initDataSetStream() {
+    const source =
+      typeof this.props.datasets === "string"
+        ? new EventSource(this.props.datasets, { withCredentials: true })
+        : this.props.datasets
+    source.addEventListener("message", this.onDataSetEvent, false)
+    source.addEventListener("error", console.error) // TODO
+    return source
+  }
+
+  private initWorkerPoolStream() {
+    const source =
+      typeof this.props.workerpools === "string"
+        ? new EventSource(this.props.workerpools, { withCredentials: true })
+        : this.props.workerpools
+    source.addEventListener("message", this.onWorkerPoolEvent, false)
+    source.addEventListener("error", console.error) // TODO
+    return source
+  }
+
+  public componentWillUnmount() {
+    this.state?.datasetEvents?.removeEventListener("message", this.onDataSetEvent)
+    this.state?.workerpoolEvents?.removeEventListener("message", this.onWorkerPoolEvent)
+  }
+
+  public componentDidMount() {
     this.setState({
       useDarkMode: true,
-      datasets,
-      workerpools,
-      datasetIndex: datasets.reduce(
-        (M, { label }, idx) => {
-          M[label] = idx
-          return M
-        },
-        {} as State["datasetIndex"],
-      ),
+      datasets: [],
+      workerpools: [],
+      datasetIndex: {},
+    })
+
+    // hmm, avoid some races, do this second
+    this.setState({
+      datasetEvents: this.initDataSetStream(),
+      workerpoolEvents: this.initWorkerPoolStream(),
     })
   }
 
