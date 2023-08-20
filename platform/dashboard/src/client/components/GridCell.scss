@@ -38,16 +38,16 @@
     }
 
     /** This gives an X inside the cell */
-    &:before,
-    &:after {
+    &:before
+    /*&:after*/ {
       position: absolute;
       content: " ";
-      height: $size;
+      height: 0.7 * $size;
       width: 2px;
-      background-color: #2c0000;
+      background-color: var(--pf-v5-global--BorderColor--100);
     }
     &:before {
-      transform: rotate(45deg);
+      transform: rotate(90deg);
     }
     &:after {
       transform: rotate(-45deg);
