@@ -1,6 +1,5 @@
 import { PureComponent } from "react"
 import {
-  Bullseye,
   Flex,
   FlexItem,
   Switch,
@@ -126,7 +125,7 @@ export class App extends PureComponent<Props, State> {
 
   private datasets() {
     return (
-      <Flex>
+      <Flex direction={{ default: "column" }}>
         {this.state?.datasets?.map((dataset, idx) => (
           <DataSet key={dataset.label} idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
         ))}
@@ -134,12 +133,16 @@ export class App extends PureComponent<Props, State> {
     )
   }
 
+  private get maxNWorkers() {
+    return this.state?.workerpools?.reduce((max, wp) => Math.max(max, wp.inbox.length), 0)
+  }
+
   private workerpools() {
     return (
-      <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
+      <Flex direction={{ default: "column" }} flex={{ default: "flex_1" }}>
         {this.state?.workerpools?.map((w) => (
           <FlexItem key={w.label}>
-            <WorkerPool model={w} datasetIndex={this.state.datasetIndex} />
+            <WorkerPool model={w} datasetIndex={this.state.datasetIndex} maxNWorkers={this.maxNWorkers} />
           </FlexItem>
         ))}
       </Flex>
@@ -148,12 +151,10 @@ export class App extends PureComponent<Props, State> {
 
   private body() {
     return (
-      <Bullseye className="codeflare--body">
-        <Flex direction={{ default: "column" }}>
-          {this.datasets()}
-          {this.workerpools()}
-        </Flex>
-      </Bullseye>
+      <Flex flex={{ default: "flex_1" }} className="codeflare--body">
+        {this.datasets()}
+        {this.workerpools()}
+      </Flex>
     )
   }
 
@@ -179,9 +180,9 @@ export class App extends PureComponent<Props, State> {
 
   public render() {
     return (
-      <Flex direction={{ default: "column" }} style={{ height: "100%" }}>
+      <Flex className="codeflare--dashboard" direction={{ default: "column" }} style={{ height: "100%" }}>
         {this.header()}
-        <FlexItem flex={{ default: "flex_1" }}>{this.body()}</FlexItem>
+        {this.body()}
       </Flex>
     )
   }

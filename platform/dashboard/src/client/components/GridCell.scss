@@ -1,29 +1,75 @@
+.codeflare--dashboard {
+  &,
+  &[data-theme="Paired"] {
+    --codeflare-cell-color-0: #1f78b4;
+    --codeflare-cell-color-1: #33a02c;
+    --codeflare-cell-color-2: #cab2d6;
+    --codeflare-cell-color-3: #fb9a99;
+    --codeflare-cell-color-4: #ff7f00;
+  }
+
+  &[data-theme="Dark2"] {
+    --codeflare-cell-color-0: #1b9e77;
+    --codeflare-cell-color-1: #d95f02;
+    --codeflare-cell-color-2: #7570b3;
+    --codeflare-cell-color-3: #e7298a;
+    --codeflare-cell-color-4: #66a61e;
+  }
+
+  &[data-theme="Accent"] {
+    --codeflare-cell-color-0: #7fc97f;
+    --codeflare-cell-color-1: #beaed4;
+    --codeflare-cell-color-2: #fdc086;
+    --codeflare-cell-color-3: #ffff99;
+    --codeflare-cell-color-4: #386cb0;
+  }
+
+  &[data-theme="Set1"] {
+    --codeflare-cell-color-0: #ff7f00;
+    --codeflare-cell-color-1: #984ea3;
+    --codeflare-cell-color-2: #4daf4a;
+    --codeflare-cell-color-3: #377eb8;
+    --codeflare-cell-color-4: #e41a1c;
+  }
+
+  &[data-theme="Set2"] {
+    --codeflare-cell-color-0: #66c2a5;
+    --codeflare-cell-color-1: #fc8d62;
+    --codeflare-cell-color-2: #8da0cb;
+    --codeflare-cell-color-3: #e78ac3;
+    --codeflare-cell-color-4: #a6d854;
+  }
+}
+
 .codeflare--grid-cell {
-  $size: 1.375em;
+  $size: 1.25em;
 
   width: $size;
   height: $size;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 300ms ease-in-out;
+
+  span {
+    font-size: 0.6875em;
+    mix-blend-mode: overlay;
+  }
 
   &[data-dataset="0"] {
-    --cell-color: #009596;
+    --cell-color: var(--codeflare-cell-color-0);
   }
   &[data-dataset="1"] {
-    --cell-color: #5752d1;
+    --cell-color: var(--codeflare-cell-color-1);
   }
   &[data-dataset="2"] {
-    --cell-color: #ec7a08;
+    --cell-color: var(--codeflare-cell-color-2);
   }
   &[data-dataset="3"] {
-    --cell-color: #f4c145;
+    --cell-color: var(--codeflare-cell-color-3);
   }
   &[data-dataset="4"] {
-    --cell-color: #4cb140;
-  }
-  &[data-type="worker"] {
-    --cell-color: var(--pf-v5-global--info-color--200);
+    --cell-color: var(--codeflare-cell-color-3);
   }
   &[data-type="waiting"] {
     --cell-color: #d2d2d2;
@@ -58,11 +104,9 @@
     background-color: var(--cell-color);
   }
 
-  &[data-type="inbox"] {
-    filter: grayscale(0.375) opacity(0.95);
-  }
+  &[data-type="inbox"],
   &[data-type="outbox"] {
-    filter: grayscale(0.8) opacity(0.95);
+    filter: grayscale(0.05) opacity(0.9);
   }
   &[data-type="processing"] {
     filter: saturate(3);

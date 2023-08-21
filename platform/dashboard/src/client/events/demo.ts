@@ -7,7 +7,7 @@ const datasets = ["0", "1", "2"]
 function randomWorker(max = 4): WorkerPoolModel["inbox"][number] {
   const model: WorkerPoolModel["inbox"][number] = {}
   datasets.forEach((dataset) => {
-    model[dataset] = ~~(Math.random() * max)
+    model[dataset] = Math.round(Math.random() * max)
   })
   return model
 }
@@ -19,10 +19,10 @@ function randomWP(label: string, N: number): WorkerPoolModel {
       .map(() => randomWorker()),
     outbox: Array(N)
       .fill(0)
-      .map(() => randomWorker()),
+      .map(() => randomWorker(2)),
     processing: Array(N)
       .fill(0)
-      .map(() => randomWorker(1)),
+      .map(() => randomWorker(0.6)),
     label,
   }
 }
@@ -34,7 +34,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
 
   private interval: null | ReturnType<typeof setInterval> = null
 
-  public constructor(private readonly intervalMillis = 4000) {}
+  public constructor(private readonly intervalMillis = 2000) {}
 
   private initInterval() {
     if (!this.interval) {
@@ -82,14 +82,14 @@ export class DemoWorkerPoolEventSource implements EventSourceLike {
 
   private interval: null | ReturnType<typeof setInterval> = null
 
-  public constructor(private readonly intervalMillis = 4000) {}
+  public constructor(private readonly intervalMillis = 2000) {}
 
   private initInterval() {
     if (!this.interval) {
       const handlers = this.handlers
       this.interval = setInterval(
         (function interval() {
-          const model: WorkerPoolModel[] = [randomWP("A", 5), randomWP("B", 8)]
+          const model: WorkerPoolModel[] = [randomWP("A", 5), randomWP("B", 12)]
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
         })(), // () means invoke the interval right away

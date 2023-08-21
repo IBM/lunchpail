@@ -1,5 +1,15 @@
 import { PropsWithChildren, PureComponent } from "react"
-import { Card, CardBody, CardTitle, Flex, FlexItem } from "@patternfly/react-core"
+import {
+  Card,
+  CardBody,
+  CardTitle,
+  Flex,
+  FlexItem,
+  DescriptionList,
+  DescriptionListTerm,
+  DescriptionListGroup,
+  DescriptionListDescription,
+} from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
 import type DataSetModel from "./DataSetModel"
@@ -9,18 +19,23 @@ type Props = DataSetModel & {
   idx: number
 }
 
-function Work(props: PropsWithChildren<{ label: string }>) {
+function Work(props: PropsWithChildren<{ label: string; count: number }>) {
   return (
-    <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
-      <SmallLabel>{props.label}</SmallLabel>
+    <DescriptionListGroup>
+      <DescriptionListTerm>
+        <SmallLabel count={props.count}>{props.label}</SmallLabel>
+      </DescriptionListTerm>
 
-      <Flex
-        gap={{ default: "gapXs" }}
-        style={{ width: "calc((4px + 1.375em) * 8 - 3px)", minHeight: "5em", alignContent: "flex-start" }}
-      >
-        {props.children}
-      </Flex>
-    </Flex>
+      <DescriptionListDescription>
+        <Flex
+          gap={{ default: "gapXs" }}
+          flexWrap={{ default: "nowrap" }}
+          style={{ width: "calc((4px + 1.375em) * 8 - 3px)", alignContent: "flex-start", overflow: "hidden" }}
+        >
+          {props.children}
+        </Flex>
+      </DescriptionListDescription>
+    </DescriptionListGroup>
   )
 }
 
@@ -39,8 +54,8 @@ export default class DataSet extends PureComponent<Props> {
       ))
   }
 
-  private inbox() {
-    return this.stack(this.props.inbox, "inbox")
+  private unassigned() {
+    return this.stack(this.props.inbox, "unassigned")
   }
 
   private outbox() {
@@ -52,10 +67,14 @@ export default class DataSet extends PureComponent<Props> {
       <Card isCompact isPlain>
         <CardTitle component="h4">DataSet {this.props.label}</CardTitle>
         <CardBody>
-          <Flex direction={{ default: "column" }}>
-            <Work label="Unassigned Work">{this.inbox()}</Work>
-            <Work label="Completed Work">{this.outbox()}</Work>
-          </Flex>
+          <DescriptionList>
+            <Work label="Unassigned Work" count={this.props.inbox}>
+              {this.unassigned()}
+            </Work>
+            <Work label="Completed Work" count={this.props.outbox}>
+              {this.outbox()}
+            </Work>
+          </DescriptionList>
         </CardBody>
       </Card>
     )

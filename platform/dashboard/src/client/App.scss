@@ -1,7 +1,15 @@
+.codeflare--body {
+  margin: 2em;
+}
+
 .codeflare--text-xs {
   font-size: var(--pf-v5-global--FontSize--xs);
 }
 
 .codeflare--text-center {
   text-align: center;
+}
+
+.codeflare--text-right {
+  text-align: right;
 }

@@ -1,6 +1,7 @@
+import { PureComponent } from "react"
 import "./GridCell.scss"
 
-export type GridTypeData = "inbox" | "outbox" | "processing" | "waiting" | "placeholder"
+export type GridTypeData = "inbox" | "outbox" | "processing" | "waiting" | "placeholder" | "unassigned"
 type GridType = GridTypeData | "worker"
 
 type Props = {
@@ -8,6 +9,17 @@ type Props = {
   dataset?: number
 }
 
-export default function GridCell(props: Props) {
-  return <div className="codeflare--grid-cell" data-type={props.type} data-dataset={props.dataset} />
+export default class GridCell extends PureComponent<Props> {
+  private innerText() {
+    return <span>{this.props.type === "outbox" ? "↑" : this.props.type === "inbox" ? "↓" : "\u00a0"}</span>
+  }
+
+  public render() {
+    // \u00a0 is &nbsp in unicode
+    return (
+      <div className="codeflare--grid-cell" data-type={this.props.type} data-dataset={this.props.dataset}>
+        {this.innerText()}
+      </div>
+    )
+  }
 }
