@@ -31,12 +31,12 @@ export default class WorkerPool extends PureComponent<props> {
         <CardTitle component="h4">{this.wpLabel()}</CardTitle>
 
         <CardBody>
-          <Flex direction={{ default: "column" }} style={{ height: "100%" }}>
+          <Flex direction={{ default: "column" }}>
             {/* This is the inbox, or "grid" of queues, which come from the particular WorkerPool data */}
             {this.isEmpty(inboxArr)}
 
             <FlexItem>
-              <Flex gap={{ default: "gapXs" }}>
+              <Flex gap={{ default: "gapXs" }} style={{ minHeight: "28em" }}>
                 {inboxArr.map((_, i) => (
                   <GridLayout
                     key={i}

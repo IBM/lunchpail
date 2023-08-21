@@ -136,7 +136,7 @@ export class App extends PureComponent<Props, State> {
 
   private workerpools() {
     return (
-      <Flex>
+      <Flex alignItems={{ default: "alignItemsFlexEnd" }}>
         {this.state?.workerpools?.map((w) => (
           <FlexItem key={w.label}>
             <WorkerPool model={w} datasetIndex={this.state.datasetIndex} />
