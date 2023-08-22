@@ -4,6 +4,8 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 import { DataSetTask } from "./WorkerPoolModel"
 import GridCell, { GridTypeData } from "./GridCell"
 
+import "./Queue.scss"
+
 export type Props = {
   inbox: DataSetTask
   outbox?: DataSetTask
@@ -33,7 +35,7 @@ export default class Queue extends PureComponent<Props> {
 
   public override render() {
     return (
-      <Flex gap={{ default: "gapXs" }}>
+      <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
         {[...this.queue(this.props.inbox, "inbox"), ...this.queue(this.props.outbox || {}, "outbox")]}
       </Flex>
     )

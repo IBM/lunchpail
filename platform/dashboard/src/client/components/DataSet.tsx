@@ -15,6 +15,8 @@ import SmallLabel from "./SmallLabel"
 import type DataSetModel from "./DataSetModel"
 import GridCell, { GridTypeData } from "./GridCell"
 
+import "./Queue.scss"
+
 type Props = DataSetModel & {
   idx: number
 }
@@ -28,6 +30,7 @@ function Work(props: PropsWithChildren<{ label: string; count: number }>) {
 
       <DescriptionListDescription>
         <Flex
+          className="codeflare--workqueue"
           gap={{ default: "gapXs" }}
           flexWrap={{ default: "nowrap" }}
           style={{ width: "calc((4px + 1.375em) * 8 - 3px)", alignContent: "flex-start", overflow: "hidden" }}

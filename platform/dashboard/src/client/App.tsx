@@ -1,12 +1,14 @@
 import { PureComponent } from "react"
 import {
-  Flex,
-  FlexItem,
   Switch,
   Masthead,
   MastheadMain,
   MastheadBrand,
   MastheadContent,
+  Split,
+  SplitItem,
+  Stack,
+  StackItem,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
@@ -125,11 +127,13 @@ export class App extends PureComponent<Props, State> {
 
   private datasets() {
     return (
-      <Flex direction={{ default: "column" }}>
+      <Stack>
         {this.state?.datasets?.map((dataset, idx) => (
-          <DataSet key={dataset.label} idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
+          <StackItem key={dataset.label}>
+            <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
+          </StackItem>
         ))}
-      </Flex>
+      </Stack>
     )
   }
 
@@ -139,22 +143,22 @@ export class App extends PureComponent<Props, State> {
 
   private workerpools() {
     return (
-      <Flex direction={{ default: "column" }} flex={{ default: "flex_1" }}>
+      <Stack>
         {this.state?.workerpools?.map((w) => (
-          <FlexItem key={w.label}>
+          <StackItem key={w.label}>
             <WorkerPool model={w} datasetIndex={this.state.datasetIndex} maxNWorkers={this.maxNWorkers} />
-          </FlexItem>
+          </StackItem>
         ))}
-      </Flex>
+      </Stack>
     )
   }
 
   private body() {
     return (
-      <Flex flex={{ default: "flex_1" }} className="codeflare--body">
-        {this.datasets()}
-        {this.workerpools()}
-      </Flex>
+      <Split hasGutter className="codeflare--body">
+        <SplitItem>{this.datasets()}</SplitItem>
+        <SplitItem>{this.workerpools()}</SplitItem>
+      </Split>
     )
   }
 
@@ -178,17 +182,21 @@ export class App extends PureComponent<Props, State> {
     )
   }
 
+  private footer() {
+    return (
+      <Toolbar>
+        <ToolbarContent></ToolbarContent>
+      </Toolbar>
+    )
+  }
+
   public render() {
     return (
-      <Flex
-        className="codeflare--dashboard"
-        direction={{ default: "column" }}
-        style={{ height: "100%" }}
-        data-is-dark-mode={this.state?.useDarkMode || false}
-      >
-        {this.header()}
-        {this.body()}
-      </Flex>
+      <Stack className="codeflare--dashboard" data-is-dark-mode={this.state?.useDarkMode || false}>
+        <StackItem>{this.header()}</StackItem>
+        <StackItem isFilled>{this.body()}</StackItem>
+        <StackItem>{this.footer()}</StackItem>
+      </Stack>
     )
   }
 }

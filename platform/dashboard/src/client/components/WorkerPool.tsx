@@ -8,6 +8,8 @@ import {
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
@@ -62,18 +64,19 @@ export default class WorkerPool extends PureComponent<Props, State> {
   /** One row per worker, within row, one cell per inbox or outbox enqueued task */
   private enqueued() {
     return (
-      <Flex gap={{ default: "gapXs" }} direction={{ default: "column" }}>
+      <Stack>
         {this.inboxes.map((inbox, i) => (
-          <GridLayout
-            key={i}
-            maxNWorkers={this.props.maxNWorkers}
-            queueNum={i + 1}
-            inbox={inbox}
-            outbox={this.outboxes[i]}
-            datasetIndex={this.props.datasetIndex}
-          />
+          <StackItem key={i}>
+            <GridLayout
+              maxNWorkers={this.props.maxNWorkers}
+              queueNum={i + 1}
+              inbox={inbox}
+              outbox={this.outboxes[i]}
+              datasetIndex={this.props.datasetIndex}
+            />
+          </StackItem>
         ))}
-      </Flex>
+      </Stack>
     )
   }
 
