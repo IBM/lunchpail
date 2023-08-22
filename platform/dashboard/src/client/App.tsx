@@ -22,6 +22,7 @@ import type DataSetModel from "./components/DataSetModel"
 import type WorkerPoolModel from "./components/WorkerPoolModel"
 
 import "./App.scss"
+import "@patternfly/react-core/dist/styles/base.css"
 
 type Props = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */

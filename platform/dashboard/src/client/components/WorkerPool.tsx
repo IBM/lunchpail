@@ -96,9 +96,8 @@ export default class WorkerPool extends PureComponent<Props, State> {
             )),
         ),
     )
-
     if (cells.length === 0) {
-      return [<GridCell type="placeholder" dataset={-1} />]
+      return [<GridCell key="-1" type="placeholder" dataset={-1} />]
     } else {
       return cells
     }
