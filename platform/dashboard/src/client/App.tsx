@@ -180,7 +180,12 @@ export class App extends PureComponent<Props, State> {
 
   public render() {
     return (
-      <Flex className="codeflare--dashboard" direction={{ default: "column" }} style={{ height: "100%" }}>
+      <Flex
+        className="codeflare--dashboard"
+        direction={{ default: "column" }}
+        style={{ height: "100%" }}
+        data-is-dark-mode={this.state?.useDarkMode || false}
+      >
         {this.header()}
         {this.body()}
       </Flex>

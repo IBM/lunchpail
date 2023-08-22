@@ -1,3 +1,10 @@
+.codeflare--dashboard[data-is-dark-mode="false"] {
+  &,
+  &[data-theme="Paired"] {
+    --codeflare-cell-color-2: #6a3d9a;
+  }
+}
+
 .codeflare--dashboard {
   &,
   &[data-theme="Paired"] {
@@ -53,6 +60,7 @@
 
   span {
     font-size: 0.6875em;
+    color: white;
     mix-blend-mode: overlay;
   }
 
