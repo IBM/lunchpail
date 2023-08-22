@@ -22,7 +22,7 @@ export default class GridLayout extends PureComponent<Props> {
   }
 
   private get nOut() {
-    return this.count(this.props.outbox)
+    return this.count(this.props.outbox || {})
   }
 
   public name() {

@@ -6,7 +6,7 @@ import GridCell, { GridTypeData } from "./GridCell"
 
 export type Props = {
   inbox: DataSetTask
-  outbox: DataSetTask
+  outbox?: DataSetTask
   datasetIndex: Record<string, number>
 }
 
@@ -34,7 +34,7 @@ export default class Queue extends PureComponent<Props> {
   public override render() {
     return (
       <Flex gap={{ default: "gapXs" }}>
-        {[...this.queue(this.props.inbox, "inbox"), ...this.queue(this.props.outbox, "outbox")]}
+        {[...this.queue(this.props.inbox, "inbox"), ...this.queue(this.props.outbox || {}, "outbox")]}
       </Flex>
     )
   }
