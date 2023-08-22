@@ -16,11 +16,9 @@ iam_token=$(curl -s -X POST 'https://iam.cloud.ibm.com/identity/token' -H 'Conte
 echo "Deleting vsi $vsi_id" 1>&2
 curl -X DELETE \
      "$endpoint/v1/instances/$vsi_id?version=2021-06-22&generation=2" \
-     -H "Authorization: Bearer $iam_token" &
+     -H "Authorization: Bearer $iam_token"
 
 echo "Deleting ip $ip_id" 1>&2
 curl -X DELETE \
      "$endpoint/v1/floating_ips/$ip_id?version=2023-07-12&generation=2&maturity=beta" \
      -H "Authorization: Bearer $iam_token"
-
-wait
