@@ -1,6 +1,7 @@
 import type EventSourceLike from "../events/EventSourceLike.js"
 import type DataSetModel from "../components/DataSetModel.js"
 import type WorkerPoolModel from "../components/WorkerPoolModel.js"
+import { intervalParam } from "../App"
 
 const datasets = ["0", "1", "2"]
 
@@ -34,7 +35,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
 
   private interval: null | ReturnType<typeof setInterval> = null
 
-  public constructor(private readonly intervalMillis = 2000) {}
+  public constructor(private readonly intervalMillis = intervalParam()) {}
 
   private initInterval() {
     if (!this.interval) {

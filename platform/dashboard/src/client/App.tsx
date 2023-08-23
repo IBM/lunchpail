@@ -51,6 +51,12 @@ type State = BaseState & {
   workerpools: WorkerPoolModel[]
 }
 
+export function intervalParam() {
+  const queryParams = new URLSearchParams(window.location.search)
+  const interval = queryParams.get("interval")
+  return interval ? parseInt(interval) : undefined
+}
+
 export class App extends Base<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
