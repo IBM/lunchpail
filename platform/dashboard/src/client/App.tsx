@@ -1,18 +1,17 @@
-import { PureComponent } from "react"
+import { Link } from "react-router-dom"
+
 import {
-  Switch,
-  Masthead,
-  MastheadMain,
-  MastheadBrand,
-  MastheadContent,
   Split,
   SplitItem,
   Stack,
   StackItem,
   Toolbar,
   ToolbarContent,
+  ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core"
+
+import Base, { BaseState } from "./pages/Base"
 
 import DataSet from "./components/DataSet"
 import WorkerPool from "./components/WorkerPool"
@@ -30,12 +29,12 @@ type Props = {
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   workerpools: string | EventSourceLike
+
+  /** Route back to this page [default: /] */
+  route?: string
 }
 
-type State = {
-  /** UI in dark mode? */
-  useDarkMode: boolean
-
+type State = BaseState & {
   /** EventSource for DataSets */
   datasetEvents: EventSourceLike
 
@@ -52,16 +51,7 @@ type State = {
   workerpools: WorkerPoolModel[]
 }
 
-export class App extends PureComponent<Props, State> {
-  private readonly toggleDarkMode = () =>
-    this.setState((curState) => {
-      const useDarkMode = !curState?.useDarkMode
-      if (useDarkMode) document.querySelector("html")?.classList.add("pf-v5-theme-dark")
-      else document.querySelector("html")?.classList.remove("pf-v5-theme-dark")
-
-      return { useDarkMode }
-    })
-
+export class App extends Base<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
     const datasets = JSON.parse(evt.data) as DataSetModel[]
@@ -154,7 +144,7 @@ export class App extends PureComponent<Props, State> {
     )
   }
 
-  private body() {
+  protected override body() {
     return (
       <Split hasGutter className="codeflare--body">
         <SplitItem>{this.datasets()}</SplitItem>
@@ -163,41 +153,23 @@ export class App extends PureComponent<Props, State> {
     )
   }
 
-  private header() {
-    return (
-      <Masthead>
-        <MastheadMain>
-          <MastheadBrand>Queueless Dashboard</MastheadBrand>
-        </MastheadMain>
+  /*  private readonly newpool = () => {
+    fetch()
+  }*/
 
-        <MastheadContent>
-          <Toolbar>
-            <ToolbarContent>
-              <ToolbarItem align={{ default: "alignRight" }}>
-                <Switch label="Dark Mode" isChecked={this.state?.useDarkMode} onChange={this.toggleDarkMode} />
-              </ToolbarItem>
-            </ToolbarContent>
-          </Toolbar>
-        </MastheadContent>
-      </Masthead>
-    )
+  private addWorkerPoolButton() {
+    return <Link to={`/newpool?returnto=${encodeURIComponent(this.props.route || "/")}`}>Add Worker Pool</Link>
   }
 
-  private footer() {
+  protected override footer() {
     return (
       <Toolbar>
-        <ToolbarContent></ToolbarContent>
+        <ToolbarGroup align={{ default: "alignRight" }}>
+          <ToolbarContent>
+            <ToolbarItem>{this.addWorkerPoolButton()}</ToolbarItem>
+          </ToolbarContent>
+        </ToolbarGroup>
       </Toolbar>
-    )
-  }
-
-  public render() {
-    return (
-      <Stack className="codeflare--dashboard" data-is-dark-mode={this.state?.useDarkMode || false}>
-        <StackItem>{this.header()}</StackItem>
-        <StackItem isFilled>{this.body()}</StackItem>
-        <StackItem>{this.footer()}</StackItem>
-      </Stack>
     )
   }
 }
