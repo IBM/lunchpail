@@ -1,4 +1,4 @@
-import { Fragment, PureComponent } from "react"
+import { Fragment, PureComponent, ReactNode } from "react"
 
 import {
   Masthead,
@@ -9,9 +9,13 @@ import {
   StackItem,
   Switch,
   Toolbar,
+  ToolbarGroup,
   ToolbarContent,
   ToolbarItem,
 } from "@patternfly/react-core"
+
+import { version } from "../../../package.json"
+import SmallLabel from "../components/SmallLabel"
 
 export interface BaseState {
   /** UI in dark mode? */
@@ -48,12 +52,33 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     )
   }
 
-  protected body() {
+  protected body(): ReactNode {
     return <Fragment />
   }
 
-  protected footer() {
+  protected footerLeft(): ReactNode {
     return <Fragment />
+  }
+
+  protected footerRight(): ReactNode {
+    return <Fragment />
+  }
+
+  private footer(): ReactNode {
+    return (
+      <Toolbar>
+        <ToolbarContent>
+          <ToolbarGroup align={{ default: "alignLeft" }}>
+            <ToolbarItem>
+              <SmallLabel>v{version}</SmallLabel>
+            </ToolbarItem>
+            {this.footerLeft()}
+          </ToolbarGroup>
+
+          <ToolbarGroup align={{ default: "alignRight" }}>{this.footerRight()}</ToolbarGroup>
+        </ToolbarContent>
+      </Toolbar>
+    )
   }
 
   public render() {

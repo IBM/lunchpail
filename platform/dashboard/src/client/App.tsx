@@ -1,15 +1,6 @@
 import { Link } from "react-router-dom"
 
-import {
-  Split,
-  SplitItem,
-  Stack,
-  StackItem,
-  Toolbar,
-  ToolbarContent,
-  ToolbarGroup,
-  ToolbarItem,
-} from "@patternfly/react-core"
+import { Split, SplitItem, Stack, StackItem, ToolbarItem } from "@patternfly/react-core"
 
 import Base, { BaseState } from "./pages/Base"
 
@@ -167,15 +158,7 @@ export class App extends Base<Props, State> {
     return <Link to={`/newpool?returnto=${encodeURIComponent(this.props.route || "/")}`}>Add Worker Pool</Link>
   }
 
-  protected override footer() {
-    return (
-      <Toolbar>
-        <ToolbarGroup align={{ default: "alignRight" }}>
-          <ToolbarContent>
-            <ToolbarItem>{this.addWorkerPoolButton()}</ToolbarItem>
-          </ToolbarContent>
-        </ToolbarGroup>
-      </Toolbar>
-    )
+  protected override footerRight() {
+    return <ToolbarItem>{this.addWorkerPoolButton()}</ToolbarItem>
   }
 }
