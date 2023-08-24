@@ -5,7 +5,7 @@ import subprocess
 from kopf import PermanentError
 
 from clone import clone
-from status import set_status
+from status import set_status, add_error_condition
 from run_id import alloc_run_id
 from run_size import load_run_size_config
 
@@ -84,6 +84,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
         set_status(name, namespace, "0", patch, "ready")
+        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {e}")
 
 # A pod that is part of a WorkerPool has been created. We now create a

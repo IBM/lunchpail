@@ -66,9 +66,9 @@ spec:
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
-        #- name: Status
-        #  type: string
-        #  jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+        - name: Status
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
 
   # either Namespaced or Cluster
   scope: Namespaced

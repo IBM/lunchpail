@@ -21,7 +21,7 @@ def set_status_immediately(customApi, name: str, namespace: str, phase: str, plu
     except Exception as e:
         logging.error(f"Error patching {plural} on pod event name={name} namespace={namespace} phase={phase}. {str(e)}")
 
-def add_error_condition_to_run(customApi, name: str, namespace: str, message: str, patch):
+def add_error_condition(customApi, name: str, namespace: str, message: str, patch):
     try:
         patch.metadata.annotations["codeflare.dev/message"] = message
     except Exception as e:
