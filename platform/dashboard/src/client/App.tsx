@@ -35,38 +35,55 @@ type State = BaseState & {
   /** DataSet models */
   datasets: DataSetModel[]
 
-  /** Map DataSetProps.label to a dense index */
+  /** Map DataSetModel.label to a dense index */
   datasetIndex: Record<string, number>
 
   /** WorkerPool models */
   workerpools: WorkerPoolModel[]
+
+  /** Map WorkerPoolModel.label to a dense index */
+  workerpoolIndex: Record<string, number>
 }
 
-export function intervalParam() {
+export function intervalParam(): number {
   const queryParams = new URLSearchParams(window.location.search)
   const interval = queryParams.get("interval")
-  return interval ? parseInt(interval) : undefined
+  return interval ? parseInt(interval) : 2000
 }
 
 export class App extends Base<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
-    const datasets = JSON.parse(evt.data) as DataSetModel[]
-    const datasetIndex = datasets.reduce(
-      (M, { label }, idx) => {
-        M[label] = idx
-        return M
-      },
-      {} as State["datasetIndex"],
-    )
+    const dataset = JSON.parse(evt.data) as DataSetModel
+
+    const datasetIndex = this.state?.datasetIndex || {}
+    let myIdx = datasetIndex[dataset.label]
+    if (myIdx === undefined) {
+      myIdx = Object.keys(datasetIndex).length
+      datasetIndex[dataset.label] = myIdx
+    }
+
+    const datasets = (this.state?.datasets || []).slice(0)
+    datasets[myIdx] = dataset
 
     this.setState({ datasets, datasetIndex })
   }
 
   private readonly onWorkerPoolEvent = (revt: Event) => {
     const evt = revt as MessageEvent
-    const workerpools = JSON.parse(evt.data) as WorkerPoolModel[]
-    this.setState({ workerpools })
+    const workerpool = JSON.parse(evt.data) as WorkerPoolModel
+
+    const workerpoolIndex = this.state?.workerpoolIndex || {}
+    let myIdx = workerpoolIndex[workerpool.label]
+    if (myIdx === undefined) {
+      myIdx = Object.keys(workerpoolIndex).length
+      workerpoolIndex[workerpool.label] = myIdx
+    }
+
+    const workerpools = (this.state?.workerpools || []).slice(0)
+    workerpools[myIdx] = workerpool
+
+    this.setState({ workerpools, workerpoolIndex })
   }
 
   private initDataSetStream() {
@@ -102,6 +119,7 @@ export class App extends Base<Props, State> {
       datasets: [],
       workerpools: [],
       datasetIndex: {},
+      workerpoolIndex: {},
     })
 
     // hmm, avoid some races, do this second
@@ -113,14 +131,19 @@ export class App extends Base<Props, State> {
     )
   }
 
+  private lexico = (a: DataSetModel, b: DataSetModel) => a.label.localeCompare(b.label)
+
   private datasets() {
     return (
       <Stack>
-        {this.state?.datasets?.map((dataset, idx) => (
-          <StackItem key={dataset.label}>
-            <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
-          </StackItem>
-        ))}
+        {this.state?.datasets
+          ?.slice()
+          .sort(this.lexico)
+          .map((dataset, idx) => (
+            <StackItem key={dataset.label}>
+              <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
+            </StackItem>
+          ))}
       </Stack>
     )
   }

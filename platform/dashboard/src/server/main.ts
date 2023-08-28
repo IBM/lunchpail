@@ -1,79 +1,102 @@
 import ViteExpress from "vite-express"
 import express, { Response } from "express"
 
+import type DataSetModel from "../client/components/DataSetModel"
 import type WorkerPoolModel from "../client/components/WorkerPoolModel"
 
 const app = express()
 
 // ##############################################################
 // DELETE LATER: hard coding some WorkerPool data to see UI
-const ds1 = "0"
-const ds2 = "1"
-const ds3 = "2"
+function initState() {
+  const datasets = Array(3)
+    .fill(0)
+    .map((_, idx) => idx.toString()) // ["0", "1", "2"]
+  const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false]
+  const workerpools = ["A", "B"]
+  const workerpoolMaxQueueDepth = [5, 12]
 
-const randomWP: WorkerPoolModel = {
-  inbox: [{ [ds1]: 1, [ds2]: 3 }, { [ds1]: 2 }, { [ds1]: 3, [ds3]: 1 }, { [ds1]: 4 }, { [ds1]: 5 }],
-  outbox: [{ [ds1]: 2 }, { [ds1]: 2, [ds3]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }],
-  processing: [{ [ds1]: 1 }, { [ds1]: 0 }, { [ds1]: 1 }, { [ds1]: 1 }, { [ds1]: 1 }],
-  label: "A",
+  return { datasets, datasetIsLive, workerpools, workerpoolMaxQueueDepth }
 }
-const randomWP2: WorkerPoolModel = {
-  inbox: [
-    { [ds1]: 5 },
-    { [ds1]: 2 },
-    { [ds1]: 3 },
-    { [ds1]: 4 },
-    { [ds1]: 1 },
-    { [ds1]: 1 },
-    { [ds1]: 2 },
-    { [ds1]: 3 },
-    { [ds1]: 4 },
-  ],
-  outbox: [{ [ds1]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }, { [ds1]: 2 }],
-  processing: [
-    { [ds1]: 0 },
-    { [ds1]: 1 },
-    { [ds1]: 1 },
-    { [ds1]: 1 },
-    { [ds1]: 1 },
-    { [ds1]: 1 },
-    { [ds1]: 0 },
-    { [ds1]: 1 },
-    { [ds1]: 0 },
-  ],
-  label: "B",
+type State = ReturnType<typeof initState>
+const states: Record<string, State> = {}
+function getState(ip: string, alwaysInit = false) {
+  return (!alwaysInit && states[ip]) || (states[ip] = initState())
+}
+
+function randomWorker(state: State, max = 4): WorkerPoolModel["inbox"][number] {
+  const model: WorkerPoolModel["inbox"][number] = {}
+  state.datasets.forEach((dataset, idx) => {
+    model[dataset] = state.datasetIsLive[idx] ? Math.round(Math.random() * max) : 0
+  })
+  return model
+}
+
+function randomWP(label: string, N: number, state: State): WorkerPoolModel {
+  return {
+    inbox: Array(N)
+      .fill(0)
+      .map(() => randomWorker(state)),
+    outbox: Array(N)
+      .fill(0)
+      .map(() => randomWorker(state, 2)),
+    processing: Array(N)
+      .fill(0)
+      .map(() => randomWorker(state, 0.6)),
+    label,
+  }
 }
 // ##############################################################
 
-function initEventSource(res: Response) {
-  res.set({
+async function initEventSource(res: Response) {
+  await res.set({
     "Cache-Control": "no-cache",
     "Content-Type": "text/event-stream",
     Connection: "keep-alive",
   })
-  res.flushHeaders()
+  await res.flushHeaders()
 }
 
-function sendEvent(model: unknown, res: Response) {
-  res.write(`data: ${JSON.stringify(model)}\n\n`)
+async function sendEvent(model: unknown, res: Response) {
+  await res.write(`data: ${JSON.stringify(model)}\n\n`)
 }
 
-app.get("/datasets", (_, res) => {
-  initEventSource(res)
+app.get("/datasets", async (req, res) => {
+  await initEventSource(res)
+  const state = getState(req.ip, true)
 
-  const model = [
-    { label: ds1, inbox: ~~(Math.random() * 20), outbox: 0 },
-    { label: ds2, inbox: ~~(Math.random() * 20), outbox: 0 },
-    { label: ds3, inbox: ~~(Math.random() * 20), outbox: 0 },
-  ]
-  sendEvent(model, res)
+  setInterval(
+    (function interval() {
+      const whichToUpdate = Math.floor(Math.random() * state.datasets.length)
+      const model: DataSetModel = {
+        label: state.datasets[whichToUpdate],
+        inbox: ~~(Math.random() * 20),
+        outbox: 0,
+      }
+      sendEvent(model, res).then(() => {
+        state.datasetIsLive[whichToUpdate] = true
+      })
+      return interval
+    })(), // () means invoke the interval right away
+    2000,
+  )
 })
 
-app.get("/workerpools", (_, res) => {
-  initEventSource(res)
+app.get("/workerpools", async (req, res) => {
+  await initEventSource(res)
+  const state = getState(req.ip)
 
-  const model = [randomWP, randomWP2]
-  sendEvent(model, res)
+  setInterval(
+    (function interval() {
+      const whichToUpdate = Math.floor(Math.random() * state.workerpools.length)
+      const label = state.workerpools[whichToUpdate]
+      const N = state.workerpoolMaxQueueDepth[whichToUpdate]
+      const model: WorkerPoolModel = randomWP(label, N, state)
+      sendEvent(model, res)
+      return interval
+    })(), // () means invoke the interval right away
+    2000,
+  )
 })
 
 ViteExpress.listen(app, 3000, () => console.log("Server is listening on port 3000..."))

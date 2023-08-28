@@ -3,12 +3,17 @@ import type DataSetModel from "../components/DataSetModel.js"
 import type WorkerPoolModel from "../components/WorkerPoolModel.js"
 import { intervalParam } from "../App"
 
-const datasets = ["0", "1", "2"]
+const datasets = Array(3)
+  .fill(0)
+  .map((_, idx) => idx.toString()) // ["0", "1", "2"]
+const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false]
+const workerpools = ["A", "B"]
+const workerpoolMaxQueueDepth = [5, 12]
 
 function randomWorker(max = 4): WorkerPoolModel["inbox"][number] {
   const model: WorkerPoolModel["inbox"][number] = {}
-  datasets.forEach((dataset) => {
-    model[dataset] = Math.round(Math.random() * max)
+  datasets.forEach((dataset, idx) => {
+    model[dataset] = datasetIsLive[idx] ? Math.round(Math.random() * max) : 0
   })
   return model
 }
@@ -42,11 +47,13 @@ export class DemoDataSetEventSource implements EventSourceLike {
       const handlers = this.handlers
       this.interval = setInterval(
         (function interval() {
-          const model: DataSetModel[] = datasets.map((label) => ({
-            label,
+          const whichToUpdate = Math.floor(Math.random() * datasets.length)
+          const model: DataSetModel = {
+            label: datasets[whichToUpdate],
             inbox: ~~(Math.random() * 20),
             outbox: 0,
-          }))
+          }
+          datasetIsLive[whichToUpdate] = true
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
         })(), // () means invoke the interval right away
@@ -90,7 +97,10 @@ export class DemoWorkerPoolEventSource implements EventSourceLike {
       const handlers = this.handlers
       this.interval = setInterval(
         (function interval() {
-          const model: WorkerPoolModel[] = [randomWP("A", 5), randomWP("B", 12)]
+          const whichToUpdate = Math.floor(Math.random() * workerpools.length)
+          const label = workerpools[whichToUpdate]
+          const N = workerpoolMaxQueueDepth[whichToUpdate]
+          const model: WorkerPoolModel = randomWP(label, N)
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
         })(), // () means invoke the interval right away
