@@ -5,8 +5,8 @@ import {
   MastheadMain,
   MastheadBrand,
   MastheadContent,
-  Stack,
-  StackItem,
+  Page,
+  PageSection,
   Switch,
   Toolbar,
   ToolbarGroup,
@@ -83,11 +83,16 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
 
   public render() {
     return (
-      <Stack className="codeflare--dashboard" data-is-dark-mode={this.state?.useDarkMode || false}>
-        <StackItem>{this.header()}</StackItem>
-        <StackItem isFilled>{this.body()}</StackItem>
-        <StackItem>{this.footer()}</StackItem>
-      </Stack>
+      <Page
+        header={this.header()}
+        className="codeflare--dashboard"
+        data-is-dark-mode={this.state?.useDarkMode || false}
+      >
+        <PageSection hasOverflowScroll isFilled>
+          {this.body()}
+        </PageSection>
+        <PageSection type="nav">{this.footer()}</PageSection>
+      </Page>
     )
   }
 }
