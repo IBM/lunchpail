@@ -12,10 +12,12 @@ import {
   ToolbarGroup,
   ToolbarContent,
   ToolbarItem,
+  MastheadToggle,
 } from "@patternfly/react-core"
 
 import { version } from "../../../package.json"
 import SmallLabel from "../components/SmallLabel"
+import { SidebarContent, SidebarToggle } from "./SidebarContent"
 
 export interface BaseState {
   /** UI in dark mode? */
@@ -35,6 +37,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
   private header() {
     return (
       <Masthead>
+        <MastheadToggle>{SidebarToggle}</MastheadToggle>
         <MastheadMain>
           <MastheadBrand>Queueless Dashboard</MastheadBrand>
         </MastheadMain>
@@ -85,13 +88,14 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return (
       <Page
         header={this.header()}
+        sidebar={<SidebarContent />}
         className="codeflare--dashboard"
         data-is-dark-mode={this.state?.useDarkMode || false}
       >
         <PageSection hasOverflowScroll isFilled>
           {this.body()}
         </PageSection>
-        <PageSection type="nav">{this.footer()}</PageSection>
+        <PageSection type="subnav">{this.footer()}</PageSection>
       </Page>
     )
   }
