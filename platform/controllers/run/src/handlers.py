@@ -152,7 +152,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
         if component(labels) == "workstealer":
             if phase == "Running":
                 try:
-                    track_workstealer_logs(name, namespace, labels)
+                    track_workstealer_logs(customApi, name, namespace, labels)
                 except Exception as e:
                     logging.error(f"Error tracking WorkStealer name={name} phase={phase}. {str(e)}")
             return

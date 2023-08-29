@@ -27,7 +27,7 @@ do
             do
                 queue="$queues/$idx/inbox"
 
-                if [[ -d "$queue" ]]
+                if [[ -d "$queue" ]] && [[ -n "$file" ]]
                 then
                     echo "Moving task=$file to queue=$queue"
                     mv "$inbox/$file" "$queue"

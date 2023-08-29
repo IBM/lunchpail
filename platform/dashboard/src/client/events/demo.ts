@@ -1,6 +1,6 @@
 import type EventSourceLike from "../events/EventSourceLike.js"
+import type QueueEvent from "../components/WorkerPoolModel.js"
 import type DataSetModel from "../components/DataSetModel.js"
-import type WorkerPoolModel from "../components/WorkerPoolModel.js"
 import { intervalParam } from "../App"
 
 const datasets = Array(3)
@@ -10,26 +10,26 @@ const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false
 const workerpools = ["A", "B"]
 const workerpoolMaxQueueDepth = [5, 12]
 
-function randomWorker(max = 4): WorkerPoolModel["inbox"][number] {
-  const model: WorkerPoolModel["inbox"][number] = {}
-  datasets.forEach((dataset, idx) => {
-    model[dataset] = datasetIsLive[idx] ? Math.round(Math.random() * max) : 0
-  })
-  return model
+function getRandomLiveDataSetIndex() {
+  /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
+  while (true) {
+    const dsidx = Math.floor(Math.random() * datasets.length)
+    if (datasetIsLive[dsidx]) {
+      return dsidx
+    }
+  }
 }
 
-function randomWP(label: string, N: number): WorkerPoolModel {
+function randomQueueEvent(workerpool: string, nWorkers: number): QueueEvent {
+  const workerIndex = Math.floor(Math.random() * nWorkers)
+  const dataset = datasets[getRandomLiveDataSetIndex()]
   return {
-    inbox: Array(N)
-      .fill(0)
-      .map(() => randomWorker()),
-    outbox: Array(N)
-      .fill(0)
-      .map(() => randomWorker(2)),
-    processing: Array(N)
-      .fill(0)
-      .map(() => randomWorker(0.6)),
-    label,
+    workerIndex,
+    workerpool,
+    dataset,
+    inbox: Math.round(Math.random() * 4),
+    outbox: Math.round(Math.random() * 2),
+    processing: Math.round(Math.random() * 0.6),
   }
 }
 
@@ -85,7 +85,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
   }
 }
 
-export class DemoWorkerPoolEventSource implements EventSourceLike {
+export class DemoQueueEventSource implements EventSourceLike {
   private readonly handlers: Handler[] = []
 
   private interval: null | ReturnType<typeof setInterval> = null
@@ -98,9 +98,9 @@ export class DemoWorkerPoolEventSource implements EventSourceLike {
       this.interval = setInterval(
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * workerpools.length)
-          const label = workerpools[whichToUpdate]
+          const workerpool = workerpools[whichToUpdate]
           const N = workerpoolMaxQueueDepth[whichToUpdate]
-          const model: WorkerPoolModel = randomWP(label, N)
+          const model = randomQueueEvent(workerpool, N)
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
         })(), // () means invoke the interval right away

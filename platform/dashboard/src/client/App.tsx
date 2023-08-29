@@ -8,8 +8,9 @@ import DataSet from "./components/DataSet"
 import WorkerPool from "./components/WorkerPool"
 
 import type EventSourceLike from "./events/EventSourceLike"
+import type QueueEvent from "./components/WorkerPoolModel"
 import type DataSetModel from "./components/DataSetModel"
-import type WorkerPoolModel from "./components/WorkerPoolModel"
+import type { WorkerPoolModel } from "./components/WorkerPoolModel"
 
 import "./App.scss"
 import "@patternfly/react-core/dist/styles/base.css"
@@ -19,7 +20,7 @@ type Props = {
   datasets: string | EventSourceLike
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  workerpools: string | EventSourceLike
+  queues: string | EventSourceLike
 
   /** Route back to this page [default: /] */
   route?: string
@@ -27,21 +28,21 @@ type Props = {
 
 type State = BaseState & {
   /** EventSource for DataSets */
-  datasetEvents: EventSourceLike
+  datasetSource: EventSourceLike
 
-  /** EventSource for WorkerPools */
-  workerpoolEvents: EventSourceLike
+  /** EventSource for Queues */
+  queueSource: EventSourceLike
 
-  /** DataSet models */
-  datasets: DataSetModel[]
+  /** Events for DataSets, indexed by DataSetModel.label */
+  datasetEvents: Record<string, DataSetModel[]>
+
+  /** Events for Queues, indexed by WorkerPoolModel.label */
+  queueEvents: Record<string, QueueEvent[]>
 
   /** Map DataSetModel.label to a dense index */
   datasetIndex: Record<string, number>
 
-  /** WorkerPool models */
-  workerpools: WorkerPoolModel[]
-
-  /** Map WorkerPoolModel.label to a dense index */
+  /** Map WorkerPool label to a dense index */
   workerpoolIndex: Record<string, number>
 }
 
@@ -54,36 +55,44 @@ export function intervalParam(): number {
 export class App extends Base<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
-    const dataset = JSON.parse(evt.data) as DataSetModel
+    const datasetEvent = JSON.parse(evt.data) as DataSetModel
+    const { label } = datasetEvent
 
     const datasetIndex = this.state?.datasetIndex || {}
-    let myIdx = datasetIndex[dataset.label]
+    let myIdx = datasetIndex[label]
     if (myIdx === undefined) {
       myIdx = Object.keys(datasetIndex).length
-      datasetIndex[dataset.label] = myIdx
+      datasetIndex[label] = myIdx
     }
 
-    const datasets = (this.state?.datasets || []).slice(0)
-    datasets[myIdx] = dataset
+    const datasetEvents = Object.assign({}, this.state?.datasetEvents || {})
+    if (!(label in datasetEvents)) {
+      datasetEvents[label] = []
+    }
+    datasetEvents[label].push(datasetEvent)
 
-    this.setState({ datasets, datasetIndex })
+    this.setState({ datasetEvents, datasetIndex })
   }
 
-  private readonly onWorkerPoolEvent = (revt: Event) => {
+  private readonly onQueueEvent = (revt: Event) => {
     const evt = revt as MessageEvent
-    const workerpool = JSON.parse(evt.data) as WorkerPoolModel
+    const queueEvent = JSON.parse(evt.data) as QueueEvent
+    const { workerpool } = queueEvent
 
     const workerpoolIndex = this.state?.workerpoolIndex || {}
-    let myIdx = workerpoolIndex[workerpool.label]
+    let myIdx = workerpoolIndex[workerpool]
     if (myIdx === undefined) {
       myIdx = Object.keys(workerpoolIndex).length
-      workerpoolIndex[workerpool.label] = myIdx
+      workerpoolIndex[workerpool] = myIdx
     }
 
-    const workerpools = (this.state?.workerpools || []).slice(0)
-    workerpools[myIdx] = workerpool
+    const queueEvents = Object.assign({}, this.state?.queueEvents || {})
+    if (!(workerpool in queueEvents)) {
+      queueEvents[workerpool] = []
+    }
+    queueEvents[workerpool].push(queueEvent)
 
-    this.setState({ workerpools, workerpoolIndex })
+    this.setState({ queueEvents, workerpoolIndex })
   }
 
   private initDataSetStream() {
@@ -96,28 +105,28 @@ export class App extends Base<Props, State> {
     return source
   }
 
-  private initWorkerPoolStream() {
+  private initQueueStream() {
     const source =
-      typeof this.props.workerpools === "string"
-        ? new EventSource(this.props.workerpools, { withCredentials: true })
-        : this.props.workerpools
-    source.addEventListener("message", this.onWorkerPoolEvent, false)
+      typeof this.props.queues === "string"
+        ? new EventSource(this.props.queues, { withCredentials: true })
+        : this.props.queues
+    source.addEventListener("message", this.onQueueEvent, false)
     source.addEventListener("error", console.error) // TODO
     return source
   }
 
   public componentWillUnmount() {
-    this.state?.datasetEvents?.removeEventListener("message", this.onDataSetEvent)
-    this.state?.workerpoolEvents?.removeEventListener("message", this.onWorkerPoolEvent)
-    this.state?.datasetEvents?.close()
-    this.state?.workerpoolEvents?.close()
+    this.state?.datasetSource?.removeEventListener("message", this.onDataSetEvent)
+    this.state?.queueSource?.removeEventListener("message", this.onQueueEvent)
+    this.state?.datasetSource?.close()
+    this.state?.queueSource?.close()
   }
 
   public componentDidMount() {
     this.setState({
       useDarkMode: true,
-      datasets: [],
-      workerpools: [],
+      datasetEvents: {},
+      queueEvents: {},
       datasetIndex: {},
       workerpoolIndex: {},
     })
@@ -125,39 +134,80 @@ export class App extends Base<Props, State> {
     // hmm, avoid some races, do this second
     setTimeout(() =>
       this.setState({
-        datasetEvents: this.initDataSetStream(),
-        workerpoolEvents: this.initWorkerPoolStream(),
+        datasetSource: this.initDataSetStream(),
+        queueSource: this.initQueueStream(),
       }),
     )
   }
 
-  private lexico = (a: DataSetModel, b: DataSetModel) => a.label.localeCompare(b.label)
+  private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
+  private lexicoWP = (a: WorkerPoolModel, b: WorkerPoolModel) => a.label.localeCompare(b.label)
 
   private datasets() {
     return (
       <Stack>
-        {this.state?.datasets
-          ?.slice()
+        {Object.entries(this.state?.datasetEvents || {})
           .sort(this.lexico)
-          .map((dataset, idx) => (
-            <StackItem key={dataset.label}>
-              <DataSet idx={idx} label={dataset.label} inbox={dataset.inbox} outbox={dataset.outbox} />
+          .map(([label, events], idx) => (
+            <StackItem key={label}>
+              <DataSet
+                idx={idx}
+                label={label}
+                inbox={events[events.length - 1].inbox}
+                outbox={events[events.length - 1].outbox}
+              />
             </StackItem>
           ))}
       </Stack>
     )
   }
 
-  private get maxNWorkers() {
-    return this.state?.workerpools?.reduce((max, wp) => Math.max(max, wp.inbox.length), 0)
+  private toWorkerPoolModel(label: string, queueEventsForOneWorkerPool: QueueEvent[]): WorkerPoolModel {
+    return queueEventsForOneWorkerPool.reduce(
+      (M, queueEvent) => {
+        if (!M.inbox[queueEvent.workerIndex]) {
+          M.inbox[queueEvent.workerIndex] = {}
+        }
+        M.inbox[queueEvent.workerIndex][queueEvent.dataset] = queueEvent.inbox
+
+        if (!M.outbox[queueEvent.workerIndex]) {
+          M.outbox[queueEvent.workerIndex] = {}
+        }
+        M.outbox[queueEvent.workerIndex][queueEvent.dataset] = queueEvent.outbox
+
+        if (!M.processing[queueEvent.workerIndex]) {
+          M.processing[queueEvent.workerIndex] = {}
+        }
+        M.processing[queueEvent.workerIndex][queueEvent.dataset] = queueEvent.processing
+
+        return M
+      },
+      { label, inbox: [], outbox: [], processing: [] } as WorkerPoolModel,
+    )
+  }
+
+  private get latestWorkerPoolModel(): WorkerPoolModel[] {
+    return Object.entries(this.state?.queueEvents || {})
+      .map(([label, queueEventsForOneWorkerPool]) => {
+        return this.toWorkerPoolModel(label, queueEventsForOneWorkerPool)
+      })
+      .sort(this.lexicoWP)
+  }
+
+  private maxNWorkers(model: WorkerPoolModel[]) {
+    return model.reduce((max, wp) => Math.max(max, wp.inbox.length), 0)
   }
 
   private workerpools() {
     return (
       <Stack>
-        {this.state?.workerpools?.map((w) => (
+        {this.latestWorkerPoolModel.map((w) => (
           <StackItem key={w.label}>
-            <WorkerPool model={w} datasetIndex={this.state.datasetIndex} maxNWorkers={this.maxNWorkers} />
+            <WorkerPool
+              model={w}
+              datasetIndex={this.state.datasetIndex}
+              maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
+            />
           </StackItem>
         ))}
       </Stack>

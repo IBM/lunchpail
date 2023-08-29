@@ -4,11 +4,18 @@ export type DataSetTask = Record<string, number>
 /** One DataSetTask for each Worker in a WorkerPool */
 type TasksAcrossWorkers = DataSetTask[]
 
-interface WorkerPoolModel {
+export interface WorkerPoolModel {
   inbox: TasksAcrossWorkers
   outbox: TasksAcrossWorkers
   processing: TasksAcrossWorkers
   label: string
 }
 
-export default WorkerPoolModel
+export default interface QueueEvent {
+  inbox: number
+  outbox: number
+  processing: number
+  dataset: string
+  workerpool: string
+  workerIndex: number
+}

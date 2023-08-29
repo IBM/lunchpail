@@ -111,6 +111,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, annota
             },
             "labels": {
                 "codeflare.dev/pod": pod_name,
+                "codeflare.dev/worker-index": worker_index,
                 "app.kubernetes.io/name": pool_name,
                 "app.kubernetes.io/part-of": app_name,
                 "app.kubernetes.io/managed-by": "codeflare.dev",
@@ -164,15 +165,23 @@ def look_for_workstealer_updates(line: str):
         patch_body = { "metadata": { "annotations": { f"codeflare.dev/unassigned": num_unassigned } } }
         return patch_body
 
-def track_workstealer_logs(pod_name: str, namespace: str, labels):
+def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
     try:
         if 'dataset.0.id' in labels:
             dataset_name = labels['dataset.0.id']
-            logging.info(f"Setting up workstealer tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
 
             try:
+                dgroup = "com.ie.ibm.hpsys"
+                version = "v1alpha1"
+                plural = "datasets"
+
+                patch_body = { "metadata": { "annotations": { f"codeflare.dev/unassigned": "0" } } }
+                logging.info(f"Patching dataset for workstealer operation dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
+                customApi.patch_namespaced_custom_object(group=dgroup, version=version, plural=plural, name=dataset_name, namespace=namespace, body=patch_body)
+
                 # intentionally fire and forget (how bad is this?)
-                track_logs(dataset_name, pod_name, namespace, "datasets", look_for_workstealer_updates, None, "com.ie.ibm.hpsys", "v1alpha1")
+                logging.info(f"Setting up workstealer tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
+                track_logs(dataset_name, pod_name, namespace, plural, look_for_workstealer_updates, None, dgroup, version)
             except Exception as e:
                 logging.error(f"Error setting up log tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
         else:

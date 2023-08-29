@@ -11,7 +11,7 @@ def get_logs(v1Api, args: Dict[str, Any], tail: bool) -> Iterable[str]:
         iterator = split_lines(resp)
     return iterator
 
-def track_logs_async(resource_name: str, pod_name: str, namespace: str, plural: str, line_handler: Callable[[str], Dict[str, Any]], container: Optional[str], group="codeflare.dev", version="v1alpha1"):
+def track_logs_async(resource_name: str, pod_name: str, namespace: str, plural: str, line_handler: Callable[[str], Dict[str, Any]], container: Optional[str]=None, group="codeflare.dev", version="v1alpha1"):
     try:
         import logging
 
@@ -50,7 +50,7 @@ def track_logs_async(resource_name: str, pod_name: str, namespace: str, plural: 
 
 # line_handler takes a `line: str` and returns a resource patch `Dict[str, Any]`
 from multiprocessing import Process
-def track_logs(resource_name: str, pod_name: str, namespace: str, plural: str, line_handler: Callable[[str], Dict[str, Any]], container: Optional[str], group: Optional[str], version: Optional[str]):
+def track_logs(resource_name: str, pod_name: str, namespace: str, plural: str, line_handler: Callable[[str], Dict[str, Any]], container: Optional[str]=None, group="codeflare.dev", version="v1alpha1"):
     proc = Process(target=track_logs_async, args=(resource_name, pod_name, namespace, plural, line_handler, container, group, version))
     proc.start()
     return proc

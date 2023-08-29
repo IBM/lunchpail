@@ -15,7 +15,7 @@ import {
 import GridCell from "./GridCell"
 import GridLayout from "./GridLayout"
 import SmallLabel from "./SmallLabel"
-import type WorkerPoolModel from "./WorkerPoolModel"
+import type { WorkerPoolModel } from "./WorkerPoolModel"
 
 interface Props {
   maxNWorkers: number

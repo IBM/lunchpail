@@ -29,6 +29,15 @@ spec:
         # enables the status subresource
         status: {}
       additionalPrinterColumns:
+        - name: Run
+          type: string
+          jsonPath: ".metadata.labels.app\\.kubernetes\\.io/part-of"
+        - name: WorkerPool
+          type: string
+          jsonPath: ".metadata.labels.app\\.kubernetes\\.io/name"
+        - name: WorkerIndex
+          type: string
+          jsonPath: ".metadata.labels.codeflare\\.dev/worker-index"
         - name: Inbox
           type: string
           description: The number of enqueued inbox tasks
