@@ -46,7 +46,7 @@ function Work(
         {props.history.length > 0 && (
           <div className="codeflare--sparkline" data-dataset={props.idx}>
             <Sparklines data={props.history} limit={30} width={100} height={20} margin={5}>
-              <SparklinesLine style={{ fill: "none" }} />
+              <SparklinesLine />
             </Sparklines>
           </div>
         )}
