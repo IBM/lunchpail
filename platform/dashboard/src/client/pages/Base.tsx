@@ -13,15 +13,19 @@ import {
   ToolbarContent,
   ToolbarItem,
   MastheadToggle,
+  PageToggleButton,
 } from "@patternfly/react-core"
 
 import { version } from "../../../package.json"
 import SmallLabel from "../components/SmallLabel"
-import { SidebarContent, SidebarToggle } from "./SidebarContent"
+import { SidebarContent } from "./SidebarContent"
+import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
 export interface BaseState {
   /** UI in dark mode? */
   useDarkMode: boolean
+  /** is sidebar open? */
+  isSidebarOpen: boolean
 }
 
 export default class Base<Props = unknown, State extends BaseState = BaseState> extends PureComponent<Props, State> {
@@ -34,10 +38,26 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
       return { useDarkMode }
     })
 
+  private readonly onSidebarToggle = () => {
+    this.setState((curState) => ({
+      isSidebarOpen: !curState?.isSidebarOpen,
+    }))
+  }
+
   private header() {
     return (
       <Masthead>
-        <MastheadToggle>{SidebarToggle}</MastheadToggle>
+        <MastheadToggle>
+          <PageToggleButton
+            variant="plain"
+            aria-label="Global navigation"
+            isSidebarOpen={this.state?.isSidebarOpen}
+            onSidebarToggle={this.onSidebarToggle}
+            id="vertical-nav-toggle"
+          >
+            <BarsIcon />
+          </PageToggleButton>
+        </MastheadToggle>
         <MastheadMain>
           <MastheadBrand>Queueless Dashboard</MastheadBrand>
         </MastheadMain>
@@ -88,14 +108,16 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return (
       <Page
         header={this.header()}
-        sidebar={<SidebarContent />}
+        sidebar={<SidebarContent isSidebarOpen={this.state?.isSidebarOpen} />}
         className="codeflare--dashboard"
         data-is-dark-mode={this.state?.useDarkMode || false}
       >
         <PageSection hasOverflowScroll isFilled>
           {this.body()}
         </PageSection>
-        <PageSection type="subnav">{this.footer()}</PageSection>
+        <PageSection padding={{ default: "noPadding" }} isFilled={false}>
+          {this.footer()}
+        </PageSection>
       </Page>
     )
   }
