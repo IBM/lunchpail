@@ -1,3 +1,4 @@
+import { Sparklines, SparklinesLine } from "react-sparklines-typescript-v2"
 import { PropsWithChildren, PureComponent } from "react"
 import {
   Card,
@@ -16,12 +17,16 @@ import type DataSetModel from "./DataSetModel"
 import GridCell, { GridTypeData } from "./GridCell"
 
 import "./Queue.scss"
+import "./Sparkline.scss"
 
 type Props = DataSetModel & {
   idx: number
+  inboxHistory: number[]
 }
 
-function Work(props: PropsWithChildren<{ label: string; count: number }>) {
+function Work(
+  props: PropsWithChildren<Pick<Props, "idx"> & { label: string; count: number; history: Props["inboxHistory"] }>,
+) {
   return (
     <DescriptionListGroup>
       <DescriptionListTerm>
@@ -37,6 +42,14 @@ function Work(props: PropsWithChildren<{ label: string; count: number }>) {
         >
           {props.children}
         </Flex>
+
+        {props.history.length > 0 && (
+          <div className="codeflare--sparkline" data-dataset={props.idx}>
+            <Sparklines data={props.history} limit={30} width={100} height={20} margin={5}>
+              <SparklinesLine style={{ fill: "none" }} />
+            </Sparklines>
+          </div>
+        )}
       </DescriptionListDescription>
     </DescriptionListGroup>
   )
@@ -71,10 +84,16 @@ export default class DataSet extends PureComponent<Props> {
         <CardTitle component="h4">DataSet {this.props.label}</CardTitle>
         <CardBody>
           <DescriptionList>
-            <Work label="Unassigned Work" count={this.props.inbox}>
+            <Work
+              label="Unassigned Work"
+              count={this.props.inbox}
+              idx={this.props.idx}
+              history={this.props.inboxHistory}
+            >
               {this.unassigned()}
             </Work>
-            <Work label="Completed Work" count={this.props.outbox}>
+
+            <Work label="Completed Work" count={this.props.outbox} idx={this.props.idx} history={[]}>
               {this.outbox()}
             </Work>
           </DescriptionList>

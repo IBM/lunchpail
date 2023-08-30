@@ -1,0 +1,13 @@
+.codeflare--sparkline {
+  &[data-dataset="0"] polyline {
+    stroke: var(--codeflare-cell-color-0) !important;
+  }
+
+  &[data-dataset="1"] polyline {
+    stroke: var(--codeflare-cell-color-1) !important;
+  }
+
+  &[data-dataset="2"] polyline {
+    stroke: var(--codeflare-cell-color-2) !important;
+  }
+}

@@ -154,6 +154,7 @@ export class App extends Base<Props, State> {
                 idx={idx}
                 label={label}
                 inbox={events[events.length - 1].inbox}
+                inboxHistory={events.map((_) => _.inbox)}
                 outbox={events[events.length - 1].outbox}
               />
             </StackItem>
