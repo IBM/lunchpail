@@ -1,3 +1,12 @@
+@media screen and (min-width: 820px) {
+  .codeflare--body {
+    flex-direction: column;
+  }
+  .codeflare--flex-stack {
+    flex-direction: row;
+  }
+}
+
 .codeflare--text-xs {
   font-size: var(--pf-v5-global--FontSize--xs);
 }

@@ -145,7 +145,7 @@ export class App extends Base<Props, State> {
 
   private datasets() {
     return (
-      <Stack hasGutter>
+      <Stack hasGutter className="codeflare--flex-stack">
         {Object.entries(this.state?.datasetEvents || {})
           .sort(this.lexico)
           .map(([label, events], idx) => (
@@ -216,7 +216,7 @@ export class App extends Base<Props, State> {
 
   private workerpools() {
     return (
-      <Stack hasGutter>
+      <Stack hasGutter className="codeflare--flex-stack">
         {this.latestWorkerPoolModel.map((w) => (
           <StackItem key={w.label}>
             <WorkerPool

@@ -46,7 +46,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
 
   private header() {
     return (
-      <Masthead>
+      <Masthead display={{ default: "inline" }}>
         <MastheadToggle>
           <PageToggleButton
             variant="plain"
