@@ -88,7 +88,7 @@
     &,
     &:hover {
       cursor: unset;
-      filter: opacity(0.375);
+      outline: none;
     }
 
     /** This gives an X inside the cell */
@@ -119,15 +119,11 @@
   &[data-type="processing"] {
     filter: saturate(3);
   }
-  &[data-type="waiting"] {
-    &:hover {
-      filter: brightness(0.75);
-    }
-  }
 
   &:hover {
     cursor: pointer;
-    filter: saturate(8);
+    outline: 1px solid #fff;
+    outline-offset: -1px;
   }
 }
 
