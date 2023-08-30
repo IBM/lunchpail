@@ -112,7 +112,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         className="codeflare--dashboard"
         data-is-dark-mode={this.state?.useDarkMode || false}
       >
-        <PageSection hasOverflowScroll isFilled>
+        <PageSection hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}
         </PageSection>
         <PageSection padding={{ default: "noPadding" }} isFilled={false}>

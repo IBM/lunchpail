@@ -145,7 +145,7 @@ export class App extends Base<Props, State> {
 
   private datasets() {
     return (
-      <Stack>
+      <Stack hasGutter>
         {Object.entries(this.state?.datasetEvents || {})
           .sort(this.lexico)
           .map(([label, events], idx) => (
@@ -155,6 +155,7 @@ export class App extends Base<Props, State> {
                 label={label}
                 inbox={events[events.length - 1].inbox}
                 inboxHistory={events.map((_) => _.inbox)}
+                outboxHistory={events.map((_) => _.outbox)}
                 outbox={events[events.length - 1].outbox}
               />
             </StackItem>
@@ -164,7 +165,7 @@ export class App extends Base<Props, State> {
   }
 
   private toWorkerPoolModel(label: string, queueEventsForOneWorkerPool: QueueEvent[]): WorkerPoolModel {
-    return queueEventsForOneWorkerPool.reduce(
+    const model = queueEventsForOneWorkerPool.reduce(
       (M, queueEvent) => {
         if (!M.inbox[queueEvent.workerIndex]) {
           M.inbox[queueEvent.workerIndex] = {}
@@ -185,6 +186,20 @@ export class App extends Base<Props, State> {
       },
       { label, inbox: [], outbox: [], processing: [] } as WorkerPoolModel,
     )
+
+    model.inbox = this.backfill(model.inbox)
+    model.outbox = this.backfill(model.outbox)
+    model.processing = this.backfill(model.processing)
+    return model
+  }
+
+  private backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
+    A: T,
+  ): T {
+    for (let idx = 0; idx < A.length; idx++) {
+      if (!(idx in A)) A[idx] = {}
+    }
+    return A
   }
 
   private get latestWorkerPoolModel(): WorkerPoolModel[] {
@@ -201,7 +216,7 @@ export class App extends Base<Props, State> {
 
   private workerpools() {
     return (
-      <Stack>
+      <Stack hasGutter>
         {this.latestWorkerPoolModel.map((w) => (
           <StackItem key={w.label}>
             <WorkerPool

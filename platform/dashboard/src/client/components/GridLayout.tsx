@@ -26,7 +26,11 @@ export default class GridLayout extends PureComponent<Props> {
   }
 
   public name() {
-    return <SmallLabel align="right">W{this.props.queueNum}</SmallLabel>
+    return (
+      <SmallLabel size="xxs" align="right">
+        {this.props.queueNum}
+      </SmallLabel>
+    )
   }
 
   public depth() {

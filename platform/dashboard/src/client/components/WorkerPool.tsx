@@ -1,7 +1,8 @@
-import { PureComponent } from "react"
+import { PureComponent, ReactNode } from "react"
 import {
   Card,
   CardBody,
+  CardHeader,
   CardTitle,
   Flex,
   DescriptionList,
@@ -108,7 +109,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
     return <Flex gap={{ default: "gapXs" }}>{this.state?.underwayCells}</Flex>
   }
 
-  private descriptionGroup(term: string, description: import("react").ReactNode, count?: number) {
+  private descriptionGroup(term: ReactNode, description: import("react").ReactNode, count?: number) {
     return (
       <DescriptionListGroup>
         <DescriptionListTerm>
@@ -121,12 +122,17 @@ export default class WorkerPool extends PureComponent<Props, State> {
 
   public override render() {
     return (
-      <Card isCompact isPlain>
-        <CardTitle component="h4">{this.label()}</CardTitle>
+      <Card isCompact isRounded>
+        <CardHeader>
+          <CardTitle component="h4">{this.label()}</CardTitle>
+        </CardHeader>
         <CardBody>
           <DescriptionList>
             {this.descriptionGroup("Processing", this.underway(), this.state?.underwayCells.length)}
-            {this.descriptionGroup("Queued Work", this.enqueued())}
+            {this.descriptionGroup(
+              `Queued Work (${this.nWorkers} ${this.nWorkers === 1 ? "worker" : "workers"})`,
+              this.enqueued(),
+            )}
           </DescriptionList>
         </CardBody>
       </Card>

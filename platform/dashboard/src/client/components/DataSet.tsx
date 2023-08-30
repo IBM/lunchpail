@@ -3,6 +3,7 @@ import { PropsWithChildren, PureComponent } from "react"
 import {
   Card,
   CardBody,
+  CardHeader,
   CardTitle,
   Flex,
   FlexItem,
@@ -22,6 +23,7 @@ import "./Sparkline.scss"
 type Props = DataSetModel & {
   idx: number
   inboxHistory: number[]
+  outboxHistory: number[]
 }
 
 function Work(
@@ -80,8 +82,10 @@ export default class DataSet extends PureComponent<Props> {
 
   public override render() {
     return (
-      <Card isCompact isPlain>
-        <CardTitle component="h4">DataSet {this.props.label}</CardTitle>
+      <Card isCompact isRounded>
+        <CardHeader>
+          <CardTitle component="h4">DataSet {this.props.label}</CardTitle>
+        </CardHeader>
         <CardBody>
           <DescriptionList>
             <Work
