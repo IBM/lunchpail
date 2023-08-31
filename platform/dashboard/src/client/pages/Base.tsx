@@ -18,7 +18,6 @@ import {
 
 import { version } from "../../../package.json"
 import SmallLabel from "../components/SmallLabel"
-import { SidebarContent } from "./SidebarContent"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
 export interface BaseState {
@@ -44,24 +43,29 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     }))
   }
 
+  protected headerToggle(): ReactNode {
+    return (
+      <MastheadToggle>
+        <PageToggleButton
+          variant="plain"
+          aria-label="Global navigation"
+          isSidebarOpen={this.state?.isSidebarOpen}
+          onSidebarToggle={this.onSidebarToggle}
+          id="vertical-nav-toggle"
+        >
+          <BarsIcon />
+        </PageToggleButton>
+      </MastheadToggle>
+    )
+  }
+
   private header() {
     return (
       <Masthead display={{ default: "inline" }}>
-        <MastheadToggle>
-          <PageToggleButton
-            variant="plain"
-            aria-label="Global navigation"
-            isSidebarOpen={this.state?.isSidebarOpen}
-            onSidebarToggle={this.onSidebarToggle}
-            id="vertical-nav-toggle"
-          >
-            <BarsIcon />
-          </PageToggleButton>
-        </MastheadToggle>
+        {this.headerToggle()}
         <MastheadMain>
           <MastheadBrand>Queueless Dashboard</MastheadBrand>
         </MastheadMain>
-
         <MastheadContent>
           <Toolbar>
             <ToolbarContent>
@@ -73,6 +77,10 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         </MastheadContent>
       </Masthead>
     )
+  }
+
+  protected sidebar(): ReactNode {
+    return <Fragment />
   }
 
   protected body(): ReactNode {
@@ -108,7 +116,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return (
       <Page
         header={this.header()}
-        sidebar={<SidebarContent isSidebarOpen={this.state?.isSidebarOpen} />}
+        sidebar={this.sidebar()}
         className="codeflare--dashboard"
         data-is-dark-mode={this.state?.useDarkMode || false}
       >

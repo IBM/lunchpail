@@ -11,6 +11,7 @@ import type EventSourceLike from "./events/EventSourceLike"
 import type QueueEvent from "./components/WorkerPoolModel"
 import type DataSetModel from "./components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./components/WorkerPoolModel"
+import { SidebarContent } from "./pages/SidebarContent"
 
 import "./App.scss"
 import "@patternfly/react-core/dist/styles/base.css"
@@ -238,6 +239,16 @@ export class App extends Base<Props, State> {
           </StackItem>
         ))}
       </Stack>
+    )
+  }
+
+  protected override sidebar() {
+    return (
+      <SidebarContent
+        isSidebarOpen={this.state?.isSidebarOpen}
+        datasetNames={Object.keys(this.state?.datasetIndex || {})}
+        workerpoolNames={Object.keys(this.state?.workerpoolIndex || {})}
+      />
     )
   }
 
