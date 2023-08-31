@@ -32,7 +32,7 @@ export default class GridLayout extends PureComponent<Props> {
   public override render() {
     return (
       <Flex gap={{ default: "gapXs" }} alignItems={{ default: "alignItemsCenter" }}>
-        <FlexItem style={{ textAlign: "right", minWidth: 1.5 + (this.props.maxNWorkers - 10) * 0.25 + "em" }}>
+        <FlexItem style={{ textAlign: "right", width: 1 + (this.props.maxNWorkers - 10) * 0.25 + "em" }}>
           {this.name()}
         </FlexItem>
 

@@ -1,3 +1,10 @@
+$size: 1em;
+$label-size: 0.6875em;
+
+.codeflare-workqueues {
+  line-height: #{$size * 1.125};
+}
+
 .codeflare--dashboard[data-is-dark-mode="false"] {
   &,
   &[data-theme="Paired"] {
@@ -51,8 +58,6 @@
 }
 
 .codeflare--grid-cell {
-  $size: 1.25em;
-
   width: $size;
   height: $size;
   display: flex;
@@ -61,7 +66,7 @@
   transition: background-color 70ms ease-in-out;
 
   span {
-    font-size: 0.6875em;
+    font-size: $label-size;
     color: white;
     mix-blend-mode: overlay;
   }

@@ -67,7 +67,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
   /** One row per worker, within row, one cell per inbox or outbox enqueued task */
   private enqueued() {
     return (
-      <Stack>
+      <Stack className="codeflare-workqueues">
         {this.inboxes.map((inbox, i) => (
           <StackItem key={i}>
             <GridLayout
@@ -110,22 +110,26 @@ export default class WorkerPool extends PureComponent<Props, State> {
     return <Flex gap={{ default: "gapXs" }}>{this.state?.underwayCells}</Flex>
   }
 
-  private prettyRate(numerator: number, denominator: number) {
-    if (numerator === 0 || denominator === 0) {
-      return ""
-    }
+  private prettyRate(tasksPerMilli: number) {
+    const tasksPerSecond = tasksPerMilli * 1000
 
-    const tasksPerMinute = (numerator / denominator) * 1000 * 60
-    if (tasksPerMinute < 1) {
-      const tasksPerHour = tasksPerMinute * 60
-      if (tasksPerHour < 1) {
-        const tasksPerDay = tasksPerHour * 24
-        return Math.round(tasksPerDay) + " tasks/day"
+    if (tasksPerMilli === 0 || isNaN(tasksPerMilli)) {
+      return ""
+    } else if (tasksPerSecond < 1) {
+      const tasksPerMinute = tasksPerSecond * 60
+      if (tasksPerMinute < 1) {
+        const tasksPerHour = tasksPerMinute * 60
+        if (tasksPerHour < 1) {
+          const tasksPerDay = tasksPerHour * 24
+          return Math.round(tasksPerDay) + " tasks/day"
+        } else {
+          return Math.round(tasksPerHour) + " tasks/hr"
+        }
       } else {
-        return Math.round(tasksPerHour) + " tasks/hour"
+        return Math.round(tasksPerMinute) + " tasks/min"
       }
     } else {
-      return Math.round(tasksPerMinute) + " tasks/minute"
+      return Math.round(tasksPerSecond) + " tasks/sec"
     }
   }
 
@@ -146,8 +150,13 @@ export default class WorkerPool extends PureComponent<Props, State> {
       return ""
     } else {
       const durationMillis = timestamps[N - 1] - timestamps[N - 2]
-      return this.prettyRate(outboxHistory[N - 1], durationMillis)
+      return this.prettyRate(outboxHistory[N - 1] / durationMillis)
     }
+  }
+
+  private get medianCompletionRate() {
+    const A = this.completionRateHistory.sort()
+    return A.length === 0 ? 0 : this.prettyRate(A[Math.round(A.length / 2)])
   }
 
   private completionRate() {
@@ -174,7 +183,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
         <CardBody>
           <DescriptionList isCompact>
             {this.descriptionGroup("Processing", this.underway(), this.state?.underwayCells.length)}
-            {this.descriptionGroup("Completion Rate", this.completionRate(), this.instantaneousCompletionRate)}
+            {this.descriptionGroup("Completion Rate", this.completionRate(), this.medianCompletionRate)}
             {this.descriptionGroup(
               `Queued Work (${this.nWorkers} ${this.nWorkers === 1 ? "worker" : "workers"})`,
               this.enqueued(),

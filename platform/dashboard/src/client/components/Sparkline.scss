@@ -1,16 +1,40 @@
 .codeflare--sparkline {
+  circle {
+    fill: transparent;
+  }
+
+  rect,
   line {
     stroke: #fff !important;
     stroke-opacity: 0.5 !important;
   }
-  &[data-dataset="0"] polyline {
-    stroke: var(--codeflare-cell-color-0) !important;
-    fill: var(--codeflare-cell-color-0) !important;
+  rect {
+    stroke-width: 0;
   }
 
-  &[data-dataset="1"] polyline {
-    stroke: var(--codeflare-cell-color-1) !important;
-    fill: var(--codeflare-cell-color-1) !important;
+  &[data-type="bars"] {
+    line {
+      /* mean/median line */
+      stroke-width: 0.375;
+      stroke: #ff7f00 !important;
+      stroke-opacity: 0.75 !important;
+      stroke-dasharray: 0.75, 0.25 !important;
+    }
+  }
+
+  &[data-dataset="0"] {
+    rect,
+    polyline {
+      fill: var(--codeflare-cell-color-0) !important;
+    }
+  }
+
+  &[data-dataset="1"] {
+    rect,
+    polyline {
+      stroke: var(--codeflare-cell-color-1) !important;
+      fill: var(--codeflare-cell-color-1) !important;
+    }
   }
 
   &[data-dataset="2"] polyline {
@@ -18,6 +42,7 @@
     fill: var(--codeflare-cell-color-2) !important;
   }
 
+  rect,
   polyline {
     fill-opacity: 0.375;
     stroke: var(--codeflare-cell-color-none) !important;
