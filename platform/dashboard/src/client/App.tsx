@@ -10,7 +10,7 @@ import WorkerPool from "./components/WorkerPool"
 import type EventSourceLike from "./events/EventSourceLike"
 import type QueueEvent from "./components/WorkerPoolModel"
 import type DataSetModel from "./components/DataSetModel"
-import type { WorkerPoolModel } from "./components/WorkerPoolModel"
+import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./components/WorkerPoolModel"
 
 import "./App.scss"
 import "@patternfly/react-core/dist/styles/base.css"
@@ -90,6 +90,13 @@ export class App extends Base<Props, State> {
     if (!(workerpool in queueEvents)) {
       queueEvents[workerpool] = []
     }
+
+    const myEvents = queueEvents[workerpool]
+    if (myEvents.length > 0 && myEvents[myEvents.length - 1].timestamp === queueEvent.timestamp) {
+      // hmm, debounce
+      return
+    }
+
     queueEvents[workerpool].push(queueEvent)
 
     this.setState({ queueEvents, workerpoolIndex })
@@ -164,7 +171,7 @@ export class App extends Base<Props, State> {
     )
   }
 
-  private toWorkerPoolModel(label: string, queueEventsForOneWorkerPool: QueueEvent[]): WorkerPoolModel {
+  private toWorkerPoolModel(label: string, queueEventsForOneWorkerPool: QueueEvent[]): WorkerPoolModelWithHistory {
     const model = queueEventsForOneWorkerPool.reduce(
       (M, queueEvent) => {
         if (!M.inbox[queueEvent.workerIndex]) {
@@ -184,13 +191,17 @@ export class App extends Base<Props, State> {
 
         return M
       },
-      { label, inbox: [], outbox: [], processing: [] } as WorkerPoolModel,
+      { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label">,
     )
 
-    model.inbox = this.backfill(model.inbox)
-    model.outbox = this.backfill(model.outbox)
-    model.processing = this.backfill(model.processing)
-    return model
+    return {
+      label,
+      inbox: this.backfill(model.inbox),
+      outbox: this.backfill(model.outbox),
+      processing: this.backfill(model.processing),
+      outboxHistory: queueEventsForOneWorkerPool.map((_) => _.outbox),
+      timestamps: queueEventsForOneWorkerPool.map((_) => _.timestamp),
+    }
   }
 
   private backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
@@ -202,7 +213,7 @@ export class App extends Base<Props, State> {
     return A
   }
 
-  private get latestWorkerPoolModel(): WorkerPoolModel[] {
+  private get latestWorkerPoolModel(): WorkerPoolModelWithHistory[] {
     return Object.entries(this.state?.queueEvents || {})
       .map(([label, queueEventsForOneWorkerPool]) => {
         return this.toWorkerPoolModel(label, queueEventsForOneWorkerPool)

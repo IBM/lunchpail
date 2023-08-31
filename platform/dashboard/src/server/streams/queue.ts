@@ -20,6 +20,7 @@ function transformLineToEvent() {
       const dataset = queue.replace(`queue-${run}-`, "").replace(/-\d+$/, "")
 
       const model: QueueEvent = {
+        timestamp: Date.now(),
         inbox: parseInt(inbox, 10),
         outbox: parseInt(outbox, 10),
         processing: parseInt(processing, 10),

@@ -1,11 +1,11 @@
 import { PureComponent } from "react"
 import "./GridCell.scss"
 
-export type GridTypeData = "inbox" | "outbox" | "processing" | "waiting" | "placeholder" | "unassigned"
+export type GridTypeData = "plain" | "inbox" | "outbox" | "processing" | "waiting" | "placeholder" | "unassigned"
 type GridType = GridTypeData | "worker"
 
 type Props = {
-  type: GridType
+  type?: GridType
   dataset?: number
 }
 
@@ -17,7 +17,7 @@ export default class GridCell extends PureComponent<Props> {
   public render() {
     // \u00a0 is &nbsp in unicode
     return (
-      <div className="codeflare--grid-cell" data-type={this.props.type} data-dataset={this.props.dataset}>
+      <div className="codeflare--grid-cell" data-type={this.props.type || "plain"} data-dataset={this.props.dataset}>
         {this.innerText()}
       </div>
     )

@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react"
 import { Badge } from "@patternfly/react-core"
 
 export default function SmallLabel(
-  props: PropsWithChildren<{ count?: number; align?: "left" | "right" | "center"; size?: "xs" | "xxs" }>,
+  props: PropsWithChildren<{ count?: number | string; align?: "left" | "right" | "center"; size?: "xs" | "xxs" }>,
 ) {
   return (
     <span>
@@ -14,7 +14,7 @@ export default function SmallLabel(
       >
         {props.children}
       </span>{" "}
-      {typeof props.count === "number" && <Badge isRead>{props.count}</Badge>}
+      {typeof props.count !== "undefined" && <Badge isRead>{props.count}</Badge>}
     </span>
   )
 }

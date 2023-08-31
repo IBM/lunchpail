@@ -8,7 +8,6 @@ import "./Queue.scss"
 
 export type Props = {
   inbox: DataSetTask
-  outbox?: DataSetTask
   datasetIndex: Record<string, number>
 }
 
@@ -36,7 +35,7 @@ export default class Queue extends PureComponent<Props> {
   public override render() {
     return (
       <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-        {[...this.queue(this.props.inbox, "inbox"), ...this.queue(this.props.outbox || {}, "outbox")]}
+        {this.queue(this.props.inbox, "plain")}
       </Flex>
     )
   }

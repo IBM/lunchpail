@@ -3,9 +3,6 @@
     stroke: #fff !important;
     stroke-opacity: 0.5 !important;
   }
-  polyline {
-    fill-opacity: 0.375;
-  }
   &[data-dataset="0"] polyline {
     stroke: var(--codeflare-cell-color-0) !important;
     fill: var(--codeflare-cell-color-0) !important;
@@ -19,5 +16,11 @@
   &[data-dataset="2"] polyline {
     stroke: var(--codeflare-cell-color-2) !important;
     fill: var(--codeflare-cell-color-2) !important;
+  }
+
+  polyline {
+    fill-opacity: 0.375;
+    stroke: var(--codeflare-cell-color-none) !important;
+    fill: var(--codeflare-cell-color-none) !important;
   }
 }

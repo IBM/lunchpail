@@ -24,6 +24,7 @@ function randomQueueEvent(workerpool: string, nWorkers: number): QueueEvent {
   const workerIndex = Math.floor(Math.random() * nWorkers)
   const dataset = datasets[getRandomLiveDataSetIndex()]
   return {
+    timestamp: Date.now(),
     workerIndex,
     workerpool,
     dataset,

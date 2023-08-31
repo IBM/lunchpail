@@ -21,22 +21,10 @@ export default class GridLayout extends PureComponent<Props> {
     return this.count(this.props.inbox)
   }
 
-  private get nOut() {
-    return this.count(this.props.outbox || {})
-  }
-
   public name() {
     return (
       <SmallLabel size="xxs" align="right">
         {this.props.queueNum}
-      </SmallLabel>
-    )
-  }
-
-  public depth() {
-    return (
-      <SmallLabel>
-        {this.nIn} ↓ {this.nOut} ↑
       </SmallLabel>
     )
   }
@@ -49,10 +37,8 @@ export default class GridLayout extends PureComponent<Props> {
         </FlexItem>
 
         <FlexItem>
-          <Queue inbox={this.props.inbox} outbox={this.props.outbox} datasetIndex={this.props.datasetIndex} />
+          <Queue inbox={this.props.inbox} datasetIndex={this.props.datasetIndex} />
         </FlexItem>
-
-        <FlexItem>{this.depth()}</FlexItem>
       </Flex>
     )
   }

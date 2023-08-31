@@ -11,7 +11,15 @@ export interface WorkerPoolModel {
   label: string
 }
 
+export interface WorkerPoolModelWithHistory extends WorkerPoolModel {
+  outboxHistory: number[]
+  timestamps: number[]
+}
+
 export default interface QueueEvent {
+  /** millis since epoch */
+  timestamp: number
+
   inbox: number
   outbox: number
   processing: number

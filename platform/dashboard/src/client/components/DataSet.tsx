@@ -1,4 +1,3 @@
-import { Sparklines, SparklinesLine } from "react-sparklines-typescript-v2"
 import { PropsWithChildren, PureComponent } from "react"
 import {
   Card,
@@ -13,12 +12,12 @@ import {
   DescriptionListDescription,
 } from "@patternfly/react-core"
 
+import Sparkline from "./Sparkline"
 import SmallLabel from "./SmallLabel"
 import type DataSetModel from "./DataSetModel"
 import GridCell, { GridTypeData } from "./GridCell"
 
 import "./Queue.scss"
-import "./Sparkline.scss"
 
 type Props = DataSetModel & {
   idx: number
@@ -45,13 +44,7 @@ function Work(
           {props.children}
         </Flex>
 
-        {props.history.length > 0 && (
-          <div className="codeflare--sparkline" data-dataset={props.idx}>
-            <Sparklines data={props.history} limit={30} width={100} height={20} margin={5}>
-              <SparklinesLine />
-            </Sparklines>
-          </div>
-        )}
+        {props.history.length > 0 && <Sparkline data={props.history} datasetIdx={props.idx} />}
       </DescriptionListDescription>
     </DescriptionListGroup>
   )
@@ -87,7 +80,7 @@ export default class DataSet extends PureComponent<Props> {
           <CardTitle component="h4">DataSet {this.props.label}</CardTitle>
         </CardHeader>
         <CardBody>
-          <DescriptionList>
+          <DescriptionList isCompact>
             <Work
               label="Unassigned Work"
               count={this.props.inbox}

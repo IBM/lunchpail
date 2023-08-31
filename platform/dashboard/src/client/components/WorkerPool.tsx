@@ -14,18 +14,20 @@ import {
 } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
+import Sparkline from "./Sparkline"
 import GridLayout from "./GridLayout"
 import SmallLabel from "./SmallLabel"
-import type { WorkerPoolModel } from "./WorkerPoolModel"
+import type { WorkerPoolModelWithHistory } from "./WorkerPoolModel"
 
 interface Props {
   maxNWorkers: number
-  model: WorkerPoolModel
+  model: WorkerPoolModelWithHistory
   datasetIndex: Record<string, number>
 }
 
 type State = {
-  underwayCells: import("react").ReactNode[]
+  /** UI for processing tasks */
+  underwayCells: ReactNode[]
 }
 
 export default class WorkerPool extends PureComponent<Props, State> {
@@ -72,7 +74,6 @@ export default class WorkerPool extends PureComponent<Props, State> {
               maxNWorkers={this.props.maxNWorkers}
               queueNum={i + 1}
               inbox={inbox}
-              outbox={this.outboxes[i]}
               datasetIndex={this.props.datasetIndex}
             />
           </StackItem>
@@ -109,7 +110,51 @@ export default class WorkerPool extends PureComponent<Props, State> {
     return <Flex gap={{ default: "gapXs" }}>{this.state?.underwayCells}</Flex>
   }
 
-  private descriptionGroup(term: ReactNode, description: import("react").ReactNode, count?: number) {
+  private prettyRate(numerator: number, denominator: number) {
+    if (numerator === 0 || denominator === 0) {
+      return ""
+    }
+
+    const tasksPerMinute = (numerator / denominator) * 1000 * 60
+    if (tasksPerMinute < 1) {
+      const tasksPerHour = tasksPerMinute * 60
+      if (tasksPerHour < 1) {
+        const tasksPerDay = tasksPerHour * 24
+        return Math.round(tasksPerDay) + " tasks/day"
+      } else {
+        return Math.round(tasksPerHour) + " tasks/hour"
+      }
+    } else {
+      return Math.round(tasksPerMinute) + " tasks/minute"
+    }
+  }
+
+  private get completionRateHistory() {
+    const { timestamps } = this.props.model
+    return this.props.model.outboxHistory.map((completions, idx) =>
+      idx === 0 ? 0 : completions / (timestamps[idx] - timestamps[idx - 1] || 1),
+    )
+  }
+
+  private get instantaneousCompletionRate() {
+    const { outboxHistory, timestamps } = this.props.model
+    const N = timestamps.length
+
+    if (!this.state) {
+      return ""
+    } else if (N <= 1) {
+      return ""
+    } else {
+      const durationMillis = timestamps[N - 1] - timestamps[N - 2]
+      return this.prettyRate(outboxHistory[N - 1], durationMillis)
+    }
+  }
+
+  private completionRate() {
+    return <Sparkline data={this.completionRateHistory} />
+  }
+
+  private descriptionGroup(term: ReactNode, description: ReactNode, count?: number | string) {
     return (
       <DescriptionListGroup>
         <DescriptionListTerm>
@@ -127,8 +172,9 @@ export default class WorkerPool extends PureComponent<Props, State> {
           <CardTitle component="h4">{this.label()}</CardTitle>
         </CardHeader>
         <CardBody>
-          <DescriptionList>
+          <DescriptionList isCompact>
             {this.descriptionGroup("Processing", this.underway(), this.state?.underwayCells.length)}
+            {this.descriptionGroup("Completion Rate", this.completionRate(), this.instantaneousCompletionRate)}
             {this.descriptionGroup(
               `Queued Work (${this.nWorkers} ${this.nWorkers === 1 ? "worker" : "workers"})`,
               this.enqueued(),

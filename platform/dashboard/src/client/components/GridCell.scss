@@ -6,6 +6,8 @@
 }
 
 .codeflare--dashboard {
+  --codeflare-cell-color-none: #d2d2d2;
+
   &,
   &[data-theme="Paired"] {
     --codeflare-cell-color-0: #1f78b4;
