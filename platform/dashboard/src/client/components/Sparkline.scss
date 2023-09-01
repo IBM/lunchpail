@@ -25,6 +25,7 @@
   &[data-dataset="0"] {
     rect,
     polyline {
+      stroke: var(--codeflare-cell-color-0) !important;
       fill: var(--codeflare-cell-color-0) !important;
     }
   }

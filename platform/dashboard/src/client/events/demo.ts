@@ -52,7 +52,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
           const model: DataSetModel = {
             label: datasets[whichToUpdate],
             inbox: ~~(Math.random() * 20),
-            outbox: 0,
+            outbox: ~~(Math.random() * 2),
           }
           datasetIsLive[whichToUpdate] = true
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))

@@ -70,7 +70,7 @@ export default class DataSet extends PureComponent<Props> {
   }
 
   private outbox() {
-    return this.stack(this.props.outbox, "outbox")
+    return this.stack(this.props.outbox, "unassigned")
   }
 
   public override render() {

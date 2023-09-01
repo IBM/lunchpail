@@ -1,5 +1,14 @@
 $size: 1em;
-$label-size: 0.6875em;
+$label-size: 0.5625rem;
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .codeflare-workqueues {
   line-height: #{$size * 1.125};
@@ -66,9 +75,11 @@ $label-size: 0.6875em;
   transition: background-color 70ms ease-in-out;
 
   span {
-    font-size: $label-size;
     color: white;
+    display: flex;
+    font-size: $label-size;
     mix-blend-mode: overlay;
+    animation: spin 4s linear infinite;
   }
 
   &[data-dataset="0"] {

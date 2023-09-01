@@ -1,4 +1,6 @@
 import { PureComponent } from "react"
+import SpinnerIcon from "@patternfly/react-icons/dist/esm/icons/spinner2-icon"
+
 import "./GridCell.scss"
 
 export type GridTypeData = "plain" | "inbox" | "outbox" | "processing" | "waiting" | "placeholder" | "unassigned"
@@ -11,7 +13,19 @@ type Props = {
 
 export default class GridCell extends PureComponent<Props> {
   private innerText() {
-    return <span>{this.props.type === "outbox" ? "↑" : this.props.type === "inbox" ? "↓" : "\u00a0"}</span>
+    return (
+      <span>
+        {this.props.type === "processing" ? (
+          <SpinnerIcon />
+        ) : this.props.type === "outbox" ? (
+          "↑"
+        ) : this.props.type === "inbox" ? (
+          "↓"
+        ) : (
+          "\u00a0"
+        )}
+      </span>
+    )
   }
 
   public render() {
