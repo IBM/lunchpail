@@ -50,6 +50,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * datasets.length)
           const model: DataSetModel = {
+            timestamp: Date.now(),
             label: datasets[whichToUpdate],
             inbox: ~~(Math.random() * 20),
             outbox: ~~(Math.random() * 2),

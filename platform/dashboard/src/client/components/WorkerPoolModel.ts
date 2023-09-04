@@ -11,10 +11,12 @@ export interface WorkerPoolModel {
   label: string
 }
 
-export interface WorkerPoolModelWithHistory extends WorkerPoolModel {
+export type QueueHistory = {
   outboxHistory: number[]
   timestamps: number[]
 }
+
+export type WorkerPoolModelWithHistory = WorkerPoolModel & QueueHistory
 
 export default interface QueueEvent {
   /** millis since epoch */

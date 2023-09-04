@@ -7,6 +7,9 @@ type DataSetModel = {
 
   /** Number of completed tasks for this dataset */
   outbox: number
+
+  /** millis since epoch */
+  timestamp: number
 }
 
 export default DataSetModel

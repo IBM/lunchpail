@@ -21,6 +21,7 @@ function transformLineToEvent() {
           inbox: parseInt(inbox, 10),
           outbox: 0,
           label,
+          timestamp: Date.now(),
         }
 
         callback(null, JSON.stringify(model))

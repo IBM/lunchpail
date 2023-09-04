@@ -14,16 +14,20 @@ import {
 
 import Sparkline from "./Sparkline"
 import SmallLabel from "./SmallLabel"
-import type DataSetModel from "./DataSetModel"
 import GridCell, { GridTypeData } from "./GridCell"
+
+import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
+
+import type DataSetModel from "./DataSetModel"
+import type { QueueHistory } from "./WorkerPoolModel"
 
 import "./Queue.scss"
 
-type Props = DataSetModel & {
-  idx: number
-  inboxHistory: number[]
-  outboxHistory: number[]
-}
+type Props = Omit<DataSetModel, "timestamp"> &
+  QueueHistory & {
+    idx: number
+    inboxHistory: number[]
+  }
 
 function Work(
   props: PropsWithChildren<Pick<Props, "idx"> & { label: string; count: number; history: Props["inboxHistory"] }>,
@@ -70,7 +74,7 @@ export default class DataSet extends PureComponent<Props> {
   }
 
   private outbox() {
-    return this.stack(this.props.outbox, "unassigned")
+    return <Sparkline data={completionRateHistory(this.props)} />
   }
 
   public override render() {
@@ -90,9 +94,12 @@ export default class DataSet extends PureComponent<Props> {
               {this.unassigned()}
             </Work>
 
-            <Work label="Completed Work" count={this.props.outbox} idx={this.props.idx} history={[]}>
-              {this.outbox()}
-            </Work>
+            <DescriptionListGroup>
+              <DescriptionListTerm>
+                <SmallLabel count={medianCompletionRate(this.props)}>Completion Rate</SmallLabel>
+              </DescriptionListTerm>
+              <DescriptionListDescription>{this.outbox()}</DescriptionListDescription>
+            </DescriptionListGroup>
           </DescriptionList>
         </CardBody>
       </Card>
