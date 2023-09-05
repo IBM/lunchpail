@@ -1,0 +1,15 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "hapq") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkerPool
+metadata:
+  name: hapq-pool1
+  namespace: codeflare-watsonxai-preprocessing
+spec:
+  dataset: hapq
+  application:
+    name: hapq
+  workers:
+    count: 1
+    size: md
+    supportsGpu: {{ .Values.supportsGpu | default false }}
+{{- end }}

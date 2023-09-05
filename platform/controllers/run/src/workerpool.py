@@ -9,18 +9,24 @@ from status import set_status, add_error_condition
 from run_id import alloc_run_id
 from run_size import load_run_size_config
 
-def run_size(customApi, spec):
+# FIXME this is duplicated from run_size.py because that code looks in
+# spec['supportsGpu'] whereas we have spec['workers']['supportsGpu']
+def run_size(customApi, spec, application):
     count = spec['workers']['count']
     size = spec['workers']['size']
-    supportsGpu = spec['workers']['supportsGpu'] if 'supportsGpu' in spec['workers'] else False
 
     logging.info(f"Loading WorkerPool run_size config size={size}")
     run_size_config = load_run_size_config(customApi, size)
     logging.info(f"Loaded WorkerPool run_size config size={size} config={run_size_config}")
 
-    if not supportsGpu:
+    poolAskedForGpu = 'supportsGpu' in spec['workers'] and spec['workers']['supportsGpu'] == True
+    poolDisabledGpu = 'supportsGpu' in spec['workers'] and spec['workers']['supportsGpu'] == False
+    appSupportsGpu = 'supportsGpu' in application['spec'] and application['spec']['supportsGpu'] == True
+    if not appSupportsGpu or not poolAskedForGpu or poolDisabledGpu:
+        # then the application or pool asked for a gpu; check to see if the pool overrides this
+        logging.info(f"Disabling GPU for this pool")
         run_size_config['gpu'] = 0
-
+    
     gpu = run_size_config['gpu']
     cpu = run_size_config['cpu']
     memory = run_size_config['memory']
@@ -47,7 +53,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         cloned_subPath = clone(v1Api, customApi, application, name, workdir)
         subPath = os.path.join(run_id, cloned_subPath)
 
-        count, cpu, memory, gpu = run_size(customApi, spec)
+        count, cpu, memory, gpu = run_size(customApi, spec, application)
         logging.info(f"Sizeof WorkerPool name={name} namespace={namespace} count={count} cpu={cpu} memory={memory} gpu={gpu}")
 
         logging.info(f"About to call out to WorkerPool launcher")

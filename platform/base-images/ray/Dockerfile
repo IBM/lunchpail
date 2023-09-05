@@ -8,9 +8,13 @@ ENV \
 
 COPY requirements.txt requirements.txt
 
+ADD sysctl.conf /etc/sysctl.d/codeflare.conf
+COPY bin /opt/codeflare/worker/bin
+
 RUN unset LD_LIBRARY_PATH && \
     apt-get update -qq --fix-missing && \
     apt-get install -y --no-install-recommends \
+        inotify-tools bash \
         build-essential \
         ca-certificates \
         cmake && \

@@ -1,0 +1,19 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: hapq
+  namespace: {{ .Values.namespace.preprocessing }}
+spec:
+  api: workqueue
+  image: ghcr.io/project-codeflare/ray22:0.0.3
+#  repo: https://github.ibm.com/tmhoangt/foundation-model-stack/tree/RHODS_pipeline/src/llm/rhods/python/ods-automated-hap
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/hapq/watsonx_ai/charts/applications/templates/preprocessing/hapq
+  command: /opt/codeflare/worker/bin/watcher.sh python -u hapq.py --models_folder=/mnt/datasets/hap-models
+  supportsGpu: true
+  inputs:
+    - useas: mount
+      sizes:
+        xs: hapq
+    - useas: mount
+      sizes:
+        xs: hap-models

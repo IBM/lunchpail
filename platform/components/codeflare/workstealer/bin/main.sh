@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-inbox="$QUEUE"/inbox
+inbox="$QUEUE"/"$INBOX"
 queues="$QUEUE"/queues
 
 function report_size {
@@ -13,7 +13,7 @@ do
         echo "Scanning inbox: $inbox"
 
         # current unassigned work items
-        files=$(ls "$inbox")
+        files=$(ls "$inbox" | grep -v queues)
         nFiles=$(echo -n "$files" | wc -l)
         report_size $nFiles
 
@@ -27,19 +27,22 @@ do
             do
                 queue="$queues/$idx/inbox"
 
-                if [[ -d "$queue" ]] && [[ -n "$file" ]]
+                if [[ -d "$queue" ]] && [[ -n "$file" ]] && [[ -f "$inbox/$file" ]] && [[ ! -e "$file.$RUN_ID" ]]
                 then
                     echo "Moving task=$file to queue=$queue"
-                    mv "$inbox/$file" "$queue"
+                    touch "$file.$RUN_ID"
+                    cp "$inbox/$file" "$queue"
 
-                    nFiles=$((nFiles - 1))
-                    report_size $nFiles
+                    if [[ $? = 0 ]]; then
+                        nFiles=$((nFiles - 1))
+                        report_size $nFiles
+                    fi
 
                     # we currently use round-robin assignment to workers
                     idx=$((idx + 1))
                     idx=$((idx % $nQueues))
                 fi
-            done                
+            done
     fi
 
     sleep 5

@@ -2,6 +2,10 @@
 - name: workstealer
   image: codeflare-workstealer-component:dev
   env:
+    - name: RUN_ID
+      value: {{ .Values.runId }}
+    - name: INBOX
+      value: {{ .Values.inbox | default "inbox" }}
     - name: QUEUE
       value: {{ print "/mnt/datasets/" .Values.dataset }}
   resources:

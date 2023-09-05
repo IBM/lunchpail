@@ -44,6 +44,9 @@ def run_size(customApi, name: str, spec, application):
 
     run_size_config = load_run_size_config(customApi, size)
 
+    # TODOs:
+    # 1) the default-run-size-config should not include GPUs if the cluster does not support them
+    # 2) we need to detect this situation here; i.e. if the cluster-default run_size_config['gpu']=0, then `clusterSupportsGpu=false`
     runAskedForGpu = 'supportsGpu' in spec and spec['supportsGpu'] == True
     runDisabledGpu = 'supportsGpu' in spec and spec['supportsGpu'] == False
     appSupportsGpu = 'supportsGpu' in application['spec'] and application['spec']['supportsGpu'] == True

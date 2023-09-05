@@ -9,6 +9,8 @@ set -o pipefail
 export RUNNING_CODEFLARE_TESTS=1
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+TOP="$SCRIPTDIR"/../..
+
 . "$SCRIPTDIR"/helpers.sh
 
 while getopts "gu" opt
@@ -41,6 +43,14 @@ do
     . "$path"/settings.sh
 
     testname=${testname-$(basename $path)}
+
+    if [[ -e "$path"/data.sh ]]; then
+        echo "$(tput setaf 2)🧪 Copying in data for $testname$(tput sgr0)" 1>&2
+        echo ""
+        "$path"/data.sh
+        "$TOP"/hack/s3-copyin.sh
+        echo "✅ Done copying in data for $testname"
+    fi
     
     if [[ ${#expected[@]} != 0 ]]
     then

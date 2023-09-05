@@ -7,7 +7,7 @@ from kubernetes.client.rest import ApiException
 from logs import track_job_logs
 from status import set_status, set_status_immediately, add_error_condition
 from run_size import run_size
-from datasets import prepare_dataset_labels, prepare_dataset_labels_for_workerpool
+from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_dataset_labels_for_workerpool
 
 from shell import create_run_shell
 from ray import create_run_ray
@@ -37,11 +37,18 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, pa
             set_status(name, namespace, 'Failed', patch)
             raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
 
-        dataset_labels = [] # prepare_dataset_labels(customApi, name, namespace, spec, application)
-        dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, dataset_labels)
+        # we need to take the union of application datasets, possibly
+        # overridden by workerpool datasets e.g. an application may
+        # specify it needs dataset "foo" mounted as a filesystem,
+        # whereas the pool wants it mounted as a configmap we want the
+        # pool's preference to take priority here; but any datasets
+        # the application needs that the pool has no opinions on, we
+        # will use the config from the application
+        datasets, dataset_labels = prepare_dataset_labels2(customApi, name, namespace, spec, application)
+        dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, datasets, dataset_labels)
 
         if dataset_labels is not None:
-            logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
+            logging.info(f"Attaching datasets WorkerPool={name} datasets={dataset_labels}")
 
         # initial ready count
         patch.metadata['codeflare.dev/ready'] = '0'
@@ -50,7 +57,8 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, pa
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
         # add_error_condition_to_run(customApi, name, namespace, str(e).strip(), patch)
-        raise kopf.PermanentError(f"Error handling run creation. {str(e)}")
+        logging.error(e)
+        raise kopf.PermanentError(f"Error handling WorkerPool creation. {str(e)}")
 
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
@@ -117,7 +125,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
         add_error_condition(customApi, name, namespace, str(e).strip(), patch)
-        raise kopf.PermanentError(f"Error handling run creation. {str(e)}")
+        raise kopf.PermanentError(f"Error handling Run creation. {str(e)}")
 
 def plural(component: str):
     if component == "workerpool":
@@ -243,4 +251,4 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
             logging.info(f"Dropping event {body}")
 
     except Exception as e:
-        logging.error(f"Error handling pod event name={name} namespace={namespace}. {str(e)}")
+        logging.error(f"Error handling Pod event name={name} namespace={namespace}. {str(e)}")

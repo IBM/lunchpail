@@ -21,6 +21,7 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
             namespace,
             part_of,
             run_id,
+            spec["inbox"] if "inbox" in spec else "",
             dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else ""
         ], capture_output=True)
