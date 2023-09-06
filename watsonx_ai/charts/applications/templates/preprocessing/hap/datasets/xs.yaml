@@ -1,7 +1,7 @@
 apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
-  name: hap-xs
+  name: hapxs
   namespace: codeflare-watsonxai-preprocessing
 spec:
   local:
