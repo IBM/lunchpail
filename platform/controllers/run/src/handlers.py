@@ -136,7 +136,8 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
         lastCondition = conditions[-1]
         component_name = labels["app.kubernetes.io/name"]
         phase = lastCondition['type'] if 'type' in lastCondition else 'Pending'
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+        message = lastCondition['reason'] if 'reason' in lastCondition else ""
+        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": message } } }
         logging.info(f"Handling managed AppWrapper update component_name={component_name} phase={phase}")
 
         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
@@ -180,7 +181,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
 
         run_name = labels["app.kubernetes.io/part-of"]
         logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "" } } }
         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
     except Exception as e:
         logging.error(f"Error patching Run on Pod status update name={name} namespace={namespace}. {str(e)}")
@@ -227,6 +228,12 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
                     plural = "runs"
                     run_name = pod_labels["app.kubernetes.io/part-of"]
                     patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+
+                    if "message" in body:
+                        patch_body["metadata"]["annotations"]["codeflare.dev/message"] = body["message"]
+                    else:
+                        patch_body["metadata"]["annotations"]["codeflare.dev/message"] = ""
+
                     logging.info(f"Patching from pod event run_name={run_name} plural={plural} phase={phase}")
                     try:
                         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural, name=run_name, namespace=namespace, body=patch_body)
