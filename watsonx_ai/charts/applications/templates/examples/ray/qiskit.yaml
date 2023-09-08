@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Values.namespace.examples }}
 spec:
   api: ray
-  image: ghcr.io/project-codeflare/ray22:0.0.1
+  image: ghcr.io/project-codeflare/ray22:0.0.3
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/examples/ray
   command: python3 main.py
   supportsGpu: false
