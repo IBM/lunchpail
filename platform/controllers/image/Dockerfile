@@ -1,7 +1,4 @@
-FROM python:3.10-slim
-
-RUN pip install --no-cache-dir kopf kubernetes
+FROM ghcr.io/project-codeflare/torchx-slim:0.0.5
 
 ADD src /src
-
 CMD kopf run /src/handlers.py --verbose
