@@ -6,4 +6,4 @@ datashim:
 datasets:
   s3:
     secret:
-      name: test-dataset-s3
+      name: cfp-test-dataset-s3
