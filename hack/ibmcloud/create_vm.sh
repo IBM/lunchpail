@@ -107,7 +107,7 @@ fi
 
 echo "Reserving floating ip" 1>&2
 resp=$(curl -s -X POST \
-            "$endpoint/v1/floating_ips?version=2023-07-06&generation=2" \
+            "$endpoint/v1/floating_ips?version=2023-08-24&generation=2" \
             -H "Authorization: Bearer $iam_token" \
             -H "Content-Type: application/json" \
             -H "accept: application/json" \

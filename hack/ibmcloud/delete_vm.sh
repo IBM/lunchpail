@@ -20,5 +20,5 @@ curl -X DELETE \
 
 echo "Deleting ip $ip_id" 1>&2
 curl -X DELETE \
-     "$endpoint/v1/floating_ips/$ip_id?version=2023-08-17&generation=2" \
+     "$endpoint/v1/floating_ips/$ip_id?version=2023-08-24&generation=2" \
      -H "Authorization: Bearer $iam_token"
