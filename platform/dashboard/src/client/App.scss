@@ -2,7 +2,8 @@
   .codeflare--body {
     flex-direction: column;
   }
-  .codeflare--flex-stack {
+  .codeflare--flex-stack.pf-v5-l-stack {
+    /* @patternfly/react-core@5.0.1 forced us to added the .pf-v5-l-stack override */
     flex-direction: row;
   }
 }
