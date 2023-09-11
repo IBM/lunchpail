@@ -21,6 +21,7 @@ function transformLineToEvent() {
 
       const model: QueueEvent = {
         timestamp: Date.now(),
+        run,
         inbox: parseInt(inbox, 10),
         outbox: parseInt(outbox, 10),
         processing: parseInt(processing, 10),

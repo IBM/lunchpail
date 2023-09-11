@@ -3,6 +3,7 @@ import type QueueEvent from "../components/WorkerPoolModel.js"
 import type DataSetModel from "../components/DataSetModel.js"
 import { intervalParam } from "../App"
 
+const runs = ["R1"]
 const datasets = Array(3)
   .fill(0)
   .map((_, idx) => idx.toString()) // ["0", "1", "2"]
@@ -25,6 +26,7 @@ function randomQueueEvent(workerpool: string, nWorkers: number): QueueEvent {
   const dataset = datasets[getRandomLiveDataSetIndex()]
   return {
     timestamp: Date.now(),
+    run: runs[0], // TODO multiple demo runs?
     workerIndex,
     workerpool,
     dataset,

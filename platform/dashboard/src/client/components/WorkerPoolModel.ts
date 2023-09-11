@@ -11,21 +11,44 @@ export interface WorkerPoolModel {
   label: string
 }
 
+/**
+ * Temporal history of queue depths
+ */
 export type QueueHistory = {
+  /** History of number of completed tasks */
   outboxHistory: number[]
+
+  /** Timestamps, parallel to the `outboxHistory` array */
   timestamps: number[]
 }
 
 export type WorkerPoolModelWithHistory = WorkerPoolModel & QueueHistory
 
+/**
+ * An update as to the depth of a queue
+ */
 export default interface QueueEvent {
-  /** millis since epoch */
+  /** Millis since epoch */
   timestamp: number
 
-  inbox: number
-  outbox: number
-  processing: number
-  dataset: string
+  /** Run that this queue is part of */
+  run: string
+
+  /** Name of WorkerPool that this queue is part of */
   workerpool: string
+
+  /** Index of this worker in this WorkerPool */
   workerIndex: number
+
+  /** Name of DataSet that this queue is helping to process */
+  dataset: string
+
+  /** Queue depth of the inbox */
+  inbox: number
+
+  /** Number of completed tasks by this worker */
+  outbox: number
+
+  /** Number of in-process tasks by this worker */
+  processing: number
 }
