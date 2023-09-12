@@ -45,12 +45,16 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     )
   }
 
+  protected pageTitle() {
+    return "Jobs Around the World Service"
+  }
+
   private header() {
     return (
       <Masthead display={{ default: "inline" }}>
         {this.headerToggle()}
         <MastheadMain>
-          <MastheadBrand>Queueless Dashboard</MastheadBrand>
+          <MastheadBrand>{this.pageTitle()}</MastheadBrand>
         </MastheadMain>
         <MastheadContent>
           <Toolbar>
