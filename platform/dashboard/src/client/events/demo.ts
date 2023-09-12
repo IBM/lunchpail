@@ -85,6 +85,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
   public close() {
     if (this.interval) {
       clearInterval(this.interval)
+      this.interval = null
     }
   }
 }
@@ -132,6 +133,7 @@ export class DemoQueueEventSource implements EventSourceLike {
   public close() {
     if (this.interval) {
       clearInterval(this.interval)
+      this.interval = null
     }
   }
 }
