@@ -19,7 +19,6 @@ type ShowAllCategoriesType = {
 }
 
 interface Props {
-  isSidebarOpen: boolean
   datasetNames: string[]
   workerpoolNames: string[]
 }
@@ -118,7 +117,7 @@ export class SidebarContent extends PureComponent<Props, State> {
     const maxShowCount = 5
     const leeway = 2
     return (
-      <PageSidebar isSidebarOpen={this.props.isSidebarOpen || false} id="vertical-sidebar">
+      <PageSidebar isManagedSidebar id="vertical-sidebar">
         <PageSidebarBody children={this.filterContent(showAllCategories, maxShowCount, leeway)} />
       </PageSidebar>
     )

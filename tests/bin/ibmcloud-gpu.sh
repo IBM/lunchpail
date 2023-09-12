@@ -89,7 +89,7 @@ if [[ -n $apikey ]] && [[ -n $resource_group ]] && [[ -n $vpc_id ]] && [[ -n $ss
         ssh -i /tmp/.ssh/gpu_ssh.prv root@$ip "sudo sysctl fs.inotify.max_user_instances=8192"
     else
         echo "Executing tests on remote host" 1>&2
-        ssh -t -t -i /tmp/.ssh/gpu_ssh.prv root@$ip "function cleanup { export apikey=$apikey; ~/cfp/hack/ibmcloud/delete_vm.sh '${GPU_CONFIG}' >& /tmp/delete_vm.out; exit 0; }; trap cleanup EXIT; export NO_KUBEFLOW=1; sudo sysctl fs.inotify.max_user_instances=8192; cd cfp; ./tests/bin/test.sh; code=$?; echo \"Remote gpu tests finished with code=$code (this message is from the remote host)\"; trap - EXIT; exit $code"
+        ssh -t -t -i /tmp/.ssh/gpu_ssh.prv root@$ip "function cleanup { export apikey=$apikey; ~/cfp/hack/ibmcloud/delete_vm.sh '${GPU_CONFIG}' >& /tmp/delete_vm.out; exit 0; }; trap cleanup EXIT; export CI=$CI; export DEBUG=$DEBUG; export NO_KUBEFLOW=1; sudo sysctl fs.inotify.max_user_instances=8192; cd cfp; ./tests/bin/test.sh; code=$?; echo \"Remote gpu tests finished with code=$code (this message is from the remote host)\"; trap - EXIT; exit $code"
         code=$?
         echo "Remote gpu tests finished with code=$code (this message is from the main test/CI host)" 1>&2
 

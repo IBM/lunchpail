@@ -246,7 +246,6 @@ export class App extends Base<Props, State> {
   protected override sidebar() {
     return (
       <SidebarContent
-        isSidebarOpen={this.state?.isSidebarOpen}
         datasetNames={Object.keys(this.state?.datasetIndex || {})}
         workerpoolNames={Object.keys(this.state?.workerpoolIndex || {})}
       />

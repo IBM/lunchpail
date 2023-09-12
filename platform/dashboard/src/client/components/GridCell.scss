@@ -79,7 +79,7 @@ $label-size: 0.5625rem;
     display: flex;
     font-size: $label-size;
     mix-blend-mode: overlay;
-    animation: spin 4s linear infinite;
+    /*animation: spin 4s linear infinite;*/
   }
 
   &[data-dataset="0"] {

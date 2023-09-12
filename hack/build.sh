@@ -8,10 +8,15 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 echo "$(tput setaf 2)Building CodeFlare$(tput sgr0)"
 
+if [[ -n "$CI" ]] && [[ -z "$DEBUG" ]]
+then
+    QUIET="-q"
+fi
+
 function build {
     local dir="$1"
     local image=$2
-    cd "$dir" && docker build -t $image .
+    cd "$dir" && docker build $QUIET -t $image .
 }
 
 function push {

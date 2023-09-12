@@ -23,8 +23,6 @@ import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 export interface BaseState {
   /** UI in dark mode? */
   useDarkMode: boolean
-  /** is sidebar open? */
-  isSidebarOpen: boolean
 }
 
 export default class Base<Props = unknown, State extends BaseState = BaseState> extends PureComponent<Props, State> {
@@ -37,22 +35,10 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
       return { useDarkMode }
     })
 
-  private readonly onSidebarToggle = () => {
-    this.setState((curState) => ({
-      isSidebarOpen: !curState?.isSidebarOpen,
-    }))
-  }
-
   protected headerToggle(): ReactNode {
     return (
       <MastheadToggle>
-        <PageToggleButton
-          variant="plain"
-          aria-label="Global navigation"
-          isSidebarOpen={this.state?.isSidebarOpen}
-          onSidebarToggle={this.onSidebarToggle}
-          id="vertical-nav-toggle"
-        >
+        <PageToggleButton variant="plain" aria-label="Global navigation" id="vertical-nav-toggle">
           <BarsIcon />
         </PageToggleButton>
       </MastheadToggle>
@@ -117,6 +103,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
       <Page
         header={this.header()}
         sidebar={this.sidebar()}
+        isManagedSidebar
         className="codeflare--dashboard"
         data-is-dark-mode={this.state?.useDarkMode || false}
       >
