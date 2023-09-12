@@ -132,7 +132,6 @@ export class App extends Base<Props, State> {
 
   public componentDidMount() {
     this.setState({
-      useDarkMode: true,
       datasetEvents: {},
       queueEvents: {},
       datasetIndex: {},

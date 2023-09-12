@@ -56,13 +56,17 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
           <Toolbar>
             <ToolbarContent>
               <ToolbarItem align={{ default: "alignRight" }}>
-                <Switch label="Dark Mode" isChecked={this.state?.useDarkMode} onChange={this.toggleDarkMode} />
+                <Switch label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
               </ToolbarItem>
             </ToolbarContent>
           </Toolbar>
         </MastheadContent>
       </Masthead>
     )
+  }
+
+  private get useDarkMode() {
+    return this.state?.useDarkMode || false
   }
 
   protected sidebar(): ReactNode {
@@ -105,7 +109,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         sidebar={this.sidebar()}
         isManagedSidebar
         className="codeflare--dashboard"
-        data-is-dark-mode={this.state?.useDarkMode || false}
+        data-is-dark-mode={this.useDarkMode}
       >
         <PageSection hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}

@@ -1,4 +1,4 @@
-import { PageSidebar, PageSidebarBody, TextInput } from "@patternfly/react-core"
+import { PageSidebar, PageSidebarBody } from "@patternfly/react-core"
 import { PureComponent, ReactNode } from "react"
 import {
   FilterSidePanel,
@@ -85,9 +85,6 @@ export class SidebarContent extends PureComponent<Props, State> {
   private filterContent(showAllCategories: ShowAllCategoriesType, maxShowCount: number, leeway: number): ReactNode {
     return (
       <FilterSidePanel id="filter-panel">
-        <FilterSidePanelCategory key="cat1">
-          <TextInput type="text" id="filter-text-input" placeholder="Filter by name" aria-label="filter text input" />
-        </FilterSidePanelCategory>
         <FilterSidePanelCategory
           key="cat2"
           title="Datasets"
@@ -117,7 +114,7 @@ export class SidebarContent extends PureComponent<Props, State> {
     const maxShowCount = 5
     const leeway = 2
     return (
-      <PageSidebar isManagedSidebar id="vertical-sidebar">
+      <PageSidebar style={{ width: "14em" }}>
         <PageSidebarBody children={this.filterContent(showAllCategories, maxShowCount, leeway)} />
       </PageSidebar>
     )
