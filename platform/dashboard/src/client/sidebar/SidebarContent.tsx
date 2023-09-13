@@ -6,14 +6,9 @@ import {
   FilterSidePanelCategoryItem,
 } from "@patternfly/react-catalog-view-extension"
 import "@patternfly/react-catalog-view-extension/dist/sass/_react-catalog-view-extension.scss"
+import { ActiveFitlersCtx, ActiveFilters } from "../context/FiltersContext"
 
-type ActiveFiltersType = {
-  filterItemName: string
-  filterItemStatus: boolean
-  filterItemType: string
-}[]
-
-type ShowAllCategoriesType = {
+type ShowAllCategories = {
   ds: boolean
   wp: boolean
 }
@@ -24,33 +19,13 @@ interface Props {
 }
 
 interface State {
-  activeFilters: ActiveFiltersType
-  showAllCategories: ShowAllCategoriesType
+  showAllCategories: ShowAllCategories
 }
 
 export class SidebarContent extends PureComponent<Props, State> {
   public constructor(props: Props) {
     super(props)
     this.state = {
-      activeFilters: [],
-      showAllCategories: {
-        ds: false,
-        wp: false,
-      },
-    }
-  }
-
-  public static getDerivedStateFromProps(props: Props) {
-    const result: ActiveFiltersType = []
-    props.datasetNames.map((name) => {
-      result.push({ filterItemName: name, filterItemStatus: true, filterItemType: "ds" })
-    })
-    props.workerpoolNames.map((name) => {
-      result.push({ filterItemName: name, filterItemStatus: true, filterItemType: "wp" })
-    })
-
-    return {
-      activeFilters: result,
       showAllCategories: {
         ds: false,
         wp: false,
@@ -59,63 +34,74 @@ export class SidebarContent extends PureComponent<Props, State> {
   }
 
   private onShowAllToggle(id: "ds" | "wp") {
-    const showAllCategories: ShowAllCategoriesType = { ...this.state?.showAllCategories }
+    const showAllCategories: ShowAllCategories = { ...this.state?.showAllCategories }
     showAllCategories[id] = !showAllCategories[id]
     this.setState({ showAllCategories })
   }
 
-  private categoryItems = (category: string) => {
-    return <>{this.state?.activeFilters.map((arrVal, idx) => this.itemRender(arrVal, idx, category))}</>
-  }
+  private categoryItems = (category: string[], whichFilter: string, actFilters: ActiveFilters) => {
+    let allActiveSets: string[] = []
 
-  private itemRender(
-    item: { filterItemName: string; filterItemStatus: boolean; filterItemType: string },
-    idx: number,
-    category: string,
-  ) {
-    if (item.filterItemType === category) {
-      return (
-        <FilterSidePanelCategoryItem key={item.filterItemName + idx} checked={item.filterItemStatus}>
-          {item.filterItemName}
-        </FilterSidePanelCategoryItem>
-      )
+    if (whichFilter === "datasets") {
+      allActiveSets = actFilters?.datasets
+    } else if (whichFilter === "workerpools") {
+      allActiveSets = actFilters?.workerpools
     }
+
+    return (
+      <>
+        {category.map((name: string, idx: number) => (
+          <FilterSidePanelCategoryItem
+            key={name + idx}
+            title={name}
+            checked={allActiveSets.includes(name)}
+            // onClick={(e) => this.onFilterChange(e, whichFilter)}
+          >
+            {name}
+          </FilterSidePanelCategoryItem>
+        ))}
+      </>
+    )
   }
 
-  private filterContent(showAllCategories: ShowAllCategoriesType, maxShowCount: number, leeway: number): ReactNode {
+  private filterContent(maxShowCount: number, leeway: number): ReactNode {
     return (
       <FilterSidePanel id="filter-panel">
         <FilterSidePanelCategory
-          key="cat2"
+          key="cat1"
           title="Datasets"
           maxShowCount={maxShowCount}
           leeway={leeway}
-          showAll={showAllCategories.ds}
+          showAll={this.state.showAllCategories.ds}
           onShowAllToggle={() => this.onShowAllToggle("ds")}
         >
-          {this.categoryItems("ds")}
+          <ActiveFitlersCtx.Consumer>
+            {(value) => this.categoryItems(this.props.datasetNames, "datasets", value)}
+          </ActiveFitlersCtx.Consumer>
         </FilterSidePanelCategory>
         <FilterSidePanelCategory
-          key="cat3"
+          key="cat2"
           title="Worker Pools"
           maxShowCount={maxShowCount}
           leeway={leeway}
-          showAll={showAllCategories.wp}
+          showAll={this.state.showAllCategories.wp}
           onShowAllToggle={() => this.onShowAllToggle("wp")}
         >
-          {this.categoryItems("wp")}
+          <ActiveFitlersCtx.Consumer>
+            {(value) => this.categoryItems(this.props.workerpoolNames, "workerpools", value)}
+          </ActiveFitlersCtx.Consumer>
         </FilterSidePanelCategory>
       </FilterSidePanel>
     )
   }
 
   public render() {
-    const { showAllCategories } = this.state
+    // Variables to assist with rendering
     const maxShowCount = 5
     const leeway = 2
     return (
       <PageSidebar className="codeflare--page-sidebar" isSidebarOpen={true}>
-        <PageSidebarBody>{this.filterContent(showAllCategories, maxShowCount, leeway)}</PageSidebarBody>
+        <PageSidebarBody>{this.filterContent(maxShowCount, leeway)}</PageSidebarBody>
       </PageSidebar>
     )
   }
