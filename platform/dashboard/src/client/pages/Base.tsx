@@ -46,7 +46,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
   }
 
   protected pageTitle() {
-    return "Jobs Around the World Service"
+    return "Jobs World Service"
   }
 
   private header() {
