@@ -114,7 +114,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
   }
 
   private pluralize(text: string, value: number) {
-    return `${value} ${text}${value === 1 ? "s" : ""}`
+    return `${value} ${text}${value !== 1 ? "s" : ""}`
   }
 
   private prettyRate(tasksPerMilli: number) {

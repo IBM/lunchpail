@@ -135,7 +135,7 @@ $label-size: 0.5625rem;
     filter: grayscale(0.05) opacity(0.9);
   }
   &[data-type="processing"] {
-    filter: saturate(3);
+    filter: saturate(1.5);
   }
 
   &:hover {
