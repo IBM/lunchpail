@@ -23,6 +23,7 @@
     "split2": "^4.2.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
+    "unique-names-generator": "^4.7.1",
     "vite-express": "*"
   },
   "devDependencies": {

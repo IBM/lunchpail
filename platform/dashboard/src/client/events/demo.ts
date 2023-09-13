@@ -1,15 +1,21 @@
+import { uniqueNamesGenerator, adjectives, colors, animals } from "unique-names-generator"
+
 import type EventSourceLike from "../events/EventSourceLike.js"
 import type QueueEvent from "../components/WorkerPoolModel.js"
 import type { WorkerPoolStatusEvent } from "../components/WorkerPoolModel.js"
 import type DataSetModel from "../components/DataSetModel.js"
 import { intervalParam } from "../App"
 
+function nRandomNames(N: number): string[] {
+  const randomName = uniqueNamesGenerator.bind(undefined, { dictionaries: [adjectives, colors, animals], length: 2 })
+
+  return Array(N).fill(0).map(randomName)
+}
+
 const runs = ["R1"]
-const datasets = Array(3)
-  .fill(0)
-  .map((_, idx) => idx.toString()) // ["0", "1", "2"]
+const datasets = nRandomNames(3)
 const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false]
-const workerpools = ["A", "B"]
+const workerpools = nRandomNames(2)
 const workerpoolMaxQueueDepth = [5, 12]
 
 function getRandomLiveDataSetIndex() {
