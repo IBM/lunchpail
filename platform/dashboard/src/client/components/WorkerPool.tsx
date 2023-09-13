@@ -76,7 +76,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
         hasNoOffset: true,
         actions: !props.statusHistory?.length
           ? []
-          : [<SmallLabel>{props.statusHistory[props.statusHistory.length - 1].status}</SmallLabel>],
+          : [<SmallLabel key="status">{props.statusHistory[props.statusHistory.length - 1].status}</SmallLabel>],
       },
     }
   }
