@@ -52,3 +52,32 @@ export default interface QueueEvent {
   /** Number of in-process tasks by this worker */
   processing: number
 }
+
+/**
+ * An update as to the status of a WorkerPool
+ */
+export interface WorkerPoolStatusEvent {
+  /** Millis since epoch */
+  timestamp: number
+
+  /** Name of WorkerPool */
+  workerpool: string
+
+  /** Machine type */
+  nodeClass: string
+
+  /** Does this pool support GPU tasks? */
+  supportsGpu: boolean
+
+  /** Age of pool */
+  age: string
+
+  /** Status of pool */
+  status: string
+
+  /** Ready worker count of pool */
+  ready: number
+
+  /** Current worker count of pool */
+  size: number
+}

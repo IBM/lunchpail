@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 
-import { Split, SplitItem, Stack, StackItem, ToolbarItem } from "@patternfly/react-core"
+import { Button, Split, SplitItem, Stack, StackItem, ToolbarItem } from "@patternfly/react-core"
 
 import Base, { BaseState } from "./pages/Base"
 
@@ -9,6 +9,7 @@ import WorkerPool from "./components/WorkerPool"
 
 import type EventSourceLike from "./events/EventSourceLike"
 import type QueueEvent from "./components/WorkerPoolModel"
+import type { WorkerPoolStatusEvent } from "./components/WorkerPoolModel"
 import type DataSetModel from "./components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./components/WorkerPoolModel"
 import { SidebarContent } from "./sidebar/SidebarContent"
@@ -17,12 +18,17 @@ import "./App.scss"
 import "@patternfly/react-core/dist/styles/base.css"
 import { ActiveFilters, ActiveFitlersCtx } from "./context/FiltersContext"
 
+import PlusIcon from "@patternfly/react-icons/dist/esm/icons/plus-icon"
+
 type Props = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   datasets: string | EventSourceLike
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   queues: string | EventSourceLike
+
+  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
+  pools: string | EventSourceLike
 
   /** Route back to this page [default: /] */
   route?: string
@@ -35,11 +41,17 @@ type State = BaseState & {
   /** EventSource for Queues */
   queueSource: EventSourceLike
 
+  /** EventSource for Pools */
+  poolSource: EventSourceLike
+
   /** Events for DataSets, indexed by DataSetModel.label */
   datasetEvents: Record<string, DataSetModel[]>
 
   /** Events for Queues, indexed by WorkerPoolModel.label */
   queueEvents: Record<string, QueueEvent[]>
+
+  /** Events for Pools, indexed by WorkerPoolModel.label */
+  poolEvents: Record<string, WorkerPoolStatusEvent[]>
 
   /** Map DataSetModel.label to a dense index */
   datasetIndex: Record<string, number>
@@ -107,6 +119,21 @@ export class App extends Base<Props, State> {
     queueEvents[workerpool].push(queueEvent)
 
     this.setState({ queueEvents, workerpoolIndex })
+  }
+
+  private readonly onPoolEvent = (revt: Event) => {
+    const evt = revt as MessageEvent
+    const poolEvent = JSON.parse(evt.data) as WorkerPoolStatusEvent
+
+    this.setState((curState) => {
+      if (!(poolEvent.workerpool in curState)) {
+        curState.poolEvents[poolEvent.workerpool] = []
+      }
+      curState.poolEvents[poolEvent.workerpool].push(poolEvent)
+      return {
+        poolEvents: Object.assign(curState.poolEvents),
+      }
+    })
   }
 
   private readonly toggleDataSetFilter = (name: string) => {
@@ -199,17 +226,30 @@ export class App extends Base<Props, State> {
     return source
   }
 
+  private initPoolStream() {
+    const source =
+      typeof this.props.pools === "string"
+        ? new EventSource(this.props.pools, { withCredentials: true })
+        : this.props.pools
+    source.addEventListener("message", this.onPoolEvent, false)
+    source.addEventListener("error", console.error) // TODO
+    return source
+  }
+
   public componentWillUnmount() {
     this.state?.datasetSource?.removeEventListener("message", this.onDataSetEvent)
     this.state?.queueSource?.removeEventListener("message", this.onQueueEvent)
+    this.state?.poolSource?.removeEventListener("message", this.onPoolEvent)
     this.state?.datasetSource?.close()
     this.state?.queueSource?.close()
+    this.state?.poolSource?.close()
   }
 
   public componentDidMount() {
     this.setState({
       datasetEvents: {},
       queueEvents: {},
+      poolEvents: {},
       datasetIndex: {},
       workerpoolIndex: {},
       filterState: {
@@ -228,6 +268,7 @@ export class App extends Base<Props, State> {
       this.setState({
         datasetSource: this.initDataSetStream(),
         queueSource: this.initQueueStream(),
+        poolSource: this.initPoolStream(),
       }),
     )
   }
@@ -324,6 +365,7 @@ export class App extends Base<Props, State> {
               <WorkerPool
                 model={w}
                 datasetIndex={this.state.datasetIndex}
+                statusHistory={this.state.poolEvents[w.label]}
                 maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
               />
             )}
@@ -353,12 +395,18 @@ export class App extends Base<Props, State> {
     )
   }
 
-  /*  private readonly newpool = () => {
-    fetch()
-  }*/
-
   private addWorkerPoolButton() {
-    return <Link to={`/newpool?returnto=${encodeURIComponent(this.props.route || "/")}`}>Add Worker Pool</Link>
+    return (
+      <Button
+        isInline
+        variant="link"
+        component={(props) => (
+          <Link {...props} to={`/newpool?returnto=${encodeURIComponent(this.props.route || "/")}`}>
+            <PlusIcon /> Add Worker Pool
+          </Link>
+        )}
+      />
+    )
   }
 
   protected override footerRight() {

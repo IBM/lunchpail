@@ -13,7 +13,7 @@
 }
 
 /* These rules hack to make the sidebar always visible */
-.codeflare--dashboard {
+/*.codeflare--dashboard {
   --pf-v5-c-page__sidebar--TranslateX: var(--pf-v5-c-page__sidebar--m-expanded--TranslateX);
   grid-template-areas: "header header" "nav main" !important;
   grid-template-columns: max-content 1fr !important;
@@ -21,7 +21,7 @@
 .codeflare--page-sidebar {
   max-width: unset !important;
   overflow: unset !important;
-}
+}*/
 
 .codeflare--text-xs {
   font-size: var(--pf-v5-global--FontSize--xs);

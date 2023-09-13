@@ -3,6 +3,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  CardHeaderProps,
   CardTitle,
   Flex,
   DescriptionList,
@@ -20,17 +21,23 @@ import SmallLabel from "./SmallLabel"
 
 import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
 
-import type { WorkerPoolModelWithHistory } from "./WorkerPoolModel"
+import type { WorkerPoolModelWithHistory, WorkerPoolStatusEvent } from "./WorkerPoolModel"
 
 interface Props {
   maxNWorkers: number
   model: WorkerPoolModelWithHistory
   datasetIndex: Record<string, number>
+
+  /** This will be ordered from least recent to most recent */
+  statusHistory: WorkerPoolStatusEvent[]
 }
 
 type State = {
   /** UI for processing tasks */
   underwayCells: ReactNode[]
+
+  /** Header actions */
+  actions: CardHeaderProps["actions"]
 }
 
 export default class WorkerPool extends PureComponent<Props, State> {
@@ -38,6 +45,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
     super(props)
     this.state = {
       underwayCells: [],
+      actions: { actions: [] },
     }
   }
 
@@ -64,6 +72,12 @@ export default class WorkerPool extends PureComponent<Props, State> {
   public static getDerivedStateFromProps(props: Props) {
     return {
       underwayCells: WorkerPool.underwayCells(props),
+      actions: {
+        hasNoOffset: true,
+        actions: !props.statusHistory?.length
+          ? []
+          : [<SmallLabel>{props.statusHistory[props.statusHistory.length - 1].status}</SmallLabel>],
+      },
     }
   }
 
@@ -157,8 +171,8 @@ export default class WorkerPool extends PureComponent<Props, State> {
 
   public override render() {
     return (
-      <Card isCompact isRounded>
-        <CardHeader>
+      <Card isCompact isRounded isClickable isSelectable>
+        <CardHeader actions={this.state?.actions}>
           <CardTitle component="h4">{this.label()}</CardTitle>
         </CardHeader>
         <CardBody>
