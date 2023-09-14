@@ -79,9 +79,9 @@ export default class DataSet extends PureComponent<Props> {
 
   public override render() {
     return (
-      <Card isCompact isRounded>
+      <Card isRounded>
         <CardHeader>
-          <CardTitle component="h4">{this.props.label}</CardTitle>
+          <CardTitle>{this.props.label}</CardTitle>
         </CardHeader>
         <CardBody>
           <DescriptionList isCompact>

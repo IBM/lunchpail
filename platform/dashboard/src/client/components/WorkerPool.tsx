@@ -32,7 +32,7 @@ interface Props {
   statusHistory: WorkerPoolStatusEvent[]
 }
 
-type State = {
+type State = Pick<WorkerPoolStatusEvent, "ready" | "size"> & {
   /** UI for processing tasks */
   underwayCells: ReactNode[]
 
@@ -44,6 +44,8 @@ export default class WorkerPool extends PureComponent<Props, State> {
   public constructor(props: Props) {
     super(props)
     this.state = {
+      size: 0,
+      ready: 0,
       underwayCells: [],
       actions: { actions: [] },
     }
@@ -65,13 +67,11 @@ export default class WorkerPool extends PureComponent<Props, State> {
     return this.props.model.processing
   }
 
-  private get nWorkers() {
-    return this.inboxes.length
-  }
-
   public static getDerivedStateFromProps(props: Props) {
     return {
       underwayCells: WorkerPool.underwayCells(props),
+      size: !props.statusHistory?.length ? 0 : props.statusHistory[props.statusHistory.length - 1].size,
+      nReadyWorkers: !props.statusHistory?.length ? 0 : props.statusHistory[props.statusHistory.length - 1].ready,
       actions: {
         hasNoOffset: true,
         actions: !props.statusHistory?.length
@@ -171,9 +171,9 @@ export default class WorkerPool extends PureComponent<Props, State> {
 
   public override render() {
     return (
-      <Card isCompact isRounded isClickable isSelectable>
+      <Card isRounded isClickable isSelectable>
         <CardHeader actions={this.state?.actions}>
-          <CardTitle component="h4">{this.label()}</CardTitle>
+          <CardTitle>{this.label()}</CardTitle>
         </CardHeader>
         <CardBody>
           <DescriptionList isCompact>
@@ -183,7 +183,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
               this.completionRate(),
               medianCompletionRate(this.props.model),
             )}
-            {this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.nWorkers)})`, this.enqueued())}
+            {this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.state?.size)})`, this.enqueued())}
           </DescriptionList>
         </CardBody>
       </Card>
