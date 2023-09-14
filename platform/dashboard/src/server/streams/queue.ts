@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-import type QueueEvent from "../../client/components/WorkerPoolModel"
+import type QueueEvent from "../../client/events/QueueEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a

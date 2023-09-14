@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-import type { WorkerPoolStatusEvent } from "../../client/components/WorkerPoolModel"
+import type WorkerPoolStatusEvent from "../../client/events/WorkerPoolStatusEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -12,11 +12,15 @@ function transformLineToEvent() {
   return new Transform({
     transform(chunk: Buffer, encoding: string, callback) {
       // Splits the string by spaces
-      const [, workerpool, ready, size, nodeClass, supportsGpu, age, status] = chunk.toString().split(/\s+/)
+      const [ns, workerpool, application, ready, size, nodeClass, supportsGpu, age, status] = chunk
+        .toString()
+        .split(/\s+/)
 
       const model: WorkerPoolStatusEvent = {
         timestamp: Date.now(),
+        ns,
         workerpool,
+        applications: [application],
         nodeClass,
         supportsGpu: /true/i.test(supportsGpu),
         age,

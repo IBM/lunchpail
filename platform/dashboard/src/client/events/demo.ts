@@ -1,8 +1,8 @@
 import { uniqueNamesGenerator, adjectives, colors, animals } from "unique-names-generator"
 
 import type EventSourceLike from "../events/EventSourceLike.js"
-import type QueueEvent from "../components/WorkerPoolModel.js"
-import type { WorkerPoolStatusEvent } from "../components/WorkerPoolModel.js"
+import type QueueEvent from "../events/QueueEvent.js"
+import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent.js"
 import type DataSetModel from "../components/DataSetModel.js"
 import { intervalParam } from "../App"
 
@@ -12,7 +12,9 @@ function nRandomNames(N: number): string[] {
   return Array(N).fill(0).map(randomName)
 }
 
+const ns = "ns"
 const runs = ["R1"]
+const applications = ["A1"]
 const datasets = nRandomNames(3)
 const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false]
 const workerpools = nRandomNames(2)
@@ -46,7 +48,9 @@ function randomQueueEvent(workerpool: string, nWorkers: number): QueueEvent {
 function randomWorkerPoolStatusEvent(workerpool: string, nWorkers: number): WorkerPoolStatusEvent {
   return {
     timestamp: Date.now(),
+    ns,
     workerpool,
+    applications,
     nodeClass: "md",
     supportsGpu: false,
     age: "",

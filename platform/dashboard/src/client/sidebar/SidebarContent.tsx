@@ -122,7 +122,7 @@ export class SidebarContent extends PureComponent<Props, State> {
     const maxShowCount = 5
     const leeway = 2
     return (
-      <PageSidebar className="codeflare--page-sidebar" isSidebarOpen={true}>
+      <PageSidebar className="codeflare--page-sidebar">
         <PageSidebarBody>{this.filterContent(maxShowCount, leeway)}</PageSidebarBody>
       </PageSidebar>
     )

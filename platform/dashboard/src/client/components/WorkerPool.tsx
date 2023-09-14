@@ -21,7 +21,8 @@ import SmallLabel from "./SmallLabel"
 
 import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
 
-import type { WorkerPoolModelWithHistory, WorkerPoolStatusEvent } from "./WorkerPoolModel"
+import type { WorkerPoolModelWithHistory } from "./WorkerPoolModel"
+import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 
 interface Props {
   maxNWorkers: number

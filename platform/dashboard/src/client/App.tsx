@@ -1,6 +1,17 @@
+import { ReactNode } from "react"
 import { Link } from "react-router-dom"
-
-import { Button, Split, SplitItem, Stack, StackItem, Title, ToolbarItem } from "@patternfly/react-core"
+import {
+  Button,
+  Divider,
+  Panel,
+  PanelMain,
+  PanelMainBody,
+  PanelHeader,
+  Stack,
+  StackItem,
+  Title,
+  ToolbarItem,
+} from "@patternfly/react-core"
 
 import Base, { BaseState } from "./pages/Base"
 
@@ -8,8 +19,8 @@ import DataSet from "./components/DataSet"
 import WorkerPool from "./components/WorkerPool"
 
 import type EventSourceLike from "./events/EventSourceLike"
-import type QueueEvent from "./components/WorkerPoolModel"
-import type { WorkerPoolStatusEvent } from "./components/WorkerPoolModel"
+import type QueueEvent from "./events/QueueEvent"
+import type WorkerPoolStatusEvent from "./events/WorkerPoolStatusEvent"
 import type DataSetModel from "./components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./components/WorkerPoolModel"
 import { SidebarContent } from "./sidebar/SidebarContent"
@@ -373,19 +384,27 @@ export class App extends Base<Props, State> {
     )
   }
 
+  private panel(title: string, body: ReactNode) {
+    return (
+      <Panel style={{ backgroundColor: "transparent" }}>
+        <PanelHeader>
+          <Title headingLevel="h3">{title}</Title>
+        </PanelHeader>
+        <Divider />
+        <PanelMain>
+          <PanelMainBody>{body}</PanelMainBody>
+        </PanelMain>
+      </Panel>
+    )
+  }
+
   protected override body() {
     return (
-      <Split hasGutter className="codeflare--body">
+      <>
         {this.chips()}
-        <SplitItem>
-          <Title headingLevel="h2">Data Sets</Title>
-          {this.datasets()}
-        </SplitItem>
-        <SplitItem>
-          <Title headingLevel="h2">Worker Pools</Title>
-          {this.workerpools()}
-        </SplitItem>
-      </Split>
+        {this.panel("Data Sets", this.datasets())}
+        {this.panel("Worker Pools", this.workerpools())}
+      </>
     )
   }
 

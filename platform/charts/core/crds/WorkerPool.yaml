@@ -48,10 +48,13 @@ spec:
         # enables the status subresource
         status: {}
       additionalPrinterColumns:
+        - name: Application
+          type: string
+          jsonPath: .spec.application.name
         - name: Ready
           type: string
           jsonPath: ".metadata.annotations.codeflare\\.dev/ready"
-        - name: WorkerCount
+        - name: Size
           type: integer
           description: The number of workers in this pool
           jsonPath: .spec.workers.count
@@ -59,7 +62,7 @@ spec:
           type: string
           description: The node class of workers in this pool
           jsonPath: .spec.workers.size
-        - name: SupportsGPU
+        - name: GPUs?
           type: boolean
           description: Do the workers in this pool support GPU jobs?
           jsonPath: .spec.workers.supportsGpu
