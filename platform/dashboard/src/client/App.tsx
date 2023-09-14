@@ -17,6 +17,7 @@ import { SidebarContent } from "./sidebar/SidebarContent"
 import "./App.scss"
 import "@patternfly/react-core/dist/styles/base.css"
 import { ActiveFilters, ActiveFitlersCtx } from "./context/FiltersContext"
+import { FilterChips } from "./components/FilterChips"
 
 import PlusIcon from "@patternfly/react-icons/dist/esm/icons/plus-icon"
 
@@ -70,8 +71,6 @@ export function intervalParam(): number {
 }
 
 export class App extends Base<Props, State> {
-  // declare context: React.ContextType<typeof ActiveFitlersCtx>
-
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
     const datasetEvent = JSON.parse(evt.data) as DataSetModel
@@ -132,26 +131,6 @@ export class App extends Base<Props, State> {
       curState.poolEvents[poolEvent.workerpool].push(poolEvent)
       return {
         poolEvents: Object.assign(curState.poolEvents),
-      }
-    })
-  }
-
-  private readonly toggleDataSetFilter = (name: string) => {
-    this.setState((curState) => {
-      if (!curState.filterState.datasets.includes(name)) {
-        this.addDataSetToFilter(name)
-      } else {
-        this.removeDataSetFromFilter(name)
-      }
-    })
-  }
-
-  private readonly toggleWorkerPoolFilter = (name: string) => {
-    this.setState((curState) => {
-      if (!curState.filterState.workerpools.includes(name)) {
-        this.addWorkerPoolToFilter(name)
-      } else {
-        this.removeWorkerPoolFromFilter(name)
       }
     })
   }
@@ -255,8 +234,8 @@ export class App extends Base<Props, State> {
       filterState: {
         datasets: [],
         workerpools: [],
-        toggleDataSetFilter: this.toggleDataSetFilter,
-        toggleWorkerPoolFilter: this.toggleWorkerPoolFilter,
+        addDataSetToFilter: this.addDataSetToFilter,
+        addWorkerPoolToFilter: this.addWorkerPoolToFilter,
         removeDataSetFromFilter: this.removeDataSetFromFilter,
         removeWorkerPoolFromFilter: this.removeWorkerPoolFromFilter,
         clearAllFilters: this.clearAllFilters,
@@ -281,22 +260,22 @@ export class App extends Base<Props, State> {
       <Stack hasGutter className="codeflare--flex-stack">
         {Object.entries(this.state?.datasetEvents || {})
           .sort(this.lexico)
-          .map(([label, events], idx) => (
-            <StackItem key={label}>
-              {(this.state?.filterState.datasets.length == 0 ||
-                label.toString() in this.state.filterState.datasets) && (
-                <DataSet
-                  idx={idx}
-                  label={label}
-                  inbox={events[events.length - 1].inbox}
-                  inboxHistory={events.map((_) => _.inbox)}
-                  outboxHistory={events.map((_) => _.outbox)}
-                  timestamps={events.map((_) => _.timestamp)}
-                  outbox={events[events.length - 1].outbox}
-                />
-              )}
-            </StackItem>
-          ))}
+          .map(
+            ([label, events], idx) =>
+              (!this.state?.filterState.datasets.length || this.state.filterState.datasets.includes(label)) && (
+                <StackItem key={label}>
+                  <DataSet
+                    idx={idx}
+                    label={label}
+                    inbox={events[events.length - 1].inbox}
+                    inboxHistory={events.map((_) => _.inbox)}
+                    outboxHistory={events.map((_) => _.outbox)}
+                    timestamps={events.map((_) => _.timestamp)}
+                    outbox={events[events.length - 1].outbox}
+                  />
+                </StackItem>
+              ),
+          )}
       </Stack>
     )
   }
@@ -358,19 +337,19 @@ export class App extends Base<Props, State> {
   private workerpools() {
     return (
       <Stack hasGutter className="codeflare--flex-stack">
-        {this.latestWorkerPoolModel.map((w) => (
-          <StackItem key={w.label}>
-            {(this.state?.filterState.workerpools.length == 0 ||
-              w.label.toString() in this.state.filterState.workerpools) && (
-              <WorkerPool
-                model={w}
-                datasetIndex={this.state.datasetIndex}
-                statusHistory={this.state.poolEvents[w.label]}
-                maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
-              />
-            )}
-          </StackItem>
-        ))}
+        {this.latestWorkerPoolModel.map(
+          (w) =>
+            (!this.state?.filterState.workerpools.length || this.state?.filterState.workerpools.includes(w.label)) && (
+              <StackItem key={w.label}>
+                <WorkerPool
+                  model={w}
+                  datasetIndex={this.state.datasetIndex}
+                  statusHistory={this.state.poolEvents[w.label]}
+                  maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
+                />
+              </StackItem>
+            ),
+        )}
       </Stack>
     )
   }
@@ -386,9 +365,18 @@ export class App extends Base<Props, State> {
     )
   }
 
+  private chips() {
+    return (
+      <ActiveFitlersCtx.Provider value={this.state?.filterState}>
+        <FilterChips />
+      </ActiveFitlersCtx.Provider>
+    )
+  }
+
   protected override body() {
     return (
       <Split hasGutter className="codeflare--body">
+        {this.chips()}
         <SplitItem>
           <Title headingLevel="h2">Data Sets</Title>
           {this.datasets()}

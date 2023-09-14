@@ -3,18 +3,18 @@ import { createContext } from "react"
 export type ActiveFilters = {
   datasets: string[]
   workerpools: string[]
-  toggleDataSetFilter: (arg: string) => void
-  toggleWorkerPoolFilter: (arg: string) => void
+  addDataSetToFilter: (arg: string) => void
+  addWorkerPoolToFilter: (arg: string) => void
   removeDataSetFromFilter: (arg: string) => void
   removeWorkerPoolFromFilter: (arg: string) => void
   clearAllFilters: () => void
 }
 
-const initialState: ActiveFilters = {
+export const initialState: ActiveFilters = {
   datasets: [],
   workerpools: [],
-  toggleDataSetFilter: () => {},
-  toggleWorkerPoolFilter: () => {},
+  addDataSetToFilter: () => {},
+  addWorkerPoolToFilter: () => {},
   removeDataSetFromFilter: () => {},
   removeWorkerPoolFromFilter: () => {},
   clearAllFilters: () => {},

@@ -39,6 +39,28 @@ export class SidebarContent extends PureComponent<Props, State> {
     this.setState({ showAllCategories })
   }
 
+  private onFilterChange = (
+    e: React.SyntheticEvent<HTMLElement>,
+    whichFilter: string,
+    changeActiveFilters: ActiveFilters,
+  ) => {
+    const target = e.currentTarget as HTMLInputElement
+
+    if (whichFilter === "datasets") {
+      if (target.checked) {
+        changeActiveFilters.addDataSetToFilter(target.title)
+      } else if (!target.checked) {
+        changeActiveFilters.removeDataSetFromFilter(target.title)
+      }
+    } else if (whichFilter === "workerpools") {
+      if (target.checked) {
+        changeActiveFilters.addWorkerPoolToFilter(target.title)
+      } else if (!target.checked) {
+        changeActiveFilters.removeWorkerPoolFromFilter(target.title)
+      }
+    }
+  }
+
   private categoryItems = (category: string[], whichFilter: string, actFilters: ActiveFilters) => {
     let allActiveSets: string[] = []
 
@@ -55,7 +77,7 @@ export class SidebarContent extends PureComponent<Props, State> {
             key={name + idx}
             title={name}
             checked={allActiveSets.includes(name)}
-            // onClick={(e) => this.onFilterChange(e, whichFilter)}
+            onClick={(e) => this.onFilterChange(e, whichFilter, actFilters)}
           >
             {name}
           </FilterSidePanelCategoryItem>
