@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom"
 
-import { App } from "./App"
+import { Dashboard } from "./pages/Dashboard"
 import NewWorkerPool from "./pages/NewWorkerPool"
 import ErrorBoundary from "./components/ErrorBoundary"
 import { DemoDataSetEventSource, DemoQueueEventSource, DemoWorkerPoolStatusEventSource } from "./events/demo"
@@ -8,13 +8,13 @@ import { DemoDataSetEventSource, DemoQueueEventSource, DemoWorkerPoolStatusEvent
 export default createBrowserRouter([
   {
     path: "/",
-    element: <App datasets="/datasets" queues="/queues" pools="/pools" route="/" />,
+    element: <Dashboard datasets="/datasets" queues="/queues" pools="/pools" route="/" />,
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/demo",
     element: (
-      <App
+      <Dashboard
         datasets={new DemoDataSetEventSource()}
         queues={new DemoQueueEventSource()}
         pools={new DemoWorkerPoolStatusEventSource()}

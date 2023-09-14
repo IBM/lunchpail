@@ -13,22 +13,22 @@ import {
   ToolbarItem,
 } from "@patternfly/react-core"
 
-import Base, { BaseState } from "./pages/Base"
+import Base, { BaseState } from "./Base"
 
-import DataSet from "./components/DataSet"
-import WorkerPool from "./components/WorkerPool"
+import DataSet from "../components/DataSet"
+import WorkerPool from "../components/WorkerPool"
 
-import type EventSourceLike from "./events/EventSourceLike"
-import type QueueEvent from "./events/QueueEvent"
-import type WorkerPoolStatusEvent from "./events/WorkerPoolStatusEvent"
-import type DataSetModel from "./components/DataSetModel"
-import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./components/WorkerPoolModel"
-import { SidebarContent } from "./sidebar/SidebarContent"
+import type EventSourceLike from "../events/EventSourceLike"
+import type QueueEvent from "../events/QueueEvent"
+import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
+import type DataSetModel from "../components/DataSetModel"
+import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
+import { SidebarContent } from "../sidebar/SidebarContent"
 
-import "./App.scss"
+import "../App.scss"
 import "@patternfly/react-core/dist/styles/base.css"
-import { ActiveFilters, ActiveFitlersCtx } from "./context/FiltersContext"
-import { FilterChips } from "./components/FilterChips"
+import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
+import { FilterChips } from "../components/FilterChips"
 
 import PlusIcon from "@patternfly/react-icons/dist/esm/icons/plus-icon"
 
@@ -81,7 +81,7 @@ export function intervalParam(): number {
   return interval ? parseInt(interval) : 2000
 }
 
-export class App extends Base<Props, State> {
+export class Dashboard extends Base<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
     const datasetEvent = JSON.parse(evt.data) as DataSetModel

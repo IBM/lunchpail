@@ -4,7 +4,7 @@ import type EventSourceLike from "../events/EventSourceLike.js"
 import type QueueEvent from "../events/QueueEvent.js"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent.js"
 import type DataSetModel from "../components/DataSetModel.js"
-import { intervalParam } from "../App"
+import { intervalParam } from "../pages/Dashboard.js"
 
 function nRandomNames(N: number): string[] {
   const randomName = uniqueNamesGenerator.bind(undefined, { dictionaries: [adjectives, colors, animals], length: 2 })
