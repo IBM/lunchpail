@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 
-import { Button, Split, SplitItem, Stack, StackItem, ToolbarItem } from "@patternfly/react-core"
+import { Button, Split, SplitItem, Stack, StackItem, Title, ToolbarItem } from "@patternfly/react-core"
 
 import Base, { BaseState } from "./pages/Base"
 
@@ -389,8 +389,14 @@ export class App extends Base<Props, State> {
   protected override body() {
     return (
       <Split hasGutter className="codeflare--body">
-        <SplitItem>{this.datasets()}</SplitItem>
-        <SplitItem>{this.workerpools()}</SplitItem>
+        <SplitItem>
+          <Title headingLevel="h2">Data Sets</Title>
+          {this.datasets()}
+        </SplitItem>
+        <SplitItem>
+          <Title headingLevel="h2">Worker Pools</Title>
+          {this.workerpools()}
+        </SplitItem>
       </Split>
     )
   }

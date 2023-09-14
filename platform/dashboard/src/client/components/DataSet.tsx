@@ -81,7 +81,7 @@ export default class DataSet extends PureComponent<Props> {
     return (
       <Card isCompact isRounded>
         <CardHeader>
-          <CardTitle component="h4">DataSet {this.props.label}</CardTitle>
+          <CardTitle component="h4">{this.props.label}</CardTitle>
         </CardHeader>
         <CardBody>
           <DescriptionList isCompact>

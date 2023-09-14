@@ -50,7 +50,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
   }
 
   public label() {
-    return `WorkerPool ${this.props.model.label}`
+    return this.props.model.label
   }
 
   private get inboxes() {
