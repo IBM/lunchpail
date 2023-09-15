@@ -4,8 +4,6 @@ import { Flex, FlexItem } from "@patternfly/react-core"
 import SmallLabel from "./SmallLabel"
 import Queue, { Props as QueueProps } from "./Queue"
 
-import "../App.scss"
-
 type Props = QueueProps & {
   queueNum: number
   maxNWorkers: number

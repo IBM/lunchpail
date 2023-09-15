@@ -25,8 +25,7 @@ import type DataSetModel from "../components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 import { SidebarContent } from "../sidebar/SidebarContent"
 
-import "../App.scss"
-import "@patternfly/react-core/dist/styles/base.css"
+import "../pages/Dashboard.scss"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 import { FilterChips } from "../components/FilterChips"
 
