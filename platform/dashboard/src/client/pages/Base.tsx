@@ -126,6 +126,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         header={this.header()}
         sidebar={this.sidebar()}
         isManagedSidebar
+        defaultManagedSidebarIsOpen={false}
         className="codeflare--dashboard"
         data-is-dark-mode={this.useDarkMode}
       >
