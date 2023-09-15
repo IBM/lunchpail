@@ -106,7 +106,15 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     )
   }
 
+  /** Filter chips UI, will be displayed above the page body */
+  protected chips(): void | ReactNode {}
+
+  protected readonly noPadding = { default: "noPadding" as const }
+  protected readonly stickyTop = { default: "top" as const }
+
   public render() {
+    const chips = this.chips()
+
     return (
       <Page
         header={this.header()}
@@ -115,6 +123,14 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         className="codeflare--dashboard"
         data-is-dark-mode={this.useDarkMode}
       >
+        {chips ? (
+          <PageSection variant="dark" stickyOnBreakpoint={this.stickyTop}>
+            {chips}
+          </PageSection>
+        ) : (
+          <></>
+        )}
+
         <PageSection hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}
         </PageSection>

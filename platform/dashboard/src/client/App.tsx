@@ -376,11 +376,20 @@ export class App extends Base<Props, State> {
     )
   }
 
-  private chips() {
+  private get hasFilters() {
     return (
-      <ActiveFitlersCtx.Provider value={this.state?.filterState}>
-        <FilterChips />
-      </ActiveFitlersCtx.Provider>
+      this.state?.filterState &&
+      (this.state.filterState.datasets.length > 0 || this.state.filterState.workerpools.length > 0)
+    )
+  }
+
+  protected override chips() {
+    return (
+      this.hasFilters && (
+        <ActiveFitlersCtx.Provider value={this.state?.filterState}>
+          <FilterChips />
+        </ActiveFitlersCtx.Provider>
+      )
     )
   }
 
@@ -401,7 +410,6 @@ export class App extends Base<Props, State> {
   protected override body() {
     return (
       <>
-        {this.chips()}
         {this.panel("Data Sets", this.datasets())}
         {this.panel("Worker Pools", this.workerpools())}
       </>
