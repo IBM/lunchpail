@@ -339,7 +339,7 @@ export class Dashboard extends Base<Props, State> {
   }
 
   private get datasetsList(): string[] {
-    return []
+    return Object.keys(this.state?.datasetIndex || {})
   }
 
   private get latestWorkerPoolModel(): WorkerPoolModelWithHistory[] {
@@ -378,7 +378,7 @@ export class Dashboard extends Base<Props, State> {
     return (
       <ActiveFitlersCtx.Provider value={this.state?.filterState}>
         <SidebarContent
-          datasetNames={Object.keys(this.state?.datasetIndex || {})}
+          datasetNames={this.datasetsList}
           workerpoolNames={Object.keys(this.state?.workerpoolIndex || {})}
         />
       </ActiveFitlersCtx.Provider>

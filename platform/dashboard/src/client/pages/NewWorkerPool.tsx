@@ -4,18 +4,15 @@ import {
   Form,
   FormContextProvider,
   FormContextProps,
-  FormGroup,
-  FormHelperText,
   FormSection,
   Grid,
   GridItem,
-  HelperText,
-  HelperTextItem,
-  TextInput,
   Wizard,
   WizardHeader,
   WizardStep,
 } from "@patternfly/react-core"
+
+import { Input, Select } from "./Forms"
 
 type Props = {
   applications: string[]
@@ -28,26 +25,19 @@ type Props = {
 export default class NewWorkerPool extends PureComponent<Props> {
   private readonly handleNameChange = () => {}
 
-  private name({ setValue, values }: FormContextProps) {
-    const name = values.poolName
+  private name(ctrl: FormContextProps) {
+    return <Input fieldId="poolName" label="Pool name" description="Choose a name for your worker pool" ctrl={ctrl} />
+  }
 
+  private application(ctrl: FormContextProps) {
     return (
-      <FormGroup label="Pool name" isRequired fieldId="poolName">
-        <TextInput
-          isRequired
-          type="text"
-          id="poolName"
-          name="poolName"
-          aria-describedby="poolName-helper"
-          value={name}
-          onChange={(evt, value) => setValue("poolName", value)}
-        />
-        <FormHelperText>
-          <HelperText>
-            <HelperTextItem>Choose a name for your worker pool</HelperTextItem>
-          </HelperText>
-        </FormHelperText>
-      </FormGroup>
+      <Select
+        fieldId="application"
+        label="Application"
+        description="Choose the Application code this pool should run"
+        ctrl={ctrl}
+        options={this.props.applications}
+      />
     )
   }
 
@@ -73,6 +63,7 @@ export default class NewWorkerPool extends PureComponent<Props> {
           <FormSection>
             <Grid hasGutter md={6}>
               <GridItem span={12}>{this.name(ctrl)}</GridItem>
+              <GridItem>{this.application(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
