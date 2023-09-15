@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import { ReactNode, PureComponent } from "react"
 import { Link } from "react-router-dom"
 
 import {
@@ -15,21 +15,20 @@ import {
   HelperText,
   HelperTextItem,
   TextInput,
-  ToolbarItem,
 } from "@patternfly/react-core"
 
-import Base, { BaseState } from "./Base"
-
 import BackIcon from "@patternfly/react-icons/dist/esm/icons/arrow-left-icon"
+
+import type { LocationProps } from "../router/withLocation"
 
 type Values = FormContextProps["values"]
 type SetValue = FormContextProps["setValue"]
 
-type State = BaseState & {
+type State = {
   isCreating: boolean
 }
 
-export default class NewWorkerPool extends Base<unknown, State> {
+export default class NewWorkerPool extends PureComponent<LocationProps, State> {
   private readonly handleNameChange = () => {}
 
   private name(setValue: SetValue, values: Values) {
@@ -80,14 +79,12 @@ export default class NewWorkerPool extends Base<unknown, State> {
       </>
     ),
   ) {
-    const queryParams = new URLSearchParams(window.location.search)
-    const returnTo = queryParams.get("returnto") || "/"
     return (
       <Button
         isInline
         variant={variant}
         component={(props) => (
-          <Link {...props} to={returnTo}>
+          <Link {...props} to={this.props.location.pathname}>
             {text}
           </Link>
         )}
@@ -95,16 +92,12 @@ export default class NewWorkerPool extends Base<unknown, State> {
     )
   }
 
-  protected override footerRight() {
-    return <ToolbarItem>{this.returnToDashboardButton()}</ToolbarItem>
-  }
-
-  protected override body() {
+  protected body() {
     return (
       <FormContextProvider initialValues={{ poolName: "mypool" }}>
         {({ setValue, values }) => (
           <Form>
-            <FormSection title="Create Worker Pool">
+            <FormSection>
               <Grid hasGutter md={6}>
                 <GridItem span={12}>{this.name(setValue, values)}</GridItem>
               </Grid>
@@ -115,5 +108,9 @@ export default class NewWorkerPool extends Base<unknown, State> {
         )}
       </FormContextProvider>
     )
+  }
+
+  public render() {
+    return this.body()
   }
 }

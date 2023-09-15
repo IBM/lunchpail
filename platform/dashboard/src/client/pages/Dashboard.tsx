@@ -1,8 +1,9 @@
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 import {
   Button,
   Divider,
+  Modal,
   Panel,
   PanelMain,
   PanelMainBody,
@@ -18,6 +19,10 @@ import Base, { BaseState } from "./Base"
 import DataSet from "../components/DataSet"
 import WorkerPool from "../components/WorkerPool"
 
+import NewWorkerPool from "./NewWorkerPool"
+
+import type { LocationProps } from "../router/withLocation"
+
 import type EventSourceLike from "../events/EventSourceLike"
 import type QueueEvent from "../events/QueueEvent"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
@@ -31,7 +36,7 @@ import { FilterChips } from "../components/FilterChips"
 
 import PlusIcon from "@patternfly/react-icons/dist/esm/icons/plus-icon"
 
-type Props = {
+type Props = LocationProps & {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   datasets: string | EventSourceLike
 
@@ -40,9 +45,6 @@ type Props = {
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   pools: string | EventSourceLike
-
-  /** Route back to this page [default: /] */
-  route?: string
 }
 
 type State = BaseState & {
@@ -415,13 +417,30 @@ export class Dashboard extends Base<Props, State> {
     )
   }
 
+  /** Handler for cancelling the Create Worker Pool process */
+  private readonly cancelNewWorkerPool = () => {
+    this.props.navigate(this.props.location.pathname) // TODO search? state?
+  }
+
+  protected override modal() {
+    return (
+      <Modal
+        title="Create Worker Pool"
+        isOpen={this.props.location.hash === "#newpool"}
+        onClose={this.cancelNewWorkerPool}
+      >
+        <NewWorkerPool location={this.props.location} navigate={this.props.navigate} />
+      </Modal>
+    )
+  }
+
   private addWorkerPoolButton() {
     return (
       <Button
         isInline
         variant="link"
         component={(props) => (
-          <Link {...props} to={`/newpool?returnto=${encodeURIComponent(this.props.route || "/")}`}>
+          <Link {...props} to="#newpool">
             <PlusIcon /> Add Worker Pool
           </Link>
         )}

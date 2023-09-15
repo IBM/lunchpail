@@ -110,6 +110,11 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
   /** Filter chips UI, will be displayed above the page body */
   protected chips(): void | ReactNode {}
 
+  /** Modal overlay UI */
+  protected modal(): ReactNode {
+    return <Fragment />
+  }
+
   protected readonly noPadding = { default: "noPadding" as const }
   protected readonly stickyTop = { default: "top" as const }
 
@@ -138,6 +143,8 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         <PageSection padding={{ default: "noPadding" }} isFilled={false}>
           {this.footer()}
         </PageSection>
+
+        {this.modal()}
       </Page>
     )
   }
