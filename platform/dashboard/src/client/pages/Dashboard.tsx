@@ -334,6 +334,14 @@ export class Dashboard extends Base<Props, State> {
     return A
   }
 
+  private get applicationsList(): string[] {
+    return []
+  }
+
+  private get datasetsList(): string[] {
+    return []
+  }
+
   private get latestWorkerPoolModel(): WorkerPoolModelWithHistory[] {
     return Object.entries(this.state?.queueEvents || {})
       .map(([label, queueEventsForOneWorkerPool]) => {
@@ -425,11 +433,16 @@ export class Dashboard extends Base<Props, State> {
   protected override modal() {
     return (
       <Modal
-        title="Create Worker Pool"
+        aria-label="new-worker-pool-modal"
+        hasNoBodyWrapper
         isOpen={this.props.location.hash === "#newpool"}
-        onClose={this.cancelNewWorkerPool}
+        showClose={false}
       >
-        <NewWorkerPool location={this.props.location} navigate={this.props.navigate} />
+        <NewWorkerPool
+          onClose={this.cancelNewWorkerPool}
+          applications={this.applicationsList}
+          datasets={this.datasetsList}
+        />
       </Modal>
     )
   }

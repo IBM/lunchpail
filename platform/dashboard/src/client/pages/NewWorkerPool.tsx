@@ -1,9 +1,6 @@
-import { ReactNode, PureComponent } from "react"
-import { Link } from "react-router-dom"
+import { PureComponent } from "react"
 
 import {
-  ActionGroup,
-  Button,
   Form,
   FormContextProvider,
   FormContextProps,
@@ -15,23 +12,23 @@ import {
   HelperText,
   HelperTextItem,
   TextInput,
+  Wizard,
+  WizardHeader,
+  WizardStep,
 } from "@patternfly/react-core"
 
-import BackIcon from "@patternfly/react-icons/dist/esm/icons/arrow-left-icon"
+type Props = {
+  applications: string[]
+  datasets: string[]
 
-import type { LocationProps } from "../router/withLocation"
-
-type Values = FormContextProps["values"]
-type SetValue = FormContextProps["setValue"]
-
-type State = {
-  isCreating: boolean
+  /** Handler to call when this dialog closes */
+  onClose(): void
 }
 
-export default class NewWorkerPool extends PureComponent<LocationProps, State> {
+export default class NewWorkerPool extends PureComponent<Props> {
   private readonly handleNameChange = () => {}
 
-  private name(setValue: SetValue, values: Values) {
+  private name({ setValue, values }: FormContextProps) {
     const name = values.poolName
 
     return (
@@ -54,63 +51,67 @@ export default class NewWorkerPool extends PureComponent<LocationProps, State> {
     )
   }
 
-  private doCreate(values: Values) {
+  private readonly doCreate = (values: FormContextProps["values"]) => {
     console.log(values) // make eslint happy
-    this.setState({ isCreating: true })
+    this.props.onClose()
   }
 
-  private actions(values: Values) {
+  private header() {
     return (
-      <ActionGroup>
-        <Button isLoading={this.state?.isCreating} onClick={() => this.doCreate(values)}>
-          Create
-        </Button>
-
-        {this.returnToDashboardButton("secondary", "Cancel")}
-      </ActionGroup>
-    )
-  }
-
-  private returnToDashboardButton(
-    variant: "link" | "secondary" = "link",
-    text: ReactNode = (
-      <>
-        <BackIcon /> Return to Dashboard
-      </>
-    ),
-  ) {
-    return (
-      <Button
-        isInline
-        variant={variant}
-        component={(props) => (
-          <Link {...props} to={this.props.location.pathname}>
-            {text}
-          </Link>
-        )}
+      <WizardHeader
+        title="Create Worker Pool"
+        description="Configure a pool of compute resources to process a given data set."
+        onClose={this.props.onClose}
       />
     )
   }
 
-  protected body() {
+  private step1(ctrl: FormContextProps) {
     return (
-      <FormContextProvider initialValues={{ poolName: "mypool" }}>
-        {({ setValue, values }) => (
-          <Form>
-            <FormSection>
-              <Grid hasGutter md={6}>
-                <GridItem span={12}>{this.name(setValue, values)}</GridItem>
-              </Grid>
-            </FormSection>
+      <WizardStep id="new-worker-pool-step-configure" name="Configure">
+        <Form>
+          <FormSection>
+            <Grid hasGutter md={6}>
+              <GridItem span={12}>{this.name(ctrl)}</GridItem>
+            </Grid>
+          </FormSection>
+        </Form>
+      </WizardStep>
+    )
+  }
 
-            {this.actions(values)}
-          </Form>
-        )}
-      </FormContextProvider>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private step2(ctrl: FormContextProps) {
+    return (
+      <WizardStep id="new-worker-pool-step-locate" name="Choose a Location">
+        TODO
+      </WizardStep>
+    )
+  }
+
+  private review(ctrl: FormContextProps) {
+    return (
+      <WizardStep
+        id="new-worker-pool-step-review"
+        name="Review"
+        footer={{ nextButtonText: "Create Worker Pool", onNext: () => this.doCreate(ctrl.values) }}
+      >
+        TODO
+      </WizardStep>
     )
   }
 
   public render() {
-    return this.body()
+    return (
+      <FormContextProvider initialValues={{ poolName: "mypool" }}>
+        {(ctrl) => (
+          <Wizard header={this.header()} onClose={this.props.onClose}>
+            {this.step1(ctrl)}
+            {this.step2(ctrl)}
+            {this.review(ctrl)}
+          </Wizard>
+        )}
+      </FormContextProvider>
+    )
   }
 }
