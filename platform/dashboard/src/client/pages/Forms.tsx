@@ -48,19 +48,45 @@ export function Input(props: FormProps & Ctrl) {
 
 export function Select(props: FormProps & Ctrl & { options: string[] }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [selected, setSelected] = useState<string>(`Please select one`)
+
+  if (props.ctrl.values[props.fieldId] && props.ctrl.values[props.fieldId] !== selected) {
+    setSelected(props.ctrl.values[props.fieldId])
+  }
 
   return (
     <Group {...props}>
       <PFSelect
         id={props.fieldId}
+        isOpen={isOpen}
         aria-describedby={`${props.fieldId}-helper`}
-        selected={props.ctrl.values[props.fieldId]}
-        onSelect={(evt, value) => typeof value === "string" && props.ctrl.setValue(props.fieldId, value)}
-        toggle={(ref) => <MenuToggle ref={ref} onClick={() => setIsOpen(!isOpen)} isExpanded={isOpen} />}
+        onOpenChange={(isOpen) => setIsOpen(isOpen)}
+        selected={selected}
+        onSelect={(evt, value) => {
+          if (typeof value === "string") {
+            props.ctrl.setValue(props.fieldId, value)
+          }
+          setSelected(value as string)
+          setIsOpen(false)
+        }}
+        toggle={(ref) => (
+          <MenuToggle
+            ref={ref}
+            onClick={() => setIsOpen(!isOpen)}
+            isExpanded={isOpen}
+            style={{
+              width: "200px",
+            }}
+          >
+            {selected}
+          </MenuToggle>
+        )}
       >
         <SelectList>
           {props.options.map((value) => (
-            <SelectOption value={value}>{value}</SelectOption>
+            <SelectOption key={value} value={value}>
+              {value}
+            </SelectOption>
           ))}
         </SelectList>
       </PFSelect>

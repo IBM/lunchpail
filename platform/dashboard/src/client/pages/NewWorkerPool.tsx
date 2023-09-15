@@ -41,6 +41,18 @@ export default class NewWorkerPool extends PureComponent<Props> {
     )
   }
 
+  private dataset(ctrl: FormContextProps) {
+    return (
+      <Select
+        fieldId="dataset"
+        label="Data Set"
+        description="Choose the Data Set this pool should process"
+        ctrl={ctrl}
+        options={this.props.datasets}
+      />
+    )
+  }
+
   private readonly doCreate = (values: FormContextProps["values"]) => {
     console.log(values) // make eslint happy
     this.props.onClose()
@@ -64,6 +76,7 @@ export default class NewWorkerPool extends PureComponent<Props> {
             <Grid hasGutter md={6}>
               <GridItem span={12}>{this.name(ctrl)}</GridItem>
               <GridItem>{this.application(ctrl)}</GridItem>
+              <GridItem>{this.dataset(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
