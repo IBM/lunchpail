@@ -1,4 +1,7 @@
 import { PureComponent } from "react"
+import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
+import { nord as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
 
 import {
   Form,
@@ -28,7 +31,9 @@ type State = {
 }
 
 export default class NewWorkerPool extends PureComponent<Props, State> {
-  private readonly handleNameChange = () => {}
+  public componentDidMount() {
+    SyntaxHighlighter.registerLanguage("yaml", yaml)
+  }
 
   private name(ctrl: FormContextProps) {
     return <Input fieldId="poolName" label="Pool name" description="Choose a name for your worker pool" ctrl={ctrl} />
@@ -106,6 +111,29 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
     )
   }
 
+  private workerPoolYaml(values: FormContextProps["values"]) {
+    const namespace = "todo"
+    const count = 1 // TODO
+    const size = "md" // TODO
+    const supportsGpu = false // TODO
+
+    return `
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkerPool
+metadata:
+  name: ${values.name}
+  namespace: ${namespace}
+spec:
+  dataset: ${values.dataset}
+  application:
+    name: ${values.application}
+  workers:
+    count: ${count}
+    size: ${size}
+    supportsGpu: ${supportsGpu}
+`
+  }
+
   private review(ctrl: FormContextProps) {
     return (
       <WizardStep
@@ -113,7 +141,9 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
         name="Review"
         footer={{ nextButtonText: "Create Worker Pool", onNext: () => this.doCreate(ctrl.values) }}
       >
-        TODO
+        <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
+          {this.workerPoolYaml(ctrl.values)}
+        </SyntaxHighlighter>
       </WizardStep>
     )
   }
@@ -124,7 +154,7 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
         {(ctrl) => (
           <Wizard header={this.header()} onClose={this.props.onClose}>
             {this.step1(ctrl)}
-            {this.step2(ctrl)}
+            {/*this.step2(ctrl)*/}
             {this.review(ctrl)}
           </Wizard>
         )}
