@@ -117,6 +117,10 @@ spec:
           type: string
           description: The command line prefix used to run this application
           jsonPath: .spec.command
+        - name: GPUs?
+          type: boolean
+          description: Do the workers in this pool support GPU jobs?
+          jsonPath: .spec.supportsGpu
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp

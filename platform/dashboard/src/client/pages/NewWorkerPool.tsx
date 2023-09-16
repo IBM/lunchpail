@@ -22,7 +22,12 @@ type Props = {
   onClose(): void
 }
 
-export default class NewWorkerPool extends PureComponent<Props> {
+type State = {
+  /** Is the current step valid, i.e. can we enable the Next button? */
+  //  isCurrentStepIsValid: boolean
+}
+
+export default class NewWorkerPool extends PureComponent<Props, State> {
   private readonly handleNameChange = () => {}
 
   private name(ctrl: FormContextProps) {
@@ -68,9 +73,17 @@ export default class NewWorkerPool extends PureComponent<Props> {
     )
   }
 
+  private isStep1Valid(ctrl: FormContextProps) {
+    return ctrl.values.poolName && ctrl.values.application && ctrl.values.dataset
+  }
+
   private step1(ctrl: FormContextProps) {
     return (
-      <WizardStep id="new-worker-pool-step-configure" name="Configure">
+      <WizardStep
+        id="new-worker-pool-step-configure"
+        name="Configure"
+        footer={{ isNextDisabled: !this.isStep1Valid(ctrl) }}
+      >
         <Form>
           <FormSection>
             <Grid hasGutter md={6}>

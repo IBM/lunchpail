@@ -35,9 +35,9 @@ function transformLineToEvent() {
 }
 
 /**
- * @return a NodeJS `Stream` that emits a stream of serialized `QueueEvent` data
+ * @return a NodeJS `Stream` that emits a stream of serialized `WorkerPoolStatusEvent` data
  */
-export default function startQueueStream() {
+export default function startWorkerPoolStatusStream() {
   const child = spawn("kubectl", ["get", "workerpool", "-A", "--no-headers", "--watch"])
   const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent())
   splitter.on("error", console.error)

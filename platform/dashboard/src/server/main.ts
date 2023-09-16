@@ -4,6 +4,7 @@ import express, { Response } from "express"
 import startPoolStream from "./streams/pool"
 import startQueueStream from "./streams/queue"
 import startDataSetStream from "./streams/dataset"
+import startApplicationStream from "./streams/application"
 
 const app = express()
 
@@ -37,6 +38,12 @@ app.get("/queues", async (req, res) => {
 app.get("/pools", async (req, res) => {
   await initEventSource(res)
   const stream = startPoolStream()
+  stream.on("data", (model) => sendEvent(model, res))
+})
+
+app.get("/applications", async (req, res) => {
+  await initEventSource(res)
+  const stream = startApplicationStream()
   stream.on("data", (model) => sendEvent(model, res))
 })
 

@@ -25,6 +25,7 @@ import type { LocationProps } from "../router/withLocation"
 
 import type EventSourceLike from "../events/EventSourceLike"
 import type QueueEvent from "../events/QueueEvent"
+import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 import type DataSetModel from "../components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
@@ -45,6 +46,9 @@ type Props = LocationProps & {
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   pools: string | EventSourceLike
+
+  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
+  applications: string | EventSourceLike
 }
 
 type State = BaseState & {
@@ -57,6 +61,9 @@ type State = BaseState & {
   /** EventSource for Pools */
   poolSource: EventSourceLike
 
+  /** EventSource for Applications */
+  applicationSource: EventSourceLike
+
   /** Events for DataSets, indexed by DataSetModel.label */
   datasetEvents: Record<string, DataSetModel[]>
 
@@ -65,6 +72,9 @@ type State = BaseState & {
 
   /** Events for Pools, indexed by WorkerPoolModel.label */
   poolEvents: Record<string, WorkerPoolStatusEvent[]>
+
+  /** Events for Applications, indexed by ApplicationSpecEvent.application */
+  applicationEvents: Record<string, ApplicationSpecEvent[]>
 
   /** Map DataSetModel.label to a dense index */
   datasetIndex: Record<string, number>
@@ -137,12 +147,27 @@ export class Dashboard extends Base<Props, State> {
     const poolEvent = JSON.parse(evt.data) as WorkerPoolStatusEvent
 
     this.setState((curState) => {
-      if (!(poolEvent.workerpool in curState)) {
+      if (!(poolEvent.workerpool in curState.poolEvents)) {
         curState.poolEvents[poolEvent.workerpool] = []
       }
       curState.poolEvents[poolEvent.workerpool].push(poolEvent)
       return {
         poolEvents: Object.assign(curState.poolEvents),
+      }
+    })
+  }
+
+  private readonly onApplicationEvent = (revt: Event) => {
+    const evt = revt as MessageEvent
+    const applicationEvent = JSON.parse(evt.data) as ApplicationSpecEvent
+
+    this.setState((curState) => {
+      if (!(applicationEvent.application in curState.applicationEvents)) {
+        curState.applicationEvents[applicationEvent.application] = []
+      }
+      curState.applicationEvents[applicationEvent.application].push(applicationEvent)
+      return {
+        applicationEvents: Object.assign(curState.applicationEvents),
       }
     })
   }
@@ -227,13 +252,25 @@ export class Dashboard extends Base<Props, State> {
     return source
   }
 
+  private initApplicationStream() {
+    const source =
+      typeof this.props.applications === "string"
+        ? new EventSource(this.props.applications, { withCredentials: true })
+        : this.props.applications
+    source.addEventListener("message", this.onApplicationEvent, false)
+    source.addEventListener("error", console.error) // TODO
+    return source
+  }
+
   public componentWillUnmount() {
     this.state?.datasetSource?.removeEventListener("message", this.onDataSetEvent)
     this.state?.queueSource?.removeEventListener("message", this.onQueueEvent)
     this.state?.poolSource?.removeEventListener("message", this.onPoolEvent)
+    this.state?.applicationSource?.removeEventListener("message", this.onApplicationEvent)
     this.state?.datasetSource?.close()
     this.state?.queueSource?.close()
     this.state?.poolSource?.close()
+    this.state?.applicationSource?.close()
   }
 
   public componentDidMount() {
@@ -241,6 +278,7 @@ export class Dashboard extends Base<Props, State> {
       datasetEvents: {},
       queueEvents: {},
       poolEvents: {},
+      applicationEvents: {},
       datasetIndex: {},
       workerpoolIndex: {},
       filterState: {
@@ -260,6 +298,7 @@ export class Dashboard extends Base<Props, State> {
         datasetSource: this.initDataSetStream(),
         queueSource: this.initQueueStream(),
         poolSource: this.initPoolStream(),
+        applicationSource: this.initApplicationStream(),
       }),
     )
   }
@@ -335,7 +374,7 @@ export class Dashboard extends Base<Props, State> {
   }
 
   private get applicationsList(): string[] {
-    return []
+    return Object.keys(this.state?.applicationEvents || {})
   }
 
   private get datasetsList(): string[] {
