@@ -16,6 +16,7 @@ import {
 } from "@patternfly/react-core"
 
 import { Input, Select } from "./Forms"
+import type NewPoolHandler from "../events/NewPoolHandler"
 
 type Props = {
   applications: string[]
@@ -23,14 +24,24 @@ type Props = {
 
   /** Handler to call when this dialog closes */
   onClose(): void
+
+  /** Handler for NewWorkerPool */
+  newpool: NewPoolHandler
 }
 
 type State = {
-  /** Is the current step valid, i.e. can we enable the Next button? */
-  //  isCurrentStepIsValid: boolean
+  /** Error in the request to create a pool? */
+  errorInCreateRequest?: unknown
 }
 
 export default class NewWorkerPool extends PureComponent<Props, State> {
+  private defaults = {
+    poolName: "mypool",
+    count: String(1),
+    size: "xs",
+    supportsGpu: false.toString(),
+  }
+
   public componentDidMount() {
     SyntaxHighlighter.registerLanguage("yaml", yaml)
   }
@@ -63,8 +74,16 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
     )
   }
 
-  private readonly doCreate = (values: FormContextProps["values"]) => {
-    console.log(values) // make eslint happy
+  private readonly doCreate = async (values: FormContextProps["values"]) => {
+    console.log("new worker pool request", values) // make eslint happy
+    try {
+      await this.props.newpool(values, this.workerPoolYaml(values))
+    } catch (errorInCreateRequest) {
+      if (errorInCreateRequest) {
+        this.setState({ errorInCreateRequest })
+        // TODO visualize this!!
+      }
+    }
     this.props.onClose()
   }
 
@@ -113,24 +132,21 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
 
   private workerPoolYaml(values: FormContextProps["values"]) {
     const namespace = "todo"
-    const count = 1 // TODO
-    const size = "md" // TODO
-    const supportsGpu = false // TODO
 
     return `
 apiVersion: codeflare.dev/v1alpha1
 kind: WorkerPool
 metadata:
-  name: ${values.name}
+  name: ${values.poolName}
   namespace: ${namespace}
 spec:
   dataset: ${values.dataset}
   application:
     name: ${values.application}
   workers:
-    count: ${count}
-    size: ${size}
-    supportsGpu: ${supportsGpu}
+    count: ${values.count}
+    size: ${values.size}
+    supportsGpu: ${values.supportsGpu}
 `
   }
 
@@ -150,7 +166,7 @@ spec:
 
   public render() {
     return (
-      <FormContextProvider initialValues={{ poolName: "mypool" }}>
+      <FormContextProvider initialValues={this.defaults}>
         {(ctrl) => (
           <Wizard header={this.header()} onClose={this.props.onClose}>
             {this.step1(ctrl)}

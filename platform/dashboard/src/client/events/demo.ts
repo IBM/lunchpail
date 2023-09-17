@@ -1,4 +1,4 @@
-import { uniqueNamesGenerator, adjectives, colors, animals } from "unique-names-generator"
+import { uniqueNamesGenerator, colors, animals } from "unique-names-generator"
 
 import type EventSourceLike from "../events/EventSourceLike.js"
 import type QueueEvent from "../events/QueueEvent.js"
@@ -8,7 +8,7 @@ import type DataSetModel from "../components/DataSetModel.js"
 import { intervalParam } from "../pages/Dashboard.js"
 
 function nRandomNames(N: number): string[] {
-  const randomName = uniqueNamesGenerator.bind(undefined, { dictionaries: [adjectives, colors, animals], length: 2 })
+  const randomName = uniqueNamesGenerator.bind(undefined, { dictionaries: [colors, animals], length: 2 })
 
   return Array(N).fill(0).map(randomName)
 }
@@ -18,8 +18,8 @@ const runs = ["R1"]
 const applications = ["A1"]
 const datasets = nRandomNames(3)
 const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false]
-const workerpools = nRandomNames(2)
-const workerpoolMaxQueueDepth = [5, 12]
+const workerpools: string[] = [] //nRandomNames(2)
+const workerpoolNumWorkers: number[] = workerpools.map(() => Math.round(Math.random() * 8))
 
 function getRandomLiveDataSetIndex() {
   /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
@@ -142,9 +142,11 @@ export class DemoQueueEventSource implements EventSourceLike {
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * workerpools.length)
           const workerpool = workerpools[whichToUpdate]
-          const N = workerpoolMaxQueueDepth[whichToUpdate]
-          const model = randomQueueEvent(workerpool, N)
-          handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+          const N = workerpoolNumWorkers[whichToUpdate]
+          if (N > 0) {
+            const model = randomQueueEvent(workerpool, N)
+            handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+          }
           return interval
         })(), // () means invoke the interval right away
         this.intervalMillis,
@@ -188,11 +190,14 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike {
       const handlers = this.handlers
       this.interval = setInterval(
         (function interval() {
-          const whichToUpdate = Math.floor(Math.random() * workerpools.length)
-          const workerpool = workerpools[whichToUpdate]
-          const N = workerpoolMaxQueueDepth[whichToUpdate]
-          const model = randomWorkerPoolStatusEvent(workerpool, N)
-          handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) })))
+          if (workerpools.length > 0) {
+            const whichToUpdate = Math.floor(Math.random() * workerpools.length)
+            const workerpool = workerpools[whichToUpdate]
+            const N = workerpoolNumWorkers[whichToUpdate]
+            const model = randomWorkerPoolStatusEvent(workerpool, N)
+            handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) })))
+          }
+
           return interval
         })(), // () means invoke the interval right away
         this.intervalMillis,
@@ -269,4 +274,10 @@ export class DemoApplicationSpecEventSource implements EventSourceLike {
       this.interval = null
     }
   }
+}
+
+import type NewPoolHandler from "./NewPoolHandler"
+export const DemoNewPoolHandler: NewPoolHandler = (values) => {
+  workerpools.push(values.poolName)
+  workerpoolNumWorkers.push(parseInt(values.count, 10))
 }

@@ -47,4 +47,8 @@ app.get("/applications", async (req, res) => {
   stream.on("data", (model) => sendEvent(model, res))
 })
 
+app.get("/newpool", async () => {
+  // TODO
+})
+
 ViteExpress.listen(app, 3000, () => console.log("Server is listening on port 3000..."))

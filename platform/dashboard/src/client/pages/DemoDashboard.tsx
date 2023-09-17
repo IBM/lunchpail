@@ -5,6 +5,7 @@ import {
   DemoQueueEventSource,
   DemoWorkerPoolStatusEventSource,
   DemoApplicationSpecEventSource,
+  DemoNewPoolHandler,
 } from "../events/demo"
 
 export default function DemoDashboard(props: LocationProps) {
@@ -14,6 +15,7 @@ export default function DemoDashboard(props: LocationProps) {
       queues={new DemoQueueEventSource()}
       pools={new DemoWorkerPoolStatusEventSource()}
       applications={new DemoApplicationSpecEventSource()}
+      newpool={DemoNewPoolHandler}
       {...props}
     />
   )

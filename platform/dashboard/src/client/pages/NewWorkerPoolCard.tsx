@@ -38,7 +38,7 @@ export default function NewWorkerPoolCard() {
             titleText="New Worker Pool"
             icon={<EmptyStateIcon icon={PlusCircleIcon} />}
           />
-          <EmptyStateBody>Bring online additional compute resources to help service queued tasks.</EmptyStateBody>
+          <EmptyStateBody>Bring online additional compute resources to help service unprocessed tasks.</EmptyStateBody>
           <EmptyStateFooter>
             <EmptyStateActions>
               <AddWorkerPoolButton />

@@ -11,6 +11,7 @@ import NewWorkerPoolCard from "./NewWorkerPoolCard"
 
 import type { LocationProps } from "../router/withLocation"
 
+import type NewPoolHandler from "../events/NewPoolHandler"
 import type EventSourceLike from "../events/EventSourceLike"
 import type QueueEvent from "../events/QueueEvent"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
@@ -35,6 +36,9 @@ type Props = LocationProps & {
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   applications: string | EventSourceLike
+
+  /** Handler for NewWorkerPool */
+  newpool: NewPoolHandler
 }
 
 type State = BaseState & {
@@ -466,6 +470,7 @@ export class Dashboard extends Base<Props, State> {
           onClose={this.cancelNewWorkerPool}
           applications={this.applicationsList}
           datasets={this.datasetsList}
+          newpool={this.props.newpool}
         />
       </Modal>
     )
