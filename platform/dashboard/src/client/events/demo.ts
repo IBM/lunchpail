@@ -7,6 +7,13 @@ import type ApplicationSpecEvent from "../events/ApplicationSpecEvent.js"
 import type DataSetModel from "../components/DataSetModel.js"
 import { intervalParam } from "../pages/Dashboard.js"
 
+type DemoWorkerPool = {
+  name: string
+  numWorkers: number
+  applications: string[]
+  datasets: string[]
+}
+
 function nRandomNames(N: number): string[] {
   const randomName = uniqueNamesGenerator.bind(undefined, { dictionaries: [colors, animals], length: 2 })
 
@@ -15,43 +22,33 @@ function nRandomNames(N: number): string[] {
 
 const ns = "ns"
 const runs = ["R1"]
-const applications = ["A1"]
+const applications = nRandomNames(1)
 const datasets = nRandomNames(3)
-const datasetIsLive = Array(datasets.length).fill(false) // [false, false, false]
-const workerpools: string[] = [] //nRandomNames(2)
-const workerpoolNumWorkers: number[] = workerpools.map(() => Math.round(Math.random() * 8))
+const workerpools: DemoWorkerPool[] = []
 
-function getRandomLiveDataSetIndex() {
-  /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
-  while (true) {
-    const dsidx = Math.floor(Math.random() * datasets.length)
-    if (datasetIsLive[dsidx]) {
-      return dsidx
-    }
-  }
-}
-
-function randomQueueEvent(workerpool: string, nWorkers: number): QueueEvent {
+function randomQueueEvent(workerpool: DemoWorkerPool): QueueEvent {
+  const nWorkers = workerpool.numWorkers
   const workerIndex = Math.floor(Math.random() * nWorkers)
-  const dataset = datasets[getRandomLiveDataSetIndex()]
   return {
     timestamp: Date.now(),
     run: runs[0], // TODO multiple demo runs?
     workerIndex,
-    workerpool,
-    dataset,
+    workerpool: workerpool.name,
+    dataset: workerpool.datasets[0], // TODO
     inbox: Math.round(Math.random() * 4),
     outbox: Math.round(Math.random() * 2),
     processing: Math.round(Math.random() * 0.6),
   }
 }
 
-function randomWorkerPoolStatusEvent(workerpool: string, nWorkers: number): WorkerPoolStatusEvent {
+function randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool): WorkerPoolStatusEvent {
+  const nWorkers = workerpool.numWorkers
+
   return {
     timestamp: Date.now(),
     ns,
-    workerpool,
-    applications,
+    workerpool: workerpool.name,
+    applications: workerpool.applications,
     nodeClass: "md",
     supportsGpu: false,
     age: "",
@@ -95,7 +92,6 @@ export class DemoDataSetEventSource implements EventSourceLike {
             inbox: ~~(Math.random() * 20),
             outbox: ~~(Math.random() * 2),
           }
-          datasetIsLive[whichToUpdate] = true
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
         })(), // () means invoke the interval right away
@@ -142,10 +138,11 @@ export class DemoQueueEventSource implements EventSourceLike {
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * workerpools.length)
           const workerpool = workerpools[whichToUpdate]
-          const N = workerpoolNumWorkers[whichToUpdate]
-          if (N > 0) {
-            const model = randomQueueEvent(workerpool, N)
-            handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+          if (workerpool) {
+            if (workerpool.numWorkers > 0) {
+              const model = randomQueueEvent(workerpool)
+              handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+            }
           }
           return interval
         })(), // () means invoke the interval right away
@@ -193,8 +190,7 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike {
           if (workerpools.length > 0) {
             const whichToUpdate = Math.floor(Math.random() * workerpools.length)
             const workerpool = workerpools[whichToUpdate]
-            const N = workerpoolNumWorkers[whichToUpdate]
-            const model = randomWorkerPoolStatusEvent(workerpool, N)
+            const model = randomWorkerPoolStatusEvent(workerpool)
             handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) })))
           }
 
@@ -278,6 +274,10 @@ export class DemoApplicationSpecEventSource implements EventSourceLike {
 
 import type NewPoolHandler from "./NewPoolHandler"
 export const DemoNewPoolHandler: NewPoolHandler = (values) => {
-  workerpools.push(values.poolName)
-  workerpoolNumWorkers.push(parseInt(values.count, 10))
+  workerpools.push({
+    name: values.poolName,
+    numWorkers: parseInt(values.count, 10),
+    applications: [values.application],
+    datasets: [values.dataset],
+  })
 }

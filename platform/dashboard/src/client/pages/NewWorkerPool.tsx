@@ -10,12 +10,13 @@ import {
   FormSection,
   Grid,
   GridItem,
+  Text,
   Wizard,
   WizardHeader,
   WizardStep,
 } from "@patternfly/react-core"
 
-import { Input, Select } from "./Forms"
+import { Input, NumberInput, Select } from "./Forms"
 import type NewPoolHandler from "../events/NewPoolHandler"
 
 type Props = {
@@ -40,6 +41,8 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
     count: String(1),
     size: "xs",
     supportsGpu: false.toString(),
+    application: this.props.applications.length === 1 ? this.props.applications[0] : "",
+    dataset: this.props.datasets.length === 1 ? this.props.datasets[0] : "",
   }
 
   public componentDidMount() {
@@ -70,6 +73,19 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
         description="Choose the Data Set this pool should process"
         ctrl={ctrl}
         options={this.props.datasets}
+      />
+    )
+  }
+
+  private numWorkers(ctrl: FormContextProps) {
+    return (
+      <NumberInput
+        fieldId="count"
+        label="Num Workers"
+        description="Number of workers in this pool"
+        ctrl={ctrl}
+        defaultValue={ctrl.values.count ? parseInt(ctrl.values.count, 10) : 1}
+        min={1}
       />
     )
   }
@@ -114,6 +130,7 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
               <GridItem span={12}>{this.name(ctrl)}</GridItem>
               <GridItem>{this.application(ctrl)}</GridItem>
               <GridItem>{this.dataset(ctrl)}</GridItem>
+              <GridItem>{this.numWorkers(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
@@ -157,6 +174,8 @@ spec:
         name="Review"
         footer={{ nextButtonText: "Create Worker Pool", onNext: () => this.doCreate(ctrl.values) }}
       >
+        <Text component="p">Validate the settings for your new worker pool.</Text>
+
         <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
           {this.workerPoolYaml(ctrl.values)}
         </SyntaxHighlighter>

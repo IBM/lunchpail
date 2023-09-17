@@ -170,6 +170,16 @@ export default class WorkerPool extends PureComponent<Props, State> {
     )
   }
 
+  private get statusHistory() {
+    return this.props.statusHistory
+  }
+
+  private get applications() {
+    if (this.statusHistory.length > 0) {
+      return this.statusHistory[this.statusHistory.length - 1].applications
+    }
+  }
+
   public override render() {
     return (
       <Card isRounded isClickable isSelectable>
@@ -178,12 +188,9 @@ export default class WorkerPool extends PureComponent<Props, State> {
         </CardHeader>
         <CardBody>
           <DescriptionList isCompact>
+            {this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>)}
+            {this.descriptionGroup("Completion Rate", this.completionRate(), medianCompletionRate(this.props.model))}
             {this.descriptionGroup("Processing", this.underway(), this.state?.underwayCells.length)}
-            {this.descriptionGroup(
-              "Completion Rate (this pool)",
-              this.completionRate(),
-              medianCompletionRate(this.props.model),
-            )}
             {this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.state?.size)})`, this.enqueued())}
           </DescriptionList>
         </CardBody>

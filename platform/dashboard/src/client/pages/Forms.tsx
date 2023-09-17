@@ -7,6 +7,7 @@ import {
   HelperText,
   HelperTextItem,
   MenuToggle,
+  NumberInput as PFNumberInput,
   Select as PFSelect,
   SelectOption,
   SelectList,
@@ -46,9 +47,9 @@ export function Input(props: FormProps & Ctrl) {
   )
 }
 
-export function Select(props: FormProps & Ctrl & { options: string[] }) {
+export function Select(props: FormProps & Ctrl & { options: string[]; selected?: string }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selected, setSelected] = useState<string>(`Please select one`)
+  const [selected, setSelected] = useState<string>(props.selected || "Please select one")
 
   if (props.ctrl.values[props.fieldId] && props.ctrl.values[props.fieldId] !== selected) {
     setSelected(props.ctrl.values[props.fieldId])
@@ -90,6 +91,35 @@ export function Select(props: FormProps & Ctrl & { options: string[] }) {
           ))}
         </SelectList>
       </PFSelect>
+    </Group>
+  )
+}
+
+export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; min?: number; max?: number }) {
+  const [value, setValue] = useState<number | "">(props.defaultValue !== undefined ? props.defaultValue : 1)
+
+  const onChange = (evt: React.FormEvent<HTMLInputElement>) => {
+    props.ctrl.setValue(props.fieldId, evt.currentTarget.value)
+  }
+
+  const onClick = (incr: number) => () => {
+    const newValue = (value as number) + incr
+    props.ctrl.setValue(props.fieldId, newValue.toString())
+    setValue(newValue)
+  }
+  const onMinus = onClick(-1)
+  const onPlus = onClick(+1)
+
+  return (
+    <Group {...props}>
+      <PFNumberInput
+        value={value}
+        min={props.min}
+        max={props.max}
+        onMinus={onMinus}
+        onPlus={onPlus}
+        onChange={onChange}
+      />
     </Group>
   )
 }
