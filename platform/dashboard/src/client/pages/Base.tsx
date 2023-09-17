@@ -82,15 +82,14 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return <Fragment />
   }
 
-  protected footerLeft(): ReactNode {
-    return <Fragment />
-  }
+  protected footerLeft(): void | ReactNode {}
 
-  protected footerRight(): ReactNode {
-    return <Fragment />
-  }
+  protected footerRight(): void | ReactNode {}
 
   private footer(): ReactNode {
+    const left = this.footerLeft()
+    const right = this.footerRight()
+    if (!left && !right) return
     return (
       <Toolbar>
         <ToolbarContent>
@@ -98,10 +97,10 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
             <ToolbarItem>
               <SmallLabel>v{version}</SmallLabel>
             </ToolbarItem>
-            {this.footerLeft()}
+            {left || <Fragment />}
           </ToolbarGroup>
 
-          <ToolbarGroup align={{ default: "alignRight" }}>{this.footerRight()}</ToolbarGroup>
+          <ToolbarGroup align={{ default: "alignRight" }}>{right || <Fragment />}</ToolbarGroup>
         </ToolbarContent>
       </Toolbar>
     )

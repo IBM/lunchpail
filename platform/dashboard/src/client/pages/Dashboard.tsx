@@ -1,18 +1,5 @@
 import type { ReactNode } from "react"
-import { Link } from "react-router-dom"
-import {
-  Button,
-  Divider,
-  Modal,
-  Panel,
-  PanelMain,
-  PanelMainBody,
-  PanelHeader,
-  Stack,
-  StackItem,
-  Title,
-  ToolbarItem,
-} from "@patternfly/react-core"
+import { Divider, Gallery, Modal, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
 
 import Base, { BaseState } from "./Base"
 
@@ -20,6 +7,7 @@ import DataSet from "../components/DataSet"
 import WorkerPool from "../components/WorkerPool"
 
 import NewWorkerPool from "./NewWorkerPool"
+import NewWorkerPoolCard from "./NewWorkerPoolCard"
 
 import type { LocationProps } from "../router/withLocation"
 
@@ -34,8 +22,6 @@ import { SidebarContent } from "../sidebar/SidebarContent"
 import "../pages/Dashboard.scss"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 import { FilterChips } from "../components/FilterChips"
-
-import PlusIcon from "@patternfly/react-icons/dist/esm/icons/plus-icon"
 
 type Props = LocationProps & {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
@@ -308,26 +294,25 @@ export class Dashboard extends Base<Props, State> {
 
   private datasets() {
     return (
-      <Stack hasGutter className="codeflare--flex-stack">
+      <Gallery hasGutter className="codeflare--flex-stack">
         {Object.entries(this.state?.datasetEvents || {})
           .sort(this.lexico)
           .map(
             ([label, events], idx) =>
               (!this.state?.filterState.datasets.length || this.state.filterState.datasets.includes(label)) && (
-                <StackItem key={label}>
-                  <DataSet
-                    idx={idx}
-                    label={label}
-                    inbox={events[events.length - 1].inbox}
-                    inboxHistory={events.map((_) => _.inbox)}
-                    outboxHistory={events.map((_) => _.outbox)}
-                    timestamps={events.map((_) => _.timestamp)}
-                    outbox={events[events.length - 1].outbox}
-                  />
-                </StackItem>
+                <DataSet
+                  key={label}
+                  idx={idx}
+                  label={label}
+                  inbox={events[events.length - 1].inbox}
+                  inboxHistory={events.map((_) => _.inbox)}
+                  outboxHistory={events.map((_) => _.outbox)}
+                  timestamps={events.map((_) => _.timestamp)}
+                  outbox={events[events.length - 1].outbox}
+                />
               ),
           )}
-      </Stack>
+      </Gallery>
     )
   }
 
@@ -395,21 +380,21 @@ export class Dashboard extends Base<Props, State> {
 
   private workerpools() {
     return (
-      <Stack hasGutter className="codeflare--flex-stack">
+      <Gallery hasGutter className="codeflare--flex-stack">
+        <NewWorkerPoolCard />
         {this.latestWorkerPoolModel.map(
           (w) =>
             (!this.state?.filterState.workerpools.length || this.state?.filterState.workerpools.includes(w.label)) && (
-              <StackItem key={w.label}>
-                <WorkerPool
-                  model={w}
-                  datasetIndex={this.state.datasetIndex}
-                  statusHistory={this.state.poolEvents[w.label]}
-                  maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
-                />
-              </StackItem>
+              <WorkerPool
+                key={w.label}
+                model={w}
+                datasetIndex={this.state.datasetIndex}
+                statusHistory={this.state.poolEvents[w.label]}
+                maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
+              />
             ),
         )}
-      </Stack>
+      </Gallery>
     )
   }
 
@@ -484,23 +469,5 @@ export class Dashboard extends Base<Props, State> {
         />
       </Modal>
     )
-  }
-
-  private addWorkerPoolButton() {
-    return (
-      <Button
-        isInline
-        variant="link"
-        component={(props) => (
-          <Link {...props} to="#newpool">
-            <PlusIcon /> Add Worker Pool
-          </Link>
-        )}
-      />
-    )
-  }
-
-  protected override footerRight() {
-    return <ToolbarItem>{this.addWorkerPoolButton()}</ToolbarItem>
   }
 }
