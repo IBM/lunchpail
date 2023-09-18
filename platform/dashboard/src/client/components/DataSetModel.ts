@@ -2,6 +2,9 @@ type DataSetModel = {
   /** Name of this dataset */
   label: string
 
+  /** Optionally, to force that this dataset has a particular index in the UI (e.g. for UI coloring) */
+  idx?: number
+
   /** Number of unassigned tasks for this dataset */
   inbox: number
 

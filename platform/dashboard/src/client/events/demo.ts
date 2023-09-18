@@ -1,4 +1,4 @@
-import { uniqueNamesGenerator, colors, animals } from "unique-names-generator"
+import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import type NewPoolHandler from "./NewPoolHandler"
 import type EventSourceLike from "../events/EventSourceLike.js"
@@ -13,30 +13,40 @@ type DemoWorkerPool = {
   numWorkers: number
   applications: string[]
   datasets: string[]
-}
-
-function nRandomNames(N: number): string[] {
-  const randomName = uniqueNamesGenerator.bind(undefined, { dictionaries: [colors, animals], length: 2 })
-
-  return Array(N).fill(0).map(randomName)
+  inboxes: number[]
+  outboxes: number[]
+  processing: number[]
 }
 
 const ns = "ns"
 const runs = ["R1"]
-const applications = nRandomNames(1)
+const applications = Array(1)
+  .fill(0)
+  .map(() => uniqueNamesGenerator({ dictionaries: [animals] }))
 
-function randomQueueEvent(workerpool: DemoWorkerPool): QueueEvent {
+function randomQueueEvent(
+  workerpool: DemoWorkerPool,
+  inboxIncr: number,
+  outboxIncr: number,
+  processingIncr: number,
+): QueueEvent {
   const nWorkers = workerpool.numWorkers
   const workerIndex = Math.floor(Math.random() * nWorkers)
+  const datasetIndex = Math.floor(Math.random() * workerpool.datasets.length)
+
+  workerpool.inboxes[workerIndex] = Math.max(0, (workerpool.inboxes[workerIndex] || 0) + inboxIncr)
+  workerpool.outboxes[workerIndex] = Math.max(0, (workerpool.outboxes[workerIndex] || 0) + outboxIncr)
+  workerpool.processing[workerIndex] = Math.max(0, (workerpool.processing[workerIndex] || 0) + processingIncr)
+
   return {
     timestamp: Date.now(),
     run: runs[0], // TODO multiple demo runs?
     workerIndex,
     workerpool: workerpool.name,
-    dataset: workerpool.datasets[0], // TODO
-    inbox: Math.round(Math.random() * 4),
-    outbox: Math.round(Math.random() * 2),
-    processing: Math.round(Math.random() * 0.6),
+    dataset: workerpool.datasets[datasetIndex],
+    inbox: workerpool.inboxes[workerIndex],
+    outbox: workerpool.outboxes[workerIndex],
+    processing: workerpool.processing[workerIndex],
   }
 }
 
@@ -79,11 +89,19 @@ export class DemoDataSetEventSource implements EventSourceLike {
 
   public constructor(private readonly intervalMillis = intervalParam()) {}
 
-  private readonly datasets: Omit<DataSetModel, "timestamp">[] = nRandomNames(3).map((label) => ({
-    label,
-    inbox: 0,
-    outbox: 0,
-  }))
+  private readonly colors = ["blue", "green", "purple"]
+  private readonly datasets: Omit<DataSetModel, "timestamp">[] = Array(3)
+    .fill(0)
+    .map((_, idx) => ({
+      label: this.colors[idx],
+      idx,
+      inbox: 0,
+      outbox: 0,
+    }))
+
+  public get sets(): readonly Omit<DataSetModel, "timestamp">[] {
+    return this.datasets
+  }
 
   private initInterval() {
     if (!this.interval) {
@@ -92,10 +110,12 @@ export class DemoDataSetEventSource implements EventSourceLike {
       this.interval = setInterval(
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * datasets.length)
-          const model: DataSetModel = Object.assign({}, datasets[whichToUpdate], {
+          const dataset = datasets[whichToUpdate]
+          dataset.inbox++
+          const model: DataSetModel = Object.assign({}, dataset, {
             timestamp: Date.now(),
-            inbox: ~~(Math.random() * 20),
-            outbox: ~~(Math.random() * 2),
+            //inbox: ~~(Math.random() * 20),
+            //outbox: ~~(Math.random() * 2),
           })
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
@@ -135,13 +155,15 @@ export class DemoQueueEventSource implements EventSourceLike {
   private interval: null | ReturnType<typeof setInterval> = null
 
   public constructor(
-    private pools: DemoWorkerPoolStatusEventSource,
+    private readonly pools: DemoWorkerPoolStatusEventSource,
+    private readonly datasets: DemoDataSetEventSource,
     private readonly intervalMillis = 2000,
   ) {}
 
   private initInterval() {
     if (!this.interval) {
       const handlers = this.handlers
+      const datasets = this.datasets.sets
       const workerpools = this.pools.pools
 
       this.interval = setInterval(
@@ -150,8 +172,18 @@ export class DemoQueueEventSource implements EventSourceLike {
           const workerpool = workerpools[whichToUpdate]
           if (workerpool) {
             if (workerpool.numWorkers > 0) {
-              const model = randomQueueEvent(workerpool)
-              handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+              // consume one into our inbox
+              const inOutOrProcessing = Math.floor(Math.random() * 3)
+              const inboxIncr = inOutOrProcessing === 0 ? 1 : inOutOrProcessing === 2 ? -1 : 0
+              const outboxIncr = inOutOrProcessing === 1 ? 1 : 0
+              const processingIncr = inOutOrProcessing === 2 ? 1 : inOutOrProcessing === 1 ? -1 : 0
+              const model = randomQueueEvent(workerpool, inboxIncr, outboxIncr, processingIncr)
+              const dataset = datasets.find((_) => _.label === model.dataset)
+              if (dataset) {
+                dataset.inbox = Math.max(0, dataset.inbox - inboxIncr)
+                dataset.outbox = dataset.inbox + outboxIncr
+                handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+              }
             }
           }
           return interval
@@ -249,6 +281,9 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPool
       numWorkers: parseInt(values.count, 10),
       applications: [values.application],
       datasets: [values.dataset],
+      inboxes: [],
+      outboxes: [],
+      processing: [],
     })
   }
 }

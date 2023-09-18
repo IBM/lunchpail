@@ -78,6 +78,10 @@ type State = BaseState & {
   filterState: ActiveFilters
 }
 
+function either<T>(x: T | undefined, y: T): T {
+  return x === undefined ? y : x
+}
+
 export function intervalParam(): number {
   const queryParams = new URLSearchParams(window.location.search)
   const interval = queryParams.get("interval")
@@ -308,7 +312,7 @@ export class Dashboard extends Base<Props, State> {
               (!this.state?.filterState.datasets.length || this.state.filterState.datasets.includes(label)) && (
                 <DataSet
                   key={label}
-                  idx={idx}
+                  idx={either(events[events.length - 1].idx, idx)}
                   label={label}
                   inbox={events[events.length - 1].inbox}
                   inboxHistory={events.map((_) => _.inbox)}
@@ -395,7 +399,7 @@ export class Dashboard extends Base<Props, State> {
                 key={w.label}
                 model={w}
                 datasetIndex={this.state.datasetIndex}
-                statusHistory={this.state.poolEvents[w.label]}
+                statusHistory={this.state.poolEvents[w.label] || []}
                 maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
               />
             ),

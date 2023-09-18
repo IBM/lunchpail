@@ -1,5 +1,5 @@
 import { PureComponent } from "react"
-import { uniqueNamesGenerator, colors, animals } from "unique-names-generator"
+import { uniqueNamesGenerator, languages } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
 import { nord as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
@@ -38,7 +38,7 @@ type State = {
 
 export default class NewWorkerPool extends PureComponent<Props, State> {
   private defaults = {
-    poolName: uniqueNamesGenerator({ dictionaries: [colors, animals], length: 2 }),
+    poolName: uniqueNamesGenerator({ dictionaries: [languages], length: 1, style: "lowerCase" }),
     count: String(1),
     size: "xs",
     supportsGpu: false.toString(),
@@ -73,7 +73,7 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
         label="Data Set"
         description="Choose the Data Set this pool should process"
         ctrl={ctrl}
-        options={this.props.datasets}
+        options={this.props.datasets.sort()}
       />
     )
   }

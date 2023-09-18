@@ -13,13 +13,16 @@ let props: null | EventProps = null
 function init() {
   if (props === null) {
     const pools = new DemoWorkerPoolStatusEventSource()
+    const datasets = new DemoDataSetEventSource()
+    const queues = new DemoQueueEventSource(pools, datasets)
+    const applications = new DemoApplicationSpecEventSource()
 
     props = {
-      datasets: new DemoDataSetEventSource(),
+      datasets,
       pools,
       newpool: pools,
-      queues: new DemoQueueEventSource(pools),
-      applications: new DemoApplicationSpecEventSource(),
+      queues,
+      applications,
     }
   }
 
