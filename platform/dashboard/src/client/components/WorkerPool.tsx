@@ -87,9 +87,9 @@ export default class WorkerPool extends PureComponent<Props, State> {
   /** One row per worker, within row, one cell per inbox or outbox enqueued task */
   private enqueued() {
     return (
-      <Stack className="codeflare-workqueues">
+      <Stack className="codeflare--workqueues">
         {this.inboxes.map((inbox, i) => (
-          <StackItem key={i}>
+          <StackItem key={i} className="codeflare--workqueues-rowgroup">
             <GridLayout
               maxNWorkers={this.props.maxNWorkers}
               queueNum={i + 1}

@@ -1,3 +1,22 @@
-.codeflare--workqueue {
+.codeflare--workqueues {
   column-gap: 3px;
+}
+
+.codeflare--workqueue {
+  display: table;
+}
+
+.codeflare--workqueues-rowgroup {
+  display: table-row-group;
+}
+
+.codeflare--workqueues-row {
+  display: table-row;
+}
+
+.codeflare--workqueues-cell {
+  &:first-child {
+    padding-right: 3px;
+  }
+  display: table-cell;
 }

@@ -87,7 +87,7 @@ function either<T>(x: T | undefined, y: T): T {
 export function intervalParam(): number {
   const queryParams = new URLSearchParams(window.location.search)
   const interval = queryParams.get("interval")
-  return interval ? parseInt(interval) : 2000
+  return interval ? parseInt(interval) : 1000
 }
 
 export class Dashboard extends Base<Props, State> {
@@ -99,7 +99,7 @@ export class Dashboard extends Base<Props, State> {
     const datasetIndex = this.state?.datasetIndex || {}
     let myIdx = datasetIndex[label]
     if (myIdx === undefined) {
-      myIdx = Object.keys(datasetIndex).length
+      myIdx = either(datasetEvent.idx, Object.keys(datasetIndex).length)
       datasetIndex[label] = myIdx
     }
 

@@ -13,9 +13,9 @@ type DemoWorkerPool = {
   numWorkers: number
   applications: string[]
   datasets: string[]
-  inboxes: number[]
-  outboxes: number[]
-  processing: number[]
+  inboxes: Record<string, number>[]
+  outboxes: Record<string, number>[]
+  processing: Record<string, number>[]
 }
 
 const ns = "ns"
@@ -24,30 +24,20 @@ const applications = Array(1)
   .fill(0)
   .map(() => uniqueNamesGenerator({ dictionaries: [animals] }))
 
-function randomQueueEvent(
-  workerpool: DemoWorkerPool,
-  inboxIncr: number,
-  outboxIncr: number,
-  processingIncr: number,
-): QueueEvent {
-  const nWorkers = workerpool.numWorkers
-  const workerIndex = Math.floor(Math.random() * nWorkers)
-  const datasetIndex = Math.floor(Math.random() * workerpool.datasets.length)
+function boxMullerTransform() {
+  const u1 = Math.random()
+  const u2 = Math.random()
 
-  workerpool.inboxes[workerIndex] = Math.max(0, (workerpool.inboxes[workerIndex] || 0) + inboxIncr)
-  workerpool.outboxes[workerIndex] = Math.max(0, (workerpool.outboxes[workerIndex] || 0) + outboxIncr)
-  workerpool.processing[workerIndex] = Math.max(0, (workerpool.processing[workerIndex] || 0) + processingIncr)
+  const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
+  const z1 = Math.sqrt(-2.0 * Math.log(u1)) * Math.sin(2.0 * Math.PI * u2)
 
-  return {
-    timestamp: Date.now(),
-    run: runs[0], // TODO multiple demo runs?
-    workerIndex,
-    workerpool: workerpool.name,
-    dataset: workerpool.datasets[datasetIndex],
-    inbox: workerpool.inboxes[workerIndex],
-    outbox: workerpool.outboxes[workerIndex],
-    processing: workerpool.processing[workerIndex],
-  }
+  return { z0, z1 }
+}
+
+function getNormallyDistributedRandomNumber(mean: number, stddev: number) {
+  const { z0 } = boxMullerTransform()
+
+  return z0 * stddev + mean
 }
 
 function randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool): WorkerPoolStatusEvent {
@@ -152,51 +142,29 @@ export class DemoDataSetEventSource implements EventSourceLike {
 export class DemoQueueEventSource implements EventSourceLike {
   private readonly handlers: Handler[] = []
 
-  private interval: null | ReturnType<typeof setInterval> = null
-
-  public constructor(
-    private readonly pools: DemoWorkerPoolStatusEventSource,
-    private readonly datasets: DemoDataSetEventSource,
-    private readonly intervalMillis = 2000,
-  ) {}
-
-  private initInterval() {
-    if (!this.interval) {
-      const handlers = this.handlers
-      const datasets = this.datasets.sets
-      const workerpools = this.pools.pools
-
-      this.interval = setInterval(
-        (function interval() {
-          const whichToUpdate = Math.floor(Math.random() * workerpools.length)
-          const workerpool = workerpools[whichToUpdate]
-          if (workerpool) {
-            if (workerpool.numWorkers > 0) {
-              // consume one into our inbox
-              const inOutOrProcessing = Math.floor(Math.random() * 3)
-              const inboxIncr = inOutOrProcessing === 0 ? 1 : inOutOrProcessing === 2 ? -1 : 0
-              const outboxIncr = inOutOrProcessing === 1 ? 1 : 0
-              const processingIncr = inOutOrProcessing === 2 ? 1 : inOutOrProcessing === 1 ? -1 : 0
-              const model = randomQueueEvent(workerpool, inboxIncr, outboxIncr, processingIncr)
-              const dataset = datasets.find((_) => _.label === model.dataset)
-              if (dataset) {
-                dataset.inbox = Math.max(0, dataset.inbox - inboxIncr)
-                dataset.outbox = dataset.inbox + outboxIncr
-                handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
-              }
-            }
-          }
-          return interval
-        })(), // () means invoke the interval right away
-        this.intervalMillis,
-      )
+  private queueEvent(workerpool: DemoWorkerPool, dataset: string, workerIndex: number): QueueEvent {
+    return {
+      timestamp: Date.now(),
+      run: runs[0], // TODO multiple demo runs?
+      workerIndex,
+      workerpool: workerpool.name,
+      dataset,
+      inbox: workerpool.inboxes[workerIndex][dataset] || 0,
+      outbox: workerpool.outboxes[workerIndex][dataset] || 0,
+      processing: workerpool.processing[workerIndex][dataset] || 0,
     }
+  }
+
+  public sendUpdate(workerpool: DemoWorkerPool, datasetLabel: string, workerIndex: number) {
+    const model = this.queueEvent(workerpool, datasetLabel, workerIndex)
+    setTimeout(() =>
+      this.handlers.forEach((handler) => handler(new MessageEvent("queue", { data: JSON.stringify(model) }))),
+    )
   }
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
       this.handlers.push(handler)
-      this.initInterval()
     }
   }
 
@@ -209,12 +177,7 @@ export class DemoQueueEventSource implements EventSourceLike {
     }
   }
 
-  public close() {
-    if (this.interval) {
-      clearInterval(this.interval)
-      this.interval = null
-    }
-  }
+  public close() {}
 }
 
 export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPoolHandler {
@@ -224,23 +187,32 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPool
 
   private readonly workerpools: DemoWorkerPool[] = []
 
-  public constructor(private readonly intervalMillis = 2000) {}
+  public constructor(
+    private readonly datasets: DemoDataSetEventSource,
+    private readonly queues: DemoQueueEventSource,
+    private readonly intervalMillis = 2000,
+  ) {}
 
   public get pools(): readonly DemoWorkerPool[] {
     return this.workerpools
   }
 
+  private sendEventFor = (workerpool: Readonly<DemoWorkerPool>): void => {
+    const model = randomWorkerPoolStatusEvent(workerpool)
+    setTimeout(() =>
+      this.handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) }))),
+    )
+  }
+
   private initInterval() {
     if (!this.interval) {
-      const { handlers, workerpools } = this
+      const { workerpools, sendEventFor } = this
 
       this.interval = setInterval(
         (function interval() {
           if (workerpools.length > 0) {
             const whichToUpdate = Math.floor(Math.random() * workerpools.length)
-            const workerpool = workerpools[whichToUpdate]
-            const model = randomWorkerPoolStatusEvent(workerpool)
-            handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) })))
+            sendEventFor(workerpools[whichToUpdate])
           }
 
           return interval
@@ -273,18 +245,94 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPool
     }
   }
 
+  private simulators: ReturnType<typeof setInterval>[] = []
+
+  private initGrabWorkSimulatorForWorker(pool: DemoWorkerPool, workerIndex: number) {
+    const { queues, datasets } = this
+
+    let active = false
+    this.simulators.push(
+      setInterval(
+        (function interval() {
+          // pull work off a dataset
+          if (active) return interval
+          else active = true
+
+          // eslint-disable-next-line no-async-promise-executor
+          new Promise(async () => {
+            const poolDataSetIndex = Math.floor(Math.random() * pool.datasets.length)
+            const datasetLabel = pool.datasets[poolDataSetIndex]
+            const dataset = datasets.sets.find((_) => _.label === datasetLabel)
+            if (dataset && dataset.inbox > 0) {
+              dataset.inbox--
+              pool.inboxes[workerIndex][dataset.label] = (pool.inboxes[workerIndex][dataset.label] || 0) + 1
+              queues.sendUpdate(pool, datasetLabel, workerIndex)
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, getNormallyDistributedRandomNumber(3000, 1500)))
+            active = false
+          })
+          return interval
+        })(),
+        getNormallyDistributedRandomNumber(1000, 300),
+      ),
+    )
+  }
+
+  private initDoWorkSimulatorForWorker(pool: DemoWorkerPool, workerIndex: number) {
+    const { queues } = this
+
+    setTimeout(() => {
+      // find work in an inbox and start processing it
+      for (let poolDatasetIndex = 0; poolDatasetIndex < pool.datasets.length; poolDatasetIndex++) {
+        const datasetLabel = pool.datasets[poolDatasetIndex]
+        if (pool.inboxes[workerIndex][datasetLabel] > 0) {
+          pool.inboxes[workerIndex][datasetLabel]--
+          pool.processing[workerIndex][datasetLabel] = (pool.processing[workerIndex][datasetLabel] || 0) + 1
+          queues.sendUpdate(pool, datasetLabel, workerIndex)
+
+          setTimeout(() => {
+            pool.outboxes[workerIndex][datasetLabel] = (pool.outboxes[workerIndex][datasetLabel] || 0) + 1
+            pool.processing[workerIndex][datasetLabel]--
+            queues.sendUpdate(pool, datasetLabel, workerIndex)
+          }, 6000)
+
+          break
+        }
+      }
+    }, 6000)
+  }
+
+  private initSimulator(pool: DemoWorkerPool) {
+    for (let workerIndex = 0; workerIndex < pool.numWorkers; workerIndex++) {
+      this.initGrabWorkSimulatorForWorker(pool, workerIndex)
+      this.initDoWorkSimulatorForWorker(pool, workerIndex)
+    }
+  }
+
   public newPool(...params: Parameters<NewPoolHandler["newPool"]>) {
     const values = params[0]
+    const numWorkers = parseInt(values.count, 10)
 
-    this.workerpools.push({
+    const pool = {
       name: values.poolName,
-      numWorkers: parseInt(values.count, 10),
+      numWorkers,
       applications: [values.application],
       datasets: [values.dataset],
-      inboxes: [],
-      outboxes: [],
-      processing: [],
-    })
+      inboxes: Array(numWorkers)
+        .fill(0)
+        .map(() => ({})),
+      outboxes: Array(numWorkers)
+        .fill(0)
+        .map(() => ({})),
+      processing: Array(numWorkers)
+        .fill(0)
+        .map(() => ({})),
+    }
+
+    this.workerpools.push(pool)
+    this.sendEventFor(pool)
+    this.initSimulator(pool)
   }
 }
 
