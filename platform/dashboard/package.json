@@ -11,6 +11,7 @@
     "test": "tsc --noEmit",
     "start": "NODE_ENV=production ts-node src/server/main.ts",
     "build:demo": "vite build --mode demo",
+    "preview": "vite preview",
     "build": "vite build"
   },
   "dependencies": {
