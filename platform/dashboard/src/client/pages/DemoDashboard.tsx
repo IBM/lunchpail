@@ -1,22 +1,34 @@
-import { Dashboard } from "./Dashboard"
-import type { LocationProps } from "../router/withLocation"
+import { useLocation, useNavigate } from "react-router-dom"
+
+import { Dashboard, EventProps } from "./Dashboard"
 import {
   DemoDataSetEventSource,
   DemoQueueEventSource,
   DemoWorkerPoolStatusEventSource,
   DemoApplicationSpecEventSource,
-  DemoNewPoolHandler,
 } from "../events/demo"
 
-export default function DemoDashboard(props: LocationProps) {
-  return (
-    <Dashboard
-      datasets={new DemoDataSetEventSource()}
-      queues={new DemoQueueEventSource()}
-      pools={new DemoWorkerPoolStatusEventSource()}
-      applications={new DemoApplicationSpecEventSource()}
-      newpool={DemoNewPoolHandler}
-      {...props}
-    />
-  )
+let props: null | EventProps = null
+
+function init() {
+  if (props === null) {
+    const pools = new DemoWorkerPoolStatusEventSource()
+
+    props = {
+      datasets: new DemoDataSetEventSource(),
+      pools,
+      newpool: pools,
+      queues: new DemoQueueEventSource(pools),
+      applications: new DemoApplicationSpecEventSource(),
+    }
+  }
+
+  return props
+}
+
+export default function DemoDashboard() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  return <Dashboard {...init()} location={location} navigate={navigate} />
 }

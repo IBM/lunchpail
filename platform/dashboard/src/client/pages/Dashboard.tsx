@@ -24,7 +24,7 @@ import "../pages/Dashboard.scss"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 import { FilterChips } from "../components/FilterChips"
 
-type Props = LocationProps & {
+export type EventProps = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   datasets: string | EventSourceLike
 
@@ -40,6 +40,8 @@ type Props = LocationProps & {
   /** Handler for NewWorkerPool */
   newpool: NewPoolHandler
 }
+
+type Props = LocationProps & EventProps
 
 type State = BaseState & {
   /** EventSource for DataSets */

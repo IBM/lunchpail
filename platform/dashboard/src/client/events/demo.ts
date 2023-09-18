@@ -1,5 +1,6 @@
 import { uniqueNamesGenerator, colors, animals } from "unique-names-generator"
 
+import type NewPoolHandler from "./NewPoolHandler"
 import type EventSourceLike from "../events/EventSourceLike.js"
 import type QueueEvent from "../events/QueueEvent.js"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent.js"
@@ -23,8 +24,6 @@ function nRandomNames(N: number): string[] {
 const ns = "ns"
 const runs = ["R1"]
 const applications = nRandomNames(1)
-const datasets = nRandomNames(3)
-const workerpools: DemoWorkerPool[] = []
 
 function randomQueueEvent(workerpool: DemoWorkerPool): QueueEvent {
   const nWorkers = workerpool.numWorkers
@@ -80,18 +79,24 @@ export class DemoDataSetEventSource implements EventSourceLike {
 
   public constructor(private readonly intervalMillis = intervalParam()) {}
 
+  private readonly datasets: Omit<DataSetModel, "timestamp">[] = nRandomNames(3).map((label) => ({
+    label,
+    inbox: 0,
+    outbox: 0,
+  }))
+
   private initInterval() {
     if (!this.interval) {
-      const handlers = this.handlers
+      const { datasets, handlers } = this
+
       this.interval = setInterval(
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * datasets.length)
-          const model: DataSetModel = {
+          const model: DataSetModel = Object.assign({}, datasets[whichToUpdate], {
             timestamp: Date.now(),
-            label: datasets[whichToUpdate],
             inbox: ~~(Math.random() * 20),
             outbox: ~~(Math.random() * 2),
-          }
+          })
           handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
           return interval
         })(), // () means invoke the interval right away
@@ -129,11 +134,16 @@ export class DemoQueueEventSource implements EventSourceLike {
 
   private interval: null | ReturnType<typeof setInterval> = null
 
-  public constructor(private readonly intervalMillis = 2000) {}
+  public constructor(
+    private pools: DemoWorkerPoolStatusEventSource,
+    private readonly intervalMillis = 2000,
+  ) {}
 
   private initInterval() {
     if (!this.interval) {
       const handlers = this.handlers
+      const workerpools = this.pools.pools
+
       this.interval = setInterval(
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * workerpools.length)
@@ -175,16 +185,23 @@ export class DemoQueueEventSource implements EventSourceLike {
   }
 }
 
-export class DemoWorkerPoolStatusEventSource implements EventSourceLike {
+export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPoolHandler {
   private readonly handlers: Handler[] = []
 
   private interval: null | ReturnType<typeof setInterval> = null
 
+  private readonly workerpools: DemoWorkerPool[] = []
+
   public constructor(private readonly intervalMillis = 2000) {}
+
+  public get pools(): readonly DemoWorkerPool[] {
+    return this.workerpools
+  }
 
   private initInterval() {
     if (!this.interval) {
-      const handlers = this.handlers
+      const { handlers, workerpools } = this
+
       this.interval = setInterval(
         (function interval() {
           if (workerpools.length > 0) {
@@ -222,6 +239,17 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike {
       clearInterval(this.interval)
       this.interval = null
     }
+  }
+
+  public newPool(...params: Parameters<NewPoolHandler["newPool"]>) {
+    const values = params[0]
+
+    this.workerpools.push({
+      name: values.poolName,
+      numWorkers: parseInt(values.count, 10),
+      applications: [values.application],
+      datasets: [values.dataset],
+    })
   }
 }
 
@@ -270,14 +298,4 @@ export class DemoApplicationSpecEventSource implements EventSourceLike {
       this.interval = null
     }
   }
-}
-
-import type NewPoolHandler from "./NewPoolHandler"
-export const DemoNewPoolHandler: NewPoolHandler = (values) => {
-  workerpools.push({
-    name: values.poolName,
-    numWorkers: parseInt(values.count, 10),
-    applications: [values.application],
-    datasets: [values.dataset],
-  })
 }

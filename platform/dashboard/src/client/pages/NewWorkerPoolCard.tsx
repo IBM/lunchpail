@@ -21,7 +21,7 @@ function AddWorkerPoolButton() {
       variant="link"
       component={(props) => (
         <Link {...props} to="#newpool">
-          Add Worker Pool
+          Create Worker Pool
         </Link>
       )}
     />
