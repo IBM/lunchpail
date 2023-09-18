@@ -22,7 +22,7 @@ function chipGroup(
   )
 }
 
-export const FilterChips: FunctionComponent = () => {
+const FilterChips: FunctionComponent = () => {
   return (
     <ActiveFitlersCtx.Consumer>
       {(value) =>
@@ -36,3 +36,5 @@ export const FilterChips: FunctionComponent = () => {
     </ActiveFitlersCtx.Consumer>
   )
 }
+
+export default FilterChips

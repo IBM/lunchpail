@@ -1,12 +1,13 @@
-import type { ReactNode } from "react"
-import { Divider, Gallery, Modal, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
+import { Fragment, ReactNode, Suspense, lazy } from "react"
+import { Divider, Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
+const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
 import Base, { BaseState } from "./Base"
 
 import DataSet from "../components/DataSet"
 import WorkerPool from "../components/WorkerPool"
 
-import NewWorkerPool from "./NewWorkerPool"
+const NewWorkerPool = lazy(() => import("./NewWorkerPool"))
 import NewWorkerPoolCard from "./NewWorkerPoolCard"
 
 import type { LocationProps } from "../router/withLocation"
@@ -20,9 +21,10 @@ import type DataSetModel from "../components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 import { SidebarContent } from "../sidebar/SidebarContent"
 
-import "../pages/Dashboard.scss"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
-import { FilterChips } from "../components/FilterChips"
+const FilterChips = lazy(() => import("../components/FilterChips"))
+
+import "./Dashboard.scss"
 
 export type EventProps = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
@@ -466,19 +468,21 @@ export class Dashboard extends Base<Props, State> {
 
   protected override modal() {
     return (
-      <Modal
-        aria-label="new-worker-pool-modal"
-        hasNoBodyWrapper
-        isOpen={this.props.location.hash === "#newpool"}
-        showClose={false}
-      >
-        <NewWorkerPool
-          onClose={this.cancelNewWorkerPool}
-          applications={this.applicationsList}
-          datasets={this.datasetsList}
-          newpool={this.props.newpool}
-        />
-      </Modal>
+      <Suspense fallback={<Fragment />}>
+        <Modal
+          aria-label="new-worker-pool-modal"
+          hasNoBodyWrapper
+          isOpen={this.props.location.hash === "#newpool"}
+          showClose={false}
+        >
+          <NewWorkerPool
+            onClose={this.cancelNewWorkerPool}
+            applications={this.applicationsList}
+            datasets={this.datasetsList}
+            newpool={this.props.newpool}
+          />
+        </Modal>
+      </Suspense>
     )
   }
 }
