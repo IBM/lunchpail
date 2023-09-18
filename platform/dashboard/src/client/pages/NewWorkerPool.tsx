@@ -1,5 +1,5 @@
 import { PureComponent } from "react"
-import { uniqueNamesGenerator, languages } from "unique-names-generator"
+import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
 import { nord as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
@@ -17,6 +17,7 @@ import {
   WizardStep,
 } from "@patternfly/react-core"
 
+import { DataSetIcon } from "../components/DataSet"
 import { Input, NumberInput, Select } from "./Forms"
 import type NewPoolHandler from "../events/NewPoolHandler"
 
@@ -38,7 +39,7 @@ type State = {
 
 export default class NewWorkerPool extends PureComponent<Props, State> {
   private defaults = {
-    poolName: uniqueNamesGenerator({ dictionaries: [languages], length: 1, style: "lowerCase" }),
+    poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
     count: String(1),
     size: "xs",
     supportsGpu: false.toString(),
@@ -74,6 +75,7 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
         description="Choose the Data Set this pool should process"
         ctrl={ctrl}
         options={this.props.datasets.sort()}
+        icons={<DataSetIcon />}
       />
     )
   }

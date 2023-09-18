@@ -24,6 +24,8 @@ import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
 import type { WorkerPoolModelWithHistory } from "./WorkerPoolModel"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 
+import WorkerPoolIcon from "@patternfly/react-icons//dist/esm/icons/server-icon"
+
 interface Props {
   maxNWorkers: number
   model: WorkerPoolModelWithHistory
@@ -183,8 +185,10 @@ export default class WorkerPool extends PureComponent<Props, State> {
   public override render() {
     return (
       <Card isRounded isClickable isSelectable>
-        <CardHeader actions={this.state?.actions}>
-          <CardTitle>{this.label()}</CardTitle>
+        <CardHeader actions={this.state?.actions} className="codeflare--card-header-no-wrap">
+          <CardTitle>
+            <WorkerPoolIcon /> {this.label()}
+          </CardTitle>
         </CardHeader>
         <CardBody>
           <DescriptionList isCompact>

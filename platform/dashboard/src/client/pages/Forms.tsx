@@ -1,4 +1,4 @@
-import { PropsWithChildren, useState } from "react"
+import { PropsWithChildren, ReactNode, useState } from "react"
 
 import {
   FormContextProps,
@@ -47,7 +47,9 @@ export function Input(props: FormProps & Ctrl) {
   )
 }
 
-export function Select(props: FormProps & Ctrl & { options: string[]; selected?: string }) {
+export function Select(
+  props: FormProps & Ctrl & { options: string[]; icons?: ReactNode | ReactNode[]; selected?: string },
+) {
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState<string>(props.selected || "Please select one")
 
@@ -84,8 +86,8 @@ export function Select(props: FormProps & Ctrl & { options: string[]; selected?:
         )}
       >
         <SelectList>
-          {props.options.map((value) => (
-            <SelectOption key={value} value={value}>
+          {props.options.map((value, idx) => (
+            <SelectOption key={value} value={value} icon={Array.isArray(props.icons) ? props.icons[idx] : props.icons}>
               {value}
             </SelectOption>
           ))}

@@ -23,6 +23,10 @@
   overflow: unset !important;
 }*/
 
+.codeflare--text-sm {
+  font-size: var(--pf-v5-global--FontSize--sm);
+}
+
 .codeflare--text-xs {
   font-size: var(--pf-v5-global--FontSize--xs);
 }
@@ -38,4 +42,13 @@
 
 .codeflare--text-right {
   text-align: right;
+}
+
+.codeflare--card-header-no-wrap {
+  .pf-v5-c-card__header-main,
+  .pf-v5-c-card__title-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }

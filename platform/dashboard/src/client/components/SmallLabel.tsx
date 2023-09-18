@@ -2,13 +2,17 @@ import type { PropsWithChildren } from "react"
 import { Badge } from "@patternfly/react-core"
 
 export default function SmallLabel(
-  props: PropsWithChildren<{ count?: number | string; align?: "left" | "right" | "center"; size?: "xs" | "xxs" }>,
+  props: PropsWithChildren<{
+    count?: number | string
+    align?: "left" | "right" | "center"
+    size?: "sm" | "xs" | "xxs"
+  }>,
 ) {
   return (
     <span>
       <span
         className={
-          `codeflare--text-${props.size || "xs"} ` +
+          `codeflare--text-${props.size || "sm"} ` +
           (props.align === "center" ? "codeflare--text-center" : props.align === "right" ? "codeflare--text-right" : "")
         }
       >

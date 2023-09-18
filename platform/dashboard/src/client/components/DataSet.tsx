@@ -21,6 +21,9 @@ import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
 import type DataSetModel from "./DataSetModel"
 import type { QueueHistory } from "./WorkerPoolModel"
 
+import DataSetIcon from "@patternfly/react-icons//dist/esm/icons/cubes-icon"
+export { DataSetIcon }
+
 import "./Queue.scss"
 
 type Props = Omit<DataSetModel, "timestamp"> &
@@ -81,7 +84,9 @@ export default class DataSet extends PureComponent<Props> {
     return (
       <Card isRounded>
         <CardHeader>
-          <CardTitle>{this.props.label}</CardTitle>
+          <CardTitle>
+            <DataSetIcon /> {this.props.label}
+          </CardTitle>
         </CardHeader>
         <CardBody>
           <DescriptionList isCompact>
