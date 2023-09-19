@@ -47,7 +47,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
   }
 
   protected pageTitle() {
-    return "Jobs World Service"
+    return "Jobs as a Service"
   }
 
   private header() {
@@ -57,15 +57,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         <MastheadMain>
           <MastheadBrand>{this.pageTitle()}</MastheadBrand>
         </MastheadMain>
-        <MastheadContent>
-          <Toolbar>
-            <ToolbarContent>
-              <ToolbarItem align={{ default: "alignRight" }}>
-                <Switch label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
-              </ToolbarItem>
-            </ToolbarContent>
-          </Toolbar>
-        </MastheadContent>
+        <MastheadContent></MastheadContent>
       </Masthead>
     )
   }
@@ -89,7 +81,6 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
   private footer(): ReactNode {
     const left = this.footerLeft()
     const right = this.footerRight()
-    if (!left && !right) return
     return (
       <Toolbar>
         <ToolbarContent>
@@ -100,7 +91,13 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
             {left || <Fragment />}
           </ToolbarGroup>
 
-          <ToolbarGroup align={{ default: "alignRight" }}>{right || <Fragment />}</ToolbarGroup>
+          <ToolbarGroup align={{ default: "alignRight" }}>
+            {right || <Fragment />}
+
+            <ToolbarItem align={{ default: "alignRight" }}>
+              <Switch label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
+            </ToolbarItem>
+          </ToolbarGroup>
         </ToolbarContent>
       </Toolbar>
     )
@@ -116,6 +113,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
 
   protected readonly noPadding = { default: "noPadding" as const }
   protected readonly stickyTop = { default: "top" as const }
+  protected readonly stickyBottom = { default: "bottom" as const }
 
   public render() {
     const chips = this.chips()
@@ -140,7 +138,12 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         <PageSection hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}
         </PageSection>
-        <PageSection padding={{ default: "noPadding" }} isFilled={false}>
+        <PageSection
+          isFilled={false}
+          stickyOnBreakpoint={this.stickyBottom}
+          padding={{ default: "noPadding" }}
+          variant="light"
+        >
           {this.footer()}
         </PageSection>
 
