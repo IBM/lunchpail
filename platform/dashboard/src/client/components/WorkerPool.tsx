@@ -93,7 +93,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
   }
 
   private static underwayCells(props: Props) {
-    const cells = (props.model.processing || []).flatMap((processing, workerIdx) =>
+    return (props.model.processing || []).flatMap((processing, workerIdx) =>
       Object.entries(processing)
         .filter(([, size]) => size > 0)
         .flatMap(([dataset, size]) =>
@@ -108,11 +108,6 @@ export default class WorkerPool extends PureComponent<Props, State> {
             )),
         ),
     )
-    if (cells.length === 0) {
-      return [<GridCell key="-1" type="placeholder" dataset={-1} />]
-    } else {
-      return cells
-    }
   }
 
   /** One row across workers, one cell per in-process task */
