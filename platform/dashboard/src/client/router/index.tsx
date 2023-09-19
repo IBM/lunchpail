@@ -8,7 +8,7 @@ const ErrorBoundary = lazy(() => import("../components/ErrorBoundary"))
 export default createBrowserRouter([
   {
     path: "/",
-    element: <LiveDashboard />,
+    element: import.meta.env.MODE === "demo" ? <DemoDashboard /> : <LiveDashboard />,
     errorElement: <ErrorBoundary />,
   },
   {

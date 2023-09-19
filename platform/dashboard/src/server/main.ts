@@ -1,10 +1,10 @@
 import ViteExpress from "vite-express"
 import express, { Response } from "express"
 
-import startPoolStream from "./streams/pool"
-import startQueueStream from "./streams/queue"
-import startDataSetStream from "./streams/dataset"
-import startApplicationStream from "./streams/application"
+import startPoolStream from "./streams/pool.js"
+import startQueueStream from "./streams/queue.js"
+import startDataSetStream from "./streams/dataset.js"
+import startApplicationStream from "./streams/application.js"
 
 const app = express()
 
