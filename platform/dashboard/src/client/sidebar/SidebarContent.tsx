@@ -107,6 +107,7 @@ export default class SidebarContent extends PureComponent<Props> {
     return {
       id: this.labels.datasets,
       name: this.labels.datasets,
+      hasCheckbox: this.props.datasetNames.length > 0,
       checkProps: { "aria-label": `datasets-check`, checked: this.allDataSetsIsChecked },
       children: this.props.datasetNames.map((name) => ({
         id: name,
@@ -120,6 +121,7 @@ export default class SidebarContent extends PureComponent<Props> {
     return {
       id: this.labels.workerpools,
       name: this.labels.workerpools,
+      hasCheckbox: this.props.workerpoolNames.length > 0,
       checkProps: { "aria-label": `datasets-check`, checked: this.allWorkerPoolsIsChecked },
       children: this.props.workerpoolNames.map((name) => ({
         id: name,
