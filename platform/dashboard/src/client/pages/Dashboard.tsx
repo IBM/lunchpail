@@ -517,12 +517,23 @@ export class Dashboard extends Base<Props, State> {
     )
   }
 
+  /** Should we *not* show the DataSetss panel? */
+  private get hideDataSets() {
+    // if we are not showing all datasets and showing all worker pools
+    return !this.state?.filterState.showingAllDataSets && this.state?.filterState.showingAllWorkerPools
+  }
+
+  /** Should we *not* show the WorkerPools panel? */
+  private get hideWorkerPools() {
+    // if we are showing all datasets and not showing all worker pools
+    return this.state?.filterState.showingAllDataSets && !this.state?.filterState.showingAllWorkerPools
+  }
+
   protected override body() {
     return (
       <>
-        {this.panel("Data Sets", this.datasets())}
-        {!(this.state?.filterState.showingAllDataSets && !this.state?.filterState.showingAllWorkerPools) &&
-          this.panel("Worker Pools", this.workerpools())}
+        {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
+        {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
       </>
     )
   }
