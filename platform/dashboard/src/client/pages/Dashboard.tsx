@@ -386,10 +386,6 @@ export class Dashboard extends Base<Props, State> {
       .sort(this.lexicoWP)
   }
 
-  private maxNWorkers(model: WorkerPoolModel[]) {
-    return model.reduce((max, wp) => Math.max(max, wp.inbox.length), 0)
-  }
-
   private workerpools() {
     return (
       <Gallery hasGutter className="codeflare--flex-stack">
@@ -402,7 +398,6 @@ export class Dashboard extends Base<Props, State> {
                 model={w}
                 datasetIndex={this.state.datasetIndex}
                 statusHistory={this.state.poolEvents[w.label] || []}
-                maxNWorkers={this.maxNWorkers(this.latestWorkerPoolModel)}
               />
             ),
         )}

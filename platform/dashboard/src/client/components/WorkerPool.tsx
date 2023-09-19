@@ -10,8 +10,6 @@ import {
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
-  Stack,
-  StackItem,
 } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
@@ -27,7 +25,6 @@ import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 import WorkerPoolIcon from "@patternfly/react-icons//dist/esm/icons/server-icon"
 
 interface Props {
-  maxNWorkers: number
   model: WorkerPoolModelWithHistory
   datasetIndex: Record<string, number>
 
@@ -87,18 +84,11 @@ export default class WorkerPool extends PureComponent<Props, State> {
   /** One row per worker, within row, one cell per inbox or outbox enqueued task */
   private enqueued() {
     return (
-      <Stack className="codeflare--workqueues">
+      <div className="codeflare--workqueues">
         {this.inboxes.map((inbox, i) => (
-          <StackItem key={i} className="codeflare--workqueues-rowgroup">
-            <GridLayout
-              maxNWorkers={this.props.maxNWorkers}
-              queueNum={i + 1}
-              inbox={inbox}
-              datasetIndex={this.props.datasetIndex}
-            />
-          </StackItem>
+          <GridLayout queueNum={i + 1} inbox={inbox} datasetIndex={this.props.datasetIndex} />
         ))}
-      </Stack>
+      </div>
     )
   }
 
