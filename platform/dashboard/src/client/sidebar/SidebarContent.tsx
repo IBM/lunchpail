@@ -1,129 +1,138 @@
-import { PageSidebar, PageSidebarBody } from "@patternfly/react-core"
-import { PureComponent, ReactNode } from "react"
-import {
-  FilterSidePanel,
-  FilterSidePanelCategory,
-  FilterSidePanelCategoryItem,
-} from "@patternfly/react-catalog-view-extension"
-import "@patternfly/react-catalog-view-extension/dist/sass/_react-catalog-view-extension.scss"
-import { ActiveFitlersCtx, ActiveFilters } from "../context/FiltersContext"
+import { PureComponent } from "react"
+import { PageSidebar, PageSidebarBody, TreeView } from "@patternfly/react-core"
 
-type ShowAllCategories = {
-  ds: boolean
-  wp: boolean
-}
+import type { ReactNode } from "react"
+import type { TreeViewDataItem } from "@patternfly/react-core"
+import type { ActiveFilters } from "../context/FiltersContext"
 
 interface Props {
   datasetNames: string[]
   workerpoolNames: string[]
+  filterState?: ActiveFilters
 }
 
-interface State {
-  showAllCategories: ShowAllCategories
-}
-
-export class SidebarContent extends PureComponent<Props, State> {
-  public constructor(props: Props) {
-    super(props)
-    this.state = {
-      showAllCategories: {
-        ds: false,
-        wp: false,
-      },
-    }
+export default class SidebarContent extends PureComponent<Props> {
+  private readonly labels = {
+    datasets: "Data Sets",
+    workerpools: "Worker Pools",
   }
 
-  private onShowAllToggle(id: "ds" | "wp") {
-    const showAllCategories: ShowAllCategories = { ...this.state?.showAllCategories }
-    showAllCategories[id] = !showAllCategories[id]
-    this.setState({ showAllCategories })
+  private filterContent(): ReactNode {
+    return (
+      <TreeView data={this.options()} onCheck={this.onCheck} hasCheckboxes hasBadges hasGuides defaultAllExpanded />
+    )
   }
 
-  private onFilterChange = (
-    e: React.SyntheticEvent<HTMLElement>,
-    whichFilter: string,
-    changeActiveFilters: ActiveFilters,
+  private get filters() {
+    return this.props.filterState
+  }
+
+  private readonly onCheck = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    item: TreeViewDataItem,
+    parentItem: TreeViewDataItem,
   ) => {
-    const target = e.currentTarget as HTMLInputElement
-
-    if (whichFilter === "datasets") {
-      if (target.checked) {
-        changeActiveFilters.addDataSetToFilter(target.title)
-      } else if (!target.checked) {
-        changeActiveFilters.removeDataSetFromFilter(target.title)
-      }
-    } else if (whichFilter === "workerpools") {
-      if (target.checked) {
-        changeActiveFilters.addWorkerPoolToFilter(target.title)
-      } else if (!target.checked) {
-        changeActiveFilters.removeWorkerPoolFromFilter(target.title)
+    if (this.filters) {
+      if (!parentItem) {
+        if (item.id! === this.labels.datasets) {
+          // user clicked on the Data Sets parent
+          this.filters.toggleShowAllDataSets()
+        } else if (item.id! === this.labels.workerpools) {
+          // user clicked on the Worker Pools parent
+          this.filters.toggleShowAllWorkerPools()
+        }
+      } else if (parentItem.id! === this.labels.datasets) {
+        // user clicked on a Data Set
+        if (item.checkProps!.checked) {
+          this.filters.removeDataSetFromFilter(item.id!)
+        } else {
+          this.filters.addDataSetToFilter(item.id!)
+        }
+      } else if (parentItem.id! === this.labels.workerpools) {
+        // user clicked on a Worker Pool
+        if (item.checkProps!.checked) {
+          this.filters.removeWorkerPoolFromFilter(item.id!)
+        } else {
+          this.filters.addWorkerPoolToFilter(item.id!)
+        }
       }
     }
   }
 
-  private categoryItems = (category: string[], whichFilter: string, actFilters: ActiveFilters) => {
-    let allActiveSets: string[] = []
-
-    if (whichFilter === "datasets") {
-      allActiveSets = actFilters?.datasets
-    } else if (whichFilter === "workerpools") {
-      allActiveSets = actFilters?.workerpools
-    }
-
-    return (
-      <>
-        {category.map((name: string, idx: number) => (
-          <FilterSidePanelCategoryItem
-            key={name + idx}
-            title={name}
-            checked={allActiveSets.includes(name)}
-            onClick={(e) => this.onFilterChange(e, whichFilter, actFilters)}
-          >
-            {name}
-          </FilterSidePanelCategoryItem>
-        ))}
-      </>
-    )
+  private options() {
+    return [this.datasetOptions(), this.workerpoolOptions()]
   }
 
-  private filterContent(maxShowCount: number, leeway: number): ReactNode {
-    return (
-      <FilterSidePanel id="filter-panel">
-        <FilterSidePanelCategory
-          key="cat1"
-          title="Datasets"
-          maxShowCount={maxShowCount}
-          leeway={leeway}
-          showAll={this.state.showAllCategories.ds}
-          onShowAllToggle={() => this.onShowAllToggle("ds")}
-        >
-          <ActiveFitlersCtx.Consumer>
-            {(value) => this.categoryItems(this.props.datasetNames, "datasets", value)}
-          </ActiveFitlersCtx.Consumer>
-        </FilterSidePanelCategory>
-        <FilterSidePanelCategory
-          key="cat2"
-          title="Worker Pools"
-          maxShowCount={maxShowCount}
-          leeway={leeway}
-          showAll={this.state.showAllCategories.wp}
-          onShowAllToggle={() => this.onShowAllToggle("wp")}
-        >
-          <ActiveFitlersCtx.Consumer>
-            {(value) => this.categoryItems(this.props.workerpoolNames, "workerpools", value)}
-          </ActiveFitlersCtx.Consumer>
-        </FilterSidePanelCategory>
-      </FilterSidePanel>
-    )
+  private get allDataSetsIsChecked() {
+    if (this.filters) {
+      if (this.filters.showingAllDataSets) {
+        return true
+      } else if (this.filters.datasets.length > 0) {
+        if (this.filters.datasets.length === this.props.datasetNames.length) {
+          return true
+        } else {
+          return null
+        }
+      }
+    }
+
+    return false
+  }
+
+  private get allWorkerPoolsIsChecked() {
+    if (this.filters) {
+      if (this.filters.showingAllWorkerPools) {
+        return true
+      } else if (this.filters.workerpools.length > 0) {
+        if (this.filters.workerpools.length === this.props.workerpoolNames.length) {
+          return true
+        } else {
+          return null
+        }
+      }
+    }
+
+    return false
+  }
+
+  private thisDataSetIsChecked(name: string) {
+    return this.allDataSetsIsChecked || (this.filters && this.filters.datasets.includes(name))
+  }
+
+  private thisWorkerPoolIsChecked(name: string) {
+    return this.allWorkerPoolsIsChecked || (this.filters && this.filters.workerpools.includes(name))
+  }
+
+  private datasetOptions(): TreeViewDataItem {
+    return {
+      id: this.labels.datasets,
+      name: this.labels.datasets,
+      checkProps: { "aria-label": `datasets-check`, checked: this.allDataSetsIsChecked },
+      children: this.props.datasetNames.map((name) => ({
+        id: name,
+        name,
+        checkProps: { "aria-label": `datasets-${name}-check`, checked: this.thisDataSetIsChecked(name) },
+      })),
+    }
+  }
+
+  private workerpoolOptions(): TreeViewDataItem {
+    return {
+      id: this.labels.workerpools,
+      name: this.labels.workerpools,
+      checkProps: { "aria-label": `datasets-check`, checked: this.allWorkerPoolsIsChecked },
+      children: this.props.workerpoolNames.map((name) => ({
+        id: name,
+        name,
+        checkProps: { "aria-label": `workerpools-${name}-check`, checked: this.thisWorkerPoolIsChecked(name) },
+      })),
+    }
   }
 
   public render() {
-    // Variables to assist with rendering
-    const maxShowCount = 5
-    const leeway = 2
     return (
-      <PageSidebar className="codeflare--page-sidebar">
-        <PageSidebarBody>{this.filterContent(maxShowCount, leeway)}</PageSidebarBody>
+      <PageSidebar className="codeflare--page-sidebar" theme="light">
+        <PageSidebarBody>{this.filterContent()}</PageSidebarBody>
       </PageSidebar>
     )
   }

@@ -3,6 +3,18 @@ import { Chip, ChipGroup, Flex } from "@patternfly/react-core"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 
+/**
+ * Note: we need to pass these in separately, and not pull them from
+ * ActiveFiltersCtx, because the user may have opted to Show All,
+ * which needs to be responsive to the dynamic addition of new
+ * elements not present when the user first clicked Show All. These
+ * are the elements to be presented as Chips.
+ */
+type Props = {
+  datasets: string[]
+  workerpools: string[]
+}
+
 function chipGroup(
   categoryName: string,
   items: ActiveFilters["datasets"] | ActiveFilters["workerpools"],
@@ -22,14 +34,14 @@ function chipGroup(
   )
 }
 
-const FilterChips: FunctionComponent = () => {
+const FilterChips: FunctionComponent<Props> = (props: Props) => {
   return (
     <ActiveFitlersCtx.Consumer>
       {(value) =>
         value && (
           <Flex>
-            {chipGroup("Data Sets", value.datasets, value.removeDataSetFromFilter)}
-            {chipGroup("Worker Pools", value.workerpools, value.removeWorkerPoolFromFilter)}
+            {chipGroup("Data Sets", props.datasets, value.removeDataSetFromFilter)}
+            {chipGroup("Worker Pools", props.workerpools, value.removeWorkerPoolFromFilter)}
           </Flex>
         )
       }

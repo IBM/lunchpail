@@ -9,19 +9,8 @@
 }
 
 .codeflare--page-sidebar {
-  width: 14em !important;
+  width: 15em !important;
 }
-
-/* These rules hack to make the sidebar always visible */
-/*.codeflare--dashboard {
-  --pf-v5-c-page__sidebar--TranslateX: var(--pf-v5-c-page__sidebar--m-expanded--TranslateX);
-  grid-template-areas: "header header" "nav main" !important;
-  grid-template-columns: max-content 1fr !important;
-}
-.codeflare--page-sidebar {
-  max-width: unset !important;
-  overflow: unset !important;
-}*/
 
 .codeflare--text-sm {
   font-size: var(--pf-v5-global--FontSize--sm);

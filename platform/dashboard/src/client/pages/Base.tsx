@@ -123,7 +123,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         header={this.header()}
         sidebar={this.sidebar()}
         isManagedSidebar
-        defaultManagedSidebarIsOpen={false}
+        defaultManagedSidebarIsOpen={true}
         className="codeflare--dashboard"
         data-is-dark-mode={this.useDarkMode}
       >
@@ -142,7 +142,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
           isFilled={false}
           stickyOnBreakpoint={this.stickyBottom}
           padding={{ default: "noPadding" }}
-          variant="light"
+          variant="dark"
         >
           {this.footer()}
         </PageSection>

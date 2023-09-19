@@ -19,7 +19,7 @@ import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 import type DataSetModel from "../components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
-import { SidebarContent } from "../sidebar/SidebarContent"
+import SidebarContent from "../sidebar/SidebarContent"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 const FilterChips = lazy(() => import("../components/FilterChips"))
@@ -170,6 +170,16 @@ export class Dashboard extends Base<Props, State> {
     })
   }
 
+  private allBut(list: string[], dropThis: string) {
+    const idx = list.indexOf(dropThis)
+    if (idx >= 0) {
+      list.splice(idx, 1)
+      return list
+    } else {
+      return list
+    }
+  }
+
   private readonly addDataSetToFilter = (dsName: string) => {
     this.setState((curState) => {
       if (!curState.filterState.datasets.includes(dsName)) {
@@ -196,7 +206,16 @@ export class Dashboard extends Base<Props, State> {
       if (index !== -1) {
         curState.filterState.datasets.splice(index, 1)
         return { filterState: Object.assign({}, curState.filterState) }
+      } else if (curState.filterState.showingAllDataSets) {
+        // user had previously selected ShowAll, and is now removing just one
+        return {
+          filterState: Object.assign({}, curState.filterState, {
+            showingAllDataSets: false,
+            datasets: this.allBut(this.datasetsList, dsName),
+          }),
+        }
       }
+
       return null
     })
   }
@@ -207,9 +226,35 @@ export class Dashboard extends Base<Props, State> {
       if (index !== -1) {
         curState.filterState.workerpools.splice(index, 1)
         return { filterState: Object.assign({}, curState.filterState) }
+      } else if (curState.filterState.showingAllWorkerPools) {
+        // user had previously selected ShowAll, and is now removing just one
+        return {
+          filterState: Object.assign({}, curState.filterState, {
+            showingAllWorkerPools: false,
+            datasets: this.allBut(this.workerpoolsList, wpName),
+          }),
+        }
       }
       return null
     })
+  }
+
+  private readonly toggleShowAllDataSets = () => {
+    this.setState((curState) => ({
+      filterState: Object.assign({}, curState.filterState, {
+        showingAllDataSets: !curState.filterState?.showingAllDataSets,
+        datasets: !curState.filterState?.showingAllDataSets === false ? [] : curState.filterState?.datasets,
+      }),
+    }))
+  }
+
+  private readonly toggleShowAllWorkerPools = () => {
+    this.setState((curState) => ({
+      filterState: Object.assign({}, curState.filterState, {
+        showingAllWorkerPools: !curState.filterState?.showingAllWorkerPools,
+        workerpools: !curState.filterState?.showingAllWorkerPools === false ? [] : curState.filterState?.workerpools,
+      }),
+    }))
   }
 
   private readonly clearAllFilters = () => {
@@ -282,10 +327,14 @@ export class Dashboard extends Base<Props, State> {
       filterState: {
         datasets: [],
         workerpools: [],
+        showingAllWorkerPools: false,
+        showingAllDataSets: false,
         addDataSetToFilter: this.addDataSetToFilter,
         addWorkerPoolToFilter: this.addWorkerPoolToFilter,
         removeDataSetFromFilter: this.removeDataSetFromFilter,
         removeWorkerPoolFromFilter: this.removeWorkerPoolFromFilter,
+        toggleShowAllDataSets: this.toggleShowAllDataSets,
+        toggleShowAllWorkerPools: this.toggleShowAllWorkerPools,
         clearAllFilters: this.clearAllFilters,
       },
     })
@@ -311,7 +360,9 @@ export class Dashboard extends Base<Props, State> {
           .sort(this.lexico)
           .map(
             ([label, events], idx) =>
-              (!this.state?.filterState.datasets.length || this.state.filterState.datasets.includes(label)) && (
+              (!this.state?.filterState.datasets.length ||
+                this.state.filterState.showingAllDataSets ||
+                this.state.filterState.datasets.includes(label)) && (
                 <DataSet
                   key={label}
                   idx={either(events[events.length - 1].idx, idx)}
@@ -378,6 +429,10 @@ export class Dashboard extends Base<Props, State> {
     return Object.keys(this.state?.datasetIndex || {})
   }
 
+  private get workerpoolsList(): string[] {
+    return this.latestWorkerPoolModel.map((_) => _.label)
+  }
+
   private get latestWorkerPoolModel(): WorkerPoolModelWithHistory[] {
     return Object.entries(this.state?.queueEvents || {})
       .map(([label, queueEventsForOneWorkerPool]) => {
@@ -392,7 +447,9 @@ export class Dashboard extends Base<Props, State> {
         <NewWorkerPoolCard />
         {this.latestWorkerPoolModel.map(
           (w) =>
-            (!this.state?.filterState.workerpools.length || this.state?.filterState.workerpools.includes(w.label)) && (
+            (!this.state?.filterState.workerpools.length ||
+              this.state.filterState.showingAllWorkerPools ||
+              this.state?.filterState.workerpools.includes(w.label)) && (
               <WorkerPool
                 key={w.label}
                 model={w}
@@ -407,28 +464,41 @@ export class Dashboard extends Base<Props, State> {
 
   protected override sidebar() {
     return (
-      <ActiveFitlersCtx.Provider value={this.state?.filterState}>
-        <SidebarContent
-          datasetNames={this.datasetsList}
-          workerpoolNames={Object.keys(this.state?.workerpoolIndex || {})}
-        />
-      </ActiveFitlersCtx.Provider>
+      <SidebarContent
+        filterState={this.state?.filterState}
+        datasetNames={this.datasetsList}
+        workerpoolNames={Object.keys(this.state?.workerpoolIndex || {})}
+      />
     )
   }
 
   private get hasFilters() {
     return (
       this.state?.filterState &&
-      (this.state.filterState.datasets.length > 0 || this.state.filterState.workerpools.length > 0)
+      (this.state.filterState.showingAllDataSets ||
+        this.state.filterState.showingAllWorkerPools ||
+        this.state.filterState.datasets.length > 0 ||
+        this.state.filterState.workerpools.length > 0)
     )
   }
 
   protected override chips() {
     return (
       this.hasFilters && (
-        <ActiveFitlersCtx.Provider value={this.state?.filterState}>
-          <FilterChips />
-        </ActiveFitlersCtx.Provider>
+        <Suspense fallback={<Fragment />}>
+          <ActiveFitlersCtx.Provider value={this.state?.filterState}>
+            <FilterChips
+              datasets={
+                this.state?.filterState.showingAllDataSets ? this.datasetsList : this.state?.filterState.datasets
+              }
+              workerpools={
+                this.state?.filterState.showingAllWorkerPools
+                  ? this.workerpoolsList
+                  : this.state?.filterState.workerpools
+              }
+            />
+          </ActiveFitlersCtx.Provider>
+        </Suspense>
       )
     )
   }
@@ -451,7 +521,8 @@ export class Dashboard extends Base<Props, State> {
     return (
       <>
         {this.panel("Data Sets", this.datasets())}
-        {this.panel("Worker Pools", this.workerpools())}
+        {!(this.state?.filterState.showingAllDataSets && !this.state?.filterState.showingAllWorkerPools) &&
+          this.panel("Worker Pools", this.workerpools())}
       </>
     )
   }
