@@ -280,7 +280,7 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPool
   }
 
   private initDoWorkSimulatorForWorker(pool: DemoWorkerPool, workerIndex: number) {
-    const { queues } = this
+    const { datasets, queues } = this
 
     setTimeout(() => {
       // find work in an inbox and start processing it
@@ -294,6 +294,12 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPool
           setTimeout(() => {
             pool.outboxes[workerIndex][datasetLabel] = (pool.outboxes[workerIndex][datasetLabel] || 0) + 1
             pool.processing[workerIndex][datasetLabel]--
+
+            const dataset = datasets.sets.find((_) => _.label === datasetLabel)
+            if (dataset) {
+              dataset.outbox++
+            }
+
             queues.sendUpdate(pool, datasetLabel, workerIndex)
           }, 6000)
 
