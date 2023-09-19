@@ -42,7 +42,14 @@ export function instantaneousCompletionRate(history: QueueHistory) {
   }
 }
 
+export function meanCompletionRate(history: QueueHistory) {
+  const rateHistory = completionRateHistory(history)
+  const N = rateHistory.length
+  const sum = rateHistory.reduce((sum, val) => sum + val)
+  return sum / N
+}
+
 export function medianCompletionRate(history: QueueHistory) {
   const A = completionRateHistory(history).sort()
-  return A.length === 0 ? 0 : prettyRate(A[Math.round(A.length / 2)])
+  return A.length === 0 ? 0 : prettyRate(A[Math.round(A.length / 2)]) || 0
 }

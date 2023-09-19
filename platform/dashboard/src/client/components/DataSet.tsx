@@ -16,7 +16,7 @@ import Sparkline from "./Sparkline"
 import SmallLabel from "./SmallLabel"
 import GridCell, { GridTypeData } from "./GridCell"
 
-import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
+import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import type DataSetModel from "./DataSetModel"
 import type { QueueHistory } from "./WorkerPoolModel"
@@ -101,7 +101,7 @@ export default class DataSet extends PureComponent<Props> {
 
             <DescriptionListGroup>
               <DescriptionListTerm>
-                <SmallLabel count={medianCompletionRate(this.props)}>Completion Rate</SmallLabel>
+                <SmallLabel count={meanCompletionRate(this.props)}>Completion Rate</SmallLabel>
               </DescriptionListTerm>
               <DescriptionListDescription>{this.outbox()}</DescriptionListDescription>
             </DescriptionListGroup>

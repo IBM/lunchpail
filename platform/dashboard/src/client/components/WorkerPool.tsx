@@ -17,7 +17,7 @@ import Sparkline from "./Sparkline"
 import GridLayout from "./GridLayout"
 import SmallLabel from "./SmallLabel"
 
-import { medianCompletionRate, completionRateHistory } from "./CompletionRate"
+import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import type { WorkerPoolModelWithHistory } from "./WorkerPoolModel"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
@@ -178,7 +178,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
         <CardBody>
           <DescriptionList isCompact>
             {this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>)}
-            {this.descriptionGroup("Completion Rate", this.completionRate(), medianCompletionRate(this.props.model))}
+            {this.descriptionGroup("Completion Rate", this.completionRate(), meanCompletionRate(this.props.model))}
             {this.descriptionGroup("Processing", this.underway(), this.state?.underwayCells.length)}
             {this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.state?.size)})`, this.enqueued())}
           </DescriptionList>
