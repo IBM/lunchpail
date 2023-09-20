@@ -5,6 +5,8 @@ import type { ReactNode } from "react"
 import type { TreeViewDataItem } from "@patternfly/react-core"
 import type { ActiveFilters } from "../context/FiltersContext"
 
+import "./SidebarContent.scss"
+
 interface Props {
   applications: string[]
   datasets: string[]
@@ -125,7 +127,7 @@ export default class SidebarContent extends PureComponent<Props> {
 
   public render() {
     return (
-      <PageSidebar className="codeflare--page-sidebar" theme="light">
+      <PageSidebar className="codeflare--page-sidebar">
         <PageSidebarBody>{this.filterContent()}</PageSidebarBody>
       </PageSidebar>
     )

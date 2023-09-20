@@ -1,0 +1,9 @@
+.codeflare--page-sidebar {
+  width: 15em !important;
+
+  .pf-v5-c-tree-view {
+    /* patternfly has a bug with TreeView against dark variant sections (e.g. PageSidebar with its default dark) */
+    --pf-v5-c-tree-view__node--hover--BackgroundColor: var(--pf-v5-global--BackgroundColor--100);
+    --pf-v5-c-tree-view__node--focus--BackgroundColor: var(--pf-v5-global--BackgroundColor--100);
+  }
+}

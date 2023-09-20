@@ -138,12 +138,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         <PageSection hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}
         </PageSection>
-        <PageSection
-          isFilled={false}
-          stickyOnBreakpoint={this.stickyBottom}
-          padding={{ default: "noPadding" }}
-          variant="dark"
-        >
+        <PageSection isFilled={false} stickyOnBreakpoint={this.stickyBottom} padding={this.noPadding}>
           {this.footer()}
         </PageSection>
 
