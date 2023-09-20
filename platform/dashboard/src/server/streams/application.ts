@@ -43,7 +43,7 @@ export default function startApplicationSpecStream() {
       "--no-headers",
       "--watch",
       "-o",
-      `jsonpath='{.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.image}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}'`,
+      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.image}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
     ])
 
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))
