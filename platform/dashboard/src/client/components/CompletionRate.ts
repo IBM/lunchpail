@@ -46,7 +46,7 @@ export function meanCompletionRate(history: QueueHistory) {
   const rateHistory = completionRateHistory(history)
   const N = rateHistory.length
   const sum = rateHistory.reduce((sum, val) => sum + val)
-  return sum / N
+  return N === 0 ? 0 : prettyRate(sum / N) || 0
 }
 
 export function medianCompletionRate(history: QueueHistory) {
