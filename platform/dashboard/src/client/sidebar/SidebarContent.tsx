@@ -6,13 +6,15 @@ import type { TreeViewDataItem } from "@patternfly/react-core"
 import type { ActiveFilters } from "../context/FiltersContext"
 
 interface Props {
-  datasetNames: string[]
-  workerpoolNames: string[]
+  applications: string[]
+  datasets: string[]
+  workerpools: string[]
   filterState?: ActiveFilters
 }
 
 export default class SidebarContent extends PureComponent<Props> {
   private readonly labels = {
+    applications: "Applications",
     datasets: "Data Sets",
     workerpools: "Worker Pools",
   }
@@ -27,6 +29,16 @@ export default class SidebarContent extends PureComponent<Props> {
     return this.props.filterState
   }
 
+  private filtersFor(kind: keyof typeof this.labels) {
+    return !this.filters
+      ? []
+      : kind === "applications"
+      ? this.filters.applications
+      : kind === "datasets"
+      ? this.filters.datasets
+      : this.filters.workerpools
+  }
+
   private readonly onCheck = (
     event: React.ChangeEvent<HTMLInputElement>,
     item: TreeViewDataItem,
@@ -34,12 +46,22 @@ export default class SidebarContent extends PureComponent<Props> {
   ) => {
     if (this.filters) {
       if (!parentItem) {
-        if (item.id! === this.labels.datasets) {
+        if (item.id! === this.labels.applications) {
+          // user clicked on the Applications parent
+          this.filters.toggleShowAllApplications()
+        } else if (item.id! === this.labels.datasets) {
           // user clicked on the Data Sets parent
           this.filters.toggleShowAllDataSets()
         } else if (item.id! === this.labels.workerpools) {
           // user clicked on the Worker Pools parent
           this.filters.toggleShowAllWorkerPools()
+        }
+      } else if (parentItem.id! === this.labels.applications) {
+        // user clicked on a Data Set
+        if (item.checkProps!.checked) {
+          this.filters.removeApplicationFromFilter(item.id!)
+        } else {
+          this.filters.addApplicationToFilter(item.id!)
         }
       } else if (parentItem.id! === this.labels.datasets) {
         // user clicked on a Data Set
@@ -59,76 +81,46 @@ export default class SidebarContent extends PureComponent<Props> {
     }
   }
 
+  private allAreChecked(kind: keyof typeof this.labels) {
+    if (this.filters) {
+      if (
+        (kind === "applications" && this.filters.showingAllApplications) ||
+        (kind === "datasets" && this.filters.showingAllDataSets) ||
+        (kind === "workerpools" && this.filters.showingAllWorkerPools)
+      ) {
+        return true
+      } else if (this.filtersFor(kind).length > 0) {
+        if (this.filtersFor(kind).length === this.props[kind].length) {
+          return true
+        } else {
+          return null
+        }
+      }
+    }
+
+    return false
+  }
+
+  private thisOneIsChecked(kind: keyof typeof this.labels, name: string) {
+    return this.allAreChecked(kind) || (this.filters && this.filtersFor(kind).includes(name))
+  }
+
+  private optionsFor(kind: keyof typeof this.labels): TreeViewDataItem {
+    return {
+      id: this.labels[kind],
+      name: this.labels[kind],
+      hasCheckbox: this.props[kind].length > 0,
+      checkProps: { "aria-label": `${kind}-check`, checked: this.allAreChecked(kind) },
+      children: this.props[kind].map((name) => ({
+        id: name,
+        name,
+        checkProps: { "aria-label": `${kind}-${name}-check`, checked: this.thisOneIsChecked(kind, name) },
+      })),
+    }
+  }
+
   private options() {
-    return [this.datasetOptions(), this.workerpoolOptions()]
-  }
-
-  private get allDataSetsIsChecked() {
-    if (this.filters) {
-      if (this.filters.showingAllDataSets) {
-        return true
-      } else if (this.filters.datasets.length > 0) {
-        if (this.filters.datasets.length === this.props.datasetNames.length) {
-          return true
-        } else {
-          return null
-        }
-      }
-    }
-
-    return false
-  }
-
-  private get allWorkerPoolsIsChecked() {
-    if (this.filters) {
-      if (this.filters.showingAllWorkerPools) {
-        return true
-      } else if (this.filters.workerpools.length > 0) {
-        if (this.filters.workerpools.length === this.props.workerpoolNames.length) {
-          return true
-        } else {
-          return null
-        }
-      }
-    }
-
-    return false
-  }
-
-  private thisDataSetIsChecked(name: string) {
-    return this.allDataSetsIsChecked || (this.filters && this.filters.datasets.includes(name))
-  }
-
-  private thisWorkerPoolIsChecked(name: string) {
-    return this.allWorkerPoolsIsChecked || (this.filters && this.filters.workerpools.includes(name))
-  }
-
-  private datasetOptions(): TreeViewDataItem {
-    return {
-      id: this.labels.datasets,
-      name: this.labels.datasets,
-      hasCheckbox: this.props.datasetNames.length > 0,
-      checkProps: { "aria-label": `datasets-check`, checked: this.allDataSetsIsChecked },
-      children: this.props.datasetNames.map((name) => ({
-        id: name,
-        name,
-        checkProps: { "aria-label": `datasets-${name}-check`, checked: this.thisDataSetIsChecked(name) },
-      })),
-    }
-  }
-
-  private workerpoolOptions(): TreeViewDataItem {
-    return {
-      id: this.labels.workerpools,
-      name: this.labels.workerpools,
-      hasCheckbox: this.props.workerpoolNames.length > 0,
-      checkProps: { "aria-label": `datasets-check`, checked: this.allWorkerPoolsIsChecked },
-      children: this.props.workerpoolNames.map((name) => ({
-        id: name,
-        name,
-        checkProps: { "aria-label": `workerpools-${name}-check`, checked: this.thisWorkerPoolIsChecked(name) },
-      })),
-    }
+    return Object.keys(this.labels).map((_) => this.optionsFor(_ as keyof typeof this.labels))
   }
 
   public render() {

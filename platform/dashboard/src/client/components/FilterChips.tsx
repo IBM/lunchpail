@@ -11,14 +11,18 @@ import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
  * are the elements to be presented as Chips.
  */
 type Props = {
+  applications: string[]
   datasets: string[]
   workerpools: string[]
 }
 
 function chipGroup(
   categoryName: string,
-  items: ActiveFilters["datasets"] | ActiveFilters["workerpools"],
-  removeFn: ActiveFilters["removeDataSetFromFilter"] | ActiveFilters["removeWorkerPoolFromFilter"],
+  items: ActiveFilters["applications"] | ActiveFilters["datasets"] | ActiveFilters["workerpools"],
+  removeFn:
+    | ActiveFilters["removeApplicationFromFilter"]
+    | ActiveFilters["removeDataSetFromFilter"]
+    | ActiveFilters["removeWorkerPoolFromFilter"],
 ) {
   return (
     items &&
@@ -40,6 +44,7 @@ const FilterChips: FunctionComponent<Props> = (props: Props) => {
       {(value) =>
         value && (
           <Flex>
+            {chipGroup("Applications", props.applications, value.removeApplicationFromFilter)}
             {chipGroup("Data Sets", props.datasets, value.removeDataSetFromFilter)}
             {chipGroup("Worker Pools", props.workerpools, value.removeWorkerPoolFromFilter)}
           </Flex>

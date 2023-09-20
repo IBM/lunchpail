@@ -18,6 +18,8 @@ import {
 } from "@patternfly/react-core"
 
 import { DataSetIcon } from "../components/DataSet"
+import { ApplicationIcon } from "../components/Application"
+
 import { Input, NumberInput, Select } from "./Forms"
 import type NewPoolHandler from "../events/NewPoolHandler"
 
@@ -63,6 +65,7 @@ export default class NewWorkerPool extends PureComponent<Props, State> {
         description="Choose the Application code this pool should run"
         ctrl={ctrl}
         options={this.props.applications}
+        icons={<ApplicationIcon />}
       />
     )
   }

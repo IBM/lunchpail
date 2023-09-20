@@ -4,6 +4,7 @@ const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default
 
 import Base, { BaseState } from "./Base"
 
+import Application from "../components/Application"
 import DataSet from "../components/DataSet"
 import WorkerPool from "../components/WorkerPool"
 
@@ -180,6 +181,16 @@ export class Dashboard extends Base<Props, State> {
     }
   }
 
+  private readonly addApplicationToFilter = (dsName: string) => {
+    this.setState((curState) => {
+      if (!curState.filterState.applications.includes(dsName)) {
+        curState.filterState.applications.push(dsName)
+        return { filterState: Object.assign({}, curState.filterState) }
+      }
+      return null
+    })
+  }
+
   private readonly addDataSetToFilter = (dsName: string) => {
     this.setState((curState) => {
       if (!curState.filterState.datasets.includes(dsName)) {
@@ -196,6 +207,26 @@ export class Dashboard extends Base<Props, State> {
         curState.filterState.workerpools.push(wpName)
         return { filterState: Object.assign({}, curState.filterState) }
       }
+      return null
+    })
+  }
+
+  private readonly removeApplicationFromFilter = (dsName: string) => {
+    this.setState((curState) => {
+      const index = curState.filterState.applications.indexOf(dsName)
+      if (index !== -1) {
+        curState.filterState.applications.splice(index, 1)
+        return { filterState: Object.assign({}, curState.filterState) }
+      } else if (curState.filterState.showingAllApplications) {
+        // user had previously selected ShowAll, and is now removing just one
+        return {
+          filterState: Object.assign({}, curState.filterState, {
+            showingAllApplications: false,
+            applications: this.allBut(this.applicationsList, dsName),
+          }),
+        }
+      }
+
       return null
     })
   }
@@ -237,6 +268,15 @@ export class Dashboard extends Base<Props, State> {
       }
       return null
     })
+  }
+
+  private readonly toggleShowAllApplications = () => {
+    this.setState((curState) => ({
+      filterState: Object.assign({}, curState.filterState, {
+        showingAllApplications: !curState.filterState?.showingAllApplications,
+        applications: !curState.filterState?.showingAllApplications === false ? [] : curState.filterState?.applications,
+      }),
+    }))
   }
 
   private readonly toggleShowAllDataSets = () => {
@@ -325,14 +365,19 @@ export class Dashboard extends Base<Props, State> {
       datasetIndex: {},
       workerpoolIndex: {},
       filterState: {
+        applications: [],
         datasets: [],
         workerpools: [],
-        showingAllWorkerPools: false,
+        showingAllApplications: false,
         showingAllDataSets: false,
+        showingAllWorkerPools: false,
+        addApplicationToFilter: this.addApplicationToFilter,
         addDataSetToFilter: this.addDataSetToFilter,
         addWorkerPoolToFilter: this.addWorkerPoolToFilter,
+        removeApplicationFromFilter: this.removeApplicationFromFilter,
         removeDataSetFromFilter: this.removeDataSetFromFilter,
         removeWorkerPoolFromFilter: this.removeWorkerPoolFromFilter,
+        toggleShowAllApplications: this.toggleShowAllApplications,
         toggleShowAllDataSets: this.toggleShowAllDataSets,
         toggleShowAllWorkerPools: this.toggleShowAllWorkerPools,
         clearAllFilters: this.clearAllFilters,
@@ -353,9 +398,21 @@ export class Dashboard extends Base<Props, State> {
   private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
   private lexicoWP = (a: WorkerPoolModel, b: WorkerPoolModel) => a.label.localeCompare(b.label)
 
+  private applications() {
+    return (
+      <Gallery hasGutter>
+        {Object.entries(this.state?.applicationEvents || {})
+          .sort(this.lexico)
+          .map(([name, events]) => (
+            <Application key={name} {...events[events.length - 1]} />
+          ))}
+      </Gallery>
+    )
+  }
+
   private datasets() {
     return (
-      <Gallery hasGutter className="codeflare--flex-stack">
+      <Gallery hasGutter>
         {Object.entries(this.state?.datasetEvents || {})
           .sort(this.lexico)
           .map(
@@ -443,7 +500,7 @@ export class Dashboard extends Base<Props, State> {
 
   private workerpools() {
     return (
-      <Gallery hasGutter className="codeflare--flex-stack">
+      <Gallery hasGutter>
         <NewWorkerPoolCard />
         {this.latestWorkerPoolModel.map(
           (w) =>
@@ -466,8 +523,9 @@ export class Dashboard extends Base<Props, State> {
     return (
       <SidebarContent
         filterState={this.state?.filterState}
-        datasetNames={this.datasetsList}
-        workerpoolNames={Object.keys(this.state?.workerpoolIndex || {})}
+        applications={this.applicationsList}
+        datasets={this.datasetsList}
+        workerpools={Object.keys(this.state?.workerpoolIndex || {})}
       />
     )
   }
@@ -475,8 +533,10 @@ export class Dashboard extends Base<Props, State> {
   private get hasFilters() {
     return (
       this.state?.filterState &&
-      (this.state.filterState.showingAllDataSets ||
+      (this.state.filterState.showingAllApplications ||
+        this.state.filterState.showingAllDataSets ||
         this.state.filterState.showingAllWorkerPools ||
+        this.state.filterState.applications.length > 0 ||
         this.state.filterState.datasets.length > 0 ||
         this.state.filterState.workerpools.length > 0)
     )
@@ -488,6 +548,11 @@ export class Dashboard extends Base<Props, State> {
         <Suspense fallback={<Fragment />}>
           <ActiveFitlersCtx.Provider value={this.state?.filterState}>
             <FilterChips
+              applications={
+                this.state?.filterState.showingAllApplications
+                  ? this.applicationsList
+                  : this.state?.filterState.applications
+              }
               datasets={
                 this.state?.filterState.showingAllDataSets ? this.datasetsList : this.state?.filterState.datasets
               }
@@ -517,21 +582,37 @@ export class Dashboard extends Base<Props, State> {
     )
   }
 
+  /** Should we *not* show the Applications panel? */
+  private get hideApplications() {
+    // if we are not showing all applications and showing all worker pools
+    return (
+      !this.state?.filterState.showingAllApplications &&
+      (this.state?.filterState.showingAllDataSets || this.state?.filterState.showingAllWorkerPools)
+    )
+  }
+
   /** Should we *not* show the DataSetss panel? */
   private get hideDataSets() {
     // if we are not showing all datasets and showing all worker pools
-    return !this.state?.filterState.showingAllDataSets && this.state?.filterState.showingAllWorkerPools
+    return (
+      !this.state?.filterState.showingAllDataSets &&
+      (this.state?.filterState.showingAllApplications || this.state?.filterState.showingAllWorkerPools)
+    )
   }
 
   /** Should we *not* show the WorkerPools panel? */
   private get hideWorkerPools() {
     // if we are showing all datasets and not showing all worker pools
-    return this.state?.filterState.showingAllDataSets && !this.state?.filterState.showingAllWorkerPools
+    return (
+      !this.state?.filterState.showingAllWorkerPools &&
+      (this.state?.filterState.showingAllApplications || this.state?.filterState.showingAllDataSets)
+    )
   }
 
   protected override body() {
     return (
       <>
+        {!this.hideApplications && this.panel("Applications", this.applications())}
         {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
         {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
       </>
