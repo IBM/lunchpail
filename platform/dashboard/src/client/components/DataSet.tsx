@@ -25,12 +25,7 @@ function Work(props: PropsWithChildren<Pick<Props, "idx"> & { history: Props["in
   return (
     <Stack hasGutter>
       <StackItem>
-        <Flex
-          className="codeflare--workqueue"
-          gap={{ default: "gapXs" }}
-          flexWrap={{ default: "nowrap" }}
-          style={{ width: "calc((4px + 1.375em) * 8 - 3px)", alignContent: "flex-start", overflow: "hidden" }}
-        >
+        <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
           {props.children}
         </Flex>
       </StackItem>
