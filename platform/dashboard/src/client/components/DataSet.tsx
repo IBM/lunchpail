@@ -10,6 +10,8 @@ import {
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core"
 
 import Sparkline from "./Sparkline"
@@ -42,16 +44,24 @@ function Work(
       </DescriptionListTerm>
 
       <DescriptionListDescription>
-        <Flex
-          className="codeflare--workqueue"
-          gap={{ default: "gapXs" }}
-          flexWrap={{ default: "nowrap" }}
-          style={{ width: "calc((4px + 1.375em) * 8 - 3px)", alignContent: "flex-start", overflow: "hidden" }}
-        >
-          {props.children}
-        </Flex>
+        <Stack hasGutter>
+          <StackItem>
+            <Flex
+              className="codeflare--workqueue"
+              gap={{ default: "gapXs" }}
+              flexWrap={{ default: "nowrap" }}
+              style={{ width: "calc((4px + 1.375em) * 8 - 3px)", alignContent: "flex-start", overflow: "hidden" }}
+            >
+              {props.children}
+            </Flex>
+          </StackItem>
 
-        {props.history.length > 0 && <Sparkline data={props.history} datasetIdx={props.idx} />}
+          {props.history.length > 0 && (
+            <StackItem>
+              <Sparkline data={props.history} datasetIdx={props.idx} />
+            </StackItem>
+          )}
+        </Stack>
       </DescriptionListDescription>
     </DescriptionListGroup>
   )
