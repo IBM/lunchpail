@@ -280,33 +280,40 @@ export class DemoWorkerPoolStatusEventSource implements EventSourceLike, NewPool
   }
 
   private initDoWorkSimulatorForWorker(pool: DemoWorkerPool, workerIndex: number) {
+    const timeOfProcessing = getNormallyDistributedRandomNumber(6000, 3000)
+    const timeBetweenProcessing = getNormallyDistributedRandomNumber(6000, 2000)
     const { datasets, queues } = this
 
-    setTimeout(() => {
+    const once = () => {
       // find work in an inbox and start processing it
       for (let poolDatasetIndex = 0; poolDatasetIndex < pool.datasets.length; poolDatasetIndex++) {
         const datasetLabel = pool.datasets[poolDatasetIndex]
         if (pool.inboxes[workerIndex][datasetLabel] > 0) {
-          pool.inboxes[workerIndex][datasetLabel]--
-          pool.processing[workerIndex][datasetLabel] = (pool.processing[workerIndex][datasetLabel] || 0) + 1
+          pool.inboxes[workerIndex][datasetLabel]-- // inbox--
+          pool.processing[workerIndex][datasetLabel] = (pool.processing[workerIndex][datasetLabel] || 0) + 1 // processing++
           queues.sendUpdate(pool, datasetLabel, workerIndex)
 
+          // after a "think time",
           setTimeout(() => {
-            pool.outboxes[workerIndex][datasetLabel] = (pool.outboxes[workerIndex][datasetLabel] || 0) + 1
-            pool.processing[workerIndex][datasetLabel]--
+            pool.outboxes[workerIndex][datasetLabel] = (pool.outboxes[workerIndex][datasetLabel] || 0) + 1 // outbox++
+            pool.processing[workerIndex][datasetLabel]-- // processing--
 
             const dataset = datasets.sets.find((_) => _.label === datasetLabel)
             if (dataset) {
+              // mark it as done in the dataset, too
               dataset.outbox++
             }
 
             queues.sendUpdate(pool, datasetLabel, workerIndex)
-          }, 6000)
+            setTimeout(once, timeBetweenProcessing)
+          }, timeOfProcessing)
 
           break
         }
       }
-    }, 6000)
+    }
+
+    once()
   }
 
   private initSimulator(pool: DemoWorkerPool) {
