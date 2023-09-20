@@ -50,7 +50,7 @@ export default abstract class CardInGallery<Props extends BaseProps> extends Pur
 
   public override render() {
     return (
-      <Card isRounded>
+      <Card isRounded isClickable isSelectable>
         <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
           <CardTitle>
             {this.icon()} {this.label()}

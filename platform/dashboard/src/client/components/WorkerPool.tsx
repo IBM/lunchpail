@@ -1,21 +1,12 @@
-import { PureComponent, ReactNode } from "react"
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  CardHeaderProps,
-  CardTitle,
-  Flex,
-  DescriptionList,
-  DescriptionListTerm,
-  DescriptionListGroup,
-  DescriptionListDescription,
-} from "@patternfly/react-core"
+import type { ReactNode } from "react"
+
+import { Flex } from "@patternfly/react-core"
 
 import GridCell from "./GridCell"
 import Sparkline from "./Sparkline"
 import GridLayout from "./GridLayout"
 import SmallLabel from "./SmallLabel"
+import CardInGallery from "./CardInGallery"
 
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
@@ -32,27 +23,37 @@ interface Props {
   statusHistory: WorkerPoolStatusEvent[]
 }
 
-type State = Pick<WorkerPoolStatusEvent, "ready" | "size"> & {
-  /** UI for processing tasks */
-  underwayCells: ReactNode[]
+export default class WorkerPool extends CardInGallery<Props> {
+  protected override label() {
+    return this.props.model.label
+  }
 
-  /** Header actions */
-  actions: CardHeaderProps["actions"]
-}
+  protected override icon() {
+    return <WorkerPoolIcon />
+  }
 
-export default class WorkerPool extends PureComponent<Props, State> {
-  public constructor(props: Props) {
-    super(props)
-    this.state = {
-      size: 0,
-      ready: 0,
-      underwayCells: [],
-      actions: { actions: [] },
+  protected override actions() {
+    return {
+      hasNoOffset: true,
+      actions: !this.props.statusHistory?.length
+        ? []
+        : [
+            <SmallLabel key="status">
+              {this.props.statusHistory[this.props.statusHistory.length - 1].status}
+            </SmallLabel>,
+          ],
     }
   }
 
-  public label() {
-    return this.props.model.label
+  protected override groups() {
+    const cells = this.underwayCells()
+
+    return [
+      this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>),
+      this.descriptionGroup("Completion Rate", this.completionRate(), meanCompletionRate(this.props.model)),
+      this.descriptionGroup("Processing", this.underway(cells), cells.length),
+      this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.size)})`, this.enqueued()),
+    ]
   }
 
   private get inboxes() {
@@ -67,18 +68,8 @@ export default class WorkerPool extends PureComponent<Props, State> {
     return this.props.model.processing
   }
 
-  public static getDerivedStateFromProps(props: Props) {
-    return {
-      underwayCells: WorkerPool.underwayCells(props),
-      size: !props.statusHistory?.length ? 0 : props.statusHistory[props.statusHistory.length - 1].size,
-      nReadyWorkers: !props.statusHistory?.length ? 0 : props.statusHistory[props.statusHistory.length - 1].ready,
-      actions: {
-        hasNoOffset: true,
-        actions: !props.statusHistory?.length
-          ? []
-          : [<SmallLabel key="status">{props.statusHistory[props.statusHistory.length - 1].status}</SmallLabel>],
-      },
-    }
+  private get size() {
+    return !this.props.statusHistory?.length ? 0 : this.props.statusHistory[this.props.statusHistory.length - 1].size
   }
 
   /** One row per worker, within row, one cell per inbox or outbox enqueued task */
@@ -92,7 +83,7 @@ export default class WorkerPool extends PureComponent<Props, State> {
     )
   }
 
-  private static underwayCells(props: Props) {
+  private underwayCells(props = this.props) {
     return (props.model.processing || []).flatMap((processing, workerIdx) =>
       Object.entries(processing)
         .filter(([, size]) => size > 0)
@@ -111,8 +102,8 @@ export default class WorkerPool extends PureComponent<Props, State> {
   }
 
   /** One row across workers, one cell per in-process task */
-  private underway() {
-    return <Flex gap={{ default: "gapXs" }}>{this.state?.underwayCells}</Flex>
+  private underway(cells: ReactNode[]) {
+    return <Flex gap={{ default: "gapXs" }}>{cells}</Flex>
   }
 
   private pluralize(text: string, value: number) {
@@ -146,17 +137,6 @@ export default class WorkerPool extends PureComponent<Props, State> {
     return <Sparkline data={completionRateHistory(this.props.model)} />
   }
 
-  private descriptionGroup(term: ReactNode, description: ReactNode, count?: number | string) {
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>
-          <SmallLabel count={count}>{term}</SmallLabel>
-        </DescriptionListTerm>
-        <DescriptionListDescription>{description}</DescriptionListDescription>
-      </DescriptionListGroup>
-    )
-  }
-
   private get statusHistory() {
     return this.props.statusHistory
   }
@@ -167,23 +147,6 @@ export default class WorkerPool extends PureComponent<Props, State> {
     }
   }
 
-  public override render() {
-    return (
-      <Card isRounded isClickable isSelectable>
-        <CardHeader actions={this.state?.actions} className="codeflare--card-header-no-wrap">
-          <CardTitle>
-            <WorkerPoolIcon /> {this.label()}
-          </CardTitle>
-        </CardHeader>
-        <CardBody>
-          <DescriptionList isCompact>
-            {this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>)}
-            {this.descriptionGroup("Completion Rate", this.completionRate(), meanCompletionRate(this.props.model))}
-            {this.descriptionGroup("Processing", this.underway(), this.state?.underwayCells.length)}
-            {this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.state?.size)})`, this.enqueued())}
-          </DescriptionList>
-        </CardBody>
-      </Card>
-    )
-  }
+  // do we need this any more? we used to have it in the <Card className/>
+  // "codeflare--card-header-no-wrap"
 }
