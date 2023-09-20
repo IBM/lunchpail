@@ -106,7 +106,10 @@ function deploy {
 }
 
 function undeploy {
-    [[ -n "$2" ]] && kill $2
+    if [[ -n "$2" ]]
+    then kill $2 || true
+    fi
+
     ("$SCRIPTDIR"/undeploy-tests.sh $1 || exit 0)
 }
 
