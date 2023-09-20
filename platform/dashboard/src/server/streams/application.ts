@@ -8,11 +8,11 @@ import type ApplicationSpecEvent from "../../client/events/ApplicationSpecEvent"
  * @return a NodeJS stream Transform that turns a raw line into a
  * (string-serialized) `ApplicationSpecEvent`
  */
-function transformLineToEvent() {
+function transformLineToEvent(sep: string) {
   return new Transform({
     transform(chunk: Buffer, encoding: string, callback) {
       // Splits the string by spaces
-      const [ns, application, api, image, command, supportsGpu, age] = chunk.toString().split(/\s+/)
+      const [ns, application, api, image, command, supportsGpu, age] = chunk.toString().split(sep)
 
       const model: ApplicationSpecEvent = {
         timestamp: Date.now(),
@@ -34,9 +34,25 @@ function transformLineToEvent() {
  * @return a NodeJS `Stream` that emits a stream of serialized `ApplicationSpecEvent` data
  */
 export default function startApplicationSpecStream() {
-  const child = spawn("kubectl", ["get", "application.codeflare.dev", "-A", "--no-headers", "--watch"])
-  const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent())
-  splitter.on("error", console.error)
-  splitter.on("close", () => child.kill())
-  return splitter
+  try {
+    const sep = "|||"
+    const child = spawn("kubectl", [
+      "get",
+      "application.codeflare.dev",
+      "-A",
+      "--no-headers",
+      "--watch",
+      "-o",
+      `jsonpath='{.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.image}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}'`,
+    ])
+
+    const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))
+    child.stderr.pipe(process.stderr)
+    splitter.on("error", console.error)
+    splitter.on("close", () => child.kill())
+    return splitter
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
 }
