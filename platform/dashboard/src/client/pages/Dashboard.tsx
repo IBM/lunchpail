@@ -432,47 +432,60 @@ export class Dashboard extends Base<Props, State> {
   private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
   private lexicoWP = (a: WorkerPoolModel, b: WorkerPoolModel) => a.label.localeCompare(b.label)
 
-  private applications() {
+  /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
+  private readonly galleryMinWidths = {
+    default: "18em",
+  }
+
+  /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
+  private readonly galleryMaxWidths = {
+    default: "18em",
+  }
+
+  /** Render a PatternFly Gallery of the given nodes */
+  private gallery(nodes: ReactNode[]) {
     return (
-      <Gallery hasGutter>
-        {Object.entries(this.state?.applicationEvents || {})
-          .filter(
-            ([name]) =>
-              !this.state?.filterState.applications.length ||
-              this.state.filterState.showingAllApplications ||
-              this.state.filterState.applications.includes(name),
-          )
-          .sort(this.lexico)
-          .map(([name, events]) => (
-            <Application key={name} {...events[events.length - 1]} />
-          ))}
+      <Gallery hasGutter minWidths={this.galleryMinWidths} maxWidths={this.galleryMaxWidths}>
+        {nodes}
       </Gallery>
     )
   }
 
+  private applications() {
+    return this.gallery(
+      Object.entries(this.state?.applicationEvents || {})
+        .filter(
+          ([name]) =>
+            !this.state?.filterState.applications.length ||
+            this.state.filterState.showingAllApplications ||
+            this.state.filterState.applications.includes(name),
+        )
+        .sort(this.lexico)
+        .map(([name, events]) => <Application key={name} {...events[events.length - 1]} />),
+    )
+  }
+
   private datasets() {
-    return (
-      <Gallery hasGutter>
-        {Object.entries(this.state?.datasetEvents || {})
-          .sort(this.lexico)
-          .map(
-            ([label, events], idx) =>
-              (!this.state?.filterState.datasets.length ||
-                this.state.filterState.showingAllDataSets ||
-                this.state.filterState.datasets.includes(label)) && (
-                <DataSet
-                  key={label}
-                  idx={either(events[events.length - 1].idx, idx)}
-                  label={label}
-                  inbox={events[events.length - 1].inbox}
-                  inboxHistory={events.map((_) => _.inbox)}
-                  outboxHistory={events.map((_) => _.outbox)}
-                  timestamps={events.map((_) => _.timestamp)}
-                  outbox={events[events.length - 1].outbox}
-                />
-              ),
-          )}
-      </Gallery>
+    return this.gallery(
+      Object.entries(this.state?.datasetEvents || {})
+        .sort(this.lexico)
+        .map(
+          ([label, events], idx) =>
+            (!this.state?.filterState.datasets.length ||
+              this.state.filterState.showingAllDataSets ||
+              this.state.filterState.datasets.includes(label)) && (
+              <DataSet
+                key={label}
+                idx={either(events[events.length - 1].idx, idx)}
+                label={label}
+                inbox={events[events.length - 1].inbox}
+                inboxHistory={events.map((_) => _.inbox)}
+                outboxHistory={events.map((_) => _.outbox)}
+                timestamps={events.map((_) => _.timestamp)}
+                outbox={events[events.length - 1].outbox}
+              />
+            ),
+        ),
     )
   }
 
@@ -539,24 +552,22 @@ export class Dashboard extends Base<Props, State> {
   }
 
   private workerpools() {
-    return (
-      <Gallery hasGutter>
-        <NewWorkerPoolCard />
-        {this.latestWorkerPoolModel.map(
-          (w) =>
-            (!this.state?.filterState.workerpools.length ||
-              this.state.filterState.showingAllWorkerPools ||
-              this.state?.filterState.workerpools.includes(w.label)) && (
-              <WorkerPool
-                key={w.label}
-                model={w}
-                datasetIndex={this.state.datasetIndex}
-                statusHistory={this.state.poolEvents[w.label] || []}
-              />
-            ),
-        )}
-      </Gallery>
-    )
+    return this.gallery([
+      <NewWorkerPoolCard />,
+      ...this.latestWorkerPoolModel.map(
+        (w) =>
+          (!this.state?.filterState.workerpools.length ||
+            this.state.filterState.showingAllWorkerPools ||
+            this.state?.filterState.workerpools.includes(w.label)) && (
+            <WorkerPool
+              key={w.label}
+              model={w}
+              datasetIndex={this.state.datasetIndex}
+              statusHistory={this.state.poolEvents[w.label] || []}
+            />
+          ),
+      ),
+    ])
   }
 
   protected override sidebar() {
