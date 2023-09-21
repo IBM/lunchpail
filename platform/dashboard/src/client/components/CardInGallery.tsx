@@ -51,7 +51,7 @@ export default abstract class CardInGallery<Props extends BaseProps> extends Pur
 
   private card(drawerCtxVal: DrawerState) {
     return (
-      <Card isRounded isClickable isSelectable onClick={() => drawerCtxVal.toggleExpanded()}>
+      <Card isLarge isClickable isSelectable onClick={drawerCtxVal.toggleExpanded}>
         <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
           <CardTitle>
             {this.icon()} {this.label()}
