@@ -23,7 +23,10 @@ import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/
 import SidebarContent from "../sidebar/SidebarContent"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
-const FilterChips = lazy(() => import("../components/FilterChips"))
+
+// strange: in non-demo mode, FilterChips stays stuck in the Suspense
+//const FilterChips = lazy(() => import("../components/FilterChips"))
+import FilterChips from "../components/FilterChips"
 
 import "./Dashboard.scss"
 
@@ -402,6 +405,12 @@ export class Dashboard extends Base<Props, State> {
     return (
       <Gallery hasGutter>
         {Object.entries(this.state?.applicationEvents || {})
+          .filter(
+            ([name]) =>
+              !this.state?.filterState.applications.length ||
+              this.state.filterState.showingAllApplications ||
+              this.state.filterState.applications.includes(name),
+          )
           .sort(this.lexico)
           .map(([name, events]) => (
             <Application key={name} {...events[events.length - 1]} />
