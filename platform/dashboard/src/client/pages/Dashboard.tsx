@@ -478,11 +478,8 @@ export class Dashboard extends Base<Props, State> {
                 key={label}
                 idx={either(events[events.length - 1].idx, idx)}
                 label={label}
-                inbox={events[events.length - 1].inbox}
-                inboxHistory={events.map((_) => _.inbox)}
-                outboxHistory={events.map((_) => _.outbox)}
-                timestamps={events.map((_) => _.timestamp)}
-                outbox={events[events.length - 1].outbox}
+                events={events}
+                numEvents={events.length}
               />
             ),
         ),
@@ -517,8 +514,8 @@ export class Dashboard extends Base<Props, State> {
       inbox: this.backfill(model.inbox),
       outbox: this.backfill(model.outbox),
       processing: this.backfill(model.processing),
-      outboxHistory: queueEventsForOneWorkerPool.map((_) => _.outbox),
-      timestamps: queueEventsForOneWorkerPool.map((_) => _.timestamp),
+      events: queueEventsForOneWorkerPool,
+      numEvents: queueEventsForOneWorkerPool.length,
     }
   }
 

@@ -8,20 +8,18 @@ import GridCell, { GridTypeData } from "./GridCell"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import type DataSetModel from "./DataSetModel"
-import type { QueueHistory } from "./WorkerPoolModel"
 
 import DataSetIcon from "@patternfly/react-icons//dist/esm/icons/cubes-icon"
 export { DataSetIcon }
 
 import "./Queue.scss"
 
-type Props = Omit<DataSetModel, "timestamp"> &
-  QueueHistory & {
-    idx: number
-    inboxHistory: number[]
-  }
+type Props = Pick<DataSetModel, "idx" | "label"> & {
+  events: DataSetModel[]
+  numEvents: number
+}
 
-function Work(props: PropsWithChildren<Pick<Props, "idx"> & { history: Props["inboxHistory"] }>) {
+function Work(props: PropsWithChildren<Pick<Props, "idx"> & { history: number[] }>) {
   return (
     <Stack hasGutter>
       <StackItem>
@@ -36,12 +34,12 @@ function Work(props: PropsWithChildren<Pick<Props, "idx"> & { history: Props["in
 }
 
 export default class DataSet extends CardInGallery<Props> {
-  private stack(model: Props["inbox"] | Props["outbox"], gridDataType: GridTypeData) {
-    if (!model) {
+  private stack(count: number, gridDataType: GridTypeData) {
+    if (!count) {
       return <GridCell type="placeholder" dataset={this.props.idx} />
     }
 
-    return Array(model || 0)
+    return Array(count)
       .fill(0)
       .map((_, index) => (
         <FlexItem key={index}>
@@ -51,7 +49,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private outbox() {
-    return <Sparkline data={completionRateHistory(this.props)} />
+    return <Sparkline data={completionRateHistory(this.props.events)} />
   }
 
   protected override icon() {
@@ -62,18 +60,30 @@ export default class DataSet extends CardInGallery<Props> {
     return this.props.label
   }
 
+  private get inboxHistory() {
+    return this.props.events.map((_) => _.inbox)
+  }
+
+  private get outboxHistory() {
+    return this.props.events.map((_) => _.outbox)
+  }
+
+  private get inboxCount() {
+    return this.props.events.length === 0 ? 0 : this.props.events[this.props.events.length - 1].inbox
+  }
+
   private unassigned() {
     return this.descriptionGroup(
       "Unassigned Work",
-      <Work idx={this.props.idx} history={this.props.inboxHistory}>
-        {this.stack(this.props.inbox, "unassigned")}
+      <Work idx={this.props.idx} history={this.inboxHistory}>
+        {this.stack(this.inboxCount, "unassigned")}
       </Work>,
-      this.props.inbox,
+      this.inboxCount,
     )
   }
 
   private completions() {
-    return this.descriptionGroup("Completion Rate", this.outbox(), meanCompletionRate(this.props))
+    return this.descriptionGroup("Completion Rate", this.outbox(), meanCompletionRate(this.props.events))
   }
 
   protected override groups() {

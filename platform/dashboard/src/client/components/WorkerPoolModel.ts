@@ -11,15 +11,7 @@ export interface WorkerPoolModel {
   label: string
 }
 
-/**
- * Temporal history of queue depths
- */
-export type QueueHistory = {
-  /** History of number of completed tasks */
-  outboxHistory: number[]
-
-  /** Timestamps, parallel to the `outboxHistory` array */
-  timestamps: number[]
+export type WorkerPoolModelWithHistory = WorkerPoolModel & {
+  numEvents: number
+  events: { outbox: number; timestamp: number }[]
 }
-
-export type WorkerPoolModelWithHistory = WorkerPoolModel & QueueHistory

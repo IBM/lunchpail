@@ -1,5 +1,3 @@
-import type { QueueHistory } from "./WorkerPoolModel"
-
 function prettyRate(tasksPerMilli: number) {
   const tasksPerSecond = tasksPerMilli * 1000
 
@@ -23,33 +21,20 @@ function prettyRate(tasksPerMilli: number) {
   }
 }
 
-export function completionRateHistory(history: QueueHistory) {
-  const { outboxHistory, timestamps } = history
-  return outboxHistory.map((completions, idx) =>
-    idx === 0 ? 0 : completions / (timestamps[idx] - timestamps[idx - 1] || 1),
+export function completionRateHistory(history: { outbox: number; timestamp: number }[]) {
+  return history.map(({ outbox, timestamp }, idx) =>
+    idx === 0 ? 0 : outbox / (timestamp - history[idx - 1].timestamp || 1),
   )
 }
 
-export function instantaneousCompletionRate(history: QueueHistory) {
-  const { outboxHistory, timestamps } = history
-  const N = timestamps.length
-
-  if (N <= 1) {
-    return ""
-  } else {
-    const durationMillis = timestamps[N - 1] - timestamps[N - 2]
-    return prettyRate(outboxHistory[N - 1] / durationMillis)
-  }
-}
-
-export function meanCompletionRate(history: QueueHistory) {
+export function meanCompletionRate(history: { outbox: number; timestamp: number }[]) {
   const rateHistory = completionRateHistory(history)
   const N = rateHistory.length
   const sum = rateHistory.reduce((sum, val) => sum + val)
   return N === 0 ? 0 : prettyRate(sum / N) || 0
 }
 
-export function medianCompletionRate(history: QueueHistory) {
+export function medianCompletionRate(history: { outbox: number; timestamp: number }[]) {
   const A = completionRateHistory(history).sort()
   return A.length === 0 ? 0 : prettyRate(A[Math.round(A.length / 2)]) || 0
 }

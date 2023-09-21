@@ -50,7 +50,7 @@ export default class WorkerPool extends CardInGallery<Props> {
 
     return [
       this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>),
-      this.descriptionGroup("Completion Rate", this.completionRate(), meanCompletionRate(this.props.model)),
+      this.descriptionGroup("Completion Rate", this.completionRate(), meanCompletionRate(this.props.model.events)),
       this.descriptionGroup("Processing", this.underway(cells), cells.length),
       this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.size)})`, this.enqueued()),
     ]
@@ -134,7 +134,7 @@ export default class WorkerPool extends CardInGallery<Props> {
   }
 
   private completionRate() {
-    return <Sparkline data={completionRateHistory(this.props.model)} />
+    return <Sparkline data={completionRateHistory(this.props.model.events)} />
   }
 
   private get statusHistory() {
