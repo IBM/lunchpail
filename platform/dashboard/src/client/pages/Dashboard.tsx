@@ -1,5 +1,21 @@
 import { Fragment, ReactNode, Suspense, lazy } from "react"
-import { Divider, Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
+import {
+  Divider,
+  Gallery,
+  Panel,
+  PanelMain,
+  PanelMainBody,
+  PanelHeader,
+  Title,
+  Drawer,
+  DrawerContent,
+  DrawerContentBody,
+  DrawerActions,
+  DrawerCloseButton,
+  DrawerHead,
+  DrawerPanelBody,
+  DrawerPanelContent,
+} from "@patternfly/react-core"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
 import Base, { BaseState } from "./Base"
@@ -26,7 +42,8 @@ import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 //const NewWorkerPool = lazy(() => import("./NewWorkerPool"))
 //const FilterChips = lazy(() => import("../components/FilterChips"))
 import NewWorkerPool from "./NewWorkerPool"
-import FilterChips from "../components/FilterChips"
+import { DrawerCtx, DrawerState } from "../context/DrawerContext"
+const FilterChips = lazy(() => import("../components/FilterChips"))
 
 import "./Dashboard.scss"
 
@@ -82,6 +99,9 @@ type State = BaseState & {
 
   /** State of active filters */
   filterState: ActiveFilters
+
+  /** State of Expandable Drawer */
+  drawerState: DrawerState
 }
 
 function either<T>(x: T | undefined, y: T): T {
@@ -308,6 +328,13 @@ export class Dashboard extends Base<Props, State> {
     })
   }
 
+  private readonly toggleExpanded = () => {
+    this.setState((curState) => {
+      curState.drawerState.isDrawerExpanded = !curState.drawerState.isDrawerExpanded
+      return { drawerState: Object.assign({}, curState.drawerState) }
+    })
+  }
+
   private initDataSetStream() {
     const source =
       typeof this.props.datasets === "string"
@@ -384,6 +411,10 @@ export class Dashboard extends Base<Props, State> {
         toggleShowAllDataSets: this.toggleShowAllDataSets,
         toggleShowAllWorkerPools: this.toggleShowAllWorkerPools,
         clearAllFilters: this.clearAllFilters,
+      },
+      drawerState: {
+        isDrawerExpanded: false,
+        toggleExpanded: this.toggleExpanded,
       },
     })
 
@@ -619,12 +650,38 @@ export class Dashboard extends Base<Props, State> {
   }
 
   protected override body() {
+    const panelContent = (
+      <DrawerPanelContent>
+        <DrawerHead>
+          <Title headingLevel="h2" size="xl">
+            Hello
+          </Title>
+          <DrawerActions>
+            <DrawerCloseButton onClick={this.toggleExpanded} />
+          </DrawerActions>
+        </DrawerHead>
+        <DrawerPanelBody>
+          <p>
+            The content of the drawer really is up to you. It could have form fields, definition lists, text lists,
+            labels, charts, progress bars, etc. Spacing recommendation is 24px margins. You can put tabs in here, and
+            can also make the drawer scrollable.
+          </p>
+        </DrawerPanelBody>
+      </DrawerPanelContent>
+    )
+
     return (
-      <>
-        {!this.hideApplications && this.panel("Applications", this.applications())}
-        {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
-        {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
-      </>
+      <DrawerCtx.Provider value={this.state?.drawerState}>
+        <Drawer isExpanded={this.state?.drawerState.isDrawerExpanded} isInline>
+          <DrawerContent panelContent={panelContent} colorVariant="light-200">
+            <DrawerContentBody hasPadding>
+              {!this.hideApplications && this.panel("Applications", this.applications())}
+              {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
+              {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
+            </DrawerContentBody>
+          </DrawerContent>
+        </Drawer>
+      </DrawerCtx.Provider>
     )
   }
 

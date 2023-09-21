@@ -17,6 +17,7 @@ import SmallLabel from "./SmallLabel"
 
 import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-square-icon"
 import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-square-icon"
+import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 
 type BaseProps = unknown
 
@@ -48,9 +49,9 @@ export default abstract class CardInGallery<Props extends BaseProps> extends Pur
     return undefined
   }
 
-  public override render() {
+  private card(drawerCtxVal: DrawerState) {
     return (
-      <Card isRounded isClickable isSelectable>
+      <Card isRounded isClickable isSelectable onClick={() => drawerCtxVal.toggleExpanded()}>
         <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
           <CardTitle>
             {this.icon()} {this.label()}
@@ -61,5 +62,9 @@ export default abstract class CardInGallery<Props extends BaseProps> extends Pur
         </CardBody>
       </Card>
     )
+  }
+
+  public override render() {
+    return <DrawerCtx.Consumer>{(drawerCtxVal) => drawerCtxVal && this.card(drawerCtxVal)}</DrawerCtx.Consumer>
   }
 }
