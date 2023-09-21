@@ -19,7 +19,6 @@ async function initEventSource(res: Response, stream: Writable) {
 
   // If client closes connection, stop sending events
   res.on("close", () => {
-    console.log("client dropped me")
     stream.end()
     res.end()
   })
