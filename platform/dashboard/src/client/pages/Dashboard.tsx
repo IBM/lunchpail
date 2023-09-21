@@ -7,8 +7,6 @@ import Base, { BaseState } from "./Base"
 import Application from "../components/Application"
 import DataSet from "../components/DataSet"
 import WorkerPool from "../components/WorkerPool"
-
-const NewWorkerPool = lazy(() => import("./NewWorkerPool"))
 import NewWorkerPoolCard from "./NewWorkerPoolCard"
 
 import type { LocationProps } from "../router/withLocation"
@@ -25,7 +23,9 @@ import SidebarContent from "../sidebar/SidebarContent"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
+//const NewWorkerPool = lazy(() => import("./NewWorkerPool"))
 //const FilterChips = lazy(() => import("../components/FilterChips"))
+import NewWorkerPool from "./NewWorkerPool"
 import FilterChips from "../components/FilterChips"
 
 import "./Dashboard.scss"
