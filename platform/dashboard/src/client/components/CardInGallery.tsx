@@ -4,7 +4,6 @@ import type { ReactNode } from "react"
 import {
   Card,
   CardHeader,
-  CardHeaderActionsObject,
   CardTitle,
   CardBody,
   DescriptionList,
@@ -13,10 +12,12 @@ import {
   DescriptionListDescription,
 } from "@patternfly/react-core"
 
+import type { CardHeaderActionsObject } from "@patternfly/react-core"
+
 import SmallLabel from "./SmallLabel"
 
-import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-square-icon"
-import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-square-icon"
+import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-icon"
+import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-icon"
 import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 
 import "./CardInGallery.scss"
