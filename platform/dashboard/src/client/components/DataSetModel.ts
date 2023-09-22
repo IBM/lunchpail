@@ -11,6 +11,18 @@ type DataSetModel = {
   /** Number of completed tasks for this dataset */
   outbox: number
 
+  /** e.g. COS vs NFS */
+  storageType: string
+
+  /** Endpoint URL */
+  endpoint: string
+
+  /** Prefix filepath */
+  bucket: string
+
+  /** Is the data to be provided without write access? */
+  isReadOnly: boolean
+
   /** millis since epoch */
   timestamp: number
 }

@@ -79,9 +79,22 @@ spec:
     subresources:
       status: {}
     additionalPrinterColumns:
+      - name: Type
+        type: string
+        jsonPath: .spec.local.type
+      - name: Endpoint
+        type: string
+        jsonPath: .spec.local.endpoint
+      - name: Bucket
+        type: string
+        jsonPath: .spec.local.bucket
+      - name: Readonly
+        type: string
+        jsonPath: .spec.local.readonly
       - name: Unassigned
         type: string
         jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
+        
 status:
   acceptedNames:
     kind: ""

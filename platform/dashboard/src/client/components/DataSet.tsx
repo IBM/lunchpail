@@ -68,8 +68,20 @@ export default class DataSet extends CardInGallery<Props> {
     return this.props.events.map((_) => _.outbox)
   }
 
+  private get last() {
+    return this.props.events.length === 0 ? null : this.props.events[this.props.events.length - 1]
+  }
+
   private get inboxCount() {
-    return this.props.events.length === 0 ? 0 : this.props.events[this.props.events.length - 1].inbox
+    return this.last ? this.last.inbox : 0
+  }
+
+  private storageType() {
+    return this.descriptionGroup("Storage Type", this.last ? this.last.storageType : "unknown")
+  }
+
+  private bucket() {
+    return this.descriptionGroup("Bucket", this.last ? this.last.bucket : "unknown")
   }
 
   private unassigned() {
@@ -87,6 +99,6 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   protected override groups() {
-    return [this.unassigned(), this.completions()]
+    return [this.storageType(), this.bucket(), this.unassigned(), this.completions()]
   }
 }

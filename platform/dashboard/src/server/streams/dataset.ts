@@ -12,7 +12,7 @@ function transformLineToEvent() {
   return new Transform({
     transform(chunk, encoding, callback) {
       // Splits the string by spaces
-      const [, label, inbox] = chunk.toString().split(/\s+/)
+      const [, label, storageType, endpoint, bucket, isReadOnly, inbox] = chunk.toString().split(/\s+/)
 
       if (inbox === "") {
         callback(null, "")
@@ -21,6 +21,10 @@ function transformLineToEvent() {
           inbox: parseInt(inbox, 10),
           outbox: 0,
           label,
+          storageType,
+          endpoint,
+          bucket,
+          isReadOnly: isReadOnly === "true",
           timestamp: Date.now(),
         }
 

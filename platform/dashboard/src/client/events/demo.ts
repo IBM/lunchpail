@@ -80,10 +80,18 @@ export class DemoDataSetEventSource implements EventSourceLike {
   public constructor(private readonly intervalMillis = intervalParam()) {}
 
   private readonly colors = ["blue", "green", "purple"]
+  private readonly endpoints = ["e1", "e2", "e3"]
+  private readonly buckets = ["pile1", "pile2", "pile3"]
+  private readonly isReadOnly = [true, false, true]
+
   private readonly datasets: Omit<DataSetModel, "timestamp">[] = Array(3)
     .fill(0)
     .map((_, idx) => ({
       label: this.colors[idx],
+      storageType: "COS",
+      endpoint: this.endpoints[idx],
+      bucket: this.buckets[idx],
+      isReadOnly: this.isReadOnly[idx],
       idx,
       inbox: 0,
       outbox: 0,
