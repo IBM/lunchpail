@@ -9,7 +9,7 @@ import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import type DataSetModel from "./DataSetModel"
 
-import DataSetIcon from "@patternfly/react-icons//dist/esm/icons/cubes-icon"
+import DataSetIcon from "@patternfly/react-icons//dist/esm/icons/database-icon"
 export { DataSetIcon }
 
 import "./Queue.scss"
