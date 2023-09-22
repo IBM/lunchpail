@@ -17,10 +17,10 @@ import {
   WizardStep,
 } from "@patternfly/react-core"
 
-import { DataSetIcon } from "../components/DataSet"
-import { ApplicationIcon } from "../components/Application"
-
+import { DataSetIcon } from "./DataSet"
+import { ApplicationIcon } from "./Application"
 import { Input, NumberInput, Select } from "./Forms"
+
 import type NewPoolHandler from "../events/NewPoolHandler"
 
 type Props = {
@@ -39,7 +39,7 @@ type State = {
   errorInCreateRequest?: unknown
 }
 
-export default class NewWorkerPool extends PureComponent<Props, State> {
+export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   private defaults = {
     poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
     count: String(1),

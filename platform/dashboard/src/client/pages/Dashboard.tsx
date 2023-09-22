@@ -23,7 +23,7 @@ import Base, { BaseState } from "./Base"
 import Application from "../components/Application"
 import DataSet from "../components/DataSet"
 import WorkerPool from "../components/WorkerPool"
-import NewWorkerPoolCard from "./NewWorkerPoolCard"
+import NewWorkerPoolCard from "../components/NewWorkerPoolCard"
 
 import type { LocationProps } from "../router/withLocation"
 
@@ -41,7 +41,7 @@ import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
 //const NewWorkerPool = lazy(() => import("./NewWorkerPool"))
 //const FilterChips = lazy(() => import("../components/FilterChips"))
-import NewWorkerPool from "./NewWorkerPool"
+import NewWorkerPoolWizard from "../components/NewWorkerPoolWizard"
 import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 const FilterChips = lazy(() => import("../components/FilterChips"))
 
@@ -694,7 +694,7 @@ export class Dashboard extends Base<Props, State> {
   }
 
   /** Handler for cancelling the Create Worker Pool process */
-  private readonly cancelNewWorkerPool = () => {
+  private readonly cancelNewWorkerPoolWizard = () => {
     this.props.navigate(this.props.location.pathname) // TODO search? state?
   }
 
@@ -707,8 +707,8 @@ export class Dashboard extends Base<Props, State> {
           isOpen={this.props.location.hash === "#newpool"}
           showClose={false}
         >
-          <NewWorkerPool
-            onClose={this.cancelNewWorkerPool}
+          <NewWorkerPoolWizard
+            onClose={this.cancelNewWorkerPoolWizard}
             applications={this.applicationsList}
             datasets={this.datasetsList}
             newpool={this.props.newpool}
