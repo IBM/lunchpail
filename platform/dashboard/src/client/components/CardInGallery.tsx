@@ -19,6 +19,8 @@ import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-square-icon"
 import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-square-icon"
 import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 
+import "./CardInGallery.scss"
+
 type BaseProps = unknown
 
 export default abstract class CardInGallery<Props extends BaseProps> extends PureComponent<Props> {
@@ -51,12 +53,11 @@ export default abstract class CardInGallery<Props extends BaseProps> extends Pur
 
   private card(drawerCtxVal: DrawerState) {
     return (
-      <Card isLarge isClickable isSelectable onClick={drawerCtxVal.toggleExpanded}>
+      <Card isClickable isSelectable onClick={drawerCtxVal.toggleExpanded}>
         <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
-          <CardTitle>
-            {this.icon()} {this.label()}
-          </CardTitle>
+          <span className="codeflare--card-icon">{this.icon()}</span>
         </CardHeader>
+        <CardTitle>{this.label()}</CardTitle>
         <CardBody>
           <DescriptionList isCompact>{this.groups()}</DescriptionList>
         </CardBody>

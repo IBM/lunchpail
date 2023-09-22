@@ -1,6 +1,8 @@
 import { useRouteError } from "react-router-dom"
 import { Bullseye, Stack, StackItem, Text, TextContent } from "@patternfly/react-core"
 
+import errorImageUrl from "../images/404.png"
+
 type ErrorResponse = {
   error: {
     message: string
@@ -30,7 +32,7 @@ export default function ErrorBoundary() {
         <StackItem isFilled />
         <StackItem>
           <Bullseye>
-            <img src="/assets/404.png" />
+            <img src={errorImageUrl} />
           </Bullseye>
         </StackItem>
         <StackItem>

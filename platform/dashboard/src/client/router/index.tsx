@@ -3,7 +3,8 @@ import { createBrowserRouter } from "react-router-dom"
 
 const DemoDashboard = lazy(() => import("../pages/DemoDashboard"))
 const LiveDashboard = lazy(() => import("../pages/LiveDashboard"))
-const ErrorBoundary = lazy(() => import("../components/ErrorBoundary"))
+//const ErrorBoundary = lazy(() => import("../components/ErrorBoundary"))
+import ErrorBoundary from "../components/ErrorBoundary"
 
 export default createBrowserRouter([
   {

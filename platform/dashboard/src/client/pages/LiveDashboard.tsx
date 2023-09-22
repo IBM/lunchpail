@@ -5,7 +5,7 @@ import type NewPoolHandler from "../events/NewPoolHandler"
 
 const newpool: NewPoolHandler = {
   newPool: async (values, yaml) => {
-    await fetch(`/newpool?yaml=${encodeURIComponent(yaml)}`)
+    await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
   },
 }
 
@@ -17,10 +17,10 @@ export default function LiveDashboard() {
     <Dashboard
       location={location}
       navigate={navigate}
-      datasets="/datasets"
-      queues="/queues"
-      pools="/pools"
-      applications="/applications"
+      datasets="/api/datasets"
+      queues="/api/queues"
+      pools="/api/pools"
+      applications="/api/applications"
       newpool={newpool}
     />
   )

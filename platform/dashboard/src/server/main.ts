@@ -1,6 +1,8 @@
+import express from "express"
 import ViteExpress from "vite-express"
-import express, { Response } from "express"
+
 import type { Writable } from "stream"
+import type { Response } from "express"
 
 import startPoolStream from "./streams/pool.js"
 import startQueueStream from "./streams/queue.js"
@@ -30,31 +32,31 @@ async function sendEvent(model: unknown, res: Response) {
   }
 }
 
-app.get("/datasets", async (req, res) => {
+app.get("/api/datasets", async (req, res) => {
   const stream = startDataSetStream()
   stream.on("data", (model) => sendEvent(model, res))
   await initEventSource(res, stream)
 })
 
-app.get("/queues", async (req, res) => {
+app.get("/api/queues", async (req, res) => {
   const stream = startQueueStream()
   stream.on("data", (model) => sendEvent(model, res))
   await initEventSource(res, stream)
 })
 
-app.get("/pools", async (req, res) => {
+app.get("/api/pools", async (req, res) => {
   const stream = startPoolStream()
   stream.on("data", (model) => sendEvent(model, res))
   await initEventSource(res, stream)
 })
 
-app.get("/applications", async (req, res) => {
+app.get("/api/applications", async (req, res) => {
   const stream = startApplicationStream()
   stream.on("data", (model) => sendEvent(model, res))
   await initEventSource(res, stream)
 })
 
-app.get("/newpool", async () => {
+app.get("/api/newpool", async () => {
   // TODO
 })
 
