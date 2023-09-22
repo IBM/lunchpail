@@ -189,7 +189,7 @@ export class Dashboard extends Base<Props, State> {
       }
       curState.applicationEvents[applicationEvent.application].push(applicationEvent)
       return {
-        applicationEvents: Object.assign(curState.applicationEvents),
+        applicationEvents: Object.assign({}, curState.applicationEvents),
       }
     })
   }
