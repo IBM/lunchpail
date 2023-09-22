@@ -1,12 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom"
 
-import { Dashboard, EventProps } from "./Dashboard"
+import { Dashboard } from "./Dashboard"
 import {
   DemoDataSetEventSource,
   DemoQueueEventSource,
   DemoWorkerPoolStatusEventSource,
   DemoApplicationSpecEventSource,
 } from "../events/demo"
+
+import type { EventProps } from "./Dashboard"
 
 let props: null | EventProps = null
 

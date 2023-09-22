@@ -39,26 +39,24 @@ import SidebarContent from "../sidebar/SidebarContent"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
-//const NewWorkerPool = lazy(() => import("./NewWorkerPool"))
-//const FilterChips = lazy(() => import("../components/FilterChips"))
-import NewWorkerPoolWizard from "../components/NewWorkerPoolWizard"
-import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 const FilterChips = lazy(() => import("../components/FilterChips"))
+const NewWorkerPoolWizard = lazy(() => import("../components/NewWorkerPoolWizard"))
+import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 
 import "./Dashboard.scss"
 
 export type EventProps = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  datasets: string | EventSourceLike
+  datasets: EventSource | EventSourceLike
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  queues: string | EventSourceLike
+  queues: EventSource | EventSourceLike
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  pools: string | EventSourceLike
+  pools: EventSource | EventSourceLike
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  applications: string | EventSourceLike
+  applications: EventSource | EventSourceLike
 
   /** Handler for NewWorkerPool */
   newpool: NewPoolHandler
@@ -67,18 +65,6 @@ export type EventProps = {
 type Props = LocationProps & EventProps
 
 type State = BaseState & {
-  /** EventSource for DataSets */
-  datasetSource: EventSourceLike
-
-  /** EventSource for Queues */
-  queueSource: EventSourceLike
-
-  /** EventSource for Pools */
-  poolSource: EventSourceLike
-
-  /** EventSource for Applications */
-  applicationSource: EventSourceLike
-
   /** Events for DataSets, indexed by DataSetModel.label */
   datasetEvents: Record<string, DataSetModel[]>
 
@@ -336,56 +322,43 @@ export class Dashboard extends Base<Props, State> {
   }
 
   private initDataSetStream() {
-    const source =
-      typeof this.props.datasets === "string"
-        ? new EventSource(this.props.datasets, { withCredentials: true })
-        : this.props.datasets
+    const source = this.props.datasets
     source.addEventListener("message", this.onDataSetEvent, false)
     source.addEventListener("error", console.error) // TODO
     return source
   }
 
   private initQueueStream() {
-    const source =
-      typeof this.props.queues === "string"
-        ? new EventSource(this.props.queues, { withCredentials: true })
-        : this.props.queues
+    const source = this.props.queues
     source.addEventListener("message", this.onQueueEvent, false)
     source.addEventListener("error", console.error) // TODO
     return source
   }
 
   private initPoolStream() {
-    const source =
-      typeof this.props.pools === "string"
-        ? new EventSource(this.props.pools, { withCredentials: true })
-        : this.props.pools
+    const source = this.props.pools
     source.addEventListener("message", this.onPoolEvent, false)
     source.addEventListener("error", console.error) // TODO
     return source
   }
 
   private initApplicationStream() {
-    const source =
-      typeof this.props.applications === "string"
-        ? new EventSource(this.props.applications, { withCredentials: true })
-        : this.props.applications
+    const source = this.props.applications
     source.addEventListener("message", this.onApplicationEvent, false)
     source.addEventListener("error", console.error) // TODO
     return source
   }
 
   public componentWillUnmount() {
-    this.state?.datasetSource?.removeEventListener("message", this.onDataSetEvent)
-    this.state?.queueSource?.removeEventListener("message", this.onQueueEvent)
-    this.state?.poolSource?.removeEventListener("message", this.onPoolEvent)
-    this.state?.applicationSource?.removeEventListener("message", this.onApplicationEvent)
-    this.state?.datasetSource?.close()
-    this.state?.queueSource?.close()
-    this.state?.poolSource?.close()
-    this.state?.applicationSource?.close()
+    this.props.datasets.removeEventListener("message", this.onDataSetEvent)
+    this.props.queues.removeEventListener("message", this.onQueueEvent)
+    this.props.pools.removeEventListener("message", this.onPoolEvent)
+    this.props.applications.removeEventListener("message", this.onApplicationEvent)
   }
 
+  public constructor(props: Props) {
+    super(props)
+  }
   public componentDidMount() {
     this.setState({
       datasetEvents: {},
@@ -419,14 +392,12 @@ export class Dashboard extends Base<Props, State> {
     })
 
     // hmm, avoid some races, do this second
-    setTimeout(() =>
-      this.setState({
-        datasetSource: this.initDataSetStream(),
-        queueSource: this.initQueueStream(),
-        poolSource: this.initPoolStream(),
-        applicationSource: this.initApplicationStream(),
-      }),
-    )
+    setTimeout(() => {
+      this.initDataSetStream()
+      this.initQueueStream()
+      this.initPoolStream()
+      this.initApplicationStream()
+    })
   }
 
   private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
