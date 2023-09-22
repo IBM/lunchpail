@@ -550,7 +550,7 @@ export class Dashboard extends Base<Props, State> {
 
   private workerpools() {
     return this.gallery([
-      <NewWorkerPoolCard />,
+      <NewWorkerPoolCard key="new-worker-pool-card" />,
       ...this.latestWorkerPoolModel.map(
         (w) =>
           (!this.state?.filterState.workerpools.length ||
