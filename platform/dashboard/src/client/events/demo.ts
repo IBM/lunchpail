@@ -66,7 +66,7 @@ function randomApplicationSpecEvent(application: string): ApplicationSpecEvent {
     command: "python foo.py",
     application,
     supportsGpu: false,
-    age: "",
+    age: new Date().toLocaleString(),
   }
 }
 

@@ -53,9 +53,9 @@ export default abstract class BaseWithDrawer<Props, State extends BaseWithDrawer
     }
   }
 
-  protected override body() {
-    const panelContent = (
-      <DrawerPanelContent>
+  private panelContent() {
+    return (
+      <DrawerPanelContent isResizable defaultSize="20%" minSize="350px">
         <DrawerHead>
           <Title headingLevel="h2" size="xl">
             {this.state?.drawerTitle && this.state.drawerTitle()}
@@ -67,10 +67,12 @@ export default abstract class BaseWithDrawer<Props, State extends BaseWithDrawer
         <DrawerPanelBody>{this.state?.drawerBody && this.state.drawerBody()}</DrawerPanelBody>
       </DrawerPanelContent>
     )
+  }
 
+  protected override body() {
     return (
       <Drawer isExpanded={!!this.state?.drawerTitle} isInline>
-        <DrawerContent panelContent={panelContent} colorVariant="light-200">
+        <DrawerContent panelContent={this.panelContent()} colorVariant="light-200">
           <DrawerContentBody hasPadding>{this.mainContentBody()}</DrawerContentBody>
         </DrawerContent>
       </Drawer>

@@ -1,6 +1,4 @@
 import { PureComponent } from "react"
-import type { ReactNode } from "react"
-
 import {
   Card,
   CardHeader,
@@ -14,6 +12,7 @@ import {
   FlexItem,
 } from "@patternfly/react-core"
 
+import type { ReactNode } from "react"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
@@ -36,7 +35,9 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     return (
       <DescriptionListGroup key={String(term)}>
         <DescriptionListTerm>
-          <SmallLabel count={count}>{term}</SmallLabel>
+          <SmallLabel count={count}>
+            <span className="codeflare--capitalize">{term}</span>
+          </SmallLabel>
         </DescriptionListTerm>
         <DescriptionListDescription>
           {description === true || description === false ? this.booleanUI(description) : description}
@@ -44,6 +45,8 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
       </DescriptionListGroup>
     )
   }
+
+  protected abstract kind(): string
 
   protected abstract label(): string
 
@@ -62,6 +65,10 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     return this.summaryGroups()
   }
 
+  private nameGroup() {
+    return this.descriptionGroup("Name", this.label())
+  }
+
   protected actions(): undefined | CardHeaderActionsObject {
     return undefined
   }
@@ -69,11 +76,13 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   private readonly detailTitle = () => (
     <Flex>
       <FlexItem>{this.icon()}</FlexItem>
-      <FlexItem>{this.label()}</FlexItem>
+      <FlexItem>{this.kind()}</FlexItem>
     </Flex>
   )
 
-  private readonly detailBody = () => <DescriptionList>{this.detailGroups()}</DescriptionList>
+  private readonly detailBody = () => (
+    <DescriptionList displaySize="lg">{[this.nameGroup(), ...this.detailGroups()]}</DescriptionList>
+  )
 
   private readonly onClick = () => {
     this.props.showDetails(this.label(), this.detailTitle, this.detailBody)
