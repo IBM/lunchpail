@@ -37,11 +37,11 @@ import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/
 import SidebarContent from "../sidebar/SidebarContent"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
+import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
 const FilterChips = lazy(() => import("../components/FilterChips"))
 const NewWorkerPoolWizard = lazy(() => import("../components/NewWorkerPoolWizard"))
-import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 
 import "./Dashboard.scss"
 
@@ -64,31 +64,29 @@ export type EventProps = {
 
 type Props = LocationProps & EventProps
 
-type State = BaseState & {
-  /** Events for DataSets, indexed by DataSetModel.label */
-  datasetEvents: Record<string, DataSetModel[]>
+type State = BaseState &
+  Partial<DrawerState> & {
+    /** Events for DataSets, indexed by DataSetModel.label */
+    datasetEvents: Record<string, DataSetModel[]>
 
-  /** Events for Queues, indexed by WorkerPoolModel.label */
-  queueEvents: Record<string, QueueEvent[]>
+    /** Events for Queues, indexed by WorkerPoolModel.label */
+    queueEvents: Record<string, QueueEvent[]>
 
-  /** Events for Pools, indexed by WorkerPoolModel.label */
-  poolEvents: Record<string, WorkerPoolStatusEvent[]>
+    /** Events for Pools, indexed by WorkerPoolModel.label */
+    poolEvents: Record<string, WorkerPoolStatusEvent[]>
 
-  /** Events for Applications, indexed by ApplicationSpecEvent.application */
-  applicationEvents: Record<string, ApplicationSpecEvent[]>
+    /** Events for Applications, indexed by ApplicationSpecEvent.application */
+    applicationEvents: Record<string, ApplicationSpecEvent[]>
 
-  /** Map DataSetModel.label to a dense index */
-  datasetIndex: Record<string, number>
+    /** Map DataSetModel.label to a dense index */
+    datasetIndex: Record<string, number>
 
-  /** Map WorkerPool label to a dense index */
-  workerpoolIndex: Record<string, number>
+    /** Map WorkerPool label to a dense index */
+    workerpoolIndex: Record<string, number>
 
-  /** State of active filters */
-  filterState: ActiveFilters
-
-  /** State of Expandable Drawer */
-  drawerState: DrawerState
-}
+    /** State of active filters */
+    filterState: ActiveFilters
+  }
 
 function either<T>(x: T | undefined, y: T): T {
   return x === undefined ? y : x
@@ -314,11 +312,25 @@ export class Dashboard extends Base<Props, State> {
     })
   }
 
-  private readonly toggleExpanded = () => {
+  private readonly closeDrawer = () => this.setState({ drawerTitle: undefined, drawerBody: undefined })
+
+  private readonly openDrawer: DrilldownProps["showDetails"] = (drawerSelection, drawerTitle, drawerBody) => {
     this.setState((curState) => {
-      curState.drawerState.isDrawerExpanded = !curState.drawerState.isDrawerExpanded
-      return { drawerState: Object.assign({}, curState.drawerState) }
+      if (curState?.drawerSelection === drawerSelection) {
+        // close if the user clicks on the currently displayed element
+        return { drawerSelection: undefined, drawerTitle: undefined, drawerBody: undefined }
+      } else {
+        // otherwise open and show that new content in the drawer
+        return { drawerSelection, drawerTitle, drawerBody }
+      }
     })
+  }
+
+  private drawerProps(): DrilldownProps {
+    return {
+      showDetails: this.openDrawer,
+      currentSelection: this.state?.drawerSelection,
+    }
   }
 
   private initDataSetStream() {
@@ -385,10 +397,6 @@ export class Dashboard extends Base<Props, State> {
         toggleShowAllWorkerPools: this.toggleShowAllWorkerPools,
         clearAllFilters: this.clearAllFilters,
       },
-      drawerState: {
-        isDrawerExpanded: false,
-        toggleExpanded: this.toggleExpanded,
-      },
     })
 
     // hmm, avoid some races, do this second
@@ -432,7 +440,7 @@ export class Dashboard extends Base<Props, State> {
             this.state.filterState.applications.includes(name),
         )
         .sort(this.lexico)
-        .map(([name, events]) => <Application key={name} {...events[events.length - 1]} />),
+        .map(([name, events]) => <Application key={name} {...events[events.length - 1]} {...this.drawerProps()} />),
     )
   }
 
@@ -451,6 +459,7 @@ export class Dashboard extends Base<Props, State> {
                 label={label}
                 events={events}
                 numEvents={events.length}
+                {...this.drawerProps()}
               />
             ),
         ),
@@ -532,6 +541,7 @@ export class Dashboard extends Base<Props, State> {
               model={w}
               datasetIndex={this.state.datasetIndex}
               statusHistory={this.state.poolEvents[w.label] || []}
+              {...this.drawerProps()}
             />
           ),
       ),
@@ -633,34 +643,26 @@ export class Dashboard extends Base<Props, State> {
       <DrawerPanelContent>
         <DrawerHead>
           <Title headingLevel="h2" size="xl">
-            Hello
+            {this.state?.drawerTitle && this.state.drawerTitle()}
           </Title>
           <DrawerActions>
-            <DrawerCloseButton onClick={this.toggleExpanded} />
+            <DrawerCloseButton onClick={this.closeDrawer} />
           </DrawerActions>
         </DrawerHead>
-        <DrawerPanelBody>
-          <p>
-            The content of the drawer really is up to you. It could have form fields, definition lists, text lists,
-            labels, charts, progress bars, etc. Spacing recommendation is 24px margins. You can put tabs in here, and
-            can also make the drawer scrollable.
-          </p>
-        </DrawerPanelBody>
+        <DrawerPanelBody>{this.state?.drawerBody && this.state.drawerBody()}</DrawerPanelBody>
       </DrawerPanelContent>
     )
 
     return (
-      <DrawerCtx.Provider value={this.state?.drawerState}>
-        <Drawer isExpanded={this.state?.drawerState.isDrawerExpanded} isInline>
-          <DrawerContent panelContent={panelContent} colorVariant="light-200">
-            <DrawerContentBody hasPadding>
-              {!this.hideApplications && this.panel("Applications", this.applications())}
-              {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
-              {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
-            </DrawerContentBody>
-          </DrawerContent>
-        </Drawer>
-      </DrawerCtx.Provider>
+      <Drawer isExpanded={!!this.state?.drawerTitle} isInline>
+        <DrawerContent panelContent={panelContent} colorVariant="light-200">
+          <DrawerContentBody hasPadding>
+            {!this.hideApplications && this.panel("Applications", this.applications())}
+            {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
+            {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
+          </DrawerContentBody>
+        </DrawerContent>
+      </Drawer>
     )
   }
 

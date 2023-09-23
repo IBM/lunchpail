@@ -45,7 +45,7 @@ export default class WorkerPool extends CardInGallery<Props> {
     }
   }
 
-  protected override groups() {
+  protected override summaryGroups() {
     const cells = this.underwayCells()
 
     return [

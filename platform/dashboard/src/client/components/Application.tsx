@@ -24,7 +24,7 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
     return this.props.application
   }
 
-  protected override groups() {
+  protected override summaryGroups() {
     return [
       this.descriptionGroup("API", this.props.api),
       this.props.supportsGpu && this.descriptionGroup("Benefits from GPU", this.props.supportsGpu || false),

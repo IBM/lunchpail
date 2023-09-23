@@ -98,7 +98,7 @@ export default class DataSet extends CardInGallery<Props> {
     return this.descriptionGroup("Completion Rate", this.outbox(), meanCompletionRate(this.props.events))
   }
 
-  protected override groups() {
+  protected override summaryGroups() {
     return [this.storageType(), this.bucket(), this.unassigned(), this.completions()]
   }
 }

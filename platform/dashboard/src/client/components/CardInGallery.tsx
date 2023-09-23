@@ -10,21 +10,24 @@ import {
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
+  Flex,
+  FlexItem,
 } from "@patternfly/react-core"
 
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
 
+import type { DrilldownProps } from "../context/DrawerContext"
+
 import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-icon"
 import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-icon"
-import { DrawerCtx, DrawerState } from "../context/DrawerContext"
 
 import "./CardInGallery.scss"
 
-type BaseProps = unknown
+type BaseProps = DrilldownProps
 
-export default abstract class CardInGallery<Props extends BaseProps> extends PureComponent<Props> {
+export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
   private booleanUI(value: boolean) {
     return value ? <YesIcon /> : <NoIcon />
   }
@@ -46,27 +49,73 @@ export default abstract class CardInGallery<Props extends BaseProps> extends Pur
 
   protected abstract icon(): ReactNode
 
-  protected abstract groups(): ReactNode[]
+  /** DescriptionList groups to display in the Card summary */
+  protected abstract summaryGroups(): ReactNode[]
+
+  /**
+   * DescriptionList groups to display in the drilldown view (e.g. a
+   * Drawer UI). This defaults to show this.summaryGroups(), which is
+   * probably not what subclasses ultimately want, but helps with
+   * prototyping.
+   */
+  protected detailGroups(): ReactNode[] {
+    return this.summaryGroups()
+  }
 
   protected actions(): undefined | CardHeaderActionsObject {
     return undefined
   }
 
-  private card(drawerCtxVal: DrawerState) {
+  private readonly detailTitle = () => (
+    <Flex>
+      <FlexItem>{this.icon()}</FlexItem>
+      <FlexItem>{this.label()}</FlexItem>
+    </Flex>
+  )
+
+  private readonly detailBody = () => <DescriptionList>{this.detailGroups()}</DescriptionList>
+
+  private readonly onClick = () => {
+    this.props.showDetails(this.label(), this.detailTitle, this.detailBody)
+  }
+
+  private summaryHeader() {
     return (
-      <Card isClickable isSelectable onClick={drawerCtxVal.toggleExpanded}>
-        <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
-          <span className="codeflare--card-icon">{this.icon()}</span>
-        </CardHeader>
-        <CardTitle>{this.label()}</CardTitle>
-        <CardBody>
-          <DescriptionList isCompact>{this.groups()}</DescriptionList>
-        </CardBody>
+      <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
+        <span className="codeflare--card-icon">{this.icon()}</span>
+      </CardHeader>
+    )
+  }
+
+  private summaryTitle() {
+    return <CardTitle>{this.label()}</CardTitle>
+  }
+
+  private summaryBody() {
+    return (
+      <CardBody>
+        <DescriptionList isCompact>{this.summaryGroups()}</DescriptionList>
+      </CardBody>
+    )
+  }
+
+  private card() {
+    return (
+      <Card
+        isLarge
+        isClickable
+        isSelectableRaised
+        isSelected={this.props.currentSelection === this.label()}
+        onClick={this.onClick}
+      >
+        {this.summaryHeader()}
+        {this.summaryTitle()}
+        {this.summaryBody()}
       </Card>
     )
   }
 
   public override render() {
-    return <DrawerCtx.Consumer>{(drawerCtxVal) => drawerCtxVal && this.card(drawerCtxVal)}</DrawerCtx.Consumer>
+    return this.card()
   }
 }

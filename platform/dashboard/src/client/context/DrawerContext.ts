@@ -1,17 +1,23 @@
-import { createContext } from "react"
+import type { ReactNode } from "react"
 
 export type DrawerState = {
-  /** Bit that controls opening/closing a drawer when card is clicked/close button clicked */
-  isDrawerExpanded: boolean
+  /** Selected id currently shown in Drawer */
+  drawerSelection: string
 
-  /** handles changing the state in Dashboard.tsx regarding opening/closing the drawer */
-  toggleExpanded: () => void
+  /** Title to display in the drawer */
+  drawerTitle(): ReactNode
+
+  /** Body to display in the drawer */
+  drawerBody(): ReactNode
 }
 
-export const initialState: DrawerState = {
-  isDrawerExpanded: false,
+export type DrilldownProps = {
+  /* id of current selection */
+  currentSelection?: string
 
-  toggleExpanded: () => {},
+  /**
+   * Set the drawer to open, unless the current drawerSelection
+   * matches the given id, then set to closed.
+   */
+  showDetails(id: string, title: DrawerState["drawerTitle"], body: DrawerState["drawerBody"]): void
 }
-
-export const DrawerCtx = createContext<DrawerState>(initialState)
