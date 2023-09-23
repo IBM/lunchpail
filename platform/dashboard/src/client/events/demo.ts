@@ -45,7 +45,7 @@ function randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool): WorkerPoolStat
 
   return {
     timestamp: Date.now(),
-    ns,
+    namespace: ns,
     workerpool: workerpool.name,
     applications: workerpool.applications,
     nodeClass: "md",
@@ -60,9 +60,10 @@ function randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool): WorkerPoolStat
 function randomApplicationSpecEvent(application: string): ApplicationSpecEvent {
   return {
     timestamp: Date.now(),
-    ns,
+    namespace: ns,
     api: "workqueue",
     image: "fakeimage",
+    repo: "github.com/foo/bar",
     command: "python foo.py",
     application,
     supportsGpu: false,

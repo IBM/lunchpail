@@ -1,5 +1,7 @@
+import isUrl from "is-url-superb"
 import { PureComponent } from "react"
 import {
+  Button,
   Card,
   CardHeader,
   CardTitle,
@@ -8,8 +10,7 @@ import {
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
-  Flex,
-  FlexItem,
+  Truncate,
 } from "@patternfly/react-core"
 
 import type { ReactNode } from "react"
@@ -21,14 +22,25 @@ import type { DrilldownProps } from "../context/DrawerContext"
 
 import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-icon"
 import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-icon"
+import LinkIcon from "@patternfly/react-icons/dist/esm/icons/external-link-square-alt-icon"
 
 import "./CardInGallery.scss"
 
 type BaseProps = DrilldownProps
 
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
-  private booleanUI(value: boolean) {
-    return value ? <YesIcon /> : <NoIcon />
+  private description(description: ReactNode) {
+    if (description === true || description === false) {
+      return description ? <YesIcon /> : <NoIcon />
+    } else if (typeof description === "string" && isUrl(description)) {
+      return (
+        <Button variant="link" icon={<LinkIcon />} iconPosition="right" href={description} component="a">
+          <Truncate content={description} />
+        </Button>
+      )
+    } else {
+      return description
+    }
   }
 
   protected descriptionGroup(term: ReactNode, description: ReactNode, count?: number | string) {
@@ -39,9 +51,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
             <span className="codeflare--capitalize">{term}</span>
           </SmallLabel>
         </DescriptionListTerm>
-        <DescriptionListDescription>
-          {description === true || description === false ? this.booleanUI(description) : description}
-        </DescriptionListDescription>
+        <DescriptionListDescription>{this.description(description)}</DescriptionListDescription>
       </DescriptionListGroup>
     )
   }
@@ -73,12 +83,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     return undefined
   }
 
-  private readonly detailTitle = () => (
-    <Flex>
-      <FlexItem>{this.icon()}</FlexItem>
-      <FlexItem>{this.kind()}</FlexItem>
-    </Flex>
-  )
+  private readonly detailTitle = () => this.kind()
 
   private readonly detailBody = () => (
     <DescriptionList displaySize="lg">{[this.nameGroup(), ...this.detailGroups()]}</DescriptionList>
@@ -113,6 +118,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
       <Card
         isLarge
         isClickable
+        isSelectable
         isSelectableRaised
         isSelected={this.props.currentSelection === this.label()}
         onClick={this.onClick}

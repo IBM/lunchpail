@@ -1,9 +1,21 @@
+$card-icon-size: 1.5em;
+
 .codeflare--card-icon {
-  font-size: 1.5em;
+  font-size: $card-icon-size;
 
   img {
-    height: 1.5em;
-    width: 1.5em;
+    height: $card-icon-size;
+    width: $card-icon-size;
+  }
+}
+
+.codeflare--detail-view {
+  a {
+    /* Hmm, patternfly seems a bit buggy here with anchors inside of a "lg" DescriptionList */
+    padding-left: 0;
+    font-size: inherit;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 }
 

@@ -109,10 +109,6 @@ spec:
           type: string
           description: The distributed API this application uses
           jsonPath: .spec.api
-        - name: Image
-          type: string
-          description: The base image this application uses
-          jsonPath: .spec.image
         - name: Command
           type: string
           description: The command line prefix used to run this application
@@ -121,6 +117,14 @@ spec:
           type: boolean
           description: Do the workers in this pool support GPU jobs?
           jsonPath: .spec.supportsGpu
+        - name: Image
+          type: string
+          description: The base image this application uses
+          jsonPath: .spec.image
+        - name: Repo
+          type: string
+          description: The source repository for this application
+          jsonPath: .spec.repo
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp

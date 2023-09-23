@@ -18,7 +18,7 @@ function transformLineToEvent() {
 
       const model: WorkerPoolStatusEvent = {
         timestamp: Date.now(),
-        ns,
+        namespace: ns,
         workerpool,
         applications: [application],
         nodeClass,

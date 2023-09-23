@@ -6,7 +6,7 @@ export default interface WorkerPoolStatusEvent {
   timestamp: number
 
   /** Namespace of WorkerPool */
-  ns: string
+  namespace: string
 
   /** Name of WorkerPool */
   workerpool: string

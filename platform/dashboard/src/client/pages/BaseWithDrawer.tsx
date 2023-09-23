@@ -55,7 +55,7 @@ export default abstract class BaseWithDrawer<Props, State extends BaseWithDrawer
 
   private panelContent() {
     return (
-      <DrawerPanelContent isResizable defaultSize="20%" minSize="350px">
+      <DrawerPanelContent isResizable className="codeflare--detail-view">
         <DrawerHead>
           <Title headingLevel="h2" size="xl">
             {this.state?.drawerTitle && this.state.drawerTitle()}

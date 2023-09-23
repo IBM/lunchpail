@@ -6,7 +6,7 @@ export default interface ApplicationSpecEvent {
   timestamp: number
 
   /** Namespace of WorkerPool */
-  ns: string
+  namespace: string
 
   /** Name of Application */
   application: string
@@ -16,6 +16,9 @@ export default interface ApplicationSpecEvent {
 
   /** Base image */
   image: string
+
+  /** Source repo */
+  repo: string
 
   /** Default command line */
   command: string
