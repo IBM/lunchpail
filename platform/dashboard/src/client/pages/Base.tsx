@@ -26,7 +26,7 @@ export interface BaseState {
   useDarkMode: boolean
 }
 
-export default class Base<Props = unknown, State extends BaseState = BaseState> extends PureComponent<Props, State> {
+export default abstract class Base<Props, State extends BaseState> extends PureComponent<Props, State> {
   private readonly toggleDarkMode = () =>
     this.setState((curState) => {
       const useDarkMode = !curState?.useDarkMode
@@ -52,7 +52,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
 
   private header() {
     return (
-      <Masthead display={{ default: "inline" }}>
+      <Masthead display={this.inline}>
         {this.headerToggle()}
         <MastheadMain>
           <MastheadBrand>{this.pageTitle()}</MastheadBrand>
@@ -70,12 +70,13 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return <Fragment />
   }
 
-  protected body(): ReactNode {
-    return <Fragment />
-  }
+  /** The content of the page */
+  protected abstract body(): ReactNode
 
+  /** Content to be displayed in the left-hand part of the footer */
   protected footerLeft(): void | ReactNode {}
 
+  /** Content to be displayed in the right-hand part of the footer */
   protected footerRight(): void | ReactNode {}
 
   private footer(): ReactNode {
@@ -84,17 +85,17 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return (
       <Toolbar>
         <ToolbarContent>
-          <ToolbarGroup align={{ default: "alignLeft" }}>
+          <ToolbarGroup align={this.alignLeft}>
             <ToolbarItem>
               <SmallLabel>v{version}</SmallLabel>
             </ToolbarItem>
             {left || <Fragment />}
           </ToolbarGroup>
 
-          <ToolbarGroup align={{ default: "alignRight" }}>
+          <ToolbarGroup align={this.alignRight}>
             {right || <Fragment />}
 
-            <ToolbarItem align={{ default: "alignRight" }}>
+            <ToolbarItem align={this.alignRight}>
               <Switch label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
             </ToolbarItem>
           </ToolbarGroup>
@@ -111,9 +112,13 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
     return <Fragment />
   }
 
+  protected readonly inline = { default: "inline" as const }
+  protected readonly alignLeft = { default: "alignLeft" as const }
+  protected readonly alignRight = { default: "alignRight" as const }
   protected readonly noPadding = { default: "noPadding" as const }
   protected readonly stickyTop = { default: "top" as const }
   protected readonly stickyBottom = { default: "bottom" as const }
+  protected readonly transparent = { backgroundColor: "transparent" as const }
 
   public render() {
     const chips = this.chips()
@@ -134,12 +139,7 @@ export default class Base<Props = unknown, State extends BaseState = BaseState> 
         ) : (
           <></>
         )}
-        <PageSection
-          padding={{ default: "noPadding" }}
-          hasOverflowScroll
-          isFilled
-          aria-label="codeflare-dashboard-body"
-        >
+        <PageSection padding={this.noPadding} hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}
         </PageSection>
         <PageSection isFilled={false} stickyOnBreakpoint={this.stickyBottom} padding={this.noPadding}>

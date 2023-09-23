@@ -1,24 +1,8 @@
 import { Fragment, ReactNode, Suspense, lazy } from "react"
-import {
-  Divider,
-  Gallery,
-  Panel,
-  PanelMain,
-  PanelMainBody,
-  PanelHeader,
-  Title,
-  Drawer,
-  DrawerContent,
-  DrawerContentBody,
-  DrawerActions,
-  DrawerCloseButton,
-  DrawerHead,
-  DrawerPanelBody,
-  DrawerPanelContent,
-} from "@patternfly/react-core"
+import { Divider, Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
-import Base, { BaseState } from "./Base"
+import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
 import Application from "../components/Application"
 import DataSet from "../components/DataSet"
@@ -37,7 +21,6 @@ import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/
 import SidebarContent from "../sidebar/SidebarContent"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
-import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
 const FilterChips = lazy(() => import("../components/FilterChips"))
@@ -64,29 +47,28 @@ export type EventProps = {
 
 type Props = LocationProps & EventProps
 
-type State = BaseState &
-  Partial<DrawerState> & {
-    /** Events for DataSets, indexed by DataSetModel.label */
-    datasetEvents: Record<string, DataSetModel[]>
+type State = BaseWithDrawerState & {
+  /** Events for DataSets, indexed by DataSetModel.label */
+  datasetEvents: Record<string, DataSetModel[]>
 
-    /** Events for Queues, indexed by WorkerPoolModel.label */
-    queueEvents: Record<string, QueueEvent[]>
+  /** Events for Queues, indexed by WorkerPoolModel.label */
+  queueEvents: Record<string, QueueEvent[]>
 
-    /** Events for Pools, indexed by WorkerPoolModel.label */
-    poolEvents: Record<string, WorkerPoolStatusEvent[]>
+  /** Events for Pools, indexed by WorkerPoolModel.label */
+  poolEvents: Record<string, WorkerPoolStatusEvent[]>
 
-    /** Events for Applications, indexed by ApplicationSpecEvent.application */
-    applicationEvents: Record<string, ApplicationSpecEvent[]>
+  /** Events for Applications, indexed by ApplicationSpecEvent.application */
+  applicationEvents: Record<string, ApplicationSpecEvent[]>
 
-    /** Map DataSetModel.label to a dense index */
-    datasetIndex: Record<string, number>
+  /** Map DataSetModel.label to a dense index */
+  datasetIndex: Record<string, number>
 
-    /** Map WorkerPool label to a dense index */
-    workerpoolIndex: Record<string, number>
+  /** Map WorkerPool label to a dense index */
+  workerpoolIndex: Record<string, number>
 
-    /** State of active filters */
-    filterState: ActiveFilters
-  }
+  /** State of active filters */
+  filterState: ActiveFilters
+}
 
 function either<T>(x: T | undefined, y: T): T {
   return x === undefined ? y : x
@@ -98,7 +80,7 @@ export function intervalParam(): number {
   return interval ? parseInt(interval) : 1000
 }
 
-export class Dashboard extends Base<Props, State> {
+export class Dashboard extends BaseWithDrawer<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
     const datasetEvent = JSON.parse(evt.data) as DataSetModel
@@ -310,27 +292,6 @@ export class Dashboard extends Base<Props, State> {
       curState.filterState.workerpools = []
       return { filterState: Object.assign({}, curState.filterState) }
     })
-  }
-
-  private readonly closeDrawer = () => this.setState({ drawerTitle: undefined, drawerBody: undefined })
-
-  private readonly openDrawer: DrilldownProps["showDetails"] = (drawerSelection, drawerTitle, drawerBody) => {
-    this.setState((curState) => {
-      if (curState?.drawerSelection === drawerSelection) {
-        // close if the user clicks on the currently displayed element
-        return { drawerSelection: undefined, drawerTitle: undefined, drawerBody: undefined }
-      } else {
-        // otherwise open and show that new content in the drawer
-        return { drawerSelection, drawerTitle, drawerBody }
-      }
-    })
-  }
-
-  private drawerProps(): DrilldownProps {
-    return {
-      showDetails: this.openDrawer,
-      currentSelection: this.state?.drawerSelection,
-    }
   }
 
   private initDataSetStream() {
@@ -599,7 +560,7 @@ export class Dashboard extends Base<Props, State> {
 
   private panel(title: string, body: ReactNode) {
     return (
-      <Panel style={{ backgroundColor: "transparent" }}>
+      <Panel style={this.transparent}>
         <PanelHeader>
           <Title headingLevel="h3">{title}</Title>
         </PanelHeader>
@@ -638,31 +599,13 @@ export class Dashboard extends Base<Props, State> {
     )
   }
 
-  protected override body() {
-    const panelContent = (
-      <DrawerPanelContent>
-        <DrawerHead>
-          <Title headingLevel="h2" size="xl">
-            {this.state?.drawerTitle && this.state.drawerTitle()}
-          </Title>
-          <DrawerActions>
-            <DrawerCloseButton onClick={this.closeDrawer} />
-          </DrawerActions>
-        </DrawerHead>
-        <DrawerPanelBody>{this.state?.drawerBody && this.state.drawerBody()}</DrawerPanelBody>
-      </DrawerPanelContent>
-    )
-
+  protected override mainContentBody() {
     return (
-      <Drawer isExpanded={!!this.state?.drawerTitle} isInline>
-        <DrawerContent panelContent={panelContent} colorVariant="light-200">
-          <DrawerContentBody hasPadding>
-            {!this.hideApplications && this.panel("Applications", this.applications())}
-            {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
-            {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
-          </DrawerContentBody>
-        </DrawerContent>
-      </Drawer>
+      <>
+        {!this.hideApplications && this.panel("Applications", this.applications())}
+        {!this.hideDataSets && this.panel("Data Sets", this.datasets())}
+        {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
+      </>
     )
   }
 
