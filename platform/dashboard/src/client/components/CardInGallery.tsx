@@ -13,7 +13,7 @@ import {
   Truncate,
 } from "@patternfly/react-core"
 
-import type { ReactNode } from "react"
+import type { MouseEvent, ReactNode } from "react"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
@@ -29,6 +29,8 @@ import "./CardInGallery.scss"
 type BaseProps = DrilldownProps
 
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
+  protected readonly stopPropagation = (evt: MouseEvent<HTMLButtonElement>) => evt.stopPropagation()
+
   private description(description: ReactNode) {
     if (description === true || description === false) {
       return description ? <YesIcon /> : <NoIcon />

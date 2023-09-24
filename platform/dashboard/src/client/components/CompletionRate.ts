@@ -1,7 +1,9 @@
 function prettyRate(tasksPerMilli: number) {
   const tasksPerSecond = tasksPerMilli * 1000
 
-  if (tasksPerMilli === 0 || isNaN(tasksPerMilli)) {
+  if (tasksPerMilli === 0) {
+    return 0
+  } else if (isNaN(tasksPerMilli)) {
     return ""
   } else if (tasksPerSecond < 1) {
     const tasksPerMinute = tasksPerSecond * 60
@@ -31,7 +33,7 @@ export function meanCompletionRate(history: { outbox: number; timestamp: number 
   const rateHistory = completionRateHistory(history)
   const N = rateHistory.length
   const sum = rateHistory.reduce((sum, val) => sum + val)
-  return N === 0 ? 0 : prettyRate(sum / N) || 0
+  return N > 0 && prettyRate(sum / N)
 }
 
 export function medianCompletionRate(history: { outbox: number; timestamp: number }[]) {

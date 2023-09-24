@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react"
-import { Flex, FlexItem, Stack, StackItem } from "@patternfly/react-core"
+import type { ReactNode } from "react"
+import { Button, Flex, FlexItem, Popover } from "@patternfly/react-core"
 
 import Sparkline from "./Sparkline"
 import CardInGallery from "./CardInGallery"
@@ -9,7 +9,8 @@ import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import type DataSetModel from "./DataSetModel"
 
-import DataSetIcon from "@patternfly/react-icons//dist/esm/icons/database-icon"
+import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon"
+import DataSetIcon from "@patternfly/react-icons/dist/esm/icons/database-icon"
 export { DataSetIcon }
 
 import "./Queue.scss"
@@ -19,22 +20,8 @@ type Props = Pick<DataSetModel, "idx" | "label"> & {
   numEvents: number
 }
 
-function Work(props: PropsWithChildren<Pick<Props, "idx"> & { history: number[] }>) {
-  return (
-    <Stack hasGutter>
-      <StackItem>
-        <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-          {props.children}
-        </Flex>
-      </StackItem>
-
-      <StackItem>{props.history.length > 0 && <Sparkline data={props.history} datasetIdx={props.idx} />}</StackItem>
-    </Stack>
-  )
-}
-
 export default class DataSet extends CardInGallery<Props> {
-  private stack(count: number, gridDataType: GridTypeData) {
+  private cells(count: number, gridDataType: GridTypeData) {
     if (!count) {
       return <GridCell type="placeholder" dataset={this.props.idx} />
     }
@@ -46,10 +33,6 @@ export default class DataSet extends CardInGallery<Props> {
           <GridCell type={gridDataType} dataset={this.props.idx} />
         </FlexItem>
       ))
-  }
-
-  private outbox() {
-    return <Sparkline data={completionRateHistory(this.props.events)} />
   }
 
   protected override icon() {
@@ -87,18 +70,60 @@ export default class DataSet extends CardInGallery<Props> {
   private unassigned() {
     return this.descriptionGroup(
       "Unassigned Work",
-      <Work idx={this.props.idx} history={this.inboxHistory}>
-        {this.stack(this.inboxCount, "unassigned")}
-      </Work>,
+      <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
+        {this.cells(this.inboxCount, "unassigned")}
+      </Flex>,
       this.inboxCount,
     )
   }
 
-  private completions() {
-    return this.descriptionGroup("Completion Rate", this.outbox(), meanCompletionRate(this.props.events))
+  private unassignedChart() {
+    return this.descriptionGroup(
+      "Unassigned Work over Time",
+      this.inboxHistory.length === 0 ? <></> : <Sparkline data={this.inboxHistory} datasetIdx={this.props.idx} />,
+    )
+  }
+
+  private none() {
+    return (
+      <Popover
+        headerContent="No progress being made"
+        bodyContent={
+          <span>
+            Consider assigning a <strong>Worker Pool</strong> to process this Data Set
+          </span>
+        }
+      >
+        <>
+          None{" "}
+          <Button className="codeflare--card-in-gallery-help-button" onClick={this.stopPropagation} variant="plain">
+            <HelpIcon />
+          </Button>
+        </>
+      </Popover>
+    )
+  }
+
+  private completionRate() {
+    return this.descriptionGroup("Completion Rate (mean)", meanCompletionRate(this.props.events) || this.none())
+  }
+
+  private completionRateChart() {
+    return this.descriptionGroup(
+      "Completion Rate over Time",
+      <Sparkline data={completionRateHistory(this.props.events)} />,
+    )
+  }
+
+  private commonGroups(): ReactNode[] {
+    return [this.storageType(), this.bucket(), this.unassigned()]
   }
 
   protected override summaryGroups() {
-    return [this.storageType(), this.bucket(), this.unassigned(), this.completions()]
+    return [...this.commonGroups(), this.completionRate()]
+  }
+
+  protected override detailGroups() {
+    return [...this.commonGroups(), this.completionRate(), this.unassignedChart(), this.completionRateChart()]
   }
 }
