@@ -594,6 +594,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     return (
       <Suspense fallback={<Fragment />}>
         <Modal
+          variant="large"
           aria-label="new-worker-pool-modal"
           hasNoBodyWrapper
           isOpen={this.props.location.hash === "#newpool"}
