@@ -56,7 +56,9 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     )
   }
 
-  protected abstract kind(): string
+  protected kind(): string {
+    return this.constructor.name
+  }
 
   protected abstract label(): string
 

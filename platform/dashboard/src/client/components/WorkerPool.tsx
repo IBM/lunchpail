@@ -24,10 +24,6 @@ interface Props {
 }
 
 export default class WorkerPool extends CardInGallery<Props> {
-  protected override kind() {
-    return "Worker Pool"
-  }
-
   protected override label() {
     return this.props.model.label
   }

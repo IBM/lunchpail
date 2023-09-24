@@ -598,6 +598,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           hasNoBodyWrapper
           isOpen={this.props.location.hash === "#newpool"}
           showClose={false}
+          onEscapePress={this.cancelNewWorkerPoolWizard}
         >
           <NewWorkerPoolWizard
             onClose={this.cancelNewWorkerPoolWizard}

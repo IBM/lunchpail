@@ -1,3 +1,4 @@
+import { LoremIpsum } from "lorem-ipsum"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import type NewPoolHandler from "./NewPoolHandler"
@@ -18,11 +19,28 @@ type DemoWorkerPool = {
   processing: Record<string, number>[]
 }
 
-const ns = "ns"
+const lorem = new LoremIpsum({
+  sentencesPerParagraph: {
+    max: 8,
+    min: 4,
+  },
+  wordsPerSentence: {
+    max: 16,
+    min: 4,
+  },
+})
+
+const ns = lorem.generateWords(3).replace(/\s/g, "-")
 const runs = ["R1"]
 const applications = Array(1)
   .fill(0)
-  .map(() => uniqueNamesGenerator({ dictionaries: [animals] }))
+  .map(() => ({
+    name: uniqueNamesGenerator({ dictionaries: [animals] }),
+    description: lorem.generateSentences(2),
+    repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
+    image: lorem.generateWords(2).replace(/\s/g, "-"),
+    file: lorem.generateWords(1).replace(/\s/g, "-"),
+  }))
 
 function boxMullerTransform() {
   const u1 = Math.random()
@@ -57,15 +75,28 @@ function randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool): WorkerPoolStat
   }
 }
 
-function randomApplicationSpecEvent(application: string): ApplicationSpecEvent {
+function randomApplicationSpecEvent({
+  name,
+  file,
+  image,
+  repoPath,
+  description,
+}: {
+  name: string
+  file: string
+  image: string
+  repoPath: string
+  description: string
+}): ApplicationSpecEvent {
   return {
     timestamp: Date.now(),
     namespace: ns,
+    application: name,
+    description,
     api: "workqueue",
-    image: "fakeimage",
-    repo: "github.com/foo/bar",
-    command: "python foo.py",
-    application,
+    image,
+    repo: `https://github.com/${repoPath}`,
+    command: `python ${file}.py`,
     supportsGpu: false,
     age: new Date().toLocaleString(),
   }

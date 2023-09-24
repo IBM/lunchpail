@@ -11,6 +11,9 @@ export default interface ApplicationSpecEvent {
   /** Name of Application */
   application: string
 
+  /** Brief description of this Application */
+  description: string
+
   /** API this Application uses */
   api: string
 

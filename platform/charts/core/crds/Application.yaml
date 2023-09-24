@@ -40,6 +40,8 @@ spec:
                   type: string
                 repo:
                   type: string
+                description:
+                  type: string
                 steps:
                   type: array
                   items:
@@ -113,6 +115,7 @@ spec:
           type: string
           description: The command line prefix used to run this application
           jsonPath: .spec.command
+          priority: 1 # -o wide only
         - name: GPUs?
           type: boolean
           description: Do the workers in this pool support GPU jobs?
@@ -125,6 +128,12 @@ spec:
           type: string
           description: The source repository for this application
           jsonPath: .spec.repo
+          priority: 1 # -o wide only
+        - name: Description
+          type: string
+          description: Brief description of this Application
+          jsonPath: .spec.description
+          priority: 1 # -o wide only
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp

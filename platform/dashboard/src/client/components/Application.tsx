@@ -9,10 +9,6 @@ import rayImageUrl from "../images/ray.png"
 import pytorchImageUrl from "../images/pytorch.svg"
 
 export default class Application extends CardInGallery<ApplicationSpecEvent> {
-  protected override kind() {
-    return "Application"
-  }
-
   protected override icon() {
     switch (this.props.api) {
       case "ray":
@@ -31,13 +27,18 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
   protected override summaryGroups() {
     return [
       this.descriptionGroup("api", this.props.api),
-      this.props.supportsGpu && this.descriptionGroup("Benefits from GPU", this.props.supportsGpu || false),
+      this.props.description && this.descriptionGroup("Description", this.props.description),
+      //this.props.supportsGpu && this.descriptionGroup("Benefits from GPU", this.props.supportsGpu),
     ]
   }
 
   protected detailGroups() {
-    return Object.keys(this.props)
-      .filter((_) => _ !== "application" && _ !== "timestamp" && _ !== "showDetails" && _ !== "currentSelection")
-      .map((term) => this.descriptionGroup(term, this.props[term as keyof ApplicationSpecEvent]))
+    return Object.entries(this.props)
+      .filter(
+        ([term]) =>
+          term !== "application" && term !== "timestamp" && term !== "showDetails" && term !== "currentSelection",
+      )
+      .filter(([, value]) => value)
+      .map(([term, value]) => typeof value !== "function" && this.descriptionGroup(term, value))
   }
 }

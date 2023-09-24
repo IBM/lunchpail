@@ -12,12 +12,13 @@ function transformLineToEvent(sep: string) {
   return new Transform({
     transform(chunk: Buffer, encoding: string, callback) {
       // Splits the string by spaces
-      const [ns, application, api, command, supportsGpu, image, repo, age] = chunk.toString().split(sep)
+      const [ns, application, api, command, supportsGpu, image, repo, description, age] = chunk.toString().split(sep)
 
       const model: ApplicationSpecEvent = {
         timestamp: Date.now(),
         namespace: ns,
         application,
+        description,
         api,
         command,
         supportsGpu: /true/i.test(supportsGpu),
@@ -44,7 +45,7 @@ export default function startApplicationSpecStream() {
       "--no-headers",
       "--watch",
       "-o",
-      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
+      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
     ])
 
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))

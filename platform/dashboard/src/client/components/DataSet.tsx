@@ -52,10 +52,6 @@ export default class DataSet extends CardInGallery<Props> {
     return <Sparkline data={completionRateHistory(this.props.events)} />
   }
 
-  protected override kind() {
-    return "Data Set"
-  }
-
   protected override icon() {
     return <DataSetIcon />
   }
