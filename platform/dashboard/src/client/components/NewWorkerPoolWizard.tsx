@@ -21,10 +21,15 @@ import { DataSetIcon } from "./DataSet"
 import { ApplicationIcon } from "./Application"
 import { Input, NumberInput, Select } from "./Forms"
 
+import type { LocationProps } from "../router/withLocation"
+
 import type NewPoolHandler from "../events/NewPoolHandler"
 
-type Props = {
+type Props = Pick<LocationProps, "searchParams"> & {
+  /** Currently available Applications */
   applications: string[]
+
+  /** Currently available DataSets */
   datasets: string[]
 
   /** Handler to call when this dialog closes */
@@ -40,13 +45,27 @@ type State = {
 }
 
 export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
+  private chooseIfExists(available: string[], desired: null | string) {
+    if (desired && available.includes(desired)) {
+      return desired
+    } else {
+      return ""
+    }
+  }
+
   private defaults = {
     poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
     count: String(1),
     size: "xs",
     supportsGpu: false.toString(),
-    application: this.props.applications.length === 1 ? this.props.applications[0] : "",
-    dataset: this.props.datasets.length === 1 ? this.props.datasets[0] : "",
+    application:
+      this.props.applications.length === 1
+        ? this.props.applications[0]
+        : this.chooseIfExists(this.props.applications, this.props.searchParams.get("application")),
+    dataset:
+      this.props.datasets.length === 1
+        ? this.props.datasets[0]
+        : this.chooseIfExists(this.props.datasets, this.props.searchParams.get("dataset")),
   }
 
   public componentDidMount() {

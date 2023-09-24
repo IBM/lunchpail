@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { Dashboard } from "./Dashboard"
 import {
@@ -34,6 +34,7 @@ function init() {
 export default function DemoDashboard() {
   const location = useLocation()
   const navigate = useNavigate()
+  const searchParams = useSearchParams()
 
-  return <Dashboard {...init()} location={location} navigate={navigate} />
+  return <Dashboard {...init()} location={location} navigate={navigate} searchParams={searchParams[0]} />
 }

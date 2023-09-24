@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import type { ReactNode } from "react"
 import { Button, Flex, FlexItem, Popover } from "@patternfly/react-core"
 
@@ -90,7 +91,8 @@ export default class DataSet extends CardInGallery<Props> {
         headerContent="No progress being made"
         bodyContent={
           <span>
-            Consider assigning a <strong>Worker Pool</strong> to process this Data Set
+            Consider assigning a <Link to={`?dataset=${this.label()}#newpool`}>New Worker Pool</Link> to process this
+            Data Set
           </span>
         }
       >

@@ -74,12 +74,6 @@ function either<T>(x: T | undefined, y: T): T {
   return x === undefined ? y : x
 }
 
-export function intervalParam(): number {
-  const queryParams = new URLSearchParams(window.location.search)
-  const interval = queryParams.get("interval")
-  return interval ? parseInt(interval) : 1000
-}
-
 export class Dashboard extends BaseWithDrawer<Props, State> {
   private readonly onDataSetEvent = (revt: Event) => {
     const evt = revt as MessageEvent
@@ -597,7 +591,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           variant="large"
           aria-label="new-worker-pool-modal"
           hasNoBodyWrapper
-          isOpen={this.props.location.hash === "#newpool"}
+          isOpen={this.props.location.hash.startsWith("#newpool")}
           showClose={false}
           onEscapePress={this.cancelNewWorkerPoolWizard}
         >
@@ -606,6 +600,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
             applications={this.applicationsList}
             datasets={this.datasetsList}
             newpool={this.props.newpool}
+            searchParams={this.props.searchParams}
           />
         </Modal>
       </Suspense>

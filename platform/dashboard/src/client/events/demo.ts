@@ -7,7 +7,6 @@ import type QueueEvent from "../events/QueueEvent.js"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent.js"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent.js"
 import type DataSetModel from "../components/DataSetModel.js"
-import { intervalParam } from "../pages/Dashboard.js"
 
 type DemoWorkerPool = {
   name: string
@@ -109,7 +108,7 @@ export class DemoDataSetEventSource implements EventSourceLike {
 
   private interval: null | ReturnType<typeof setInterval> = null
 
-  public constructor(private readonly intervalMillis = intervalParam()) {}
+  public constructor(private readonly intervalMillis = 1000) {}
 
   private readonly colors = ["blue", "green", "purple"]
   private readonly endpoints = ["e1", "e2", "e3"]
