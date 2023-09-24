@@ -28,18 +28,18 @@ const NewWorkerPoolWizard = lazy(() => import("../components/NewWorkerPoolWizard
 
 import "./Dashboard.scss"
 
-export type EventProps = {
+export type EventProps<Source extends EventSource | EventSourceLike = EventSource | EventSourceLike> = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  datasets: EventSource | EventSourceLike
+  datasets: Source
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  queues: EventSource | EventSourceLike
+  queues: Source
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  pools: EventSource | EventSourceLike
+  pools: Source
 
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  applications: EventSource | EventSourceLike
+  applications: Source
 
   /** Handler for NewWorkerPool */
   newpool: NewPoolHandler
@@ -294,32 +294,16 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     })
   }
 
-  private initDataSetStream() {
-    const source = this.props.datasets
-    source.addEventListener("message", this.onDataSetEvent, false)
+  private initEventStream(source: EventSource | EventSourceLike, handler: EventListenerObject["handleEvent"]) {
+    source.addEventListener("message", handler, false)
     source.addEventListener("error", console.error) // TODO
-    return source
   }
 
-  private initQueueStream() {
-    const source = this.props.queues
-    source.addEventListener("message", this.onQueueEvent, false)
-    source.addEventListener("error", console.error) // TODO
-    return source
-  }
-
-  private initPoolStream() {
-    const source = this.props.pools
-    source.addEventListener("message", this.onPoolEvent, false)
-    source.addEventListener("error", console.error) // TODO
-    return source
-  }
-
-  private initApplicationStream() {
-    const source = this.props.applications
-    source.addEventListener("message", this.onApplicationEvent, false)
-    source.addEventListener("error", console.error) // TODO
-    return source
+  private readonly initEventStreams = () => {
+    this.initEventStream(this.props.queues, this.onQueueEvent)
+    this.initEventStream(this.props.datasets, this.onDataSetEvent)
+    this.initEventStream(this.props.pools, this.onPoolEvent)
+    this.initEventStream(this.props.applications, this.onApplicationEvent)
   }
 
   public componentWillUnmount() {
@@ -329,9 +313,6 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.props.applications.removeEventListener("message", this.onApplicationEvent)
   }
 
-  public constructor(props: Props) {
-    super(props)
-  }
   public componentDidMount() {
     this.setState({
       datasetEvents: {},
@@ -361,12 +342,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     })
 
     // hmm, avoid some races, do this second
-    setTimeout(() => {
-      this.initDataSetStream()
-      this.initQueueStream()
-      this.initPoolStream()
-      this.initApplicationStream()
-    })
+    setTimeout(this.initEventStreams)
   }
 
   private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
