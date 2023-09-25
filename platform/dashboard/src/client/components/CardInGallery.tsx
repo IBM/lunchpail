@@ -36,7 +36,14 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
       return description ? <YesIcon /> : <NoIcon />
     } else if (typeof description === "string" && isUrl(description)) {
       return (
-        <Button variant="link" icon={<LinkIcon />} iconPosition="right" href={description} component="a">
+        <Button
+          variant="link"
+          target="_blank"
+          icon={<LinkIcon />}
+          iconPosition="right"
+          href={description}
+          component="a"
+        >
           <Truncate content={description} />
         </Button>
       )
