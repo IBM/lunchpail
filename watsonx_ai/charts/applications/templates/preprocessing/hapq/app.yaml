@@ -10,7 +10,9 @@ spec:
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/preprocessing/hapq
   command: /opt/codeflare/worker/bin/watcher.sh python -u hapq.py --models_folder=/mnt/datasets/hap-models
   supportsGpu: true
-  description: Eliminates Hate and Profanity from a given input data set (parquet files) using a given pre-trained model (work queue formulation).
+  description: >-
+    Eliminates Hate and Profanity from a given input data set (parquet
+    files) using a given pre-trained model (work queue formulation).
   inputs:
     - useas: mount
       sizes:

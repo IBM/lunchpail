@@ -11,3 +11,5 @@ spec:
   supportsGpu: false
   requirements:
     - qiskit==0.37.0
+  description: >-
+    A simple Qiskit integration with Ray.
