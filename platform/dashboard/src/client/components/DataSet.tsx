@@ -91,7 +91,7 @@ export default class DataSet extends CardInGallery<Props> {
     // do for now, it seems
     return (
       <Popover
-        headerContent={<span onClick={this.stopPropagation}>No progress being made</span>}
+        headerContent={<span onClick={this.stopPropagation}>No progress is being made</span>}
         bodyContent={
           <span onClick={this.stopPropagation}>
             Consider assigning a{" "}
