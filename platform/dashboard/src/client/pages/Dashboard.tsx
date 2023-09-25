@@ -1,5 +1,5 @@
 import { Fragment, ReactNode, Suspense, lazy } from "react"
-import { Divider, Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
+import { Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
@@ -532,9 +532,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     return (
       <Panel style={this.transparent}>
         <PanelHeader>
-          <Title headingLevel="h3">{title}</Title>
+          <Title headingLevel="h2">{title}</Title>
         </PanelHeader>
-        <Divider />
         <PanelMain>
           <PanelMainBody>{body}</PanelMainBody>
         </PanelMain>
