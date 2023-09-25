@@ -127,7 +127,6 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   private card() {
     return (
       <Card
-        isLarge
         isClickable
         isSelectable
         isSelectableRaised

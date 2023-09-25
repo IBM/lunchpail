@@ -126,7 +126,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private commonGroups(): ReactNode[] {
-    return [this.storageType(), this.bucket(), this.unassigned()]
+    return [this.unassigned()]
   }
 
   protected override summaryGroups() {
@@ -134,6 +134,12 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   protected override detailGroups() {
-    return [...this.commonGroups(), this.unassignedChart(), this.completionRateChart()]
+    return [
+      this.storageType(),
+      this.bucket(),
+      ...this.commonGroups(),
+      this.unassignedChart(),
+      this.completionRateChart(),
+    ]
   }
 }
