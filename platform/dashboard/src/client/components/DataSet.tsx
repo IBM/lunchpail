@@ -86,13 +86,19 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private none() {
+    // PopoverProps does not support onClick; we add it instead to
+    // headerContent and bodyContent -- imperfect, but the best we can
+    // do for now, it seems
     return (
       <Popover
-        headerContent="No progress being made"
+        headerContent={<span onClick={this.stopPropagation}>No progress being made</span>}
         bodyContent={
-          <span>
-            Consider assigning a <Link to={`?dataset=${this.label()}#newpool`}>New Worker Pool</Link> to process this
-            Data Set
+          <span onClick={this.stopPropagation}>
+            Consider assigning a{" "}
+            <Link onClick={this.stopPropagation} to={`?dataset=${this.label()}#newpool`}>
+              New Worker Pool
+            </Link>{" "}
+            to process this Data Set
           </span>
         }
       >

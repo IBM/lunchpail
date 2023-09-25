@@ -29,7 +29,7 @@ import "./CardInGallery.scss"
 type BaseProps = DrilldownProps
 
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
-  protected readonly stopPropagation = (evt: MouseEvent<HTMLButtonElement>) => evt.stopPropagation()
+  protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
 
   private description(description: ReactNode) {
     if (description === true || description === false) {
