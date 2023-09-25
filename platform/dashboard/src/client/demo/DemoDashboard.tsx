@@ -1,14 +1,13 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
-import { Dashboard } from "./Dashboard"
-import {
-  DemoDataSetEventSource,
-  DemoQueueEventSource,
-  DemoWorkerPoolStatusEventSource,
-  DemoApplicationSpecEventSource,
-} from "../events/demo"
+import { Dashboard } from "../pages/Dashboard"
 
-import type { EventProps } from "./Dashboard"
+import DemoQueueEventSource from "./streams/queue"
+import DemoDataSetEventSource from "./streams/dataset"
+import DemoWorkerPoolStatusEventSource from "./streams/pool"
+import DemoApplicationSpecEventSource from "./streams/application"
+
+import type { EventProps } from "../pages/Dashboard"
 
 let props: null | EventProps = null
 
