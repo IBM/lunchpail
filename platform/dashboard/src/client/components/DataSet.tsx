@@ -117,9 +117,11 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private completionRateChart() {
+    const mean = meanCompletionRate(this.props.events)
     return this.descriptionGroup(
-      "Completion Rate over Time",
-      <Sparkline data={completionRateHistory(this.props.events)} />,
+      "Completion Rate",
+      !mean ? this.none() : <Sparkline data={completionRateHistory(this.props.events)} />,
+      mean || undefined,
     )
   }
 
@@ -128,10 +130,10 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   protected override summaryGroups() {
-    return [...this.commonGroups(), this.completionRate()]
+    return [...this.commonGroups(), this.completionRateChart()]
   }
 
   protected override detailGroups() {
-    return [...this.commonGroups(), this.completionRate(), this.unassignedChart(), this.completionRateChart()]
+    return [...this.commonGroups(), this.unassignedChart(), this.completionRateChart()]
   }
 }
