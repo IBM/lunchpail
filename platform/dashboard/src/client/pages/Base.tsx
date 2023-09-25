@@ -1,6 +1,7 @@
 import { Fragment, PureComponent, ReactNode } from "react"
 
 import {
+  Divider,
   Masthead,
   MastheadMain,
   MastheadBrand,
@@ -133,9 +134,10 @@ export default abstract class Base<Props, State extends BaseState> extends PureC
         data-is-dark-mode={this.useDarkMode}
       >
         {chips ? (
-          <PageSection variant="dark" stickyOnBreakpoint={this.stickyTop}>
-            {chips}
-          </PageSection>
+          <>
+            <PageSection variant="light">{chips}</PageSection>
+            <Divider />
+          </>
         ) : (
           <></>
         )}
