@@ -8,6 +8,7 @@ import type { ActiveFilters } from "../context/FiltersContext"
 import "./SidebarContent.scss"
 
 interface Props {
+  appMd5: string
   applications: string[]
   datasets: string[]
   workerpools: string[]

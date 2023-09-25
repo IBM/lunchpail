@@ -26,6 +26,9 @@ import type { LocationProps } from "../router/withLocation"
 import type NewPoolHandler from "../events/NewPoolHandler"
 
 type Props = Pick<LocationProps, "searchParams"> & {
+  /** Md5 of current application names */
+  appMd5: string
+
   /** Currently available Applications */
   applications: string[]
 

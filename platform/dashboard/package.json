@@ -16,9 +16,11 @@
   },
   "dependencies": {
     "@patternfly/react-core": "^5.0.1",
+    "@types/md5": "^2.3.2",
     "express": "^4.18.2",
     "is-url-superb": "^6.1.0",
     "lorem-ipsum": "^2.0.8",
+    "md5": "^2.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0",

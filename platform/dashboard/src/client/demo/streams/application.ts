@@ -8,24 +8,27 @@ import { ns } from "./misc"
 import lorem from "../util/lorem"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
+  private readonly apis = ["workqueue", "ray", "torch"]
+
   /** Model of current applications */
-  private readonly applications = Array(1)
-    .fill(0)
-    .map(() => ({
-      name: uniqueNamesGenerator({ dictionaries: [animals] }),
-      description: lorem.generateSentences(2),
-      repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
-      image: lorem.generateWords(2).replace(/\s/g, "-"),
-      file: lorem.generateWords(1).replace(/\s/g, "-"),
-    }))
+  private readonly applications = this.apis.map((api) => ({
+    name: uniqueNamesGenerator({ dictionaries: [animals] }),
+    description: lorem.generateSentences(2),
+    api,
+    repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
+    image: lorem.generateWords(2).replace(/\s/g, "-"),
+    file: lorem.generateWords(1).replace(/\s/g, "-"),
+  }))
 
   private randomApplicationSpecEvent({
+    api,
     name,
     file,
     image,
     repoPath,
     description,
   }: {
+    api: string
     name: string
     file: string
     image: string
@@ -37,7 +40,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       namespace: ns,
       application: name,
       description,
-      api: "workqueue",
+      api,
       image,
       repo: `https://github.com/${repoPath}`,
       command: `python ${file}.py`,

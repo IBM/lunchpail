@@ -1,3 +1,4 @@
+import md5 from "md5"
 import { Fragment, ReactNode, Suspense, lazy } from "react"
 import { Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
@@ -57,8 +58,14 @@ type State = BaseWithDrawerState & {
   /** Events for Pools, indexed by WorkerPoolModel.label */
   poolEvents: Record<string, WorkerPoolStatusEvent[]>
 
-  /** Events for Applications, indexed by ApplicationSpecEvent.application */
-  applicationEvents: Record<string, ApplicationSpecEvent[]>
+  /** Latest event for each Application */
+  latestApplicationEvents: ApplicationSpecEvent[]
+
+  /** Latest name of ech Application, parallel to `latestApplicationEvents` */
+  latestApplicationNames: string[]
+
+  /** md5 sum of latestApplicationEvents */
+  appMd5: string
 
   /** Map DataSetModel.label to a dense index */
   datasetIndex: Record<string, number>
@@ -139,17 +146,34 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     })
   }
 
+  private md5(A: string[]): string {
+    return A.map((_) => md5(_)).join("-")
+  }
+
   private readonly onApplicationEvent = (revt: Event) => {
     const evt = revt as MessageEvent
     const applicationEvent = JSON.parse(evt.data) as ApplicationSpecEvent
 
     this.setState((curState) => {
-      if (!(applicationEvent.application in curState.applicationEvents)) {
-        curState.applicationEvents[applicationEvent.application] = []
-      }
-      curState.applicationEvents[applicationEvent.application].push(applicationEvent)
-      return {
-        applicationEvents: Object.assign({}, curState.applicationEvents),
+      if (!curState.latestApplicationEvents || curState.latestApplicationEvents.length === 0) {
+        const latestApplicationEvents = [applicationEvent]
+        const latestApplicationNames = [applicationEvent.application]
+        return { latestApplicationEvents, latestApplicationNames, appMd5: this.md5(latestApplicationNames) }
+      } else {
+        const idx = curState.latestApplicationEvents.findIndex((_) => _.application === applicationEvent.application)
+        if (idx < 0) {
+          curState.latestApplicationEvents.push(applicationEvent)
+          curState.latestApplicationNames.push(applicationEvent.application)
+        } else {
+          curState.latestApplicationEvents[idx] = applicationEvent
+          curState.latestApplicationNames[idx] = applicationEvent.application
+        }
+
+        return {
+          latestApplicationEvents: curState.latestApplicationEvents,
+          latestApplicationNames: curState.latestApplicationNames,
+          appMd5: this.md5(curState.latestApplicationNames),
+        }
       }
     })
   }
@@ -312,7 +336,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       datasetEvents: {},
       queueEvents: {},
       poolEvents: {},
-      applicationEvents: {},
+      latestApplicationEvents: [],
       datasetIndex: {},
       workerpoolIndex: {},
       filterState: {
@@ -340,6 +364,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
+  private lexicoApp = (a: ApplicationSpecEvent, b: ApplicationSpecEvent) => a.application.localeCompare(b.application)
   private lexicoWP = (a: WorkerPoolModel, b: WorkerPoolModel) => a.label.localeCompare(b.label)
 
   /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
@@ -363,15 +388,15 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   private applications() {
     return this.gallery(
-      Object.entries(this.state?.applicationEvents || {})
+      (this.state?.latestApplicationEvents || [])
         .filter(
-          ([name]) =>
+          (evt) =>
             !this.state?.filterState.applications.length ||
             this.state.filterState.showingAllApplications ||
-            this.state.filterState.applications.includes(name),
+            this.state.filterState.applications.includes(evt.application),
         )
-        .sort(this.lexico)
-        .map(([name, events]) => <Application key={name} {...events[events.length - 1]} {...this.drawerProps()} />),
+        .sort(this.lexicoApp)
+        .map((evt) => <Application key={evt.application} {...evt} {...this.drawerProps()} />),
     )
   }
 
@@ -440,7 +465,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   private get applicationsList(): string[] {
-    return Object.keys(this.state?.applicationEvents || {})
+    return this.state?.latestApplicationNames || []
   }
 
   private get datasetsList(): string[] {
@@ -483,6 +508,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     return (
       <SidebarContent
         filterState={this.state?.filterState}
+        appMd5={this.state?.appMd5}
         applications={this.applicationsList}
         datasets={this.datasetsList}
         workerpools={Object.keys(this.state?.workerpoolIndex || {})}
@@ -596,7 +622,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         >
           <NewWorkerPoolWizard
             onClose={this.cancelNewWorkerPoolWizard}
-            applications={this.applicationsList}
+            appMd5={this.state?.appMd5}
+            applications={this.state?.latestApplicationNames}
             datasets={this.datasetsList}
             newpool={this.props.newpool}
             searchParams={this.props.searchParams}
