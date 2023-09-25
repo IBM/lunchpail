@@ -11,7 +11,7 @@ spec:
   command: python3 hap_driver.py --input_folder=/mnt/datasets/hapxs --models_folder=/mnt/datasets/hap-models
   supportsGpu: true
   description: >-
-    Eliminates Hate and Profanity from a given input data set (parquet
+    Eliminate Hate and Profanity from a given input data set (parquet
     files) using a given pre-trained model.
   inputs:
     - useas: mount

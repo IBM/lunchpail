@@ -11,7 +11,7 @@ spec:
   command: /opt/codeflare/worker/bin/watcher.sh python -u hapq.py --models_folder=/mnt/datasets/hap-models
   supportsGpu: true
   description: >-
-    Eliminates Hate and Profanity from a given input data set (parquet
+    Eliminate Hate and Profanity from a given input data set (parquet
     files) using a given pre-trained model (work queue formulation).
   inputs:
     - useas: mount

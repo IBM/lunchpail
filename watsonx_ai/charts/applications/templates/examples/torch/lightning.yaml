@@ -10,7 +10,7 @@ spec:
   command: python3 lightning_ddp_example.py
   supportsGpu: true
   description: >-
-    A PyTorch example using the Lightning API.
+    PyTorch Lightning example.
 #  inputs:
 #    - useas: argv
 #      sizes:
