@@ -23,11 +23,14 @@ export default abstract class BaseWithDrawer<Props, State extends BaseWithDrawer
   /** The content to display in the main (non drawer) section */
   protected abstract mainContentBody(): ReactNode
 
+  /** State that will mark the drawer as closed */
+  private closedDrawerState = { drawerSelection: undefined, drawerTitle: undefined, drawerBody: undefined }
+
   /**
    * User has clicked on a UI element that should result in the drawer
    * ending up closed.
    */
-  protected readonly closeDrawer = () => this.setState({ drawerTitle: undefined, drawerBody: undefined })
+  protected readonly closeDrawer = () => this.setState(this.closedDrawerState)
 
   /**
    * User has clicked on a UI element that should result in the drawer
@@ -37,7 +40,7 @@ export default abstract class BaseWithDrawer<Props, State extends BaseWithDrawer
     this.setState((curState) => {
       if (curState?.drawerSelection === drawerSelection) {
         // close if the user clicks on the currently displayed element
-        return { drawerSelection: undefined, drawerTitle: undefined, drawerBody: undefined }
+        return this.closedDrawerState
       } else {
         // otherwise open and show that new content in the drawer
         return { drawerSelection, drawerTitle, drawerBody }
