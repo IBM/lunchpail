@@ -101,7 +101,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   )
 
   private readonly onClick = () => {
-    this.props.showDetails(this.label(), this.detailTitle, this.detailBody)
+    this.props.showDetails(`${this.kind}-${this.label()}`, this.detailTitle, this.detailBody)
   }
 
   private summaryHeader() {
