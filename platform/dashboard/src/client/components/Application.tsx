@@ -32,6 +32,15 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
     ]
   }
 
+  /**
+   * If we can find a "foo.py", then append it to the repo, so that
+   * users can click to see the source directly.
+   */
+  private get repoPlusSource() {
+    const source = this.props["command"].match(/\s(\w+\.py)\s/)
+    return this.props["repo"] + (source ? "/" + source[1] : "")
+  }
+
   protected detailGroups() {
     return Object.entries(this.props)
       .filter(
@@ -39,6 +48,10 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
           term !== "application" && term !== "timestamp" && term !== "showDetails" && term !== "currentSelection",
       )
       .filter(([, value]) => value)
-      .map(([term, value]) => typeof value !== "function" && this.descriptionGroup(term, value))
+      .map(([term, value]) =>
+        term === "repo"
+          ? this.descriptionGroup(term, this.repoPlusSource)
+          : typeof value !== "function" && this.descriptionGroup(term, value),
+      )
   }
 }
