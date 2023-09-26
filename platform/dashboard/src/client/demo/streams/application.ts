@@ -8,7 +8,7 @@ import { ns } from "./misc"
 import lorem from "../util/lorem"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
-  private readonly apis = ["workqueue", "ray", "torch"]
+  private readonly apis = ["workqueue", "ray", "torch", "workqueue"]
 
   /** Model of current applications */
   private readonly applications = this.apis.map((api) => ({
