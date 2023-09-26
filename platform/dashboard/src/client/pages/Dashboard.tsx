@@ -181,8 +181,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   private allBut(list: string[], dropThis: string) {
     const idx = list.indexOf(dropThis)
     if (idx >= 0) {
-      list.splice(idx, 1)
-      return list
+      return [...list.slice(0, idx), ...list.slice(idx + 1)]
     } else {
       return list
     }
@@ -281,7 +280,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.setState((curState) => ({
       filterState: Object.assign({}, curState.filterState, {
         showingAllApplications: !curState.filterState?.showingAllApplications,
-        applications: !curState.filterState?.showingAllApplications === false ? [] : curState.filterState?.applications,
+        applications: curState.filterState?.showingAllApplications === false ? [] : curState.filterState?.applications,
       }),
     }))
   }
@@ -290,7 +289,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.setState((curState) => ({
       filterState: Object.assign({}, curState.filterState, {
         showingAllDataSets: !curState.filterState?.showingAllDataSets,
-        datasets: !curState.filterState?.showingAllDataSets === false ? [] : curState.filterState?.datasets,
+        datasets: curState.filterState?.showingAllDataSets === false ? [] : curState.filterState?.datasets,
       }),
     }))
   }
@@ -299,7 +298,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.setState((curState) => ({
       filterState: Object.assign({}, curState.filterState, {
         showingAllWorkerPools: !curState.filterState?.showingAllWorkerPools,
-        workerpools: !curState.filterState?.showingAllWorkerPools === false ? [] : curState.filterState?.workerpools,
+        workerpools: curState.filterState?.showingAllWorkerPools === false ? [] : curState.filterState?.workerpools,
       }),
     }))
   }
@@ -343,9 +342,9 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         applications: [],
         datasets: [],
         workerpools: [],
-        showingAllApplications: false,
-        showingAllDataSets: false,
-        showingAllWorkerPools: false,
+        showingAllApplications: true,
+        showingAllDataSets: true,
+        showingAllWorkerPools: true,
         addApplicationToFilter: this.addApplicationToFilter,
         addDataSetToFilter: this.addDataSetToFilter,
         addWorkerPoolToFilter: this.addWorkerPoolToFilter,
