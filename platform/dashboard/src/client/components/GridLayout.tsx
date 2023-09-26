@@ -36,7 +36,7 @@ export default class GridLayout extends PureComponent<Props> {
         <FlexItem className="codeflare--workqueues-cell">{this.name()}</FlexItem>
 
         <FlexItem className="codeflare--workqueues-cell">
-          <Queue inbox={this.props.inbox} datasetIndex={this.props.datasetIndex} />
+          <Queue inbox={this.props.inbox} datasetIndex={this.props.datasetIndex} gridTypeData="plain" />
         </FlexItem>
       </Flex>
     )

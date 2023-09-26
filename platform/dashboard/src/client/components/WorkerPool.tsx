@@ -81,7 +81,13 @@ export default class WorkerPool extends CardInGallery<Props> {
     return (
       <div className="codeflare--workqueues">
         {this.inboxes.map((inbox, i) => (
-          <GridLayout key={i} queueNum={i + 1} inbox={inbox} datasetIndex={this.props.datasetIndex} />
+          <GridLayout
+            key={i}
+            queueNum={i + 1}
+            inbox={inbox}
+            datasetIndex={this.props.datasetIndex}
+            gridTypeData="plain"
+          />
         ))}
       </div>
     )

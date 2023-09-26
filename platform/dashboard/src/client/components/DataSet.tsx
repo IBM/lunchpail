@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom"
 import type { ReactNode } from "react"
-import { Button, Flex, FlexItem, Popover } from "@patternfly/react-core"
+import { Link } from "react-router-dom"
+import { Button, Popover } from "@patternfly/react-core"
 
+import Queue from "./Queue"
 import Sparkline from "./Sparkline"
 import CardInGallery from "./CardInGallery"
-import GridCell, { GridTypeData } from "./GridCell"
+import type { GridTypeData } from "./GridCell"
 
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
@@ -14,8 +15,6 @@ import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon"
 import DataSetIcon from "@patternfly/react-icons/dist/esm/icons/database-icon"
 export { DataSetIcon }
 
-import "./Queue.scss"
-
 type Props = Pick<DataSetModel, "idx" | "label"> & {
   events: DataSetModel[]
   numEvents: number
@@ -24,16 +23,17 @@ type Props = Pick<DataSetModel, "idx" | "label"> & {
 export default class DataSet extends CardInGallery<Props> {
   private cells(count: number, gridDataType: GridTypeData) {
     if (!count) {
-      return <GridCell type="placeholder" dataset={this.props.idx} />
+      return (
+        <Queue inbox={{ [this.props.label]: 0 }} datasetIndex={{ [this.props.label]: 0 }} gridTypeData="placeholder" />
+      )
     }
-
-    return Array(count)
-      .fill(0)
-      .map((_, index) => (
-        <FlexItem key={index}>
-          <GridCell type={gridDataType} dataset={this.props.idx} />
-        </FlexItem>
-      ))
+    return (
+      <Queue
+        inbox={{ [this.props.label]: this.inboxCount }}
+        datasetIndex={{ [this.props.label]: 0 }}
+        gridTypeData={gridDataType}
+      />
+    )
   }
 
   protected override icon() {
@@ -69,13 +69,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private unassigned() {
-    return this.descriptionGroup(
-      "Unassigned Work",
-      <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-        {this.cells(this.inboxCount, "unassigned")}
-      </Flex>,
-      this.inboxCount,
-    )
+    return this.descriptionGroup("Unassigned Work", this.cells(this.inboxCount, "unassigned"), this.inboxCount)
   }
 
   private unassignedChart() {
