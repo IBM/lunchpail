@@ -18,7 +18,7 @@ interface Props {
 export default class SidebarContent extends PureComponent<Props> {
   private readonly labels = {
     applications: "Applications",
-    datasets: "Data Sets",
+    datasets: "Task Queues",
     workerpools: "Worker Pools",
   }
 
