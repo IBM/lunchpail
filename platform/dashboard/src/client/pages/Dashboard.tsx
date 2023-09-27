@@ -598,9 +598,9 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   protected override mainContentBody() {
     return (
       <>
-        {!this.hideApplications && this.panel("Applications", this.applications())}
         {!this.hideDataSets && this.panel("Task Queues", this.datasets())}
         {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
+        {!this.hideApplications && this.panel("Applications", this.applications())}
       </>
     )
   }

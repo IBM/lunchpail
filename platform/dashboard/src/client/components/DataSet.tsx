@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
-import { Button, Popover } from "@patternfly/react-core"
+import { Bullseye, Button, Popover } from "@patternfly/react-core"
 
 import Queue from "./Queue"
 import Sparkline from "./Sparkline"
@@ -13,6 +13,7 @@ import type DataSetModel from "./DataSetModel"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 
 import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon"
+import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import DataSetIcon from "@patternfly/react-icons/dist/esm/icons/database-icon"
 export { DataSetIcon }
 
@@ -31,13 +32,16 @@ export default class DataSet extends CardInGallery<Props> {
   private associatedApplications() {
     const { label } = this.props
 
-    const apps = this.props.applications.filter((app) => {
+    return this.props.applications.filter((app) => {
       if (app["data sets"]) {
         const { xs, sm, md, lg, xl } = app["data sets"]
         return xs === label || sm === label || md === label || lg === label || xl === label
       }
     })
+  }
 
+  private associatedApplicationsUI() {
+    const apps = this.associatedApplications()
     return this.descriptionGroup(
       "Associated Applications",
       apps.length === 0 ? this.none() : apps.map((_) => _.application),
@@ -146,7 +150,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private commonGroups(): ReactNode[] {
-    return [this.associatedApplications(), this.unassigned()]
+    return [this.associatedApplicationsUI(), this.unassigned()]
   }
 
   protected override summaryGroups() {
@@ -161,5 +165,24 @@ export default class DataSet extends CardInGallery<Props> {
       this.unassignedChart(),
       // this.completionRateChart(),
     ]
+  }
+
+  private readonly processTheseTasks = (props: object) => (
+    <Link {...props} to={`?dataset=${this.label()}#newpool`}>
+      <span className="pf-v5-c-button__icon pf-m-start">
+        <RocketIcon />
+      </span>{" "}
+      Process these Tasks
+    </Link>
+  )
+
+  protected override summaryFooter() {
+    return (
+      this.associatedApplications().length > 0 && (
+        <Bullseye>
+          <Button isInline variant="link" onClick={this.stopPropagation} component={this.processTheseTasks} />
+        </Bullseye>
+      )
+    )
   }
 }

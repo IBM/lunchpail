@@ -65,19 +65,59 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     }
   }
 
+  private get searchedApplication() {
+    const app = this.props.searchParams.get("application")
+    if (!app || !this.props.applications.find((_) => _.application === app)) {
+      return null
+    } else {
+      return app
+    }
+  }
+
+  private get searchedDataSet() {
+    const dataset = this.props.searchParams.get("dataset")
+    if (!dataset || !this.props.datasets.includes(dataset)) {
+      return null
+    } else {
+      return dataset
+    }
+  }
+
+  private supportsDataSet(app: ApplicationSpecEvent, dataset: string) {
+    const datasets = app["data sets"]
+    return (
+      datasets &&
+      (datasets.xs === dataset ||
+        datasets.sm === dataset ||
+        datasets.md === dataset ||
+        datasets.lg === dataset ||
+        datasets.xl === dataset)
+    )
+  }
+
+  private get compatibleApplications() {
+    const dataset = this.searchedDataSet
+    if (dataset) {
+      return this.props.applications.filter((app) => this.supportsDataSet(app, dataset))
+    } else {
+      return this.props.applications
+    }
+  }
+
+  private chooseIfSingleton(A: ApplicationSpecEvent[]): string {
+    return A.length === 1 ? A[0].application : ""
+  }
+
   private defaults = {
     poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
     count: String(1),
     size: "xs",
     supportsGpu: false.toString(),
-    application:
-      this.props.applications.length === 1
-        ? this.props.applications[0].application
-        : this.chooseAppIfExists(this.props.applications, this.props.searchParams.get("application")),
+    application: this.chooseIfSingleton(this.compatibleApplications),
     dataset:
       this.props.datasets.length === 1
         ? this.props.datasets[0]
-        : this.chooseDataSetIfExists(this.props.datasets, this.props.searchParams.get("dataset")),
+        : this.chooseDataSetIfExists(this.props.datasets, this.searchedDataSet),
   }
 
   public componentDidMount() {
@@ -95,7 +135,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
         label="Application"
         description="Choose the Application code this pool should run"
         ctrl={ctrl}
-        options={this.props.applications.map((_) => _.application)}
+        options={this.compatibleApplications.map((_) => _.application)}
         icons={this.props.applications.map(applicationIcon)}
       />
     )

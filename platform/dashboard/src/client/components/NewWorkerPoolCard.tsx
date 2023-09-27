@@ -14,18 +14,19 @@ import {
 
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-function AddWorkerPoolButton() {
+function createWorkerPool(props: object) {
   return (
-    <Button
-      isInline
-      variant="link"
-      component={(props) => (
-        <Link {...props} to="#newpool">
-          Create Worker Pool
-        </Link>
-      )}
-    />
+    <Link {...props} to="#newpool">
+      <span className="pf-v5-c-button__icon pf-m-start">
+        <PlusCircleIcon />
+      </span>
+      Create Worker Pool
+    </Link>
   )
+}
+
+function AddWorkerPoolButton() {
+  return <Button isInline variant="link" component={createWorkerPool} />
 }
 
 export default function NewWorkerPoolCard() {
