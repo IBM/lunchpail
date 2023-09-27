@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
   CardBody,
+  CardFooter,
   DescriptionList,
   DescriptionListTerm,
   DescriptionListGroup,
@@ -61,13 +62,16 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
       if (Array.isArray(description)) {
         return description.join(",")
       } else {
-        return (
-          <List isPlain isBordered>
-            {Object.entries(description).map(([key, value]) => (
-              <ListItem key={key}>{value}</ListItem>
-            ))}
-          </List>
-        )
+        const entries = Object.entries(description).filter(([, value]) => !!value)
+        if (entries.length > 0) {
+          return (
+            <List isPlain isBordered>
+              {entries.map(([key, value]) => (
+                <ListItem key={key}>{value}</ListItem>
+              ))}
+            </List>
+          )
+        }
       }
     } else {
       return description
@@ -79,16 +83,19 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     description: ReactNode | Record<string, string>,
     count?: number | string,
   ) {
-    return (
-      <DescriptionListGroup key={String(term)}>
-        <DescriptionListTerm>
-          <SmallLabel count={count}>
-            <span className="codeflare--capitalize">{term}</span>
-          </SmallLabel>
-        </DescriptionListTerm>
-        <DescriptionListDescription>{this.description(description)}</DescriptionListDescription>
-      </DescriptionListGroup>
-    )
+    const desc = this.description(description)
+    if (desc) {
+      return (
+        <DescriptionListGroup key={String(term)}>
+          <DescriptionListTerm>
+            <SmallLabel count={count}>
+              <span className="codeflare--capitalize">{term}</span>
+            </SmallLabel>
+          </DescriptionListTerm>
+          <DescriptionListDescription>{desc}</DescriptionListDescription>
+        </DescriptionListGroup>
+      )
+    }
   }
 
   protected kind(): string {
@@ -144,15 +151,15 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   }
 
   private summaryTitle() {
-    return <CardTitle>{this.label()}</CardTitle>
+    return this.label()
   }
 
   private summaryBody() {
-    return (
-      <CardBody>
-        <DescriptionList isCompact>{this.summaryGroups()}</DescriptionList>
-      </CardBody>
-    )
+    return <DescriptionList isCompact>{this.summaryGroups()}</DescriptionList>
+  }
+
+  protected summaryFooter(): null | ReactNode {
+    return null
   }
 
   private card() {
@@ -165,8 +172,9 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
         onClick={this.onClick}
       >
         {this.summaryHeader()}
-        {this.summaryTitle()}
-        {this.summaryBody()}
+        <CardTitle>{this.summaryTitle()}</CardTitle>
+        <CardBody>{this.summaryBody()}</CardBody>
+        {this.summaryFooter() && <CardFooter>{this.summaryFooter()}</CardFooter>}
       </Card>
     )
   }
