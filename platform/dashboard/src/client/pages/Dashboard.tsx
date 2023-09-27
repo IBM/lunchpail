@@ -395,7 +395,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
             this.state.filterState.applications.includes(evt.application),
         )
         .sort(this.lexicoApp)
-        .map((evt) => <Application key={evt.application} {...evt} {...this.drawerProps()} />),
+        .map((evt) => <Application key={evt.application} {...evt} {...this.drilldownProps()} />),
     )
   }
 
@@ -411,10 +411,11 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               <DataSet
                 key={label}
                 idx={either(events[events.length - 1].idx, idx)}
+                applications={this.state?.latestApplicationEvents || []}
                 label={label}
                 events={events}
                 numEvents={events.length}
-                {...this.drawerProps()}
+                {...this.drilldownProps()}
               />
             ),
         ),
@@ -496,7 +497,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               model={w}
               datasetIndex={this.state.datasetIndex}
               statusHistory={this.state.poolEvents[w.label] || []}
-              {...this.drawerProps()}
+              {...this.drilldownProps()}
             />
           ),
       ),
@@ -605,7 +606,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   /** Handler for cancelling the Create Worker Pool process */
   private readonly cancelNewWorkerPoolWizard = () => {
-    this.props.navigate(this.props.location.pathname) // TODO search? state?
+    this.returnHome()
   }
 
   protected override modal() {

@@ -2,13 +2,13 @@ import type { ReactNode } from "react"
 
 export type DrawerState = {
   /** Selected id currently shown in Drawer */
-  drawerSelection: string
+  id: string
 
   /** Title to display in the drawer */
-  drawerTitle(): ReactNode
+  title(): ReactNode
 
   /** Body to display in the drawer */
-  drawerBody(): ReactNode
+  body(): ReactNode
 }
 
 export type DrilldownProps = {
@@ -19,5 +19,5 @@ export type DrilldownProps = {
    * Set the drawer to open, unless the current drawerSelection
    * matches the given id, then set to closed.
    */
-  showDetails(id: string, title: DrawerState["drawerTitle"], body: DrawerState["drawerBody"]): void
+  showDetails(props: DrawerState): void
 }

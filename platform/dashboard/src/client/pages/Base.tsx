@@ -17,6 +17,8 @@ import {
   PageToggleButton,
 } from "@patternfly/react-core"
 
+import type { LocationProps } from "../router/withLocation"
+
 import { version } from "../../../package.json"
 import "@patternfly/react-core/dist/styles/base.css"
 import SmallLabel from "../components/SmallLabel"
@@ -27,7 +29,10 @@ export interface BaseState {
   useDarkMode: boolean
 }
 
-export default abstract class Base<Props, State extends BaseState> extends PureComponent<Props, State> {
+export default abstract class Base<Props extends LocationProps, State extends BaseState> extends PureComponent<
+  Props,
+  State
+> {
   private readonly toggleDarkMode = () =>
     this.setState((curState) => {
       const useDarkMode = !curState?.useDarkMode
@@ -45,6 +50,11 @@ export default abstract class Base<Props, State extends BaseState> extends PureC
         </PageToggleButton>
       </MastheadToggle>
     )
+  }
+
+  /** Redirect back to the main page */
+  protected returnHome() {
+    this.props.navigate(this.props.location.pathname) // TODO search? state?
   }
 
   protected pageTitle() {

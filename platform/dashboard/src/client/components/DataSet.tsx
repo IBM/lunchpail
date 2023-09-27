@@ -10,6 +10,7 @@ import type { GridTypeData } from "./GridCell"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import type DataSetModel from "./DataSetModel"
+import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 
 import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon"
 import DataSetIcon from "@patternfly/react-icons/dist/esm/icons/database-icon"
@@ -18,9 +19,28 @@ export { DataSetIcon }
 type Props = Pick<DataSetModel, "idx" | "label"> & {
   events: DataSetModel[]
   numEvents: number
+
+  /** Latest set of Application s*/
+  applications: ApplicationSpecEvent[]
 }
 
 export default class DataSet extends CardInGallery<Props> {
+  private associatedApplications() {
+    const { label } = this.props
+
+    const apps = this.props.applications.filter((app) => {
+      if (app["data sets"]) {
+        const { xs, sm, md, lg, xl } = app["data sets"]
+        return xs === label || sm === label || md === label || lg === label || xl === label
+      }
+    })
+
+    return this.descriptionGroup(
+      "Associated Applications",
+      apps.length === 0 ? this.none() : apps.map((_) => _.application),
+    )
+  }
+
   private cells(count: number, gridDataType: GridTypeData) {
     if (!count) {
       return (
@@ -69,7 +89,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private unassigned() {
-    return this.descriptionGroup("Unassigned Work", this.cells(this.inboxCount, "unassigned"), this.inboxCount)
+    return this.descriptionGroup("Tasks", this.cells(this.inboxCount, "unassigned"), this.inboxCount)
   }
 
   private unassignedChart() {
@@ -79,7 +99,7 @@ export default class DataSet extends CardInGallery<Props> {
     )
   }
 
-  private none() {
+  private zeroCompletionRate() {
     // PopoverProps does not support onClick; we add it instead to
     // headerContent and bodyContent -- imperfect, but the best we can
     // do for now, it seems
@@ -97,7 +117,7 @@ export default class DataSet extends CardInGallery<Props> {
         }
       >
         <>
-          None{" "}
+          this.none(){" "}
           <Button className="codeflare--card-in-gallery-help-button" onClick={this.stopPropagation} variant="plain">
             <HelpIcon />
           </Button>
@@ -107,7 +127,10 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private completionRate() {
-    return this.descriptionGroup("Completion Rate (mean)", meanCompletionRate(this.props.events) || this.none())
+    return this.descriptionGroup(
+      "Completion Rate (mean)",
+      meanCompletionRate(this.props.events) || this.zeroCompletionRate(),
+    )
   }
 
   private completionRateChart() {
@@ -120,7 +143,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   private commonGroups(): ReactNode[] {
-    return [this.unassigned()]
+    return [this.associatedApplications(), this.unassigned()]
   }
 
   protected override summaryGroups() {

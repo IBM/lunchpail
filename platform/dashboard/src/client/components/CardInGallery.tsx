@@ -33,6 +33,14 @@ type BaseProps = DrilldownProps
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
   protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
 
+  /**
+   * Signify that there is no corresponding... something, e.g. an
+   * Application with no corresponding DataSet, or vice versa.
+   */
+  protected none() {
+    return <i>None</i>
+  }
+
   private description(description: ReactNode | Record<string, string>) {
     if (description === true || description === false) {
       return description ? <YesIcon /> : <NoIcon />
@@ -50,14 +58,17 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
         </Button>
       )
     } else if (description && typeof description === "object" && !isValidElement(description)) {
-      return (
-        <List isPlain isBordered>
-          {Object.entries(description).map(([key, value]) => (
-            <ListItem key={key}>{value}</ListItem>
-          ))}
-        </List>
-      )
-      return JSON.stringify(description)
+      if (Array.isArray(description)) {
+        return description.join(",")
+      } else {
+        return (
+          <List isPlain isBordered>
+            {Object.entries(description).map(([key, value]) => (
+              <ListItem key={key}>{value}</ListItem>
+            ))}
+          </List>
+        )
+      }
     } else {
       return description
     }
@@ -117,11 +128,11 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
 
   /** An identifier that is unique across all Cards */
   private get selectionId() {
-    return `${this.kind}-${this.label()}`
+    return `${this.kind()}-${this.label()}`
   }
 
   private readonly onClick = () => {
-    this.props.showDetails(this.selectionId, this.detailTitle, this.detailBody)
+    this.props.showDetails({ id: this.selectionId, title: this.detailTitle, body: this.detailBody })
   }
 
   private summaryHeader() {
