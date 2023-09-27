@@ -84,7 +84,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     count?: number | string,
   ) {
     const desc = this.description(description)
-    if (desc) {
+    if (desc != null && desc !== undefined) {
       return (
         <DescriptionListGroup key={String(term)}>
           <DescriptionListTerm>
