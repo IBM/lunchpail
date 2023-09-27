@@ -115,8 +115,13 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     <DescriptionList displaySize="lg">{[this.nameGroup(), ...this.detailGroups()]}</DescriptionList>
   )
 
+  /** An identifier that is unique across all Cards */
+  private get selectionId() {
+    return `${this.kind}-${this.label()}`
+  }
+
   private readonly onClick = () => {
-    this.props.showDetails(`${this.kind}-${this.label()}`, this.detailTitle, this.detailBody)
+    this.props.showDetails(this.selectionId, this.detailTitle, this.detailBody)
   }
 
   private summaryHeader() {
@@ -145,7 +150,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
         isClickable
         isSelectable
         isSelectableRaised
-        isSelected={this.props.currentSelection === this.label()}
+        isSelected={this.props.currentSelection === this.selectionId}
         onClick={this.onClick}
       >
         {this.summaryHeader()}
