@@ -5,6 +5,8 @@ import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import ApplicationIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
 export { ApplicationIcon }
 
+import WorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
+
 import rayImageUrl from "../images/ray.png"
 import pytorchImageUrl from "../images/pytorch.svg"
 
@@ -15,6 +17,8 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
         return <img src={rayImageUrl} />
       case "torch":
         return <img src={pytorchImageUrl} />
+      case "workqueue":
+        return <WorkQueueIcon />
       default:
         return <ApplicationIcon />
     }
