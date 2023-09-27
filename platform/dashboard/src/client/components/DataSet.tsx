@@ -180,7 +180,13 @@ export default class DataSet extends CardInGallery<Props> {
     return (
       this.associatedApplications().length > 0 && (
         <Bullseye>
-          <Button isInline variant="link" onClick={this.stopPropagation} component={this.processTheseTasks} />
+          <Button
+            isInline
+            variant="primary"
+            size="sm"
+            onClick={this.stopPropagation}
+            component={this.processTheseTasks}
+          />
         </Bullseye>
       )
     )
