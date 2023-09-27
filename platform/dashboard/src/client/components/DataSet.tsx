@@ -150,7 +150,7 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   protected override summaryGroups() {
-    return [...this.commonGroups(), this.completionRateChart()]
+    return [...this.commonGroups() /*, this.completionRateChart()*/]
   }
 
   protected override detailGroups() {
@@ -159,7 +159,7 @@ export default class DataSet extends CardInGallery<Props> {
       this.bucket(),
       ...this.commonGroups(),
       this.unassignedChart(),
-      this.completionRateChart(),
+      // this.completionRateChart(),
     ]
   }
 }
