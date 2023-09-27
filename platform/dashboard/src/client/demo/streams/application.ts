@@ -9,12 +9,14 @@ import lorem from "../util/lorem"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
   private readonly apis = ["workqueue", "ray", "torch", "workqueue"]
+  private readonly inputMd = ["blue", "green", "blue", "purple"]
 
   /** Model of current applications */
-  private readonly applications = this.apis.map((api) => ({
+  private readonly applications = this.apis.map((api, idx) => ({
     name: uniqueNamesGenerator({ dictionaries: [animals] }),
     description: lorem.generateSentences(2),
     api,
+    inputMd: this.inputMd[idx],
     repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
     image: lorem.generateWords(2).replace(/\s/g, "-"),
     file: lorem.generateWords(1).replace(/\s/g, "-"),
@@ -27,6 +29,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     image,
     repoPath,
     description,
+    inputMd,
   }: {
     api: string
     name: string
@@ -34,6 +37,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     image: string
     repoPath: string
     description: string
+    inputMd: string
   }): ApplicationSpecEvent {
     return {
       timestamp: Date.now(),
@@ -45,6 +49,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       repo: `https://github.com/${repoPath}`,
       command: `python ${file}.py`,
       supportsGpu: false,
+      "data sets": { md: inputMd },
       age: new Date().toLocaleString(),
     }
   }

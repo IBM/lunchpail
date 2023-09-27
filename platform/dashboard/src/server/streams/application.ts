@@ -12,7 +12,23 @@ function transformLineToEvent(sep: string) {
   return new Transform({
     transform(chunk: Buffer, encoding: string, callback) {
       // Splits the string by spaces
-      const [ns, application, api, command, supportsGpu, image, repo, description, age] = chunk.toString().split(sep)
+      const [
+        ns,
+        application,
+        api,
+        command,
+        supportsGpu,
+        image,
+        repo,
+        description,
+        defaultSize,
+        xs,
+        sm,
+        md,
+        lg,
+        xl,
+        age,
+      ] = chunk.toString().split(sep)
 
       const model: ApplicationSpecEvent = {
         timestamp: Date.now(),
@@ -24,6 +40,8 @@ function transformLineToEvent(sep: string) {
         supportsGpu: /true/i.test(supportsGpu),
         image,
         repo,
+        defaultSize: defaultSize as ApplicationSpecEvent["defaultSize"],
+        "data sets": { xs, sm, md, lg, xl },
         age,
       }
 
@@ -45,7 +63,7 @@ export default function startApplicationSpecStream() {
       "--no-headers",
       "--watch",
       "-o",
-      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
+      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.spec.inputs.defaultSize}{"${sep}"}{.spec.inputs.xs}{"${sep}"}{.spec.inputs.sm}{"${sep}"}{.spec.inputs.md}{"${sep}"}{.spec.inputs.lg}{"${sep}"}{.spec.inputs.xl}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
     ])
 
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))

@@ -29,6 +29,10 @@ export default interface ApplicationSpecEvent {
   /** Does this pool support GPU tasks? */
   supportsGpu: boolean
 
+  defaultSize?: "xs" | "sm" | "md" | "lg" | "xl"
+
+  "data sets"?: { xs?: string; sm?: string; md?: string; lg?: string; xl?: string }
+
   /** Age of Application */
   age: string
 }

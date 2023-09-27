@@ -1,5 +1,5 @@
 import isUrl from "is-url-superb"
-import { PureComponent } from "react"
+import { isValidElement, PureComponent } from "react"
 import {
   Button,
   Card,
@@ -10,6 +10,8 @@ import {
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
+  List,
+  ListItem,
   Truncate,
 } from "@patternfly/react-core"
 
@@ -31,7 +33,7 @@ type BaseProps = DrilldownProps
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
   protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
 
-  private description(description: ReactNode) {
+  private description(description: ReactNode | Record<string, string>) {
     if (description === true || description === false) {
       return description ? <YesIcon /> : <NoIcon />
     } else if (typeof description === "string" && isUrl(description)) {
@@ -47,12 +49,25 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
           <Truncate content={description} />
         </Button>
       )
+    } else if (description && typeof description === "object" && !isValidElement(description)) {
+      return (
+        <List isPlain isBordered>
+          {Object.entries(description).map(([key, value]) => (
+            <ListItem key={key}>{value}</ListItem>
+          ))}
+        </List>
+      )
+      return JSON.stringify(description)
     } else {
       return description
     }
   }
 
-  protected descriptionGroup(term: ReactNode, description: ReactNode, count?: number | string) {
+  protected descriptionGroup(
+    term: ReactNode,
+    description: ReactNode | Record<string, string>,
+    count?: number | string,
+  ) {
     return (
       <DescriptionListGroup key={String(term)}>
         <DescriptionListTerm>
