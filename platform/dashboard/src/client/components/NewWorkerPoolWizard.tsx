@@ -108,16 +108,19 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     return A.length === 1 ? A[0].application : ""
   }
 
-  private defaults = {
-    poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
-    count: String(1),
-    size: "xs",
-    supportsGpu: false.toString(),
-    application: this.chooseIfSingleton(this.compatibleApplications),
-    dataset:
-      this.props.datasets.length === 1
-        ? this.props.datasets[0]
-        : this.chooseDataSetIfExists(this.props.datasets, this.searchedDataSet),
+  /** Initial value for form */
+  private get defaults() {
+    return {
+      poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
+      count: String(1),
+      size: "xs",
+      supportsGpu: false.toString(),
+      application: this.chooseIfSingleton(this.compatibleApplications),
+      dataset:
+        this.props.datasets.length === 1
+          ? this.props.datasets[0]
+          : this.chooseDataSetIfExists(this.props.datasets, this.searchedDataSet),
+    }
   }
 
   public componentDidMount() {
