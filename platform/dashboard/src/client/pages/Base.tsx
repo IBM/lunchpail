@@ -139,7 +139,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
         header={this.header()}
         sidebar={this.sidebar()}
         isManagedSidebar
-        defaultManagedSidebarIsOpen={true}
+        defaultManagedSidebarIsOpen={false}
         className="codeflare--dashboard"
         data-is-dark-mode={this.useDarkMode}
       >
