@@ -42,6 +42,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       namespace: ns,
       workerpool: workerpool.name,
       applications: workerpool.applications,
+      datasets: workerpool.datasets,
       nodeClass: "md",
       supportsGpu: false,
       age: "",

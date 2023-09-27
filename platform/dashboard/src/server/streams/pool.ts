@@ -12,7 +12,7 @@ function transformLineToEvent() {
   return new Transform({
     transform(chunk: Buffer, encoding: string, callback) {
       // Splits the string by spaces
-      const [ns, workerpool, application, ready, size, nodeClass, supportsGpu, age, status] = chunk
+      const [ns, workerpool, application, dataset, ready, size, nodeClass, supportsGpu, age, status] = chunk
         .toString()
         .split(/\s+/)
 
@@ -21,6 +21,7 @@ function transformLineToEvent() {
         namespace: ns,
         workerpool,
         applications: [application],
+        datasets: [dataset],
         nodeClass,
         supportsGpu: /true/i.test(supportsGpu),
         age,

@@ -51,6 +51,9 @@ spec:
         - name: Application
           type: string
           jsonPath: .spec.application.name
+        - name: DataSet
+          type: string
+          jsonPath: .spec.dataset
         - name: Ready
           type: string
           jsonPath: ".metadata.annotations.codeflare\\.dev/ready"

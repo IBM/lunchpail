@@ -14,6 +14,9 @@ export default interface WorkerPoolStatusEvent {
   /** Applications that this WorkerPool supports */
   applications: string[]
 
+  /** DataSets that this WorkerPool supports */
+  datasets: string[]
+
   /** Machine type */
   nodeClass: string
 

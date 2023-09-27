@@ -52,6 +52,7 @@ export default class WorkerPool extends CardInGallery<Props> {
 
     return [
       this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>),
+      this.datasets && this.descriptionGroup("Task Queues", <SmallLabel>{this.datasets}</SmallLabel>),
       this.descriptionGroup(
         "Completion Rate",
         this.completionRate(),
@@ -156,6 +157,12 @@ export default class WorkerPool extends CardInGallery<Props> {
   private get applications() {
     if (this.statusHistory.length > 0) {
       return this.statusHistory[this.statusHistory.length - 1].applications
+    }
+  }
+
+  private get datasets() {
+    if (this.statusHistory.length > 0) {
+      return this.statusHistory[this.statusHistory.length - 1].datasets
     }
   }
 
