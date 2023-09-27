@@ -573,6 +573,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     // if we are not showing all applications and showing all worker pools
     return (
       !this.state?.filterState.showingAllApplications &&
+      this.state?.filterState.applications.length === 0 &&
       (this.state?.filterState.showingAllDataSets || this.state?.filterState.showingAllWorkerPools)
     )
   }
@@ -582,6 +583,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     // if we are not showing all datasets and showing all worker pools
     return (
       !this.state?.filterState.showingAllDataSets &&
+      this.state?.filterState.datasets.length === 0 &&
       (this.state?.filterState.showingAllApplications || this.state?.filterState.showingAllWorkerPools)
     )
   }
@@ -591,6 +593,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     // if we are showing all datasets and not showing all worker pools
     return (
       !this.state?.filterState.showingAllWorkerPools &&
+      this.state?.filterState.workerpools.length === 0 &&
       (this.state?.filterState.showingAllApplications || this.state?.filterState.showingAllDataSets)
     )
   }
