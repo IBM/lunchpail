@@ -8,7 +8,7 @@ import { ns } from "./misc"
 import lorem from "../util/lorem"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
-  private readonly apis = ["workqueue", "ray", "torch", "workqueue"]
+  private readonly apis = ["spark", "ray", "torch", "workqueue"]
   private readonly inputMd = ["blue", "green", "blue", "purple"]
 
   /** Model of current applications */

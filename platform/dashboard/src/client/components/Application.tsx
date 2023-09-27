@@ -8,6 +8,7 @@ export { ApplicationIcon }
 import WorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
 
 import rayImageUrl from "../images/ray.png"
+import sparkImageUrl from "../images/spark.svg"
 import pytorchImageUrl from "../images/pytorch.svg"
 
 export default class Application extends CardInGallery<ApplicationSpecEvent> {
@@ -15,6 +16,8 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
     switch (this.props.api) {
       case "ray":
         return <img src={rayImageUrl} />
+      case "spark":
+        return <img src={sparkImageUrl} />
       case "torch":
         return <img src={pytorchImageUrl} />
       case "workqueue":
