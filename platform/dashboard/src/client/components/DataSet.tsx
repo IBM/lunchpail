@@ -22,6 +22,9 @@ type Props = Pick<DataSetModel, "idx" | "label"> & {
 
   /** Latest set of Application s*/
   applications: ApplicationSpecEvent[]
+
+  /** Map DataSetModel.label to a dense index */
+  datasetIndex: Record<string, number>
 }
 
 export default class DataSet extends CardInGallery<Props> {
@@ -44,13 +47,13 @@ export default class DataSet extends CardInGallery<Props> {
   private cells(count: number, gridDataType: GridTypeData) {
     if (!count) {
       return (
-        <Queue inbox={{ [this.props.label]: 0 }} datasetIndex={{ [this.props.label]: 0 }} gridTypeData="placeholder" />
+        <Queue inbox={{ [this.props.label]: 0 }} datasetIndex={this.props.datasetIndex} gridTypeData="placeholder" />
       )
     }
     return (
       <Queue
         inbox={{ [this.props.label]: this.inboxCount }}
-        datasetIndex={{ [this.props.label]: 0 }}
+        datasetIndex={this.props.datasetIndex}
         gridTypeData={gridDataType}
       />
     )

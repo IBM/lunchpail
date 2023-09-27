@@ -415,6 +415,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
                 label={label}
                 events={events}
                 numEvents={events.length}
+                datasetIndex={this.state.datasetIndex}
                 {...this.drilldownProps()}
               />
             ),

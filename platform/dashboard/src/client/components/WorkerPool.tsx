@@ -17,6 +17,8 @@ import WorkerPoolIcon from "@patternfly/react-icons//dist/esm/icons/server-icon"
 
 interface Props {
   model: WorkerPoolModelWithHistory
+
+  /** Map DataSetModel.label to a dense index */
   datasetIndex: Record<string, number>
 
   /** This will be ordered from least recent to most recent */
