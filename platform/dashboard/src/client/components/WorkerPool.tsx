@@ -53,12 +53,12 @@ export default class WorkerPool extends CardInGallery<Props> {
     return [
       this.applications && this.descriptionGroup("Applications", <SmallLabel>{this.applications}</SmallLabel>),
       this.datasets && this.descriptionGroup("Task Queues", <SmallLabel>{this.datasets}</SmallLabel>),
+      this.descriptionGroup("Processing", /*this.underway(cells),*/ cells.length),
       this.descriptionGroup(
         "Completion Rate",
         this.completionRate(),
         meanCompletionRate(this.props.model.events) || "None",
       ),
-      this.descriptionGroup("Processing", this.underway(cells), cells.length),
       this.descriptionGroup(`Queued Work (${this.pluralize("worker", this.size)})`, this.enqueued()),
     ]
   }
