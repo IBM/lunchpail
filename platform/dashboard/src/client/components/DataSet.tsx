@@ -74,7 +74,7 @@ export default class DataSet extends CardInGallery<Props> {
 
   private unassignedChart() {
     return this.descriptionGroup(
-      "Unassigned Work over Time",
+      "Tasks over Time",
       this.inboxHistory.length === 0 ? <></> : <Sparkline data={this.inboxHistory} datasetIdx={this.props.idx} />,
     )
   }

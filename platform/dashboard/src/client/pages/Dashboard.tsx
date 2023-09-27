@@ -622,7 +622,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           <NewWorkerPoolWizard
             onClose={this.cancelNewWorkerPoolWizard}
             appMd5={this.state?.appMd5}
-            applications={this.state?.latestApplicationNames}
+            applications={this.state?.latestApplicationEvents}
             datasets={this.datasetsList}
             newpool={this.props.newpool}
             searchParams={this.props.searchParams}

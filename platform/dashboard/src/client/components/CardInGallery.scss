@@ -1,12 +1,12 @@
-$card-icon-size: 1.5em;
+$card-icon-size: 1.75em;
 
 .codeflare--card-icon {
   font-size: $card-icon-size;
+}
 
-  img {
-    height: $card-icon-size;
-    width: $card-icon-size;
-  }
+.codeflare--card-icon-image {
+  height: 1em;
+  width: 1em;
 }
 
 .codeflare--detail-view {

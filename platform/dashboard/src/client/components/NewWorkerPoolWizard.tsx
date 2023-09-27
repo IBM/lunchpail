@@ -18,10 +18,11 @@ import {
 } from "@patternfly/react-core"
 
 import { DataSetIcon } from "./DataSet"
-import { ApplicationIcon } from "./Application"
+import { applicationIcon } from "./Application"
 import { Input, NumberInput, Select } from "./Forms"
 
 import type { LocationProps } from "../router/withLocation"
+import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 
 import type NewPoolHandler from "../events/NewPoolHandler"
 
@@ -30,7 +31,7 @@ type Props = Pick<LocationProps, "searchParams"> & {
   appMd5: string
 
   /** Currently available Applications */
-  applications: string[]
+  applications: ApplicationSpecEvent[]
 
   /** Currently available DataSets */
   datasets: string[]
@@ -48,7 +49,15 @@ type State = {
 }
 
 export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
-  private chooseIfExists(available: string[], desired: null | string) {
+  private chooseAppIfExists(available: Props["applications"], desired: null | string) {
+    if (desired && available.find((_) => _.application === desired)) {
+      return desired
+    } else {
+      return ""
+    }
+  }
+
+  private chooseDataSetIfExists(available: Props["datasets"], desired: null | string) {
     if (desired && available.includes(desired)) {
       return desired
     } else {
@@ -63,12 +72,12 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     supportsGpu: false.toString(),
     application:
       this.props.applications.length === 1
-        ? this.props.applications[0]
-        : this.chooseIfExists(this.props.applications, this.props.searchParams.get("application")),
+        ? this.props.applications[0].application
+        : this.chooseAppIfExists(this.props.applications, this.props.searchParams.get("application")),
     dataset:
       this.props.datasets.length === 1
         ? this.props.datasets[0]
-        : this.chooseIfExists(this.props.datasets, this.props.searchParams.get("dataset")),
+        : this.chooseDataSetIfExists(this.props.datasets, this.props.searchParams.get("dataset")),
   }
 
   public componentDidMount() {
@@ -86,8 +95,8 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
         label="Application"
         description="Choose the Application code this pool should run"
         ctrl={ctrl}
-        options={this.props.applications}
-        icons={<ApplicationIcon />}
+        options={this.props.applications.map((_) => _.application)}
+        icons={this.props.applications.map(applicationIcon)}
       />
     )
   }

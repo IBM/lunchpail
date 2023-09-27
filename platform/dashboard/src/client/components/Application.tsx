@@ -2,29 +2,31 @@ import CardInGallery from "./CardInGallery"
 
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 
-import ApplicationIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
-export { ApplicationIcon }
-
 import WorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
+import ApplicationIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
 
 import rayImageUrl from "../images/ray.png"
 import sparkImageUrl from "../images/spark.svg"
 import pytorchImageUrl from "../images/pytorch.svg"
 
+export function applicationIcon(props: ApplicationSpecEvent) {
+  switch (props.api) {
+    case "ray":
+      return <img className="codeflare--card-icon-image" src={rayImageUrl} />
+    case "torch":
+      return <img className="codeflare--card-icon-image" src={pytorchImageUrl} />
+    case "spark":
+      return <img className="codeflare--card-icon-image" src={sparkImageUrl} />
+    case "workqueue":
+      return <WorkQueueIcon />
+    default:
+      return <ApplicationIcon />
+  }
+}
+
 export default class Application extends CardInGallery<ApplicationSpecEvent> {
   protected override icon() {
-    switch (this.props.api) {
-      case "ray":
-        return <img src={rayImageUrl} />
-      case "spark":
-        return <img src={sparkImageUrl} />
-      case "torch":
-        return <img src={pytorchImageUrl} />
-      case "workqueue":
-        return <WorkQueueIcon />
-      default:
-        return <ApplicationIcon />
-    }
+    return applicationIcon(this.props)
   }
 
   protected override label() {
