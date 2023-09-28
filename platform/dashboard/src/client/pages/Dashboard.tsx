@@ -368,12 +368,12 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
   private readonly galleryMinWidths = {
-    default: "18em",
+    default: "22em",
   }
 
   /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
   private readonly galleryMaxWidths = {
-    default: "18em",
+    default: "22em",
   }
 
   /** Render a PatternFly Gallery of the given nodes */
