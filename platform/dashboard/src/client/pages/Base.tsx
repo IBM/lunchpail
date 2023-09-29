@@ -53,7 +53,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
   }
 
   /** Redirect back to the main page */
-  protected returnHome() {
+  protected readonly returnHome = () => {
     this.props.navigate(this.props.location.pathname) // TODO search? state?
   }
 

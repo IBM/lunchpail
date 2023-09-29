@@ -1,19 +1,17 @@
-import type { ReactNode } from "react"
-
 export type DrawerState = {
   /** Selected id currently shown in Drawer */
   id: string
 
-  /** Title to display in the drawer */
-  title(): ReactNode
-
-  /** Body to display in the drawer */
-  body(): ReactNode
+  /** Selected kind currently shown in Drawer */
+  kind: string
 }
 
 export type DrilldownProps = {
   /* id of current selection */
-  currentSelection?: string
+  currentlySelectedId: DrawerState["id"] | null
+
+  /* kind of current selection */
+  currentlySelectedKind: DrawerState["kind"] | null
 
   /**
    * Set the drawer to open, unless the current drawerSelection

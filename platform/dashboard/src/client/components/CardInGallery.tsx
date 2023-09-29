@@ -1,101 +1,27 @@
-import isUrl from "is-url-superb"
-import { isValidElement, PureComponent } from "react"
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardBody,
-  CardFooter,
-  DescriptionList,
-  DescriptionListTerm,
-  DescriptionListGroup,
-  DescriptionListDescription,
-  List,
-  ListItem,
-  Truncate,
-} from "@patternfly/react-core"
+import { PureComponent } from "react"
+import { Card, CardHeader, CardTitle, CardBody, CardFooter } from "@patternfly/react-core"
 
 import type { MouseEvent, ReactNode } from "react"
+import type { LocationProps } from "../router/withLocation"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
-import SmallLabel from "./SmallLabel"
+import { dl, descriptionGroup } from "./DescriptionGroup"
 
 import type { DrilldownProps } from "../context/DrawerContext"
 
-import YesIcon from "@patternfly/react-icons//dist/esm/icons/check-icon"
-import NoIcon from "@patternfly/react-icons//dist/esm/icons/minus-icon"
-import LinkIcon from "@patternfly/react-icons/dist/esm/icons/external-link-square-alt-icon"
-
 import "./CardInGallery.scss"
 
-type BaseProps = DrilldownProps
+type BaseProps = DrilldownProps & Pick<LocationProps, "navigate">
 
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
   protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
-
-  /**
-   * Signify that there is no corresponding... something, e.g. an
-   * Application with no corresponding DataSet, or vice versa.
-   */
-  protected none() {
-    return <i>None</i>
-  }
-
-  private description(description: ReactNode | Record<string, string>) {
-    if (description === true || description === false) {
-      return description ? <YesIcon /> : <NoIcon />
-    } else if (typeof description === "string" && isUrl(description)) {
-      return (
-        <Button
-          variant="link"
-          target="_blank"
-          icon={<LinkIcon />}
-          iconPosition="right"
-          href={description}
-          component="a"
-        >
-          <Truncate content={description} />
-        </Button>
-      )
-    } else if (description && typeof description === "object" && !isValidElement(description)) {
-      if (Array.isArray(description)) {
-        return description.join(",")
-      } else {
-        const entries = Object.entries(description).filter(([, value]) => !!value)
-        if (entries.length > 0) {
-          return (
-            <List isPlain isBordered>
-              {entries.map(([key, value]) => (
-                <ListItem key={key}>{value}</ListItem>
-              ))}
-            </List>
-          )
-        }
-      }
-    } else {
-      return description
-    }
-  }
 
   protected descriptionGroup(
     term: ReactNode,
     description: ReactNode | Record<string, string>,
     count?: number | string,
   ) {
-    const desc = this.description(description)
-    if (desc != null && desc !== undefined) {
-      return (
-        <DescriptionListGroup key={String(term)}>
-          <DescriptionListTerm>
-            <SmallLabel count={count}>
-              <span className="codeflare--capitalize">{term}</span>
-            </SmallLabel>
-          </DescriptionListTerm>
-          <DescriptionListDescription>{desc}</DescriptionListDescription>
-        </DescriptionListGroup>
-      )
-    }
+    return descriptionGroup(term, description, count)
   }
 
   protected kind(): string {
@@ -119,27 +45,12 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     return this.summaryGroups()
   }
 
-  private nameGroup() {
-    return this.descriptionGroup("Name", this.label())
-  }
-
   protected actions(): undefined | CardHeaderActionsObject {
     return undefined
   }
 
-  private readonly detailTitle = () => this.kind()
-
-  private readonly detailBody = () => (
-    <DescriptionList displaySize="lg">{[this.nameGroup(), ...this.detailGroups()]}</DescriptionList>
-  )
-
-  /** An identifier that is unique across all Cards */
-  private get selectionId() {
-    return `${this.kind()}-${this.label()}`
-  }
-
   private readonly onClick = () => {
-    this.props.showDetails({ id: this.selectionId, title: this.detailTitle, body: this.detailBody })
+    this.props.showDetails({ id: this.label(), kind: this.kind() })
   }
 
   private summaryHeader() {
@@ -155,7 +66,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   }
 
   private summaryBody() {
-    return <DescriptionList>{this.summaryGroups()}</DescriptionList>
+    return dl(this.summaryGroups())
   }
 
   protected summaryFooter(): null | ReactNode {
@@ -169,7 +80,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
         isClickable
         isSelectable
         isSelectableRaised
-        isSelected={this.props.currentSelection === this.selectionId}
+        isSelected={this.props.currentlySelectedId === this.label() && this.props.currentlySelectedKind === this.kind()}
         onClick={this.onClick}
       >
         {this.summaryHeader()}

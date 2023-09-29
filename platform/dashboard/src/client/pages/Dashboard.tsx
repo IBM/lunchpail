@@ -5,9 +5,9 @@ const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default
 
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
-import Application from "../components/Application"
-import DataSet from "../components/DataSet"
-import WorkerPool from "../components/WorkerPool"
+import Application from "../components/Application/Card"
+import DataSet from "../components/DataSet/Card"
+import WorkerPool from "../components/WorkerPool/Card"
 import NewWorkerPoolCard from "../components/NewWorkerPoolCard"
 
 import type { LocationProps } from "../router/withLocation"
@@ -395,7 +395,9 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
             this.state.filterState.applications.includes(evt.application),
         )
         .sort(this.lexicoApp)
-        .map((evt) => <Application key={evt.application} {...evt} {...this.drilldownProps()} />),
+        .map((evt) => (
+          <Application key={evt.application} {...evt} {...this.drilldownProps()} navigate={this.props.navigate} />
+        )),
     )
   }
 
@@ -416,6 +418,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
                 events={events}
                 numEvents={events.length}
                 datasetIndex={this.state.datasetIndex}
+                navigate={this.props.navigate}
                 {...this.drilldownProps()}
               />
             ),
@@ -498,6 +501,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               model={w}
               datasetIndex={this.state.datasetIndex}
               statusHistory={this.state.poolEvents[w.label] || []}
+              navigate={this.props.navigate}
               {...this.drilldownProps()}
             />
           ),
@@ -608,11 +612,6 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     )
   }
 
-  /** Handler for cancelling the Create Worker Pool process */
-  private readonly cancelNewWorkerPoolWizard = () => {
-    this.returnHome()
-  }
-
   protected override modal() {
     return (
       <Suspense fallback={<Fragment />}>
@@ -622,10 +621,10 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           hasNoBodyWrapper
           isOpen={this.props.location.hash.startsWith("#newpool")}
           showClose={false}
-          onEscapePress={this.cancelNewWorkerPoolWizard}
+          onEscapePress={this.returnHome}
         >
           <NewWorkerPoolWizard
-            onClose={this.cancelNewWorkerPoolWizard}
+            onClose={this.returnHome}
             appMd5={this.state?.appMd5}
             applications={this.state?.latestApplicationEvents}
             datasets={this.datasetsList}
@@ -635,5 +634,34 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         </Modal>
       </Suspense>
     )
+  }
+
+  protected override getApplication(id: string): ApplicationSpecEvent | undefined {
+    return this.state?.latestApplicationEvents.find((_) => _.application === id)
+  }
+
+  protected override getDataSet(id: string) {
+    const events = this.state?.datasetEvents[id]
+    return !this.state || !events || events.length === 0
+      ? undefined
+      : {
+          idx: either(events[events.length - 1].idx, this.state.datasetIndex[id]),
+          applications: this.state?.latestApplicationEvents || [],
+          label: id,
+          events: events,
+          numEvents: events.length,
+          datasetIndex: this.state.datasetIndex,
+        }
+  }
+
+  protected override getWorkerPool(id: string) {
+    const model = this.latestWorkerPoolModel.find((_) => _.label === id)
+    return !this.state || !model
+      ? undefined
+      : {
+          model,
+          statusHistory: this.state.poolEvents[id] || [],
+          datasetIndex: this.state.datasetIndex,
+        }
   }
 }

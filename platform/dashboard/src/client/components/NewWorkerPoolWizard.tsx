@@ -17,8 +17,8 @@ import {
   WizardStep,
 } from "@patternfly/react-core"
 
-import { DataSetIcon } from "./DataSet"
-import { applicationIcon } from "./Application"
+import DataSetIcon from "./DataSet/Icon"
+import ApplicationIcon from "./Application/Icon"
 import { Input, NumberInput, Select } from "./Forms"
 
 import type { LocationProps } from "../router/withLocation"
@@ -139,7 +139,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
         description="Choose the Application code this pool should run"
         ctrl={ctrl}
         options={this.compatibleApplications.map((_) => _.application)}
-        icons={this.props.applications.map(applicationIcon)}
+        icons={this.props.applications.map(ApplicationIcon)}
       />
     )
   }

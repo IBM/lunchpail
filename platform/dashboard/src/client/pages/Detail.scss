@@ -1,0 +1,13 @@
+.codeflare--detail-view {
+  a {
+    /* Hmm, patternfly seems a bit buggy here with anchors inside of a "lg" DescriptionList */
+    padding-left: 0;
+    font-size: inherit;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.codeflare--capitalize {
+  text-transform: capitalize;
+}
