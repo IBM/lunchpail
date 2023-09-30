@@ -1,3 +1,4 @@
+import { datasets } from "./Card"
 import { dlWithName, descriptionGroup } from "../DescriptionGroup"
 
 import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
@@ -21,6 +22,8 @@ function detailGroups(props: ApplicationSpecEvent) {
     .map(([term, value]) =>
       term === "repo"
         ? descriptionGroup(term, repoPlusSource(props))
+        : term === "data sets"
+        ? datasets(props)
         : typeof value !== "function" && descriptionGroup(term, value),
     )
 }

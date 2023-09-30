@@ -1,9 +1,11 @@
-import type { ReactNode } from "react"
+import { Flex } from "@patternfly/react-core"
 
 import None from "../None"
 import Queue from "../Queue"
 import { descriptionGroup } from "../DescriptionGroup"
+import { linkToApplicationDetails } from "../../pages/Navigation"
 
+import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"
 
 import type Props from "./Props"
@@ -26,9 +28,12 @@ export function associatedApplications(props: LabelAndApplications) {
   })
 }
 
-function associatedApplicationsUI(props: LabelAndApplications) {
+function associatedApplicationsUI(props: Props) {
   const apps = associatedApplications(props)
-  return descriptionGroup("Associated Applications", apps.length === 0 ? None() : apps.map((_) => _.application))
+  return descriptionGroup(
+    "Associated Applications",
+    apps.length === 0 ? None() : <Flex>{apps.map(linkToApplicationDetails)}</Flex>,
+  )
 }
 
 function inboxCount(props: JustEvents) {

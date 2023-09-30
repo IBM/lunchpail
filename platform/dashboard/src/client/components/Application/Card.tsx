@@ -1,7 +1,19 @@
+import { Flex } from "@patternfly/react-core"
+
 import CardInGallery from "../CardInGallery"
+import { descriptionGroup } from "../DescriptionGroup"
+import { linkToDataSetDetails } from "../../pages/Navigation"
+
 import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 
 import ApplicationIcon from "./Icon"
+
+export function datasets(props: ApplicationSpecEvent) {
+  return (
+    props["data sets"] &&
+    descriptionGroup("Data Sets", <Flex>{Object.values(props["data sets"]).map(linkToDataSetDetails)}</Flex>)
+  )
+}
 
 export default class Application extends CardInGallery<ApplicationSpecEvent> {
   protected override icon() {
@@ -15,7 +27,7 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
   protected override groups() {
     return [
       this.descriptionGroup("api", this.props.api),
-      this.props["data sets"] && this.descriptionGroup("Data Sets", this.props["data sets"]),
+      datasets(this.props),
       this.props.description && this.descriptionGroup("Description", this.props.description),
       //this.props.supportsGpu && this.descriptionGroup("Benefits from GPU", this.props.supportsGpu),
     ]

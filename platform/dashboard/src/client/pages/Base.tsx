@@ -17,6 +17,7 @@ import {
   PageToggleButton,
 } from "@patternfly/react-core"
 
+import { navigateToHome } from "./Navigation"
 import type { LocationProps } from "../router/withLocation"
 
 import { version } from "../../../package.json"
@@ -53,9 +54,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
   }
 
   /** Redirect back to the main page */
-  protected readonly returnHome = () => {
-    this.props.navigate(this.props.location.pathname) // TODO search? state?
-  }
+  protected readonly returnHome = () => navigateToHome(this.props)
 
   protected pageTitle() {
     return "Jobs as a Service"

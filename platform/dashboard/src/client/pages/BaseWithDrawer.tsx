@@ -27,6 +27,8 @@ import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 
+import { navigateToDetails } from "./Navigation"
+
 import "./Detail.scss"
 
 export default abstract class BaseWithDrawer<
@@ -49,7 +51,7 @@ export default abstract class BaseWithDrawer<
       this.returnHome()
     } else {
       // otherwise open and show that new content in the drawer
-      this.props.navigate(`?id=${drawer.id}&kind=${drawer.kind}#detail`)
+      navigateToDetails(drawer, this.props)
     }
   }
 
