@@ -33,17 +33,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   protected abstract icon(): ReactNode
 
   /** DescriptionList groups to display in the Card summary */
-  protected abstract summaryGroups(): ReactNode[]
-
-  /**
-   * DescriptionList groups to display in the drilldown view (e.g. a
-   * Drawer UI). This defaults to show this.summaryGroups(), which is
-   * probably not what subclasses ultimately want, but helps with
-   * prototyping.
-   */
-  protected detailGroups(): ReactNode[] {
-    return this.summaryGroups()
-  }
+  protected abstract groups(): ReactNode[]
 
   protected actions(): undefined | CardHeaderActionsObject {
     return undefined
@@ -53,7 +43,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     this.props.showDetails({ id: this.label(), kind: this.kind() })
   }
 
-  private summaryHeader() {
+  private header() {
     return (
       <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
         <span className="codeflare--card-icon">{this.icon()}</span>
@@ -61,15 +51,15 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     )
   }
 
-  private summaryTitle() {
+  private title() {
     return this.label()
   }
 
-  private summaryBody() {
-    return dl(this.summaryGroups())
+  private body() {
+    return dl(this.groups())
   }
 
-  protected summaryFooter(): null | ReactNode {
+  protected footer(): null | ReactNode {
     return null
   }
 
@@ -83,10 +73,10 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
         isSelected={this.props.currentlySelectedId === this.label() && this.props.currentlySelectedKind === this.kind()}
         onClick={this.onClick}
       >
-        {this.summaryHeader()}
-        <CardTitle>{this.summaryTitle()}</CardTitle>
-        <CardBody>{this.summaryBody()}</CardBody>
-        {this.summaryFooter() && <CardFooter>{this.summaryFooter()}</CardFooter>}
+        {this.header()}
+        <CardTitle>{this.title()}</CardTitle>
+        <CardBody>{this.body()}</CardBody>
+        {this.footer() && <CardFooter>{this.footer()}</CardFooter>}
       </Card>
     )
   }

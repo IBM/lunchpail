@@ -79,7 +79,7 @@ export default class DataSet extends CardInGallery<Props> {
     )
   }
 
-  protected override summaryGroups() {
+  protected override groups() {
     return [...commonGroups(this.props) /*, this.completionRateChart()*/]
   }
 
@@ -92,7 +92,7 @@ export default class DataSet extends CardInGallery<Props> {
     </Link>
   )
 
-  protected override summaryFooter() {
+  protected override footer() {
     return (
       associatedApplications(this.props).length > 0 && (
         <Bullseye>

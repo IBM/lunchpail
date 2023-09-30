@@ -12,7 +12,7 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
     return this.props.application
   }
 
-  protected override summaryGroups() {
+  protected override groups() {
     return [
       this.descriptionGroup("api", this.props.api),
       this.props["data sets"] && this.descriptionGroup("Data Sets", this.props["data sets"]),

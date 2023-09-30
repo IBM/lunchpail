@@ -20,7 +20,7 @@ export default class WorkerPool extends CardInGallery<Props> {
     return <WorkerPoolIcon />
   }
 
-  protected override summaryGroups() {
+  protected override groups() {
     return summaryGroups(this.props)
   }
 
