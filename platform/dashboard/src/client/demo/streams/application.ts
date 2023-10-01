@@ -11,9 +11,13 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
   private readonly apis = ["spark", "ray", "torch", "workqueue"]
   private readonly inputMd = ["blue", "green", "blue", "purple"]
 
-  /** Model of current applications */
+  /**
+   * Model of current applications. Note the use of a fixed starting
+   * seed for the unique names generator. This is to give us a
+   * deterministic sequence of Application names.
+   */
   private readonly applications = this.apis.map((api, idx) => ({
-    name: uniqueNamesGenerator({ dictionaries: [animals] }),
+    name: uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + idx }),
     description: lorem.generateSentences(2),
     api,
     inputMd: this.inputMd[idx],
