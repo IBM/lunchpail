@@ -17,7 +17,7 @@ import {
   PageToggleButton,
 } from "@patternfly/react-core"
 
-import { navigateToHome } from "./Navigation"
+import navigateToHome from "../navigate/home"
 import type { LocationProps } from "../router/withLocation"
 
 import { version } from "../../../package.json"

@@ -18,16 +18,15 @@ import type { BaseState } from "./Base"
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
-
 export type BaseWithDrawerState = BaseState & { drawer?: DrawerState }
-
 import type DataSetProps from "../components/DataSet/Props"
 import type WorkerPoolProps from "../components/WorkerPool/Props"
+
 import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 
-import { navigateToDetails } from "./Navigation"
+import { navigateToDetails } from "../navigate/details"
 
 import "./Detail.scss"
 

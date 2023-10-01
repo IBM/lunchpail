@@ -2,7 +2,6 @@ import { PureComponent } from "react"
 import { Card, CardHeader, CardTitle, CardBody, CardFooter } from "@patternfly/react-core"
 
 import type { MouseEvent, ReactNode } from "react"
-import type { LocationProps } from "../router/withLocation"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import { dl, descriptionGroup } from "./DescriptionGroup"
@@ -11,7 +10,7 @@ import type { DrilldownProps } from "../context/DrawerContext"
 
 import "./CardInGallery.scss"
 
-type BaseProps = DrilldownProps & Pick<LocationProps, "navigate">
+type BaseProps = DrilldownProps
 
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
   protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()

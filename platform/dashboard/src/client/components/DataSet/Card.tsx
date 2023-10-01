@@ -1,23 +1,20 @@
-import { Link } from "react-router-dom"
-import { Bullseye, Button, Popover } from "@patternfly/react-core"
+import { Bullseye } from "@patternfly/react-core"
 
-import None from "../None"
-import Sparkline from "../Sparkline"
 import CardInGallery from "../CardInGallery"
-import { meanCompletionRate, completionRateHistory } from "../CompletionRate"
+import linkToNewPool from "../../navigate/newpool"
 
-import BaseProps from "./Props"
+import type BaseProps from "./Props"
+import type { LocationProps } from "../../router/withLocation"
+
 import { associatedApplications, commonGroups } from "./common"
-
-import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon"
-import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 
 import DataSetIcon from "./Icon"
 
-type Props = BaseProps & {
-  /** To help with keeping react re-rendering happy */
-  numEvents: number
-}
+type Props = BaseProps &
+  Omit<LocationProps, "navigate"> & {
+    /** To help with keeping react re-rendering happy */
+    numEvents: number
+  }
 
 export default class DataSet extends CardInGallery<Props> {
   protected override icon() {
@@ -28,15 +25,15 @@ export default class DataSet extends CardInGallery<Props> {
     return this.props.label
   }
 
-  private get outboxHistory() {
+  /* private get outboxHistory() {
     return this.props.events.map((_) => _.outbox)
-  }
+  } */
 
-  private get last() {
+  /* private get last() {
     return this.props.events.length === 0 ? null : this.props.events[this.props.events.length - 1]
-  }
+  } */
 
-  private zeroCompletionRate() {
+  /* private zeroCompletionRate() {
     // PopoverProps does not support onClick; we add it instead to
     // headerContent and bodyContent -- imperfect, but the best we can
     // do for now, it seems
@@ -61,50 +58,31 @@ export default class DataSet extends CardInGallery<Props> {
         </>
       </Popover>
     )
-  }
+  } */
 
-  private completionRate() {
+  /* private completionRate() {
     return this.descriptionGroup(
       "Completion Rate (mean)",
       meanCompletionRate(this.props.events) || this.zeroCompletionRate(),
     )
-  }
+  } */
 
-  private completionRateChart() {
+  /* private completionRateChart() {
     const mean = meanCompletionRate(this.props.events)
     return this.descriptionGroup(
       "Completion Rate",
       !mean ? None() : <Sparkline data={completionRateHistory(this.props.events)} />,
       mean || undefined,
     )
-  }
+  } */
 
   protected override groups() {
     return [...commonGroups(this.props) /*, this.completionRateChart()*/]
   }
 
-  private readonly processTheseTasks = (props: object) => (
-    <Link {...props} to={`?dataset=${this.label()}#newpool`}>
-      <span className="pf-v5-c-button__icon pf-m-start">
-        <RocketIcon />
-      </span>{" "}
-      Process these Tasks
-    </Link>
-  )
-
   protected override footer() {
     return (
-      associatedApplications(this.props).length > 0 && (
-        <Bullseye>
-          <Button
-            isInline
-            variant="primary"
-            size="sm"
-            onClick={this.stopPropagation}
-            component={this.processTheseTasks}
-          />
-        </Bullseye>
-      )
+      associatedApplications(this.props).length > 0 && <Bullseye>{linkToNewPool(this.label(), this.props)}</Bullseye>
     )
   }
 }

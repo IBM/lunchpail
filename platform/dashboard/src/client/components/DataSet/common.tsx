@@ -3,7 +3,7 @@ import { Flex } from "@patternfly/react-core"
 import None from "../None"
 import Queue from "../Queue"
 import { descriptionGroup } from "../DescriptionGroup"
-import { linkToApplicationDetails } from "../../pages/Navigation"
+import { linkToApplicationDetails } from "../../navigate/details"
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"

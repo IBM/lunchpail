@@ -395,9 +395,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
             this.state.filterState.applications.includes(evt.application),
         )
         .sort(this.lexicoApp)
-        .map((evt) => (
-          <Application key={evt.application} {...evt} {...this.drilldownProps()} navigate={this.props.navigate} />
-        )),
+        .map((evt) => <Application key={evt.application} {...evt} {...this.drilldownProps()} />),
     )
   }
 
@@ -418,7 +416,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
                 events={events}
                 numEvents={events.length}
                 datasetIndex={this.state.datasetIndex}
-                navigate={this.props.navigate}
+                location={this.props.location}
+                searchParams={this.props.searchParams}
                 {...this.drilldownProps()}
               />
             ),
@@ -501,7 +500,6 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               model={w}
               datasetIndex={this.state.datasetIndex}
               statusHistory={this.state.poolEvents[w.label] || []}
-              navigate={this.props.navigate}
               {...this.drilldownProps()}
             />
           ),

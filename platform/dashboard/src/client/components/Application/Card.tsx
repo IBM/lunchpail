@@ -2,7 +2,7 @@ import { Flex } from "@patternfly/react-core"
 
 import CardInGallery from "../CardInGallery"
 import { descriptionGroup } from "../DescriptionGroup"
-import { linkToDataSetDetails } from "../../pages/Navigation"
+import { linkToDataSetDetails } from "../../navigate/details"
 
 import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 

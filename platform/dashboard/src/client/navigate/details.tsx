@@ -1,15 +1,12 @@
 import { Link } from "react-router-dom"
 import { Button } from "@patternfly/react-core"
 
-import type { MouseEvent } from "react"
+import { stopPropagation } from "."
+
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 
 type Entity = { id: string; kind: string }
-
-export function navigateToHome(props: Pick<LocationProps, "location" | "navigate">) {
-  props.navigate(props.location.pathname) // TODO search? state?
-}
 
 function hrefToDetails({ id, kind }: Entity) {
   return `?id=${id}&kind=${kind}#detail`
@@ -17,10 +14,6 @@ function hrefToDetails({ id, kind }: Entity) {
 
 export function navigateToDetails(entity: Entity, props: Pick<LocationProps, "navigate">) {
   props.navigate(hrefToDetails(entity))
-}
-
-function stopPropagation(evt: MouseEvent<HTMLElement>) {
-  evt.stopPropagation()
 }
 
 export function routerToDetails(props: { "data-id": string; "data-kind": string }) {
