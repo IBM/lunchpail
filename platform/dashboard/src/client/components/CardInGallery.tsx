@@ -23,9 +23,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     return descriptionGroup(term, description, count)
   }
 
-  protected kind(): string {
-    return this.constructor.name
-  }
+  protected abstract kind(): string
 
   protected abstract label(): string
 

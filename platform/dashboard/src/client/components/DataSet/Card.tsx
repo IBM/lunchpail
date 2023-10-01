@@ -17,6 +17,10 @@ type Props = BaseProps &
   }
 
 export default class DataSet extends CardInGallery<Props> {
+  protected override kind() {
+    return "DataSet"
+  }
+
   protected override icon() {
     return <DataSetIcon />
   }

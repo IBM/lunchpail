@@ -12,6 +12,10 @@ import { summaryGroups, pluralize } from "./Summary"
 import WorkerPoolIcon from "./Icon"
 
 export default class WorkerPool extends CardInGallery<Props> {
+  protected override kind() {
+    return "WorkerPool"
+  }
+
   protected override label() {
     return this.props.model.label
   }

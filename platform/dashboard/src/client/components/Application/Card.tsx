@@ -16,6 +16,10 @@ export function datasets(props: ApplicationSpecEvent) {
 }
 
 export default class Application extends CardInGallery<ApplicationSpecEvent> {
+  protected override kind() {
+    return "Application"
+  }
+
   protected override icon() {
     return <ApplicationIcon {...this.props} />
   }
