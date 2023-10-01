@@ -23,13 +23,11 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     inputMd: this.inputMd[idx],
     repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
     image: lorem.generateWords(2).replace(/\s/g, "-"),
-    file: lorem.generateWords(1).replace(/\s/g, "-"),
   }))
 
   private randomApplicationSpecEvent({
     api,
     name,
-    file,
     image,
     repoPath,
     description,
@@ -37,7 +35,6 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
   }: {
     api: string
     name: string
-    file: string
     image: string
     repoPath: string
     description: string
@@ -51,7 +48,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       api,
       image,
       repo: `https://github.com/${repoPath}`,
-      command: `python ${file}.py`,
+      command: `python ${name}.py`,
       supportsGpu: false,
       "data sets": { md: inputMd },
       age: new Date().toLocaleString(),
