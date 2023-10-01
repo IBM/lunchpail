@@ -35,6 +35,7 @@ import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 
+import names from "../names"
 import { navigateToDetails } from "../navigate/details"
 
 import "./Detail.scss"
@@ -101,7 +102,7 @@ export default abstract class BaseWithDrawer<
         <DrawerHead>
           <Breadcrumb>
             <BreadcrumbItem>Resources</BreadcrumbItem>
-            <BreadcrumbItem>{kind}</BreadcrumbItem>
+            <BreadcrumbItem>{(kind && names[kind]) || kind}</BreadcrumbItem>
           </Breadcrumb>
           <Title headingLevel="h2" size="2xl">
             {id}

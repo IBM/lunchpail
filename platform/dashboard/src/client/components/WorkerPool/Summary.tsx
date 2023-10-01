@@ -1,3 +1,4 @@
+import names from "../../names"
 import Sparkline from "../Sparkline"
 import GridLayout from "../GridLayout"
 import SmallLabel from "../SmallLabel"
@@ -54,7 +55,7 @@ export function summaryGroups(props: Props) {
 
   return [
     applications && descriptionGroup("Applications", <SmallLabel>{applications}</SmallLabel>),
-    datasets && descriptionGroup("Task Queues", <SmallLabel>{datasets}</SmallLabel>),
+    datasets && descriptionGroup(names["TaskQueues"], <SmallLabel>{datasets}</SmallLabel>),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
     descriptionGroup(`Queued Work (${pluralize("worker", size(props))})`, enqueued(props)),

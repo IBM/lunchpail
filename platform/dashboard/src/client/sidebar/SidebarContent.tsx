@@ -1,6 +1,8 @@
 import { PureComponent } from "react"
 import { PageSidebar, PageSidebarBody, TreeView } from "@patternfly/react-core"
 
+import names from "../names"
+
 import type { ReactNode } from "react"
 import type { TreeViewDataItem } from "@patternfly/react-core"
 import type { ActiveFilters } from "../context/FiltersContext"
@@ -17,9 +19,9 @@ interface Props {
 
 export default class SidebarContent extends PureComponent<Props> {
   private readonly labels = {
-    datasets: "Task Queues",
-    workerpools: "Worker Pools",
-    applications: "Applications",
+    datasets: names["DataSets"],
+    workerpools: names["WorkerPools"],
+    applications: names["Applications"],
   }
 
   private filterContent(): ReactNode {

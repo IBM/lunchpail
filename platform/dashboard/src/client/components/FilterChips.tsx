@@ -1,6 +1,7 @@
 import type { FunctionComponent } from "react"
 import { Chip, ChipGroup, Flex } from "@patternfly/react-core"
 
+import names from "../names"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 
 /**
@@ -44,9 +45,9 @@ const FilterChips: FunctionComponent<Props> = (props: Props) => {
       {(value) =>
         value && (
           <Flex>
-            {chipGroup("Task Queues", props.datasets, value.removeDataSetFromFilter)}
-            {chipGroup("Worker Pools", props.workerpools, value.removeWorkerPoolFromFilter)}
-            {chipGroup("Applications", props.applications, value.removeApplicationFromFilter)}
+            {chipGroup(names["DataSets"], props.datasets, value.removeDataSetFromFilter)}
+            {chipGroup(names["WorkerPools"], props.workerpools, value.removeWorkerPoolFromFilter)}
+            {chipGroup(names["Applications"], props.applications, value.removeApplicationFromFilter)}
           </Flex>
         )
       }

@@ -3,6 +3,7 @@ import { Fragment, ReactNode, Suspense, lazy } from "react"
 import { Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
+import names from "../names"
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
 import Application from "../components/Application/Card"
@@ -603,9 +604,9 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   protected override mainContentBody() {
     return (
       <>
-        {!this.hideDataSets && this.panel("Task Queues", this.datasets())}
-        {!this.hideWorkerPools && this.panel("Worker Pools", this.workerpools())}
-        {!this.hideApplications && this.panel("Applications", this.applications())}
+        {!this.hideDataSets && this.panel(names["DataSets"], this.datasets())}
+        {!this.hideWorkerPools && this.panel(names["WorkerPools"], this.workerpools())}
+        {!this.hideApplications && this.panel(names["Applications"], this.applications())}
       </>
     )
   }
