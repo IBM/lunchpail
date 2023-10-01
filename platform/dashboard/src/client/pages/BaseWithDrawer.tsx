@@ -88,7 +88,7 @@ export default abstract class BaseWithDrawer<
         : undefined
 
     return (
-      <DrawerPanelContent isResizable minSize="300px" className="codeflare--detail-view">
+      <DrawerPanelContent className="codeflare--detail-view">
         <DrawerHead>
           <Title headingLevel="h2" size="xl">
             {kind}
