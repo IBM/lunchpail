@@ -1,5 +1,5 @@
 import Sparkline from "../Sparkline"
-import { dlWithName, descriptionGroup } from "../DescriptionGroup"
+import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import type Props from "./Props"
 import { lastEvent, commonGroups } from "./common"
@@ -38,5 +38,5 @@ function detailGroups(props: Props) {
 }
 
 export default function DataSetDetail(props: Props | undefined) {
-  return props && dlWithName(props.label, detailGroups(props))
+  return props && dl(detailGroups(props))
 }

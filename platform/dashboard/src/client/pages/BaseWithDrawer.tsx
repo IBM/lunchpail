@@ -1,6 +1,9 @@
+import { lazy } from "react"
 import type { ReactNode } from "react"
 
 import {
+  Breadcrumb,
+  BreadcrumbItem,
   Title,
   Drawer,
   DrawerContent,
@@ -11,6 +14,12 @@ import {
   DrawerPanelBody,
   DrawerPanelContent,
 } from "@patternfly/react-core"
+
+const EmptyState = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyState })))
+const EmptyStateHeader = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateHeader })))
+const EmptyStateBody = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateBody })))
+const EmptyStateIcon = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateIcon })))
+import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
 
 import Base from "./Base"
 
@@ -90,15 +99,32 @@ export default abstract class BaseWithDrawer<
     return (
       <DrawerPanelContent className="codeflare--detail-view">
         <DrawerHead>
-          <Title headingLevel="h2" size="xl">
-            {kind}
+          <Breadcrumb>
+            <BreadcrumbItem>Resources</BreadcrumbItem>
+            <BreadcrumbItem>{kind}</BreadcrumbItem>
+          </Breadcrumb>
+          <Title headingLevel="h2" size="2xl">
+            {id}
           </Title>
           <DrawerActions>
             <DrawerCloseButton onClick={this.returnHome} />
           </DrawerActions>
         </DrawerHead>
-        <DrawerPanelBody>{body || "Not Found"}</DrawerPanelBody>
+        <DrawerPanelBody>{body ?? this.detailNotFound()}</DrawerPanelBody>
       </DrawerPanelContent>
+    )
+  }
+
+  private detailNotFound() {
+    return (
+      <EmptyState>
+        <EmptyStateHeader
+          titleText="Resource not found"
+          headingLevel="h4"
+          icon={<EmptyStateIcon icon={SearchIcon} />}
+        />
+        <EmptyStateBody>It may still be loading. Hang tight.</EmptyStateBody>
+      </EmptyState>
     )
   }
 

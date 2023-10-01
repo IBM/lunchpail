@@ -12,6 +12,7 @@ import {
 } from "@patternfly/react-core"
 
 import type { ReactNode } from "react"
+import type { DescriptionListProps } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
 
@@ -72,10 +73,10 @@ function nameGroup(name: string) {
   return descriptionGroup("Name", name)
 }
 
-export function dl(groups: ReactNode[]) {
-  return <DescriptionList displaySize="lg">{groups}</DescriptionList>
+export function dl(groups: ReactNode[], props?: DescriptionListProps) {
+  return <DescriptionList {...props}>{groups}</DescriptionList>
 }
 
-export function dlWithName(name: string, groups: ReactNode[]) {
-  return dl([nameGroup(name), ...groups])
+export function dlForName(name: string) {
+  return dl([nameGroup(name), <div />], { displaySize: "lg", isHorizontal: true, isFluid: true })
 }

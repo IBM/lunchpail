@@ -1,5 +1,5 @@
 import type Props from "./Props"
-import { dlWithName } from "../DescriptionGroup"
+import { dl } from "../DescriptionGroup"
 
 import { summaryGroups } from "./Summary"
 
@@ -9,5 +9,5 @@ function detailGroups(props: Props) {
 }
 
 export default function WorkerPoolDetail(props: Props | undefined) {
-  return props && dlWithName(props.model.label, detailGroups(props))
+  return props && dl(detailGroups(props))
 }

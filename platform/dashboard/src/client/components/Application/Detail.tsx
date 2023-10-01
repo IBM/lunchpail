@@ -1,5 +1,5 @@
 import { datasets } from "./Card"
-import { dlWithName, descriptionGroup } from "../DescriptionGroup"
+import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 
@@ -29,5 +29,5 @@ function detailGroups(props: ApplicationSpecEvent) {
 }
 
 export default function ApplicationDetail(props: ApplicationSpecEvent | undefined) {
-  return props && dlWithName(props.application, detailGroups(props))
+  return props && dl(detailGroups(props))
 }
