@@ -54,8 +54,8 @@ export function summaryGroups(props: Props) {
   const datasets = latestDataSets(props)
 
   return [
-    applications && descriptionGroup("Applications", <SmallLabel>{applications}</SmallLabel>),
-    datasets && descriptionGroup(names["TaskQueues"], <SmallLabel>{datasets}</SmallLabel>),
+    applications && descriptionGroup(names["applications"], <SmallLabel>{applications}</SmallLabel>),
+    datasets && descriptionGroup(names["datasets"], <SmallLabel>{datasets}</SmallLabel>),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
     descriptionGroup(`Queued Work (${pluralize("worker", size(props))})`, enqueued(props)),

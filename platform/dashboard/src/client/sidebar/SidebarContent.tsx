@@ -1,15 +1,17 @@
 import { PureComponent } from "react"
-import { PageSidebar, PageSidebarBody, TreeView } from "@patternfly/react-core"
+import { PageSidebar, PageSidebarBody, Nav, NavList, NavItem, TreeView } from "@patternfly/react-core"
 
 import names from "../names"
+import isShowingKind, { hash } from "../navigate/kind"
 
 import type { ReactNode } from "react"
+import type { LocationProps } from "../router/withLocation"
 import type { TreeViewDataItem } from "@patternfly/react-core"
 import type { ActiveFilters } from "../context/FiltersContext"
 
 import "./SidebarContent.scss"
 
-interface Props {
+type Props = Pick<LocationProps, "location"> & {
   appMd5: string
   applications: string[]
   datasets: string[]
@@ -19,9 +21,9 @@ interface Props {
 
 export default class SidebarContent extends PureComponent<Props> {
   private readonly labels = {
-    datasets: names["DataSets"],
-    workerpools: names["WorkerPools"],
-    applications: names["Applications"],
+    datasets: names["datasets"],
+    workerpools: names["workerpools"],
+    applications: names["applications"],
   }
 
   private filterContent(): ReactNode {
@@ -128,10 +130,27 @@ export default class SidebarContent extends PureComponent<Props> {
     return Object.keys(this.labels).map((_) => this.optionsFor(_ as keyof typeof this.labels))
   }
 
+  private nav() {
+    return (
+      <Nav>
+        <NavList>
+          {Object.entries(this.labels).map(([kindStr, item]) => {
+            const kind = kindStr as keyof typeof this.labels // typescript insufficiency
+            return (
+              <NavItem key={kind} to={hash(kind)} isActive={isShowingKind(kind, this.props)}>
+                {item}
+              </NavItem>
+            )
+          })}
+        </NavList>
+      </Nav>
+    )
+  }
+
   public render() {
     return (
       <PageSidebar className="codeflare--page-sidebar">
-        <PageSidebarBody>{this.filterContent()}</PageSidebarBody>
+        <PageSidebarBody>{this.nav()}</PageSidebarBody>
       </PageSidebar>
     )
   }

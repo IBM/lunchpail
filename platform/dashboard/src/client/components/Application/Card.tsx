@@ -12,13 +12,16 @@ import ApplicationIcon from "./Icon"
 export function datasets(props: ApplicationSpecEvent) {
   return (
     props["data sets"] &&
-    descriptionGroup(names["DataSets"], <Flex>{Object.values(props["data sets"]).map(linkToDataSetDetails)}</Flex>)
+    descriptionGroup(
+      names["datasets"],
+      <Flex>{Object.values(props["data sets"]).map((id) => linkToDataSetDetails({ id }))}</Flex>,
+    )
   )
 }
 
 export default class Application extends CardInGallery<ApplicationSpecEvent> {
   protected override kind() {
-    return "Application"
+    return "applications" as const
   }
 
   protected override icon() {

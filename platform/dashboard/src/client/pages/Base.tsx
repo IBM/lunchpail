@@ -13,6 +13,8 @@ import {
   ToolbarGroup,
   ToolbarContent,
   ToolbarItem,
+  TextContent,
+  Text,
   MastheadToggle,
   PageToggleButton,
 } from "@patternfly/react-core"
@@ -130,6 +132,12 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
   protected readonly stickyBottom = { default: "bottom" as const }
   protected readonly transparent = { backgroundColor: "transparent" as const }
 
+  /** Title content to place in the PageSection title stripe above the main body content */
+  protected abstract title(): string
+
+  /** Subtitle content to place in the PageSection title stripe above the main body content */
+  protected abstract subtitle(): ReactNode
+
   public render() {
     const chips = this.chips()
 
@@ -138,7 +146,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
         header={this.header()}
         sidebar={this.sidebar()}
         isManagedSidebar
-        defaultManagedSidebarIsOpen={false}
+        defaultManagedSidebarIsOpen={true}
         className="codeflare--dashboard"
         data-is-dark-mode={this.useDarkMode}
       >
@@ -150,7 +158,15 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
         ) : (
           <></>
         )}
+        <PageSection variant="light">
+          <TextContent>
+            <Text component="h1">{this.title()}</Text>
+            <Text component="p">{this.subtitle()}</Text>
+          </TextContent>
+        </PageSection>
+
         <PageSection padding={this.noPadding} hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
+          <Divider />
           {this.body()}
         </PageSection>
         <PageSection isFilled={false} stickyOnBreakpoint={this.stickyBottom} padding={this.noPadding}>

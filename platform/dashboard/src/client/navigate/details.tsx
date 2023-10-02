@@ -3,30 +3,40 @@ import { Button } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
+import type { Kind } from "../names"
+import type { FunctionComponent } from "react"
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 
-type Entity = { id: string; kind: string }
+type Entity = { id: string; kind: Kind }
 
-function hrefToDetails({ id, kind }: Entity) {
-  return `?id=${id}&kind=${kind}#detail`
+function href({ id, kind }: Entity, props: string | Pick<LocationProps, "location">) {
+  return `?id=${id}&kind=${kind}&view=detail${typeof props === "string" ? props : props.location.hash}`
 }
 
-export function navigateToDetails(entity: Entity, props: Pick<LocationProps, "navigate">) {
-  props.navigate(hrefToDetails(entity))
+export function isShowingDetails(props: Pick<LocationProps, "searchParams">) {
+  return props.searchParams.get("view") === "detail"
 }
 
-export function routerToDetails(props: { "data-id": string; "data-kind": string }) {
+export function navigateToDetails(entity: Entity, props: Pick<LocationProps, "navigate" | "location">) {
+  props.navigate(href(entity, props))
+}
+
+export function routerToDetails(props: { "data-id": string; "data-kind": string; "data-hash": string }) {
   const id = props["data-id"]
-  const kind = props["data-kind"]
+  const kind = props["data-kind"] as Kind
+  const hash = props["data-hash"]
+
   return (
-    <Link {...props} to={hrefToDetails({ id, kind })}>
+    <Link {...props} to={href({ id, kind }, hash)}>
       {id}
     </Link>
   )
 }
 
-export function linkToDetails(id: string, kind: string) {
+const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
+  const location = window.location // FIXME: useLocation()
+
   return (
     <Button
       key={id}
@@ -35,19 +45,20 @@ export function linkToDetails(id: string, kind: string) {
       onClick={stopPropagation}
       data-id={id}
       data-kind={kind}
+      data-hash={location.hash}
       component={routerToDetails}
     />
   )
 }
 
-export function linkToApplicationDetails({ application }: ApplicationSpecEvent) {
-  return linkToDetails(application, "Application")
+export const linkToApplicationDetails: FunctionComponent<ApplicationSpecEvent> = ({ application: id }) => {
+  return linkToDetails({ id, kind: "applications" })
 }
 
-export function linkToDataSetDetails(id: string) {
-  return linkToDetails(id, "DataSet")
+export const linkToDataSetDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
+  return linkToDetails({ id, kind: "datasets" })
 }
 
-export function linkToWorkerPoolDetails(id: string) {
-  return linkToDetails(id, "WorkerPool")
+export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
+  return linkToDetails({ id, kind: "workerpools" })
 }

@@ -1,7 +1,7 @@
 import { Bullseye } from "@patternfly/react-core"
 
 import CardInGallery from "../CardInGallery"
-import linkToNewPool from "../../navigate/newpool"
+import { linkToNewPool } from "../../navigate/newpool"
 
 import type BaseProps from "./Props"
 import type { LocationProps } from "../../router/withLocation"
@@ -18,7 +18,7 @@ type Props = BaseProps &
 
 export default class DataSet extends CardInGallery<Props> {
   protected override kind() {
-    return "DataSet"
+    return "datasets" as const
   }
 
   protected override icon() {

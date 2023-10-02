@@ -45,9 +45,9 @@ const FilterChips: FunctionComponent<Props> = (props: Props) => {
       {(value) =>
         value && (
           <Flex>
-            {chipGroup(names["DataSets"], props.datasets, value.removeDataSetFromFilter)}
-            {chipGroup(names["WorkerPools"], props.workerpools, value.removeWorkerPoolFromFilter)}
-            {chipGroup(names["Applications"], props.applications, value.removeApplicationFromFilter)}
+            {chipGroup(names["datasets"], props.datasets, value.removeDataSetFromFilter)}
+            {chipGroup(names["workerpools"], props.workerpools, value.removeWorkerPoolFromFilter)}
+            {chipGroup(names["applications"], props.applications, value.removeApplicationFromFilter)}
           </Flex>
         )
       }

@@ -13,7 +13,7 @@ import WorkerPoolIcon from "./Icon"
 
 export default class WorkerPool extends CardInGallery<Props> {
   protected override kind() {
-    return "WorkerPool"
+    return "workerpools" as const
   }
 
   protected override label() {

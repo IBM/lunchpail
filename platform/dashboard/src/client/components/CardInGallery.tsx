@@ -6,6 +6,7 @@ import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import { dl, descriptionGroup } from "./DescriptionGroup"
 
+import type { Kind } from "../names"
 import type { DrilldownProps } from "../context/DrawerContext"
 
 import "./CardInGallery.scss"
@@ -23,7 +24,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
     return descriptionGroup(term, description, count)
   }
 
-  protected abstract kind(): string
+  protected abstract kind(): Kind
 
   protected abstract label(): string
 

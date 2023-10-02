@@ -35,8 +35,9 @@ import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 
-import names from "../names"
-import { navigateToDetails } from "../navigate/details"
+import names, { Kind } from "../names"
+import { hash } from "../navigate/kind"
+import { isShowingDetails, navigateToDetails } from "../navigate/details"
 
 import "./Detail.scss"
 
@@ -81,19 +82,19 @@ export default abstract class BaseWithDrawer<
     return this.props.searchParams.get("id")
   }
 
-  private get currentlySelectedKind() {
-    return this.props.searchParams.get("kind")
+  private get currentlySelectedKind(): Kind {
+    return this.props.searchParams.get("kind") as Kind
   }
 
   private panelContent() {
     const id = this.currentlySelectedId
     const kind = this.currentlySelectedKind
     const body =
-      id !== null && kind === "Application"
+      id !== null && kind === "applications"
         ? ApplicationDetail(this.getApplication(id))
-        : id !== null && kind === "DataSet"
+        : id !== null && kind === "datasets"
         ? DataSetDetail(this.getDataSet(id))
-        : id !== null && kind === "WorkerPool"
+        : id !== null && kind === "workerpools"
         ? WorkerPoolDetail(this.getWorkerPool(id))
         : undefined
 
@@ -102,7 +103,7 @@ export default abstract class BaseWithDrawer<
         <DrawerHead>
           <Breadcrumb>
             <BreadcrumbItem>Resources</BreadcrumbItem>
-            <BreadcrumbItem>{(kind && names[kind]) || kind}</BreadcrumbItem>
+            <BreadcrumbItem to={hash(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
           </Breadcrumb>
           <Title headingLevel="h2" size="2xl">
             {id}
@@ -132,7 +133,7 @@ export default abstract class BaseWithDrawer<
   }
 
   private get isDrawerExpanded() {
-    return this.props.location.hash.startsWith("#detail")
+    return isShowingDetails(this.props)
   }
 
   protected override body() {

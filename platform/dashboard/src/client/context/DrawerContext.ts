@@ -1,9 +1,11 @@
+import type { Kind } from "../names"
+
 export type DrawerState = {
   /** Selected id currently shown in Drawer */
   id: string
 
   /** Selected kind currently shown in Drawer */
-  kind: string
+  kind: Kind
 }
 
 export type DrilldownProps = {

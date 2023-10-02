@@ -1,9 +1,11 @@
 import md5 from "md5"
 import { Fragment, ReactNode, Suspense, lazy } from "react"
-import { Gallery, Panel, PanelMain, PanelMainBody, PanelHeader, Title } from "@patternfly/react-core"
+import { Gallery } from "@patternfly/react-core"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
-import names from "../names"
+import names, { subtitles } from "../names"
+import { currentKind } from "../navigate/kind"
+import isShowingNewPool from "../navigate/newpool"
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
 import Application from "../components/Application/Card"
@@ -516,6 +518,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         applications={this.applicationsList}
         datasets={this.datasetsList}
         workerpools={Object.keys(this.state?.workerpoolIndex || {})}
+        location={this.props.location}
       />
     )
   }
@@ -558,17 +561,12 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     )
   }
 
-  private panel(title: string, body: ReactNode) {
-    return (
-      <Panel style={this.transparent}>
-        <PanelHeader>
-          <Title headingLevel="h2">{title}</Title>
-        </PanelHeader>
-        <PanelMain>
-          <PanelMainBody>{body}</PanelMainBody>
-        </PanelMain>
-      </Panel>
-    )
+  protected override title() {
+    return names[currentKind(this.props)]
+  }
+
+  protected override subtitle() {
+    return subtitles[currentKind(this.props)]
   }
 
   /** Should we *not* show the Applications panel? */
@@ -602,13 +600,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   protected override mainContentBody() {
-    return (
-      <>
-        {!this.hideDataSets && this.panel(names["DataSets"], this.datasets())}
-        {!this.hideWorkerPools && this.panel(names["WorkerPools"], this.workerpools())}
-        {!this.hideApplications && this.panel(names["Applications"], this.applications())}
-      </>
-    )
+    const kind = currentKind(this.props)
+    return kind === "applications" ? this.applications() : kind === "datasets" ? this.datasets() : this.workerpools()
   }
 
   protected override modal() {
@@ -618,7 +611,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           variant="large"
           aria-label="new-worker-pool-modal"
           hasNoBodyWrapper
-          isOpen={this.props.location.hash.startsWith("#newpool")}
+          isOpen={isShowingNewPool(this.props)}
           showClose={false}
           onEscapePress={this.returnHome}
         >
