@@ -9,6 +9,9 @@ type GridType = GridTypeData | "worker"
 type Props = {
   type?: GridType
   dataset?: number
+
+  /** Represents how many GridCells there are in a stack */
+  stackDepth: number
 }
 
 export default class GridCell extends PureComponent<Props> {
@@ -29,9 +32,13 @@ export default class GridCell extends PureComponent<Props> {
   }
 
   public render() {
-    // \u00a0 is &nbsp in unicode
     return (
-      <div className="codeflare--grid-cell" data-type={this.props.type || "plain"} data-dataset={this.props.dataset}>
+      <div
+        className="codeflare--grid-cell"
+        data-type={this.props.type || "plain"}
+        data-dataset={this.props.dataset}
+        title={this.props.stackDepth.toString()}
+      >
         {this.innerText()}
       </div>
     )
