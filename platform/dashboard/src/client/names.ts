@@ -1,6 +1,6 @@
 const names: Record<string, string> = {
-  Application: "Appliaction",
-  Applications: "Appliactions",
+  Application: "Application",
+  Applications: "Applications",
   DataSet: "Task Queue",
   DataSets: "Task Queues",
   WorkerPool: "Worker Pool",
