@@ -1,4 +1,4 @@
-import { lazy } from "react"
+import { lazy, Suspense } from "react"
 import type { ReactNode } from "react"
 
 import {
@@ -118,14 +118,16 @@ export default abstract class BaseWithDrawer<
 
   private detailNotFound() {
     return (
-      <EmptyState>
-        <EmptyStateHeader
-          titleText="Resource not found"
-          headingLevel="h4"
-          icon={<EmptyStateIcon icon={SearchIcon} />}
-        />
-        <EmptyStateBody>It may still be loading. Hang tight.</EmptyStateBody>
-      </EmptyState>
+      <Suspense fallback={<></>}>
+        <EmptyState>
+          <EmptyStateHeader
+            titleText="Resource not found"
+            headingLevel="h4"
+            icon={<EmptyStateIcon icon={SearchIcon} />}
+          />
+          <EmptyStateBody>It may still be loading. Hang tight.</EmptyStateBody>
+        </EmptyState>
+      </Suspense>
     )
   }
 
