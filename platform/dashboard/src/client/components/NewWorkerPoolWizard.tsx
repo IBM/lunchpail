@@ -37,7 +37,10 @@ type Props = Pick<LocationProps, "searchParams"> & {
   datasets: string[]
 
   /** Handler to call when this dialog closes */
-  onClose(): void
+  onSuccess(): void
+
+  /** Handler to call when this dialog closes */
+  onCancel(): void
 
   /** Handler for NewWorkerPool */
   newpool: NewPoolHandler
@@ -180,7 +183,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
         // TODO visualize this!!
       }
     }
-    this.props.onClose()
+    this.props.onSuccess()
   }
 
   private header() {
@@ -188,7 +191,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
       <WizardHeader
         title="Create Worker Pool"
         description="Configure a pool of compute resources to process a given data set."
-        onClose={this.props.onClose}
+        onClose={this.props.onCancel}
       />
     )
   }
@@ -267,7 +270,7 @@ spec:
     return (
       <FormContextProvider initialValues={this.defaults}>
         {(ctrl) => (
-          <Wizard header={this.header()} onClose={this.props.onClose}>
+          <Wizard header={this.header()} onClose={this.props.onCancel}>
             {this.step1(ctrl)}
             {/*this.step2(ctrl)*/}
             {this.review(ctrl)}

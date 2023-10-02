@@ -20,6 +20,8 @@ import {
 } from "@patternfly/react-core"
 
 import navigateToHome from "../navigate/home"
+import { navigateToWorkerPools } from "../navigate/home"
+
 import type { LocationProps } from "../router/withLocation"
 
 import { version } from "../../../package.json"
@@ -57,6 +59,9 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
 
   /** Redirect back to the main page */
   protected readonly returnHome = () => navigateToHome(this.props)
+
+  /** Redirect back to the WorkerPools section */
+  protected readonly returnToWorkerPools = () => navigateToWorkerPools(this.props)
 
   protected pageTitle() {
     return "Jobs as a Service"

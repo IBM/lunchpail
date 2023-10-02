@@ -616,7 +616,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           onEscapePress={this.returnHome}
         >
           <NewWorkerPoolWizard
-            onClose={this.returnHome}
+            onSuccess={this.returnToWorkerPools}
+            onCancel={this.returnHome}
             appMd5={this.state?.appMd5}
             applications={this.state?.latestApplicationEvents}
             datasets={this.datasetsList}
