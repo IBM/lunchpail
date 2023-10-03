@@ -16,47 +16,6 @@ $label-size: 0.5625rem;
 
 .codeflare--dashboard {
   --codeflare-cell-color-none: #d2d2d2;
-
-  &[data-theme="Paired"] {
-    --codeflare-cell-color-0: #1f78b4;
-    --codeflare-cell-color-1: #33a02c;
-    --codeflare-cell-color-2: #cab2d6;
-    --codeflare-cell-color-3: #fb9a99;
-    --codeflare-cell-color-4: #ff7f00;
-  }
-
-  &[data-theme="Dark2"] {
-    --codeflare-cell-color-0: #1b9e77;
-    --codeflare-cell-color-1: #d95f02;
-    --codeflare-cell-color-2: #7570b3;
-    --codeflare-cell-color-3: #e7298a;
-    --codeflare-cell-color-4: #66a61e;
-  }
-
-  &[data-theme="Accent"] {
-    --codeflare-cell-color-0: #386cb0;
-    --codeflare-cell-color-1: #7fc97f;
-    --codeflare-cell-color-2: #beaed4;
-    --codeflare-cell-color-3: #fdc086;
-    --codeflare-cell-color-4: #ffff99;
-  }
-
-  &,
-  &[data-theme="Set1"] {
-    --codeflare-cell-color-0: #377eb8;
-    --codeflare-cell-color-1: #4daf4a; //f781bf; //a65628;
-    --codeflare-cell-color-2: #984ea3;
-    --codeflare-cell-color-3: #ff7f00;
-    --codeflare-cell-color-4: #e41a1c;
-  }
-
-  &[data-theme="Set2"] {
-    --codeflare-cell-color-0: #8da0cb;
-    --codeflare-cell-color-1: #a6d854;
-    --codeflare-cell-color-2: #e78ac3;
-    --codeflare-cell-color-3: #fc8d62;
-    --codeflare-cell-color-4: #66c2a5;
-  }
 }
 
 .codeflare--grid-cell {
@@ -76,20 +35,70 @@ $label-size: 0.5625rem;
     /*animation: spin 4s linear infinite;*/
   }
 
-  &[data-dataset="0"] {
-    --cell-color: var(--codeflare-cell-color-0);
+  // Colors dataset 0's stacks of GridCells
+  &[data-dataset="0"][data-depth="1"] {
+    --cell-color: #084594;
   }
-  &[data-dataset="1"] {
-    --cell-color: var(--codeflare-cell-color-1);
+  &[data-dataset="0"][data-depth="10"] {
+    --cell-color: #2171b5;
   }
-  &[data-dataset="2"] {
-    --cell-color: var(--codeflare-cell-color-2);
+  &[data-dataset="0"][data-depth="100"] {
+    --cell-color: #4292c6;
   }
-  &[data-dataset="3"] {
-    --cell-color: var(--codeflare-cell-color-3);
+  &[data-dataset="0"][data-depth="1000"] {
+    --cell-color: #6baed6;
   }
-  &[data-dataset="4"] {
-    --cell-color: var(--codeflare-cell-color-3);
+  // Colors dataset 1's stacks of GridCells
+  &[data-dataset="1"][data-depth="1"] {
+    --cell-color: #4a1486;
+  }
+  &[data-dataset="1"][data-depth="10"] {
+    --cell-color: #6a51a3;
+  }
+  &[data-dataset="1"][data-depth="100"] {
+    --cell-color: #807dba;
+  }
+  &[data-dataset="1"][data-depth="1000"] {
+    --cell-color: #9e9ac8;
+  }
+  // Colors dataset 2's stacks of GridCells
+  &[data-dataset="2"][data-depth="1"] {
+    --cell-color: #005a32;
+  }
+  &[data-dataset="2"][data-depth="10"] {
+    --cell-color: #238b45;
+  }
+  &[data-dataset="2"][data-depth="100"] {
+    --cell-color: #41ab5d;
+  }
+  &[data-dataset="2"][data-depth="1000"] {
+    --cell-color: #74c476;
+  }
+  // Colors dataset 3's stacks of GridCells
+  &[data-dataset="3"][data-depth="1"] {
+    --cell-color: #8c2d04;
+  }
+  &[data-dataset="3"][data-depth="10"] {
+    --cell-color: #d94801;
+  }
+  &[data-dataset="3"][data-depth="100"] {
+    --cell-color: #f16913;
+  }
+  &[data-dataset="3"][data-depth="1000"] {
+    --cell-color: #fd8d3c;
+  }
+  // Colors dataset 4's stacks of GridCells
+  &[data-dataset="4"][data-depth="1"] {
+    --cell-color: #252525;
+  }
+  &[data-dataset="4"][data-depth="10"] {
+    --cell-color: #525252;
+  }
+  &[data-dataset="4"][data-depth="100"] {
+    --cell-color: #737373;
+  }
+  &[data-dataset="4"][data-depth="1000"] {
+    --cell-color: #969696;
   }
   &[data-type="waiting"] {
     --cell-color: #d2d2d2;

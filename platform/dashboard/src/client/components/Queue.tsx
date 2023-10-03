@@ -36,7 +36,7 @@ export default class Queue extends PureComponent<Props> {
          * a number representing US cents, so we hard-code the '$' below and divide
          * the number 'size' by 100 to get number representing the depth of a stack.
          */
-        const coinDenominations: number[] = [1, 5, 10, 50, 100, 500, 1000]
+        const coinDenominations: number[] = [1, 10, 100, 1000]
         return (
           Object.entries(gridCellStacking("$" + size / 100, coinDenominations))
             // Find the number of stacks that are being used to render 'size' GridCells by finding the non-zero values from gridCellStacking()

@@ -37,6 +37,7 @@ export default class GridCell extends PureComponent<Props> {
         className="codeflare--grid-cell"
         data-type={this.props.type || "plain"}
         data-dataset={this.props.dataset}
+        data-depth={this.props.stackDepth}
         title={this.props.stackDepth.toString()}
       >
         {this.innerText()}
