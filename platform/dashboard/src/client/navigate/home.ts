@@ -3,8 +3,8 @@ import type { LocationProps } from "../router/withLocation"
 
 function returnTo(props: LocationProps, hash = props.location.hash) {
   const returnTo = props.searchParams.get("returnTo")
-  const to = returnTo ? decodeURIComponent(returnTo).replace(/#\w+/, hash) : props.location.pathname + hash
-  props.navigate(to)
+  const to = returnTo ? decodeURIComponent(returnTo).replace(/#\w+/, "") : props.location.pathname
+  props.navigate(to + hash)
 }
 
 export default function navigateToHome(props: LocationProps) {

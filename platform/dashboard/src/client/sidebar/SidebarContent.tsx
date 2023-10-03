@@ -2,7 +2,7 @@ import { PureComponent } from "react"
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavList, NavItem } from "@patternfly/react-core"
 
 import names from "../names"
-import isShowingKind, { hash } from "../navigate/kind"
+import isShowingKind, { hashIfNeeded } from "../navigate/kind"
 
 import type { LocationProps } from "../router/withLocation"
 import type { ActiveFilters } from "../context/FiltersContext"
@@ -137,7 +137,7 @@ export default class SidebarContent extends PureComponent<Props> {
           {Object.entries(this.labels).map(([kindStr, name]) => {
             const kind = kindStr as keyof typeof this.labels // typescript insufficiency
             return (
-              <NavItem key={kind} to={hash(kind)} isActive={isShowingKind(kind, this.props)}>
+              <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind, this.props)}>
                 {name}{" "}
                 <Badge isRead style={this.marginLeft}>
                   {this.props[kind].length}

@@ -36,7 +36,7 @@ import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 
 import names, { Kind } from "../names"
-import { hash } from "../navigate/kind"
+import { hashIfNeeded } from "../navigate/kind"
 import { isShowingDetails, navigateToDetails } from "../navigate/details"
 
 import "./Detail.scss"
@@ -103,7 +103,7 @@ export default abstract class BaseWithDrawer<
         <DrawerHead>
           <Breadcrumb>
             <BreadcrumbItem>Resources</BreadcrumbItem>
-            <BreadcrumbItem to={hash(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
+            <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
           </Breadcrumb>
           <Title headingLevel="h2" size="2xl">
             {id}
