@@ -1,9 +1,7 @@
-import { Flex } from "@patternfly/react-core"
-
 import names from "../../names"
 import CardInGallery from "../CardInGallery"
 import { descriptionGroup } from "../DescriptionGroup"
-import { linkToDataSetDetails } from "../../navigate/details"
+import { linkToAllDataSetDetails } from "../../navigate/details"
 
 import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 
@@ -12,10 +10,7 @@ import ApplicationIcon from "./Icon"
 export function datasets(props: ApplicationSpecEvent) {
   return (
     props["data sets"] &&
-    descriptionGroup(
-      names["datasets"],
-      <Flex>{Object.values(props["data sets"]).map((id) => linkToDataSetDetails({ id }))}</Flex>,
-    )
+    descriptionGroup(names["datasets"], linkToAllDataSetDetails(Object.values(props["data sets"])))
   )
 }
 

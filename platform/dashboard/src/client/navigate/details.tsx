@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Button } from "@patternfly/react-core"
+import { Button, Flex } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
@@ -51,12 +51,22 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
   )
 }
 
-export const linkToApplicationDetails: FunctionComponent<ApplicationSpecEvent> = ({ application: id }) => {
+export const linkToApplicationDetails: FunctionComponent<Pick<ApplicationSpecEvent, "application">> = ({
+  application: id,
+}) => {
   return linkToDetails({ id, kind: "applications" })
+}
+
+export function linkToAllApplicationDetails(names: string[]) {
+  return <Flex>{names.map((application) => linkToApplicationDetails({ application }))}</Flex>
 }
 
 export const linkToDataSetDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
   return linkToDetails({ id, kind: "datasets" })
+}
+
+export function linkToAllDataSetDetails(names: string[]) {
+  return <Flex>{names.map((id) => linkToDataSetDetails({ id }))}</Flex>
 }
 
 export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {

@@ -1,9 +1,9 @@
 import names from "../../names"
 import Sparkline from "../Sparkline"
 import GridLayout from "../GridLayout"
-import SmallLabel from "../SmallLabel"
 import { descriptionGroup } from "../DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "../CompletionRate"
+import { linkToAllApplicationDetails, linkToAllDataSetDetails } from "../../navigate/details"
 
 import type Props from "./Props"
 
@@ -54,8 +54,8 @@ export function summaryGroups(props: Props) {
   const datasets = latestDataSets(props)
 
   return [
-    applications && descriptionGroup(names["applications"], <SmallLabel>{applications}</SmallLabel>),
-    datasets && descriptionGroup(names["datasets"], <SmallLabel>{datasets}</SmallLabel>),
+    applications && descriptionGroup(names["applications"], linkToAllApplicationDetails(applications)),
+    datasets && descriptionGroup(names["datasets"], linkToAllDataSetDetails(datasets)),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
     descriptionGroup(`Queued Work (${pluralize("worker", size(props))})`, enqueued(props)),
