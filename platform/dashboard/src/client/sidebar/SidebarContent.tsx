@@ -1,12 +1,10 @@
 import { PureComponent } from "react"
-import { PageSidebar, PageSidebarBody, Nav, NavList, NavItem, TreeView } from "@patternfly/react-core"
+import { Badge, PageSidebar, PageSidebarBody, Nav, NavList, NavItem } from "@patternfly/react-core"
 
 import names from "../names"
 import isShowingKind, { hash } from "../navigate/kind"
 
-import type { ReactNode } from "react"
 import type { LocationProps } from "../router/withLocation"
-import type { TreeViewDataItem } from "@patternfly/react-core"
 import type { ActiveFilters } from "../context/FiltersContext"
 
 import "./SidebarContent.scss"
@@ -26,7 +24,7 @@ export default class SidebarContent extends PureComponent<Props> {
     applications: names["applications"],
   }
 
-  private filterContent(): ReactNode {
+  /* private filterContent(): ReactNode {
     return (
       <TreeView data={this.options()} onCheck={this.onCheck} hasCheckboxes hasBadges hasGuides defaultAllExpanded />
     )
@@ -128,17 +126,22 @@ export default class SidebarContent extends PureComponent<Props> {
 
   private options() {
     return Object.keys(this.labels).map((_) => this.optionsFor(_ as keyof typeof this.labels))
-  }
+  }*/
+
+  private readonly marginLeft = { marginLeft: "1em" }
 
   private nav() {
     return (
       <Nav>
         <NavList>
-          {Object.entries(this.labels).map(([kindStr, item]) => {
+          {Object.entries(this.labels).map(([kindStr, name]) => {
             const kind = kindStr as keyof typeof this.labels // typescript insufficiency
             return (
               <NavItem key={kind} to={hash(kind)} isActive={isShowingKind(kind, this.props)}>
-                {item}
+                {name}{" "}
+                <Badge isRead style={this.marginLeft}>
+                  {this.props[kind].length}
+                </Badge>
               </NavItem>
             )
           })}
