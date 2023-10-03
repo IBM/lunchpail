@@ -1,9 +1,8 @@
-import { Flex } from "@patternfly/react-core"
-
 import None from "../None"
 import Queue from "../Queue"
+import names from "../../names"
 import { descriptionGroup } from "../DescriptionGroup"
-import { linkToApplicationDetails } from "../../navigate/details"
+import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "../../navigate/details"
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"
@@ -17,7 +16,7 @@ export function lastEvent(props: JustEvents) {
   return props.events.length === 0 ? null : props.events[props.events.length - 1]
 }
 
-export function associatedApplications(props: LabelAndApplications) {
+export function associatedApplicationEvents(props: LabelAndApplications) {
   const { label } = props
 
   return props.applications.filter((app) => {
@@ -28,11 +27,18 @@ export function associatedApplications(props: LabelAndApplications) {
   })
 }
 
-function associatedApplicationsUI(props: Props) {
-  const apps = associatedApplications(props)
+function associatedApplications(props: Props) {
+  const apps = associatedApplicationEvents(props)
   return descriptionGroup(
-    "Associated Applications",
-    apps.length === 0 ? None() : <Flex>{apps.map(linkToApplicationDetails)}</Flex>,
+    `Associated ${names.applications}`,
+    apps.length === 0 ? None() : linkToAllApplicationDetails(apps),
+  )
+}
+
+function associatedWorkerPools(props: Props) {
+  return descriptionGroup(
+    `Associated ${names.workerpools}`,
+    props.workerpools.length === 0 ? None() : linkToAllWorkerPoolDetails(props.workerpools),
   )
 }
 
@@ -56,5 +62,5 @@ function unassigned(props: LabelEventsDataSetIndex) {
 }
 
 export function commonGroups(props: Props): ReactNode[] {
-  return [associatedApplicationsUI(props), unassigned(props)]
+  return [associatedApplications(props), associatedWorkerPools(props), unassigned(props)]
 }

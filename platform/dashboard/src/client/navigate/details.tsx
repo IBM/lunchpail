@@ -7,6 +7,7 @@ import type { Kind } from "../names"
 import type { FunctionComponent } from "react"
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
+import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 
 type Entity = { id: string; kind: Kind }
 
@@ -57,8 +58,14 @@ export const linkToApplicationDetails: FunctionComponent<Pick<ApplicationSpecEve
   return linkToDetails({ id, kind: "applications" })
 }
 
-export function linkToAllApplicationDetails(names: string[]) {
-  return <Flex>{names.map((application) => linkToApplicationDetails({ application }))}</Flex>
+export function linkToAllApplicationDetails(applications: ApplicationSpecEvent[] | string[]) {
+  return (
+    <Flex>
+      {applications.map((application) =>
+        linkToApplicationDetails(typeof application === "string" ? { application } : application),
+      )}
+    </Flex>
+  )
 }
 
 export const linkToDataSetDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
@@ -71,4 +78,8 @@ export function linkToAllDataSetDetails(names: string[]) {
 
 export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
   return linkToDetails({ id, kind: "workerpools" })
+}
+
+export function linkToAllWorkerPoolDetails(pools: WorkerPoolStatusEvent[]) {
+  return <Flex>{pools.map((pool) => linkToWorkerPoolDetails({ id: pool.workerpool }))}</Flex>
 }

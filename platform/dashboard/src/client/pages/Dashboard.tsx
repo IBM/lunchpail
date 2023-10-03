@@ -61,6 +61,9 @@ type State = BaseWithDrawerState & {
   /** Events for Pools, indexed by WorkerPoolModel.label */
   poolEvents: Record<string, WorkerPoolStatusEvent[]>
 
+  /** Latest relationship between DataSet and WorkerPoolStatusEvent */
+  datasetToPool: Record<string, WorkerPoolStatusEvent[]>
+
   /** Latest event for each Application */
   latestApplicationEvents: ApplicationSpecEvent[]
 
@@ -143,6 +146,22 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         curState.poolEvents[poolEvent.workerpool] = []
       }
       curState.poolEvents[poolEvent.workerpool].push(poolEvent)
+
+      // keep track of the relationship between DataSet and
+      // WorkerPools that are processing that DataSet
+      poolEvent.datasets.forEach((dataset) => {
+        if (!curState.datasetToPool[dataset]) {
+          curState.datasetToPool[dataset] = []
+        }
+        // idx: index of this event's workerpool in the model for this dataset
+        const idx = curState.datasetToPool[dataset].findIndex((_) => _.workerpool === poolEvent.workerpool)
+        if (idx < 0) {
+          curState.datasetToPool[dataset].push(poolEvent)
+        } else {
+          curState.datasetToPool[dataset][idx] = poolEvent
+        }
+      })
+
       return {
         poolEvents: Object.assign(curState.poolEvents),
       }
@@ -338,6 +357,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       datasetEvents: {},
       queueEvents: {},
       poolEvents: {},
+      datasetToPool: {},
       latestApplicationEvents: [],
       datasetIndex: {},
       workerpoolIndex: {},
@@ -414,6 +434,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               <DataSet
                 key={label}
                 idx={either(events[events.length - 1].idx, idx)}
+                workerpools={this.state?.datasetToPool[label] || []}
                 applications={this.state?.latestApplicationEvents || []}
                 label={label}
                 events={events}
@@ -639,6 +660,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       ? undefined
       : {
           idx: either(events[events.length - 1].idx, this.state.datasetIndex[id]),
+          workerpools: this.state?.datasetToPool[id] || [],
           applications: this.state?.latestApplicationEvents || [],
           label: id,
           events: events,

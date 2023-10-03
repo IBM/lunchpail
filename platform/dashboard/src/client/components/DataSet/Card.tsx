@@ -6,7 +6,7 @@ import { linkToNewPool } from "../../navigate/newpool"
 import type BaseProps from "./Props"
 import type { LocationProps } from "../../router/withLocation"
 
-import { associatedApplications, commonGroups } from "./common"
+import { associatedApplicationEvents, commonGroups } from "./common"
 
 import DataSetIcon from "./Icon"
 
@@ -86,7 +86,9 @@ export default class DataSet extends CardInGallery<Props> {
 
   protected override footer() {
     return (
-      associatedApplications(this.props).length > 0 && <Bullseye>{linkToNewPool(this.label(), this.props)}</Bullseye>
+      associatedApplicationEvents(this.props).length > 0 && (
+        <Bullseye>{linkToNewPool(this.label(), this.props)}</Bullseye>
+      )
     )
   }
 }
