@@ -30,15 +30,19 @@ export function associatedApplicationEvents(props: LabelAndApplications) {
 function associatedApplications(props: Props) {
   const apps = associatedApplicationEvents(props)
   return descriptionGroup(
-    `Associated ${names.applications}`,
+    `Compatible ${names.applications}`,
     apps.length === 0 ? None() : linkToAllApplicationDetails(apps),
+    undefined,
+    "The Applications that are capable of processing tasks from this queue.",
   )
 }
 
 function associatedWorkerPools(props: Props) {
   return descriptionGroup(
-    `Associated ${names.workerpools}`,
+    `Active ${names.workerpools}`,
     props.workerpools.length === 0 ? None() : linkToAllWorkerPoolDetails(props.workerpools),
+    undefined,
+    "The Worker Pools that have been assigned to process tasks from this queue.",
   )
 }
 

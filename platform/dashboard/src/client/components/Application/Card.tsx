@@ -10,7 +10,12 @@ import ApplicationIcon from "./Icon"
 export function datasets(props: ApplicationSpecEvent) {
   return (
     props["data sets"] &&
-    descriptionGroup(names["datasets"], linkToAllDataSetDetails(Object.values(props["data sets"])))
+    descriptionGroup(
+      names["datasets"],
+      linkToAllDataSetDetails(Object.values(props["data sets"])),
+      undefined,
+      "The Task Queues this application is capable of processing, i.e. those that it is compatible with.",
+    )
   )
 }
 
@@ -29,10 +34,10 @@ export default class Application extends CardInGallery<ApplicationSpecEvent> {
 
   protected override groups() {
     return [
-      this.descriptionGroup("api", this.props.api),
+      descriptionGroup("api", this.props.api, undefined, "The API used by this Application to distribute work."),
       datasets(this.props),
-      this.props.description && this.descriptionGroup("Description", this.props.description),
-      //this.props.supportsGpu && this.descriptionGroup("Benefits from GPU", this.props.supportsGpu),
+      this.props.description && descriptionGroup("Description", this.props.description),
+      //this.props.supportsGpu && descriptionGroup("Benefits from GPU", this.props.supportsGpu),
     ]
   }
 }

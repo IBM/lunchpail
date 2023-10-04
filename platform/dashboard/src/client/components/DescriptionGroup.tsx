@@ -1,20 +1,25 @@
 import isUrl from "is-url-superb"
-import { isValidElement } from "react"
+import { isValidElement, lazy } from "react"
 import {
   Button,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
+  DescriptionListTermHelpText,
+  DescriptionListTermHelpTextButton,
   DescriptionListDescription,
   List,
   ListItem,
   Truncate,
 } from "@patternfly/react-core"
 
+const Popover = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Popover })))
+
 import type { ReactNode } from "react"
 import type { DescriptionListProps } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
+import { stopPropagation } from "../navigate"
 
 import YesIcon from "@patternfly/react-icons/dist/esm/icons/check-icon"
 import NoIcon from "@patternfly/react-icons/dist/esm/icons/minus-icon"
@@ -49,20 +54,37 @@ function dd(description: ReactNode | Record<string, string>) {
   }
 }
 
+function dt(term: ReactNode, count?: number | string, helperText?: string) {
+  const label = (
+    <SmallLabel count={count}>
+      <span className="codeflare--capitalize">{term}</span>
+    </SmallLabel>
+  )
+
+  if (!helperText) {
+    return <DescriptionListTerm>{label}</DescriptionListTerm>
+  } else {
+    return (
+      <DescriptionListTermHelpText>
+        <Popover headerContent={label} bodyContent={helperText}>
+          <DescriptionListTermHelpTextButton onClick={stopPropagation}>{label}</DescriptionListTermHelpTextButton>
+        </Popover>
+      </DescriptionListTermHelpText>
+    )
+  }
+}
+
 export function descriptionGroup(
   term: ReactNode,
   description: ReactNode | Record<string, string>,
   count?: number | string,
+  helperText?: string,
 ) {
   const desc = dd(description)
   if (desc != null && desc !== undefined) {
     return (
       <DescriptionListGroup key={String(term)}>
-        <DescriptionListTerm>
-          <SmallLabel count={count}>
-            <span className="codeflare--capitalize">{term}</span>
-          </SmallLabel>
-        </DescriptionListTerm>
+        {dt(term, count, helperText)}
         <DescriptionListDescription>{desc}</DescriptionListDescription>
       </DescriptionListGroup>
     )

@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardBody, CardFooter } from "@patternfly/r
 import type { MouseEvent, ReactNode } from "react"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
-import { dl, descriptionGroup } from "./DescriptionGroup"
+import { dl } from "./DescriptionGroup"
 
 import type { Kind } from "../names"
 import type { DrilldownProps } from "../context/DrawerContext"
@@ -15,14 +15,6 @@ type BaseProps = DrilldownProps
 
 export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
   protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
-
-  protected descriptionGroup(
-    term: ReactNode,
-    description: ReactNode | Record<string, string>,
-    count?: number | string,
-  ) {
-    return descriptionGroup(term, description, count)
-  }
 
   protected abstract kind(): Kind
 
