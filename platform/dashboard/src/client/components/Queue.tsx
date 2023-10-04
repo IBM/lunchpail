@@ -40,14 +40,13 @@ export default class Queue extends PureComponent<Props> {
         // the number of such coins ('value'). Currently,
         // gridCellStacking() requires that the first paramter be a
         // currency, so we add the '$' prefix
-        //
         return (
           Object.entries(gridCellStacking("$" + size, this.coinDenominations))
+            .reverse()
             // Find the number of stacks that are being used to render 'size' GridCells by finding the non-zero values from gridCellStacking()
             .filter(([, numStacks]) => numStacks > 0)
             .map(([stackDepth, numStacks]) =>
               // Finally, render 'numStacks' stacks of GridCells. 'stackDepth' represents how many GridCells there are in that stack.
-              // TODO: denote a stack changed depth via darker color change in the next PR
               Array(numStacks)
                 .fill(0)
                 .map((_, idx) => this.cell(cellType, dataset, idx, parseInt(stackDepth, 10) / 100)),
