@@ -1,3 +1,4 @@
+import None from "../None"
 import names from "../../names"
 import CardInGallery from "../CardInGallery"
 import { descriptionGroup } from "../DescriptionGroup"
@@ -8,14 +9,14 @@ import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 import ApplicationIcon from "./Icon"
 
 export function datasets(props: ApplicationSpecEvent) {
-  return (
-    props["data sets"] &&
-    descriptionGroup(
-      names["datasets"],
-      linkToAllDataSetDetails(Object.values(props["data sets"])),
-      undefined,
-      "The Task Queues this application is capable of processing, i.e. those that it is compatible with.",
-    )
+  const datasets = props["data sets"]
+  const datasetNames = !datasets ? [] : Object.values(datasets).filter(Boolean)
+
+  return descriptionGroup(
+    names["datasets"],
+    datasetNames.length === 0 ? None() : linkToAllDataSetDetails(datasetNames),
+    undefined,
+    "The Task Queues this application is capable of processing, i.e. those that it is compatible with.",
   )
 }
 
