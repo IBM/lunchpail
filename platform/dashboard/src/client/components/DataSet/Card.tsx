@@ -6,7 +6,7 @@ import { linkToNewPool } from "../../navigate/newpool"
 import type BaseProps from "./Props"
 import type { LocationProps } from "../../router/withLocation"
 
-import { associatedApplicationEvents, commonGroups } from "./common"
+import { commonGroups, numAssociatedApplicationEvents, numAssociatedWorkerPools } from "./common"
 
 import DataSetIcon from "./Icon"
 
@@ -22,11 +22,15 @@ export default class DataSet extends CardInGallery<Props> {
   }
 
   protected override icon() {
-    return <DataSetIcon />
+    return <DataSetIcon className={this.hasAssignedWorkers ? "codeflare--active" : ""} />
   }
 
   protected override label() {
     return this.props.label
+  }
+
+  private get hasAssignedWorkers() {
+    return numAssociatedWorkerPools(this.props) > 0
   }
 
   /* private get outboxHistory() {
@@ -86,8 +90,8 @@ export default class DataSet extends CardInGallery<Props> {
 
   protected override footer() {
     return (
-      associatedApplicationEvents(this.props).length > 0 && (
-        <Bullseye>{linkToNewPool(this.label(), this.props)}</Bullseye>
+      numAssociatedApplicationEvents(this.props) > 0 && (
+        <Bullseye>{linkToNewPool(this.label(), this.props, this.hasAssignedWorkers ? "add" : "start")}</Bullseye>
       )
     )
   }

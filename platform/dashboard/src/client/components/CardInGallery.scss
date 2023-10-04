@@ -2,6 +2,10 @@ $card-icon-size: 1.75em;
 
 .codeflare--card-icon {
   font-size: $card-icon-size;
+
+  .codeflare--active {
+    fill: var(--pf-v5-global--primary-color--100);
+  }
 }
 
 .codeflare--card-icon-image {

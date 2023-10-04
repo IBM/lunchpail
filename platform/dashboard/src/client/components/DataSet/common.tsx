@@ -6,6 +6,7 @@ import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "../../n
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"
+import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">
@@ -16,15 +17,21 @@ export function lastEvent(props: JustEvents) {
   return props.events.length === 0 ? null : props.events[props.events.length - 1]
 }
 
-export function associatedApplicationEvents(props: LabelAndApplications) {
-  const { label } = props
+function associatedApplicationsFilter(this: LabelAndApplications, app: ApplicationSpecEvent) {
+  const { label } = this
+  if (app["data sets"]) {
+    const { xs, sm, md, lg, xl } = app["data sets"]
+    return xs === label || sm === label || md === label || lg === label || xl === label
+  }
+}
 
-  return props.applications.filter((app) => {
-    if (app["data sets"]) {
-      const { xs, sm, md, lg, xl } = app["data sets"]
-      return xs === label || sm === label || md === label || lg === label || xl === label
-    }
-  })
+export function numAssociatedApplicationEvents(props: LabelAndApplications) {
+  const filter = associatedApplicationsFilter.bind(props)
+  return props.applications.reduce((N, app) => (filter(app) ? N + 1 : N), 0)
+}
+
+export function associatedApplicationEvents(props: LabelAndApplications) {
+  return props.applications.filter(associatedApplicationsFilter.bind(props))
 }
 
 function associatedApplications(props: Props) {
@@ -44,6 +51,10 @@ function associatedWorkerPools(props: Props) {
     undefined,
     "The Worker Pools that have been assigned to process tasks from this queue.",
   )
+}
+
+export function numAssociatedWorkerPools(props: Props) {
+  return props.workerpools.length
 }
 
 function inboxCount(props: JustEvents) {
