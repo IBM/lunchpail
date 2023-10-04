@@ -36,7 +36,7 @@ function dd(description: ReactNode | Record<string, string>) {
     )
   } else if (description && typeof description === "object" && !isValidElement(description)) {
     if (Array.isArray(description)) {
-      return description.join(",")
+      return description.flatMap((item, idx) => [idx > 0 ? ", " : "", item])
     } else {
       const entries = Object.entries(description).filter(([, value]) => !!value)
       if (entries.length > 0) {

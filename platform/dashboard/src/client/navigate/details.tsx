@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Button, Flex } from "@patternfly/react-core"
+import { Button } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
@@ -59,12 +59,8 @@ export const linkToApplicationDetails: FunctionComponent<Pick<ApplicationSpecEve
 }
 
 export function linkToAllApplicationDetails(applications: ApplicationSpecEvent[] | string[]) {
-  return (
-    <Flex>
-      {applications.map((application) =>
-        linkToApplicationDetails(typeof application === "string" ? { application } : application),
-      )}
-    </Flex>
+  return applications.map((application) =>
+    linkToApplicationDetails(typeof application === "string" ? { application } : application),
   )
 }
 
@@ -73,7 +69,7 @@ export const linkToDataSetDetails: FunctionComponent<Pick<Entity, "id">> = ({ id
 }
 
 export function linkToAllDataSetDetails(names: string[]) {
-  return <Flex>{names.map((id) => linkToDataSetDetails({ id }))}</Flex>
+  return names.map((id) => linkToDataSetDetails({ id }))
 }
 
 export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
@@ -81,5 +77,5 @@ export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({
 }
 
 export function linkToAllWorkerPoolDetails(pools: WorkerPoolStatusEvent[]) {
-  return <Flex>{pools.map((pool) => linkToWorkerPoolDetails({ id: pool.workerpool }))}</Flex>
+  return pools.map((pool) => linkToWorkerPoolDetails({ id: pool.workerpool }))
 }
