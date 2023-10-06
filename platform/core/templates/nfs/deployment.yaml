@@ -16,6 +16,10 @@ spec:
         app.kubernetes.io/component: nfs
     spec:
       terminationGracePeriodSeconds: 0
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
       containers:
       - name: nfs-server
         image: k8s.gcr.io/volume-nfs:0.8
@@ -33,5 +37,7 @@ spec:
         - name: rpcbind
           containerPort: 111
         securityContext:
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME", "SYS_ADMIN", "CAP_DAC_READ_SEARCH"]
           privileged: true
 {{- end }}

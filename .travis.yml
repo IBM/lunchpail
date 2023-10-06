@@ -1,7 +1,3 @@
-# we need ubuntu 22.04 for podman v4
-group: beta
-dist: jammy
-
 language: bash
 
 services:

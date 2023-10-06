@@ -35,23 +35,30 @@ function apt_update {
     fi
 }
 
-function get_docker {
-    if ! which docker >& /dev/null; then
-        echo "$(tput setaf 2)Installing docker$(tput sgr0)"
-        apt_update
-        sudo DEBIAN_FRONTEND=noninteractive apt -y install apt-transport-https ca-certificates curl software-properties-common
-        sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt update
+function check_podman {
+    if which podman
+    then
+        export KIND_EXPERIMENTAL_PROVIDER=podman
+        export DOCKER=podman
 
-        apt-cache policy docker-ce
-        sudo DEBIAN_FRONTEND=noninteractive apt -y install docker-ce
+        if test $(podman machine list --noheading | wc -l) = 0
+        then
+            echo "$(tput setaf 2)Creating podman machine$(tput sgr0)" 1>&2
+            podman machine init --rootful --memory 8192 --now
+        fi
+    else
+        echo "$(tput setaf 2)Using docker$(tput sgr0)"
+        export DOCKER=docker
+    fi
 
-        if [[ $USER != root ]]; then
-            sudo usermod -aG docker ${USER}
-            su - ${USER}
-            groups | grep docker
+    if [[ $DOCKER = podman ]]
+    then
+        if ! podman machine inspect | grep -i rootful
+        then podman machine set --rootful
+        fi
+
+        if ! podman machine inspect | grep State | grep running
+        then podman machine start
         fi
     fi
 }
@@ -165,7 +172,7 @@ function update_helm_dependencies {
 get_minio_client
 get_kubectl
 get_helm
-get_docker
+check_podman
 
 if [[ -z "$CODEFLARE_PREP_INIT" ]]; then
     # allows us to do some docker builds in parallel with these expensive steps

@@ -10,7 +10,7 @@ import { Transform } from "stream"
 export default function filterOutMissingCRDs() {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
-      if (chunk.indexOf("error: the server doesn't have a resource type") < 0) {
+      if (chunk.indexOf("error: the server doesn't have a resource type") < 0 && chunk.indexOf("refused") < 0) {
         callback(null, chunk)
       } else {
         callback(null, "")

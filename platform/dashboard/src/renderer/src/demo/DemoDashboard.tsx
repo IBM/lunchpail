@@ -73,6 +73,8 @@ export default function DemoDashboard() {
         async status() {
           return {
             location: "demo",
+            podmanCli: true,
+            podmanMachine: true,
             cluster: true,
             runtime: true,
             examples: false,

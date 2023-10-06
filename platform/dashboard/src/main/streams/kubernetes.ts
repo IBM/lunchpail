@@ -38,6 +38,7 @@ export default function startStreamForKind(kind: string, { withTimestamp = false
     const lineSplitter = split2()
 
     child.stderr.pipe(errorFilter).pipe(process.stderr)
+    child.once("error", (err) => console.error(err))
 
     return child.stdout
       .pipe(lineSplitter)

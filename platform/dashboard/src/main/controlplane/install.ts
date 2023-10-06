@@ -69,6 +69,6 @@ async function applyAll(_config: Config, props: ApplyProps) {
  * plane with the given `config`.
  */
 export default async function manageControlPlane(config: Config, action: Action) {
-  const { kubeconfig } = await createKindClusterIfNeeded()
+  const { kubeconfig } = await createKindClusterIfNeeded(action)
   await applyAll(config, { kubeconfig, action })
 }
