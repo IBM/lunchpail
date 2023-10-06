@@ -1,4 +1,5 @@
 import { PureComponent } from "react"
+import { Tooltip } from "@patternfly/react-core"
 import SpinnerIcon from "@patternfly/react-icons/dist/esm/icons/spinner2-icon"
 
 import "./GridCell.scss"
@@ -33,15 +34,20 @@ export default class GridCell extends PureComponent<Props> {
 
   public render() {
     return (
-      <div
-        className="codeflare--grid-cell"
-        data-type={this.props.type || "plain"}
-        data-dataset={this.props.dataset}
-        data-depth={this.props.stackDepth}
-        title={this.props.stackDepth.toString()}
+      <Tooltip
+        content={`This cell represents ${this.props.stackDepth.toString()} ${
+          this.props.stackDepth === 1 ? "task" : "tasks"
+        }.`}
       >
-        {this.innerText()}
-      </div>
+        <div
+          className="codeflare--grid-cell"
+          data-type={this.props.type || "plain"}
+          data-dataset={this.props.dataset}
+          data-depth={this.props.stackDepth}
+        >
+          {this.innerText()}
+        </div>
+      </Tooltip>
     )
   }
 }
