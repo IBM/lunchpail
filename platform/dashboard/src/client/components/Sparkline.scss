@@ -1,3 +1,6 @@
+@use "sass:map";
+@import "./colors";
+
 .codeflare--sparkline {
   circle {
     fill: transparent !important;
@@ -22,31 +25,22 @@
     }
   }
 
-  &[data-dataset="0"] {
-    rect,
-    polyline {
-      stroke: var(--codeflare-cell-color-0) !important;
-      fill: var(--codeflare-cell-color-0) !important;
-    }
-  }
-
-  &[data-dataset="1"] {
-    rect,
-    polyline {
-      stroke: var(--codeflare-cell-color-1) !important;
-      fill: var(--codeflare-cell-color-1) !important;
-    }
-  }
-
-  &[data-dataset="2"] polyline {
-    stroke: var(--codeflare-cell-color-2) !important;
-    fill: var(--codeflare-cell-color-2) !important;
-  }
-
   rect,
   polyline {
     fill-opacity: 0.375;
     stroke: var(--codeflare-cell-color-none) !important;
     fill: var(--codeflare-cell-color-none) !important;
+  }
+
+  @for $idx from 1 through length($cell-colors) {
+    $colormap: nth($cell-colors, $idx);
+    $color: map.get($colormap, 1000);
+    &[data-dataset="#{$idx - 1}"] {
+      rect,
+      polyline {
+        stroke: $color !important;
+        fill: $color !important;
+      }
+    }
   }
 }

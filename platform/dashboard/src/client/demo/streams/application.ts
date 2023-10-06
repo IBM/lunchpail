@@ -6,10 +6,11 @@ import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
 import Base from "./base"
 import { ns } from "./misc"
 import lorem from "../util/lorem"
+import { colors } from "./dataset"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
   private readonly apis = ["spark", "ray", "torch", "workqueue"]
-  private readonly inputMd = ["blue", "green", "blue", "purple"]
+  private readonly inputMd = [colors[0], colors[1], colors[0], colors[2]]
 
   /**
    * Model of current applications. Note the use of a fixed starting

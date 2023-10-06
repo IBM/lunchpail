@@ -1,3 +1,5 @@
+@import "./colors";
+
 $size: 1rem;
 $label-size: 0.5625rem;
 
@@ -18,6 +20,15 @@ $label-size: 0.5625rem;
   --codeflare-cell-color-none: #d2d2d2;
 }
 
+@for $idx from 1 through length($cell-colors) {
+  $colormap: nth($cell-colors, $idx);
+  @each $depth, $color in $colormap {
+    .codeflare--grid-cell[data-dataset="#{$idx - 1}"][data-depth="#{$depth}"] {
+      background-color: $color;
+    }
+  }
+}
+
 .codeflare--grid-cell {
   width: $size;
   height: $size;
@@ -35,76 +46,8 @@ $label-size: 0.5625rem;
     /*animation: spin 4s linear infinite;*/
   }
 
-  // Colors dataset 0's stacks of GridCells
-  &[data-dataset="0"][data-depth="1000"] {
-    --cell-color: #08519c;
-  }
-  &[data-dataset="0"][data-depth="100"] {
-    --cell-color: #4292c6;
-  }
-  &[data-dataset="0"][data-depth="10"] {
-    --cell-color: #9ecae1;
-  }
-  &[data-dataset="0"][data-depth="1"] {
-    --cell-color: #deebf7;
-  }
-  // Colors dataset 1's stacks of GridCells
-  &[data-dataset="1"][data-depth="1000"] {
-    --cell-color: #006d2c;
-  }
-  &[data-dataset="1"][data-depth="100"] {
-    --cell-color: #41ab5d;
-  }
-  &[data-dataset="1"][data-depth="10"] {
-    --cell-color: #a1d99b;
-  }
-  &[data-dataset="1"][data-depth="1"] {
-    --cell-color: #e5f5e0;
-  }
-  // Colors dataset 2's stacks of GridCells
-  &[data-dataset="2"][data-depth="1000"] {
-    --cell-color: #54278f;
-  }
-  &[data-dataset="2"][data-depth="100"] {
-    --cell-color: #807dba;
-  }
-  &[data-dataset="2"][data-depth="10"] {
-    --cell-color: #bcbddc;
-  }
-  &[data-dataset="2"][data-depth="1"] {
-    --cell-color: #efedf5;
-  }
-  // Colors dataset 3's stacks of GridCells
-  &[data-dataset="3"][data-depth="1000"] {
-    --cell-color: #a63603;
-  }
-  &[data-dataset="3"][data-depth="100"] {
-    --cell-color: #f16913;
-  }
-  &[data-dataset="3"][data-depth="10"] {
-    --cell-color: #fdae6b;
-  }
-  &[data-dataset="3"][data-depth="1"] {
-    --cell-color: #fee6ce;
-  }
-  // Colors dataset 4's stacks of GridCells
-  &[data-dataset="4"][data-depth="1000"] {
-    --cell-color: #7a0177;
-  }
-  &[data-dataset="4"][data-depth="100"] {
-    --cell-color: #dd3497;
-  }
-  &[data-dataset="4"][data-depth="10"] {
-    --cell-color: #fa9fb5;
-  }
-  &[data-dataset="4"][data-depth="1"] {
-    --cell-color: #fde0dd;
-  }
-  &[data-type="waiting"] {
-    --cell-color: #d2d2d2;
-  }
   &[data-type="placeholder"] {
-    --cell-color: transparent;
+    background-color: transparent;
 
     &,
     &:hover {
@@ -127,10 +70,6 @@ $label-size: 0.5625rem;
     &:after {
       transform: rotate(-45deg);
     }
-  }
-
-  & {
-    background-color: var(--cell-color);
   }
 
   &[data-type="inbox"],

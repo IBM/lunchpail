@@ -1,0 +1,43 @@
+/**
+ * This is an array of maps. The outer array will be indexed by
+ * `[data-dataset]`, and the inner map will be indexed by the `depth`
+ * of a grid cell.
+ */
+$cell-colors: (
+  (
+    1000: #7a0177,
+    100: #dd3497,
+    10: #fa9fb5,
+    1: #fcc5c0,
+  ),
+  (
+    1000: #006837,
+    100: #41ab5d,
+    10: #addd8e,
+    1: #d9f0a3,
+  ),
+  (
+    1000: #810f7c,
+    100: #8c6bb1,
+    10: #9ebcda,
+    1: #bfd3e6,
+  ),
+  (
+    1000: #08519c,
+    100: #4292c6,
+    10: #9ecae1,
+    1: #c6dbef,
+  ),
+  (
+    1000: #a63603,
+    100: #f16913,
+    10: #fdae6b,
+    1: #fdd0a2,
+  ),
+  (
+    1000: #016c59,
+    100: #3690c0,
+    10: #a6bddb,
+    1: #d0d1e6,
+  )
+);
