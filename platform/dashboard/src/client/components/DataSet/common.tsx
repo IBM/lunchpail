@@ -59,7 +59,7 @@ export function numAssociatedWorkerPools(props: Props) {
 
 function inboxCount(props: JustEvents) {
   const last = lastEvent(props)
-  return last ? last.inbox : 0
+  return last?.inbox ?? 0
 }
 
 function cells(count: number, gridDataType: GridTypeData, props: LabelEventsDataSetIndex) {
@@ -73,7 +73,7 @@ function cells(count: number, gridDataType: GridTypeData, props: LabelEventsData
 
 function unassigned(props: LabelEventsDataSetIndex) {
   const count = inboxCount(props)
-  return descriptionGroup("Tasks", cells(count, "unassigned", props), count)
+  return descriptionGroup("Tasks", count === 0 ? None() : cells(count, "unassigned", props), count)
 }
 
 export function commonGroups(props: Props): ReactNode[] {
