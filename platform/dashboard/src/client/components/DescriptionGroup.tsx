@@ -25,12 +25,33 @@ import YesIcon from "@patternfly/react-icons/dist/esm/icons/check-icon"
 import NoIcon from "@patternfly/react-icons/dist/esm/icons/minus-icon"
 import LinkIcon from "@patternfly/react-icons/dist/esm/icons/external-link-square-alt-icon"
 
+const imageRepoUrlPattern = /^ghcr\.io/
+function isImageRepoUrl(str: string) {
+  return imageRepoUrlPattern.test(str)
+}
+
+const httpPattern = /^https?:/
+function httpsIfNeeded(url: string) {
+  if (!httpPattern.test(url)) {
+    return "https://" + url
+  } else {
+    return url
+  }
+}
+
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false) {
     return description ? <YesIcon /> : <NoIcon />
-  } else if (typeof description === "string" && isUrl(description)) {
+  } else if (typeof description === "string" && (isUrl(description) || isImageRepoUrl(description))) {
     return (
-      <Button variant="link" target="_blank" icon={<LinkIcon />} iconPosition="right" href={description} component="a">
+      <Button
+        variant="link"
+        target="_blank"
+        icon={<LinkIcon />}
+        iconPosition="right"
+        href={httpsIfNeeded(description)}
+        component="a"
+      >
         <Truncate content={description} />
       </Button>
     )
