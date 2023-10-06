@@ -39,7 +39,7 @@ function associatedApplications(props: Props) {
   return descriptionGroup(
     `Compatible ${names.applications}`,
     apps.length === 0 ? None() : linkToAllApplicationDetails(apps),
-    undefined,
+    apps.length,
     "The Applications that are capable of processing tasks from this queue.",
   )
 }
@@ -48,7 +48,7 @@ function associatedWorkerPools(props: Props) {
   return descriptionGroup(
     `Active ${names.workerpools}`,
     props.workerpools.length === 0 ? None() : linkToAllWorkerPoolDetails(props.workerpools),
-    undefined,
+    props.workerpools.length,
     "The Worker Pools that have been assigned to process tasks from this queue.",
   )
 }
