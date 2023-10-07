@@ -8,8 +8,16 @@ import type { LocationProps } from "../router/withLocation"
 import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-function href(dataset: string, returnTo: string) {
-  return `?dataset=${dataset}&returnTo=${returnTo}&view=newpool`
+type StartOrAdd = "start" | "add" | "create"
+
+function href(dataset?: string, returnTo?: string, hash?: string) {
+  const queries = [
+    "view=newpool",
+    dataset ? `dataset=${dataset}` : undefined,
+    returnTo ? `returnTo=${returnTo}` : undefined,
+  ].filter(Boolean)
+
+  return "?" + queries.join("&") + (hash ?? "")
 }
 
 export default function isShowingNewPool(props: Pick<LocationProps, "searchParams">) {
@@ -17,18 +25,23 @@ export default function isShowingNewPool(props: Pick<LocationProps, "searchParam
 }
 
 function routerToNewPool(props: {
+  "data-hash": string
   "data-dataset": string
   "data-return-to": string
-  "data-start-or-add": "start" | "add"
+  "data-start-or-add": StartOrAdd
 }) {
+  const hash = props["data-hash"]
   const dataset = props["data-dataset"]
   const returnTo = props["data-return-to"]
-  const start = props["data-start-or-add"] === "start"
+  const start = props["data-start-or-add"]
+
+  const icon = start === "start" ? <RocketIcon /> : <PlusCircleIcon />
+  const linkText =
+    start === "start" ? "Process these Tasks" : start === "add" ? "Add a Worker Pool" : "Create Worker Pool"
 
   return (
-    <Link {...props} to={href(dataset, returnTo)}>
-      <span className="pf-v5-c-button__icon pf-m-start">{start ? <RocketIcon /> : <PlusCircleIcon />}</span>{" "}
-      {start ? "Process these Tasks" : "Add a Worker Pool"}
+    <Link {...props} to={href(dataset, returnTo, hash)}>
+      <span className="pf-v5-c-button__icon pf-m-start">{icon}</span> {linkText}
     </Link>
   )
 }
@@ -41,20 +54,23 @@ function routerToNewPool(props: {
  * resources.
  */
 export function linkToNewPool(
-  dataset: string,
-  props: Omit<LocationProps, "navigate">,
-  startOrAdd: "start" | "add" = "start",
+  dataset: string | undefined,
+  { location, searchParams }: Omit<LocationProps, "navigate">,
+  startOrAdd: StartOrAdd = "start",
+  buttonProps?: import("@patternfly/react-core").ButtonProps,
 ) {
-  const currentHash = props.location.hash
-  const currentSearch = props.searchParams
-  const returnTo = encodeURIComponent(`?${currentSearch}${currentHash}`)
+  const currentHash = location.hash
+  const currentSearch = searchParams
+  const returnTo = encodeURIComponent(`?${currentSearch}`)
 
   return (
     <Button
+      {...buttonProps}
       size="sm"
       onClick={stopPropagation}
       data-dataset={dataset}
       data-start-or-add={startOrAdd}
+      data-hash={currentHash}
       data-return-to={returnTo}
       component={routerToNewPool}
     />

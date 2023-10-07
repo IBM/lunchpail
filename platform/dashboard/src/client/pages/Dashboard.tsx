@@ -513,7 +513,11 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   private workerpools() {
     return this.gallery([
-      <NewWorkerPoolCard key="new-worker-pool-card" />,
+      <NewWorkerPoolCard
+        key="new-worker-pool-card"
+        location={this.props.location}
+        searchParams={this.props.searchParams}
+      />,
       ...this.latestWorkerPoolModel.map(
         (w) =>
           (!this.state?.filterState.workerpools.length ||

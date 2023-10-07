@@ -1,9 +1,6 @@
-import { Link } from "react-router-dom"
-
 import {
   Card,
   Bullseye,
-  Button,
   EmptyState,
   EmptyStateBody,
   EmptyStateHeader,
@@ -12,24 +9,16 @@ import {
   EmptyStateActions,
 } from "@patternfly/react-core"
 
+import type { LocationProps } from "../../../router/withLocation"
+import { linkToNewPool } from "../../../navigate/newpool"
+
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-function createWorkerPool(props: object) {
-  return (
-    <Link {...props} to="#newpool">
-      <span className="pf-v5-c-button__icon pf-m-start">
-        <PlusCircleIcon />
-      </span>
-      Create Worker Pool
-    </Link>
-  )
+function AddWorkerPoolButton(props: Omit<LocationProps, "navigate">) {
+  return linkToNewPool(undefined, props, "create", { isInline: true, variant: "link" })
 }
 
-function AddWorkerPoolButton() {
-  return <Button isInline variant="link" component={createWorkerPool} />
-}
-
-export default function NewWorkerPoolCard() {
+export default function NewWorkerPoolCard(props: Omit<LocationProps, "navigate">) {
   return (
     <Card isCompact>
       <Bullseye>
@@ -42,7 +31,7 @@ export default function NewWorkerPoolCard() {
           <EmptyStateBody>Bring online additional compute resources to help service unprocessed tasks.</EmptyStateBody>
           <EmptyStateFooter>
             <EmptyStateActions>
-              <AddWorkerPoolButton />
+              <AddWorkerPoolButton {...props} />
             </EmptyStateActions>
           </EmptyStateFooter>
         </EmptyState>
