@@ -1,5 +1,5 @@
 import isUrl from "is-url-superb"
-import { isValidElement, lazy } from "react"
+import { isValidElement, lazy, Suspense } from "react"
 import {
   Button,
   DescriptionList,
@@ -87,9 +87,11 @@ function dt(term: ReactNode, count?: number | string, helperText?: string) {
   } else {
     return (
       <DescriptionListTermHelpText>
-        <Popover headerContent={label} bodyContent={helperText}>
-          <DescriptionListTermHelpTextButton onClick={stopPropagation}>{label}</DescriptionListTermHelpTextButton>
-        </Popover>
+        <Suspense fallback={<div />}>
+          <Popover headerContent={label} bodyContent={helperText}>
+            <DescriptionListTermHelpTextButton onClick={stopPropagation}>{label}</DescriptionListTermHelpTextButton>
+          </Popover>
+        </Suspense>
       </DescriptionListTermHelpText>
     )
   }
