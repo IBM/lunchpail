@@ -29,6 +29,11 @@
   text-align: right;
 }
 
+.codeflare--max-width-30em {
+  max-width: 30em;
+  word-break: normal;
+}
+
 .codeflare--card-header-no-wrap {
   .pf-v5-c-card__header-main,
   .pf-v5-c-card__title-text {

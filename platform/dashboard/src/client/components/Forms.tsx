@@ -10,6 +10,7 @@ import {
   NumberInput as PFNumberInput,
   Select as PFSelect,
   SelectOption,
+  SelectOptionProps,
   SelectList,
   TextInput,
 } from "@patternfly/react-core"
@@ -48,7 +49,8 @@ export function Input(props: FormProps & Ctrl) {
 }
 
 export function Select(
-  props: FormProps & Ctrl & { options: string[]; icons?: ReactNode | ReactNode[]; selected?: string },
+  props: FormProps &
+    Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string },
 ) {
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState<string>(props.selected || "Please select one")
@@ -86,11 +88,18 @@ export function Select(
         )}
       >
         <SelectList>
-          {props.options.map((value, idx) => (
-            <SelectOption key={value} value={value} icon={Array.isArray(props.icons) ? props.icons[idx] : props.icons}>
-              {value}
-            </SelectOption>
-          ))}
+          {props.options.map((option, idx) => {
+            const sprops = typeof option === "string" ? { value: option } : option
+            return (
+              <SelectOption
+                key={sprops.value}
+                {...sprops}
+                icon={Array.isArray(props.icons) ? props.icons[idx] : props.icons}
+              >
+                {sprops.value}
+              </SelectOption>
+            )
+          })}
         </SelectList>
       </PFSelect>
     </Group>

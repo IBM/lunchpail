@@ -150,8 +150,11 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
         label={names.applications}
         description={`Choose the ${names.applications} code this pool should run`}
         ctrl={ctrl}
-        options={this.compatibleApplications.map((_) => _.application)}
-        icons={this.props.applications.map(ApplicationIcon)}
+        options={this.compatibleApplications.map((_) => ({
+          value: _.application,
+          description: <div className="codeflare--max-width-30em">{_.description}</div>,
+        }))}
+        icons={this.compatibleApplications.map(ApplicationIcon)}
       />
     )
   }
