@@ -11,7 +11,7 @@ import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 import Application from "../components/Application/Card"
 import DataSet from "../components/DataSet/Card"
 import WorkerPool from "../components/WorkerPool/Card"
-import NewWorkerPoolCard from "../components/NewWorkerPoolCard"
+import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import type { LocationProps } from "../router/withLocation"
 
@@ -28,7 +28,7 @@ import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
 const FilterChips = lazy(() => import("../components/FilterChips"))
-const NewWorkerPoolWizard = lazy(() => import("../components/NewWorkerPoolWizard"))
+const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wizard"))
 
 import "./Dashboard.scss"
 

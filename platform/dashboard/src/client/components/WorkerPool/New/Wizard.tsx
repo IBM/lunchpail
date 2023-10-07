@@ -17,14 +17,16 @@ import {
   WizardStep,
 } from "@patternfly/react-core"
 
-import DataSetIcon from "./DataSet/Icon"
-import ApplicationIcon from "./Application/Icon"
-import { Input, NumberInput, Select } from "./Forms"
+import DataSetIcon from "../../DataSet/Icon"
+import ApplicationIcon from "../../Application/Icon"
 
-import type { LocationProps } from "../router/withLocation"
-import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
+import { singular as names } from "../../../names"
+import { Input, NumberInput, Select } from "../../Forms"
 
-import type NewPoolHandler from "../events/NewPoolHandler"
+import type { LocationProps } from "../../../router/withLocation"
+import type ApplicationSpecEvent from "../../../events/ApplicationSpecEvent"
+
+import type NewPoolHandler from "../../../events/NewPoolHandler"
 
 type Props = Pick<LocationProps, "searchParams"> & {
   /** Md5 of current application names */
@@ -131,15 +133,22 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   }
 
   private name(ctrl: FormContextProps) {
-    return <Input fieldId="poolName" label="Pool name" description="Choose a name for your worker pool" ctrl={ctrl} />
+    return (
+      <Input
+        fieldId="poolName"
+        label="Pool name"
+        description={`Choose a name for your ${names.workerpools}`}
+        ctrl={ctrl}
+      />
+    )
   }
 
   private application(ctrl: FormContextProps) {
     return (
       <Select
         fieldId="application"
-        label="Application"
-        description="Choose the Application code this pool should run"
+        label={names.applications}
+        description={`Choose the ${names.applications} code this pool should run`}
         ctrl={ctrl}
         options={this.compatibleApplications.map((_) => _.application)}
         icons={this.props.applications.map(ApplicationIcon)}
@@ -151,8 +160,8 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     return (
       <Select
         fieldId="dataset"
-        label="Data Set"
-        description="Choose the Data Set this pool should process"
+        label={names.datasets}
+        description={`Choose the ${names.datasets} this pool should process`}
         ctrl={ctrl}
         options={this.props.datasets.sort()}
         icons={<DataSetIcon />}
@@ -164,8 +173,8 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     return (
       <NumberInput
         fieldId="count"
-        label="Num Workers"
-        description="Number of workers in this pool"
+        label="Worker count"
+        description="Number of Workers in this pool"
         ctrl={ctrl}
         defaultValue={ctrl.values.count ? parseInt(ctrl.values.count, 10) : 1}
         min={1}
@@ -190,7 +199,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     return (
       <WizardHeader
         title="Create Worker Pool"
-        description="Configure a pool of compute resources to process a given data set."
+        description="Configure a pool of compute resources to process Tasks in a Queue."
         onClose={this.props.onCancel}
       />
     )
@@ -257,7 +266,7 @@ spec:
         name="Review"
         footer={{ nextButtonText: "Create Worker Pool", onNext: () => this.doCreate(ctrl.values) }}
       >
-        <Text component="p">Validate the settings for your new worker pool.</Text>
+        <Text component="p">Confirm the settings for your new worker pool.</Text>
 
         <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
           {this.workerPoolYaml(ctrl.values)}

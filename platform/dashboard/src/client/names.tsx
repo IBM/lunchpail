@@ -10,6 +10,12 @@ const names: Record<Kind, string> = {
   workerpools: "Worker Pools",
 }
 
+export const singular: Record<Kind, string> = {
+  applications: "Application",
+  datasets: "Task Queue",
+  workerpools: "Worker Pool",
+}
+
 export const subtitles: Record<Kind, import("react").ReactNode> = {
   applications: (
     <span>
