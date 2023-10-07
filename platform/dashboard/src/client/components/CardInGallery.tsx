@@ -46,7 +46,7 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   }
 
   private body() {
-    return dl(this.groups())
+    return dl(this.groups(), { isCompact: true })
   }
 
   protected footer(): null | ReactNode {
@@ -56,7 +56,6 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
   private card() {
     return (
       <Card
-        isLarge
         isClickable
         isSelectable
         isSelectableRaised
