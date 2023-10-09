@@ -3,6 +3,8 @@ import { join } from "path"
 import { electronApp, optimizer, is } from "@electron-toolkit/utils"
 import icon from "../../resources/icon.png?asset"
 
+import { initEvents } from "./events"
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -18,6 +20,7 @@ function createWindow(): void {
   })
 
   mainWindow.on("ready-to-show", () => {
+    initEvents(mainWindow)
     mainWindow.show()
   })
 
