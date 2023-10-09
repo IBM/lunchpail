@@ -1,11 +1,21 @@
-import { StrictMode } from "react"
+import { StrictMode, useState } from "react"
 import ReactDOM from "react-dom/client"
 import { RouterProvider } from "react-router-dom"
 
 import router from "./router"
+import Settings from "./Settings"
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
-)
+function App() {
+  // default to working in demo mode for now
+  const demoMode = useState(true)
+
+  return (
+    <StrictMode>
+      <Settings.Provider value={{ demoMode }}>
+        <RouterProvider router={router} />
+      </Settings.Provider>
+    </StrictMode>
+  )
+}
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<App />)

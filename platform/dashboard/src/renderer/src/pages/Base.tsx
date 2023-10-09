@@ -19,6 +19,8 @@ import {
   PageToggleButton,
 } from "@patternfly/react-core"
 
+import Settings from "../Settings"
+
 import navigateToHome from "../navigate/home"
 import { navigateToWorkerPools } from "../navigate/home"
 
@@ -112,6 +114,17 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
           <ToolbarGroup align={this.alignRight}>
             {right || <Fragment />}
 
+            <ToolbarItem align={this.alignRight}>
+              <Settings.Consumer>
+                {(settings) => (
+                  <Switch
+                    label="Demo Mode"
+                    isChecked={settings.demoMode[0]}
+                    onChange={(_, val) => settings.demoMode[1](val)}
+                  />
+                )}
+              </Settings.Consumer>
+            </ToolbarItem>
             <ToolbarItem align={this.alignRight}>
               <Switch label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
             </ToolbarItem>
