@@ -25,7 +25,7 @@ function Dashboard() {
 
 export default createBrowserRouter([
   {
-    path: "/",
+    path: "/*",
     element: <Dashboard />,
     errorElement,
   },
