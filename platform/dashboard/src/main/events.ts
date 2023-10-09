@@ -1,15 +1,9 @@
-import express from "express"
-import ViteExpress from "vite-express"
-
-import type { Writable } from "stream"
-import type { Response } from "express"
+/*import type { Writable } from "stream"
 
 import startPoolStream from "./streams/pool.js"
 import startQueueStream from "./streams/queue.js"
 import startDataSetStream from "./streams/dataset.js"
 import startApplicationStream from "./streams/application.js"
-
-const app = express()
 
 async function initEventSource(res: Response, stream: Writable) {
   await res.set({
@@ -60,4 +54,4 @@ app.get("/api/newpool", async () => {
   // TODO
 })
 
-ViteExpress.listen(app, 3000, () => console.log("Server is listening on port 3000..."))
+*/

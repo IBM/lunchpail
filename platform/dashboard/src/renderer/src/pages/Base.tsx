@@ -24,7 +24,7 @@ import { navigateToWorkerPools } from "../navigate/home"
 
 import type { LocationProps } from "../router/withLocation"
 
-import { version } from "../../../package.json"
+import { version } from "../../../../package.json"
 import "@patternfly/react-core/dist/styles/base.css"
 import SmallLabel from "../components/SmallLabel"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"

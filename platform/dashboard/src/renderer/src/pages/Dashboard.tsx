@@ -11,6 +11,7 @@ import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 import Application from "../components/Application/Card"
 import DataSet from "../components/DataSet/Card"
 import WorkerPool from "../components/WorkerPool/Card"
+
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import type { LocationProps } from "../router/withLocation"
@@ -423,8 +424,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   private datasets() {
-    return this.gallery(
-      Object.entries(this.state?.datasetEvents || {})
+    return this.gallery([
+      ...Object.entries(this.state?.datasetEvents || {})
         .sort(this.lexico)
         .map(
           ([label, events], idx) =>
@@ -446,7 +447,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               />
             ),
         ),
-    )
+    ])
   }
 
   private toWorkerPoolModel(label: string, queueEventsForOneWorkerPool: QueueEvent[]): WorkerPoolModelWithHistory {
@@ -634,11 +635,11 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       <Suspense fallback={<Fragment />}>
         <Modal
           variant="large"
-          aria-label="new-worker-pool-modal"
-          hasNoBodyWrapper
-          isOpen={isShowingNewPool(this.props)}
           showClose={false}
+          hasNoBodyWrapper
+          aria-label="wizard-modal"
           onEscapePress={this.returnHome}
+          isOpen={isShowingNewPool(this.props)}
         >
           <NewWorkerPoolWizard
             onSuccess={this.returnToWorkerPools}
