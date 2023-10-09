@@ -1,10 +1,10 @@
 import NewCard from "../../NewCard"
-import { linkToNewPool } from "../../../navigate/newpool"
+import { LinkToNewPool } from "../../../navigate/newpool"
 
 import type { LocationProps } from "../../../router/withLocation"
 
 function AddWorkerPoolButton(props: Omit<LocationProps, "navigate">) {
-  return linkToNewPool(undefined, props, "create", { isInline: true, variant: "link" })
+  return <LinkToNewPool {...props} startOrAdd="create" />
 }
 
 export default function NewWorkerPoolCard(props: Omit<LocationProps, "navigate">) {
