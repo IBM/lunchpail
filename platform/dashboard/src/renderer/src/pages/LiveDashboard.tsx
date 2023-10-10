@@ -17,9 +17,17 @@ const newpool: NewPoolHandler = {
 import EventSourceLike from "../events/EventSourceLike"
 class ElectronEventSource implements EventSourceLike {
   public constructor(private readonly source) {}
+
+  /**
+   * We need to keep track of the `off` function due to issues with
+   * contextBridge. See
+   * https://github.com/electron/electron/issues/21437#issuecomment-802288574
+   */
+  private off: null | (() => void) = null
+
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      jaas.on(this.source, (evt, model) => {
+      this.off = jaas.on(this.source, (evt, model) => {
         // ugh, this is highly imperfect. currently the UI code
         // expects to be given something that looks like a
         // MessageEvent
@@ -27,9 +35,13 @@ class ElectronEventSource implements EventSourceLike {
       })
     }
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public removeEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      jaas.off(this.source, handler)
+      if (this.off) {
+        this.off()
+      }
     }
   }
   public close() {}

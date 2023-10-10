@@ -59,36 +59,60 @@ app.get("/api/newpool", async () => {
 export function initEvents(mainWindow: import("electron").BrowserWindow) {
   ipcMain.on("/datasets/open", () => {
     const stream = startDataSetStream()
-    stream.on("data", (model) => mainWindow.webContents.send("/datasets/event", { data: JSON.parse(model) }))
-    ipcMain.once("/datasets/close", () => stream.end())
+    const cb = (model) => mainWindow.webContents.send("/datasets/event", { data: JSON.parse(model) })
+    stream.on("data", cb)
+    ipcMain.once("/datasets/close", () => {
+      stream.off("data", cb)
+      stream.end()
+    })
   })
 
   ipcMain.on("/queues/open", () => {
     const stream = startQueueStream()
-    stream.on("data", (model) => mainWindow.webContents.send("/queues/event", { data: JSON.parse(model) }))
-    ipcMain.once("/queues/close", () => stream.end())
+    const cb = (model) => mainWindow.webContents.send("/queues/event", { data: JSON.parse(model) })
+    stream.on("data", cb)
+    ipcMain.once("/queues/close", () => {
+      stream.off("data", cb)
+      stream.end()
+    })
   })
 
   ipcMain.on("/pools/open", () => {
     const stream = startPoolStream()
-    stream.on("data", (model) => mainWindow.webContents.send("/pools/event", { data: JSON.parse(model) }))
-    ipcMain.once("/pools/close", () => stream.end())
+    const cb = (model) => mainWindow.webContents.send("/pools/event", { data: JSON.parse(model) })
+    stream.on("data", cb)
+    ipcMain.once("/pools/close", () => {
+      stream.off("data", cb)
+      stream.end()
+    })
   })
 
   ipcMain.on("/applications/open", () => {
     const stream = startApplicationStream()
-    stream.on("data", (model) => mainWindow.webContents.send("/applications/event", { data: JSON.parse(model) }))
-    ipcMain.once("/applications/close", () => stream.end())
+    const cb = (model) => mainWindow.webContents.send("/applications/event", { data: JSON.parse(model) })
+    stream.on("data", cb)
+    ipcMain.once("/applications/close", () => {
+      stream.off("data", cb)
+      stream.end()
+    })
   })
 }
 
 export default {
-  on(source: "datasets" | "queues" | "pools" | "applications", cb: DataSetModel) {
+  on(source: "datasets" | "queues" | "pools" | "applications", cb: unknown) {
     ipcRenderer.on(`/${source}/event`, cb)
     ipcRenderer.send(`/${source}/open`)
-  },
-  off(source: "datasets" | "queues" | "pools" | "applications", cb: DataSetModel) {
-    ipcRenderer.off(`/${source}/event`, cb)
-    ipcRenderer.send(`/${source}/close`)
+
+    //
+    // We need to handle the `off` function differently due to issues
+    // with contextBridge. It turns out that `cb` will be a *copy* of
+    // the original function, hence a naive use of removeListener
+    // won't actually unlisten. See
+    // https://github.com/electron/electron/issues/21437#issuecomment-802288574
+    //
+    return () => {
+      ipcRenderer.removeListener(`/${source}/event`, cb)
+      ipcRenderer.send(`/${source}/close`)
+    }
   },
 }

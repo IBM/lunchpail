@@ -382,8 +382,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       },
     })
 
-    // hmm, avoid some races, do this second
-    setTimeout(this.initEventStreams)
+    this.initEventStreams()
   }
 
   private lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
