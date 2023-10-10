@@ -13,7 +13,7 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         rm ./get_helm.sh && \
         pip install --no-cache-dir kopf kubernetes>=21 && \
         python -m pip install --upgrade pip && \
-        python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx==0.5.0' 'kubernetes==17.17.0' 'pyyaml==5.3.1' && \
+        python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx==0.5.0' 'kubernetes==18.20.0' && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/ts && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/ray && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/moto && \
