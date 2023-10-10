@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react"
 import { createBrowserRouter } from "react-router-dom"
 
-const DemoDashboard = lazy(() => import("../demo/DemoDashboard"))
-const LiveDashboard = lazy(() => import("../pages/LiveDashboard"))
+import DemoDashboard from "../demo/DemoDashboard"
+import LiveDashboard from "../pages/LiveDashboard"
 const ErrorBoundary = lazy(() => import("../components/ErrorBoundary"))
 
 import Settings from "../Settings"
