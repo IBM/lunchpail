@@ -11,6 +11,9 @@ IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}
 ARCH=${ARCH-$(uname -m)}
 export KFP_VERSION=2.0.0
 
+# Note: a trailing slash is required, if this is non-empty
+IMAGE_REPO=ghcr.io/project-codeflare/
+
 # for local testing
 CLUSTER_NAME=${CLUSTER_NAME-codeflare-platform}
 
@@ -39,7 +42,6 @@ if [[ -z "$NO_KIND" ]]; then
     VERSION=dev
 else
     VERSION=0.0.1 # FIXME
-    # IMAGE_REPO= # FIXME
 fi
 
 

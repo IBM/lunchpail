@@ -13,7 +13,7 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         rm ./get_helm.sh && \
         pip install --no-cache-dir kopf kubernetes>=21 && \
         python -m pip install --upgrade pip && \
-        python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx[dev]==0.5.0' 'pyyaml==5.3.1' && \
+        python -m venv $TORCHX_HOME && $TORCHX_HOME/bin/pip install --no-cache-dir 'torchx==0.5.0' 'kubernetes==17.17.0' 'pyyaml==5.3.1' && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/ts && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/ray && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/moto && \
@@ -31,6 +31,8 @@ RUN apt update && apt install -y bc build-essential ca-certificates curl git && 
         rm -rf $TORCHX_HOME/lib/python*/site-packages/fontTools && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/matplotlib && \
         rm -rf $TORCHX_HOME/lib/python*/site-packages/sqlalchemy && \
+        rm -f $TORCHX_HOME/lib/python*/site-packages/torch/_torch_docs.py && \
+        rm -f $TORCHX_HOME/lib/python*/site-packages/torch/_tensor_docs.py && \
         apt remove -y build-essential ca-certificates curl && \
         apt autoremove -y && \
         rm -rf /var/lib/apt/lists/*

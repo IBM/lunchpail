@@ -1,6 +1,6 @@
 {{- define "codeflare.dev/containers/workstealer" }}
 - name: workstealer
-  image: codeflare-workstealer-component:dev
+  image: ghcr.io/project-codeflare/codeflare-workstealer-component:dev
   env:
     - name: RUN_ID
       value: {{ .Values.runId }}
