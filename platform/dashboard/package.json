@@ -1,9 +1,9 @@
 {
   "name": "jaas",
-  "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "version": "0.0.10",
+  "description": "Jobs as a Service",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "@starpit",
   "homepage": "https://www.electronjs.org",
   "scripts": {
     "format": "prettier --write .",
