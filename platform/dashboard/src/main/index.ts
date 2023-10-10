@@ -19,8 +19,9 @@ function createWindow(): void {
     },
   })
 
+  initEvents(mainWindow)
+
   mainWindow.on("ready-to-show", () => {
-    initEvents(mainWindow)
     mainWindow.show()
   })
 

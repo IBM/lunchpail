@@ -1,5 +1,5 @@
 import { ipcMain, ipcRenderer } from "electron"
-
+import { clusterExists } from "./prereq/check"
 import startPoolStream from "./streams/pool.js"
 import startQueueStream from "./streams/queue.js"
 import startDataSetStream from "./streams/dataset.js"
@@ -96,6 +96,10 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
       stream.end()
     })
   })
+  ipcMain.handle("/prereqs/check", () => {
+    // Checking if we have a control plane cluster running
+    return clusterExists()
+  })
 }
 
 export default {
@@ -114,5 +118,9 @@ export default {
       ipcRenderer.removeListener(`/${source}/event`, cb)
       ipcRenderer.send(`/${source}/close`)
     }
+  },
+  async isLaptopReady() {
+    const isReady = await ipcRenderer.invoke("/prereqs/check")
+    return isReady
   },
 }
