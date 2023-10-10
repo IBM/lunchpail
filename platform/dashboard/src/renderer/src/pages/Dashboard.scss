@@ -34,6 +34,18 @@
   word-break: normal;
 }
 
+.codeflare--demo-mode {
+  color: var(--pf-v5-global--palette--red-50);
+}
+
+.codeflare--status-online {
+  color: var(--pf-v5-global--primary-color--100);
+}
+
+.codeflare--status-offline {
+  color: var(--pf-v5-global--danger-color--100);
+}
+
 .codeflare--card-header-no-wrap {
   .pf-v5-c-card__header-main,
   .pf-v5-c-card__title-text {

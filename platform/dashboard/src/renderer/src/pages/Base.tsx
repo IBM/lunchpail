@@ -6,8 +6,10 @@ import {
   MastheadMain,
   MastheadBrand,
   MastheadContent,
+  MastheadToggle,
   Page,
   PageSection,
+  PageToggleButton,
   Switch,
   Toolbar,
   ToolbarGroup,
@@ -15,8 +17,6 @@ import {
   ToolbarItem,
   TextContent,
   Text,
-  MastheadToggle,
-  PageToggleButton,
 } from "@patternfly/react-core"
 
 import Settings from "../Settings"
@@ -29,7 +29,10 @@ import type { LocationProps } from "../router/withLocation"
 import { version } from "../../../../package.json"
 import "@patternfly/react-core/dist/styles/base.css"
 import SmallLabel from "../components/SmallLabel"
+
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
+import DemoIcon from "@patternfly/react-icons/dist/esm/icons/flask-icon"
+import LiveIcon from "@patternfly/react-icons/dist/esm/icons/circle-icon"
 
 export interface BaseState {
   /** UI in dark mode? */
@@ -76,8 +79,62 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
         <MastheadMain>
           <MastheadBrand>{this.pageTitle()}</MastheadBrand>
         </MastheadMain>
-        <MastheadContent></MastheadContent>
+        <MastheadContent>{this.headerToolbar()}</MastheadContent>
       </Masthead>
+    )
+  }
+
+  protected headerToolbar() {
+    return (
+      <Toolbar>
+        <ToolbarContent>
+          {this.headerToolbarLeftGroup()}
+          {this.headerToolbarRightGroup()}
+        </ToolbarContent>
+      </Toolbar>
+    )
+  }
+
+  protected headerToolbarLeftGroup() {}
+
+  protected headerToolbarRightGroup() {
+    return (
+      <ToolbarGroup align={this.alignRight} spacer={this.spacerMd}>
+        {this.headerToolbarRightItems()}
+      </ToolbarGroup>
+    )
+  }
+
+  protected headerToolbarRightItems() {
+    return [this.controlPlaneStatusToolbarItem()]
+  }
+
+  protected controlPlaneStatusToolbarItem() {
+    return (
+      <ToolbarItem key="control-plane-status">
+        <Settings.Consumer>
+          {(settings) =>
+            settings.demoMode[0] ? this.demoModeStatus() : this.controlPlaneStatus(settings.controlPlaneReady)
+          }
+        </Settings.Consumer>
+      </ToolbarItem>
+    )
+  }
+
+  protected demoModeStatus() {
+    return (
+      <div>
+        <DemoIcon className="codeflare--demo-mode" /> Offline Demo
+      </div>
+    )
+  }
+
+  protected controlPlaneStatus(controlPlaneReady: boolean) {
+    return (
+      <div>
+        <LiveIcon className={controlPlaneReady ? "codeflare--status-online" : "codeflare--status-offline"} /> Controller{" "}
+        {controlPlaneReady ? "Healthy" : "Offline"}
+      </div>
     )
   }
 
@@ -118,6 +175,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
               <Settings.Consumer>
                 {(settings) => (
                   <Switch
+                    hasCheckIcon
                     label="Demo Mode"
                     isChecked={settings.demoMode[0]}
                     onChange={(_, val) => settings.demoMode[1](val)}
@@ -126,7 +184,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
               </Settings.Consumer>
             </ToolbarItem>
             <ToolbarItem align={this.alignRight}>
-              <Switch label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
+              <Switch hasCheckIcon label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
             </ToolbarItem>
           </ToolbarGroup>
         </ToolbarContent>
@@ -149,6 +207,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
   protected readonly stickyTop = { default: "top" as const }
   protected readonly stickyBottom = { default: "bottom" as const }
   protected readonly transparent = { backgroundColor: "transparent" as const }
+  protected readonly spacerMd = { default: "spacerNone" as const, md: "spacerMd" as const }
 
   /** Title content to place in the PageSection title stripe above the main body content */
   protected abstract title(): string
