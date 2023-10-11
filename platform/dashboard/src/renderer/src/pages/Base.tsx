@@ -33,6 +33,7 @@ import SmallLabel from "../components/SmallLabel"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 import DemoIcon from "@patternfly/react-icons/dist/esm/icons/flask-icon"
 import LiveIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon"
+import IssueIcon from "@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon"
 
 export interface BaseState {
   /** UI in dark mode? */
@@ -137,7 +138,11 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
     return (
       <>
         Controller Status{" "}
-        <LiveIcon className={controlPlaneReady ? "codeflare--status-online" : "codeflare--status-offline"} />
+        {controlPlaneReady ? (
+          <LiveIcon className="codeflare--status-online" />
+        ) : (
+          <IssueIcon className="codeflare--status-offline" />
+        )}
       </>
     )
   }
