@@ -1,4 +1,5 @@
 import { ipcMain, ipcRenderer } from "electron"
+
 import { clusterExists } from "./prereq/check"
 import startPoolStream from "./streams/pool.js"
 import startQueueStream from "./streams/queue.js"
@@ -100,6 +101,11 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
     // Checking if we have a control plane cluster running
     return clusterExists()
   })
+
+  ipcMain.handle("/prereqs/install", async () => {
+    await import("./prereq/install").then((_) => _.default("lite"))
+    return true
+  })
 }
 
 export default {
@@ -122,5 +128,9 @@ export default {
   async isLaptopReady() {
     const isReady = await ipcRenderer.invoke("/prereqs/check")
     return isReady
+  },
+  async makeLaptopReady() {
+    const response = await ipcRenderer.invoke("/prereqs/install")
+    return response
   },
 }

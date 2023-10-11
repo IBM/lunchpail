@@ -23,6 +23,7 @@ dependencies:
 - name: kube-fledged
   version: 0.10.0
   repository: https://senthilrch.github.io/kubefledged-charts
+  condition: kube-fledged.enabled
 
 - name: gpu-operator
   version: 23.3.2

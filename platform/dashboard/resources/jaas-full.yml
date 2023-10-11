@@ -1,0 +1,4462 @@
+# Source: codeflare-platform/charts/spark-operator/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-platform-spark-operator
+  annotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-delete-policy": hook-failed, before-hook-creation
+    "helm.sh/hook-weight": "-10"
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: codeflare-platform/charts/spark-operator/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-platform-spark-operator
+  annotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-delete-policy": hook-failed, before-hook-creation
+    "helm.sh/hook-weight": "-10"
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - configmaps
+  - secrets
+  verbs:
+  - create
+  - get
+  - delete
+  - update
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - get
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - resourcequotas
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - create
+  - get
+  - update
+  - delete
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - create
+  - get
+  - update
+  - delete
+- apiGroups:
+  - sparkoperator.k8s.io
+  resources:
+  - sparkapplications
+  - sparkapplications/status
+  - scheduledsparkapplications
+  - scheduledsparkapplications/status
+  verbs:
+  - "*"
+  
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - delete
+---
+# Source: codeflare-platform/charts/spark-operator/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-platform-spark-operator
+  annotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-delete-policy": hook-failed, before-hook-creation
+    "helm.sh/hook-weight": "-10"
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-platform-spark-operator
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: codeflare-platform-spark-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "codeflare-platform-fluent-bit-test-connection"
+  namespace: default
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: "busybox:latest"
+      imagePullPolicy: Always
+      command: ['wget']
+      args: ['codeflare-platform-fluent-bit:2020']
+  restartPolicy: Never
+---
+# Source: codeflare-platform/charts/spark-operator/templates/webhook-cleanup-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: codeflare-platform-spark-operator-webhook-cleanup
+  annotations:
+    helm.sh/hook: pre-delete, pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  template:
+    metadata:
+      name: codeflare-platform-spark-operator-webhook-cleanup
+    spec:
+      serviceAccountName: codeflare-platform-spark-operator
+      restartPolicy: OnFailure
+      containers:
+      - name: clean-secret
+        image: ghcr.io/googlecloudplatform/spark-operator:v1beta2-1.3.8-3.1.1
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          {}
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "curl -ik \
+          -X DELETE \
+          -H \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" \
+          -H \"Accept: application/json\" \
+          -H \"Content-Type: application/json\" \
+          https://kubernetes.default.svc/api/v1/namespaces/default/secrets/codeflare-platform-spark-operator-webhook-certs \
+          && \
+          curl -ik \
+          -X DELETE \
+          -H \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" \
+          -H \"Accept: application/json\" \
+          -H \"Content-Type: application/json\" \
+          --data \"{\\\"kind\\\":\\\"DeleteOptions\\\",\\\"apiVersion\\\":\\\"batch/v1\\\",\\\"propagationPolicy\\\":\\\"Foreground\\\"}\" \
+          https://kubernetes.default.svc/apis/batch/v1/namespaces/default/jobs/codeflare-platform-spark-operator-webhook-init"
+---
+# Source: codeflare-platform/charts/spark-operator/templates/webhook-init-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: codeflare-platform-spark-operator-webhook-init
+  annotations:
+    helm.sh/hook: pre-install, pre-upgrade
+    helm.sh/hook-weight: "50"
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  template:
+    metadata:
+      name: codeflare-platform-spark-operator-webhook-init
+    spec:
+      serviceAccountName: codeflare-platform-spark-operator
+      restartPolicy: OnFailure
+      containers:
+      - name: main
+        image: ghcr.io/googlecloudplatform/spark-operator:v1beta2-1.3.8-3.1.1
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          {}
+        command: [
+            "/usr/bin/gencerts.sh",
+            "-n", "default",
+            "-s", "codeflare-platform-spark-operator-webhook",
+            "-r", "codeflare-platform-spark-operator-webhook-certs",
+            "-p"
+          ]
+MANIFEST:
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: codeflare-system
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/application/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-application-controller-account
+  namespace: codeflare-system
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/image/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-image-controller-account
+  namespace: codeflare-system
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/run/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-run-controller-account
+  namespace: codeflare-system
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-controller-rbac.yaml
+# This YAML file contains RBAC API objects that are necessary to run external
+# CSI attacher for H3 adapter
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-controller-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-nodeplugin-rbac.yaml
+# This YAML defines all API objects to create RBAC roles for CSI node plugin
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-nodeplugin-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-attacher-rbac.yaml
+# This YAML file contains RBAC API objects that are necessary to run external
+# CSI attacher for nfs flex adapter
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-attacher-nfs
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-nodeplugin-rbac.yaml
+# This YAML defines all API objects to create RBAC roles for CSI node plugin
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-nodeplugin
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/csi-s3.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-s3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/attacher-rbac.yaml
+# This YAML file contains all RBAC objects that are necessary to run external
+# CSI attacher.
+#
+# In production, each CSI driver deployment has to be customized:
+# - to avoid conflicts, use non-default namespace and different names
+#   for non-namespaced entities like the ClusterRole
+# - decide whether the deployment replicates the external CSI
+#   attacher, in which case leadership election must be enabled;
+#   this influences the RBAC setup, see below
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-attacher
+  # replace with non-default namespace name
+  namespace: default
+  labels:
+    app.kubernetes.io/name: "dlf"
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/provisioner-rbac.yaml
+# This YAML file contains all RBAC objects that are necessary to run external
+# CSI provisioner.
+#
+# In production, each CSI driver deployment has to be customized:
+# - to avoid conflicts, use non-default namespace and different names
+#   for non-namespaced entities like the ClusterRole
+# - decide whether the deployment replicates the external CSI
+#   provisioner, in which case leadership election must be enabled;
+#   this influences the RBAC setup, see below
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-provisioner
+  # replace with non-default namespace name
+  namespace: default
+  labels:
+    app.kubernetes.io/name: "dlf"
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/rbac/service_account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dataset-operator
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-platform-fluent-bit
+  namespace: default
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/serviceaccount-controller.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-platform-kube-fledged-controller
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/serviceaccount-webhook-server.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-platform-kube-fledged-webhook-server
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+#
+apiVersion: v1
+#
+kind: ServiceAccount
+metadata:
+  labels:
+    wdc.ibm.com/ownership: admin
+  name: mcad-controller
+  namespace: kube-system
+#
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scheduler-plugins-scheduler
+  namespace: default
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scheduler-plugins-controller
+  namespace: default
+---
+# Source: codeflare-platform/charts/spark-operator/templates/spark-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: codeflare-platform-spark
+  namespace: default
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: codeflare-platform/charts/codeflare-s3/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: codeflare-s3
+  namespace: codeflare-system
+  labels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: s3
+type: Opaque
+data:
+  AWS_ACCESS_KEY_ID: eHh4
+  AWS_SECRET_ACCESS_KEY: eXl5
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/secrets/server-tls.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/name: dlf
+  name: webhook-server-tls
+  namespace: default
+type: kubernetes.io/tls
+data:
+  tls.crt: YmFyCg==
+  tls.key: YmFyCg==
+---
+# Source: codeflare-platform/charts/codeflare-defaults/templates/default-ray-fluentbit-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-ray-fluentbit-config
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/component: fluentbit
+    app.kubernetes.io/part-of: codeflare.dev
+data:
+  priority: "100"
+  fluent-bit.conf: |
+    [INPUT]
+        Name tail
+        Path /tmp/ray/session_latest/logs/*
+        Tag ray
+        Path_Key true
+        Refresh_Interval 5
+    [OUTPUT]
+        Name stdout
+        Match *
+---
+# Source: codeflare-platform/charts/codeflare-s3/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: codeflare-s3
+  namespace: codeflare-system
+  labels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: s3
+data:
+  TEST_BUCKET: zzz
+  S3_ENDPOINT: http://codeflare-s3:9000
+  USE_MINIO_EXTENSIONS: "true"
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: codeflare-platform-fluent-bit
+  namespace: default
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+data:
+  custom_parsers.conf: |
+    [PARSER]
+        Name docker_no_time
+        Format json
+        Time_Keep Off
+        Time_Key time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+    
+  fluent-bit.conf: |
+    [SERVICE]
+        Daemon Off
+        Flush 1
+        Log_Level info
+        Parsers_File parsers.conf
+        Parsers_File custom_parsers.conf
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port 2020
+        Health_Check On
+    
+    [INPUT]
+        Name tail
+        Path /var/log/containers/*.log
+        multiline.parser docker, cri
+        Tag kube.*
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines On
+    
+    [INPUT]
+        Name systemd
+        Tag host.*
+        Systemd_Filter _SYSTEMD_UNIT=kubelet.service
+        Read_From_Tail On
+    
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+    
+    [OUTPUT]
+        Name es
+        Match kube.*
+        Host elasticsearch-master
+        Logstash_Format On
+        Retry_Limit False
+    
+    [OUTPUT]
+        Name es
+        Match host.*
+        Host elasticsearch-master
+        Logstash_Format On
+        Logstash_Prefix node
+        Retry_Limit False
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scheduler-config
+  namespace: default
+data:
+  scheduler-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1beta3
+    kind: KubeSchedulerConfiguration
+    leaderElection:
+      leaderElect: false
+    profiles:
+    # Compose all plugins in one profile
+    - schedulerName: scheduler-plugins-scheduler
+      plugins:
+        multiPoint:
+          enabled:
+          - name: Coscheduling
+          disabled:
+          - name: PrioritySort
+          - name: CapacityScheduling
+          - name: NodeResourceTopologyMatch
+          - name: NodeResourcesAllocatable
+      pluginConfig: 
+      - args:
+          permitWaitingTimeSeconds: 10
+        name: Coscheduling
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-h3-storageclass.yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+provisioner: kubernetes.io/no-provisioner
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/storageclass.yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: csi-s3
+  labels:
+    app.kubernetes.io/name: "dlf"
+provisioner: ch.ctrox.csi.s3-driver
+parameters:
+  # specify which mounter to use
+  # can be set to s3fs, goofys
+  # OTHER OPTIONS NOT WORKING!
+  mounter: goofys
+
+  csi.storage.k8s.io/provisioner-secret-name: ${pvc.name}
+  csi.storage.k8s.io/provisioner-secret-namespace: ${pvc.namespace}
+
+  csi.storage.k8s.io/controller-publish-secret-name: ${pvc.name}
+  csi.storage.k8s.io/controller-publish-secret-namespace: ${pvc.namespace}
+
+  csi.storage.k8s.io/node-stage-secret-name: ${pvc.name}
+  csi.storage.k8s.io/node-stage-secret-namespace: ${pvc.namespace}
+
+  csi.storage.k8s.io/node-publish-secret-name: ${pvc.name}
+  csi.storage.k8s.io/node-publish-secret-namespace: ${pvc.namespace}
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/nfs/pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: workdir
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.96.244.176
+    path: "/"
+  mountOptions:
+    - nfsvers=4.2
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/nfs/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: workdir
+  namespace: codeflare-system
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: workdir
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/crds/com.ie.ibm.hpsys_datasetinternals_crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: datasetsinternal.com.ie.ibm.hpsys
+spec:
+  group: com.ie.ibm.hpsys
+  names:
+    kind: DatasetInternal
+    listKind: DatasetInternalList
+    plural: datasetsinternal
+    singular: datasetinternal
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: DatasetInternal is the Schema for the datasetsinternal API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DatasetSpec defines the desired state of Dataset
+            properties:
+              extract:
+                type: string
+              format:
+                type: string
+              local:
+                additionalProperties:
+                  type: string
+                description: Foo is an example field of Dataset. Edit dataset_types.go
+                  to remove/update
+                type: object
+              remote:
+                additionalProperties:
+                  type: string
+                type: object
+              type:
+                description: TODO temp definition for archive
+                type: string
+              url:
+                type: string
+            type: object
+          status:
+            description: DatasetInternalStatus defines the observed state of DatasetInternal
+            properties:
+              caching:
+                properties:
+                  placements:
+                    properties:
+                      datalocations:
+                        items:
+                          properties:
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      gateways:
+                        items:
+                          properties:
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/crds/com.ie.ibm.hpsys_datasets_crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: datasets.com.ie.ibm.hpsys
+spec:
+  group: com.ie.ibm.hpsys
+  names:
+    kind: Dataset
+    listKind: DatasetList
+    plural: datasets
+    singular: dataset
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Dataset is the Schema for the datasets API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DatasetSpec defines the desired state of Dataset
+            properties:
+              extract:
+                type: string
+              format:
+                type: string
+              local:
+                additionalProperties:
+                  type: string
+                description: Foo is an example field of Dataset. Edit dataset_types.go
+                  to remove/update
+                type: object
+              remote:
+                additionalProperties:
+                  type: string
+                type: object
+              type:
+                description: TODO temp definition for archive
+                type: string
+              url:
+                type: string
+            type: object
+          status:
+            description: DatasetStatus defines the observed state of Dataset
+            properties:
+              caching:
+                properties:
+                  info:
+                    type: string
+                  status:
+                    type: string
+                type: object
+              provision:
+                properties:
+                  info:
+                    type: string
+                  status:
+                    type: string
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+      - name: Type
+        type: string
+        jsonPath: .spec.local.type
+      - name: Endpoint
+        type: string
+        jsonPath: .spec.local.endpoint
+      - name: Bucket
+        type: string
+        jsonPath: .spec.local.bucket
+      - name: Readonly
+        type: string
+        jsonPath: .spec.local.readonly
+      - name: Unassigned
+        type: string
+        jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
+        
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/application/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-application-controller-role-cluster
+rules:
+
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [create]
+
+  - apiGroups: [codeflare.dev]
+    resources: [applications,applications/status]
+    verbs: [list, watch, patch, get]
+    
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups: [kopf.dev]
+    resources: [clusterkopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  # Framework: runtime observation of namespaces & CRDs (addition/deletion).
+  - apiGroups: [apiextensions.k8s.io]
+    resources: [customresourcedefinitions]
+    verbs: [list, watch]
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [list, watch]
+
+  # Framework: admission webhook configuration management.
+  - apiGroups: [admissionregistration.k8s.io/v1, admissionregistration.k8s.io/v1beta1]
+    resources: [validatingwebhookconfigurations, mutatingwebhookconfigurations]
+    verbs: [create, patch]
+
+  # Application: read-only access for watching cluster-wide.
+  - apiGroups: [kopf.dev]
+    resources: [kopfexamples]
+    verbs: [list, watch]
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/image/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-image-controller-role-cluster
+rules:
+
+  - apiGroups: [codeflare.dev]
+    resources: [images]
+    verbs: [list, watch, patch, get]
+
+  - apiGroups: [kubefledged.io]
+    resources: [imagecaches,imagecaches/status]
+    verbs: [list, patch]
+    
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create, list, watch, patch]
+
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups: [kopf.dev]
+    resources: [clusterkopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  # Framework: runtime observation of namespaces & CRDs (addition/deletion).
+  - apiGroups: [apiextensions.k8s.io]
+    resources: [customresourcedefinitions]
+    verbs: [list, watch]
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [list, watch]
+
+  # Framework: admission webhook configuration management.
+  - apiGroups: [admissionregistration.k8s.io/v1, admissionregistration.k8s.io/v1beta1]
+    resources: [validatingwebhookconfigurations, mutatingwebhookconfigurations]
+    verbs: [create, patch]
+
+  # Application: read-only access for watching cluster-wide.
+  - apiGroups: [kopf.dev]
+    resources: [kopfexamples]
+    verbs: [list, watch]
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/run/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-run-controller-role-cluster
+rules:
+
+  - apiGroups: [mcad.ibm.com]
+    resources: [appwrappers]
+    verbs: [watch]
+
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [get]
+
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [list]
+
+    # to find the torchx head pod
+  - apiGroups: [""]
+    resources: [pods,pods/log]
+    verbs: [get, list, delete, watch, patch]
+
+  - apiGroups: [""]
+    resources: [pods/status]
+    verbs: [patch]
+
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get, watch]
+
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [rolebindings,roles]
+    verbs: [get,create,delete]
+  - apiGroups: [""]
+    resources: [serviceaccounts]
+    verbs: [get,create,delete]
+    
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create, list, watch, patch]
+
+  - apiGroups: [""]
+    resources: [persistentvolumeclaims]
+    verbs: [create, delete]
+
+  - apiGroups: [""]
+    resources: [persistentvolumes]
+    verbs: [get,create,delete]
+
+  - apiGroups: [ray.io]
+    resources: [rayclusters,rayjobs]
+    verbs: [list,get,create,delete]
+
+    # hmm, sparkoperator needs a lot...
+  - apiGroups: [sparkoperator.k8s.io]
+    resources: [sparkapplications]
+    verbs: [list,get,create,delete]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["*"]
+
+  - apiGroups: [com.ie.ibm.hpsys]
+    resources: [datasets]
+    verbs: [get, patch]
+
+  - apiGroups: [codeflare.dev]
+    resources: [platformreposecrets,platformimagepullsecrets,runsizeconfigurations]
+    verbs: [list]
+  - apiGroups: [codeflare.dev]
+    resources: [runs/status, workerpools/status]
+    verbs: [list, watch, patch, get]
+  - apiGroups: [codeflare.dev]
+    resources: [applications, queues, runs, workerpools]
+    verbs: [create, list, watch, patch, get]
+    
+  - apiGroups: [mcad.ibm.com]
+    resources: [appwrappers]
+    verbs: [create, list, get, delete, patch]
+
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups: [kopf.dev]
+    resources: [clusterkopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  # Framework: runtime observation of namespaces & CRDs (addition/deletion).
+  - apiGroups: [apiextensions.k8s.io]
+    resources: [customresourcedefinitions]
+    verbs: [list, watch]
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [list, watch]
+
+  # Framework: admission webhook configuration management.
+  - apiGroups: [admissionregistration.k8s.io/v1, admissionregistration.k8s.io/v1beta1]
+    resources: [validatingwebhookconfigurations, mutatingwebhookconfigurations]
+    verbs: [create, patch]
+
+  # Application: read-only access for watching cluster-wide.
+  - apiGroups: [kopf.dev]
+    resources: [kopfexamples]
+    verbs: [list, watch]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-controller-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-controller-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update", "patch", "create"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-nodeplugin-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["secrets","secret"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-attacher-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-attacher-runner-nfs
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-nodeplugin-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/csi-s3.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-s3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "update"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update","create"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/attacher-rbac.yaml
+# Attacher must be able to work with PVs, CSINodes and VolumeAttachments
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-attacher-runner
+  labels:
+    app.kubernetes.io/name: "dlf"
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update", "patch"] #Adding "update"
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update", "patch", "create"]  #Adding "update"
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
+#Secret permission is optional.
+#Enable it if you need value from secret.
+#For example, you have key `csi.storage.k8s.io/controller-publish-secret-name` in StorageClass.parameters
+#see https://kubernetes-csi.github.io/docs/secrets-and-credentials.html
+#  - apiGroups: [""]
+#    resources: ["secrets"]
+#    verbs: ["get", "list"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/provisioner-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-provisioner-runner
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+rules:
+  # The following rule should be uncommented for plugins that require secrets
+  # for provisioning. #Enabling secrets
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  # Access to volumeattachments is only needed when the CSI driver
+  # has the PUBLISH_UNPUBLISH_VOLUME controller capability.
+  # In that case, external-provisioner will watch volumeattachments
+  # to determine when it is safe to delete a volume.
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch","create"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/rbac/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: dataset-operator
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - persistentvolumes
+  - events
+  - configmaps
+  - secrets
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - apps
+  resourceNames:
+  - dataset-operator
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - get
+- apiGroups:
+  - com.ie.ibm.hpsys
+  resources:
+  - '*'
+  - datasetsinternal
+  - datasets
+  verbs:
+  - '*'
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - objectbucket.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+    - admissionregistration.k8s.io
+  resources:
+    - mutatingwebhookconfigurations
+  verbs:
+    - '*'
+- apiGroups: ["batch", "extensions"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-platform-fluent-bit
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/clusterrole-controller.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-platform-kube-fledged-controller
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+rules:
+  - apiGroups:
+      - "kubefledged.io"
+    resources:
+      - imagecaches
+    verbs:
+      - get
+      - list
+      - watch
+      - update      
+  - apiGroups:
+      - "kubefledged.io"
+    resources:
+      - imagecaches/status
+    verbs:
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - list
+      - watch
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - create
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - watch
+      - get
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/clusterrole-webhook-server.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: codeflare-platform-kube-fledged-webhook-server
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+rules:
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - update
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/ray_rayjob_editor_role.yaml
+# permissions for end users to edit rayjobs.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+  name: rayjob-editor-role
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs/status
+  verbs:
+  - get
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/ray_rayjob_viewer_role.yaml
+# permissions for end users to view rayjobs.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+  name: rayjob-viewer-role
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs/status
+  verbs:
+  - get
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/ray_rayservice_editor_role.yaml
+# permissions for end users to edit rayservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rayservice-editor-role
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices/status
+  verbs:
+  - get
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/ray_rayservice_viewer_role.yaml
+# permissions for end users to view rayservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rayservice-viewer-role
+rules:
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices/status
+  verbs:
+  - get
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/role.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+  name: kuberay-operator
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingressclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ray.io
+  resources:
+  - rayclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ray.io
+  resources:
+  - rayjobs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ray.io
+  resources:
+  - rayservices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-metrics-server-resources
+rules:
+- apiGroups:
+  - custom.metrics.k8s.io
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-metrics-resource-reader
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pods
+  - services
+  verbs:
+  - get
+  - list
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  name: system:controller:xqueuejob-controller
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+rules:
+- apiGroups:
+  - mcad.ibm.com
+  resources:
+  - xqueuejobs
+  - queuejobs
+  - schedulingspecs
+  - appwrappers
+  - appwrappers/finalizers
+  - appwrappers/status
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+#
+#
+#
+- apiGroups:
+    - scheduling.x-k8s.io
+  resources:
+    - podgroups
+  verbs:
+  - get 
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+#
+#
+#
+#
+- apiGroups:
+    - ray.io
+  resources:
+    - rayjobs
+  verbs:
+  - get 
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+#
+#
+#
+#
+- apiGroups:
+    - sparkoperator.k8s.io
+  resources:
+    - sparkapplications
+  verbs:
+  - get 
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+#
+#
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: scheduler-plugins-scheduler
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["", "events.k8s.io"]
+  resources: ["events"]
+  verbs: ["create", "patch", "update"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["create"]
+- apiGroups: ["coordination.k8s.io"]
+  resourceNames: ["kube-scheduler"]
+  resources: ["leases"]
+  verbs: ["get", "update"]
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resourceNames: ["kube-scheduler"]
+  resources: ["endpoints"]
+  verbs: ["get", "update"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch", "patch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["delete", "get", "list", "watch", "update"]
+- apiGroups: [""]
+  resources: ["bindings", "pods/binding"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["pods/status"]
+  verbs: ["patch", "update"]
+- apiGroups: [""]
+  resources: ["replicationcontrollers", "services"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps", "extensions"]
+  resources: ["replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["statefulsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims", "persistentvolumes"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["tokenreviews"]
+  verbs: ["create"]
+- apiGroups: ["authorization.k8s.io"]
+  resources: ["subjectaccessreviews"]
+  verbs: ["create"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["csinodes", "storageclasses" , "csidrivers" , "csistoragecapacities"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["topology.node.k8s.io"]
+  resources: ["noderesourcetopologies"]
+  verbs: ["get", "list", "watch"]
+# resources need to be updated with the scheduler plugins used
+- apiGroups: ["scheduling.x-k8s.io"]
+  resources: ["podgroups", "elasticquotas", "podgroups/status", "elasticquotas/status"]
+  verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+# for network-aware plugins add the following lines (scheduler-plugins v.0.25.7)
+#- apiGroups: [ "appgroup.diktyo.x-k8s.io" ]
+#  resources: [ "appgroups" ]
+#  verbs: [ "get", "list", "watch", "create", "delete", "update", "patch" ]
+#- apiGroups: [ "networktopology.diktyo.x-k8s.io" ]
+#  resources: [ "networktopologies" ]
+#  verbs: [ "get", "list", "watch", "create", "delete", "update", "patch" ]
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: scheduler-plugins-controller
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch", "update"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch", "patch"]
+- apiGroups: ["topology.node.k8s.io"]
+  resources: ["noderesourcetopologies"]
+  verbs: ["get", "list", "watch"]
+# resources need to be updated with the scheduler plugins used
+- apiGroups: ["scheduling.x-k8s.io"]
+  resources: ["podgroups", "elasticquotas", "podgroups/status", "elasticquotas/status"]
+  verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/application/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-application-controller-rolebinding-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: codeflare-application-controller-role-cluster
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-application-controller-account
+    namespace: codeflare-system
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/image/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-image-controller-rolebinding-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: codeflare-image-controller-role-cluster
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-image-controller-account
+    namespace: codeflare-system
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/run/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-run-controller-rolebinding-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: codeflare-run-controller-role-cluster
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-run-controller-account
+    namespace: codeflare-system
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-controller-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: csi-controller-h3
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: external-controller-h3
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-nodeplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: csi-nodeplugin-h3
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: csi-nodeplugin-h3
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-attacher-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role-nfs
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: csi-attacher-nfs
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: external-attacher-runner-nfs
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-nodeplugin-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: csi-nodeplugin
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: csi-nodeplugin
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/csi-s3.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-s3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: csi-s3
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: csi-s3
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/attacher-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role
+  labels:
+    app.kubernetes.io/name: "dlf"
+subjects:
+  - kind: ServiceAccount
+    name: csi-attacher
+    # replace with non-default namespace name
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: external-attacher-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/provisioner-rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-role
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: csi-provisioner
+    # replace with non-default namespace name
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: external-provisioner-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/rbac/role_binding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: dataset-operator
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: dataset-operator
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: dataset-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-platform-fluent-bit
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: codeflare-platform-fluent-bit
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-platform-fluent-bit
+    namespace: default
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/clusterrolebinding-controller.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-platform-kube-fledged-controller
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: codeflare-platform-kube-fledged-controller
+subjects:
+- kind: ServiceAccount
+  name: codeflare-platform-kube-fledged-controller
+  namespace: "default"
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:nodes
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/clusterrolebinding-webhook-server.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: codeflare-platform-kube-fledged-webhook-server
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: codeflare-platform-kube-fledged-webhook-server
+subjects:
+- kind: ServiceAccount
+  name: codeflare-platform-kube-fledged-webhook-server
+  namespace: "default"
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:nodes
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/rolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+  name: kuberay-operator
+subjects:
+- kind: ServiceAccount
+  name: kuberay-operator
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: kuberay-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hpa-controller-custom-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: custom-metrics-server-resources
+subjects:
+- kind: ServiceAccount
+  name: horizontal-pod-autoscaler
+  namespace: kube-system
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-metrics:system:auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: mcad-controller
+  namespace: kube-system
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-metrics-resource-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: custom-metrics-resource-reader
+subjects:
+- kind: ServiceAccount
+  name: mcad-controller
+  namespace: kube-system
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:controller:xqueuejob-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:controller:xqueuejob-controller
+subjects:
+- kind: ServiceAccount
+  name: mcad-controller
+  namespace: kube-system
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:controller:xqueuejob-controller-edit
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- kind: ServiceAccount
+  name: mcad-controller
+  namespace: kube-system
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:controller:xqueuejob-controller-kube-scheduler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-scheduler
+subjects:
+- kind: ServiceAccount
+  name: mcad-controller
+  namespace: kube-system
+#
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: scheduler-plugins-scheduler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: scheduler-plugins-scheduler
+subjects:
+- kind: ServiceAccount
+  name: scheduler-plugins-scheduler
+  namespace: default
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: scheduler-plugins-controller
+subjects:
+- kind: ServiceAccount
+  name: scheduler-plugins-controller
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: scheduler-plugins-controller
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/application/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: codeflare-application-controller-role-namespaced
+  namespace: codeflare-system
+rules:
+
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [create]
+    
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups: [kopf.dev]
+    resources: [kopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  # Framework: posting the events about the handlers progress/errors.
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+
+  # Application: watching & handling for the custom resource we declare.
+  - apiGroups: [kopf.dev]
+    resources: [kopfexamples]
+    verbs: [list, watch, patch]
+
+  # Application: other resources it produces and manipulates.
+  # Here, we create Jobs+PVCs+Pods, but we do not patch/update/delete them ever.
+  - apiGroups: [batch, extensions]
+    resources: [jobs]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [pods, persistentvolumeclaims]
+    verbs: [create]
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/image/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: codeflare-image-controller-role-namespaced
+  namespace: codeflare-system
+rules:
+
+  - apiGroups: [codeflare.dev]
+    resources: [images]
+    verbs: [list, watch, patch, get]
+
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups: [kopf.dev]
+    resources: [kopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  # Framework: posting the events about the handlers progress/errors.
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+
+  # Application: watching & handling for the custom resource we declare.
+  - apiGroups: [kopf.dev]
+    resources: [kopfexamples]
+    verbs: [list, watch, patch]
+
+  # Application: other resources it produces and manipulates.
+  # Here, we create Jobs+PVCs+Pods, but we do not patch/update/delete them ever.
+  - apiGroups: [batch, extensions]
+    resources: [jobs]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [pods, persistentvolumeclaims]
+    verbs: [create]
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/run/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: codeflare-run-controller-role-namespaced
+  namespace: codeflare-system
+rules:
+
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [get,create]
+
+  - apiGroups: [""]
+    resources: [persistentvolumeclaims, events]
+    verbs: [create]
+    
+  - apiGroups: [codeflare.dev]
+    resources: [runs, runs/status, applications]
+    verbs: [list, watch, patch, get]
+    
+  - apiGroups: [mcad.ibm.com]
+    resources: [appwrappers]
+    verbs: [create, list, get, delete, patch]
+
+  # Framework: knowing which other operators are running (i.e. peering).
+  - apiGroups: [kopf.dev]
+    resources: [kopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  # Framework: posting the events about the handlers progress/errors.
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+
+  # Application: watching & handling for the custom resource we declare.
+  - apiGroups: [kopf.dev]
+    resources: [kopfexamples]
+    verbs: [list, watch, patch]
+
+  # Application: other resources it produces and manipulates.
+  # Here, we create Jobs+PVCs+Pods, but we do not patch/update/delete them ever.
+  - apiGroups: [batch, extensions]
+    resources: [jobs]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [pods, persistentvolumeclaims]
+    verbs: [create]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/attacher-rbac.yaml
+# Attacher must be able to work with configmaps or leases in the current namespace
+# if (and only if) leadership election is enabled
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  # replace with non-default namespace name
+  namespace: default
+  name: external-attacher-cfg
+  labels:
+    app.kubernetes.io/name: "dlf"
+rules:
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "watch", "list", "delete", "update", "create"]
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/provisioner-rbac.yaml
+# Provisioner must be able to work with endpoints in current namespace
+# if (and only if) leadership election is enabled
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  # replace with non-default namespace name
+  namespace: default
+  name: external-provisioner-cfg
+  labels:
+    app.kubernetes.io/name: "dlf"
+rules:
+  # Only one of the following rules for endpoints or leases is required based on
+  # what is set for `--leader-election-type`. Endpoints are deprecated in favor of Leases.
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "watch", "list", "delete", "update", "create"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "watch", "list", "delete", "update", "create"]
+  # Permissions for CSIStorageCapacity are only needed enabling the publishing
+  # of storage capacity information.
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csistoragecapacities"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # The GET permissions below are needed for walking up the ownership chain
+  # for CSIStorageCapacity. They are sufficient for deployment via
+  # StatefulSet (only needs to get Pod) and Deployment (needs to get
+  # Pod and then ReplicaSet to find the Deployment).
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get"]
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/leader_election_role.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+  name: kuberay-operator-leader-election
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+---
+# Source: codeflare-platform/charts/spark-operator/templates/spark-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-role
+  namespace: default
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - "*"
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/application/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: codeflare-application-controller-rolebinding-namespaced
+  namespace: codeflare-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: codeflare-application-controller-role-namespaced
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-application-controller-account
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/image/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: codeflare-image-controller-rolebinding-namespaced
+  namespace: codeflare-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: codeflare-image-controller-role-namespaced
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-image-controller-account
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/run/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: codeflare-run-controller-rolebinding-namespaced
+  namespace: codeflare-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: codeflare-run-controller-role-namespaced
+subjects:
+  - kind: ServiceAccount
+    name: codeflare-run-controller-account
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/attacher-rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role-cfg
+  # replace with non-default namespace name
+  namespace: default
+  labels:
+    app.kubernetes.io/name: "dlf"
+subjects:
+  - kind: ServiceAccount
+    name: csi-attacher
+    # replace with non-default namespace name
+    namespace: default
+roleRef:
+  kind: Role
+  name: external-attacher-cfg
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-sidecars-rbac/templates/provisioner-rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-role-cfg
+  # replace with non-default namespace name
+  namespace: default
+  labels:
+    app.kubernetes.io/name: "dlf"
+subjects:
+  - kind: ServiceAccount
+    name: csi-provisioner
+    # replace with non-default namespace name
+    namespace: default
+roleRef:
+  kind: Role
+  name: external-provisioner-cfg
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/leader_election_role_binding.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+  name: kuberay-operator-leader-election
+subjects:
+- kind: ServiceAccount
+  name: kuberay-operator
+  namespace: default
+roleRef:
+  kind: Role
+  name: kuberay-operator-leader-election
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: custom-metrics-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: mcad-controller
+  namespace: kube-system
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sched-plugins::extension-apiserver-authentication-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: scheduler-plugins-scheduler
+  namespace: default
+- kind: ServiceAccount
+  name: scheduler-plugins-controller
+  namespace: default
+---
+# Source: codeflare-platform/charts/spark-operator/templates/spark-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark
+  namespace: default
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+subjects:
+- kind: ServiceAccount
+  name: codeflare-platform-spark
+  namespace: default
+roleRef:
+  kind: Role
+  name: spark-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/nfs/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: workdir
+  namespace: codeflare-system
+spec:
+  clusterIP: 10.96.244.176
+  ports:
+  - name: nfs
+    port: 2049
+    protocol: TCP
+  - name: mountd
+    port: 20048
+    protocol: TCP
+  - name: rpcbind
+    port: 111
+    protocol: UDP
+  selector:
+    app.kubernetes.io/name: codeflare-platform
+    app.kubernetes.io/component: nfs
+---
+# Source: codeflare-platform/charts/codeflare-s3/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: codeflare-s3
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/name: codeflare-s3
+    app.kubernetes.io/component: s3
+spec:
+  ports:
+  - name: api
+    protocol: TCP
+    port: 9000
+    targetPort: 9000
+  - name: console
+    protocol: TCP
+    port: 9090
+    targetPort: 9090
+  selector:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/name: codeflare-s3
+    app.kubernetes.io/component: s3
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-attacher-nfsplugin.yaml
+# This YAML file contains attacher & csi driver API objects that are necessary
+# to run external CSI attacher for nfs
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-attacher-nfsplugin
+  namespace: default
+  labels:
+    app: csi-attacher-nfsplugin
+    app.kubernetes.io/name: "dlf"
+spec:
+  selector:
+    app: csi-attacher-nfsplugin
+  ports:
+    - name: dummy
+      port: 12345
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/attacher.yaml
+# needed for StatefulSet
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-attacher-s3
+  namespace: default
+  labels:
+    app: csi-attacher-s3
+    app.kubernetes.io/name: "dlf"
+spec:
+  selector:
+    app: csi-attacher-s3
+  ports:
+    - name: dummy
+      port: 12345
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/provisioner.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-provisioner-s3
+  namespace: default
+  labels:
+    app: csi-provisioner-s3
+    app.kubernetes.io/name: "dlf"
+spec:
+  selector:
+    app: csi-provisioner-s3
+  ports:
+    - name: dummy
+      port: 12345
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/apps/operator.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-server
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  ports:
+    - port: 443
+      protocol: TCP
+      targetPort: webhook-api
+  selector:
+    name: dataset-operator
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: codeflare-platform-fluent-bit
+  namespace: default
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2020
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/service-webhook-server.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: codeflare-platform-kube-fledged-webhook-server
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+  - name: webhook-server
+    port: 3443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform-webhook-server
+  type: ClusterIP
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: kuberay-operator
+    app.kubernetes.io/instance: codeflare-platform
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: custom-metrics-apiserver
+  namespace: kube-system
+spec:
+  ports:
+  - name: https
+    port: 443
+    targetPort: 6443
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: custom-metrics-apiserver
+---
+# Source: codeflare-platform/charts/spark-operator/templates/webhook-service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: codeflare-platform-spark-operator-webhook
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+  - port: 443
+    targetPort: 8080
+    name: webhook
+  selector:
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-nodeplugin-h3.yaml
+# This YAML file contains driver-registrar & csi driver nodeplugin API objects
+# that are necessary to run CSI nodeplugin for H3
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: csi-nodeplugin-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: csi-nodeplugin-h3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "dlf"
+        app: csi-nodeplugin-h3
+    spec:
+      serviceAccountName: csi-nodeplugin-h3
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: node-driver-registrar
+          image: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/csi-h3 /registration/csi-h3-reg.sock"]
+          args:
+            - --v=5
+            - --csi-address=/plugin/csi.sock
+            - --kubelet-registration-path=/var/lib/kubelet/plugins/csi-h3/csi.sock
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: registration-dir
+              mountPath: /registration
+        - name: h3
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: "carvicsforth/csi-h3:v1.2.0"
+          args:
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+          # imagePullPolicy: "Always"
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "mount -t fuse.h3fuse | while read -r mount; do umount $(echo $mount | awk '{print $3}') ; done"]
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: "Bidirectional"
+      volumes:
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/csi-h3
+            type: DirectoryOrCreate
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+        - hostPath:
+            path: /var/lib/kubelet/plugins_registry
+            type: DirectoryOrCreate
+          name: registration-dir
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-nodeplugin-nfsplugin.yaml
+# This YAML file contains driver-registrar & csi driver nodeplugin API objects
+# that are necessary to run CSI nodeplugin for nfs
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: csi-nodeplugin-nfsplugin
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: csi-nodeplugin-nfsplugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "dlf"
+        app: csi-nodeplugin-nfsplugin
+    spec:
+      serviceAccountName: csi-nodeplugin
+      hostNetwork: true
+      containers:
+        - name: node-driver-registrar
+          image: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/csi-nfsplugin /registration/csi-nfsplugin-reg.sock"]
+          args:
+            - --v=10
+            - --csi-address=/plugin/csi.sock
+            - --kubelet-registration-path=/var/lib/kubelet/plugins/csi-nfsplugin/csi.sock
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: registration-dir
+              mountPath: /registration
+        - name: nfs
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: "quay.io/datashim-io/csi-nfs:latest"
+          args :
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+          imagePullPolicy: "Always"
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: "Bidirectional"
+      volumes:
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/csi-nfsplugin
+            type: DirectoryOrCreate
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+        - hostPath:
+            path: /var/lib/kubelet/plugins_registry
+            type: Directory
+          name: registration-dir
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/csi-s3.yaml
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: csi-s3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: csi-s3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "dlf"
+        app: csi-s3
+    spec:
+      serviceAccountName: csi-s3
+      containers:
+        - name: driver-registrar
+          image: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0"
+          imagePullPolicy: Always
+          args:
+            - --v=5
+            - --csi-address=/csi/csi.sock
+            - --kubelet-registration-path=/var/lib/kubelet/plugins/csi-s3/csi.sock
+          securityContext:
+            # This is necessary only for systems with SELinux, where
+            # non-privileged sidecar containers cannot access unix domain socket
+            # created by privileged CSI driver container.
+            privileged: false
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+            - mountPath: /registration
+              name: registration-dir
+        - name: csi-s3
+          image: "quay.io/datashim-io/csi-s3:latest"
+          imagePullPolicy: Always
+          args:
+            - "--v=5"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--nodeid=$(KUBE_NODE_NAME)"
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///csi/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: cheap
+              value: "off"
+          securityContext:
+            privileged: true
+          #          ports:
+          #            - containerPort: 9898
+          #              name: healthz
+          #              protocol: TCP
+          #          TODO make it configurable and build it for ppc64le
+          #          livenessProbe:
+          #            failureThreshold: 5
+          #            httpGet:
+          #              path: /healthz
+          #              port: healthz
+          #            initialDelaySeconds: 10
+          #            timeoutSeconds: 3
+          #            periodSeconds: 2
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+            - mountPath: /var/lib/kubelet/pods
+              mountPropagation: Bidirectional
+              name: mountpoint-dir
+            - mountPath: /dev
+              name: dev-dir
+          ##TODO make it configurable and build it for ppc64le
+      #        - name: liveness-probe
+      #          volumeMounts:
+      #            - mountPath: /csi
+      #              name: socket-dir
+      #          image: quay.io/k8scsi/livenessprobe:v1.1.0
+      #          args:
+      #            - --csi-address=/csi/csi.sock
+      #            - --health-port=9898
+      volumes:
+        - hostPath:
+            path: /var/lib/kubelet/plugins/csi-s3
+            type: DirectoryOrCreate
+          name: socket-dir
+        - hostPath:
+            path: /var/lib/kubelet/pods
+            type: DirectoryOrCreate
+          name: mountpoint-dir
+        - hostPath:
+            path: /var/lib/kubelet/plugins_registry
+            type: Directory
+          name: registration-dir
+        - hostPath:
+            path: /dev
+            type: Directory
+          name: dev-dir
+---
+# Source: codeflare-platform/charts/fluent-bit/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: codeflare-platform-fluent-bit
+  namespace: default
+  labels:
+    helm.sh/chart: fluent-bit-0.30.4
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "2.1.4"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fluent-bit
+      app.kubernetes.io/instance: codeflare-platform
+  template:
+    metadata:
+      annotations:
+        checksum/config: 2a3415f212a9c617c52b1b9be707a64908c97c5f8a80e14ca1163b797b773a71
+        checksum/luascripts: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      labels:
+        app.kubernetes.io/name: fluent-bit
+        app.kubernetes.io/instance: codeflare-platform
+    spec:
+      serviceAccountName: codeflare-platform-fluent-bit
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: fluent-bit
+          image: "cr.fluentbit.io/fluent/fluent-bit:2.1.4"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 2020
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+          volumeMounts:
+            - mountPath: /fluent-bit/etc/fluent-bit.conf
+              name: config
+              subPath: fluent-bit.conf
+            - mountPath: /fluent-bit/etc/custom_parsers.conf
+              name: config
+              subPath: custom_parsers.conf
+            - mountPath: /var/log
+              name: varlog
+            - mountPath: /var/lib/docker/containers
+              name: varlibdockercontainers
+              readOnly: true
+            - mountPath: /etc/machine-id
+              name: etcmachineid
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: codeflare-platform-fluent-bit
+        - hostPath:
+            path: /var/log
+          name: varlog
+        - hostPath:
+            path: /var/lib/docker/containers
+          name: varlibdockercontainers
+        - hostPath:
+            path: /etc/machine-id
+            type: File
+          name: etcmachineid
+---
+# Source: codeflare-platform/charts/codeflare-s3/templates/client.yaml
+# The point of this is to give an easy way to debug issues with the in-cluster s3.
+# TODO: this should probably only be deployed when in debug mode?
+apiVersion: v1
+kind: Pod
+metadata:
+  name: codeflare-s3-client
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/component: s3
+spec:
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
+
+  containers:
+  - name: client
+    image: bitnami/minio-client:2023.8.29
+    imagePullPolicy: IfNotPresent
+    envFrom:
+      - configMapRef:
+          name: codeflare-s3
+      - secretRef:
+          name: codeflare-s3
+    command:
+      - sh
+      - "-c"
+      - |
+        until mc alias set s3 $S3_ENDPOINT $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY; do
+          echo 'Waiting for minio to come alive'
+          sleep 1
+        done
+        sleep infinity
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/application/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-application-controller
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/component: run-controller
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: application-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: codeflare.dev
+        app.kubernetes.io/component: application-controller
+    spec:
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: codeflare-application-controller-account
+      volumes:        
+        - name: workdir
+          nfs:
+            server: 10.96.244.176
+            path: /
+      containers:
+      - name: controller
+        image: ghcr.io/project-codeflare/codeflare-application-controller:dev
+        env:
+          - name: WORKDIR
+            value: /workdir
+          - name: WORKDIR_PVC
+            value: workdir
+        volumeMounts:
+        - name: workdir
+          mountPath: /workdir
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/image/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-image-controller
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/component: image-controller
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: image-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: codeflare.dev
+        app.kubernetes.io/component: image-controller
+    spec:
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: codeflare-image-controller-account
+      volumes:        
+        - name: workdir
+          nfs:
+            server: 10.96.244.176
+            path: /
+      containers:
+      - name: controller
+        image: ghcr.io/project-codeflare/codeflare-image-controller:dev
+        env:
+          - name: WORKDIR
+            value: /workdir
+          - name: WORKDIR_PVC
+            value: workdir
+          - name: WORKDIR_SERVER
+            value: 10.96.244.176
+        volumeMounts:
+        - name: workdir
+          mountPath: /workdir
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/controllers/run/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-run-controller
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/component: run-controller
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/component: run-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: codeflare.dev
+        app.kubernetes.io/component: run-controller
+    spec:
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: codeflare-run-controller-account
+      volumes:        
+        - name: workdir
+          nfs:
+            server: 10.96.244.176
+            path: /
+      containers:
+      - name: controller
+        image: ghcr.io/project-codeflare/codeflare-run-controller:dev
+        env:
+          - name: WORKDIR
+            value: /workdir
+          - name: WORKDIR_PVC
+            value: workdir
+          - name: WORKDIR_SERVER
+            value: 10.96.244.176
+        volumeMounts:
+        - name: workdir
+          mountPath: /workdir
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/nfs/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "nfs-server"
+  namespace: codeflare-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: codeflare-platform
+      app.kubernetes.io/component: nfs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: codeflare-platform
+        app.kubernetes.io/component: nfs
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: nfs-server
+        image: k8s.gcr.io/volume-nfs:0.8
+        command: ["/bin/bash", "-c", "--"]
+        args:
+          - |
+            mkdir /exports
+            /usr/local/bin/run_nfs.sh /exports
+
+        ports:
+        - name: nfs
+          containerPort: 2049
+        - name: mountd
+          containerPort: 20048
+        - name: rpcbind
+          containerPort: 111
+        securityContext:
+          privileged: true
+---
+# Source: codeflare-platform/charts/codeflare-s3/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-s3
+  namespace: codeflare-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: codeflare.dev
+      app.kubernetes.io/name: codeflare-s3
+      app.kubernetes.io/component: s3
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: codeflare.dev
+        app.kubernetes.io/name: codeflare-s3
+        app.kubernetes.io/component: s3
+    spec:
+      terminationGracePeriodSeconds: 0
+      volumes:
+        - name: data
+          hostPath:
+          emptyDir:
+            sizeLimit: 1Gi
+        
+      containers:
+      - name: minio
+        image: bitnami/minio:2023.8.29
+        imagePullPolicy: IfNotPresent
+        envFrom:
+          - secretRef:
+              name: codeflare-s3
+        command:
+          - /bin/bash
+          - -c
+        args: 
+          - "echo 'Cleaning /data' && find /data | wc -l && rm -rf /data/* && rm -rf /data/.minio.sys && find /data && find /data | wc -l && echo 'Starting minio' && MINIO_ROOT_USER=$AWS_ACCESS_KEY_ID MINIO_ROOT_PASSWORD=$AWS_SECRET_ACCESS_KEY minio server /data --console-address :9090"
+        securityContext:
+          runAsUser: 0
+          privileged: true
+        ports:
+        - containerPort: 9000
+          hostPort: 9000
+        - containerPort: 9090
+          hostPort: 9090
+        # Mount the volume into the pod
+        volumeMounts:
+        - name: data # must match the volume name, above
+          mountPath: "/data"
+
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 2
+          periodSeconds: 15
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/apps/operator.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataset-operator
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: dataset-operator
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        name: dataset-operator
+        app.kubernetes.io/name: "dlf"
+    spec:
+      serviceAccountName: dataset-operator
+      initContainers:
+        - name: generate-keys
+          image: "quay.io/datashim-io/generate-keys:latest"
+          imagePullPolicy: Always
+          env:
+            - name: DATASET_OPERATOR_NAMESPACE
+              value: default
+      containers:
+        - name: dataset-operator
+          # Replace this with the built image name
+          image: "quay.io/datashim-io/dataset-operator:latest"
+          command:
+            - /manager
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9443
+              name: webhook-api
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "dataset-operator"
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: webhook-tls-certs
+              mountPath: /tmp/k8s-webhook-server/serving-certs
+              readOnly: true
+      volumes:
+        - name: webhook-tls-certs
+          secret:
+            secretName: webhook-server-tls
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/deployment-controller.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-platform-kube-fledged-controller
+  labels:
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-fledged
+      app.kubernetes.io/instance: codeflare-platform
+      app.kubernetes.io/part-of: codeflare-platform-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-fledged
+        app.kubernetes.io/instance: codeflare-platform
+        app.kubernetes.io/part-of: codeflare-platform-controller
+    spec:
+      serviceAccountName: codeflare-platform-kube-fledged-controller
+      securityContext:
+        {}
+      containers:
+        - name: kube-fledged
+          securityContext:
+            {}
+          image: docker.io/senthilrch/kubefledged-controller:v0.10.0
+          command: [/opt/bin/kubefledged-controller]
+          args:
+            - "--stderrthreshold=INFO"
+            - "--image-pull-deadline-duration=5m"
+            - "--image-cache-refresh-frequency=15m"
+            - "--image-pull-policy=IfNotPresent"
+            - "--image-delete-job-host-network=false"
+            - "--job-retention-policy=delete"          
+          imagePullPolicy: Always
+          env:
+            - name: KUBEFLEDGED_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KUBEFLEDGED_CRI_CLIENT_IMAGE
+              value: docker.io/senthilrch/kubefledged-cri-client:v0.10.0
+            - name: BUSYBOX_IMAGE
+              value: senthilrch/busybox:1.35.0
+          resources:
+            {}
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/deployment-webhook-server.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-platform-kube-fledged-webhook-server
+  labels:
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-fledged
+      app.kubernetes.io/instance: codeflare-platform
+      app.kubernetes.io/part-of: codeflare-platform-webhook-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-fledged
+        app.kubernetes.io/instance: codeflare-platform
+        app.kubernetes.io/part-of: codeflare-platform-webhook-server
+    spec:
+      serviceAccountName: codeflare-platform-kube-fledged-webhook-server
+      securityContext:
+        {}
+      initContainers:
+        - image: docker.io/senthilrch/kubefledged-webhook-server:v0.10.0
+          command: [/opt/bin/kubefledged-webhook-server]
+          args:
+          - "--stderrthreshold=INFO"
+          - "--init-server"
+          imagePullPolicy: Always
+          name: init
+          env:
+          - name: KUBEFLEDGED_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: WEBHOOK_SERVER_SERVICE
+            value: codeflare-platform-kube-fledged-webhook-server
+          - name: VALIDATING_WEBHOOK_CONFIG
+            value: codeflare-platform-kube-fledged-webhook-server
+          - name: CERT_KEY_PATH
+            value: "/var/run/secrets/webhook-server/"
+          volumeMounts:
+          - name: certkey-volume
+            mountPath: "/var/run/secrets/webhook-server"
+      containers:
+        - name: kube-fledged
+          securityContext:
+            {}
+          image: docker.io/senthilrch/kubefledged-webhook-server:v0.10.0
+          command: [/opt/bin/kubefledged-webhook-server]
+          args:
+            - "--stderrthreshold=INFO"
+            - "--cert-file=/var/run/secrets/webhook-server/tls.crt"
+            - "--key-file=/var/run/secrets/webhook-server/tls.key"
+            - "--port=443"
+          imagePullPolicy: Always
+          env:
+            - name: KUBEFLEDGED_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            {}
+          volumeMounts:
+          - name: certkey-volume
+            mountPath: "/var/run/secrets/webhook-server"
+            readOnly: true
+      volumes:
+      - name: certkey-volume
+        emptyDir: {}
+---
+# Source: codeflare-platform/charts/kuberay-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kuberay-operator
+  labels:
+    app.kubernetes.io/name: kuberay-operator
+    helm.sh/chart: kuberay-operator-0.5.0
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kuberay-operator
+      app.kubernetes.io/instance: codeflare-platform
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kuberay-operator
+        app.kubernetes.io/instance: codeflare-platform
+        app.kubernetes.io/component: kuberay-operator
+    spec:
+      serviceAccountName: kuberay-operator
+      volumes: []
+      securityContext:
+        null
+      containers:
+        - name: kuberay-operator
+          securityContext:
+            {}
+          image: "kuberay/operator:v0.5.0"
+          imagePullPolicy: IfNotPresent
+          volumeMounts: []
+          command:
+            - /manager
+          args:
+            []
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            []
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 5
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcad-controller
+  namespace: kube-system
+  labels:
+    chart: "mcad-controller-0.1.0"
+    app: custom-metrics-apiserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-metrics-apiserver
+  template:
+    metadata:
+      labels:
+        app: custom-metrics-apiserver
+      name: mcad-controller
+    spec:
+#
+      serviceAccountName: mcad-controller
+#
+#
+      volumes:
+      - name: temp-vol
+        emptyDir: {}
+#
+      containers:
+#
+      - name: mcad-controller
+        image: "quay.io/project-codeflare/mcad-controller:release-v1.32.0"
+        imagePullPolicy: IfNotPresent
+        command: ["mcad-controller"]
+#
+#
+        args: ["--v", "4", "--logtostderr"]
+#
+        ports:
+        - containerPort: 6443
+          name: https
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - mountPath: /tmp
+          name: temp-vol
+#
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          periodSeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          periodSeconds: 5
+          timeoutSeconds: 5
+#
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2048Mi
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/deployment.yaml
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: scheduler-plugins-controller
+  namespace: default
+  labels:
+    app: scheduler-plugins-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler-plugins-controller
+  template:
+    metadata:
+      labels:
+        app: scheduler-plugins-controller
+    spec:
+      serviceAccountName: scheduler-plugins-controller
+      containers:
+      - name: scheduler-plugins-controller
+        image: registry.k8s.io/scheduler-plugins/controller:v0.25.7
+        imagePullPolicy: IfNotPresent
+---
+# Source: codeflare-platform/charts/scheduler-plugins/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: scheduler
+  name: scheduler-plugins-scheduler
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      component: scheduler
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: scheduler
+    spec:
+      serviceAccountName: scheduler-plugins-scheduler
+      containers:
+      - command:
+        - /bin/kube-scheduler
+        - --config=/etc/kubernetes/scheduler-config.yaml
+        image: registry.k8s.io/scheduler-plugins/kube-scheduler:v0.25.7
+        imagePullPolicy: IfNotPresent        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10259
+            scheme: HTTPS
+          initialDelaySeconds: 15
+        name: scheduler-plugins-scheduler
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 10259
+            scheme: HTTPS
+        resources:
+          requests:
+            cpu: '0.1'
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: scheduler-config
+          mountPath: /etc/kubernetes
+          readOnly: true
+      hostNetwork: false
+      hostPID: false
+      volumes:
+      - name: scheduler-config
+        configMap:
+          name: scheduler-config
+---
+# Source: codeflare-platform/charts/spark-operator/templates/deployment.yaml
+# If the admission webhook is enabled, then a post-install step is required
+# to generate and install the secret in the operator namespace.
+
+# In the post-install hook, the token corresponding to the operator service account
+# is used to authenticate with the Kubernetes API server to install the secret bundle.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeflare-platform-spark-operator
+  labels:
+    helm.sh/chart: spark-operator-1.1.27
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/version: "v1beta2-1.3.8-3.1.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spark-operator
+      app.kubernetes.io/instance: codeflare-platform
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
+        prometheus.io/path: /metrics
+      labels:
+        app.kubernetes.io/name: spark-operator
+        app.kubernetes.io/instance: codeflare-platform
+        app.kubernetes.io/part-of: codeflare.dev
+    spec:
+      serviceAccountName: codeflare-platform-spark-operator
+      securityContext:
+        {}
+      containers:
+      - name: spark-operator
+        image: ghcr.io/googlecloudplatform/spark-operator:v1beta2-1.3.8-3.1.1
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          {}
+        ports:
+          - name: "metrics"
+            containerPort: 10254
+        
+        args:
+        - -v=2
+        - -logtostderr
+        - -namespace=
+        - -enable-ui-service=true
+        - -ingress-url-format=
+        - -controller-threads=10
+        - -resync-interval=30
+        - -enable-batch-scheduler=false
+        - -label-selector-filter=
+        - -enable-metrics=true
+        - -metrics-labels=app_type
+        - -metrics-port=10254
+        - -metrics-endpoint=/metrics
+        - -metrics-prefix=
+        - -enable-webhook=true
+        - -webhook-svc-namespace=default
+        - -webhook-port=8080
+        - -webhook-timeout=30
+        - -webhook-svc-name=codeflare-platform-spark-operator-webhook
+        - -webhook-config-name=codeflare-platform-spark-operator-webhook-config
+        - -webhook-namespace-selector=
+        - -enable-resource-quota-enforcement=false
+        resources:
+          {}
+        volumeMounts:
+          - name: webhook-certs
+            mountPath: /etc/webhook-certs
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: codeflare-platform-spark-operator-webhook-certs
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-h3-chart/templates/csi-controller-h3.yaml
+# This YAML file contains attacher & csi driver API objects that are necessary
+# to run external CSI attacher for H3
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-controller-h3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  serviceName: "csi-controller-h3"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-controller-h3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "dlf"
+        app: csi-controller-h3
+    spec:
+      serviceAccountName: csi-controller-h3
+      containers:
+        - name: csi-attacher
+          image: "k8s.gcr.io/sig-storage/csi-attacher:v3.3.0"
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          # imagePullPolicy: "Always"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+        - name: h3
+          image: "carvicsforth/csi-h3:v1.2.0"
+          args :
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+          # imagePullPolicy: "Always"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /plugin
+      volumes:
+        - name: socket-dir
+          emptyDir:
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-nfs-chart/templates/csi-attacher-nfsplugin.yaml
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-attacher-nfsplugin
+  namespace: default
+  labels:
+    app.kubernetes.io/name: "dlf"
+spec:
+  selector:
+    matchLabels:
+      app: csi-attacher-nfsplugin
+  serviceName: "csi-attacher-nfsplugin"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "dlf"
+        app: csi-attacher-nfsplugin
+    spec:
+      serviceAccountName: csi-attacher-nfs
+      containers:
+        - name: csi-attacher
+          image: "k8s.gcr.io/sig-storage/csi-attacher:v3.3.0"
+          args:
+            - "--v=10"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+        - name: nfs
+          image: "quay.io/datashim-io/csi-nfs:latest"
+          args :
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /plugin
+      volumes:
+        - name: socket-dir
+          emptyDir: {}
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/attacher.yaml
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-attacher-s3
+  namespace: default
+  labels:
+    app.kubernetes.io/name: "dlf"
+spec:
+  serviceName: "csi-attacher-s3"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-attacher-s3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "dlf"
+        app: csi-attacher-s3
+    spec:
+      serviceAccountName: csi-attacher
+      containers:
+        - name: csi-attacher
+          image: "k8s.gcr.io/sig-storage/csi-attacher:v3.3.0"
+          imagePullPolicy: Always
+          args:
+            - --v=5
+            - --csi-address=/csi/csi.sock
+          securityContext:
+            # This is necessary only for systems with SELinux, where
+            # non-privileged sidecar containers cannot access unix domain socket
+            # created by privileged CSI driver container.
+            privileged: true
+          volumeMounts:
+          - mountPath: /csi
+            name: socket-dir
+
+      volumes:
+        - hostPath:
+            path: /var/lib/kubelet/plugins/csi-s3
+            type: DirectoryOrCreate
+          name: socket-dir
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/provisioner.yaml
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-provisioner-s3
+  labels:
+    app.kubernetes.io/name: "dlf"
+  namespace: default
+spec:
+  serviceName: "csi-provisioner-s3"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-provisioner-s3
+  template:
+    metadata:
+      labels:
+        app: csi-provisioner-s3
+    spec:
+      serviceAccountName: csi-provisioner
+      containers:
+        - name: csi-provisioner
+          image: "k8s.gcr.io/sig-storage/csi-provisioner:v2.2.2"
+          imagePullPolicy: Always
+          args:
+            - -v=5
+            - --csi-address=/csi/csi.sock
+            - --feature-gates=Topology=true
+          securityContext:
+            # This is necessary only for systems with SELinux, where
+            # non-privileged sidecar containers cannot access unix domain socket
+            # created by privileged CSI driver container.
+            privileged: true
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+      volumes:
+        - hostPath:
+            path: /var/lib/kubelet/plugins/csi-s3
+            type: DirectoryOrCreate
+          name: socket-dir
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/configmap.yaml
+#
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+#
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/deployment.yaml
+#
+---
+# Source: codeflare-platform/charts/mcad-controller/templates/imageSecret.yaml
+#
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/csi-s3-chart/templates/driver.yaml
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: ch.ctrox.csi.s3-driver
+spec:
+  attachRequired: false
+  podInfoOnMount: false
+  volumeLifecycleModes:
+    - Persistent
+#    - Ephemeral
+---
+# Source: codeflare-platform/charts/codeflare-core/templates/images/image-cache.yaml
+apiVersion: kubefledged.io/v1alpha2
+kind: ImageCache
+metadata:
+  # Name of the image cache. A cluster can have multiple image cache objects
+  name: codeflare-image-cache
+  namespace: codeflare-system
+  # The kubernetes namespace to be used for this image cache. You can choose a different namepace as per your preference
+  labels:
+    app: kubefledged
+    kubefledged: imagecache
+    app.kubernetes.io/component: imagecache
+    app.kubernetes.io/part-of: codeflare.dev
+spec:
+  # The "cacheSpec" field allows a user to define a list of images and onto which worker nodes those images should be cached (i.e. pre-pulled).
+  cacheSpec:
+    # Specifies a list of images (nginx:1.23.1) with no node selector, hence these images will be cached in all the nodes in the cluster
+    - images: []
+  # Specifies a list of image pull secrets to pull images from private repositories into the cache
+  imagePullSecrets: []
+---
+# Source: codeflare-platform/charts/dlf-chart/charts/dataset-operator-chart/templates/apps/webhook-definition.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: dlf-mutating-webhook-cfg
+---
+# Source: codeflare-platform/charts/codeflare-defaults/templates/default-run-size-config.yaml
+apiVersion: codeflare.dev/v1alpha1
+kind: RunSizeConfiguration
+metadata:
+  name: default-run-size-configuration
+spec:
+  priority: 100
+  config:
+    xs:
+      workers: 1
+      cpu: 1
+      memory: 4Gi
+      gpu: 1
+    sm:
+      workers: 2
+      cpu: 1
+      memory: 8Gi
+      gpu: 1
+    md:
+      workers: 4
+      cpu: 2
+      memory: 16Gi
+      gpu: 1
+    lg:
+      workers: 8
+      cpu: 4
+      memory: 32Gi
+      gpu: 1
+    xl:
+      workers: 20
+      cpu: 4
+      memory: 48Gi
+      gpu: 1
+    xxl:
+      workers: 40
+      cpu: 8
+      memory: 64Gi
+      gpu: 1
+---
+# Source: codeflare-platform/charts/kube-fledged/templates/validatingwebhook.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: codeflare-platform-kube-fledged-webhook-server
+  labels:
+    
+    helm.sh/chart: kube-fledged-v0.10.0
+    app.kubernetes.io/name: kube-fledged
+    app.kubernetes.io/instance: codeflare-platform
+    app.kubernetes.io/part-of: codeflare-platform
+    app.kubernetes.io/version: "v0.10.0"
+    app.kubernetes.io/managed-by: Helm  
+  annotations:
+    meta.helm.sh/release-name: codeflare-platform
+    meta.helm.sh/release-namespace: default
+webhooks:
+  - name: validate-image-cache.kubefledged.io
+    admissionReviewVersions: ["v1beta1", "v1"]
+    timeoutSeconds: 1
+    failurePolicy: Fail
+    sideEffects: None
+    clientConfig:
+      service:
+        namespace: "default"
+        name: codeflare-platform-kube-fledged-webhook-server
+        path: "/validate-image-cache"
+        port: 3443
+      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZCVENDQXUyZ0F3SUJBZ0lDQitVd0RRWUpLb1pJaHZjTkFRRUxCUUF3R1RFWE1CVUdBMVVFQ2hNT2EzVmkKWldac1pXUm5aV1F1YVc4d0hoY05NakV3TnpJeU1EZ3hPVFEwV2hjTk1qSXdOekl5TURneE9UUTBXakFaTVJjdwpGUVlEVlFRS0V3NXJkV0psWm14bFpHZGxaQzVwYnpDQ0FpSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnSVBBRENDCkFnb0NnZ0lCQU93dDNjWm12SnRNN1NKUGx4QlRHUGtSY3lxZGlzUXNEKzRBbTdYYjVnOVhZd3FyanZwanZVdkMKTS9FVkZiK1p1aGd5R2I5b3dEb0IxOFJ1VGd2WFMrNTZ4VlNQYTE0WENoTi92U2ZZaTAydzhaZGcxdy8wNTBFRwplMXQ4ZytTL2hXZlhxUnFORnRONTk0N25jNFcxUllJYUN5WVhjc3dGbHNMdG9xRU95aFR3ZmhyTURRY1lvaDFvCmVZRmZ1bHdiSGltdlJKYlR0QXh2b2o3OVl5MHEzTVdGWXArZ3JvR1dadk1ZeFRRSjZKT0F6bjdIUEFqY3ZqdjIKRmdRSTBVNDlDcUdpUzZWR0ZlOHFBSm15b3BYcHBJZ2l3ODUrbHBnYVA1Y3p6UjVjWHp6anBUczl1T2pWdllzLwpZSm5JS05nUlNJWnJkaE9oUzdJcllhM1JhTU5la3NSOWsrMm5LYXdwSkJBVy91VmszRmcrZFFWWHk2YTE0Yk5ZCmxnTis3SXptd21QTk1BVGVVOTZ5UWVrQ1R3UUlGWVkwZmlxd0ZjamlzZlJ6U1FHY1dUbk91bkV0MWlKbWlXckkKZzUvWEI5ZDhHQ3FGWkJEdnpNUjU5S1RwRlhacjNPYmxONkFIQ3VQa0xKNGZPMklDZWdoeGQ4TUsrTExkaERLMwo3N01qV1dXMkV4L1RDT2pQbUNIalFzWjNCeTVFR2hFTGdIczV6NGxTQSsrZGRFR1AvamptL3FQOUJWVmFBNXJJCkRuSCs1bHNuZkNEQXJYaE5HckVhaVA4a3JjVmF1SlRQNXdJMElORFFoeE1XMUFqdHA0SmgxSVZ1bHNuZU9CME4KempGMVIvempCbDhUTlN3Y2RnN3dCbm1lVWhDbGVvZ1MwZ1J0ejREZDEzeGwrOFc0ZGNDL0FnTUJBQUdqVnpCVgpNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0RBVEFQQmdOVkhSTUJBZjhFCkJUQURBUUgvTUIwR0ExVWREZ1FXQkJRUmo4WUFSS09Vb213Z0Z6WGNrandBRFpEU2VqQU5CZ2txaGtpRzl3MEIKQVFzRkFBT0NBZ0VBQ0RRb1JFbllsd2pOb0tFTUlqUGJ5Wk1MdUQ5Smt6ZFhldzlESTBCNUtTaHkySFZBc0E2MgpiYzFZM25lYXRyQWcyUXJ5dklhYzZCUVhQbW4zUmF2V084blNuQnJDbHJkYk8vSXc2RnFtZVBVaDZSQVQzNyt6CitoWVdpL3JwL1U5bVBidm4yc2xOMVRlK3R6a1BsN01KeGxwMXRSWTU0RjB6Q0ZOdnFwUXBMUDdiS1VTVVVITmQKUW1WcWVQaHBucC9XV1dQNklXNVJ2VE8rSmhhTFpSV3hNaUxiWWtxN1lOZkI4SHhCam92T1NDMEE4TVRCRGVuTgpaV2lWcjN2K1kyOW9qZFY5R29VSzNPaDN0YVZNbStXWUxBdGxOcmpVdGxzU0NWN1dGbFhpNTZVd2xPZXd4ZGhmClcvMGdrTFkyaDNKNHdHUDZ6c09XbGgzVlVMV0w3WUZUYWllTEhpT0N3VzVaZ1FoWVRFNFAvcWdaQkZVVXRqNGUKbGRXeVFZWlBUR2dNelVxdm0wM3NDRHByRTM1eStSY0hFcEpwU2NXcy9yeW5VaXVJYnVGU3dhZUY2RktFZG5hSwpIMnRvdnpjMlBvMDJyWVFFOVhDNHdKUFpSaEpFYldocVROZ3JuL2NPRGZuNFovUVRyMGoxbGU1V3BacXE4Y1hWCjl5UHNVclVRL1g1WDNsMURtejlMcXhDd1ErZG5YU2xxczdRYnY5dDhPbUNZUEdnQVJaRU1qejFDUmJIbDZTaGkKaVAzY1JUTVRFV2hUMTJRZGZPd3djYUVCanNoQ0doVDAwZ3lUdFFzNm9wSzZLQm11RXF0cXV1TlFyMUdmaTl5bQp5WW1pNGg4RFdIdERpTEFrQW1DZWZuQXZoTWpiRXF3SzN6bmROdW1GTTAvbEtyZTBtekgvU3ZJPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    rules:
+      - operations: ["CREATE", "UPDATE"]
+        apiGroups: ["kubefledged.io"]
+        apiVersions: ["v1alpha2"]
+        resources: ["imagecaches"]
+        scope: "Namespaced"
+

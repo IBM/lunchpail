@@ -1,5 +1,5 @@
 declare global {
   interface Window {
-    jaas: import("../main/events")
+    jaas: typeof import("../main/events")
   }
 }
