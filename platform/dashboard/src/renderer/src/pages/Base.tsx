@@ -32,7 +32,7 @@ import SmallLabel from "../components/SmallLabel"
 
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 import DemoIcon from "@patternfly/react-icons/dist/esm/icons/flask-icon"
-import LiveIcon from "@patternfly/react-icons/dist/esm/icons/circle-icon"
+import LiveIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon"
 
 export interface BaseState {
   /** UI in dark mode? */
@@ -112,29 +112,33 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
   protected controlPlaneStatusToolbarItem() {
     return (
       <ToolbarItem key="control-plane-status">
-        <Settings.Consumer>
-          {(settings) =>
-            settings.demoMode[0] ? this.demoModeStatus() : this.controlPlaneStatus(settings.controlPlaneReady)
-          }
-        </Settings.Consumer>
+        <TextContent>
+          <Text component="small">
+            <Settings.Consumer>
+              {(settings) =>
+                settings.demoMode[0] ? this.demoModeStatus() : this.controlPlaneStatus(settings.controlPlaneReady)
+              }
+            </Settings.Consumer>
+          </Text>
+        </TextContent>
       </ToolbarItem>
     )
   }
 
   protected demoModeStatus() {
     return (
-      <div>
-        <DemoIcon className="codeflare--demo-mode" /> Offline Demo
-      </div>
+      <>
+        Offline Demo <DemoIcon className="codeflare--demo-mode" />
+      </>
     )
   }
 
   protected controlPlaneStatus(controlPlaneReady: boolean) {
     return (
-      <div>
-        <LiveIcon className={controlPlaneReady ? "codeflare--status-online" : "codeflare--status-offline"} /> Controller{" "}
-        {controlPlaneReady ? "Healthy" : "Offline"}
-      </div>
+      <>
+        Controller Status{" "}
+        <LiveIcon className={controlPlaneReady ? "codeflare--status-online" : "codeflare--status-offline"} />
+      </>
     )
   }
 
