@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Button } from "@patternfly/react-core"
+import { Button, Flex, FlexItem } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
@@ -14,6 +14,9 @@ function href(view: string, returnTo?: string, hash?: string, qs: string[] = [])
   return "?" + queries.join("&") + (hash ?? "")
 }
 
+const gapSm = { default: "gapSm" as const }
+const noWrap = { default: "noWrap" as const }
+
 /** A React component that will offer a Link to a given `data-href` */
 function linker(props: { "data-href": string; "data-link-text": string; "data-start-or-add": StartOrAdd }) {
   const href = props["data-href"]
@@ -24,7 +27,10 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
 
   return (
     <Link {...props} to={href}>
-      <span className="pf-v5-c-button__icon pf-m-start">{icon}</span> {linkText}
+      <Flex gap={gapSm} flexWrap={noWrap}>
+        <FlexItem>{icon}</FlexItem>
+        <FlexItem>{linkText}</FlexItem>
+      </Flex>
     </Link>
   )
 }

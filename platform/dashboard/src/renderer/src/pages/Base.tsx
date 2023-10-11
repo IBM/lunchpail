@@ -2,6 +2,8 @@ import { Fragment, PureComponent, ReactNode } from "react"
 
 import {
   Divider,
+  Flex,
+  FlexItem,
   Masthead,
   MastheadMain,
   MastheadBrand,
@@ -126,24 +128,27 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
     )
   }
 
-  protected demoModeStatus() {
+  protected iconWithLabel(label: string, icon: ReactNode) {
     return (
-      <>
-        Offline Demo <DemoIcon className="codeflare--demo-mode" />
-      </>
+      <Flex flexWrap={this.noWrap} gap={this.gapSm}>
+        <FlexItem>{icon}</FlexItem>
+        <FlexItem>{label}</FlexItem>
+      </Flex>
     )
   }
 
+  protected demoModeStatus() {
+    return this.iconWithLabel("Offline Demo", <DemoIcon className="codeflare--demo-mode" />)
+  }
+
   protected controlPlaneStatus(controlPlaneReady: boolean) {
-    return (
-      <>
-        Controller Status{" "}
-        {controlPlaneReady ? (
-          <LiveIcon className="codeflare--status-online" />
-        ) : (
-          <IssueIcon className="codeflare--status-offline" />
-        )}
-      </>
+    return this.iconWithLabel(
+      "Platform Status",
+      controlPlaneReady ? (
+        <LiveIcon className="codeflare--status-online" />
+      ) : (
+        <IssueIcon className="codeflare--status-offline" />
+      ),
     )
   }
 
@@ -209,7 +214,9 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
     return <Fragment />
   }
 
+  protected readonly gapSm = { default: "gapSm" as const }
   protected readonly inline = { default: "inline" as const }
+  protected readonly noWrap = { default: "noWrap" as const }
   protected readonly alignLeft = { default: "alignLeft" as const }
   protected readonly alignRight = { default: "alignRight" as const }
   protected readonly noPadding = { default: "noPadding" as const }
