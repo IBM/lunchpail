@@ -2,8 +2,6 @@ import { Fragment, PureComponent, ReactNode } from "react"
 
 import {
   Divider,
-  Flex,
-  FlexItem,
   Masthead,
   MastheadMain,
   MastheadBrand,
@@ -33,9 +31,7 @@ import "@patternfly/react-core/dist/styles/base.css"
 import SmallLabel from "../components/SmallLabel"
 
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
-import DemoIcon from "@patternfly/react-icons/dist/esm/icons/flask-icon"
-import LiveIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon"
-import IssueIcon from "@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon"
+import ControlPlaneStatus from "../components/ControlPlaneStatus"
 
 export interface BaseState {
   /** UI in dark mode? */
@@ -119,39 +115,10 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
       <ToolbarItem key="control-plane-status">
         <TextContent>
           <Text component="small">
-            <Settings.Consumer>
-              {(settings) =>
-                settings &&
-                (settings.demoMode[0] ? this.demoModeStatus() : this.controlPlaneStatus(settings.controlPlaneReady))
-              }
-            </Settings.Consumer>
+            <ControlPlaneStatus />
           </Text>
         </TextContent>
       </ToolbarItem>
-    )
-  }
-
-  protected iconWithLabel(label: string, icon: ReactNode) {
-    return (
-      <Flex flexWrap={this.noWrap} gap={this.gapSm}>
-        <FlexItem>{icon}</FlexItem>
-        <FlexItem>{label}</FlexItem>
-      </Flex>
-    )
-  }
-
-  protected demoModeStatus() {
-    return this.iconWithLabel("Offline Demo", <DemoIcon className="codeflare--demo-mode" />)
-  }
-
-  protected controlPlaneStatus(controlPlaneReady: boolean) {
-    return this.iconWithLabel(
-      "Platform Status",
-      controlPlaneReady ? (
-        <LiveIcon className="codeflare--status-online" />
-      ) : (
-        <IssueIcon className="codeflare--status-offline" />
-      ),
     )
   }
 
@@ -217,9 +184,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
     return <Fragment />
   }
 
-  protected readonly gapSm = { default: "gapSm" as const }
   protected readonly inline = { default: "inline" as const }
-  protected readonly noWrap = { default: "nowrap" as const }
   protected readonly alignLeft = { default: "alignLeft" as const }
   protected readonly alignRight = { default: "alignRight" as const }
   protected readonly noPadding = { default: "noPadding" as const }
