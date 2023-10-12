@@ -3,6 +3,7 @@
   "include": ["package.json", "src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"],
   "compilerOptions": {
     "composite": true,
+    "noEmit": true,
     "jsx": "react-jsx"
   }
 }
