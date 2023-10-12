@@ -1,0 +1,10 @@
+*~
+*.sh
+.DS_Store
+.cache
+node_modules
+/controllers
+/components
+
+# dashboard node modules and source aren't important for the backend; for now ignore all of it
+/dashboard

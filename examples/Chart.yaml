@@ -1,0 +1,10 @@
+apiVersion: v1
+name: codeflare-examples
+description: Deploys CodeFlare example Applications
+type: application
+
+# Chart version.
+version: 0.0.1
+
+# CodeFlare version.
+appVersion: "latest"

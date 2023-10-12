@@ -1,0 +1,8 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: queuedemo1
+  namespace: {{ .Values.namespace }}
+spec:
+  application:
+    name: queuedemo1

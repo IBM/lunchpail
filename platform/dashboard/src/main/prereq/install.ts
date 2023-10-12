@@ -27,23 +27,53 @@ async function createKindClusterIfNeeded(clusterName = "codeflare-platform") {
 }
 
 async function apply(props: { config: Config; clusterName: string; kubeconfig: FileResult; action: Action }) {
-  const { default: yaml } = await (props.config === "lite"
+  const { default: core } = await (props.config === "lite"
     ? // @ts-ignore
       import("../../../resources/jaas-lite.yml?raw")
     : // @ts-ignore
       import("../../../resources/jaas-full.yml?raw"))
 
-  console.log("Got yaml", yaml)
+  // @ts-ignore
+  const { default: examples } = await import("../../../resources/jaas-examples.yml?raw")
+
+  console.log("Got core", core)
   console.log("Got kubeconfig", props.kubeconfig)
 
-  const yamlFile = await file()
-  const { writeFile } = await import("node:fs/promises")
-  await writeFile(yamlFile.path, yaml)
-
   const execPromise = promisify(exec)
-  console.log(await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${yamlFile.path}`))
+  const { writeFile } = await import("node:fs/promises")
 
-  await Promise.all([yamlFile.cleanup(), props.kubeconfig.cleanup()])
+  const coreFile = await file()
+  await writeFile(coreFile.path, core)
+
+  const examplesFile = await file()
+  await writeFile(examplesFile.path, examples)
+
+  const okCore = await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${coreFile.path}`)
+    .then((resp) => {
+      console.log(resp)
+      return true
+    })
+    .catch((err) => {
+      console.error(err)
+      return false
+    })
+
+  const okExamples = await execPromise(
+    `kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${examplesFile.path}`,
+  )
+    .then((resp) => {
+      console.log(resp)
+      return true
+    })
+    .catch((err) => {
+      console.error(err)
+      return false
+    })
+
+  console.log("OK core", okCore)
+  console.log("OK examples", okExamples)
+
+  await Promise.all([coreFile.cleanup(), examplesFile.cleanup(), props.kubeconfig.cleanup()])
 }
 
 export default async function manageControlPlane(config: Config, action: Action) {

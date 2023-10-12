@@ -1,0 +1,14 @@
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: queuedemo1 # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  namespace: {{ .Values.namespace }}
+spec:
+  local:
+    type: "COS"
+    bucket: queuedemo1
+    endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+    secret-name: queuedemo1-cfsecret
+    secret-namespace: {{ .Values.namespace }}
+    #readonly: "true" # default is false
+    provision: "true"

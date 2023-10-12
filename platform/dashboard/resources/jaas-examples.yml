@@ -1,0 +1,62 @@
+---
+# Source: codeflare-examples/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: codeflare-examples
+---
+# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/dataset-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: queuedemo1-cfsecret # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  namespace: codeflare-examples
+type: Opaque
+data:
+  accessKeyID: Y29kZWZsYXJleQ==
+  secretAccessKey: Y29kZWZsYXJleQ==
+---
+# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/README.md
+# Application api=workqueue
+---
+# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/app.yaml
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: queuedemo1
+  namespace: codeflare-examples
+spec:
+  api: workqueue
+  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/charts/examples/applications/workqueue/queuedemo1
+  command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
+  description: Hello
+  inputs:
+    - sizes:
+        lg: queuedemo1
+---
+# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/dataset.yaml
+apiVersion: com.ie.ibm.hpsys/v1alpha1
+kind: Dataset
+metadata:
+  name: queuedemo1 # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  namespace: codeflare-examples
+spec:
+  local:
+    type: "COS"
+    bucket: queuedemo1
+    endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+    secret-name: queuedemo1-cfsecret
+    secret-namespace: codeflare-examples
+    #readonly: "true" # default is false
+    provision: "true"
+---
+# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/run.yaml
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: queuedemo1
+  namespace: codeflare-examples
+spec:
+  application:
+    name: queuedemo1
