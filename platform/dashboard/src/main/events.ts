@@ -97,13 +97,19 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
       stream.end()
     })
   })
-  ipcMain.handle("/prereqs/check", () => {
+
+  ipcMain.handle("/controlplane/status", () => {
     // Checking if we have a control plane cluster running
     return clusterExists()
   })
 
-  ipcMain.handle("/prereqs/install", async () => {
-    await import("./prereq/install").then((_) => _.default("lite"))
+  ipcMain.handle("/controlplane/init", async () => {
+    await import("./prereq/install").then((_) => _.default("lite", "apply"))
+    return true
+  })
+
+  ipcMain.handle("/controlplane/destroy", async () => {
+    await import("./prereq/install").then((_) => _.default("lite", "delete"))
     return true
   })
 }
@@ -125,12 +131,18 @@ export default {
       ipcRenderer.send(`/${source}/close`)
     }
   },
-  async isLaptopReady() {
-    const isReady = await ipcRenderer.invoke("/prereqs/check")
-    return isReady
-  },
-  async makeLaptopReady() {
-    const response = await ipcRenderer.invoke("/prereqs/install")
-    return response
+  controlplane: {
+    async status() {
+      const isReady = await ipcRenderer.invoke("/controlplane/status")
+      return isReady
+    },
+    async init() {
+      const response = await ipcRenderer.invoke("/controlplane/init")
+      return response
+    },
+    async destroy() {
+      const response = await ipcRenderer.invoke("/controlplane/destroy")
+      return response
+    },
   },
 }

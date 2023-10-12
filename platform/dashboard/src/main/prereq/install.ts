@@ -7,6 +7,7 @@ import { exec } from "node:child_process"
 import type { FileResult } from "tmp-promise"
 
 type Config = "lite" | "full"
+type Action = "apply" | "delete"
 
 function installKindIfNeeded() {
   // TODO
@@ -25,7 +26,7 @@ async function createKindClusterIfNeeded(clusterName = "codeflare-platform") {
   }
 }
 
-async function apply(props: { config: Config; clusterName: string; kubeconfig: FileResult }) {
+async function apply(props: { config: Config; clusterName: string; kubeconfig: FileResult; action: Action }) {
   const { default: yaml } = await (props.config === "lite"
     ? // @ts-ignore
       import("../../../resources/jaas-lite.yml?raw")
@@ -40,13 +41,13 @@ async function apply(props: { config: Config; clusterName: string; kubeconfig: F
   await writeFile(yamlFile.path, yaml)
 
   const execPromise = promisify(exec)
-  console.log(await execPromise(`kubectl apply --dry-run --kubeconfig ${props.kubeconfig.path} -f ${yamlFile.path}`))
+  console.log(await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${yamlFile.path}`))
 
   await Promise.all([yamlFile.cleanup(), props.kubeconfig.cleanup()])
 }
 
-export default async function installControlPlane(config: Config) {
+export default async function manageControlPlane(config: Config, action: Action) {
   await installKindIfNeeded()
   const { clusterName, kubeconfig } = await createKindClusterIfNeeded()
-  await apply({ config, clusterName, kubeconfig })
+  await apply({ config, clusterName, kubeconfig, action })
 }

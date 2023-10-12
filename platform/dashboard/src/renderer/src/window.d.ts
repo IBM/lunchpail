@@ -1,9 +1,13 @@
 export type JaaSApi = {
   on(source: "datasets" | "queues" | "pools" | "applications", cb: (...args: unknown[]) => void): void
 
-  isLaptopReady(): Promise<void>
+  controlplane: {
+    status: Promise<boolean>
 
-  makeLaptopReady(): Promise<void>
+    init(): Promise<void>
+
+    destroy(): Promise<void>
+  }
 }
 
 declare global {

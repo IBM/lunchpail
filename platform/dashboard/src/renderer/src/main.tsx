@@ -18,7 +18,7 @@ function App() {
     async function checkControlPlaneStatus() {
       if (!demoMode[0]) {
         // determine current cluster status
-        const isReady = await window.jaas.isLaptopReady()
+        const isReady = await window.jaas.controlplane.status()
         setControlPlaneReady(isReady)
         console.log("Control Plane Ready?", isReady)
       }
