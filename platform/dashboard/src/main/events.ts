@@ -1,10 +1,10 @@
 import { ipcMain, ipcRenderer } from "electron"
 
 import { clusterExists } from "./prereq/check"
-import startPoolStream from "./streams/pool.js"
-import startQueueStream from "./streams/queue.js"
-import startDataSetStream from "./streams/dataset.js"
-import startApplicationStream from "./streams/application.js"
+import startPoolStream from "./streams/pool"
+import startQueueStream from "./streams/queue"
+import startDataSetStream from "./streams/dataset"
+import startApplicationStream from "./streams/application"
 
 /*async function initEventSource(res: Response, stream: Writable) {
   await res.set({
@@ -109,7 +109,7 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
 }
 
 export default {
-  on(source: "datasets" | "queues" | "pools" | "applications", cb: unknown) {
+  on(source: "datasets" | "queues" | "pools" | "applications", cb: (...args: unknown[]) => void) {
     ipcRenderer.on(`/${source}/event`, cb)
     ipcRenderer.send(`/${source}/open`)
 

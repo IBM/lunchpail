@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-import type QueueEvent from "../../client/events/QueueEvent"
+// FIXME import type QueueEvent from "../../renderer/src/events/QueueEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -10,7 +10,7 @@ import type QueueEvent from "../../client/events/QueueEvent"
  */
 function transformLineToEvent() {
   return new Transform({
-    transform(chunk: Buffer, encoding: string, callback) {
+    transform(chunk: Buffer, _: string, callback) {
       // Splits the string by spaces
       const [, queue, run, workerpool, workerIndex, inbox, processing, outbox] = chunk.toString().split(/\s+/)
 
@@ -19,7 +19,7 @@ function transformLineToEvent() {
       //      run = test7
       const dataset = queue.replace(`queue-${run}-`, "").replace(/-\d+$/, "")
 
-      const model: QueueEvent = {
+      const model /* FIXME : QueueEvent */ = {
         timestamp: Date.now(),
         run,
         inbox: parseInt(inbox, 10),

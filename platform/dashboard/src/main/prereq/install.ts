@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { file } from "tmp-promise"
 import { promisify } from "node:util"
 import { exec } from "node:child_process"
@@ -25,8 +27,10 @@ async function createKindClusterIfNeeded(clusterName = "codeflare-platform") {
 
 async function apply(props: { config: Config; clusterName: string; kubeconfig: FileResult }) {
   const { default: yaml } = await (props.config === "lite"
-    ? import("../../../resources/jaas-lite.yml?raw")
-    : import("../../../resources/jaas-full.yml?raw"))
+    ? // @ts-ignore
+      import("../../../resources/jaas-lite.yml?raw")
+    : // @ts-ignore
+      import("../../../resources/jaas-full.yml?raw"))
 
   console.log("Got yaml", yaml)
   console.log("Got kubeconfig", props.kubeconfig)

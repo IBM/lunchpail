@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-import type DataSetModel from "../../client/components/DataSetModel"
+// FIXME import type DataSetModel from "../../renderer/src/components/DataSetModel"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -10,14 +10,14 @@ import type DataSetModel from "../../client/components/DataSetModel"
  */
 function transformLineToEvent() {
   return new Transform({
-    transform(chunk, encoding, callback) {
+    transform(chunk, _, callback) {
       // Splits the string by spaces
       const [, label, storageType, endpoint, bucket, isReadOnly, inbox] = chunk.toString().split(/\s+/)
 
       if (inbox === "") {
         callback(null, "")
       } else {
-        const model: DataSetModel = {
+        const model /* FIXME : DataSetModel */ = {
           inbox: parseInt(inbox, 10),
           outbox: 0,
           label,

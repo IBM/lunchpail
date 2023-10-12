@@ -42,7 +42,7 @@ export function Input(props: FormProps & Ctrl) {
         name={props.fieldId}
         aria-describedby={`${props.fieldId}-helper`}
         value={props.ctrl.values[props.fieldId]}
-        onChange={(evt, value) => props.ctrl.setValue(props.fieldId, value)}
+        onChange={(_, value) => props.ctrl.setValue(props.fieldId, value)}
       />
     </Group>
   )
@@ -67,7 +67,7 @@ export function Select(
         aria-describedby={`${props.fieldId}-helper`}
         onOpenChange={(isOpen) => setIsOpen(isOpen)}
         selected={selected}
-        onSelect={(evt, value) => {
+        onSelect={(_, value) => {
           if (typeof value === "string") {
             props.ctrl.setValue(props.fieldId, value)
           }

@@ -10,13 +10,13 @@ type Props = QueueProps & {
 
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */
 export default class GridLayout extends PureComponent<Props> {
-  private count(model: Props["inbox"]) {
+  /* private count(model: Props["inbox"]) {
     return Object.values(model).reduce((sum, depth) => sum + depth, 0)
-  }
+  } */
 
-  private get nIn() {
+  /* private get nIn() {
     return this.count(this.props.inbox)
-  }
+  } */
 
   public name() {
     return (

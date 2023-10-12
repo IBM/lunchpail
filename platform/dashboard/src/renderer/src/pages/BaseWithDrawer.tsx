@@ -48,9 +48,6 @@ export default abstract class BaseWithDrawer<
   /** The content to display in the main (non drawer) section */
   protected abstract mainContentBody(): ReactNode
 
-  /** State that will mark the drawer as closed */
-  private closedDrawerState = { drawer: undefined }
-
   /**
    * User has clicked on a UI element that should result in the drawer
    * ending up open, and showing the given content.

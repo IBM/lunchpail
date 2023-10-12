@@ -73,6 +73,7 @@ function dd(description: ReactNode | Record<string, string>) {
   } else {
     return description
   }
+  return null
 }
 
 function dt(term: ReactNode, count?: number | string, helperText?: string) {
@@ -112,6 +113,7 @@ export function descriptionGroup(
       </DescriptionListGroup>
     )
   }
+  return null
 }
 
 function nameGroup(name: string) {

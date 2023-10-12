@@ -19,8 +19,11 @@ export default defineConfig({
     plugins: [
       react(),
       checker({
-        // e.g. use TypeScript check
-        typescript: true,
+        typescript: {
+          // this tells vite-plugin-checker to support "composite"
+          // projects, which is the case for our ./tsconfig.json
+          buildMode: true,
+        },
       }),
     ],
   },

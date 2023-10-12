@@ -18,6 +18,7 @@ import type { LocationProps } from "../router/withLocation"
 
 import type NewPoolHandler from "../events/NewPoolHandler"
 import type EventSourceLike from "../events/EventSourceLike"
+import type { Handler, EventLike } from "../events/EventSourceLike"
 import type QueueEvent from "../events/QueueEvent"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
@@ -33,7 +34,7 @@ const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wiza
 
 import "./Dashboard.scss"
 
-export type EventProps<Source extends EventSource | EventSourceLike = EventSource | EventSourceLike> = {
+export type EventProps<Source extends EventSourceLike = EventSourceLike> = {
   /** If `string`, then it will be interpreted as the route to the server-side EventSource */
   datasets: Source
 
@@ -89,8 +90,7 @@ function either<T>(x: T | undefined, y: T): T {
 }
 
 export class Dashboard extends BaseWithDrawer<Props, State> {
-  private readonly onDataSetEvent = (revt: Event) => {
-    const evt = revt as MessageEvent
+  private readonly onDataSetEvent = (evt: EventLike) => {
     const datasetEvent = JSON.parse(evt.data) as DataSetModel
     const { label } = datasetEvent
 
@@ -110,8 +110,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.setState({ datasetEvents, datasetIndex })
   }
 
-  private readonly onQueueEvent = (revt: Event) => {
-    const evt = revt as MessageEvent
+  private readonly onQueueEvent = (evt: EventLike) => {
     const queueEvent = JSON.parse(evt.data) as QueueEvent
     const { workerpool } = queueEvent
 
@@ -138,8 +137,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.setState({ queueEvents, workerpoolIndex })
   }
 
-  private readonly onPoolEvent = (revt: Event) => {
-    const evt = revt as MessageEvent
+  private readonly onPoolEvent = (evt: EventLike) => {
     const poolEvent = JSON.parse(evt.data) as WorkerPoolStatusEvent
 
     this.setState((curState) => {
@@ -173,8 +171,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     return A.map((_) => md5(_)).join("-")
   }
 
-  private readonly onApplicationEvent = (revt: Event) => {
-    const evt = revt as MessageEvent
+  private readonly onApplicationEvent = (evt: EventLike) => {
     const applicationEvent = JSON.parse(evt.data) as ApplicationSpecEvent
 
     this.setState((curState) => {
@@ -334,7 +331,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     })
   }
 
-  private initEventStream(source: EventSource | EventSourceLike, handler: EventListenerObject["handleEvent"]) {
+  private initEventStream(source: EventSourceLike, handler: Handler) {
     source.addEventListener("message", handler, false)
     source.addEventListener("error", console.error) // TODO
   }
@@ -595,34 +592,34 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   /** Should we *not* show the Applications panel? */
-  private get hideApplications() {
+  /*private get hideApplications() {
     // if we are not showing all applications and showing all worker pools
     return (
       !this.state?.filterState.showingAllApplications &&
       this.state?.filterState.applications.length === 0 &&
       (this.state?.filterState.showingAllDataSets || this.state?.filterState.showingAllWorkerPools)
     )
-  }
+  }*/
 
   /** Should we *not* show the DataSetss panel? */
-  private get hideDataSets() {
+  /*private get hideDataSets() {
     // if we are not showing all datasets and showing all worker pools
     return (
       !this.state?.filterState.showingAllDataSets &&
       this.state?.filterState.datasets.length === 0 &&
       (this.state?.filterState.showingAllApplications || this.state?.filterState.showingAllWorkerPools)
     )
-  }
+  }*/
 
   /** Should we *not* show the WorkerPools panel? */
-  private get hideWorkerPools() {
+  /*private get hideWorkerPools() {
     // if we are showing all datasets and not showing all worker pools
     return (
       !this.state?.filterState.showingAllWorkerPools &&
       this.state?.filterState.workerpools.length === 0 &&
       (this.state?.filterState.showingAllApplications || this.state?.filterState.showingAllDataSets)
     )
-  }
+  }*/
 
   protected override mainContentBody() {
     const kind = currentKind(this.props)

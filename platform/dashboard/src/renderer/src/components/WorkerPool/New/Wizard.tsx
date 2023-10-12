@@ -54,13 +54,13 @@ type State = {
 }
 
 export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
-  private chooseAppIfExists(available: Props["applications"], desired: null | string) {
+  /* private chooseAppIfExists(available: Props["applications"], desired: null | string) {
     if (desired && available.find((_) => _.application === desired)) {
       return desired
     } else {
       return ""
     }
-  }
+  } */
 
   private chooseDataSetIfExists(available: Props["datasets"], desired: null | string) {
     if (desired && available.includes(desired)) {
@@ -70,14 +70,14 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     }
   }
 
-  private get searchedApplication() {
+  /* private get searchedApplication() {
     const app = this.props.searchParams.get("application")
     if (!app || !this.props.applications.find((_) => _.application === app)) {
       return null
     } else {
       return app
     }
-  }
+  } */
 
   private get searchedDataSet() {
     const dataset = this.props.searchParams.get("dataset")
@@ -234,13 +234,13 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private step2(ctrl: FormContextProps) {
+  /*private step2(ctrl: FormContextProps) {
     return (
       <WizardStep id="new-worker-pool-step-locate" name="Choose a Location">
         TODO
       </WizardStep>
     )
-  }
+  }*/
 
   private workerPoolYaml(values: FormContextProps["values"]) {
     const namespace = "todo"

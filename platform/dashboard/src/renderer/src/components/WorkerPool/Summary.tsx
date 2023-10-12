@@ -19,12 +19,14 @@ function latestApplications(props: Props) {
   if (props.statusHistory.length > 0) {
     return props.statusHistory[props.statusHistory.length - 1].applications
   }
+  return null
 }
 
 function latestDataSets(props: Props) {
   if (props.statusHistory.length > 0) {
     return props.statusHistory[props.statusHistory.length - 1].datasets
   }
+  return null
 }
 
 function size(props: Props) {

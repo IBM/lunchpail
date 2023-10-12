@@ -17,7 +17,7 @@ function Dashboard() {
   return (
     <Suspense fallback={<div />}>
       <Settings.Consumer>
-        {(settings) => (settings.demoMode[0] ? <DemoDashboard /> : <LiveDashboard />)}
+        {(settings) => (settings && settings.demoMode[0] ? <DemoDashboard /> : <LiveDashboard />)}
       </Settings.Consumer>
     </Suspense>
   )

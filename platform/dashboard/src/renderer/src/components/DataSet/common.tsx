@@ -23,6 +23,7 @@ function associatedApplicationsFilter(this: LabelAndApplications, app: Applicati
     const { xs, sm, md, lg, xl } = app["data sets"]
     return xs === label || sm === label || md === label || lg === label || xl === label
   }
+  return null
 }
 
 export function numAssociatedApplicationEvents(props: LabelAndApplications) {

@@ -15,7 +15,7 @@ function href(view: string, returnTo?: string, hash?: string, qs: string[] = [])
 }
 
 const gapSm = { default: "gapSm" as const }
-const noWrap = { default: "noWrap" as const }
+const noWrap = { default: "nowrap" as const }
 
 /** A React component that will offer a Link to a given `data-href` */
 function linker(props: { "data-href": string; "data-link-text": string; "data-start-or-add": StartOrAdd }) {

@@ -98,7 +98,9 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
     )
   }
 
-  protected headerToolbarLeftGroup() {}
+  protected headerToolbarLeftGroup() {
+    return <></>
+  }
 
   protected headerToolbarRightGroup() {
     return (
@@ -119,7 +121,8 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
           <Text component="small">
             <Settings.Consumer>
               {(settings) =>
-                settings.demoMode[0] ? this.demoModeStatus() : this.controlPlaneStatus(settings.controlPlaneReady)
+                settings &&
+                (settings.demoMode[0] ? this.demoModeStatus() : this.controlPlaneStatus(settings.controlPlaneReady))
               }
             </Settings.Consumer>
           </Text>
@@ -191,8 +194,8 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
                   <Switch
                     hasCheckIcon
                     label="Demo Mode"
-                    isChecked={settings.demoMode[0]}
-                    onChange={(_, val) => settings.demoMode[1](val)}
+                    isChecked={settings ? settings.demoMode[0] : false}
+                    onChange={(_, val) => settings && settings.demoMode[1](val)}
                   />
                 )}
               </Settings.Consumer>
@@ -216,7 +219,7 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
 
   protected readonly gapSm = { default: "gapSm" as const }
   protected readonly inline = { default: "inline" as const }
-  protected readonly noWrap = { default: "noWrap" as const }
+  protected readonly noWrap = { default: "nowrap" as const }
   protected readonly alignLeft = { default: "alignLeft" as const }
   protected readonly alignRight = { default: "alignRight" as const }
   protected readonly noPadding = { default: "noPadding" as const }

@@ -1,4 +1,7 @@
 import { createContext } from "react"
+import type { Dispatch, SetStateAction } from "react"
 
-const Settings = createContext({ demoMode: false })
+type SettingsType = null | { demoMode: [boolean, Dispatch<SetStateAction<boolean>>]; controlPlaneReady: boolean }
+
+const Settings = createContext<SettingsType>(null)
 export default Settings

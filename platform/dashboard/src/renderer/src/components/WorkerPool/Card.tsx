@@ -1,13 +1,9 @@
-import type { ReactNode } from "react"
-
-import { Flex } from "@patternfly/react-core"
-
 import SmallLabel from "../SmallLabel"
 import CardInGallery from "../CardInGallery"
 
 import type Props from "./Props"
 
-import { summaryGroups, pluralize } from "./Summary"
+import { summaryGroups } from "./Summary"
 
 import WorkerPoolIcon from "./Icon"
 
@@ -41,13 +37,13 @@ export default class WorkerPool extends CardInGallery<Props> {
     }
   }
 
-  private get outboxes() {
+  /* private get outboxes() {
     return this.props.model.outbox
-  }
+  } */
 
-  private get processing() {
+  /* private get processing() {
     return this.props.model.processing
-  }
+  } */
 
   /* private underwayCells(props = this.props) {
     return (props.model.processing || []).flatMap((processing, workerIdx) =>
@@ -68,11 +64,11 @@ export default class WorkerPool extends CardInGallery<Props> {
   } */
 
   /** One row across workers, one cell per in-process task */
-  private underway(cells: ReactNode[]) {
+  /* private underway(cells: ReactNode[]) {
     return <Flex gap={{ default: "gapXs" }}>{cells}</Flex>
-  }
+  } */
 
-  private prettyRate(tasksPerMilli: number) {
+  /* private prettyRate(tasksPerMilli: number) {
     const tasksPerSecond = tasksPerMilli * 1000
 
     if (tasksPerMilli === 0 || isNaN(tasksPerMilli)) {
@@ -93,7 +89,7 @@ export default class WorkerPool extends CardInGallery<Props> {
     } else {
       return `${pluralize("task", Math.round(tasksPerSecond))}/sec`
     }
-  }
+  } */
 
   // do we need this any more? we used to have it in the <Card className/>
   // "codeflare--card-header-no-wrap"

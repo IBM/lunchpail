@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-import type ApplicationSpecEvent from "../../client/events/ApplicationSpecEvent"
+// FIXME import type ApplicationSpecEvent from "../../renderer/src/events/ApplicationSpecEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -10,7 +10,7 @@ import type ApplicationSpecEvent from "../../client/events/ApplicationSpecEvent"
  */
 function transformLineToEvent(sep: string) {
   return new Transform({
-    transform(chunk: Buffer, encoding: string, callback) {
+    transform(chunk: Buffer, _: string, callback) {
       // Splits the string by spaces
       const [ns, application, api, command, supportsGpu, image, repo, description, inputs_stringified, age] = chunk
         .toString()
@@ -18,7 +18,7 @@ function transformLineToEvent(sep: string) {
 
       const inputs = inputs_stringified ? JSON.parse(inputs_stringified) : []
 
-      const model: ApplicationSpecEvent = {
+      const model /* FIXME : ApplicationSpecEvent */ = {
         timestamp: Date.now(),
         namespace: ns,
         application,
@@ -28,7 +28,7 @@ function transformLineToEvent(sep: string) {
         supportsGpu: /true/i.test(supportsGpu),
         image,
         repo,
-        defaultSize: inputs[0] ? (inputs[0].defaultSize as ApplicationSpecEvent["defaultSize"]) : undefined,
+        defaultSize: inputs[0] ? inputs[0].defaultSize /* FIXME as ApplicationSpecEvent["defaultSize"] */ : undefined,
         "data sets": inputs[0] ? inputs[0].sizes : undefined, // FIXME
         age,
       }

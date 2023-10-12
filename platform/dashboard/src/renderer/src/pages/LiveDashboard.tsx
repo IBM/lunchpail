@@ -4,8 +4,10 @@ import { Dashboard } from "./Dashboard"
 
 import type { EventProps } from "./Dashboard"
 import type NewPoolHandler from "../events/NewPoolHandler"
+import type { Handler } from "../events/EventSourceLike"
+import type EventSourceLike from "../events/EventSourceLike"
 
-let props: null | EventProps<EventSource> = null
+let props: null | EventProps<EventSourceLike> = null
 
 const newpool: NewPoolHandler = {
   newPool: async (values, yaml) => {
@@ -14,7 +16,6 @@ const newpool: NewPoolHandler = {
   },
 }
 
-import EventSourceLike from "../events/EventSourceLike"
 class ElectronEventSource implements EventSourceLike {
   public constructor(private readonly source) {}
 
@@ -27,7 +28,7 @@ class ElectronEventSource implements EventSourceLike {
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      this.off = jaas.on(this.source, (evt, model) => {
+      this.off = window.jaas.on(this.source, (_, model) => {
         // ugh, this is highly imperfect. currently the UI code
         // expects to be given something that looks like a
         // MessageEvent
@@ -37,7 +38,7 @@ class ElectronEventSource implements EventSourceLike {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public removeEventListener(evt: "message" | "error", handler: Handler) {
+  public removeEventListener(evt: "message" | "error" /*, handler: Handler*/) {
     if (evt === "message") {
       if (this.off) {
         this.off()
@@ -60,19 +61,20 @@ function newIfNeeded(source: "applications" | "datasets" | "pools" | "queues") {
   return new ElectronEventSource(source)
 }
 
-function init() {
+function init(): EventProps<EventSourceLike> {
   const queues = newIfNeeded("queues")
   const datasets = newIfNeeded("datasets")
   const pools = newIfNeeded("pools")
   const applications = newIfNeeded("applications")
 
-  props = {
+  const theProps = {
     datasets,
     pools,
     newpool,
     queues,
     applications,
   }
+  props = theProps
 
   window.addEventListener("beforeunload", () => {
     queues.close()
@@ -81,7 +83,7 @@ function init() {
     applications.close()
   })
 
-  return props
+  return theProps
 }
 
 export default function LiveDashboard() {
