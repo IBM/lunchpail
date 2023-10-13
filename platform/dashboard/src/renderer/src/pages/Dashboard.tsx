@@ -92,9 +92,21 @@ function either<T>(x: T | undefined, y: T): T {
 export class Dashboard extends BaseWithDrawer<Props, State> {
   private readonly onDataSetEvent = (evt: EventLike) => {
     const datasetEvent = JSON.parse(evt.data) as DataSetModel
-    const { label } = datasetEvent
+    const { label, status } = datasetEvent
 
     const datasetIndex = this.state?.datasetIndex || {}
+
+    if (status === "Terminating") {
+      return this.setState((curState) => {
+        delete curState?.datasetIndex[label]
+        delete curState?.datasetEvents[label]
+        return {
+          datasetIndex,
+          datasetEvents: Object.assign({}, curState?.datasetEvents),
+        }
+      })
+    }
+
     let myIdx = datasetIndex[label]
     if (myIdx === undefined) {
       myIdx = either(datasetEvent.idx, Object.keys(datasetIndex).length)
@@ -141,7 +153,21 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     const poolEvent = JSON.parse(evt.data) as WorkerPoolStatusEvent
 
     this.setState((curState) => {
-      if (!(poolEvent.workerpool in curState.poolEvents)) {
+      if (status === "Terminating") {
+        this.setState((curState) => {
+          delete curState?.poolEvents[poolEvent.workerpool]
+
+          for (const dataset of Object.keys(curState.datasetToPool)) {
+            curState.datasetToPool[dataset] = curState.datasetToPool[dataset].filter(
+              (_) => _.workerpool !== poolEvent.workerpool,
+            )
+          }
+
+          return {
+            poolEvents: Object.assign({}, curState?.poolEvents),
+          }
+        })
+      } else if (!(poolEvent.workerpool in curState.poolEvents)) {
         curState.poolEvents[poolEvent.workerpool] = []
       }
       curState.poolEvents[poolEvent.workerpool].push(poolEvent)
@@ -175,7 +201,23 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     const applicationEvent = JSON.parse(evt.data) as ApplicationSpecEvent
 
     this.setState((curState) => {
-      if (!curState.latestApplicationEvents || curState.latestApplicationEvents.length === 0) {
+      if (applicationEvent.status === "Terminating") {
+        // this Application has been deleted
+        const foundIdx = curState?.latestApplicationEvents?.findIndex(
+          (_) => _.application === applicationEvent.application,
+        )
+        if (foundIdx >= 0 && curState && curState.latestApplicationEvents) {
+          curState.latestApplicationEvents.splice(foundIdx, 1)
+          const latestApplicationNames = curState.latestApplicationEvents.map((_) => _.application)
+          return {
+            latestApplicationEvents: curState.latestApplicationEvents,
+            latestApplicationNames,
+            appMd5: this.md5(latestApplicationNames),
+          }
+        } else {
+          return null
+        }
+      } else if (!curState.latestApplicationEvents || curState.latestApplicationEvents.length === 0) {
         const latestApplicationEvents = [applicationEvent]
         const latestApplicationNames = [applicationEvent.application]
         return { latestApplicationEvents, latestApplicationNames, appMd5: this.md5(latestApplicationNames) }

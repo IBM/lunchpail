@@ -53,6 +53,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       supportsGpu: false,
       "data sets": { md: inputMd },
       age: new Date().toLocaleString(),
+      status: "Ready",
     }
   }
 

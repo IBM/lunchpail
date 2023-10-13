@@ -88,12 +88,15 @@ spec:
       - name: Bucket
         type: string
         jsonPath: .spec.local.bucket
-      - name: Readonly
-        type: string
-        jsonPath: .spec.local.readonly
       - name: Unassigned
         type: string
         jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
+      - name: Status
+        type: string
+        jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+      - name: Readonly
+        type: string
+        jsonPath: .spec.local.readonly
         
 status:
   acceptedNames:

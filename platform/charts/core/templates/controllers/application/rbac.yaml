@@ -10,15 +10,14 @@ kind: ClusterRole
 metadata:
   name: codeflare-application-controller-role-cluster
 rules:
-
-  - apiGroups: [""]
-    resources: [namespaces]
-    verbs: [create]
-
   - apiGroups: [codeflare.dev]
     resources: [applications,applications/status]
     verbs: [list, watch, patch, get]
-    
+
+  - apiGroups: [com.ie.ibm.hpsys]
+    resources: [datasets,datasets/status]
+    verbs: [list, watch, patch, get]
+
   # Framework: knowing which other operators are running (i.e. peering).
   - apiGroups: [kopf.dev]
     resources: [clusterkopfpeerings]
@@ -48,11 +47,10 @@ metadata:
   name: codeflare-application-controller-role-namespaced
   namespace: {{ .Values.controllers.namespace }}
 rules:
+  - apiGroups: [com.ie.ibm.hpsys]
+    resources: [datasets,datasets/status]
+    verbs: [list, watch, patch, get]
 
-  - apiGroups: [""]
-    resources: [namespaces]
-    verbs: [create]
-    
   # Framework: knowing which other operators are running (i.e. peering).
   - apiGroups: [kopf.dev]
     resources: [kopfpeerings]

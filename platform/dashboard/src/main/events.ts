@@ -62,40 +62,48 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
     const stream = startDataSetStream()
     const cb = (model) => mainWindow.webContents.send("/datasets/event", { data: JSON.parse(model) })
     stream.on("data", cb)
-    ipcMain.once("/datasets/close", () => {
+
+    const cleanup = () => {
       stream.off("data", cb)
       stream.end()
-    })
+    }
+    ipcMain.once("/datasets/close", cleanup)
   })
 
   ipcMain.on("/queues/open", () => {
     const stream = startQueueStream()
     const cb = (model) => mainWindow.webContents.send("/queues/event", { data: JSON.parse(model) })
     stream.on("data", cb)
-    ipcMain.once("/queues/close", () => {
+
+    const cleanup = () => {
       stream.off("data", cb)
       stream.end()
-    })
+    }
+    ipcMain.once("/queues/close", cleanup)
   })
 
   ipcMain.on("/pools/open", () => {
     const stream = startPoolStream()
     const cb = (model) => mainWindow.webContents.send("/pools/event", { data: JSON.parse(model) })
     stream.on("data", cb)
-    ipcMain.once("/pools/close", () => {
+
+    const cleanup = () => {
       stream.off("data", cb)
       stream.end()
-    })
+    }
+    ipcMain.once("/pools/close", cleanup)
   })
 
   ipcMain.on("/applications/open", () => {
     const stream = startApplicationStream()
     const cb = (model) => mainWindow.webContents.send("/applications/event", { data: JSON.parse(model) })
     stream.on("data", cb)
-    ipcMain.once("/applications/close", () => {
+
+    const cleanup = () => {
       stream.off("data", cb)
       stream.end()
-    })
+    }
+    ipcMain.once("/applications/close", cleanup)
   })
 
   ipcMain.handle("/controlplane/status", () => {

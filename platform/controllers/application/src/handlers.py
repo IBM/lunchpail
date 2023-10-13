@@ -5,18 +5,40 @@ from kubernetes.client.rest import ApiException
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
-#customApi = client.CustomObjectsApi(client.ApiClient())
+customApi = client.CustomObjectsApi(client.ApiClient())
+
+def set_status(name: str, namespace: str, phase: str, group = "codeflare.dev", version = "v1alpha1", plural = "applications", field = "status"):
+    patch_body = { "metadata": { "annotations": { f"codeflare.dev/{field}": phase } } }
+
+    try:
+        resp = customApi.patch_namespaced_custom_object(
+            group=group,
+            version=version,
+            plural=plural,
+            name=name,
+            namespace=namespace,
+            body=patch_body
+        )
+    except Exception as e:
+        logging.error(f"Error patching {plural}.{group} name={name} namespace={namespace} phase={phase}. {str(e)}")
 
 @kopf.on.create('applications.codeflare.dev')
-@kopf.on.update('applications.codeflare.dev', field='spec')
-def create_application(name, spec, patch, **kwargs):
-    pass
-#    namespace = f"codeflare-application-{name}"
-#    try:
-#        v1Api.create_namespace(body = client.V1Namespace(metadata=client.V1ObjectMeta(name=namespace)))
-#        logging.info(f"Created namespace for application named {name} with namespace={namespace}")
-#    except ApiException as e:
-#        if e.status != 409:
-#            raise e
+def create_application(name: str, namespace: str, spec, patch, **kwargs):
+    logging.info(f"Handling Application create name={name}")
+    set_status(name, namespace, "Ready")
 
-#    patch.metadata.annotations['codeflare.dev/namespace'] = namespace
+@kopf.on.delete('applications.codeflare.dev')
+def delete_application(name: str, namespace: str, spec, patch, **kwargs):
+    logging.info(f"Handling Application delete name={name}")
+    set_status(name, namespace, "Terminating")
+
+@kopf.on.create('datasets.com.ie.ibm.hpsys')
+def create_dataset(name: str, namespace: str, spec, patch, **kwargs):
+    logging.info(f"Handling Dataset create name={name}")
+    set_status(name, namespace, "Ready", "com.ie.ibm.hpsys", "v1alpha1", "datasets")
+    set_status(name, namespace, "0", "com.ie.ibm.hpsys", "v1alpha1", "datasets", "unassigned")
+
+@kopf.on.delete('datasets.com.ie.ibm.hpsys')
+def delete_dataset(name: str, namespace: str, spec, patch, **kwargs):
+    logging.info(f"Handling Dataset delete name={name}")
+    set_status(name, namespace, "Terminating", "com.ie.ibm.hpsys", "v1alpha1", "datasets")

@@ -11,6 +11,9 @@ export default interface ApplicationSpecEvent {
   /** Name of Application */
   application: string
 
+  /** Status of Application */
+  status: string
+
   /** Brief description of this Application */
   description: string
 

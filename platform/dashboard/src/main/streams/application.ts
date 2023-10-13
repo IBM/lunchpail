@@ -12,9 +12,8 @@ function transformLineToEvent(sep: string) {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
       // Splits the string by spaces
-      const [ns, application, api, command, supportsGpu, image, repo, description, inputs_stringified, age] = chunk
-        .toString()
-        .split(sep)
+      const [ns, application, api, command, supportsGpu, image, repo, description, inputs_stringified, age, status] =
+        chunk.toString().split(sep)
 
       const inputs = inputs_stringified ? JSON.parse(inputs_stringified) : []
 
@@ -31,6 +30,7 @@ function transformLineToEvent(sep: string) {
         defaultSize: inputs[0] ? inputs[0].defaultSize /* FIXME as ApplicationSpecEvent["defaultSize"] */ : undefined,
         "data sets": inputs[0] ? inputs[0].sizes : undefined, // FIXME
         age,
+        status,
       }
 
       callback(null, JSON.stringify(model))
@@ -50,8 +50,9 @@ export default function startApplicationSpecStream() {
       "-A",
       "--no-headers",
       "--watch",
+      "--ignore-not-found",
       "-o",
-      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.spec.inputs}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
+      `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.spec.inputs}{"${sep}"}{.metadata.creationTimestamp}{"${sep}"}{.metadata.annotations.codeflare\\.dev/status}{"${sep}\\n"}`,
     ])
 
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))

@@ -5,6 +5,9 @@ type DataSetModel = {
   /** Optionally, to force that this dataset has a particular index in the UI (e.g. for UI coloring) */
   idx?: number
 
+  /** Status of DataSet */
+  status: string
+
   /** Number of unassigned tasks for this dataset */
   inbox: number
 

@@ -8,6 +8,7 @@ import type { FileResult } from "tmp-promise"
 
 type Config = "lite" | "full"
 type Action = "apply" | "delete"
+type InstallProps = { config: Config; clusterName: string; kubeconfig: FileResult; action: Action }
 
 function installKindIfNeeded() {
   // TODO
@@ -26,18 +27,12 @@ async function createKindClusterIfNeeded(clusterName = "codeflare-platform") {
   }
 }
 
-async function apply(props: { config: Config; clusterName: string; kubeconfig: FileResult; action: Action }) {
+async function applyCore(props: InstallProps) {
   const { default: core } = await (props.config === "lite"
     ? // @ts-ignore
       import("../../../resources/jaas-lite.yml?raw")
     : // @ts-ignore
       import("../../../resources/jaas-full.yml?raw"))
-
-  // @ts-ignore
-  const { default: examples } = await import("../../../resources/jaas-examples.yml?raw")
-
-  console.log("Got core", core)
-  console.log("Got kubeconfig", props.kubeconfig)
 
   const execPromise = promisify(exec)
   const { writeFile } = await import("node:fs/promises")
@@ -45,10 +40,35 @@ async function apply(props: { config: Config; clusterName: string; kubeconfig: F
   const coreFile = await file()
   await writeFile(coreFile.path, core)
 
+  const ok = await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${coreFile.path}`)
+    .then((resp) => {
+      console.log(resp)
+      return true
+    })
+    .catch((err) => {
+      console.error(err)
+      return false
+    })
+
+  await coreFile.cleanup()
+
+  return ok
+}
+
+async function applyExamples(props: InstallProps) {
+  // @ts-ignore
+  const { default: examples } = await import("../../../resources/jaas-examples.yml?raw")
+
+  // console.log("Got core", core)
+  // console.log("Got kubeconfig", props.kubeconfig)
+
+  const execPromise = promisify(exec)
+  const { writeFile } = await import("node:fs/promises")
+
   const examplesFile = await file()
   await writeFile(examplesFile.path, examples)
 
-  const okCore = await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${coreFile.path}`)
+  const ok = await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${examplesFile.path}`)
     .then((resp) => {
       console.log(resp)
       return true
@@ -58,22 +78,20 @@ async function apply(props: { config: Config; clusterName: string; kubeconfig: F
       return false
     })
 
-  const okExamples = await execPromise(
-    `kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${examplesFile.path}`,
-  )
-    .then((resp) => {
-      console.log(resp)
-      return true
-    })
-    .catch((err) => {
-      console.error(err)
-      return false
-    })
+  await examplesFile.cleanup()
+  return ok
+}
 
-  console.log("OK core", okCore)
-  console.log("OK examples", okExamples)
+async function apply(props: InstallProps) {
+  if (props.action === "delete") {
+    await applyExamples(props)
+    await applyCore(props)
+  } else {
+    await applyCore(props)
+    await applyExamples(props)
+  }
 
-  await Promise.all([coreFile.cleanup(), examplesFile.cleanup(), props.kubeconfig.cleanup()])
+  await props.kubeconfig.cleanup()
 }
 
 export default async function manageControlPlane(config: Config, action: Action) {

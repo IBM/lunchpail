@@ -15,6 +15,7 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
     .map((_, idx) => ({
       label: colors[idx],
       storageType: "COS",
+      status: "Ready",
       endpoint: this.endpoints[idx],
       bucket: this.buckets[idx],
       isReadOnly: this.isReadOnly[idx],
