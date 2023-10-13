@@ -1,15 +1,18 @@
-import { createContext } from "react"
+import { createContext, useState } from "react"
 
 import type { Dispatch, SetStateAction } from "react"
+type State<T> = [T, Dispatch<SetStateAction<T>>]
 
-type SettingsType = null | { demoMode: [boolean, Dispatch<SetStateAction<boolean>>]; controlPlaneReady: null | boolean }
+type SettingsType = null | { darkMode: State<boolean>; demoMode: State<boolean>; controlPlaneReady: null | boolean }
 
 const Settings = createContext<SettingsType>(null)
 export default Settings
 
+type SettingsKey = "darkMode" | "demoMode"
+
 /** Restore previously selected demoMode setting */
-export function restoreDemoMode(): boolean {
-  const setting = localStorage.getItem("demoMode")
+function restoreBoolean(key: SettingsKey): boolean {
+  const setting = localStorage.getItem(key)
   if (setting === "false") {
     return false
   } else {
@@ -19,6 +22,42 @@ export function restoreDemoMode(): boolean {
 }
 
 /** Persist a demoMode setting */
-export function saveDemoMode(demoMode: boolean): void {
-  localStorage.setItem("demoMode", demoMode.toString())
+function saveBoolean(key: SettingsKey, value: boolean): void {
+  localStorage.setItem(key, value.toString())
+}
+
+function state(key: SettingsKey, onChange?: (val: boolean) => void) {
+  const initialValue = restoreBoolean(key)
+  const state = useState(initialValue)
+  const origSet = state[1]
+
+  if (onChange) {
+    onChange(initialValue)
+  }
+
+  // override the updater so that we can persist the choice
+  state[1] = (action: SetStateAction<boolean>) => {
+    const newValue = typeof action === "boolean" ? action : action(state[0])
+    if (onChange) {
+      onChange(newValue)
+    }
+
+    saveBoolean(key, newValue) // persist
+    origSet(action) // react
+  }
+
+  return state
+}
+
+export function demoModeState() {
+  return state("demoMode")
+}
+
+function onChangeDarkMode(useDarkMode: boolean) {
+  if (useDarkMode) document.querySelector("html")?.classList.add("pf-v5-theme-dark")
+  else document.querySelector("html")?.classList.remove("pf-v5-theme-dark")
+}
+
+export function darkModeState() {
+  return state("darkMode", onChangeDarkMode)
 }

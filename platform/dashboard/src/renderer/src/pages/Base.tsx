@@ -33,24 +33,12 @@ import SmallLabel from "../components/SmallLabel"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 import ControlPlaneStatus from "../components/ControlPlaneStatus"
 
-export interface BaseState {
-  /** UI in dark mode? */
-  useDarkMode: boolean
-}
+export interface BaseState {}
 
 export default abstract class Base<Props extends LocationProps, State extends BaseState> extends PureComponent<
   Props,
   State
 > {
-  private readonly toggleDarkMode = () =>
-    this.setState((curState) => {
-      const useDarkMode = !curState?.useDarkMode
-      if (useDarkMode) document.querySelector("html")?.classList.add("pf-v5-theme-dark")
-      else document.querySelector("html")?.classList.remove("pf-v5-theme-dark")
-
-      return { useDarkMode }
-    })
-
   protected headerToggle(): ReactNode {
     return (
       <MastheadToggle>
@@ -122,10 +110,6 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
     )
   }
 
-  private get useDarkMode() {
-    return this.state?.useDarkMode || false
-  }
-
   protected sidebar(): ReactNode {
     return <Fragment />
   }
@@ -168,7 +152,16 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
               </Settings.Consumer>
             </ToolbarItem>
             <ToolbarItem align={this.alignRight}>
-              <Switch hasCheckIcon label="Dark Mode" isChecked={this.useDarkMode} onChange={this.toggleDarkMode} />
+              <Settings.Consumer>
+                {(settings) => (
+                  <Switch
+                    hasCheckIcon
+                    label="Dark Mode"
+                    isChecked={settings ? settings.darkMode[0] : false}
+                    onChange={(_, val) => settings && settings.darkMode[1](val)}
+                  />
+                )}
+              </Settings.Consumer>
             </ToolbarItem>
           </ToolbarGroup>
         </ToolbarContent>
@@ -209,7 +202,6 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
         isManagedSidebar
         defaultManagedSidebarIsOpen={true}
         className="codeflare--dashboard"
-        data-is-dark-mode={this.useDarkMode}
       >
         {chips ? (
           <>
