@@ -42,6 +42,10 @@
   color: var(--pf-v5-global--success-color--100);
 }
 
+.codeflare--status-unknown {
+  color: var(--pf-v5-global--disabled-color--300);
+}
+
 .codeflare--status-offline {
   color: var(--pf-v5-global--danger-color--100);
 }

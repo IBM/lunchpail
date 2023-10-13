@@ -9,8 +9,9 @@ function App() {
   // default to working in demo mode for now
   const demoMode = useState(true)
 
-  // is the local control plane good to go?
-  const [controlPlaneReady, setControlPlaneReady] = useState(false)
+  // is the local control plane good to go? null means unknown
+  // (e.g. that a check is in progress)
+  const [controlPlaneReady, setControlPlaneReady] = useState<null | boolean>(null)
 
   // launch an effect that triggers a control plane readiness check
   // whenever entering non-demo/live mode

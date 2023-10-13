@@ -6,6 +6,7 @@ import LiveIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon"
 import InfoCircleIcon from "@patternfly/react-icons/dist/esm/icons/info-circle-icon"
 import DemoIcon from "@patternfly/react-icons/dist/esm/icons/flask-icon"
 import IssueIcon from "@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon"
+import CheckingIcon from "@patternfly/react-icons/dist/esm/icons/question-circle-icon"
 
 export default function ControlPlaneStatus() {
   // treeContent and bodyContent contain bogus data for now
@@ -90,8 +91,10 @@ export default function ControlPlaneStatus() {
         if (settings && !settings.demoMode[0]) {
           return settings.controlPlaneReady ? (
             <TreeView data={treeContent} icon={<InfoCircleIcon />} expandedIcon={<LiveIcon />} />
+          ) : settings.controlPlaneReady === null ? (
+            "Checking on the status of the control plane..."
           ) : (
-            <p>controller not ready</p>
+            "Control plane is offline"
           )
         } else {
           return "Currently running in offline demo mode."
@@ -104,10 +107,12 @@ export default function ControlPlaneStatus() {
     return IconWithLabel("Offline Demo", <DemoIcon className="codeflare--demo-mode" />)
   }
 
-  function controlPlaneStatus(controlPlaneReady: boolean) {
+  function controlPlaneStatus(controlPlaneReady: null | boolean) {
     return IconWithLabel(
       "Platform Status",
-      controlPlaneReady ? (
+      controlPlaneReady === null ? (
+        <CheckingIcon className="codeflare--status-unknown" />
+      ) : controlPlaneReady ? (
         <LiveIcon className="codeflare--status-online" />
       ) : (
         <IssueIcon className="codeflare--status-offline" />
