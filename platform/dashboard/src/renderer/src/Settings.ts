@@ -1,7 +1,7 @@
 import { createContext, useState } from "react"
 
 import type { Dispatch, SetStateAction } from "react"
-type State<T> = [T, Dispatch<SetStateAction<T>>]
+type State<T> = [T, Dispatch<SetStateAction<T>>, (evt: unknown, val: T) => void]
 
 type SettingsType = null | { darkMode: State<boolean>; demoMode: State<boolean>; controlPlaneReady: null | boolean }
 
@@ -26,7 +26,7 @@ function saveBoolean(key: SettingsKey, value: boolean): void {
   localStorage.setItem(key, value.toString())
 }
 
-function state(key: SettingsKey, onChange?: (val: boolean) => void) {
+function state(key: SettingsKey, onChange?: (val: boolean) => void): State<boolean> {
   const initialValue = restoreBoolean(key)
   const state = useState(initialValue)
   const origSet = state[1]
@@ -46,7 +46,7 @@ function state(key: SettingsKey, onChange?: (val: boolean) => void) {
     origSet(action) // react
   }
 
-  return state
+  return [...state, (_, val: boolean) => state[1](val)]
 }
 
 export function demoModeState() {

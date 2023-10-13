@@ -145,8 +145,8 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
                   <Switch
                     hasCheckIcon
                     label="Demo Mode"
-                    isChecked={settings ? settings.demoMode[0] : false}
-                    onChange={(_, val) => settings && settings.demoMode[1](val)}
+                    isChecked={settings?.demoMode[0]}
+                    onChange={settings?.demoMode[2]}
                   />
                 )}
               </Settings.Consumer>
@@ -157,8 +157,8 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
                   <Switch
                     hasCheckIcon
                     label="Dark Mode"
-                    isChecked={settings ? settings.darkMode[0] : false}
-                    onChange={(_, val) => settings && settings.darkMode[1](val)}
+                    isChecked={settings?.darkMode[0]}
+                    onChange={settings?.darkMode[2]}
                   />
                 )}
               </Settings.Consumer>
