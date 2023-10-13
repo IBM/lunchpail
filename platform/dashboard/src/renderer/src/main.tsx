@@ -1,13 +1,21 @@
 import { createRoot } from "react-dom/client"
 import { RouterProvider } from "react-router-dom"
-import { StrictMode, useEffect, useState } from "react"
+import { StrictMode, useEffect, useState, SetStateAction } from "react"
 
 import router from "./router"
-import Settings from "./Settings"
+import Settings, { restoreDemoMode, saveDemoMode } from "./Settings"
 
 function App() {
   // default to working in demo mode for now
-  const demoMode = useState(true)
+  const demoMode = useState(restoreDemoMode())
+  const origSetDemoMode = demoMode[1]
+
+  // override the updater so that we can persist the choice
+  demoMode[1] = (action: SetStateAction<boolean>) => {
+    const newDemoMode = typeof action === "boolean" ? action : action(demoMode[0])
+    saveDemoMode(newDemoMode) // persist
+    origSetDemoMode(action) // react
+  }
 
   // is the local control plane good to go? null means unknown
   // (e.g. that a check is in progress)
