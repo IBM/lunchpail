@@ -1,12 +1,12 @@
-import Settings from "../Settings"
+import { Button, TreeView, Popover } from "@patternfly/react-core"
 
-import { TreeView, Popover } from "@patternfly/react-core"
+import Settings from "../Settings"
 import IconWithLabel from "./IconWithLabel"
+
 import LiveIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon"
 import InfoCircleIcon from "@patternfly/react-icons/dist/esm/icons/info-circle-icon"
-import DemoIcon from "@patternfly/react-icons/dist/esm/icons/flask-icon"
-import IssueIcon from "@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon"
-import CheckingIcon from "@patternfly/react-icons/dist/esm/icons/question-circle-icon"
+
+import "./ControlPlaneStatus.scss"
 
 export default function ControlPlaneStatus() {
   // treeContent and bodyContent contain bogus data for now
@@ -104,29 +104,30 @@ export default function ControlPlaneStatus() {
   )
 
   function demoModeStatus() {
-    return IconWithLabel("Offline Demo", <DemoIcon className="codeflare--demo-mode" />)
+    return "Running in Demo Mode"
   }
 
   function controlPlaneStatus(controlPlaneReady: null | boolean) {
-    return IconWithLabel(
-      "Platform Status",
-      controlPlaneReady === null ? (
-        <CheckingIcon className="codeflare--status-unknown" />
-      ) : controlPlaneReady ? (
-        <LiveIcon className="codeflare--status-online" />
-      ) : (
-        <IssueIcon className="codeflare--status-offline" />
-      ),
-    )
+    const status = controlPlaneReady === null ? "Not Provisioned" : controlPlaneReady ? "Healthy" : "Unhealthy"
+
+    return `Control Plane is ${status}`
   }
 
   return (
-    <Popover headerContent="Status" bodyContent={bodyContent}>
-      <Settings.Consumer>
-        {(settings) =>
-          settings && (settings.demoMode[0] ? demoModeStatus() : controlPlaneStatus(settings.controlPlaneReady))
-        }
-      </Settings.Consumer>
-    </Popover>
+    <Settings.Consumer>
+      {(settings) => (
+        <IconWithLabel
+          icon={
+            <Popover headerContent="Status" bodyContent={bodyContent}>
+              <Button variant="plain" size="sm" className="codeflare--control-plane-status-info">
+                <InfoCircleIcon />
+              </Button>
+            </Popover>
+          }
+        >
+          {settings && (settings.demoMode[0] ? demoModeStatus() : controlPlaneStatus(settings.controlPlaneReady))}
+        </IconWithLabel>
+      )}
+    </Settings.Consumer>
   )
 }
