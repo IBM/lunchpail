@@ -2,7 +2,11 @@ export type JaaSApi = {
   on(source: "datasets" | "queues" | "pools" | "applications", cb: (...args: unknown[]) => void): void
 
   controlplane: {
-    status: Promise<boolean>
+    status: Promise<{
+      clusterExists: boolean
+      core: boolean
+      example: boolean
+    }>
 
     init(): Promise<void>
 

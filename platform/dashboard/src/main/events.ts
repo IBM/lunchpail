@@ -57,6 +57,13 @@ app.get("/api/newpool", async () => {
 
 */
 
+async function getStatusFromMain() {
+  // Checking if we have a control plane cluster running
+  return { clusterExists: await clusterExists(), core: true, example: false }
+}
+
+type Status = ReturnType<typeof getStatusFromMain>
+
 export function initEvents(mainWindow: import("electron").BrowserWindow) {
   ipcMain.on("/datasets/open", () => {
     const stream = startDataSetStream()
@@ -106,10 +113,7 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
     ipcMain.once("/applications/close", cleanup)
   })
 
-  ipcMain.handle("/controlplane/status", () => {
-    // Checking if we have a control plane cluster running
-    return clusterExists()
-  })
+  ipcMain.handle("/controlplane/status", getStatusFromMain)
 
   ipcMain.handle("/controlplane/init", async () => {
     await import("./prereq/install").then((_) => _.default("lite", "apply"))
@@ -141,7 +145,7 @@ export default {
   },
   controlplane: {
     async status() {
-      const isReady = await ipcRenderer.invoke("/controlplane/status")
+      const isReady = (await ipcRenderer.invoke("/controlplane/status")) as Status
       return isReady
     },
     async init() {

@@ -20,7 +20,7 @@ function App() {
       if (!demoMode[0]) {
         // determine current cluster status
         const isReady = await window.jaas.controlplane.status()
-        setControlPlaneReady(isReady)
+        setControlPlaneReady(isReady.clusterExists)
         console.log("Control Plane Ready?", isReady)
       }
     }
