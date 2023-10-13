@@ -5,58 +5,58 @@ kind: Namespace
 metadata:
   name: codeflare-examples
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/dataset-secret.yaml
+# Source: codeflare-examples/templates/applications/workqueue/queue-example/dataset-secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: queuedemo1-cfsecret # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  name: queue-example-cfsecret # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
   namespace: codeflare-examples
 type: Opaque
 data:
   accessKeyID: Y29kZWZsYXJleQ==
   secretAccessKey: Y29kZWZsYXJleQ==
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/README.md
+# Source: codeflare-examples/templates/applications/workqueue/queue-example/README.md
 # Application api=workqueue
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/app.yaml
+# Source: codeflare-examples/templates/applications/workqueue/queue-example/app.yaml
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
-  name: queuedemo1
+  name: queue-example
   namespace: codeflare-examples
 spec:
   api: workqueue
   image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/charts/examples/applications/workqueue/queuedemo1
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/charts/examples/applications/workqueue/queue-example
   command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
-  description: Hello
+  description: A simple example of a workqueue-style application.
   inputs:
     - sizes:
-        lg: queuedemo1
+        lg: queueexample
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/dataset.yaml
+# Source: codeflare-examples/templates/applications/workqueue/queue-example/dataset.yaml
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
 metadata:
-  name: queuedemo1 # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  name: queueexample # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
   namespace: codeflare-examples
 spec:
   local:
     type: "COS"
-    bucket: queuedemo1
+    bucket: queue-example
     endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
-    secret-name: queuedemo1-cfsecret
+    secret-name: queue-example-cfsecret
     secret-namespace: codeflare-examples
     #readonly: "true" # default is false
     provision: "true"
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queuedemo1/run.yaml
+# Source: codeflare-examples/templates/applications/workqueue/queue-example/run.yaml
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
-  name: queuedemo1
+  name: queue-example
   namespace: codeflare-examples
 spec:
   application:
-    name: queuedemo1
+    name: queue-example

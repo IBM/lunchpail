@@ -1,14 +1,14 @@
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
-  name: queuedemo1
+  name: queue-example
   namespace: {{ .Values.namespace }}
 spec:
   api: workqueue
   image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/charts/examples/applications/workqueue/queuedemo1
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/charts/examples/applications/workqueue/queue-example
   command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
-  description: Hello
+  description: A simple example of a workqueue-style application.
   inputs:
     - sizes:
-        lg: queuedemo1
+        lg: queueexample
