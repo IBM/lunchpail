@@ -1,10 +1,11 @@
 import { ipcMain, ipcRenderer } from "electron"
 
-import { clusterExists } from "./prereq/check"
 import startPoolStream from "./streams/pool"
 import startQueueStream from "./streams/queue"
 import startDataSetStream from "./streams/dataset"
 import startApplicationStream from "./streams/application"
+
+import { Status, getStatusFromMain } from "./controlplane/status"
 
 /*async function initEventSource(res: Response, stream: Writable) {
   await res.set({
@@ -57,19 +58,21 @@ app.get("/api/newpool", async () => {
 
 */
 
-async function getStatusFromMain() {
-  // Checking if we have a control plane cluster running
-  return { clusterExists: await clusterExists(), core: true, example: false }
-}
-
-type Status = ReturnType<typeof getStatusFromMain>
-
 /** Valid resource types */
 const kinds = ["datasets", "queues", "pools", "applications"]
 type Kind = (typeof kinds)[number]
 
+/**
+ * This will register an `ipcMain` listener for `/${kind}/open`
+ * messages. Upon receipt of such a message, this logic will initiate
+ * a watcher against the given `kind` of resource. It will pass back
+ * any messages to the sender of that message.
+ */
 function initStreamForResourceKind(kind: Kind) {
+  // listen for /open messages
   ipcMain.on(`/${kind}/open`, (evt) => {
+    // we have received such a message, so initialize the watcher,
+    // which will give us a stream of serialized models
     const stream =
       kind === "datasets"
         ? startDataSetStream()
@@ -79,9 +82,11 @@ function initStreamForResourceKind(kind: Kind) {
         ? startPoolStream()
         : startApplicationStream()
 
+    // when we get a serialized model, send an event back to the sender
     const cb = (model) => evt.sender.send(`/${kind}/event`, { data: JSON.parse(model) })
     stream.on("data", cb)
 
+    // when a `/${kind}/close` message is received, tear down the watcher
     const cleanup = () => {
       stream.off("data", cb)
       stream.end()
@@ -91,30 +96,38 @@ function initStreamForResourceKind(kind: Kind) {
 }
 
 export function initEvents() {
+  // listen for /open events from the renderer, one per `Kind` of
+  // resource
   kinds.forEach(initStreamForResourceKind)
 
+  // worker pool create request
   ipcMain.handle("/pools/create", (_, yaml: string) => import("./pools/create").then((_) => _.default(yaml)))
 
+  // control plane status request
   ipcMain.handle("/controlplane/status", getStatusFromMain)
 
+  // control plane setup request
   ipcMain.handle("/controlplane/init", async () => {
     await import("./prereq/install").then((_) => _.default("lite", "apply"))
     return true
   })
 
+  // control plane teardown request
   ipcMain.handle("/controlplane/destroy", async () => {
     await import("./prereq/install").then((_) => _.default("lite", "delete"))
     return true
   })
 }
 
-function onFromClientSide(
-  _: "message",
-  source: "datasets" | "queues" | "pools" | "applications",
-  cb: (...args: unknown[]) => void,
-) {
-  ipcRenderer.on(`/${source}/event`, cb)
-  ipcRenderer.send(`/${source}/open`)
+/**
+ * The UI has asked to be informed of events related to the given
+ * `kind` of resource. Pass that request on to the main process. It
+ * will call us back on the `/event` channel, and then we pass these
+ * return messages, in turn, back to the UI via the given `cb` callback.
+ */
+function onFromClientSide(_: "message", kind: Kind, cb: (...args: unknown[]) => void) {
+  ipcRenderer.on(`/${kind}/event`, cb)
+  ipcRenderer.send(`/${kind}/open`)
 
   //
   // We need to handle the `off` function differently due to issues
@@ -124,11 +137,15 @@ function onFromClientSide(
   // https://github.com/electron/electron/issues/21437#issuecomment-802288574
   //
   return () => {
-    ipcRenderer.removeListener(`/${source}/event`, cb)
-    ipcRenderer.send(`/${source}/close`)
+    ipcRenderer.removeListener(`/${kind}/event`, cb)
+    ipcRenderer.send(`/${kind}/close`)
   }
 }
 
+/**
+ * This is the JaasAPI renderer-side implementation. TODO, we need to
+ * find a way to share datatypes with the renderer.
+ */
 export default {
   datasets: {
     on(evt: "message", cb: (...args: unknown[]) => void) {
