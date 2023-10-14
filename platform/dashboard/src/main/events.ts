@@ -126,22 +126,47 @@ export function initEvents(mainWindow: import("electron").BrowserWindow) {
   })
 }
 
-export default {
-  on(source: "datasets" | "queues" | "pools" | "applications", cb: (...args: unknown[]) => void) {
-    ipcRenderer.on(`/${source}/event`, cb)
-    ipcRenderer.send(`/${source}/open`)
+function onFromClientSide(
+  _: "message",
+  source: "datasets" | "queues" | "pools" | "applications",
+  cb: (...args: unknown[]) => void,
+) {
+  ipcRenderer.on(`/${source}/event`, cb)
+  ipcRenderer.send(`/${source}/open`)
 
-    //
-    // We need to handle the `off` function differently due to issues
-    // with contextBridge. It turns out that `cb` will be a *copy* of
-    // the original function, hence a naive use of removeListener
-    // won't actually unlisten. See
-    // https://github.com/electron/electron/issues/21437#issuecomment-802288574
-    //
-    return () => {
-      ipcRenderer.removeListener(`/${source}/event`, cb)
-      ipcRenderer.send(`/${source}/close`)
-    }
+  //
+  // We need to handle the `off` function differently due to issues
+  // with contextBridge. It turns out that `cb` will be a *copy* of
+  // the original function, hence a naive use of removeListener
+  // won't actually unlisten. See
+  // https://github.com/electron/electron/issues/21437#issuecomment-802288574
+  //
+  return () => {
+    ipcRenderer.removeListener(`/${source}/event`, cb)
+    ipcRenderer.send(`/${source}/close`)
+  }
+}
+
+export default {
+  datasets: {
+    on(evt: "message", cb: (...args: unknown[]) => void) {
+      onFromClientSide(evt, "datasets", cb)
+    },
+  },
+  applications: {
+    on(evt: "message", cb: (...args: unknown[]) => void) {
+      onFromClientSide(evt, "applications", cb)
+    },
+  },
+  pools: {
+    on(evt: "message", cb: (...args: unknown[]) => void) {
+      onFromClientSide(evt, "pools", cb)
+    },
+  },
+  queues: {
+    on(evt: "message", cb: (...args: unknown[]) => void) {
+      onFromClientSide(evt, "queues", cb)
+    },
   },
   controlplane: {
     async status() {

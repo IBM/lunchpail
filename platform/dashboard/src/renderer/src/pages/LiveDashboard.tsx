@@ -28,7 +28,7 @@ class ElectronEventSource implements EventSourceLike {
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      this.off = window.jaas.on(this.source, (_, model) => {
+      this.off = window.jaas[this.source].on(evt, (_, model) => {
         // ugh, this is highly imperfect. currently the UI code
         // expects to be given something that looks like a
         // MessageEvent
