@@ -23,7 +23,7 @@ export function LinkToNewPool(
 ) {
   const linkText =
     props.startOrAdd === "start"
-      ? "Process these Tasks"
+      ? "Assign Workers to this Queue"
       : props.startOrAdd === "add"
       ? "Add a Worker Pool"
       : "Create Worker Pool"

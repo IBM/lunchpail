@@ -10,9 +10,9 @@ import type EventSourceLike from "../events/EventSourceLike"
 let props: null | EventProps<EventSourceLike> = null
 
 const newpool: NewPoolHandler = {
-  newPool: async (values, yaml) => {
+  newPool: async (_, yaml) => {
     // browser apis: await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
-    console.log("TODO", values, yaml)
+    window.jaas.pools.create(yaml)
   },
 }
 

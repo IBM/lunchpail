@@ -64,54 +64,36 @@ async function getStatusFromMain() {
 
 type Status = ReturnType<typeof getStatusFromMain>
 
-export function initEvents(mainWindow: import("electron").BrowserWindow) {
-  ipcMain.on("/datasets/open", () => {
-    const stream = startDataSetStream()
-    const cb = (model) => mainWindow.webContents.send("/datasets/event", { data: JSON.parse(model) })
+/** Valid resource types */
+const kinds = ["datasets", "queues", "pools", "applications"]
+type Kind = (typeof kinds)[number]
+
+function initStreamForResourceKind(kind: Kind) {
+  ipcMain.on(`/${kind}/open`, (evt) => {
+    const stream =
+      kind === "datasets"
+        ? startDataSetStream()
+        : kind === "queues"
+        ? startQueueStream()
+        : kind === "pools"
+        ? startPoolStream()
+        : startApplicationStream()
+
+    const cb = (model) => evt.sender.send(`/${kind}/event`, { data: JSON.parse(model) })
     stream.on("data", cb)
 
     const cleanup = () => {
       stream.off("data", cb)
       stream.end()
     }
-    ipcMain.once("/datasets/close", cleanup)
+    ipcMain.once(`/${kind}/close`, cleanup)
   })
+}
 
-  ipcMain.on("/queues/open", () => {
-    const stream = startQueueStream()
-    const cb = (model) => mainWindow.webContents.send("/queues/event", { data: JSON.parse(model) })
-    stream.on("data", cb)
+export function initEvents() {
+  kinds.forEach(initStreamForResourceKind)
 
-    const cleanup = () => {
-      stream.off("data", cb)
-      stream.end()
-    }
-    ipcMain.once("/queues/close", cleanup)
-  })
-
-  ipcMain.on("/pools/open", () => {
-    const stream = startPoolStream()
-    const cb = (model) => mainWindow.webContents.send("/pools/event", { data: JSON.parse(model) })
-    stream.on("data", cb)
-
-    const cleanup = () => {
-      stream.off("data", cb)
-      stream.end()
-    }
-    ipcMain.once("/pools/close", cleanup)
-  })
-
-  ipcMain.on("/applications/open", () => {
-    const stream = startApplicationStream()
-    const cb = (model) => mainWindow.webContents.send("/applications/event", { data: JSON.parse(model) })
-    stream.on("data", cb)
-
-    const cleanup = () => {
-      stream.off("data", cb)
-      stream.end()
-    }
-    ipcMain.once("/applications/close", cleanup)
-  })
+  ipcMain.handle("/pools/create", (_, yaml: string) => import("./pools/create").then((_) => _.default(yaml)))
 
   ipcMain.handle("/controlplane/status", getStatusFromMain)
 
@@ -161,6 +143,10 @@ export default {
   pools: {
     on(evt: "message", cb: (...args: unknown[]) => void) {
       onFromClientSide(evt, "pools", cb)
+    },
+
+    create(yaml: string) {
+      ipcRenderer.invoke("/pools/create", yaml)
     },
   },
   queues: {
