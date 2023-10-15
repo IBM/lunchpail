@@ -11,6 +11,7 @@ import {
   FormSection,
   Grid,
   GridItem,
+  TextContent,
   Text,
   Wizard,
   WizardHeader,
@@ -243,7 +244,14 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   }*/
 
   private workerPoolYaml(values: FormContextProps["values"]) {
-    const namespace = "todo"
+    const applicationSpec = this.props.applications.find((_) => _.application === values.application)
+    if (!applicationSpec) {
+      console.error("Internal error: Application spec not found", values.application)
+      // TODO how do we report this to the UI?
+    }
+
+    // TODO re: internal-error
+    const namespace = applicationSpec ? applicationSpec.namespace : "internal-error"
 
     return `
 apiVersion: codeflare.dev/v1alpha1
@@ -269,7 +277,9 @@ spec:
         name="Review"
         footer={{ nextButtonText: "Create Worker Pool", onNext: () => this.doCreate(ctrl.values) }}
       >
-        <Text component="p">Confirm the settings for your new worker pool.</Text>
+        <TextContent>
+          <Text component="p">Confirm the settings for your new worker pool.</Text>
+        </TextContent>
 
         <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
           {this.workerPoolYaml(ctrl.values)}
