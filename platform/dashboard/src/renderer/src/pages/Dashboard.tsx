@@ -170,7 +170,12 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       } else if (!(poolEvent.workerpool in curState.poolEvents)) {
         curState.poolEvents[poolEvent.workerpool] = []
       }
-      curState.poolEvents[poolEvent.workerpool].push(poolEvent)
+
+      const events = curState.poolEvents[poolEvent.workerpool]
+      if (events.length === 0 || events[events.length - 1] !== poolEvent) {
+        // weird debounce
+        curState.poolEvents[poolEvent.workerpool].push(poolEvent)
+      }
 
       // keep track of the relationship between DataSet and
       // WorkerPools that are processing that DataSet
@@ -488,7 +493,10 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     ])
   }
 
-  private toWorkerPoolModel(label: string, queueEventsForOneWorkerPool: QueueEvent[]): WorkerPoolModelWithHistory {
+  private toWorkerPoolModel(
+    pool: WorkerPoolStatusEvent,
+    queueEventsForOneWorkerPool: QueueEvent[] = [],
+  ): WorkerPoolModelWithHistory {
     const model = queueEventsForOneWorkerPool.reduce(
       (M, queueEvent) => {
         if (!M.inbox[queueEvent.workerIndex]) {
@@ -512,7 +520,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     )
 
     return {
-      label,
+      label: pool.workerpool,
       inbox: this.backfill(model.inbox),
       outbox: this.backfill(model.outbox),
       processing: this.backfill(model.processing),
@@ -543,9 +551,12 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   private get latestWorkerPoolModel(): WorkerPoolModelWithHistory[] {
-    return Object.entries(this.state?.queueEvents || {})
-      .map(([label, queueEventsForOneWorkerPool]) => {
-        return this.toWorkerPoolModel(label, queueEventsForOneWorkerPool)
+    return Object.values(this.state?.poolEvents || {})
+      .filter((poolEventsForOneWorkerPool) => poolEventsForOneWorkerPool.length > 0)
+      .map((poolEventsForOneWorkerPool) => {
+        const pool = poolEventsForOneWorkerPool[poolEventsForOneWorkerPool.length - 1]
+        const queueEventsForOneWorkerPool = this.state?.queueEvents[pool.workerpool]
+        return this.toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
       })
       .sort(this.lexicoWP)
   }
@@ -581,7 +592,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         appMd5={this.state?.appMd5}
         applications={this.applicationsList}
         datasets={this.datasetsList}
-        workerpools={Object.keys(this.state?.workerpoolIndex || {})}
+        workerpools={this.workerpoolsList}
         location={this.props.location}
       />
     )

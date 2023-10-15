@@ -32,7 +32,7 @@ export function completionRateHistory(history: { outbox: number; timestamp: numb
 export function meanCompletionRate(history: { outbox: number; timestamp: number }[]) {
   const rateHistory = completionRateHistory(history)
   const N = rateHistory.length
-  const sum = rateHistory.reduce((sum, val) => sum + val)
+  const sum = rateHistory.reduce((sum, val) => sum + val, 0)
   return N > 0 && prettyRate(sum / N)
 }
 
