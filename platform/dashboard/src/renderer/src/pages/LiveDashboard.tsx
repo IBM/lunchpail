@@ -17,7 +17,7 @@ const newpool: NewPoolHandler = {
 }
 
 class ElectronEventSource implements EventSourceLike {
-  public constructor(private readonly source) {}
+  public constructor(private readonly source: string) {}
 
   /**
    * We need to keep track of the `off` function due to issues with

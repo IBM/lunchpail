@@ -149,17 +149,17 @@ function onFromClientSide(_: "message", kind: Kind, cb: (...args: unknown[]) => 
 export default {
   datasets: {
     on(evt: "message", cb: (...args: unknown[]) => void) {
-      onFromClientSide(evt, "datasets", cb)
+      return onFromClientSide(evt, "datasets", cb)
     },
   },
   applications: {
     on(evt: "message", cb: (...args: unknown[]) => void) {
-      onFromClientSide(evt, "applications", cb)
+      return onFromClientSide(evt, "applications", cb)
     },
   },
   pools: {
     on(evt: "message", cb: (...args: unknown[]) => void) {
-      onFromClientSide(evt, "pools", cb)
+      return onFromClientSide(evt, "pools", cb)
     },
 
     create(yaml: string) {
@@ -168,7 +168,7 @@ export default {
   },
   queues: {
     on(evt: "message", cb: (...args: unknown[]) => void) {
-      onFromClientSide(evt, "queues", cb)
+      return onFromClientSide(evt, "queues", cb)
     },
   },
   controlplane: {
