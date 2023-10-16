@@ -59,7 +59,8 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
             logging.info(f"Error while cloning workdir name={name} namespace={namespace}. {str(e).strip()}")
             if "access denied" in str(e):
                 already_thrown = True
-                set_status(name, namespace, 'AccessDenied', patch)
+                set_status(name, namespace, 'AccessDenied', patch, "reason")
+                set_status(name, namespace, 'CloneFailed', patch)
                 set_status(name, namespace, "0", patch, "ready")
                 add_error_condition(customApi, name, namespace, str(e).strip(), patch)
                 raise TemporaryError(f"Failed to create WorkerPool due to missing credentials name={name} namespace={namespace}. {str(e).strip()}")

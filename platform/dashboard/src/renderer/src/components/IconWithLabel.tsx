@@ -2,8 +2,6 @@ import type { PropsWithChildren, ReactNode } from "react"
 
 import { Button, Flex, FlexItem, Popover } from "@patternfly/react-core"
 
-import { stopPropagation } from "../navigate"
-
 import InfoCircleIcon from "@patternfly/react-icons/dist/esm/icons/info-circle-icon"
 import ExclamationCircleIcon from "@patternfly/react-icons//dist/esm/icons/exclamation-circle-icon"
 
@@ -31,7 +29,6 @@ function popover(props: PopoverProps) {
       triggerAction="hover"
     >
       <Button
-        onClick={stopPropagation}
         variant="plain"
         size="sm"
         className="codeflare--control-plane-status-info"

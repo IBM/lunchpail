@@ -1,1012 +1,4 @@
 ---
-# Source: crds/Application.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: applications.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      subresources:
-        # enables the status subresource
-        status: {}
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              oneOf:
-                - required: [api,image,command]
-                - required: [api,steps]
-              properties:
-                api:
-                  type: string
-                  enum:
-                    - shell
-                    - ray
-                    - torch
-                    - spark
-                    - kubeflow
-                    - sequence
-                    - workqueue
-                image:
-                  type: string
-                repo:
-                  type: string
-                description:
-                  type: string
-                steps:
-                  type: array
-                  items:
-                    type: string
-                env:
-                  type: object
-                  additionalProperties:
-                    type: string
-                requirements:
-                  type: array
-                  items:
-                    type: string
-                command:
-                  type: string
-                options:
-                  type: string
-                minMemory:
-                  type: string
-                  pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                supportsGpu:
-                  type: boolean
-                  default: false
-                inputs:
-                  type: array
-                  items:
-                    type: object
-                    required: [sizes]
-                    properties:
-                      useas:
-                        type: string
-                        enum: [mount,configmap]
-                      namespace:
-                        type: string
-                      defaultSize:
-                        type: string
-                        enum: [xs,sm,md,lg,xl,xxl]
-                      sizes:
-                        type: object
-                        properties:
-                          xs:
-                            type: string
-                          sm:
-                            type: string
-                          md:
-                            type: string
-                          lg:
-                            type: string
-                          xl:
-                            type: string
-                          xxl:
-                            type: string
-
-            status:
-              type: object
-              properties:
-                phase:
-                  type: string
-                  enum:
-                    - Pending
-                    - Queued
-                    - Running
-                    - Completed
-                    - Failed
-                    
-      additionalPrinterColumns:
-        - name: API
-          type: string
-          description: The distributed API this application uses
-          jsonPath: .spec.api
-        - name: Command
-          type: string
-          description: The command line prefix used to run this application
-          jsonPath: .spec.command
-          priority: 1 # -o wide only
-        - name: GPUs?
-          type: boolean
-          description: Do the workers in this pool support GPU jobs?
-          jsonPath: .spec.supportsGpu
-        - name: Image
-          type: string
-          description: The base image this application uses
-          jsonPath: .spec.image
-        - name: Repo
-          type: string
-          description: The source repository for this application
-          jsonPath: .spec.repo
-          priority: 1 # -o wide only
-        - name: Description
-          type: string
-          description: Brief description of this Application
-          jsonPath: .spec.description
-          priority: 1 # -o wide only
-        - name: Age
-          type: date
-          jsonPath: .metadata.creationTimestamp
-
-  # either Namespaced or Cluster
-  scope: Namespaced
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: applications
-    # singular name to be used as an alias on the CLI and for display
-    singular: application
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: Application
-    # shortNames allow shorter string to match your resource on the CLI
-    shortNames:
-    - app
-
----
-# Source: crds/Image.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: images.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: [image]
-              properties:
-                image:
-                  type: string
-      # subresources for the custom resource
-      subresources:
-        # enables the status subresource
-        status: {}
-      additionalPrinterColumns:
-        - name: Image
-          type: string
-          description: The image path
-          jsonPath: .spec.image
-        - name: Age
-          type: date
-          jsonPath: .metadata.creationTimestamp
-
-  # either Namespaced or Cluster
-  scope: Namespaced
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: images
-    # singular name to be used as an alias on the CLI and for display
-    singular: image
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: Image
-    # shortNames allow shorter string to match your resource on the CLI
-    #shortNames:
-    #- im
-
----
-# Source: crds/PlatformImagePullSecret.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: platformimagepullsecrets.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # either Namespaced or Cluster
-  scope: Cluster
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: platformimagepullsecrets
-    # singular name to be used as an alias on the CLI and for display
-    singular: platformimagepullsecret
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: PlatformImagePullSecret
-    # shortNames allow shorter string to match your resource on the CLI
-    shortNames:
-    - pips
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: [repo,secret]
-              properties:
-                repo:
-                  type: string
-                secret:
-                  type: object
-                  required: [name,namespace]
-                  properties:
-                    name:
-                      type: string
-                    namespace:
-                      type: string
-
----
-# Source: crds/PlatformRepoSecret.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: platformreposecrets.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # either Namespaced or Cluster
-  scope: Cluster
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: platformreposecrets
-    # singular name to be used as an alias on the CLI and for display
-    singular: platformreposecret
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: PlatformRepoSecret
-    # shortNames allow shorter string to match your resource on the CLI
-    shortNames:
-    - prs
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: [repo,secret]
-              properties:
-                repo:
-                  type: string
-                secret:
-                  type: object
-                  required: [name,namespace]
-                  properties:
-                    name:
-                      type: string
-                    namespace:
-                      type: string
-
----
-# Source: crds/Queue.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: queues.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: [dataset]
-              properties:
-                dataset:
-                  type: string
-                
-      # subresources for the custom resource
-      subresources:
-        # enables the status subresource
-        status: {}
-      additionalPrinterColumns:
-        - name: Run
-          type: string
-          jsonPath: ".metadata.labels.app\\.kubernetes\\.io/part-of"
-        - name: WorkerPool
-          type: string
-          jsonPath: ".metadata.labels.app\\.kubernetes\\.io/name"
-        - name: WorkerIndex
-          type: string
-          jsonPath: ".metadata.labels.codeflare\\.dev/worker-index"
-        - name: Inbox
-          type: string
-          description: The number of enqueued inbox tasks
-          jsonPath: ".metadata.annotations.codeflare\\.dev/inbox"
-        - name: Processing
-          type: string
-          description: The number of in-progress tasks
-          jsonPath: ".metadata.annotations.codeflare\\.dev/processing"
-        - name: Outbox
-          type: string
-          description: The number of completed tasks
-          jsonPath: ".metadata.annotations.codeflare\\.dev/outbox"
-
-  # either Namespaced or Cluster
-  scope: Namespaced
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: queues
-    # singular name to be used as an alias on the CLI and for display
-    singular: queue
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: Queue
-    # shortNames allow shorter string to match your resource on the CLI
-    #shortNames:
-    #- q
-
----
-# Source: crds/Run.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: runs.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: [application]
-              properties:
-                application:
-                  type: object
-                  required: [name]
-                  properties:
-                    name:
-                      type: string
-                    namespace:
-                      type: string
-                options:
-                  type: string
-                env:
-                  type: object
-                  additionalProperties:
-                    type: string
-                priority:
-                  type: string
-                  enum:
-                    - low
-                    - normal
-                    - high
-                workers:
-                  type: number
-                supportsGpu:
-                  type: boolean
-                size:
-                  type: string
-                  enum: [xs,sm,md,lg,xl,xxl]
-                input:
-                  type: string
-                  enum: [xs,sm,md,lg,xl,xxl]
-                inbox:
-                  type: string
-      # subresources for the custom resource
-      subresources:
-        # enables the status subresource
-        status: {}
-      additionalPrinterColumns:
-        - name: Application
-          type: string
-          description: The application definition being run
-          jsonPath: .spec.application.name
-        #- name: Options
-        #  type: string
-        #  description: Addition command line options
-        #  jsonPath: .spec.options
-        - name: Age
-          type: date
-          jsonPath: .metadata.creationTimestamp
-        - name: Status
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
-        - name: Epoch
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch"
-        - name: Progress
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch-progress"
-        - name: Message
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
-
-  # either Namespaced or Cluster
-  scope: Namespaced
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: runs
-    # singular name to be used as an alias on the CLI and for display
-    singular: run
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: Run
-    # shortNames allow shorter string to match your resource on the CLI
-    shortNames:
-    - ru
-
----
-# Source: crds/RunSizeConfiguration.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: runsizeconfigurations.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # either Namespaced or Cluster
-  scope: Cluster
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: runsizeconfigurations
-    # singular name to be used as an alias on the CLI and for display
-    singular: runsizeconfiguration
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: RunSizeConfiguration
-    # shortNames allow shorter string to match your resource on the CLI
-    shortNames:
-    - rsc
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: ["config"]
-              properties:
-                priority:
-                  type: number
-                config:
-                  type: object
-                  required: ["xs", "sm", "md", "lg", "xl", "xxl"]
-                  properties:
-                    xs:
-                      type: object
-                      required: ["workers", "cpu", "memory", "gpu"]
-                      properties:
-                        workers:
-                          type: number
-                        cpu:
-                          x-kubernetes-int-or-string: true
-                          pattern: '^\d+m?$'
-                        memory:
-                           type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                        gpu:
-                          type: number
-                    sm:
-                      type: object
-                      required: ["workers", "cpu", "memory", "gpu"]
-                      properties:
-                        workers:
-                          type: number
-                        cpu:
-                          x-kubernetes-int-or-string: true
-                          pattern: '^\d+m?$'
-                        memory:
-                           type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                        gpu:
-                          type: number
-                    md:
-                      type: object
-                      required: ["workers", "cpu", "memory", "gpu"]
-                      properties:
-                        workers:
-                          type: number
-                        cpu:
-                          x-kubernetes-int-or-string: true
-                          pattern: '^\d+m?$'
-                        memory:
-                           type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                        gpu:
-                          type: number
-                    lg:
-                      type: object
-                      required: ["workers", "cpu", "memory", "gpu"]
-                      properties:
-                        workers:
-                          type: number
-                        cpu:
-                          x-kubernetes-int-or-string: true
-                          pattern: '^\d+m?$'
-                        memory:
-                           type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                        gpu:
-                          type: number
-                    xl:
-                      type: object
-                      required: ["workers", "cpu", "memory", "gpu"]
-                      properties:
-                        workers:
-                          type: number
-                        cpu:
-                          x-kubernetes-int-or-string: true
-                          pattern: '^\d+m?$'
-                        memory:
-                           type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                        gpu:
-                          type: number
-                    xxl:
-                      type: object
-                      required: ["workers", "cpu", "memory", "gpu"]
-                      properties:
-                        workers:
-                          type: number
-                        cpu:
-                          x-kubernetes-int-or-string: true
-                          pattern: '^\d+m?$'
-                        memory:
-                           type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
-                        gpu:
-                          type: number
-
----
-# Source: crds/WorkerPool.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: workerpools.codeflare.dev
-spec:
-  # group name to use for REST API: /apis/<group>/<version>
-  group: codeflare.dev
-  # list of versions supported by this CustomResourceDefinition
-  versions:
-    - name: v1alpha1
-      # Each version can be enabled/disabled by Served flag.
-      served: true
-      # One and only one version must be marked as the storage version.
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              required: [application,dataset,workers]
-              properties:
-                application:
-                  type: object
-                  required: [name]
-                  properties:
-                    name:
-                      type: string
-                dataset:
-                  type: string
-                workers:
-                  type: object
-                  required: [count,size]
-                  properties:
-                    count:
-                      type: integer
-                      minimum: 1
-                    supportsGpu:
-                      type: boolean
-                      default: false
-                    size:
-                      type: string
-                      enum: [xs,sm,md,lg,xl,xxl]
-                
-      # subresources for the custom resource
-      subresources:
-        # enables the status subresource
-        status: {}
-      additionalPrinterColumns:
-        - name: Application
-          type: string
-          jsonPath: .spec.application.name
-        - name: DataSet
-          type: string
-          jsonPath: .spec.dataset
-        - name: Ready
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/ready"
-        - name: Size
-          type: integer
-          description: The number of workers in this pool
-          jsonPath: .spec.workers.count
-        - name: NodeClass
-          type: string
-          description: The node class of workers in this pool
-          jsonPath: .spec.workers.size
-        - name: GPUs?
-          type: boolean
-          description: Do the workers in this pool support GPU jobs?
-          jsonPath: .spec.workers.supportsGpu
-        - name: Age
-          type: date
-          jsonPath: .metadata.creationTimestamp
-        - name: Status
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
-        - name: Message
-          type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
-          priority: 1 # -o wide only
-
-  # either Namespaced or Cluster
-  scope: Namespaced
-  names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: workerpools
-    # singular name to be used as an alias on the CLI and for display
-    singular: workerpool
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
-    kind: WorkerPool
-    # shortNames allow shorter string to match your resource on the CLI
-    shortNames:
-    - wp
-
----
-# Source: crds/com.ie.ibm.hpsys_datasetinternals_crd.yaml
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
-  creationTimestamp: null
-  name: datasetsinternal.com.ie.ibm.hpsys
-spec:
-  group: com.ie.ibm.hpsys
-  names:
-    kind: DatasetInternal
-    listKind: DatasetInternalList
-    plural: datasetsinternal
-    singular: datasetinternal
-  scope: Namespaced
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: DatasetInternal is the Schema for the datasetsinternal API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: DatasetSpec defines the desired state of Dataset
-            properties:
-              extract:
-                type: string
-              format:
-                type: string
-              local:
-                additionalProperties:
-                  type: string
-                description: Foo is an example field of Dataset. Edit dataset_types.go
-                  to remove/update
-                type: object
-              remote:
-                additionalProperties:
-                  type: string
-                type: object
-              type:
-                description: TODO temp definition for archive
-                type: string
-              url:
-                type: string
-            type: object
-          status:
-            description: DatasetInternalStatus defines the observed state of DatasetInternal
-            properties:
-              caching:
-                properties:
-                  placements:
-                    properties:
-                      datalocations:
-                        items:
-                          properties:
-                            key:
-                              type: string
-                            value:
-                              type: string
-                          type: object
-                        type: array
-                      gateways:
-                        items:
-                          properties:
-                            key:
-                              type: string
-                            value:
-                              type: string
-                          type: object
-                        type: array
-                    type: object
-                type: object
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
-
----
-# Source: crds/com.ie.ibm.hpsys_datasets_crd.yaml
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
-  creationTimestamp: null
-  name: datasets.com.ie.ibm.hpsys
-spec:
-  group: com.ie.ibm.hpsys
-  names:
-    kind: Dataset
-    listKind: DatasetList
-    plural: datasets
-    singular: dataset
-  scope: Namespaced
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: Dataset is the Schema for the datasets API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: DatasetSpec defines the desired state of Dataset
-            properties:
-              extract:
-                type: string
-              format:
-                type: string
-              local:
-                additionalProperties:
-                  type: string
-                description: Foo is an example field of Dataset. Edit dataset_types.go
-                  to remove/update
-                type: object
-              remote:
-                additionalProperties:
-                  type: string
-                type: object
-              type:
-                description: TODO temp definition for archive
-                type: string
-              url:
-                type: string
-            type: object
-          status:
-            description: DatasetStatus defines the observed state of Dataset
-            properties:
-              caching:
-                properties:
-                  info:
-                    type: string
-                  status:
-                    type: string
-                type: object
-              provision:
-                properties:
-                  info:
-                    type: string
-                  status:
-                    type: string
-                type: object
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-    additionalPrinterColumns:
-      - name: Type
-        type: string
-        jsonPath: .spec.local.type
-      - name: Endpoint
-        type: string
-        jsonPath: .spec.local.endpoint
-      - name: Bucket
-        type: string
-        jsonPath: .spec.local.bucket
-      - name: Unassigned
-        type: string
-        jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
-      - name: Status
-        type: string
-        jsonPath: ".metadata.annotations.codeflare\\.dev/status"
-      - name: Readonly
-        type: string
-        jsonPath: .spec.local.readonly
-        
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
-
----
-# Source: crds/scheduling.x-k8s.io_podgroups.yaml
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    api-approved.kubernetes.io: https://github.com/kubernetes-sigs/scheduler-plugins/pull/50
-    controller-gen.kubebuilder.io/version: v0.11.1
-  creationTimestamp: null
-  name: podgroups.scheduling.x-k8s.io
-spec:
-  group: scheduling.x-k8s.io
-  names:
-    kind: PodGroup
-    listKind: PodGroupList
-    plural: podgroups
-    shortNames:
-    - pg
-    - pgs
-    singular: podgroup
-  scope: Namespaced
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: PodGroup is a collection of Pod; used for batch workload.
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: Specification of the desired behavior of the pod group.
-            properties:
-              minMember:
-                description: MinMember defines the minimal number of members/tasks
-                  to run the pod group; if there's not enough resources to start all
-                  tasks, the scheduler will not start anyone.
-                format: int32
-                type: integer
-              minResources:
-                additionalProperties:
-                  anyOf:
-                  - type: integer
-                  - type: string
-                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                  x-kubernetes-int-or-string: true
-                description: MinResources defines the minimal resource of members/tasks
-                  to run the pod group; if there's not enough resources to start all
-                  tasks, the scheduler will not start anyone.
-                type: object
-              scheduleTimeoutSeconds:
-                description: ScheduleTimeoutSeconds defines the maximal time of members/tasks
-                  to wait before run the pod group;
-                format: int32
-                type: integer
-            type: object
-          status:
-            description: Status represents the current information about a pod group.
-              This data may not be up to date.
-            properties:
-              failed:
-                description: The number of pods which reached phase Failed.
-                format: int32
-                type: integer
-              occupiedBy:
-                description: OccupiedBy marks the workload (e.g., deployment, statefulset)
-                  UID that occupy the podgroup. It is empty if not initialized.
-                type: string
-              phase:
-                description: Current phase of PodGroup.
-                type: string
-              running:
-                description: The number of actively running pods.
-                format: int32
-                type: integer
-              scheduleStartTime:
-                description: ScheduleStartTime of the group
-                format: date-time
-                type: string
-              scheduled:
-                description: The number of actively running pods.
-                format: int32
-                type: integer
-              succeeded:
-                description: The number of pods which reached phase Succeeded.
-                format: int32
-                type: integer
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-
----
 # Source: crds/ibm.com_quotasubtree-v1.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -8888,6 +7880,1018 @@ spec:
         type: object
     served: true
     storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+
+---
+# Source: crds/scheduling.x-k8s.io_podgroups.yaml
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    api-approved.kubernetes.io: https://github.com/kubernetes-sigs/scheduler-plugins/pull/50
+    controller-gen.kubebuilder.io/version: v0.11.1
+  creationTimestamp: null
+  name: podgroups.scheduling.x-k8s.io
+spec:
+  group: scheduling.x-k8s.io
+  names:
+    kind: PodGroup
+    listKind: PodGroupList
+    plural: podgroups
+    shortNames:
+    - pg
+    - pgs
+    singular: podgroup
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: PodGroup is a collection of Pod; used for batch workload.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: Specification of the desired behavior of the pod group.
+            properties:
+              minMember:
+                description: MinMember defines the minimal number of members/tasks
+                  to run the pod group; if there's not enough resources to start all
+                  tasks, the scheduler will not start anyone.
+                format: int32
+                type: integer
+              minResources:
+                additionalProperties:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
+                description: MinResources defines the minimal resource of members/tasks
+                  to run the pod group; if there's not enough resources to start all
+                  tasks, the scheduler will not start anyone.
+                type: object
+              scheduleTimeoutSeconds:
+                description: ScheduleTimeoutSeconds defines the maximal time of members/tasks
+                  to wait before run the pod group;
+                format: int32
+                type: integer
+            type: object
+          status:
+            description: Status represents the current information about a pod group.
+              This data may not be up to date.
+            properties:
+              failed:
+                description: The number of pods which reached phase Failed.
+                format: int32
+                type: integer
+              occupiedBy:
+                description: OccupiedBy marks the workload (e.g., deployment, statefulset)
+                  UID that occupy the podgroup. It is empty if not initialized.
+                type: string
+              phase:
+                description: Current phase of PodGroup.
+                type: string
+              running:
+                description: The number of actively running pods.
+                format: int32
+                type: integer
+              scheduleStartTime:
+                description: ScheduleStartTime of the group
+                format: date-time
+                type: string
+              scheduled:
+                description: The number of actively running pods.
+                format: int32
+                type: integer
+              succeeded:
+                description: The number of pods which reached phase Succeeded.
+                format: int32
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+# Source: crds/Application.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: applications.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      subresources:
+        # enables the status subresource
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              oneOf:
+                - required: [api,image,command]
+                - required: [api,steps]
+              properties:
+                api:
+                  type: string
+                  enum:
+                    - shell
+                    - ray
+                    - torch
+                    - spark
+                    - kubeflow
+                    - sequence
+                    - workqueue
+                image:
+                  type: string
+                repo:
+                  type: string
+                description:
+                  type: string
+                steps:
+                  type: array
+                  items:
+                    type: string
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
+                requirements:
+                  type: array
+                  items:
+                    type: string
+                command:
+                  type: string
+                options:
+                  type: string
+                minMemory:
+                  type: string
+                  pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                supportsGpu:
+                  type: boolean
+                  default: false
+                inputs:
+                  type: array
+                  items:
+                    type: object
+                    required: [sizes]
+                    properties:
+                      useas:
+                        type: string
+                        enum: [mount,configmap]
+                      namespace:
+                        type: string
+                      defaultSize:
+                        type: string
+                        enum: [xs,sm,md,lg,xl,xxl]
+                      sizes:
+                        type: object
+                        properties:
+                          xs:
+                            type: string
+                          sm:
+                            type: string
+                          md:
+                            type: string
+                          lg:
+                            type: string
+                          xl:
+                            type: string
+                          xxl:
+                            type: string
+
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - Queued
+                    - Running
+                    - Completed
+                    - Failed
+                    
+      additionalPrinterColumns:
+        - name: API
+          type: string
+          description: The distributed API this application uses
+          jsonPath: .spec.api
+        - name: Command
+          type: string
+          description: The command line prefix used to run this application
+          jsonPath: .spec.command
+          priority: 1 # -o wide only
+        - name: GPUs?
+          type: boolean
+          description: Do the workers in this pool support GPU jobs?
+          jsonPath: .spec.supportsGpu
+        - name: Image
+          type: string
+          description: The base image this application uses
+          jsonPath: .spec.image
+        - name: Repo
+          type: string
+          description: The source repository for this application
+          jsonPath: .spec.repo
+          priority: 1 # -o wide only
+        - name: Description
+          type: string
+          description: Brief description of this Application
+          jsonPath: .spec.description
+          priority: 1 # -o wide only
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: applications
+    # singular name to be used as an alias on the CLI and for display
+    singular: application
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: Application
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - app
+
+---
+# Source: crds/Image.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: images.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+      # subresources for the custom resource
+      subresources:
+        # enables the status subresource
+        status: {}
+      additionalPrinterColumns:
+        - name: Image
+          type: string
+          description: The image path
+          jsonPath: .spec.image
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: images
+    # singular name to be used as an alias on the CLI and for display
+    singular: image
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: Image
+    # shortNames allow shorter string to match your resource on the CLI
+    #shortNames:
+    #- im
+
+---
+# Source: crds/PlatformImagePullSecret.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: platformimagepullsecrets.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # either Namespaced or Cluster
+  scope: Cluster
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: platformimagepullsecrets
+    # singular name to be used as an alias on the CLI and for display
+    singular: platformimagepullsecret
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: PlatformImagePullSecret
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - pips
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [repo,secret]
+              properties:
+                repo:
+                  type: string
+                secret:
+                  type: object
+                  required: [name,namespace]
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+
+---
+# Source: crds/PlatformRepoSecret.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: platformreposecrets.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # either Namespaced or Cluster
+  scope: Cluster
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: platformreposecrets
+    # singular name to be used as an alias on the CLI and for display
+    singular: platformreposecret
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: PlatformRepoSecret
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - prs
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [repo,secret]
+              properties:
+                repo:
+                  type: string
+                secret:
+                  type: object
+                  required: [name,namespace]
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+
+---
+# Source: crds/Queue.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: queues.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [dataset]
+              properties:
+                dataset:
+                  type: string
+                
+      # subresources for the custom resource
+      subresources:
+        # enables the status subresource
+        status: {}
+      additionalPrinterColumns:
+        - name: Run
+          type: string
+          jsonPath: ".metadata.labels.app\\.kubernetes\\.io/part-of"
+        - name: WorkerPool
+          type: string
+          jsonPath: ".metadata.labels.app\\.kubernetes\\.io/name"
+        - name: WorkerIndex
+          type: string
+          jsonPath: ".metadata.labels.codeflare\\.dev/worker-index"
+        - name: Inbox
+          type: string
+          description: The number of enqueued inbox tasks
+          jsonPath: ".metadata.annotations.codeflare\\.dev/inbox"
+        - name: Processing
+          type: string
+          description: The number of in-progress tasks
+          jsonPath: ".metadata.annotations.codeflare\\.dev/processing"
+        - name: Outbox
+          type: string
+          description: The number of completed tasks
+          jsonPath: ".metadata.annotations.codeflare\\.dev/outbox"
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: queues
+    # singular name to be used as an alias on the CLI and for display
+    singular: queue
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: Queue
+    # shortNames allow shorter string to match your resource on the CLI
+    #shortNames:
+    #- q
+
+---
+# Source: crds/Run.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: runs.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [application]
+              properties:
+                application:
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                options:
+                  type: string
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
+                priority:
+                  type: string
+                  enum:
+                    - low
+                    - normal
+                    - high
+                workers:
+                  type: number
+                supportsGpu:
+                  type: boolean
+                size:
+                  type: string
+                  enum: [xs,sm,md,lg,xl,xxl]
+                input:
+                  type: string
+                  enum: [xs,sm,md,lg,xl,xxl]
+                inbox:
+                  type: string
+      # subresources for the custom resource
+      subresources:
+        # enables the status subresource
+        status: {}
+      additionalPrinterColumns:
+        - name: Application
+          type: string
+          description: The application definition being run
+          jsonPath: .spec.application.name
+        #- name: Options
+        #  type: string
+        #  description: Addition command line options
+        #  jsonPath: .spec.options
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+        - name: Status
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+        - name: Epoch
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch"
+        - name: Progress
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch-progress"
+        - name: Message
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: runs
+    # singular name to be used as an alias on the CLI and for display
+    singular: run
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: Run
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - ru
+
+---
+# Source: crds/RunSizeConfiguration.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: runsizeconfigurations.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # either Namespaced or Cluster
+  scope: Cluster
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: runsizeconfigurations
+    # singular name to be used as an alias on the CLI and for display
+    singular: runsizeconfiguration
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: RunSizeConfiguration
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - rsc
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: ["config"]
+              properties:
+                priority:
+                  type: number
+                config:
+                  type: object
+                  required: ["xs", "sm", "md", "lg", "xl", "xxl"]
+                  properties:
+                    xs:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    sm:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    md:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    lg:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    xl:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+                    xxl:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
+
+---
+# Source: crds/WorkerPool.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: workerpools.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [application,dataset,workers]
+              properties:
+                application:
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                dataset:
+                  type: string
+                workers:
+                  type: object
+                  required: [count,size]
+                  properties:
+                    count:
+                      type: integer
+                      minimum: 1
+                    supportsGpu:
+                      type: boolean
+                      default: false
+                    size:
+                      type: string
+                      enum: [xs,sm,md,lg,xl,xxl]
+                
+      # subresources for the custom resource
+      subresources:
+        # enables the status subresource
+        status: {}
+      additionalPrinterColumns:
+        - name: Application
+          type: string
+          jsonPath: .spec.application.name
+        - name: DataSet
+          type: string
+          jsonPath: .spec.dataset
+        - name: Ready
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/ready"
+        - name: Size
+          type: integer
+          description: The number of workers in this pool
+          jsonPath: .spec.workers.count
+        - name: NodeClass
+          type: string
+          description: The node class of workers in this pool
+          jsonPath: .spec.workers.size
+        - name: GPUs?
+          type: boolean
+          description: Do the workers in this pool support GPU jobs?
+          jsonPath: .spec.workers.supportsGpu
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+        - name: Status
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+        - name: Reason
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/reason"
+          priority: 1 # -o wide only
+        - name: Message
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
+          priority: 1 # -o wide only
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: workerpools
+    # singular name to be used as an alias on the CLI and for display
+    singular: workerpool
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: WorkerPool
+    # shortNames allow shorter string to match your resource on the CLI
+    shortNames:
+    - wp
+
+---
+# Source: crds/com.ie.ibm.hpsys_datasetinternals_crd.yaml
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: datasetsinternal.com.ie.ibm.hpsys
+spec:
+  group: com.ie.ibm.hpsys
+  names:
+    kind: DatasetInternal
+    listKind: DatasetInternalList
+    plural: datasetsinternal
+    singular: datasetinternal
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: DatasetInternal is the Schema for the datasetsinternal API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DatasetSpec defines the desired state of Dataset
+            properties:
+              extract:
+                type: string
+              format:
+                type: string
+              local:
+                additionalProperties:
+                  type: string
+                description: Foo is an example field of Dataset. Edit dataset_types.go
+                  to remove/update
+                type: object
+              remote:
+                additionalProperties:
+                  type: string
+                type: object
+              type:
+                description: TODO temp definition for archive
+                type: string
+              url:
+                type: string
+            type: object
+          status:
+            description: DatasetInternalStatus defines the observed state of DatasetInternal
+            properties:
+              caching:
+                properties:
+                  placements:
+                    properties:
+                      datalocations:
+                        items:
+                          properties:
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      gateways:
+                        items:
+                          properties:
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+
+---
+# Source: crds/com.ie.ibm.hpsys_datasets_crd.yaml
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: datasets.com.ie.ibm.hpsys
+spec:
+  group: com.ie.ibm.hpsys
+  names:
+    kind: Dataset
+    listKind: DatasetList
+    plural: datasets
+    singular: dataset
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Dataset is the Schema for the datasets API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DatasetSpec defines the desired state of Dataset
+            properties:
+              extract:
+                type: string
+              format:
+                type: string
+              local:
+                additionalProperties:
+                  type: string
+                description: Foo is an example field of Dataset. Edit dataset_types.go
+                  to remove/update
+                type: object
+              remote:
+                additionalProperties:
+                  type: string
+                type: object
+              type:
+                description: TODO temp definition for archive
+                type: string
+              url:
+                type: string
+            type: object
+          status:
+            description: DatasetStatus defines the observed state of Dataset
+            properties:
+              caching:
+                properties:
+                  info:
+                    type: string
+                  status:
+                    type: string
+                type: object
+              provision:
+                properties:
+                  info:
+                    type: string
+                  status:
+                    type: string
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+      - name: Type
+        type: string
+        jsonPath: .spec.local.type
+      - name: Endpoint
+        type: string
+        jsonPath: .spec.local.endpoint
+      - name: Bucket
+        type: string
+        jsonPath: .spec.local.bucket
+      - name: Unassigned
+        type: string
+        jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
+      - name: Status
+        type: string
+        jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+      - name: Readonly
+        type: string
+        jsonPath: .spec.local.readonly
+        
 status:
   acceptedNames:
     kind: ""

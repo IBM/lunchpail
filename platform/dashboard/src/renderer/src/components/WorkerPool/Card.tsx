@@ -1,5 +1,5 @@
 import CardInGallery from "../CardInGallery"
-import { actions, summaryGroups } from "./Summary"
+import { statusActions, summaryGroups } from "./Summary"
 
 import type Props from "./Props"
 
@@ -23,7 +23,7 @@ export default class WorkerPool extends CardInGallery<Props> {
   }
 
   protected override actions() {
-    return actions(this.props)
+    return statusActions(this.props, "small")
   }
 
   /* private get outboxes() {

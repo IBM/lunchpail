@@ -26,8 +26,11 @@ export default interface WorkerPoolStatusEvent {
   /** Age of pool */
   age: string
 
-  /** Status of pool */
+  /** Status of pool, e.g. "Ready" | "CloneFailed" */
   status: string
+
+  /** Categorical Reason to help understand a failure, e.g. "AccessDenied" stemming from status=CloneFailed */
+  reason?: string
 
   /** Failure message or other status details */
   message?: string
