@@ -1,5 +1,3 @@
-import { Bullseye } from "@patternfly/react-core"
-
 import CardInGallery from "../CardInGallery"
 import { LinkToNewPool } from "../../navigate/newpool"
 
@@ -91,14 +89,12 @@ export default class DataSet extends CardInGallery<Props> {
   protected override footer() {
     return (
       numAssociatedApplicationEvents(this.props) > 0 && (
-        <Bullseye>
-          <LinkToNewPool
-            location={this.props.location}
-            searchParams={this.props.searchParams}
-            dataset={this.label()}
-            startOrAdd={this.hasAssignedWorkers ? "add" : "start"}
-          />
-        </Bullseye>
+        <LinkToNewPool
+          location={this.props.location}
+          searchParams={this.props.searchParams}
+          dataset={this.label()}
+          startOrAdd={this.hasAssignedWorkers ? "add" : "start"}
+        />
       )
     )
   }

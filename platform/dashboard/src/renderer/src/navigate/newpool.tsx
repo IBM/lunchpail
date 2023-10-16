@@ -23,9 +23,9 @@ export function LinkToNewPool(
 ) {
   const linkText =
     props.startOrAdd === "start"
-      ? "Assign Workers to this Queue"
+      ? "Assign Workers"
       : props.startOrAdd === "add"
-      ? "Add a Worker Pool"
+      ? "Assign More Workers"
       : "Create Worker Pool"
   const qs = [props.dataset ? `dataset=${props.dataset}` : ""]
 
