@@ -4,6 +4,9 @@ import type { ReactNode } from "react"
 import {
   Breadcrumb,
   BreadcrumbItem,
+  Card,
+  CardBody,
+  CardHeader,
   Title,
   Drawer,
   DrawerContent,
@@ -84,17 +87,26 @@ export default abstract class BaseWithDrawer<
     return this.props.searchParams.get("kind") as NamedKind
   }
 
+  /** @return the content to be shown in the drawer (*not* in the main body section) */
   private panelContent() {
     const id = this.currentlySelectedId
     const kind = this.currentlySelectedKind
-    const body =
+
+    const content =
       id !== null && kind === "applications"
         ? ApplicationDetail(this.getApplication(id))
         : id !== null && kind === "datasets"
         ? DataSetDetail(this.getDataSet(id))
         : id !== null && kind === "workerpools"
-        ? WorkerPoolDetail(this.getWorkerPool(id))
-        : undefined
+        ? WorkerPoolDetail(this.getWorkerPool(id), this.props)
+        : { actions: undefined as ReactNode, body: undefined as ReactNode }
+
+    const body = content.body && (
+      <Card isPlain isFullHeight>
+        {"actions" in content && <CardHeader>{content.actions}</CardHeader>}
+        <CardBody isFilled>{content.body}</CardBody>
+      </Card>
+    )
 
     return (
       <DrawerPanelContent className="codeflare--detail-view">

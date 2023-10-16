@@ -5,17 +5,15 @@ import { Dashboard } from "./Dashboard"
 
 import type Kind from "../Kind"
 import type { EventProps } from "./Dashboard"
-import type NewPoolHandler from "../events/NewPoolHandler"
 import type { Handler } from "../events/EventSourceLike"
 import type EventSourceLike from "../events/EventSourceLike"
+import type CreateResourceHandler from "../events/NewPoolHandler"
 
 let props: null | EventProps<EventSourceLike> = null
 
-const newpool: NewPoolHandler = {
-  newPool: async (_, yaml) => {
-    // browser apis: await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
-    window.jaas.workerpools.create(yaml)
-  },
+const createResource: CreateResourceHandler = async (_, yaml) => {
+  // browser apis: await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
+  window.jaas.createResource(yaml)
 }
 
 class ElectronEventSource implements EventSourceLike {
@@ -89,6 +87,12 @@ export default function LiveDashboard() {
   const searchParams = useSearchParams()
 
   return (
-    <Dashboard {...init()} newpool={newpool} location={location} navigate={navigate} searchParams={searchParams[0]} />
+    <Dashboard
+      {...init()}
+      createResource={createResource}
+      location={location}
+      navigate={navigate}
+      searchParams={searchParams[0]}
+    />
   )
 }

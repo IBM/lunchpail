@@ -38,5 +38,5 @@ function detailGroups(props: Props) {
 }
 
 export default function DataSetDetail(props: Props | undefined) {
-  return props && dl(detailGroups(props))
+  return { body: props && dl(detailGroups(props)) }
 }

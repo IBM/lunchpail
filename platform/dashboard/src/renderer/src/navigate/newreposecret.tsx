@@ -3,9 +3,9 @@ import LinkToNewWizard, { isShowingTask } from "./wizard"
 import type { WizardProps } from "./wizard"
 import type { LocationProps } from "../router/withLocation"
 
-const task = "newpool"
+const task = "newreposecret"
 
-export default function isShowingNewPool(props: Pick<LocationProps, "searchParams">) {
+export default function isShowingNewRepoSecret(props: Pick<LocationProps, "searchParams">) {
   return isShowingTask(task, props)
 }
 
@@ -16,18 +16,17 @@ export default function isShowingNewPool(props: Pick<LocationProps, "searchParam
  * otherwise, present as if we are augmenting existing computational
  * resources.
  */
-export function LinkToNewPool(
+export function LinkToNewRepoSecret(
   props: WizardProps & {
-    dataset?: string
+    repo?: string
+    namespace: string
   },
 ) {
-  const linkText =
-    props.startOrAdd === "start"
-      ? "Assign Workers"
-      : props.startOrAdd === "add"
-      ? "Assign More Workers"
-      : "Create Worker Pool"
-  const qs = [props.dataset ? `dataset=${props.dataset}` : ""]
+  const linkText = props.startOrAdd === "fix" ? "Quick Fix: Add Repo Secret" : "Create Repo Secret"
+  const qs = [`namespace=${props.namespace}`].filter(Boolean)
+  if (props.repo) {
+    qs.push(`repo=${props.repo}`)
+  }
 
   return <LinkToNewWizard {...props} task={task} linkText={linkText} qs={qs} />
 }

@@ -25,10 +25,8 @@ type Kind = "workerpools" | "queues" | "datasets" | "applications"
 
 /** Jobs as a Service API to server-side functionality */
 export interface JaasApi extends Record<Kind, JaasResourceApi> {
-  workerpools: {
-    /** Create a worker pool */
-    create(yaml: string): Promise<void>
-  }
+  /** Create a resource */
+  createResource(yaml: string): Promise<void>
 
   /** Jobs as a Service API to server-side control plane functionality */
   controlplane: ControlPlaneApi

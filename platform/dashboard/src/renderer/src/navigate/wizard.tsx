@@ -3,13 +3,27 @@ import { Button, Flex, FlexItem } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
+import type { LocationProps } from "../router/withLocation"
+
+import HeartIcon from "@patternfly/react-icons/dist/esm/icons/heart-icon"
 import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-type StartOrAdd = "start" | "add" | "create"
+type StartOrAdd = "start" | "add" | "create" | "fix"
 
-function href(view: string, returnTo?: string, hash?: string, qs: string[] = []) {
-  const queries = [`view=${view}`, ...qs, returnTo ? `returnTo=${returnTo}` : undefined].filter(Boolean)
+/** URI ?view=wizard */
+const view = "wizard"
+
+export function isShowingWizard(props: Pick<LocationProps, "searchParams">) {
+  return props.searchParams.get("view") === view
+}
+
+export function isShowingTask(task: string, props: Pick<LocationProps, "searchParams">) {
+  return props.searchParams.get("task") === task
+}
+
+function href(task: string, returnTo?: string, hash?: string, qs: string[] = []) {
+  const queries = [`view=${view}`, `task=${task}`, ...qs, returnTo ? `returnTo=${returnTo}` : undefined].filter(Boolean)
 
   return "?" + queries.join("&") + (hash ?? "")
 }
@@ -22,7 +36,7 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
   const href = props["data-href"]
   const start = props["data-start-or-add"]
 
-  const icon = start === "start" ? <RocketIcon /> : <PlusCircleIcon />
+  const icon = start === "start" ? <RocketIcon /> : start === "fix" ? <HeartIcon /> : <PlusCircleIcon />
   const linkText = props["data-link-text"]
 
   return (
@@ -42,7 +56,7 @@ export type WizardProps = Omit<import("../router/withLocation").LocationProps, "
 
 /** Internal props */
 type Props = WizardProps & {
-  view: string
+  task: string
   linkText: string
   qs: string[]
 }
@@ -57,7 +71,7 @@ export default function LinkToNewWizard(props: Props) {
   const currentHash = props.location.hash
   const currentSearch = props.searchParams
   const returnTo = encodeURIComponent(`?${currentSearch}`)
-  const theHref = href(props.view, returnTo, currentHash, props.qs)
+  const theHref = href(props.task, returnTo, currentHash, props.qs)
 
   return (
     <Button

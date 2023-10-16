@@ -9,6 +9,9 @@ export interface WorkerPoolModel {
   outbox: TasksAcrossWorkers
   processing: TasksAcrossWorkers
   label: string
+
+  /** Namespace in which this model is stored */
+  namespace: string
 }
 
 export type WorkerPoolModelWithHistory = WorkerPoolModel & {

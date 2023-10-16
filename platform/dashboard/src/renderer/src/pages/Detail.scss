@@ -1,5 +1,5 @@
 .codeflare--detail-view {
-  a {
+  a:not(.pf-v5-c-button) {
     /* Hmm, patternfly seems a bit buggy here with anchors inside of a "lg" DescriptionList */
     padding-left: 0;
     font-size: inherit;

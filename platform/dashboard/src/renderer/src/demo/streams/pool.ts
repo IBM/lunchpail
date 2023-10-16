@@ -1,7 +1,7 @@
 import type DemoQueueEventSource from "./queue"
 import type DemoDataSetEventSource from "./dataset"
-import type NewPoolHandler from "../../events/NewPoolHandler"
 import type EventSourceLike from "../../events/EventSourceLike"
+import type CreateResourceHandler from "../../events/NewPoolHandler"
 import type WorkerPoolStatusEvent from "../../events/WorkerPoolStatusEvent"
 
 import Base from "./base"
@@ -18,7 +18,7 @@ export type DemoWorkerPool = {
   processing: Record<string, number>[]
 }
 
-export default class DemoWorkerPoolStatusEventSource extends Base implements EventSourceLike, NewPoolHandler {
+export default class DemoWorkerPoolStatusEventSource extends Base implements EventSourceLike {
   /** Model of current worker pools */
   private readonly workerpools: DemoWorkerPool[] = []
 
@@ -155,7 +155,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     }
   }
 
-  public newPool(...params: Parameters<NewPoolHandler["newPool"]>) {
+  public createResource(...params: Parameters<CreateResourceHandler>) {
     const values = params[0]
     const numWorkers = parseInt(values.count, 10)
 

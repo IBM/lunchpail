@@ -103,8 +103,8 @@ export function initEvents() {
   // resource
   kinds.forEach(initStreamForResourceKind)
 
-  // worker pool create request
-  ipcMain.handle("/pools/create", (_, yaml: string) => import("./pools/create").then((_) => _.default(yaml)))
+  // resource create request
+  ipcMain.handle("/create", (_, yaml: string) => import("./pools/create").then((_) => _.default(yaml)))
 
   // control plane status request
   ipcMain.handle("/controlplane/status", getStatusFromMain)
@@ -167,10 +167,8 @@ kinds.forEach((kind) => {
     on: onFromClientSide.bind(kind),
   }
 
-  if (kind === "workerpools") {
-    apiImpl[kind].create = (yaml: string) => {
-      ipcRenderer.invoke("/pools/create", yaml)
-    }
+  apiImpl["createResource"] = (yaml: string) => {
+    ipcRenderer.invoke("/create", yaml)
   }
 })
 

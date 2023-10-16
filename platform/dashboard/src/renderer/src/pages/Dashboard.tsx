@@ -5,6 +5,7 @@ const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default
 
 import names, { subtitles } from "../names"
 import { currentKind } from "../navigate/kind"
+import { isShowingWizard } from "../navigate/wizard"
 import isShowingNewPool from "../navigate/newpool"
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
@@ -18,7 +19,7 @@ import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 import type Kind from "../Kind"
 import type { LocationProps } from "../router/withLocation"
 
-import type NewPoolHandler from "../events/NewPoolHandler"
+import type CreateResourceHandler from "../events/NewPoolHandler"
 import type EventSourceLike from "../events/EventSourceLike"
 import type { Handler, EventLike } from "../events/EventSourceLike"
 import type QueueEvent from "../events/QueueEvent"
@@ -33,6 +34,7 @@ import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 // strange: in non-demo mode, FilterChips stays stuck in the Suspense
 const FilterChips = lazy(() => import("../components/FilterChips"))
 const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wizard"))
+const NewRepoSecretWizard = lazy(() => import("../components/PlatformRepoSecret/New/Wizard"))
 
 import "./Dashboard.scss"
 
@@ -42,7 +44,7 @@ export type EventProps<Source extends EventSourceLike = EventSourceLike> = Recor
 type Props = LocationProps &
   EventProps & {
     /** Handler for NewWorkerPool */
-    newpool: NewPoolHandler
+    createResource: CreateResourceHandler
   }
 
 type State = BaseWithDrawerState & {
@@ -531,11 +533,12 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
         return M
       },
-      { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label">,
+      { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace">,
     )
 
     return {
       label: pool.workerpool,
+      namespace: pool.namespace,
       inbox: this.backfill(model.inbox),
       outbox: this.backfill(model.outbox),
       processing: this.backfill(model.processing),
@@ -724,17 +727,28 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
           hasNoBodyWrapper
           aria-label="wizard-modal"
           onEscapePress={this.returnHome}
-          isOpen={isShowingNewPool(this.props)}
+          isOpen={isShowingWizard(this.props)}
         >
-          <NewWorkerPoolWizard
-            onSuccess={this.returnToWorkerPools}
-            onCancel={this.returnHome}
-            appMd5={this.state?.appMd5}
-            applications={this.state?.latestApplicationEvents}
-            datasets={this.datasetsList}
-            newpool={this.props.newpool}
-            searchParams={this.props.searchParams}
-          />
+          {isShowingNewPool(this.props) ? (
+            <NewWorkerPoolWizard
+              onSuccess={this.returnToWorkerPools}
+              onCancel={this.returnHome}
+              appMd5={this.state?.appMd5}
+              applications={this.state?.latestApplicationEvents}
+              datasets={this.datasetsList}
+              createResource={this.props.createResource}
+              searchParams={this.props.searchParams}
+            />
+          ) : (
+            <NewRepoSecretWizard
+              repo={this.props.searchParams.get("repo")}
+              namespace={this.props.searchParams.get("namespace") || "default"}
+              onSuccess={this.returnToWorkerPools}
+              onCancel={this.returnHome}
+              createResource={this.props.createResource}
+              searchParams={this.props.searchParams}
+            />
+          )}
         </Modal>
       </Suspense>
     )

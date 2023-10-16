@@ -29,5 +29,5 @@ function detailGroups(props: ApplicationSpecEvent) {
 }
 
 export default function ApplicationDetail(props: ApplicationSpecEvent | undefined) {
-  return props && dl(detailGroups(props))
+  return { body: props && dl(detailGroups(props)) }
 }

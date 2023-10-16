@@ -25,9 +25,8 @@ import { singular as names } from "../../../names"
 import { Input, NumberInput, Select } from "../../Forms"
 
 import type { LocationProps } from "../../../router/withLocation"
+import type CreateResourceHandler from "../../../events/NewPoolHandler"
 import type ApplicationSpecEvent from "../../../events/ApplicationSpecEvent"
-
-import type NewPoolHandler from "../../../events/NewPoolHandler"
 
 type Props = Pick<LocationProps, "searchParams"> & {
   /** Md5 of current application names */
@@ -46,7 +45,7 @@ type Props = Pick<LocationProps, "searchParams"> & {
   onCancel(): void
 
   /** Handler for NewWorkerPool */
-  newpool: NewPoolHandler
+  createResource: CreateResourceHandler
 }
 
 type State = {
@@ -189,7 +188,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   private readonly doCreate = async (values: FormContextProps["values"]) => {
     console.log("new worker pool request", values) // make eslint happy
     try {
-      await this.props.newpool.newPool(values, this.workerPoolYaml(values))
+      await this.props.createResource(values, this.workerPoolYaml(values))
     } catch (errorInCreateRequest) {
       if (errorInCreateRequest) {
         this.setState({ errorInCreateRequest })

@@ -13,15 +13,18 @@ import {
   SelectOptionProps,
   SelectList,
   TextInput,
+  TextInputProps,
 } from "@patternfly/react-core"
 
 type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
 type FormProps = { fieldId: string; label: string; description: string }
 type GroupProps = PropsWithChildren<FormProps>
 
+import "./Forms.scss"
+
 function Group(props: GroupProps) {
   return (
-    <FormGroup isRequired label={props.label} fieldId={props.fieldId}>
+    <FormGroup isRequired label={props.label} fieldId={props.fieldId} data-has-pointer-events="true">
       {props.children}
       <FormHelperText>
         <HelperText>
@@ -32,12 +35,14 @@ function Group(props: GroupProps) {
   )
 }
 
-export function Input(props: FormProps & Ctrl) {
+export function Input(props: FormProps & Pick<TextInputProps, "type" | "readOnlyVariant" | "customIcon"> & Ctrl) {
   return (
     <Group {...props}>
       <TextInput
         isRequired
-        type="text"
+        type={props.type ?? "text"}
+        readOnlyVariant={props.readOnlyVariant}
+        customIcon={props.customIcon}
         id={props.fieldId}
         name={props.fieldId}
         aria-describedby={`${props.fieldId}-helper`}

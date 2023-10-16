@@ -41,7 +41,7 @@ export default function DemoDashboard() {
   return (
     <Dashboard
       {...props}
-      newpool={props.workerpools}
+      createResource={props.workerpools.createResource.bind(props.workerpools)}
       location={location}
       navigate={navigate}
       searchParams={searchParams[0]}
