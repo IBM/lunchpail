@@ -10,7 +10,7 @@ export interface ControlPlaneApi {
   status(): Promise<{
     clusterExists: boolean
     core: boolean
-    example: boolean
+    examples: boolean
   }>
 
   /** Bring up the control plane */
