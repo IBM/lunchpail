@@ -47,6 +47,7 @@
 }
 
 [data-jaas-status="Failed"],
+[data-jaas-status="MissingCredentials"],
 .codeflare--status-offline {
   color: var(--pf-v5-global--danger-color--100) !important;
 }

@@ -2,7 +2,7 @@ import os
 import base64
 import logging
 import subprocess
-from kopf import PermanentError
+from kopf import PermanentError, TemporaryError
 
 from clone import clone
 from status import set_status, add_error_condition
@@ -34,6 +34,8 @@ def run_size(customApi, spec, application):
     return count, cpu, memory, gpu
 
 def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, dataset_labels, patch):
+    already_thrown = False
+
     try:
         set_status(name, namespace, 'Pending', patch)
         set_status(name, namespace, "0", patch, "ready")
@@ -50,7 +52,18 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         logging.info(f"Creating WorkerPool name={name} namespace={namespace} for application={application_name} uid={uid}")
 
         run_id, workdir = alloc_run_id("workerpool", name)
-        cloned_subPath = clone(v1Api, customApi, application, name, workdir)
+
+        try:
+            cloned_subPath = clone(v1Api, customApi, application, name, workdir)
+        except Exception as e:
+            logging.info(f"Error while cloning workdir name={name} namespace={namespace}. {str(e).strip()}")
+            if "access denied" in str(e):
+                already_thrown = True
+                set_status(name, namespace, 'MissingCredentials', patch)
+                set_status(name, namespace, "0", patch, "ready")
+                add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+                raise TemporaryError(f"Failed to create WorkerPool due to missing credentials name={name} namespace={namespace}. {str(e).strip()}")
+
         subPath = os.path.join(run_id, cloned_subPath)
 
         count, cpu, memory, gpu = run_size(customApi, spec, application)
@@ -88,10 +101,11 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
             return ""
 
     except Exception as e:
-        set_status(name, namespace, 'Failed', patch)
-        set_status(name, namespace, "0", patch, "ready")
-        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
-        raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {str(e).strip()}")
+        if not already_thrown:
+            set_status(name, namespace, 'Failed', patch)
+            set_status(name, namespace, "0", patch, "ready")
+            add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+            raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {str(e).strip()}")
 
 # A pod that is part of a WorkerPool has been created. We now create a
 # Queue resource to help with accounting.

@@ -56,6 +56,11 @@ function numProcessing(props: Props) {
   )
 }
 
+/** "FooBar" -> "Foo Bar" */
+function titleCaseSplit(str: string) {
+  return str.split(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/).join(" ")
+}
+
 export function actions(props: Props): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
   const latestStatus = props.statusHistory[props.statusHistory.length - 1]
 
@@ -66,13 +71,11 @@ export function actions(props: Props): CardHeaderActionsObject & { actions: [] |
       : [
           <IconWithLabel
             key="Status"
-            popoverHeader={latestStatus?.status}
+            popoverHeader={titleCaseSplit(latestStatus?.status)}
             popoverBody={latestStatus?.message}
-            status={latestStatus?.status}
+            status={/Failed|MissingCredentials/.test(latestStatus?.status) ? "Failed" : latestStatus?.status}
           >
-            <Text component="small" data-jaas-status={latestStatus?.status}>
-              {latestStatus?.status}
-            </Text>
+            <Text component="small">{titleCaseSplit(latestStatus?.status)}</Text>
           </IconWithLabel>,
         ],
   }
