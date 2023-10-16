@@ -51,7 +51,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, pa
             logging.info(f"Attaching datasets WorkerPool={name} datasets={dataset_labels}")
 
         # initial ready count
-        patch.metadata['codeflare.dev/ready'] = '0'
+        patch.metadata.annotations['codeflare.dev/ready'] = '0'
 
         create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, dataset_labels, patch)
     except Exception as e:

@@ -75,6 +75,10 @@ spec:
         - name: Status
           type: string
           jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+        - name: Message
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
+          priority: 1 # -o wide only
 
   # either Namespaced or Cluster
   scope: Namespaced

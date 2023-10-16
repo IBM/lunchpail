@@ -29,6 +29,9 @@ export default interface WorkerPoolStatusEvent {
   /** Status of pool */
   status: string
 
+  /** Failure message or other status details */
+  message?: string
+
   /** Ready worker count of pool */
   ready: number
 

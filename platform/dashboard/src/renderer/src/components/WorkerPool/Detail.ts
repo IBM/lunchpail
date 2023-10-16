@@ -1,11 +1,10 @@
 import type Props from "./Props"
-import { dl } from "../DescriptionGroup"
+import { dl, descriptionGroup } from "../DescriptionGroup"
 
-import { summaryGroups } from "./Summary"
+import { actions, summaryGroups } from "./Summary"
 
 function detailGroups(props: Props) {
-  // for now, the detail view shows the same content as the card summary...
-  return summaryGroups(props)
+  return [actions(props).actions.map((action) => [descriptionGroup(action.key, action)]), ...summaryGroups(props)]
 }
 
 export default function WorkerPoolDetail(props: Props | undefined) {

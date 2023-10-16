@@ -91,7 +91,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         set_status(name, namespace, 'Failed', patch)
         set_status(name, namespace, "0", patch, "ready")
         add_error_condition(customApi, name, namespace, str(e).strip(), patch)
-        raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {e}")
+        raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {str(e).strip()}")
 
 # A pod that is part of a WorkerPool has been created. We now create a
 # Queue resource to help with accounting.

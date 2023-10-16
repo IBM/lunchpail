@@ -1,4 +1,4 @@
-import { Button, TreeView, Popover } from "@patternfly/react-core"
+import { TreeView } from "@patternfly/react-core"
 
 import Settings from "../Settings"
 import IconWithLabel from "./IconWithLabel"
@@ -116,15 +116,7 @@ export default function ControlPlaneStatus() {
   return (
     <Settings.Consumer>
       {(settings) => (
-        <IconWithLabel
-          icon={
-            <Popover headerContent="Status" bodyContent={bodyContent}>
-              <Button variant="plain" size="sm" className="codeflare--control-plane-status-info">
-                <InfoCircleIcon />
-              </Button>
-            </Popover>
-          }
-        >
+        <IconWithLabel popoverHeader="Status" popoverBody={bodyContent}>
           {settings && (settings.demoMode[0] ? demoModeStatus() : controlPlaneStatus(settings.controlPlaneReady))}
         </IconWithLabel>
       )}

@@ -1,11 +1,16 @@
+import type { ReactNode } from "react"
+import { Text } from "@patternfly/react-core"
+
 import names from "../../names"
 import Sparkline from "../Sparkline"
 import GridLayout from "../GridLayout"
+import IconWithLabel from "../IconWithLabel"
 import { descriptionGroup } from "../DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "../CompletionRate"
 import { linkToAllApplicationDetails, linkToAllDataSetDetails } from "../../navigate/details"
 
 import type Props from "./Props"
+import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 export function pluralize(text: string, value: number) {
   return `${value} ${text}${value !== 1 ? "s" : ""}`
@@ -49,6 +54,21 @@ function numProcessing(props: Props) {
     (N: number, processing) => N + Object.values(processing).reduce((M, size) => M + size, 0),
     0,
   )
+}
+
+export function actions(props: Props): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
+  const latestStatus = props.statusHistory[props.statusHistory.length - 1]
+
+  return {
+    hasNoOffset: true,
+    actions: !latestStatus
+      ? []
+      : [
+          <IconWithLabel key="Status" popoverHeader={latestStatus?.status} popoverBody={latestStatus?.message}>
+            <Text component="small">{latestStatus?.status}</Text>
+          </IconWithLabel>,
+        ],
+  }
 }
 
 export function summaryGroups(props: Props) {

@@ -8,7 +8,9 @@ def set_status(name: str, namespace: str, phase: str, patch, status_field = "sta
         logging.info(f"Patching {status_field} name={name} namespace={namespace} phase={phase}")
         patch.metadata.annotations[f"codeflare.dev/{status_field}"] = phase
 
-        if status_field != "message":
+        if status_field != "message" and phase != "Failed":
+            # hmm, we need to find a way to clear messages from prior
+            # states of this resource. this is pretty imperfect
             patch.metadata.annotations["codeflare.dev/message"] = ""
 
         # patch.status['phase'] = phase
@@ -26,7 +28,8 @@ def set_status_immediately(customApi, name: str, namespace: str, phase: str, plu
         logging.error(f"Error patching {plural} on pod event name={name} namespace={namespace} phase={phase}. {str(e)}")
 
 def add_error_condition(customApi, name: str, namespace: str, message: str, patch):
-    try:
-        patch.metadata.annotations["codeflare.dev/message"] = message
-    except Exception as e:
-        raise PermanentError(f"Error patching error condition name={name} namespace={namespace} message={message}. {str(e)}.")
+    set_status(name, namespace, message, patch, "message")
+#    try:
+#        patch.metadata.annotations["codeflare.dev/message"] = message
+#    except Exception as e:
+#        raise PermanentError(f"Error patching error condition name={name} namespace={namespace} message={message}. {str(e)}.")

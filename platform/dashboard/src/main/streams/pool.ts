@@ -12,10 +12,10 @@ function transformLineToEvent() {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
       // Splits the string by spaces
-      const [ns, workerpool, application, dataset, ready, size, nodeClass, supportsGpu, age, status] = chunk
-        .toString()
-        .split(/\s+/)
+      const fields = chunk.toString().split(/\s+/)
 
+      const [ns, workerpool, application, dataset, ready, size, nodeClass, supportsGpu, age, status, ...message] =
+        fields
       const model /* FIXME : WorkerPoolStatusEvent */ = {
         timestamp: Date.now(),
         namespace: ns,
@@ -26,6 +26,7 @@ function transformLineToEvent() {
         supportsGpu: /true/i.test(supportsGpu),
         age,
         status,
+        message: message.join(" "),
         ready: parseInt(ready, 10),
         size: parseInt(size, 10),
       }
@@ -39,7 +40,8 @@ function transformLineToEvent() {
  * @return a NodeJS `Stream` that emits a stream of serialized `WorkerPoolStatusEvent` data
  */
 export default function startWorkerPoolStatusStream() {
-  const child = spawn("kubectl", ["get", "workerpool", "-A", "--no-headers", "--watch"])
+  // -o wide gives us failure messages
+  const child = spawn("kubectl", ["get", "workerpool", "-A", "--no-headers", "--watch", "-o=wide"])
   const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent())
   splitter.on("error", console.error)
   splitter.on("close", () => child.kill())

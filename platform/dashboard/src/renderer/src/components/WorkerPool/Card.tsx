@@ -1,9 +1,7 @@
-import SmallLabel from "../SmallLabel"
 import CardInGallery from "../CardInGallery"
+import { actions, summaryGroups } from "./Summary"
 
 import type Props from "./Props"
-
-import { summaryGroups } from "./Summary"
 
 import WorkerPoolIcon from "./Icon"
 
@@ -25,16 +23,7 @@ export default class WorkerPool extends CardInGallery<Props> {
   }
 
   protected override actions() {
-    return {
-      hasNoOffset: true,
-      actions: !this.props.statusHistory?.length
-        ? []
-        : [
-            <SmallLabel key="status">
-              {this.props.statusHistory[this.props.statusHistory.length - 1].status}
-            </SmallLabel>,
-          ],
-    }
+    return actions(this.props)
   }
 
   /* private get outboxes() {
