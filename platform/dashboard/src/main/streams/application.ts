@@ -50,7 +50,6 @@ export default function startApplicationSpecStream() {
       "-A",
       "--no-headers",
       "--watch",
-      "--ignore-not-found",
       "-o",
       `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.spec.inputs}{"${sep}"}{.metadata.creationTimestamp}{"${sep}"}{.metadata.annotations.codeflare\\.dev/status}{"${sep}\\n"}`,
     ])

@@ -92,11 +92,11 @@ function either<T>(x: T | undefined, y: T): T {
 export class Dashboard extends BaseWithDrawer<Props, State> {
   private readonly onDataSetEvent = (evt: EventLike) => {
     const datasetEvent = JSON.parse(evt.data) as DataSetModel
-    const { label, status } = datasetEvent
+    const { label } = datasetEvent
 
     const datasetIndex = this.state?.datasetIndex || {}
 
-    if (status === "Terminating") {
+    if (datasetEvent.status === "Terminating") {
       return this.setState((curState) => {
         delete curState?.datasetIndex[label]
         delete curState?.datasetEvents[label]
@@ -153,20 +153,18 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     const poolEvent = JSON.parse(evt.data) as WorkerPoolStatusEvent
 
     this.setState((curState) => {
-      if (status === "Terminating") {
-        this.setState((curState) => {
-          delete curState?.poolEvents[poolEvent.workerpool]
+      if (poolEvent.status === "Terminating") {
+        delete curState?.poolEvents[poolEvent.workerpool]
 
-          for (const dataset of Object.keys(curState.datasetToPool)) {
-            curState.datasetToPool[dataset] = curState.datasetToPool[dataset].filter(
-              (_) => _.workerpool !== poolEvent.workerpool,
-            )
-          }
+        for (const dataset of Object.keys(curState.datasetToPool)) {
+          curState.datasetToPool[dataset] = curState.datasetToPool[dataset].filter(
+            (_) => _.workerpool !== poolEvent.workerpool,
+          )
+        }
 
-          return {
-            poolEvents: Object.assign({}, curState?.poolEvents),
-          }
-        })
+        return {
+          poolEvents: Object.assign({}, curState?.poolEvents),
+        }
       } else if (!(poolEvent.workerpool in curState.poolEvents)) {
         curState.poolEvents[poolEvent.workerpool] = []
       }

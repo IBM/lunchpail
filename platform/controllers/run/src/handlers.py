@@ -23,10 +23,17 @@ config.load_incluster_config()
 v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
+# A WorkerPool has been deleted.
+@kopf.on.delete('workerpools.codeflare.dev')
+def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
+    logging.info(f"Handling WorkerPool delete name={name}")
+    set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
+
 # A WorkerPool has been created.
 @kopf.on.create('workerpools.codeflare.dev')
 def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
     try:
+        set_status_immediately(customApi, name, namespace, "Pending", "workerpools")
         application_name = spec['application']['name']
         application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
         logging.info(f"WorkerPool creation for application={application_name} uid={uid}")
@@ -64,8 +71,6 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, pa
 @kopf.on.create('runs.codeflare.dev')
 def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
     try:
-        set_status_immediately(customApi, name, namespace, 'Pending')
-
         # what top-level run is this part of? this could be this very run,
         # if it is a top-level run...
         # also, if part of a sequence, which step are we?

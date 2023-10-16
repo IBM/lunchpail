@@ -35,7 +35,7 @@ def clone(v1Api, customApi, application, name: str, workdir: str):
 
     clone_out = subprocess.run(["/src/clone.sh", name, workdir, repo, user_b64, pat_b64], capture_output=True)
     if clone_out.returncode != 0:
-        raise PermanentError(f"Failed to clone workdir. {clone_out.stderr.decode('utf-8')}")
+        raise PermanentError(f"Failed to clone code. {clone_out.stderr.decode('utf-8')}")
 
     logging.info(f"clone_out={clone_out}")
     cloned_subPath = clone_out.stdout.decode('utf-8')

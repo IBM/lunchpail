@@ -5,7 +5,7 @@ import subprocess
 from kopf import PermanentError, TemporaryError
 
 from clone import clone
-from status import set_status, add_error_condition
+from status import set_status, set_status_immediately, add_error_condition
 from run_id import alloc_run_id
 from run_size import load_run_size_config
 
@@ -37,7 +37,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
     already_thrown = False
 
     try:
-        set_status(name, namespace, 'Pending', patch)
+        set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
         set_status(name, namespace, "0", patch, "ready")
 
         api = application['spec']['api']
@@ -59,7 +59,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
             logging.info(f"Error while cloning workdir name={name} namespace={namespace}. {str(e).strip()}")
             if "access denied" in str(e):
                 already_thrown = True
-                set_status(name, namespace, 'MissingCredentials', patch)
+                set_status(name, namespace, 'AccessDenied', patch)
                 set_status(name, namespace, "0", patch, "ready")
                 add_error_condition(customApi, name, namespace, str(e).strip(), patch)
                 raise TemporaryError(f"Failed to create WorkerPool due to missing credentials name={name} namespace={namespace}. {str(e).strip()}")

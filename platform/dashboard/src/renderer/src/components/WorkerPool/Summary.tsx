@@ -73,7 +73,7 @@ export function actions(props: Props): CardHeaderActionsObject & { actions: [] |
             key="Status"
             popoverHeader={titleCaseSplit(latestStatus?.status)}
             popoverBody={latestStatus?.message}
-            status={/Failed|MissingCredentials/.test(latestStatus?.status) ? "Failed" : latestStatus?.status}
+            status={/Failed|AccessDenied/.test(latestStatus?.status) ? "Failed" : latestStatus?.status}
           >
             <Text component="small">{titleCaseSplit(latestStatus?.status)}</Text>
           </IconWithLabel>,
