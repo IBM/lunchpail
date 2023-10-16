@@ -6,5 +6,5 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 cd "$SCRIPTDIR"/../../platform/dashboard
-yarn install
+yarn install --frozen-lockfile
 npm test
