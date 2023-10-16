@@ -64,8 +64,15 @@ export function actions(props: Props): CardHeaderActionsObject & { actions: [] |
     actions: !latestStatus
       ? []
       : [
-          <IconWithLabel key="Status" popoverHeader={latestStatus?.status} popoverBody={latestStatus?.message}>
-            <Text component="small">{latestStatus?.status}</Text>
+          <IconWithLabel
+            key="Status"
+            popoverHeader={latestStatus?.status}
+            popoverBody={latestStatus?.message}
+            status={latestStatus?.status}
+          >
+            <Text component="small" data-jaas-status={latestStatus?.status}>
+              {latestStatus?.status}
+            </Text>
           </IconWithLabel>,
         ],
   }

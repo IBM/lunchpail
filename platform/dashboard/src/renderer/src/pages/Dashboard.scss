@@ -46,8 +46,9 @@
   color: var(--pf-v5-global--disabled-color--300);
 }
 
+[data-jaas-status="Failed"],
 .codeflare--status-offline {
-  color: var(--pf-v5-global--danger-color--100);
+  color: var(--pf-v5-global--danger-color--100) !important;
 }
 
 .codeflare--card-header-no-wrap {
