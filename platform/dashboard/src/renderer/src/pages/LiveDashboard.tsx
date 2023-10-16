@@ -1,7 +1,9 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
+import { kinds } from "../Kind"
 import { Dashboard } from "./Dashboard"
 
+import type Kind from "../Kind"
 import type { EventProps } from "./Dashboard"
 import type NewPoolHandler from "../events/NewPoolHandler"
 import type { Handler } from "../events/EventSourceLike"
@@ -12,12 +14,12 @@ let props: null | EventProps<EventSourceLike> = null
 const newpool: NewPoolHandler = {
   newPool: async (_, yaml) => {
     // browser apis: await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
-    window.jaas.pools.create(yaml)
+    window.jaas.workerpools.create(yaml)
   },
 }
 
 class ElectronEventSource implements EventSourceLike {
-  public constructor(private readonly source: string) {}
+  public constructor(private readonly kind: Kind) {}
 
   /**
    * We need to keep track of the `off` function due to issues with
@@ -28,7 +30,7 @@ class ElectronEventSource implements EventSourceLike {
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      this.off = window.jaas[this.source].on(evt, (_, model) => {
+      this.off = window.jaas[this.kind].on(evt, (_, model) => {
         // ugh, this is highly imperfect. currently the UI code
         // expects to be given something that looks like a
         // MessageEvent
@@ -49,41 +51,36 @@ class ElectronEventSource implements EventSourceLike {
 }
 
 /** TODO, how do we avoid listing the fields here? Typescript fu needed */
-function newIfNeeded(source: "applications" | "datasets" | "pools" | "queues") {
-  if (props && props[source]) {
-    props[source].close()
+function newIfNeeded(kind: Kind) {
+  if (props && props[kind]) {
+    // close prior stream for this `kind`
+    props[kind].close()
   }
 
   // browser api
-  // return new EventSource(`/api/${source}`, { withCredentials: true })
+  // return new EventSource(`/api/${kind}`, { withCredentials: true })
 
   // electron api
-  return new ElectronEventSource(source)
+  return new ElectronEventSource(kind)
 }
 
 function init(): EventProps<EventSourceLike> {
-  const queues = newIfNeeded("queues")
-  const datasets = newIfNeeded("datasets")
-  const pools = newIfNeeded("pools")
-  const applications = newIfNeeded("applications")
+  // initialize streams, one per Kind of resource
+  const streams: Record<Kind, ElectronEventSource> = kinds.reduce(
+    (M, kind) => {
+      M[kind] = newIfNeeded(kind)
+      return M
+    },
+    {} as Record<Kind, ElectronEventSource>,
+  )
 
-  const theProps = {
-    datasets,
-    pools,
-    newpool,
-    queues,
-    applications,
-  }
-  props = theProps
+  // make sure to close the streams before we exit
+  window.addEventListener("beforeunload", () => Object.values(streams).forEach((stream) => stream.close()))
 
-  window.addEventListener("beforeunload", () => {
-    queues.close()
-    datasets.close()
-    pools.close()
-    applications.close()
-  })
+  // this memo helps us with closing prior streams on page refresh
+  props = streams
 
-  return theProps
+  return streams
 }
 
 export default function LiveDashboard() {
@@ -91,5 +88,7 @@ export default function LiveDashboard() {
   const navigate = useNavigate()
   const searchParams = useSearchParams()
 
-  return <Dashboard {...init()} location={location} navigate={navigate} searchParams={searchParams[0]} />
+  return (
+    <Dashboard {...init()} newpool={newpool} location={location} navigate={navigate} searchParams={searchParams[0]} />
+  )
 }

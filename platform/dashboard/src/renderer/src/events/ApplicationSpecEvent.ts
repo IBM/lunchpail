@@ -5,7 +5,7 @@ export default interface ApplicationSpecEvent {
   /** Millis since epoch */
   timestamp: number
 
-  /** Namespace of WorkerPool */
+  /** Namespace of Application */
   namespace: string
 
   /** Name of Application */

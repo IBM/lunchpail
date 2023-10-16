@@ -4,6 +4,7 @@ import startPoolStream from "./streams/pool"
 import startQueueStream from "./streams/queue"
 import startDataSetStream from "./streams/dataset"
 import startApplicationStream from "./streams/application"
+import startPlatformRepoSecretStream from "./streams/platformreposecret"
 
 import { Status, getStatusFromMain } from "./controlplane/status"
 
@@ -58,8 +59,8 @@ app.get("/api/newpool", async () => {
 
 */
 
-/** Valid resource types */
-const kinds = ["datasets", "queues", "pools", "applications"]
+/** Valid resource types. TODO share this with renderer */
+const kinds = ["datasets", "queues", "workerpools", "applications", "platformreposecrets"] as const
 type Kind = (typeof kinds)[number]
 
 /**
@@ -78,8 +79,10 @@ function initStreamForResourceKind(kind: Kind) {
         ? startDataSetStream()
         : kind === "queues"
         ? startQueueStream()
-        : kind === "pools"
+        : kind === "workerpools"
         ? startPoolStream()
+        : kind === "platformreposecrets"
+        ? startPlatformRepoSecretStream()
         : startApplicationStream()
 
     // when we get a serialized model, send an event back to the sender
@@ -125,9 +128,9 @@ export function initEvents() {
  * will call us back on the `/event` channel, and then we pass these
  * return messages, in turn, back to the UI via the given `cb` callback.
  */
-function onFromClientSide(_: "message", kind: Kind, cb: (...args: unknown[]) => void) {
-  ipcRenderer.on(`/${kind}/event`, cb)
-  ipcRenderer.send(`/${kind}/open`)
+function onFromClientSide(this: Kind, _: "message", cb: (...args: unknown[]) => void) {
+  ipcRenderer.on(`/${this}/event`, cb)
+  ipcRenderer.send(`/${this}/open`)
 
   //
   // We need to handle the `off` function differently due to issues
@@ -137,40 +140,12 @@ function onFromClientSide(_: "message", kind: Kind, cb: (...args: unknown[]) => 
   // https://github.com/electron/electron/issues/21437#issuecomment-802288574
   //
   return () => {
-    ipcRenderer.removeListener(`/${kind}/event`, cb)
-    ipcRenderer.send(`/${kind}/close`)
+    ipcRenderer.removeListener(`/${this}/event`, cb)
+    ipcRenderer.send(`/${this}/close`)
   }
 }
 
-/**
- * This is the JaasAPI renderer-side implementation. TODO, we need to
- * find a way to share datatypes with the renderer.
- */
-export default {
-  datasets: {
-    on(evt: "message", cb: (...args: unknown[]) => void) {
-      return onFromClientSide(evt, "datasets", cb)
-    },
-  },
-  applications: {
-    on(evt: "message", cb: (...args: unknown[]) => void) {
-      return onFromClientSide(evt, "applications", cb)
-    },
-  },
-  pools: {
-    on(evt: "message", cb: (...args: unknown[]) => void) {
-      return onFromClientSide(evt, "pools", cb)
-    },
-
-    create(yaml: string) {
-      ipcRenderer.invoke("/pools/create", yaml)
-    },
-  },
-  queues: {
-    on(evt: "message", cb: (...args: unknown[]) => void) {
-      return onFromClientSide(evt, "queues", cb)
-    },
-  },
+const apiImpl = {
   controlplane: {
     async status() {
       const isReady = (await ipcRenderer.invoke("/controlplane/status")) as Status
@@ -186,3 +161,21 @@ export default {
     },
   },
 }
+
+kinds.forEach((kind) => {
+  apiImpl[kind] = {
+    on: onFromClientSide.bind(kind),
+  }
+
+  if (kind === "workerpools") {
+    apiImpl[kind].create = (yaml: string) => {
+      ipcRenderer.invoke("/pools/create", yaml)
+    }
+  }
+})
+
+/**
+ * This is the JaasAPI renderer-side implementation. TODO, we need to
+ * find a way to share datatypes with the renderer.
+ */
+export default apiImpl

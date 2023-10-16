@@ -23,6 +23,7 @@ import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
 
 import Base from "./Base"
 
+import type { NamedKind } from "../Kind"
 import type { BaseState } from "./Base"
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
@@ -35,7 +36,7 @@ import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 
-import names, { Kind } from "../names"
+import names from "../names"
 import { hashIfNeeded } from "../navigate/kind"
 import { isShowingDetails, navigateToDetails } from "../navigate/details"
 
@@ -79,8 +80,8 @@ export default abstract class BaseWithDrawer<
     return this.props.searchParams.get("id")
   }
 
-  private get currentlySelectedKind(): Kind {
-    return this.props.searchParams.get("kind") as Kind
+  private get currentlySelectedKind(): NamedKind {
+    return this.props.searchParams.get("kind") as NamedKind
   }
 
   private panelContent() {

@@ -2,6 +2,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { Dashboard } from "../pages/Dashboard"
 
+import NothingEventSource from "./streams/nothing"
 import DemoQueueEventSource from "./streams/queue"
 import DemoDataSetEventSource from "./streams/dataset"
 import DemoWorkerPoolStatusEventSource from "./streams/pool"
@@ -9,21 +10,22 @@ import DemoApplicationSpecEventSource from "./streams/application"
 
 import type { EventProps } from "../pages/Dashboard"
 
-let props: null | EventProps = null
+let props: null | (EventProps & { workerpools: DemoWorkerPoolStatusEventSource }) = null
 
 function init() {
   if (props === null) {
     const queues = new DemoQueueEventSource()
     const datasets = new DemoDataSetEventSource()
-    const pools = new DemoWorkerPoolStatusEventSource(datasets, queues)
+    const workerpools = new DemoWorkerPoolStatusEventSource(datasets, queues)
     const applications = new DemoApplicationSpecEventSource()
+    const platformreposecrets = new NothingEventSource()
 
     props = {
       datasets,
-      pools,
-      newpool: pools,
+      workerpools,
       queues,
       applications,
+      platformreposecrets,
     }
   }
 
@@ -35,5 +37,14 @@ export default function DemoDashboard() {
   const navigate = useNavigate()
   const searchParams = useSearchParams()
 
-  return <Dashboard {...init()} location={location} navigate={navigate} searchParams={searchParams[0]} />
+  const props = init()
+  return (
+    <Dashboard
+      {...props}
+      newpool={props.workerpools}
+      location={location}
+      navigate={navigate}
+      searchParams={searchParams[0]}
+    />
+  )
 }

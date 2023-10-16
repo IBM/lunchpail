@@ -2,21 +2,28 @@ import { Link } from "react-router-dom"
 
 import { hash } from "./navigate/kind"
 
-export type Kind = "applications" | "datasets" | "workerpools"
+import type { CredentialsKind, NamedKind, ResourceKind } from "./Kind"
 
-const names: Record<Kind, string> = {
-  applications: "Applications",
+export const resourceNames: Record<ResourceKind, string> = {
   datasets: "Task Queues",
   workerpools: "Worker Pools",
+  applications: "Applications",
 }
 
-export const singular: Record<Kind, string> = {
+export const credentialsNames: Record<CredentialsKind, string> = {
+  platformreposecrets: "Repo Secrets",
+}
+
+const names: Record<NamedKind, string> = Object.assign({}, resourceNames, credentialsNames)
+
+export const singular: Record<NamedKind, string> = {
   applications: "Application",
   datasets: "Task Queue",
   workerpools: "Worker Pool",
+  platformreposecrets: "Repo Secret",
 }
 
-export const subtitles: Record<Kind, import("react").ReactNode> = {
+export const subtitles: Record<NamedKind, import("react").ReactNode> = {
   applications: (
     <span>
       The registered code bases in your system. Each <strong>Application</strong> has a base image, a code repository,
@@ -36,6 +43,9 @@ export const subtitles: Record<Kind, import("react").ReactNode> = {
       The registered compute pools in your system. Each <strong>Worker Pool</strong> is a set of workers that can
       process tasks from one or more <Link to={hash("datasets")}>Task Queues</Link>.
     </span>
+  ),
+  platformreposecrets: (
+    <span>The registered GitHub credentials that can be used to clone repositories from a particular GitHub URL.</span>
   ),
 }
 

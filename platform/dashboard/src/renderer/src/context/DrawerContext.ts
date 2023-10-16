@@ -1,4 +1,4 @@
-import type { Kind } from "../names"
+import type Kind from "../Kind"
 
 export type DrawerState = {
   /** Selected id currently shown in Drawer */

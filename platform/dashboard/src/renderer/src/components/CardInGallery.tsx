@@ -6,7 +6,7 @@ import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import { dl } from "./DescriptionGroup"
 
-import type { Kind } from "../names"
+import type Kind from "../Kind"
 import type { DrilldownProps } from "../context/DrawerContext"
 
 import "./CardInGallery.scss"

@@ -8,13 +8,13 @@ import { spawn } from "child_process"
  * @return a NodeJS stream Transform that turns a raw line into a
  * (string-serialized) `WorkerPoolStatusEvent`
  */
-function transformLineToEvent() {
+function transformLineToEvent(sep = /\s+/) {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
       // Splits the string by spaces
       const [ns, workerpool, application, dataset, ready, size, nodeClass, supportsGpu, age, status, ...message] = chunk
         .toString()
-        .split(/\s+/)
+        .split(sep)
 
       const model /* FIXME : WorkerPoolStatusEvent */ = {
         timestamp: Date.now(),

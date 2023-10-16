@@ -1,37 +1,35 @@
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
-import names from "../names"
+import { resourceKinds, credentialsKinds } from "../Kind"
+import { resourceNames, credentialsNames } from "../names"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
 
 import type { LocationProps } from "../router/withLocation"
 import type { ActiveFilters } from "../context/FiltersContext"
 
-import "./SidebarContent.scss"
+import "./Sidebar.scss"
 
 type Props = Pick<LocationProps, "location"> & {
   appMd5: string
   applications: string[]
   datasets: string[]
   workerpools: string[]
+  platformreposecrets: string[]
   filterState?: ActiveFilters
-}
-
-const resourceLabels = {
-  datasets: names["datasets"],
-  workerpools: names["workerpools"],
-  applications: names["applications"],
 }
 
 const marginLeft = { marginLeft: "1em" as const }
 
-function SidebarResourceNavItems(props: Props) {
+function SidebarNavItems<
+  Kinds extends typeof resourceKinds | typeof credentialsKinds,
+  Names extends typeof resourceNames | typeof credentialsNames,
+>(props: Props & { kinds: Kinds; names: Names }) {
   return (
     <>
-      {Object.entries(resourceLabels).map(([kindStr, name]) => {
-        const kind = kindStr as keyof typeof resourceLabels // typescript insufficiency
+      {props.kinds.map((kind) => {
         return (
           <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind, props)}>
-            {name}{" "}
+            {props.names[kind]}{" "}
             <Badge isRead style={marginLeft}>
               {props[kind].length}
             </Badge>
@@ -45,19 +43,15 @@ function SidebarResourceNavItems(props: Props) {
 function SidebarResourcesNavGroup(props: Props) {
   return (
     <NavExpandable title="Resources" isExpanded>
-      <SidebarResourceNavItems {...props} />
+      <SidebarNavItems kinds={resourceKinds} names={resourceNames} {...props} />
     </NavExpandable>
   )
 }
 
-function SidebarCredentialsNavItems() {
-  return <></>
-}
-
-function SidebarCredentialsNavGroup() {
+function SidebarCredentialsNavGroup(props: Props) {
   return (
-    <NavExpandable title="Credentials">
-      <SidebarCredentialsNavItems />
+    <NavExpandable title="Credentials" isExpanded>
+      <SidebarNavItems kinds={credentialsKinds} names={credentialsNames} {...props} />
     </NavExpandable>
   )
 }
@@ -67,7 +61,7 @@ function SidebarNav(props: Props) {
     <Nav>
       <NavList>
         <SidebarResourcesNavGroup {...props} />
-        <SidebarCredentialsNavGroup />
+        <SidebarCredentialsNavGroup {...props} />
       </NavList>
     </Nav>
   )
@@ -93,7 +87,7 @@ export default function Sidebar(props: Props) {
     return this.props.filterState
   }
 
-  private filtersFor(kind: keyof typeof resourceLabels) {
+  private filtersFor(kind: keyof typeof resourceNames) {
     return !this.filters
       ? []
       : kind === "applications"
@@ -110,31 +104,31 @@ export default function Sidebar(props: Props) {
   ) => {
     if (this.filters) {
       if (!parentItem) {
-        if (item.id! === resourceLabels.applications) {
+        if (item.id! === resourceNames.applications) {
           // user clicked on the Applications parent
           this.filters.toggleShowAllApplications()
-        } else if (item.id! === resourceLabels.datasets) {
+        } else if (item.id! === resourceNames.datasets) {
           // user clicked on the Data Sets parent
           this.filters.toggleShowAllDataSets()
-        } else if (item.id! === resourceLabels.workerpools) {
+        } else if (item.id! === resourceNames.workerpools) {
           // user clicked on the Worker Pools parent
           this.filters.toggleShowAllWorkerPools()
         }
-      } else if (parentItem.id! === resourceLabels.applications) {
+      } else if (parentItem.id! === resourceNames.applications) {
         // user clicked on a Data Set
         if (item.checkProps!.checked) {
           this.filters.removeApplicationFromFilter(item.id!)
         } else {
           this.filters.addApplicationToFilter(item.id!)
         }
-      } else if (parentItem.id! === resourceLabels.datasets) {
+      } else if (parentItem.id! === resourceNames.datasets) {
         // user clicked on a Data Set
         if (item.checkProps!.checked) {
           this.filters.removeDataSetFromFilter(item.id!)
         } else {
           this.filters.addDataSetToFilter(item.id!)
         }
-      } else if (parentItem.id! === resourceLabels.workerpools) {
+      } else if (parentItem.id! === resourceNames.workerpools) {
         // user clicked on a Worker Pool
         if (item.checkProps!.checked) {
           this.filters.removeWorkerPoolFromFilter(item.id!)
@@ -145,7 +139,7 @@ export default function Sidebar(props: Props) {
     }
   }
 
-  private allAreChecked(kind: keyof typeof resourceLabels) {
+  private allAreChecked(kind: keyof typeof resourceNames) {
     if (this.filters) {
       if (
         (kind === "applications" && this.filters.showingAllApplications) ||
@@ -165,14 +159,14 @@ export default function Sidebar(props: Props) {
     return false
   }
 
-  private thisOneIsChecked(kind: keyof typeof resourceLabels, name: string) {
+  private thisOneIsChecked(kind: keyof typeof resourceNames, name: string) {
     return this.allAreChecked(kind) || (this.filters && this.filtersFor(kind).includes(name))
   }
 
-  private optionsFor(kind: keyof typeof resourceLabels): TreeViewDataItem {
+  private optionsFor(kind: keyof typeof resourceNames): TreeViewDataItem {
     return {
-      id: resourceLabels[kind],
-      name: resourceLabels[kind],
+      id: resourceNames[kind],
+      name: resourceNames[kind],
       hasCheckbox: this.props[kind].length > 0,
       checkProps: { "aria-label": `${kind}-check`, checked: this.allAreChecked(kind) },
       children: this.props[kind].map((name) => ({
@@ -184,5 +178,5 @@ export default function Sidebar(props: Props) {
   }
 
   private options() {
-    return Object.keys(resourceLabels).map((_) => this.optionsFor(_ as keyof typeof resourceLabels))
+    return Object.keys(resourceNames).map((_) => this.optionsFor(_ as keyof typeof resourceNames))
   }*/

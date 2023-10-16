@@ -3,7 +3,7 @@ import { Button } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
-import type { Kind } from "../names"
+import type Kind from "../Kind"
 import type { FunctionComponent } from "react"
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"

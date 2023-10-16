@@ -15,6 +15,7 @@ import WorkerPool from "../components/WorkerPool/Card"
 import Sidebar from "../sidebar"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
+import type Kind from "../Kind"
 import type { LocationProps } from "../router/withLocation"
 
 import type NewPoolHandler from "../events/NewPoolHandler"
@@ -23,6 +24,7 @@ import type { Handler, EventLike } from "../events/EventSourceLike"
 import type QueueEvent from "../events/QueueEvent"
 import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
+import type PlatformRepoSecretEvent from "../events/PlatformRepoSecretEvent"
 import type DataSetModel from "../components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
@@ -34,24 +36,14 @@ const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wiza
 
 import "./Dashboard.scss"
 
-export type EventProps<Source extends EventSourceLike = EventSourceLike> = {
-  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  datasets: Source
+/** one EventSource per resource Kind */
+export type EventProps<Source extends EventSourceLike = EventSourceLike> = Record<Kind, Source>
 
-  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  queues: Source
-
-  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  pools: Source
-
-  /** If `string`, then it will be interpreted as the route to the server-side EventSource */
-  applications: Source
-
-  /** Handler for NewWorkerPool */
-  newpool: NewPoolHandler
-}
-
-type Props = LocationProps & EventProps
+type Props = LocationProps &
+  EventProps & {
+    /** Handler for NewWorkerPool */
+    newpool: NewPoolHandler
+  }
 
 type State = BaseWithDrawerState & {
   /** Events for DataSets, indexed by DataSetModel.label */
@@ -59,6 +51,9 @@ type State = BaseWithDrawerState & {
 
   /** Events for Queues, indexed by WorkerPoolModel.label */
   queueEvents: Record<string, QueueEvent[]>
+
+  /** Events for PlatformRepoSecrets, indexed by PlatformRepoSecretEvent.name */
+  platformreposecretEvents: Record<string, PlatformRepoSecretEvent[]>
 
   /** Events for Pools, indexed by WorkerPoolModel.label */
   poolEvents: Record<string, WorkerPoolStatusEvent[]>
@@ -147,6 +142,25 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     queueEvents[workerpool].push(queueEvent)
 
     this.setState({ queueEvents, workerpoolIndex })
+  }
+
+  private readonly onPlatformRepoSecretEvent = (evt: EventLike) => {
+    const event = JSON.parse(evt.data) as PlatformRepoSecretEvent
+
+    this.setState((curState) => {
+      if (event.status === "Terminating") {
+        delete curState.platformreposecretEvents[event.name]
+      } else {
+        if (!curState.platformreposecretEvents[event.name]) {
+          curState.platformreposecretEvents[event.name] = []
+        }
+        curState.platformreposecretEvents[event.name].push(event)
+      }
+
+      return {
+        platformreposecretEvents: Object.assign({}, curState?.platformreposecretEvents),
+      }
+    })
   }
 
   private readonly onPoolEvent = (evt: EventLike) => {
@@ -384,21 +398,24 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   private readonly initEventStreams = () => {
     this.initEventStream(this.props.queues, this.onQueueEvent)
     this.initEventStream(this.props.datasets, this.onDataSetEvent)
-    this.initEventStream(this.props.pools, this.onPoolEvent)
+    this.initEventStream(this.props.workerpools, this.onPoolEvent)
     this.initEventStream(this.props.applications, this.onApplicationEvent)
+    this.initEventStream(this.props.platformreposecrets, this.onPlatformRepoSecretEvent)
   }
 
   public componentWillUnmount() {
     this.props.datasets.removeEventListener("message", this.onDataSetEvent)
     this.props.queues.removeEventListener("message", this.onQueueEvent)
-    this.props.pools.removeEventListener("message", this.onPoolEvent)
+    this.props.workerpools.removeEventListener("message", this.onPoolEvent)
     this.props.applications.removeEventListener("message", this.onApplicationEvent)
+    this.props.platformreposecrets.removeEventListener("message", this.onPlatformRepoSecretEvent)
   }
 
   public componentDidMount() {
     this.setState({
       datasetEvents: {},
       queueEvents: {},
+      platformreposecretEvents: {},
       poolEvents: {},
       datasetToPool: {},
       latestApplicationEvents: [],
@@ -548,6 +565,10 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     return this.latestWorkerPoolModel.map((_) => _.label)
   }
 
+  private get platformRepoSecretsList(): string[] {
+    return Object.keys(this.state?.platformreposecretEvents || {})
+  }
+
   private get latestWorkerPoolModel(): WorkerPoolModelWithHistory[] {
     return Object.values(this.state?.poolEvents || {})
       .filter((poolEventsForOneWorkerPool) => poolEventsForOneWorkerPool.length > 0)
@@ -557,6 +578,14 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         return this.toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
       })
       .sort(this.lexicoWP)
+  }
+
+  private platformreposecrets() {
+    return this.gallery([
+      ...Object.values(this.state?.platformreposecretEvents || {})
+        .filter((events) => events.length > 0)
+        .map((events) => events[events.length - 1].name),
+    ])
   }
 
   private workerpools() {
@@ -591,6 +620,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
         applications={this.applicationsList}
         datasets={this.datasetsList}
         workerpools={this.workerpoolsList}
+        platformreposecrets={this.platformRepoSecretsList}
         location={this.props.location}
       />
     )
@@ -673,8 +703,16 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }*/
 
   protected override mainContentBody() {
-    const kind = currentKind(this.props)
-    return kind === "applications" ? this.applications() : kind === "datasets" ? this.datasets() : this.workerpools()
+    switch (currentKind(this.props)) {
+      case "applications":
+        return this.applications()
+      case "datasets":
+        return this.datasets()
+      case "workerpools":
+        return this.workerpools()
+      case "platformreposecrets":
+        return this.platformreposecrets()
+    }
   }
 
   protected override modal() {

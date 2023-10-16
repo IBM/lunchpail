@@ -21,11 +21,11 @@ export interface ControlPlaneApi {
 }
 
 /** Valid resource types */
-type Kind = "pools" | "queues" | "datasets" | "applications"
+type Kind = "workerpools" | "queues" | "datasets" | "applications"
 
 /** Jobs as a Service API to server-side functionality */
 export interface JaasApi extends Record<Kind, JaasResourceApi> {
-  pools: {
+  workerpools: {
     /** Create a worker pool */
     create(yaml: string): Promise<void>
   }
