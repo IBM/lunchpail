@@ -8,8 +8,8 @@ import { initEvents } from "./events"
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 1024,
+    width: 1400,
+    height: 1050,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === "linux" ? { icon } : {}),
