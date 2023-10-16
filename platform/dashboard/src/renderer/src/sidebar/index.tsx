@@ -1,5 +1,4 @@
-import { PureComponent } from "react"
-import { Badge, PageSidebar, PageSidebarBody, Nav, NavList, NavItem } from "@patternfly/react-core"
+import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
 import names from "../names"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
@@ -17,14 +16,74 @@ type Props = Pick<LocationProps, "location"> & {
   filterState?: ActiveFilters
 }
 
-export default class SidebarContent extends PureComponent<Props> {
-  private readonly labels = {
-    datasets: names["datasets"],
-    workerpools: names["workerpools"],
-    applications: names["applications"],
-  }
+const resourceLabels = {
+  datasets: names["datasets"],
+  workerpools: names["workerpools"],
+  applications: names["applications"],
+}
 
-  /* private filterContent(): ReactNode {
+const marginLeft = { marginLeft: "1em" as const }
+
+function SidebarResourceNavItems(props: Props) {
+  return (
+    <>
+      {Object.entries(resourceLabels).map(([kindStr, name]) => {
+        const kind = kindStr as keyof typeof resourceLabels // typescript insufficiency
+        return (
+          <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind, props)}>
+            {name}{" "}
+            <Badge isRead style={marginLeft}>
+              {props[kind].length}
+            </Badge>
+          </NavItem>
+        )
+      })}
+    </>
+  )
+}
+
+function SidebarResourcesNavGroup(props: Props) {
+  return (
+    <NavExpandable title="Resources" isExpanded>
+      <SidebarResourceNavItems {...props} />
+    </NavExpandable>
+  )
+}
+
+function SidebarCredentialsNavItems() {
+  return <></>
+}
+
+function SidebarCredentialsNavGroup() {
+  return (
+    <NavExpandable title="Credentials">
+      <SidebarCredentialsNavItems />
+    </NavExpandable>
+  )
+}
+
+function SidebarNav(props: Props) {
+  return (
+    <Nav>
+      <NavList>
+        <SidebarResourcesNavGroup {...props} />
+        <SidebarCredentialsNavGroup />
+      </NavList>
+    </Nav>
+  )
+}
+
+export default function Sidebar(props: Props) {
+  return (
+    <PageSidebar className="codeflare--page-sidebar">
+      <PageSidebarBody>
+        <SidebarNav {...props} />
+      </PageSidebarBody>
+    </PageSidebar>
+  )
+}
+
+/* private filterContent(): ReactNode {
     return (
       <TreeView data={this.options()} onCheck={this.onCheck} hasCheckboxes hasBadges hasGuides defaultAllExpanded />
     )
@@ -34,7 +93,7 @@ export default class SidebarContent extends PureComponent<Props> {
     return this.props.filterState
   }
 
-  private filtersFor(kind: keyof typeof this.labels) {
+  private filtersFor(kind: keyof typeof resourceLabels) {
     return !this.filters
       ? []
       : kind === "applications"
@@ -51,31 +110,31 @@ export default class SidebarContent extends PureComponent<Props> {
   ) => {
     if (this.filters) {
       if (!parentItem) {
-        if (item.id! === this.labels.applications) {
+        if (item.id! === resourceLabels.applications) {
           // user clicked on the Applications parent
           this.filters.toggleShowAllApplications()
-        } else if (item.id! === this.labels.datasets) {
+        } else if (item.id! === resourceLabels.datasets) {
           // user clicked on the Data Sets parent
           this.filters.toggleShowAllDataSets()
-        } else if (item.id! === this.labels.workerpools) {
+        } else if (item.id! === resourceLabels.workerpools) {
           // user clicked on the Worker Pools parent
           this.filters.toggleShowAllWorkerPools()
         }
-      } else if (parentItem.id! === this.labels.applications) {
+      } else if (parentItem.id! === resourceLabels.applications) {
         // user clicked on a Data Set
         if (item.checkProps!.checked) {
           this.filters.removeApplicationFromFilter(item.id!)
         } else {
           this.filters.addApplicationToFilter(item.id!)
         }
-      } else if (parentItem.id! === this.labels.datasets) {
+      } else if (parentItem.id! === resourceLabels.datasets) {
         // user clicked on a Data Set
         if (item.checkProps!.checked) {
           this.filters.removeDataSetFromFilter(item.id!)
         } else {
           this.filters.addDataSetToFilter(item.id!)
         }
-      } else if (parentItem.id! === this.labels.workerpools) {
+      } else if (parentItem.id! === resourceLabels.workerpools) {
         // user clicked on a Worker Pool
         if (item.checkProps!.checked) {
           this.filters.removeWorkerPoolFromFilter(item.id!)
@@ -86,7 +145,7 @@ export default class SidebarContent extends PureComponent<Props> {
     }
   }
 
-  private allAreChecked(kind: keyof typeof this.labels) {
+  private allAreChecked(kind: keyof typeof resourceLabels) {
     if (this.filters) {
       if (
         (kind === "applications" && this.filters.showingAllApplications) ||
@@ -106,14 +165,14 @@ export default class SidebarContent extends PureComponent<Props> {
     return false
   }
 
-  private thisOneIsChecked(kind: keyof typeof this.labels, name: string) {
+  private thisOneIsChecked(kind: keyof typeof resourceLabels, name: string) {
     return this.allAreChecked(kind) || (this.filters && this.filtersFor(kind).includes(name))
   }
 
-  private optionsFor(kind: keyof typeof this.labels): TreeViewDataItem {
+  private optionsFor(kind: keyof typeof resourceLabels): TreeViewDataItem {
     return {
-      id: this.labels[kind],
-      name: this.labels[kind],
+      id: resourceLabels[kind],
+      name: resourceLabels[kind],
       hasCheckbox: this.props[kind].length > 0,
       checkProps: { "aria-label": `${kind}-check`, checked: this.allAreChecked(kind) },
       children: this.props[kind].map((name) => ({
@@ -125,36 +184,5 @@ export default class SidebarContent extends PureComponent<Props> {
   }
 
   private options() {
-    return Object.keys(this.labels).map((_) => this.optionsFor(_ as keyof typeof this.labels))
+    return Object.keys(resourceLabels).map((_) => this.optionsFor(_ as keyof typeof resourceLabels))
   }*/
-
-  private readonly marginLeft = { marginLeft: "1em" }
-
-  private nav() {
-    return (
-      <Nav>
-        <NavList>
-          {Object.entries(this.labels).map(([kindStr, name]) => {
-            const kind = kindStr as keyof typeof this.labels // typescript insufficiency
-            return (
-              <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind, this.props)}>
-                {name}{" "}
-                <Badge isRead style={this.marginLeft}>
-                  {this.props[kind].length}
-                </Badge>
-              </NavItem>
-            )
-          })}
-        </NavList>
-      </Nav>
-    )
-  }
-
-  public render() {
-    return (
-      <PageSidebar className="codeflare--page-sidebar">
-        <PageSidebarBody>{this.nav()}</PageSidebarBody>
-      </PageSidebar>
-    )
-  }
-}

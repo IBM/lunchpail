@@ -12,6 +12,7 @@ import Application from "../components/Application/Card"
 import DataSet from "../components/DataSet/Card"
 import WorkerPool from "../components/WorkerPool/Card"
 
+import Sidebar from "../sidebar"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import type { LocationProps } from "../router/withLocation"
@@ -24,7 +25,6 @@ import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
 import type DataSetModel from "../components/DataSetModel"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
-import SidebarContent from "../sidebar/SidebarContent"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
 
@@ -585,7 +585,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   protected override sidebar() {
     return (
-      <SidebarContent
+      <Sidebar
         filterState={this.state?.filterState}
         appMd5={this.state?.appMd5}
         applications={this.applicationsList}
