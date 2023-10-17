@@ -70,31 +70,64 @@ type Kind = (typeof kinds)[number]
  * any messages to the sender of that message.
  */
 function initStreamForResourceKind(kind: Kind) {
+  const openEvent = `/${kind}/open`
+  const dataEvent = `/${kind}/event`
+  const closeEvent = `/${kind}/close`
+
   // listen for /open messages
-  ipcMain.on(`/${kind}/open`, (evt) => {
-    // we have received such a message, so initialize the watcher,
-    // which will give us a stream of serialized models
-    const stream =
-      kind === "datasets"
-        ? startDataSetStream()
-        : kind === "queues"
-        ? startQueueStream()
-        : kind === "workerpools"
-        ? startPoolStream()
-        : kind === "platformreposecrets"
-        ? startPlatformRepoSecretStream()
-        : startApplicationStream()
+  ipcMain.on(openEvent, (evt) => {
+    // We have received such a message, so initialize the watcher,
+    // which will give us a stream of serialized models. We do so in
+    // `init()`, but we need to manage premature closing of the
+    // streams. This can happen if the `kubectl` watchers are spawned
+    // before the CRDs have been registered.
 
-    // when we get a serialized model, send an event back to the sender
-    const cb = (model) => evt.sender.send(`/${kind}/event`, { data: JSON.parse(model) })
-    stream.on("data", cb)
+    // has /${kind}/close been called from the client? we need to
+    // distinguish an intentional close coming from the client vs a
+    // stream close due to premature exit of kubectl
+    let closedOnPurpose = false
 
-    // when a `/${kind}/close` message is received, tear down the watcher
-    const cleanup = () => {
-      stream.off("data", cb)
-      stream.end()
+    let stream: null | import("stream").Transform = null
+
+    const init = () => {
+      stream =
+        kind === "datasets"
+          ? startDataSetStream()
+          : kind === "queues"
+          ? startQueueStream()
+          : kind === "workerpools"
+          ? startPoolStream()
+          : kind === "platformreposecrets"
+          ? startPlatformRepoSecretStream()
+          : startApplicationStream()
+
+      // when a `/${kind}/close` message is received, tear down the watcher
+      const cleanup = () => {
+        closedOnPurpose = true
+        if (stream) {
+          stream.off("data", cb)
+          stream.end()
+        }
+      }
+
+      ipcMain.once(closeEvent, cleanup)
+
+      // when we get a serialized model, send an event back to the sender
+      const cb = (model) => evt.sender.send(dataEvent, { data: JSON.parse(model) })
+      stream.on("data", cb)
+
+      stream.on("close", async () => {
+        if (!closedOnPurpose) {
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+          ipcMain.off(closeEvent, cleanup)
+          if (!closedOnPurpose) {
+            init()
+          }
+        }
+      })
     }
-    ipcMain.once(`/${kind}/close`, cleanup)
+
+    init()
   })
 }
 
