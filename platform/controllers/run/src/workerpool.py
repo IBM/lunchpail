@@ -34,8 +34,6 @@ def run_size(customApi, spec, application):
     return count, cpu, memory, gpu
 
 def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, dataset_labels, patch):
-    already_thrown = False
-
     try:
         set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
         set_status(name, namespace, "0", patch, "ready")
@@ -58,7 +56,6 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         except Exception as e:
             logging.info(f"Error while cloning workdir name={name} namespace={namespace}. {str(e).strip()}")
             if "access denied" in str(e):
-                already_thrown = True
                 set_status(name, namespace, 'AccessDenied', patch, "reason")
                 set_status(name, namespace, 'CloneFailed', patch)
                 set_status(name, namespace, "0", patch, "ready")
@@ -101,12 +98,14 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
             #return head_pod_name
             return ""
 
+    except TemporaryError as te:
+        # pass through any TemporaryErrors
+        raise te
     except Exception as e:
-        if not already_thrown:
-            set_status(name, namespace, 'Failed', patch)
-            set_status(name, namespace, "0", patch, "ready")
-            add_error_condition(customApi, name, namespace, str(e).strip(), patch)
-            raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {str(e).strip()}")
+        set_status(name, namespace, 'Failed', patch)
+        set_status(name, namespace, "0", patch, "ready")
+        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+        raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {str(e).strip()}")
 
 # A pod that is part of a WorkerPool has been created. We now create a
 # Queue resource to help with accounting.

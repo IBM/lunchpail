@@ -61,11 +61,15 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, pa
         patch.metadata.annotations['codeflare.dev/ready'] = '0'
 
         create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, dataset_labels, patch)
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for WorkerPool creation name={name}")
+        raise e
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
         # add_error_condition_to_run(customApi, name, namespace, str(e).strip(), patch)
         logging.error(e)
-        raise kopf.PermanentError(f"Error handling WorkerPool creation. {str(e)}")
+        raise kopf.PermanentError(f"Error handling WorkerPool creation name={name}. {str(e)}")
 
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
