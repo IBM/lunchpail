@@ -192,8 +192,8 @@ metadata:
   namespace: ${this.props.namespace}
 type: Opaque
 data:
-  user: ${values.user}
-  pat: ${values.pat}
+  user: ${btoa(values.user)}
+  pat: ${btoa(values.pat)}
 `
   }
 

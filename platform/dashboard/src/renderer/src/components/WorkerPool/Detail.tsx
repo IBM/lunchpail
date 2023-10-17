@@ -35,7 +35,7 @@ function detailGroups(props: Props) {
 function actions(props: Props, locationProps: LocationProps) {
   const latestStatus = props.statusHistory[props.statusHistory.length - 1]
   if (latestStatus?.status === "CloneFailed" && latestStatus?.reason === "AccessDenied") {
-    const repoMatch = latestStatus?.message?.match(/'(https:\/\/.+)'/)
+    const repoMatch = latestStatus?.message?.match(/(https:\/\/[^/]+)/)
     const repo = repoMatch ? repoMatch[1] : undefined
     return <LinkToNewRepoSecret repo={repo} namespace={props.model.namespace} {...locationProps} startOrAdd="fix" />
   } else {
