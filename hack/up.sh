@@ -18,8 +18,14 @@ wait
 # specify a namespace to use as a subchart; it will thus, for now, run
 # in the default namespace
 
+# For now, don't stand up the examples as part of this hack, as they
+# will consume resources in a way that may block tests e.g. in Travis
+# with its small workers. The dashboard UI will allow bringing these
+# examples in selectively.
+HAS_EXAMPLES=false
+
 echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
-$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA
+$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA
 
 # sigh, some components may use kustomize, not helm

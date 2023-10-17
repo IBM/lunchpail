@@ -14,23 +14,82 @@ dependencies:
   version: 0.5.0
   repository: https://ray-project.github.io/kuberay-helm/
   condition: ray.enabled
+  tags:
+    - full
 
 - name: fluent-bit
   version: 0.30.4
   repository: https://fluent.github.io/helm-charts
   condition: ray.enabled
+  tags:
+    - full
 
 - name: kube-fledged
   version: 0.10.0
   repository: https://senthilrch.github.io/kubefledged-charts
   condition: kube-fledged.enabled
+  tags:
+    - core
 
 - name: gpu-operator
   version: 23.3.2
   repository: https://nvidia.github.io/gpu-operator
   condition: nvidia.enabled
+  tags:
+    - full
 
 - name: spark-operator
   version: 1.1.27
   repository: https://googlecloudplatform.github.io/spark-on-k8s-operator
   condition: spark.enabled
+  tags:
+    - full
+
+- name: codeflare-core
+  version: 0.0.1
+  repository: file://./core
+  condition: core.enabled
+  tags:
+    - core
+
+- name: mcad-controller
+  version: 0.1.0
+  repository: file://./mcad-controller
+  condition: core.enabled
+  tags:
+    - core
+
+- name: codeflare-s3
+  version: 0.0.1
+  repository: file://./s3
+  condition: core.enabled
+  tags:
+    - core
+
+- name: scheduler-plugins
+  version: 0.25.7
+  repository: file://./co-scheduler
+  condition: core.enabled
+  tags:
+    - core
+
+- name: dlf-chart
+  version: 0.1.0
+  repository: file://./datashim
+  condition: core.enabled
+  tags:
+    - core
+
+- name: codeflare-defaults
+  version: 0.0.1
+  repository: file://./defaults
+  condition: defaults.enabled
+  tags:
+    - defaults
+
+- name: codeflare-examples
+  version: 0.0.1
+  repository: file://./examples
+  condition: examples.enabled
+  tags:
+    - examples

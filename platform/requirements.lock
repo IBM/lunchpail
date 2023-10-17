@@ -14,5 +14,26 @@ dependencies:
 - name: spark-operator
   repository: https://googlecloudplatform.github.io/spark-on-k8s-operator
   version: 1.1.27
-digest: sha256:840db147a3d38839348f65d98187510e348391e07494e9fff1c47bdc8b00f1fa
-generated: "2023-10-12T14:16:20.585861-04:00"
+- name: codeflare-core
+  repository: file://./core
+  version: 0.0.1
+- name: mcad-controller
+  repository: file://./mcad-controller
+  version: 0.1.0
+- name: codeflare-s3
+  repository: file://./s3
+  version: 0.0.1
+- name: scheduler-plugins
+  repository: file://./co-scheduler
+  version: 0.25.7
+- name: dlf-chart
+  repository: file://./datashim
+  version: 0.1.0
+- name: codeflare-defaults
+  repository: file://./defaults
+  version: 0.0.1
+- name: codeflare-examples
+  repository: file://./examples
+  version: 0.0.1
+digest: sha256:d739c4d20d711bbd082f91d20dd253d9d48ffb44e7f9e871e16dd2298602e45f
+generated: "2023-10-17T13:18:39.058564-04:00"

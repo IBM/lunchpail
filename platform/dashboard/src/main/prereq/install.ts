@@ -9,32 +9,43 @@ import type { ApplyProps } from "./apply"
 type Config = "lite" | "full"
 
 /** Install/delete the core from the control plane */
-async function applyCore(config: Config, props: ApplyProps) {
-  const { default: coreYaml } = await (config === "lite"
+async function core(config: Config) {
+  const { default: yaml } = await (config === "lite"
     ? // @ts-ignore
       import("../../../resources/jaas-lite.yml?raw")
     : // @ts-ignore
       import("../../../resources/jaas-full.yml?raw"))
 
-  return apply(coreYaml, props)
+  return yaml
+}
+
+/** Install/delete the defaults from the control plane */
+async function defaults() {
+  // @ts-ignore
+  const { default: yaml } = await import("../../../resources/jaas-defaults.yml?raw")
+
+  return yaml
 }
 
 /** Install/delete the examples from the control plane */
-async function applyExamples(props: ApplyProps) {
+async function examples() {
   // @ts-ignore
-  const { default: examplesYaml } = await import("../../../resources/jaas-examples.yml?raw")
+  const { default: yaml } = await import("../../../resources/jaas-examples.yml?raw")
 
-  return apply(examplesYaml, props)
+  return yaml
 }
 
 /** Install/delete all of the requested control plane components */
 async function applyAll(config: Config, props: ApplyProps) {
+  const yamls = await Promise.all([core(config), defaults(), examples()])
+
   if (props.action === "delete") {
-    await applyExamples(props)
-    await applyCore(config, props)
-  } else {
-    await applyCore(config, props)
-    await applyExamples(props)
+    // we need to unwind things in the reverse order we applied them
+    yamls.reverse()
+  }
+
+  for await (const yaml of yamls) {
+    await apply(yaml, props)
   }
 
   await props.kubeconfig.cleanup()

@@ -13,9 +13,17 @@ if [[ ! -e "$OUTDIR" ]]
 then mkdir "$OUTDIR"
 fi
 
-helm template --include-crds codeflare-platform "$TOP"/platform --set nvidia.enabled=false --set ray.enabled=false --set kube-fledged.enabled=false --set spark.enabled=false > "$OUTDIR"/jaas-lite.yml
+cd "$TOP"/platform && helm dependency update .
 
-helm template --include-crds codeflare-platform "$TOP"/platform --set nvidia.enabled=false --set ray.enabled=true --set kube-fledged.enabled=true --set spark.enabled=true > "$OUTDIR"/jaas-full.yml
+# lite deployment
+helm template --include-crds codeflare-platform "$TOP"/platform --set tags.examples=false --set tags.defaults=false --set tags.full=false --set tags.core=true > "$OUTDIR"/jaas-lite.yml
+
+# full deployment
+helm template --include-crds codeflare-platform "$TOP"/platform --set tags.examples=false --set tags.defaults=false --set tags.full=true --set tags.core=true > "$OUTDIR"/jaas-full.yml
+
+# defaults
+helm template --include-crds codeflare-platform "$TOP"/platform --set tags.examples=false --set tags.defaults=true --set tags.full=false --set tags.core=false > "$OUTDIR"/jaas-defaults.yml
 
 # examples
-helm template --include-crds codeflare-examples "$TOP"/examples $HELM_DEMO_SECRETS > "$OUTDIR"/jaas-examples.yml
+helm template --include-crds codeflare-platform "$TOP"/platform $HELM_DEMO_SECRETS --set tags.examples=true --set tags.defaults=false --set tags.full=false --set tags.core=false > "$OUTDIR"/jaas-examples.yml
+

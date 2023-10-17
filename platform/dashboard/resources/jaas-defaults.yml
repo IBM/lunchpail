@@ -1,0 +1,78 @@
+---
+# Source: codeflare-platform/charts/codeflare-defaults/templates/default-ray-fluentbit-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-ray-fluentbit-config
+  namespace: codeflare-system
+  labels:
+    app.kubernetes.io/component: fluentbit
+    app.kubernetes.io/part-of: codeflare.dev
+data:
+  priority: "100"
+  fluent-bit.conf: |
+    [INPUT]
+        Name tail
+        Path /tmp/ray/session_latest/logs/*
+        Tag ray
+        Path_Key true
+        Refresh_Interval 5
+    [OUTPUT]
+        Name stdout
+        Match *
+---
+# Source: codeflare-platform/charts/codeflare-defaults/templates/default-ray-fluentbit-config.yaml~
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-ray-fluentbit-config
+data:
+  fluent-bit.conf: |
+    [INPUT]
+        Name tail
+        Path /tmp/ray/session_latest/logs/*
+        Tag ray
+        Path_Key true
+        Refresh_Interval 5
+    [OUTPUT]
+        Name stdout
+        Match *
+---
+# Source: codeflare-platform/charts/codeflare-defaults/templates/default-run-size-config.yaml
+apiVersion: codeflare.dev/v1alpha1
+kind: RunSizeConfiguration
+metadata:
+  name: default-run-size-configuration
+spec:
+  priority: 100
+  config:
+    xs:
+      workers: 1
+      cpu: 1
+      memory: 4Gi
+      gpu: 1
+    sm:
+      workers: 2
+      cpu: 1
+      memory: 8Gi
+      gpu: 1
+    md:
+      workers: 4
+      cpu: 2
+      memory: 16Gi
+      gpu: 1
+    lg:
+      workers: 8
+      cpu: 4
+      memory: 32Gi
+      gpu: 1
+    xl:
+      workers: 20
+      cpu: 4
+      memory: 48Gi
+      gpu: 1
+    xxl:
+      workers: 40
+      cpu: 8
+      memory: 64Gi
+      gpu: 1

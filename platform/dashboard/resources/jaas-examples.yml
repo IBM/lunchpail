@@ -1,11 +1,11 @@
 ---
-# Source: codeflare-examples/templates/namespace.yaml
+# Source: codeflare-platform/charts/codeflare-examples/templates/namespace.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
   name: codeflare-examples
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queue-example/dataset-secret.yaml
+# Source: codeflare-platform/charts/codeflare-examples/templates/applications/workqueue/queue-example/dataset-secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -16,10 +16,10 @@ data:
   accessKeyID: Y29kZWZsYXJleQ==
   secretAccessKey: Y29kZWZsYXJleQ==
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queue-example/README.md
+# Source: codeflare-platform/charts/codeflare-examples/templates/applications/workqueue/queue-example/README.md
 # Application api=workqueue
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queue-example/app.yaml
+# Source: codeflare-platform/charts/codeflare-examples/templates/applications/workqueue/queue-example/app.yaml
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
@@ -35,7 +35,7 @@ spec:
     - sizes:
         lg: queueexample
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queue-example/dataset.yaml
+# Source: codeflare-platform/charts/codeflare-examples/templates/applications/workqueue/queue-example/dataset.yaml
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
 metadata:
@@ -51,7 +51,7 @@ spec:
     #readonly: "true" # default is false
     provision: "true"
 ---
-# Source: codeflare-examples/templates/applications/workqueue/queue-example/run.yaml
+# Source: codeflare-platform/charts/codeflare-examples/templates/applications/workqueue/queue-example/run.yaml
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
