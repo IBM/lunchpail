@@ -22,6 +22,9 @@ import {
 import { Input } from "../../Forms"
 import { singular as names } from "../../../names"
 
+import Settings from "../../../Settings"
+
+import type { Dispatch, SetStateAction } from "react"
 import type { LocationProps } from "../../../router/withLocation"
 import type CreateResourceHandler from "../../../events/NewPoolHandler"
 
@@ -55,7 +58,7 @@ type State = {
 
 export default class NewRepoSecretWizard extends PureComponent<Props, State> {
   /** Initial value for form */
-  private get defaults() {
+  private defaults(user = "") {
     return {
       name:
         (this.props.repo || "")
@@ -69,7 +72,7 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
       count: String(1),
       size: "xs",
       repo: this.props.repo || "",
-      user: "",
+      user,
       pat: "",
     }
   }
@@ -230,16 +233,33 @@ data:
     )
   }
 
+  private wrapWithSettings(ctrl: FormContextProps, setUser: Dispatch<SetStateAction<string>> | undefined) {
+    const { setValue: origSetValue } = ctrl
+    return Object.assign({}, ctrl, {
+      setValue(fieldId: string, value: string) {
+        origSetValue(fieldId, value)
+        if (fieldId === "user" && setUser) {
+          // remember user setting
+          setUser(value)
+        }
+      },
+    })
+  }
+
   public render() {
     return (
-      <FormContextProvider initialValues={this.defaults}>
-        {(ctrl) => (
-          <Wizard header={this.header()} onClose={this.props.onCancel}>
-            {this.step1(ctrl)}
-            {this.review(ctrl)}
-          </Wizard>
+      <Settings.Consumer>
+        {(settings) => (
+          <FormContextProvider initialValues={this.defaults(settings?.prsUser[0])}>
+            {(ctrl) => (
+              <Wizard header={this.header()} onClose={this.props.onCancel}>
+                {this.step1(this.wrapWithSettings(ctrl, settings?.prsUser[1]))}
+                {this.review(ctrl)}
+              </Wizard>
+            )}
+          </FormContextProvider>
         )}
-      </FormContextProvider>
+      </Settings.Consumer>
     )
   }
 }

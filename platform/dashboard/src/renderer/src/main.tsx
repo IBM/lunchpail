@@ -3,7 +3,7 @@ import { RouterProvider } from "react-router-dom"
 import { StrictMode, useEffect, useState } from "react"
 
 import router from "./router"
-import Settings, { darkModeState, demoModeState } from "./Settings"
+import Settings, { darkModeState, demoModeState, prsUserState } from "./Settings"
 
 export type Status = {
   clusterExists: boolean
@@ -12,8 +12,9 @@ export type Status = {
 }
 
 function App() {
-  const darkMode = darkModeState()
-  const demoMode = demoModeState()
+  const darkMode = darkModeState() // UI in dark mode?
+  const demoMode = demoModeState() // are we running in offline mode?
+  const prsUser = prsUserState() // user for PlatformRepoSecrets
 
   // is the local control plane good to go? null means unknown
   // (e.g. that a check is in progress)
@@ -35,7 +36,7 @@ function App() {
 
   return (
     <StrictMode>
-      <Settings.Provider value={{ darkMode, demoMode, controlPlaneReady }}>
+      <Settings.Provider value={{ darkMode, demoMode, prsUser, controlPlaneReady }}>
         <RouterProvider router={router} />
       </Settings.Provider>
     </StrictMode>

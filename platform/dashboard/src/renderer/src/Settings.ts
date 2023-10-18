@@ -4,32 +4,48 @@ import type { Status } from "./main"
 import type { Dispatch, SetStateAction } from "react"
 type State<T> = [T, Dispatch<SetStateAction<T>>, (evt: unknown, val: T) => void]
 
-type SettingsType = null | { darkMode: State<boolean>; demoMode: State<boolean>; controlPlaneReady: null | Status }
+type SettingsType = null | {
+  darkMode: State<boolean>
+  demoMode: State<boolean>
+  prsUser: State<string>
+  controlPlaneReady: null | Status
+}
 
 const Settings = createContext<SettingsType>(null)
 export default Settings
 
-type SettingsKey = "darkMode" | "demoMode"
+type SettingsKey = "darkMode" | "demoMode" | "platformreposecret.user"
 
-/** Restore previously selected demoMode setting */
-function restoreBoolean(key: SettingsKey): boolean {
-  const setting = localStorage.getItem(key)
+/** Restore previously selected Setting */
+function restore(key: SettingsKey) {
+  return localStorage.getItem(key)
+}
+
+/** Restore previously selected boolean Setting */
+function restoreBoolean(key: SettingsKey) {
+  const setting = restore(key)
   if (setting === "false") {
     return false
-  } else {
-    // default value: true
+  } else if (setting === "true") {
     return true
+  } else {
+    return null
   }
 }
 
-/** Persist a demoMode setting */
-function saveBoolean(key: SettingsKey, value: boolean): void {
+/** Persist a Setting */
+function save(key: SettingsKey, value: string | boolean | number): void {
   localStorage.setItem(key, value.toString())
 }
 
-function state(key: SettingsKey, onChange?: (val: boolean) => void): State<boolean> {
-  const initialValue = restoreBoolean(key)
-  const state = useState(initialValue)
+function state<T extends string | boolean | number>(
+  key: SettingsKey,
+  defaultValue: T,
+  onChange?: (val: T) => void,
+): State<T> {
+  const initialValue = ((typeof defaultValue === "boolean" ? restoreBoolean(key) : restore(key)) ?? defaultValue) as T
+
+  const state = useState<T>(initialValue)
   const origSet = state[1]
 
   if (onChange) {
@@ -37,21 +53,26 @@ function state(key: SettingsKey, onChange?: (val: boolean) => void): State<boole
   }
 
   // override the updater so that we can persist the choice
-  state[1] = (action: SetStateAction<boolean>) => {
-    const newValue = typeof action === "boolean" ? action : action(state[0])
+  state[1] = (action: SetStateAction<T>) => {
+    const newValue = typeof action === "function" ? action(state[0]) : action
     if (onChange) {
       onChange(newValue)
     }
 
-    saveBoolean(key, newValue) // persist
+    save(key, newValue) // persist
     origSet(action) // react
   }
 
-  return [...state, (_, val: boolean) => state[1](val)]
+  return [...state, (_, val: T) => state[1](val)]
 }
 
 export function demoModeState() {
-  return state("demoMode")
+  // default to true
+  return state<boolean>("demoMode", true)
+}
+
+export function prsUserState() {
+  return state<string>("platformreposecret.user", "")
 }
 
 function onChangeDarkMode(useDarkMode: boolean) {
@@ -60,5 +81,6 @@ function onChangeDarkMode(useDarkMode: boolean) {
 }
 
 export function darkModeState() {
-  return state("darkMode", onChangeDarkMode)
+  // default to false
+  return state<boolean>("darkMode", false, onChangeDarkMode)
 }
