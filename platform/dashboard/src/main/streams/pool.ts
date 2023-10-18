@@ -2,6 +2,8 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
+import filterOutMissingCRDs from "./filter-missing-crd-errors"
+
 // FIXME import type WorkerPoolStatusEvent from "../../renderer/src/events/WorkerPoolStatusEvent"
 
 /**
@@ -72,6 +74,8 @@ export default function startWorkerPoolStatusStream() {
     "-o",
     "jsonpath=" + fields.map((field) => `{${field}}`).join(`{"${fieldSep}"}`) + `{"${fieldSep}${recordSep}"}`,
   ])
+
+  child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
 
   const splitter = child.stdout.pipe(split2(recordSep)).pipe(transformLineToEvent(fieldSep))
   splitter.on("error", console.error)

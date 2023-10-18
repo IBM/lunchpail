@@ -2,6 +2,8 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
+import filterOutMissingCRDs from "./filter-missing-crd-errors"
+
 // FIXME import type ApplicationSpecEvent from "../../renderer/src/events/ApplicationSpecEvent"
 
 /**
@@ -54,8 +56,9 @@ export default function startApplicationSpecStream() {
       `jsonpath={.metadata.namespace}{"${sep}"}{.metadata.name}{"${sep}"}{.spec.api}{"${sep}"}{.spec.command}{"${sep}"}{.spec.supportsGpu}{"${sep}"}{.spec.image}{"${sep}"}{.spec.repo}{"${sep}"}{.spec.description}{"${sep}"}{.spec.inputs}{"${sep}"}{.metadata.creationTimestamp}{"${sep}"}{.metadata.annotations.codeflare\\.dev/status}{"${sep}\\n"}`,
     ])
 
+    child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
+
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))
-    child.stderr.pipe(process.stderr)
     splitter.on("error", console.error)
     splitter.on("close", () => child.kill())
     return splitter

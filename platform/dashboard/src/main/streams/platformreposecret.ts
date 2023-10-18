@@ -2,6 +2,8 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
+import filterOutMissingCRDs from "./filter-missing-crd-errors"
+
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
  * (string-serialized) `PlatformRepoSecretEvent`
@@ -41,8 +43,9 @@ export default function startPlatformRepoSecretStream() {
       `jsonpath={.metadata.name}{"${sep}"}{.metadata.annotations.codeflare\\.dev/status}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
     ])
 
+    child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
+
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))
-    child.stderr.pipe(process.stderr)
     splitter.on("error", console.error)
     splitter.on("close", () => child.kill())
     return splitter

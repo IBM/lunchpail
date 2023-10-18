@@ -2,6 +2,8 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
+import filterOutMissingCRDs from "./filter-missing-crd-errors"
+
 // FIXME import type DataSetModel from "../../renderer/src/components/DataSetModel"
 
 /**
@@ -41,6 +43,8 @@ function transformLineToEvent() {
 export default function startDataSetStream() {
   // TODO: manage the child process?
   const child = spawn("kubectl", ["get", "dataset", "-A", "--no-headers", "--watch"])
+  child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
+
   const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent())
   splitter.on("error", console.error)
   splitter.on("close", () => child.kill())
