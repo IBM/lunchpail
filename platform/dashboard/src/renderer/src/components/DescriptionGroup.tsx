@@ -39,6 +39,8 @@ function httpsIfNeeded(url: string) {
   }
 }
 
+const noLeftPadding = { paddingLeft: 0 }
+
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false) {
     return description ? <YesIcon /> : <NoIcon />
@@ -51,6 +53,9 @@ function dd(description: ReactNode | Record<string, string>) {
         iconPosition="right"
         href={httpsIfNeeded(description)}
         component="a"
+        style={
+          noLeftPadding /* isInline is the nominal way to do this, but it is not compatible with our use of Truncate */
+        }
       >
         <Truncate content={description} />
       </Button>
