@@ -94,6 +94,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     const datasetIndex = this.state?.datasetIndex || {}
 
     if (datasetEvent.status === "Terminating") {
+      this.closeDetailViewIfShowing(label, "datasets")
+
       return this.setState((curState) => {
         delete curState?.datasetIndex[label]
         delete curState?.datasetEvents[label]
@@ -151,6 +153,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
     this.setState((curState) => {
       if (event.status === "Terminating") {
+        this.closeDetailViewIfShowing(event.name, "platformreposecrets")
         delete curState.platformreposecretEvents[event.name]
       } else {
         if (!curState.platformreposecretEvents[event.name]) {
@@ -170,6 +173,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
     this.setState((curState) => {
       if (poolEvent.status === "Terminating") {
+        this.closeDetailViewIfShowing(poolEvent.workerpool, "workerpools")
         delete curState?.poolEvents[poolEvent.workerpool]
 
         for (const dataset of Object.keys(curState.datasetToPool)) {
@@ -222,6 +226,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.setState((curState) => {
       if (applicationEvent.status === "Terminating") {
         // this Application has been deleted
+        this.closeDetailViewIfShowing(applicationEvent.application, "applications")
+
         const foundIdx = curState?.latestApplicationEvents?.findIndex(
           (_) => _.application === applicationEvent.application,
         )

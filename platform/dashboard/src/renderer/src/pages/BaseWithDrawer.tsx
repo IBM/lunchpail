@@ -87,6 +87,12 @@ export default abstract class BaseWithDrawer<
     return this.props.searchParams.get("kind") as NamedKind
   }
 
+  protected closeDetailViewIfShowing(id: string, kind: NamedKind) {
+    if (this.currentlySelectedId === id && this.currentlySelectedKind === kind) {
+      this.returnHome()
+    }
+  }
+
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   private panelContent() {
     const id = this.currentlySelectedId
