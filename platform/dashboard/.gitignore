@@ -4,3 +4,6 @@ dist
 out
 *.log*
 *.tsbuildinfo
+/test-results/
+/playwright-report/
+/playwright/.cache/

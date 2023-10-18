@@ -38,9 +38,9 @@ dmg:
   artifactName: ${name}-${version}-${arch}.${ext}
 linux:
   target:
-    - AppImage
-    - snap
-    - deb
+    # - AppImage
+    # - snap
+    # - deb
   maintainer: electronjs.org
   category: Utility
 appImage:

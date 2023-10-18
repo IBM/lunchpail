@@ -29,7 +29,7 @@ To make production double-clickable builds, use the following commands:
 $ yarn build:win
 
 # For macOS
-$ yarn build:mac
+$ yarn build:darwin
 
 # For Linux
 $ yarn build:linux
