@@ -31,9 +31,12 @@ def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
 
 # A WorkerPool has been created.
 @kopf.on.create('workerpools.codeflare.dev')
-def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
+def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, labels, spec, patch, **kwargs):
     try:
-        set_status_immediately(customApi, name, namespace, "Pending", "workerpools")
+        if not "codeflare.dev/status" in annotations or annotations["codeflare.dev/status"] != "CloneFailed":
+            set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
+            set_status(name, namespace, "0", patch, "ready")
+
         application_name = spec['application']['name']
         application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
         logging.info(f"WorkerPool creation for application={application_name} uid={uid}")
@@ -56,9 +59,6 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, labels, spec, pa
 
         if dataset_labels is not None:
             logging.info(f"Attaching datasets WorkerPool={name} datasets={dataset_labels}")
-
-        # initial ready count
-        patch.metadata.annotations['codeflare.dev/ready'] = '0'
 
         create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, dataset_labels, patch)
     except kopf.TemporaryError as e:

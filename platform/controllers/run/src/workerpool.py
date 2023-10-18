@@ -35,9 +35,6 @@ def run_size(customApi, spec, application):
 
 def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, dataset_labels, patch):
     try:
-        set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
-        set_status(name, namespace, "0", patch, "ready")
-
         api = application['spec']['api']
         if api != "workqueue":
             raise PermanentError(f"Failed to launch WorkerPool, due to unsupported api={api}.")

@@ -8,7 +8,7 @@ def set_status(name: str, namespace: str, phase: str, patch, status_field = "sta
         logging.info(f"Patching {status_field} name={name} namespace={namespace} phase={phase}")
         patch.metadata.annotations[f"codeflare.dev/{status_field}"] = phase
 
-        if status_field != "message" and phase != "Failed":
+        if status_field != "ready" and status_field != "reason" and status_field != "message" and not "Failed" in phase:
             # hmm, we need to find a way to clear messages and reasons
             # from prior states of this resource. this is pretty
             # imperfect.
