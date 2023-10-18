@@ -1,4 +1,5 @@
 import { PureComponent } from "react"
+import removeAccents from "remove-accents"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
@@ -116,7 +117,9 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   /** Initial value for form */
   private get defaults() {
     return {
-      poolName: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
+      poolName: removeAccents(
+        uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
+      ),
       count: String(1),
       size: "xs",
       supportsGpu: false.toString(),
