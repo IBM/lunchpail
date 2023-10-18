@@ -52,7 +52,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
             cloned_subPath = clone(v1Api, customApi, application, name, workdir)
         except Exception as e:
             logging.info(f"Error while cloning workdir name={name} namespace={namespace}. {str(e).strip()}")
-            if "access denied" in str(e):
+            if "access denied" in str(e) or "returned error: 403" in str(e):
                 set_status(name, namespace, 'AccessDenied', patch, "reason")
                 set_status(name, namespace, 'CloneFailed', patch)
                 set_status(name, namespace, "0", patch, "ready")
