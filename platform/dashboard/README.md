@@ -1,26 +1,28 @@
-# jaas
+# Jobs as Service Client
 
-An Electron application with React and TypeScript
+An Electron application that provides a client-side user experience
+for Jobs as a Service.
 
-## Recommended IDE Setup
+## Development
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-
-## Project Setup
-
-### Install
+First, make sure you have a recent version of
+[NodeJS](https://nodejs.org/en) and
+(Yarn)(https://classic.yarnpkg.com/lang/en/docs/install) installed on
+your laptop. Then:
 
 ```bash
+# This will install the dependencies
 $ yarn
 ```
 
-### Development
-
 ```bash
+# This will launch a watcher and open an Electron window
 $ yarn dev
 ```
 
-### Build
+### Production Builds
+
+To make production double-clickable builds, use the following commands:
 
 ```bash
 # For windows
@@ -32,3 +34,6 @@ $ yarn build:mac
 # For Linux
 $ yarn build:linux
 ```
+
+On macOS, the builds will be signed and notarized only if you have an
+Apple Developer ID, an app-specific password, etc.
