@@ -207,7 +207,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       })
 
       return {
-        poolEvents: Object.assign(curState.poolEvents),
+        poolEvents: Object.assign({}, curState.poolEvents),
       }
     })
   }
