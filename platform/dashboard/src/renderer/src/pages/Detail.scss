@@ -8,6 +8,14 @@
   }
 }
 
+/** To get inner scrolling on panel body */
+.codeflare--detail-view {
+  overflow: hidden;
+  .codeflare--detail-view-body {
+    overflow: auto;
+  }
+}
+
 .codeflare--capitalize {
   text-transform: capitalize;
 }

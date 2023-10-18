@@ -206,7 +206,6 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
         {chips ? (
           <>
             <PageSection variant="light">{chips}</PageSection>
-            <Divider />
           </>
         ) : (
           <></>
@@ -218,8 +217,10 @@ export default abstract class Base<Props extends LocationProps, State extends Ba
           </TextContent>
         </PageSection>
 
-        <PageSection padding={this.noPadding} hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
+        <PageSection padding={this.noPadding} isFilled={false}>
           <Divider />
+        </PageSection>
+        <PageSection padding={this.noPadding} hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
           {this.body()}
         </PageSection>
         <PageSection isFilled={false} stickyOnBreakpoint={this.stickyBottom} padding={this.noPadding}>

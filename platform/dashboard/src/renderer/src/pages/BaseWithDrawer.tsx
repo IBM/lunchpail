@@ -4,9 +4,7 @@ import type { ReactNode } from "react"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  Card,
-  CardBody,
-  CardHeader,
+  Divider,
   Title,
   Drawer,
   DrawerContent,
@@ -107,13 +105,6 @@ export default abstract class BaseWithDrawer<
         ? WorkerPoolDetail(this.getWorkerPool(id), this.props)
         : { actions: undefined as ReactNode, body: undefined as ReactNode }
 
-    const body = content.body && (
-      <Card isPlain isFullHeight>
-        {"actions" in content && <CardHeader>{content.actions}</CardHeader>}
-        <CardBody isFilled>{content.body}</CardBody>
-      </Card>
-    )
-
     return (
       <DrawerPanelContent className="codeflare--detail-view">
         <DrawerHead>
@@ -124,11 +115,20 @@ export default abstract class BaseWithDrawer<
           <Title headingLevel="h2" size="2xl">
             {id}
           </Title>
+
           <DrawerActions>
             <DrawerCloseButton onClick={this.returnHome} />
           </DrawerActions>
         </DrawerHead>
-        <DrawerPanelBody>{body ?? this.detailNotFound()}</DrawerPanelBody>
+        <DrawerPanelBody className="codeflare--detail-view-body">
+          {content.body ?? this.detailNotFound()}
+        </DrawerPanelBody>
+        {"actions" in content && content.actions && (
+          <>
+            <Divider />
+            <DrawerPanelBody>{content.actions}</DrawerPanelBody>
+          </>
+        )}
       </DrawerPanelContent>
     )
   }

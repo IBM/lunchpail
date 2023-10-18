@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom"
-import { Button, Flex, FlexItem } from "@patternfly/react-core"
+import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
 import type { LocationProps } from "../router/withLocation"
 
-import HeartIcon from "@patternfly/react-icons/dist/esm/icons/heart-icon"
+import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
 import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
@@ -36,7 +36,7 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
   const href = props["data-href"]
   const start = props["data-start-or-add"]
 
-  const icon = start === "start" ? <RocketIcon /> : start === "fix" ? <HeartIcon /> : <PlusCircleIcon />
+  const icon = start === "start" ? <RocketIcon /> : start === "fix" ? <FixIcon /> : <PlusCircleIcon />
   const linkText = props["data-link-text"]
 
   return (
@@ -73,10 +73,10 @@ export default function LinkToNewWizard(props: Props) {
   const returnTo = encodeURIComponent(`?${currentSearch}`)
   const theHref = href(props.task, returnTo, currentHash, props.qs)
 
-  return (
+  const button = (
     <Button
       isInline={props.startOrAdd === "create"}
-      variant={props.startOrAdd === "create" ? "link" : "primary"}
+      variant={props.startOrAdd === "create" ? "link" : props.startOrAdd === "fix" ? "danger" : "primary"}
       size="sm"
       onClick={stopPropagation}
       data-start-or-add={props.startOrAdd || "start"}
@@ -85,4 +85,10 @@ export default function LinkToNewWizard(props: Props) {
       component={linker}
     />
   )
+
+  if (props.startOrAdd === "fix") {
+    return <Tooltip content="Click here to attempt this suggested quick fix">{button}</Tooltip>
+  } else {
+    return button
+  }
 }

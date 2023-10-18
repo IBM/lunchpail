@@ -28,10 +28,12 @@ function messageGroups(props: Props) {
   }
 }
 
+/** Description list groups to show in the Details view for WorkerPools */
 function detailGroups(props: Props) {
   return [statusGroup(props), ...reasonGroups(props), ...messageGroups(props), ...summaryGroups(props)]
 }
 
+/** Any suggestions/corrective action buttons */
 function actions(props: Props, locationProps: LocationProps) {
   const latestStatus = props.statusHistory[props.statusHistory.length - 1]
   if (latestStatus?.status === "CloneFailed" && latestStatus?.reason === "AccessDenied") {
@@ -43,6 +45,7 @@ function actions(props: Props, locationProps: LocationProps) {
   }
 }
 
+/** The body and actions to show in the WorkerPool Details view */
 export default function WorkerPoolDetail(props: Props | undefined, locationProps: LocationProps) {
   return { body: props && dl(detailGroups(props)), actions: props && actions(props, locationProps) }
 }

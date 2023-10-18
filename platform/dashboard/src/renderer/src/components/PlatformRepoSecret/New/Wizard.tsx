@@ -1,5 +1,5 @@
 import { PureComponent } from "react"
-import { uniqueNamesGenerator, starWars } from "unique-names-generator"
+import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
 import { nord as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
@@ -57,7 +57,15 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
   /** Initial value for form */
   private get defaults() {
     return {
-      name: uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
+      name:
+        (this.props.repo || "")
+          .replace(/\./g, "-")
+          .replace(/^http?s:\/\//, "")
+          .replace(/$/, "-") +
+        uniqueNamesGenerator({ dictionaries: [adjectives, animals], length: 2, style: "lowerCase" }).replace(
+          /[ _]/g,
+          "-",
+        ),
       count: String(1),
       size: "xs",
       repo: this.props.repo || "",
@@ -173,12 +181,17 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
   }*/
 
   private yaml(values: FormContextProps["values"]) {
+    const apiVersion = "codeflare.dev/v1alpha1"
+    const kind = "PlatformRepoSecret"
+
     return `
-apiVersion: codeflare.dev/v1alpha1
-kind: PlatformRepoSecret
+apiVersion: ${apiVersion}
+kind: ${kind}
 metadata:
   name: ${values.name}
   namespace: ${this.props.namespace}
+  labels:
+    app.kubernetes.io/managed-by: jaas
 spec:
   repo: ${values.repo}
   secret:
@@ -190,11 +203,13 @@ kind: Secret
 metadata:
   name: ${values.name}
   namespace: ${this.props.namespace}
+  labels:
+    app.kubernetes.io/managed-by: jaas
 type: Opaque
 data:
   user: ${btoa(values.user)}
   pat: ${btoa(values.pat)}
-`
+`.trim()
   }
 
   private review(ctrl: FormContextProps) {

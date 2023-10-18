@@ -22,7 +22,7 @@ export function LinkToNewRepoSecret(
     namespace: string
   },
 ) {
-  const linkText = props.startOrAdd === "fix" ? "Quick Fix: Add Repo Secret" : "Create Repo Secret"
+  const linkText = props.startOrAdd === "fix" ? "Add Repo Secret" : "Create Repo Secret"
   const qs = [`namespace=${props.namespace}`].filter(Boolean)
   if (props.repo) {
     qs.push(`repo=${props.repo}`)
