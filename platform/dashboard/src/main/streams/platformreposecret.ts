@@ -6,16 +6,17 @@ import { spawn } from "child_process"
  * @return a NodeJS stream Transform that turns a raw line into a
  * (string-serialized) `PlatformRepoSecretEvent`
  */
-function transformLineToEvent(sep: RegExp) {
+function transformLineToEvent(sep: string) {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
       // Splits the string by spaces
-      const [namespace, name, age] = chunk.toString().split(sep)
+      const [name, status, age] = chunk.toString().split(sep)
 
       const model /* FIXME : PlatformRepoSecretEvent */ = {
         timestamp: Date.now(),
-        namespace,
+        namespace: "",
         name,
+        status,
         age,
       }
 
@@ -29,9 +30,17 @@ function transformLineToEvent(sep: RegExp) {
  */
 export default function startPlatformRepoSecretStream() {
   try {
-    const child = spawn("kubectl", ["get", "platformreposecrets.codeflare.dev", "-A", "--no-headers", "--watch"])
+    const sep = "|||"
+    const child = spawn("kubectl", [
+      "get",
+      "platformreposecrets.codeflare.dev",
+      "-A",
+      "--no-headers",
+      "--watch",
+      "-o",
+      `jsonpath={.metadata.name}{"${sep}"}{.metadata.annotations.codeflare\\.dev/status}{"${sep}"}{.metadata.creationTimestamp}{"${sep}\\n"}`,
+    ])
 
-    const sep = /\s+/
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))
     child.stderr.pipe(process.stderr)
     splitter.on("error", console.error)

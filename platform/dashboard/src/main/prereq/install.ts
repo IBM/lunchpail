@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import apply from "./apply"
 import createKindClusterIfNeeded from "./kind"
+import apply, { deleteJaaSManagedResources } from "./apply"
 
 import type Action from "./action"
 import type { ApplyProps } from "./apply"
@@ -42,6 +42,7 @@ async function applyAll(config: Config, props: ApplyProps) {
   if (props.action === "delete") {
     // we need to unwind things in the reverse order we applied them
     yamls.reverse()
+    await deleteJaaSManagedResources(props)
   }
 
   for await (const yaml of yamls) {

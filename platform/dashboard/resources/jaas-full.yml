@@ -58146,12 +58146,17 @@ metadata:
   name: codeflare-application-controller-role-cluster
 rules:
   - apiGroups: [codeflare.dev]
-    resources: [applications,applications/status]
+    resources: [applications,applications/status,platformreposecrets,platformreposecrets/status]
     verbs: [list, watch, patch, get]
 
   - apiGroups: [com.ie.ibm.hpsys]
     resources: [datasets,datasets/status]
     verbs: [list, watch, patch, get]
+
+  # Framework: posting the events about the handlers progress/errors.
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
 
   # Framework: knowing which other operators are running (i.e. peering).
   - apiGroups: [kopf.dev]
