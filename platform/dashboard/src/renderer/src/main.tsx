@@ -6,6 +6,8 @@ import router from "./router"
 import Status, { statusState } from "./Status"
 import Settings, { darkModeState, demoModeState, prsUserState } from "./Settings"
 
+import "@patternfly/react-core/dist/styles/base.css"
+
 function App() {
   const darkMode = darkModeState() // UI in dark mode?
   const demoMode = demoModeState() // are we running in offline mode?

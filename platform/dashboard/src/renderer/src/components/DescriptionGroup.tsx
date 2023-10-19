@@ -43,7 +43,11 @@ const noLeftPadding = { paddingLeft: 0 }
 
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false) {
-    return description ? <YesIcon /> : <NoIcon />
+    return description ? (
+      <YesIcon className="codeflare--status-online" />
+    ) : (
+      <NoIcon className="codeflare--status-offline" />
+    )
   } else if (typeof description === "string" && (isUrl(description) || isImageRepoUrl(description))) {
     return (
       <Button
@@ -82,11 +86,8 @@ function dd(description: ReactNode | Record<string, string>) {
 }
 
 function dt(term: ReactNode, count?: number | string, helperText?: string) {
-  const label = (
-    <SmallLabel count={count}>
-      <span className="codeflare--capitalize">{term}</span>
-    </SmallLabel>
-  )
+  const termUI = <span className="codeflare--capitalize">{dd(term)}</span>
+  const label = count === undefined ? termUI : <SmallLabel count={count}>{termUI}</SmallLabel>
 
   if (!helperText) {
     return <DescriptionListTerm>{label}</DescriptionListTerm>

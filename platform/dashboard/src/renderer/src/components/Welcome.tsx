@@ -1,5 +1,15 @@
-import { ControlPlaneStatusDetail } from "./ControlPlaneStatus"
+import { Bullseye, Grid, GridItem } from "@patternfly/react-core"
+
+import ControlPlaneStatus from "./ControlPlaneStatus/Card"
 
 export default function Welcome() {
-  return <ControlPlaneStatusDetail />
+  return (
+    <Bullseye>
+      <Grid>
+        <GridItem>
+          <ControlPlaneStatus />
+        </GridItem>
+      </Grid>
+    </Bullseye>
+  )
 }
