@@ -76,7 +76,7 @@ function header(props: { refreshing: Refreshing; refresh(): void; update(): void
 
   return (
     <CardHeader actions={status ? { hasNoOffset: true, actions } : undefined} isToggleRightAligned>
-      <CardTitle>Control Plane</CardTitle>
+      <CardTitle>Your Personal Job Manager</CardTitle>
     </CardHeader>
   )
 }
@@ -143,7 +143,7 @@ export default function ControlPlaneStatusCard() {
   useEffect(() => {}, [refreshing])
 
   return (
-    <Card>
+    <Card isLarge>
       {header({ refreshing, refresh, update, destroy })}
       {refreshing && bodyWhileRefreshing({ refreshing })}
       {body()}

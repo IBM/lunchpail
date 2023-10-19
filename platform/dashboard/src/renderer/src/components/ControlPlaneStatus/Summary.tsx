@@ -15,7 +15,7 @@ function demoModeStatus() {
 }
 
 export function isHealthy(status: null | ControlPlaneStatus) {
-  return status?.management && status?.runtime
+  return status?.controlPlane && status?.runtime
 }
 
 function controlPlaneStatus(status: null | ControlPlaneStatus) {

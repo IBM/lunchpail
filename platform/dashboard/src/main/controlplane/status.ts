@@ -6,7 +6,7 @@ import type ControlPlaneStatus from "@jaas/common/status/ControlPlaneStatus"
  * Check to see if we have a control plane cluster and facilities running
  */
 export async function getStatusFromMain(): Promise<ControlPlaneStatus> {
-  const [location, management, runtime, examples, defaults] = await Promise.all([
+  const [location, controlPlane, runtime, examples, defaults] = await Promise.all([
     "local",
     doesClusterExist(),
     isRuntimeProvisioned(),
@@ -14,7 +14,7 @@ export async function getStatusFromMain(): Promise<ControlPlaneStatus> {
     false,
   ])
 
-  return { location, management, runtime, examples, defaults }
+  return { location, controlPlane, runtime, examples, defaults }
 }
 
 export type Status = ReturnType<typeof getStatusFromMain>
