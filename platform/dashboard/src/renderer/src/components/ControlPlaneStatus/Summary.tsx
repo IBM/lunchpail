@@ -13,8 +13,8 @@ function demoModeStatus() {
   return "Offline Demo"
 }
 
-function isHealthy(status: null | ControlPlaneStatus) {
-  return status?.clusterExists && status?.core
+export function isHealthy(status: null | ControlPlaneStatus) {
+  return status?.management && status?.runtime
 }
 
 function controlPlaneStatus(status: null | ControlPlaneStatus) {

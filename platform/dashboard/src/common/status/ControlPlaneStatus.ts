@@ -1,9 +1,12 @@
 type ControlPlaneStatus = {
+  /** Where is the control plane running */
+  location: string
+
   /** Does the Kubernetes cluster to house the control plane exist? */
-  clusterExists: boolean
+  management: boolean
 
   /** Are the core runtime resources provisioned in the management cluster? */
-  core: boolean
+  runtime: boolean
 
   /** Are the JaaS examples provisioned in the management cluster? */
   examples: boolean
@@ -13,8 +16,9 @@ type ControlPlaneStatus = {
 }
 
 export const descriptions: Record<keyof ControlPlaneStatus, string> = {
-  clusterExists: "Does the Kubernetes cluster to house the control plane exist?",
-  core: "Are the core runtime resources provisioned in the management cluster?",
+  location: "Where is the control plane running?",
+  management: "Does the Kubernetes cluster to house the control plane exist?",
+  runtime: "Are the core runtime resources provisioned in the management cluster?",
   examples: "Are the JaaS examples provisioned in the management cluster?",
   defaults: "Are the JaaS default settings provisioned in the management cluster?",
 }
