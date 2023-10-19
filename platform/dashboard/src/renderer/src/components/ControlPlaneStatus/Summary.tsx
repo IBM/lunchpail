@@ -1,3 +1,4 @@
+import { useContext } from "react"
 import { Link } from "react-router-dom"
 
 import Settings from "../../Settings"
@@ -26,17 +27,12 @@ function controlPlaneStatus(status: null | ControlPlaneStatus) {
 }
 
 export default function ControlPlaneStatusSummary() {
+  const { status } = useContext(Status)
+  const settings = useContext(Settings)
+
   return (
-    <Settings.Consumer>
-      {(settings) => (
-        <Status.Consumer>
-          {(status) => (
-            <IconWithLabel icon={isHealthy(status) ? <HealthyIcon /> : <UnhealthyIcon />}>
-              {settings?.demoMode[0] ? demoModeStatus() : controlPlaneStatus(status)}
-            </IconWithLabel>
-          )}
-        </Status.Consumer>
-      )}
-    </Settings.Consumer>
+    <IconWithLabel icon={isHealthy(status) ? <HealthyIcon /> : <UnhealthyIcon />}>
+      {settings?.demoMode[0] ? demoModeStatus() : controlPlaneStatus(status)}
+    </IconWithLabel>
   )
 }

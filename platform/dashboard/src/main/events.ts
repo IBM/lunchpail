@@ -144,13 +144,13 @@ export function initEvents() {
 
   // control plane setup request
   ipcMain.handle("/controlplane/init", async () => {
-    await import("./prereq/install").then((_) => _.default("lite", "apply"))
+    await import("./controlplane/install").then((_) => _.default("lite", "apply"))
     return true
   })
 
   // control plane teardown request
   ipcMain.handle("/controlplane/destroy", async () => {
-    await import("./prereq/install").then((_) => _.default("lite", "delete"))
+    await import("./controlplane/install").then((_) => _.default("lite", "delete"))
     return true
   })
 }

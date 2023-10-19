@@ -15,12 +15,12 @@ function App() {
 
   // is the local control plane good to go? null means unknown
   // (e.g. that a check is in progress)
-  const [status] = statusState(demoMode)
+  const statusCtx = statusState(demoMode)
 
   return (
     <StrictMode>
       <Settings.Provider value={{ darkMode, demoMode, prsUser }}>
-        <Status.Provider value={status}>
+        <Status.Provider value={statusCtx}>
           <RouterProvider router={router} />
         </Status.Provider>
       </Settings.Provider>

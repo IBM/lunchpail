@@ -5,7 +5,8 @@ import type ControlPlaneStatus from "@jaas/common/status/ControlPlaneStatus"
 
 export { ControlPlaneStatus }
 
-const StatusCtx = createContext<null | ControlPlaneStatus>(null)
+type StatusCtxType = { status: null | ControlPlaneStatus; refreshStatus(): void }
+const StatusCtx = createContext<StatusCtxType>({ status: null, refreshStatus: () => {} })
 export default StatusCtx
 
 export function statusState(demoMode: State<boolean>) {
@@ -14,17 +15,23 @@ export function statusState(demoMode: State<boolean>) {
 
   // launch an effect that triggers a control plane readiness check
   // whenever entering non-demo/live mode
-  useEffect(() => {
-    async function checkControlPlaneStatus() {
-      if (!demoMode[0]) {
-        // determine current cluster status
-        const status = await window.jaas.controlplane.status()
-        setStatus(status)
-        console.log("Control Plane Status", status)
-      }
+  async function checkControlPlaneStatus() {
+    if (!demoMode[0]) {
+      // determine current cluster status
+      const status = await window.jaas.controlplane.status()
+      setStatus(status)
+      console.log("Control Plane Status", status)
     }
+  }
+
+  useEffect(() => {
     checkControlPlaneStatus()
   }, [demoMode[0]])
 
-  return status
+  return {
+    status: status[0],
+    refreshStatus: () => {
+      checkControlPlaneStatus()
+    },
+  }
 }

@@ -1,7 +1,7 @@
-import { exec } from "child_process"
-import { promisify } from "util"
+import { promisify } from "node:util"
+import { exec } from "node:child_process"
 
-export async function clusterExists() {
+export async function doesClusterExist() {
   try {
     const command = promisify(exec)
     const result = await command("kind get clusters")
