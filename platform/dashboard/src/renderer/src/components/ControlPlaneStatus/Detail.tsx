@@ -2,6 +2,7 @@ import Status from "../../Status"
 import Settings from "../../Settings"
 
 import { dl, descriptionGroup } from "../DescriptionGroup"
+import { descriptions } from "@jaas/common/status/ControlPlaneStatus"
 
 export default function ControlPlaneStatusDetail() {
   return (
@@ -15,7 +16,9 @@ export default function ControlPlaneStatusDetail() {
                   return "Checking on the status of the control plane..."
                 } else {
                   return dl(
-                    Object.entries(status).map(([key, value]) => descriptionGroup(key, value)),
+                    Object.entries(status).map(([key, value]) =>
+                      descriptionGroup(key, value, undefined, descriptions[key]),
+                    ),
                     { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true },
                   )
                 }
