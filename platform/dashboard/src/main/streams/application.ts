@@ -4,7 +4,7 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-// FIXME import type ApplicationSpecEvent from "../../renderer/src/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -19,7 +19,7 @@ function transformLineToEvent(sep: string) {
 
       const inputs = inputs_stringified ? JSON.parse(inputs_stringified) : []
 
-      const model /* FIXME : ApplicationSpecEvent */ = {
+      const model: ApplicationSpecEvent = {
         timestamp: Date.now(),
         namespace: ns,
         application,

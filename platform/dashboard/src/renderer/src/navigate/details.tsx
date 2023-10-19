@@ -6,8 +6,8 @@ import { stopPropagation } from "."
 import type Kind from "../Kind"
 import type { FunctionComponent } from "react"
 import type { LocationProps } from "../router/withLocation"
-import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 type Entity = { id: string; kind: Kind }
 

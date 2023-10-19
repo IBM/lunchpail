@@ -26,7 +26,7 @@ import Settings from "../../../Settings"
 
 import type { Dispatch, SetStateAction } from "react"
 import type { LocationProps } from "../../../router/withLocation"
-import type CreateResourceHandler from "../../../events/NewPoolHandler"
+import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"

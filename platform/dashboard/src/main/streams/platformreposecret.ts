@@ -4,6 +4,8 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
+import type PlatformRepoSecretEvent from "@jaas/common/events/PlatformRepoSecretEvent"
+
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
  * (string-serialized) `PlatformRepoSecretEvent`
@@ -14,7 +16,7 @@ function transformLineToEvent(sep: string) {
       // Splits the string by spaces
       const [name, status, age] = chunk.toString().split(sep)
 
-      const model /* FIXME : PlatformRepoSecretEvent */ = {
+      const model: PlatformRepoSecretEvent = {
         timestamp: Date.now(),
         namespace: "",
         name,

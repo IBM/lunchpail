@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-// FIXME import type QueueEvent from "../../renderer/src/events/QueueEvent"
+import type QueueEvent from "@jaas/common/events/QueueEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -19,7 +19,7 @@ function transformLineToEvent() {
       //      run = test7
       const dataset = queue.replace(`queue-${run}-`, "").replace(/-\d+$/, "")
 
-      const model /* FIXME : QueueEvent */ = {
+      const model: QueueEvent = {
         timestamp: Date.now(),
         run,
         inbox: parseInt(inbox, 10),

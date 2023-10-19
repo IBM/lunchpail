@@ -1,4 +1,4 @@
-import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 import WorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
 import ApplicationIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"

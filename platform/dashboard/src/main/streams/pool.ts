@@ -4,7 +4,7 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-// FIXME import type WorkerPoolStatusEvent from "../../renderer/src/events/WorkerPoolStatusEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -17,7 +17,7 @@ function transformLineToEvent(fieldSep: string) {
       const [ns, workerpool, application, dataset, ready, size, nodeClass, supportsGpu, age, status, reason, message] =
         chunk.toString().split(fieldSep)
 
-      const model /* FIXME : WorkerPoolStatusEvent */ = {
+      const model: WorkerPoolStatusEvent = {
         timestamp: Date.now(),
         namespace: ns,
         workerpool,

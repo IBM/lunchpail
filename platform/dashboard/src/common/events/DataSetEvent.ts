@@ -1,4 +1,4 @@
-type DataSetModel = {
+type DataSetEvent = {
   /** Name of this dataset */
   label: string
 
@@ -30,4 +30,4 @@ type DataSetModel = {
   timestamp: number
 }
 
-export default DataSetModel
+export default DataSetEvent

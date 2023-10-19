@@ -26,8 +26,8 @@ import { singular as names } from "../../../names"
 import { Input, NumberInput, Select } from "../../Forms"
 
 import type { LocationProps } from "../../../router/withLocation"
-import type CreateResourceHandler from "../../../events/NewPoolHandler"
-import type ApplicationSpecEvent from "../../../events/ApplicationSpecEvent"
+import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 type Props = Pick<LocationProps, "searchParams"> & {
   /** Md5 of current application names */

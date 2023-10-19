@@ -4,7 +4,7 @@ import CardInGallery from "../CardInGallery"
 import { descriptionGroup } from "../DescriptionGroup"
 import { linkToAllDataSetDetails } from "../../navigate/details"
 
-import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 import ApplicationIcon from "./Icon"
 

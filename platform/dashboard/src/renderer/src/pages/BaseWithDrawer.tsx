@@ -27,7 +27,7 @@ import Base from "./Base"
 import type { NamedKind } from "../Kind"
 import type { BaseState } from "./Base"
 import type { LocationProps } from "../router/withLocation"
-import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 export type BaseWithDrawerState = BaseState & { drawer?: DrawerState }
 import type DataSetProps from "../components/DataSet/Props"

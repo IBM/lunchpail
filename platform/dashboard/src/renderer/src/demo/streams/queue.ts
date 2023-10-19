@@ -1,6 +1,6 @@
 import type { DemoWorkerPool } from "./pool"
-import type QueueEvent from "../../events/QueueEvent.js"
-import type EventSourceLike from "../../events/EventSourceLike"
+import type QueueEvent from "@jaas/common/events/QueueEvent.js"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import Base from "./base"
 import { runs } from "./misc"

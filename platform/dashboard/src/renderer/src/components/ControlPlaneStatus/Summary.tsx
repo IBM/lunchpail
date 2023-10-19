@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 
 import Settings from "../../Settings"
-import Status, { Status as ControlPlaneStatus } from "../../Status"
+import Status, { ControlPlaneStatus } from "../../Status"
 
 import { hash } from "../../navigate/kind"
 import IconWithLabel from "../IconWithLabel"
@@ -13,11 +13,11 @@ function demoModeStatus() {
   return "Offline Demo"
 }
 
-function isHealthy(status: ControlPlaneStatus) {
+function isHealthy(status: null | ControlPlaneStatus) {
   return status?.clusterExists && status?.core
 }
 
-function controlPlaneStatus(status: ControlPlaneStatus) {
+function controlPlaneStatus(status: null | ControlPlaneStatus) {
   return (
     <Link to={hash("welcome")}>
       {status === null ? "Not Provisioned" : isHealthy(status) ? "Healthy" : "Unhealthy"}

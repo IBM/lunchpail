@@ -1,9 +1,9 @@
-import type DataSetModel from "../DataSetModel"
-import type ApplicationSpecEvent from "../../events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "../../events/WorkerPoolStatusEvent"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
-type Props = Pick<DataSetModel, "idx" | "label"> & {
-  events: DataSetModel[]
+type Props = Pick<DataSetEvent, "idx" | "label"> & {
+  events: DataSetEvent[]
 
   /** Latest set of Applications */
   applications: ApplicationSpecEvent[]
@@ -11,7 +11,7 @@ type Props = Pick<DataSetModel, "idx" | "label"> & {
   /** Latest set of WorkerPools aimed at processing this DataSet */
   workerpools: WorkerPoolStatusEvent[]
 
-  /** Map DataSetModel.label to a dense index */
+  /** Map DataSetEvent.label to a dense index */
   datasetIndex: Record<string, number>
 }
 

@@ -2,6 +2,7 @@ import { resolve } from "path"
 import { defineConfig, externalizeDepsPlugin } from "electron-vite"
 import react from "@vitejs/plugin-react"
 import checker from "vite-plugin-checker"
+import tsconfigPaths from "vite-tsconfig-paths"
 
 export default defineConfig({
   main: {
@@ -18,6 +19,7 @@ export default defineConfig({
     },
     plugins: [
       react(),
+      tsconfigPaths(),
       checker({
         typescript: {
           // this tells vite-plugin-checker to support "composite"

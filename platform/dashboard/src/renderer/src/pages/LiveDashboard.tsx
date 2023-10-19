@@ -5,9 +5,9 @@ import { Dashboard } from "./Dashboard"
 
 import type Kind from "../Kind"
 import type { EventProps } from "./Dashboard"
-import type { Handler } from "../events/EventSourceLike"
-import type EventSourceLike from "../events/EventSourceLike"
-import type CreateResourceHandler from "../events/NewPoolHandler"
+import type { Handler } from "@jaas/common/events/EventSourceLike"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
+import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
 
 let props: null | EventProps<EventSourceLike> = null
 

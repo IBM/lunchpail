@@ -4,7 +4,7 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-// FIXME import type DataSetModel from "../../renderer/src/components/DataSetModel"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a
@@ -19,7 +19,7 @@ function transformLineToEvent() {
       if (inbox === "") {
         callback(null, "")
       } else {
-        const model /* FIXME : DataSetModel */ = {
+        const model: DataSetEvent = {
           inbox: parseInt(inbox, 10),
           outbox: 0,
           label,

@@ -20,14 +20,14 @@ import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 import type Kind from "../Kind"
 import type { LocationProps } from "../router/withLocation"
 
-import type CreateResourceHandler from "../events/NewPoolHandler"
-import type EventSourceLike from "../events/EventSourceLike"
-import type { Handler, EventLike } from "../events/EventSourceLike"
-import type QueueEvent from "../events/QueueEvent"
-import type ApplicationSpecEvent from "../events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "../events/WorkerPoolStatusEvent"
-import type PlatformRepoSecretEvent from "../events/PlatformRepoSecretEvent"
-import type DataSetModel from "../components/DataSetModel"
+import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
+import type { Handler, EventLike } from "@jaas/common/events/EventSourceLike"
+import type QueueEvent from "@jaas/common/events/QueueEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
+import type PlatformRepoSecretEvent from "@jaas/common/events/PlatformRepoSecretEvent"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
@@ -49,8 +49,8 @@ type Props = LocationProps &
   }
 
 type State = BaseWithDrawerState & {
-  /** Events for DataSets, indexed by DataSetModel.label */
-  datasetEvents: Record<string, DataSetModel[]>
+  /** Events for DataSets, indexed by DataSetEvent.label */
+  datasetEvents: Record<string, DataSetEvent[]>
 
   /** Events for Queues, indexed by WorkerPoolModel.label */
   queueEvents: Record<string, QueueEvent[]>
@@ -73,7 +73,7 @@ type State = BaseWithDrawerState & {
   /** md5 sum of latestApplicationEvents */
   appMd5: string
 
-  /** Map DataSetModel.label to a dense index */
+  /** Map DataSetEvent.label to a dense index */
   datasetIndex: Record<string, number>
 
   /** Map WorkerPool label to a dense index */
@@ -89,7 +89,7 @@ function either<T>(x: T | undefined, y: T): T {
 
 export class Dashboard extends BaseWithDrawer<Props, State> {
   private readonly onDataSetEvent = (evt: EventLike) => {
-    const datasetEvent = JSON.parse(evt.data) as DataSetModel
+    const datasetEvent = JSON.parse(evt.data) as DataSetEvent
     const { label } = datasetEvent
 
     const datasetIndex = this.state?.datasetIndex || {}

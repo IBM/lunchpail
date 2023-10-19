@@ -1,5 +1,5 @@
-import type DataSetModel from "../../components/DataSetModel"
-import type EventSourceLike from "../../events/EventSourceLike"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import Base from "./base"
 
@@ -10,7 +10,7 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
   private readonly buckets = ["pile1", "pile2", "pile3"]
   private readonly isReadOnly = [true, false, true]
 
-  private readonly datasets: Omit<DataSetModel, "timestamp">[] = Array(3)
+  private readonly datasets: Omit<DataSetEvent, "timestamp">[] = Array(3)
     .fill(0)
     .map((_, idx) => ({
       label: colors[idx],
@@ -24,7 +24,7 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
       outbox: 0,
     }))
 
-  public get sets(): readonly Omit<DataSetModel, "timestamp">[] {
+  public get sets(): readonly Omit<DataSetEvent, "timestamp">[] {
     return this.datasets
   }
 
@@ -37,7 +37,7 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
           const whichToUpdate = Math.floor(Math.random() * datasets.length)
           const dataset = datasets[whichToUpdate]
           dataset.inbox++
-          const model: DataSetModel = Object.assign({}, dataset, {
+          const model: DataSetEvent = Object.assign({}, dataset, {
             timestamp: Date.now(),
             //inbox: ~~(Math.random() * 20),
             //outbox: ~~(Math.random() * 2),
