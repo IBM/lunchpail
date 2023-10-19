@@ -8,7 +8,7 @@ function returnTo(props: LocationProps, hash = props.location.hash) {
 }
 
 export default function navigateToHome(props: LocationProps) {
-  returnTo(props)
+  returnTo(props, hash("datasets"))
 }
 
 export function navigateToWorkerPools(props: LocationProps) {

@@ -1,14 +1,12 @@
 import { createContext, useState } from "react"
 
-import type { Status } from "./main"
 import type { Dispatch, SetStateAction } from "react"
-type State<T> = [T, Dispatch<SetStateAction<T>>, (evt: unknown, val: T) => void]
+export type State<T> = [T, Dispatch<SetStateAction<T>>, (evt: unknown, val: T) => void]
 
 type SettingsType = null | {
   darkMode: State<boolean>
   demoMode: State<boolean>
   prsUser: State<string>
-  controlPlaneReady: null | Status
 }
 
 const Settings = createContext<SettingsType>(null)

@@ -7,11 +7,7 @@ export interface JaasResourceApi {
 /** Jobs as a Service API to server-side control plane functionality */
 export interface ControlPlaneApi {
   /** @return status of the control plane */
-  status(): Promise<{
-    clusterExists: boolean
-    core: boolean
-    examples: boolean
-  }>
+  status(): Promise<import("../Status").StatusType>
 
   /** Bring up the control plane */
   init(): Promise<void>

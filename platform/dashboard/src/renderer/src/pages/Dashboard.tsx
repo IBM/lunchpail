@@ -9,6 +9,7 @@ import { isShowingWizard } from "../navigate/wizard"
 import isShowingNewPool from "../navigate/newpool"
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
+import Welcome from "../components/Welcome"
 import Application from "../components/Application/Card"
 import DataSet from "../components/DataSet/Card"
 import WorkerPool from "../components/WorkerPool/Card"
@@ -713,6 +714,8 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   protected override mainContentBody() {
     switch (currentKind(this.props)) {
+      case "welcome":
+        return <Welcome />
       case "applications":
         return this.applications()
       case "datasets":

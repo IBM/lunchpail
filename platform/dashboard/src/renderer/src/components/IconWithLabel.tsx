@@ -46,7 +46,7 @@ function popover(props: PopoverProps) {
   )
 }
 
-export default function IconWithLabel(props: PropsWithChildren<PopoverProps & { icon?: ReactNode }>) {
+export default function IconWithLabel(props: PropsWithChildren<Partial<PopoverProps> & { icon?: ReactNode }>) {
   const { popoverHeader, popoverBody } = props
 
   return (

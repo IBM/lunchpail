@@ -1,9 +1,9 @@
-import type { NamedKind } from "../Kind"
+import type { NavigableKind } from "../Kind"
 import type { LocationProps } from "../router/withLocation"
 
-const defaultKind: NamedKind = "datasets"
+const defaultKind: NavigableKind = "welcome"
 
-export function hash(kind: NamedKind) {
+export function hash(kind: NavigableKind) {
   return "#" + kind
 }
 
@@ -11,14 +11,14 @@ export function hash(kind: NamedKind) {
  * Avoid an extra # in the URI if we are navigating to the
  * defaultKind.
  */
-export function hashIfNeeded(kind: NamedKind) {
+export function hashIfNeeded(kind: NavigableKind) {
   return kind === defaultKind ? "#" : "#" + kind
 }
 
-export function currentKind(props: Pick<LocationProps, "location">): NamedKind {
-  return (props.location.hash.slice(1) as NamedKind) || defaultKind
+export function currentKind(props: Pick<LocationProps, "location">): NavigableKind {
+  return (props.location.hash.slice(1) as NavigableKind) || defaultKind
 }
 
-export default function isShowingKind(kind: NamedKind, props: Pick<LocationProps, "location">) {
+export default function isShowingKind(kind: NavigableKind, props: Pick<LocationProps, "location">) {
   return kind === currentKind(props)
 }

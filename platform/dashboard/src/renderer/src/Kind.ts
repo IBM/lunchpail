@@ -16,6 +16,12 @@ export const namedKinds = [...resourceKinds, ...credentialsKinds] as const
 /** Resources that will appear in the UI */
 export type NamedKind = (typeof namedKinds)[number]
 
+/** Navigable, but not representing a resource */
+export type NonResourceKind = "welcome"
+
+/** Resources that will appear in the Nav UI */
+export type NavigableKind = NamedKind | NonResourceKind
+
 /** All resources, including those tracked by not directly appearing in the UI */
 export const kinds = [...namedKinds, "queues"] as const
 

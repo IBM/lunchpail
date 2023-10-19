@@ -35,10 +35,10 @@ import ControlPlaneStatus from "../components/ControlPlaneStatus"
 
 export interface BaseState {}
 
-export default abstract class Base<Props extends LocationProps, State extends BaseState> extends PureComponent<
-  Props,
-  State
-> {
+export default abstract class Base<
+  Props extends LocationProps = LocationProps,
+  State extends BaseState = BaseState,
+> extends PureComponent<Props, State> {
   protected headerToggle(): ReactNode {
     return (
       <MastheadToggle>

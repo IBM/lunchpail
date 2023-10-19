@@ -1,37 +1,32 @@
-import { TreeView } from "@patternfly/react-core"
+import { Link } from "react-router-dom"
 
 import Settings from "../Settings"
+import Status, { Status as ControlPlaneStatus } from "../Status"
+
+import { hash } from "../navigate/kind"
 import IconWithLabel from "./IconWithLabel"
-import type { Status } from "../main"
+import { dl, descriptionGroup } from "./DescriptionGroup"
+
 import "./ControlPlaneStatus.scss"
 
-export default function ControlPlaneStatus() {
-  // treeContent and bodyContent contain bogus data for now
-  const treeContent = [
-    {
-      name: "Cluster Exists",
-      id: "djnjnfaijfnain",
-    },
-    {
-      name: "Core",
-      id: "fsdbr;dxkc;lks",
-    },
-    {
-      name: "Examples",
-      id: "kftjrgsedrtjykdjhsd",
-    },
-  ]
+import HealthyIcon from "@patternfly/react-icons/dist/esm/icons/check-circle-icon"
+import UnhealthyIcon from "@patternfly/react-icons/dist/esm/icons/times-circle-icon"
 
-  const bodyContent = (
+export function ControlPlaneStatusDetail() {
+  return (
     <Settings.Consumer>
       {(settings) => {
-        if (settings && !settings.demoMode[0]) {
-          return settings.controlPlaneReady ? (
-            <TreeView data={treeContent} />
-          ) : settings.controlPlaneReady === null ? (
-            "Checking on the status of the control plane..."
-          ) : (
-            "Control plane is offline"
+        if (!settings?.demoMode[0]) {
+          return (
+            <Status.Consumer>
+              {(status) => {
+                if (!status) {
+                  return "Checking on the status of the control plane..."
+                } else {
+                  return dl(Object.entries(status).map(([key, value]) => descriptionGroup(key, value)))
+                }
+              }}
+            </Status.Consumer>
           )
         } else {
           return "Currently running in offline demo mode."
@@ -39,27 +34,35 @@ export default function ControlPlaneStatus() {
       }}
     </Settings.Consumer>
   )
+}
 
+export default function ControlPlaneStatusSummary() {
   function demoModeStatus() {
-    return "Running in Demo Mode"
+    return "Offline Demo"
   }
 
-  function controlPlaneStatus(controlPlaneReady: null | Status) {
-    const status = controlPlaneReady === null ? "Not Provisioned" : controlPlaneReady ? "Healthy" : "Unhealthy"
+  function isHealthy(status: ControlPlaneStatus) {
+    return status?.clusterExists && status?.core
+  }
 
-    return `JaaS is ${status}`
+  function controlPlaneStatus(status: ControlPlaneStatus) {
+    return (
+      <Link to={hash("welcome")}>
+        {status === null ? "Not Provisioned" : isHealthy(status) ? "Healthy" : "Unhealthy"}
+      </Link>
+    )
   }
 
   return (
     <Settings.Consumer>
       {(settings) => (
-        <IconWithLabel
-          popoverHeader="JaaS Status"
-          popoverBody={bodyContent}
-          status={settings?.controlPlaneReady ? "Healthy" : "Unhealthy"}
-        >
-          {settings && (settings.demoMode[0] ? demoModeStatus() : controlPlaneStatus(settings.controlPlaneReady))}
-        </IconWithLabel>
+        <Status.Consumer>
+          {(status) => (
+            <IconWithLabel icon={isHealthy(status) ? <HealthyIcon /> : <UnhealthyIcon />}>
+              {settings?.demoMode[0] ? demoModeStatus() : controlPlaneStatus(status)}
+            </IconWithLabel>
+          )}
+        </Status.Consumer>
       )}
     </Settings.Consumer>
   )

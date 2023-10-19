@@ -1,8 +1,8 @@
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
 import { resourceKinds, credentialsKinds } from "../Kind"
-import { resourceNames, credentialsNames } from "../names"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
+import { nonResourceNames, resourceNames, credentialsNames } from "../names"
 
 import type { LocationProps } from "../router/withLocation"
 import type { ActiveFilters } from "../context/FiltersContext"
@@ -56,10 +56,19 @@ function SidebarCredentialsNavGroup(props: Props) {
   )
 }
 
+function SidebarHelloNavGroup(props: Pick<Props, "location">) {
+  return (
+    <NavItem to="#welcome" isActive={isShowingKind("welcome", props)}>
+      {nonResourceNames.welcome}
+    </NavItem>
+  )
+}
+
 function SidebarNav(props: Props) {
   return (
     <Nav>
       <NavList>
+        <SidebarHelloNavGroup {...props} />
         <SidebarResourcesNavGroup {...props} />
         <SidebarCredentialsNavGroup {...props} />
       </NavList>

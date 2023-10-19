@@ -2,7 +2,11 @@ import { Link } from "react-router-dom"
 
 import { hash } from "./navigate/kind"
 
-import type { CredentialsKind, NamedKind, ResourceKind } from "./Kind"
+import type { CredentialsKind, NamedKind, NonResourceKind, NavigableKind, ResourceKind } from "./Kind"
+
+export const nonResourceNames: Record<NonResourceKind, string> = {
+  welcome: "Welcome",
+}
 
 export const resourceNames: Record<ResourceKind, string> = {
   datasets: "Task Queues",
@@ -14,7 +18,7 @@ export const credentialsNames: Record<CredentialsKind, string> = {
   platformreposecrets: "Repo Secrets",
 }
 
-const names: Record<NamedKind, string> = Object.assign({}, resourceNames, credentialsNames)
+const names: Record<NavigableKind, string> = Object.assign({}, nonResourceNames, resourceNames, credentialsNames)
 
 export const singular: Record<NamedKind, string> = {
   applications: "Application",
@@ -23,7 +27,13 @@ export const singular: Record<NamedKind, string> = {
   platformreposecrets: "Repo Secret",
 }
 
-export const subtitles: Record<NamedKind, import("react").ReactNode> = {
+export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
+  welcome: (
+    <span>
+      <strong>Jobs as a Service</strong> lets you assign <Link to={hash("workerpools")}>Workers</Link> to process{" "}
+      <Link to={hash("datasets")}>Queued work</Link> without having to worry about managing long-lived clusters.
+    </span>
+  ),
   applications: (
     <span>
       The registered code bases in your system. Each <strong>Application</strong> has a base image, a code repository,
