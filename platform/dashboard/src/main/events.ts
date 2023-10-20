@@ -63,6 +63,21 @@ app.get("/api/newpool", async () => {
 const kinds = ["datasets", "queues", "workerpools", "applications", "platformreposecrets"] as const
 type Kind = (typeof kinds)[number]
 
+function streamForKind(kind: Kind): import("stream").Transform {
+  switch (kind) {
+    case "datasets":
+      return startDataSetStream()
+    case "queues":
+      return startQueueStream()
+    case "workerpools":
+      return startPoolStream()
+    case "platformreposecrets":
+      return startPlatformRepoSecretStream()
+    case "applications":
+      return startApplicationStream()
+  }
+}
+
 /**
  * This will register an `ipcMain` listener for `/${kind}/open`
  * messages. Upon receipt of such a message, this logic will initiate
@@ -87,40 +102,39 @@ function initStreamForResourceKind(kind: Kind) {
     // stream close due to premature exit of kubectl
     let closedOnPurpose = false
 
-    let stream: null | import("stream").Transform = null
+    let stream: null | ReturnType<typeof streamForKind> = null
 
     const init = () => {
-      stream =
-        kind === "datasets"
-          ? startDataSetStream()
-          : kind === "queues"
-          ? startQueueStream()
-          : kind === "workerpools"
-          ? startPoolStream()
-          : kind === "platformreposecrets"
-          ? startPlatformRepoSecretStream()
-          : startApplicationStream()
+      const myStream = streamForKind(kind)
+      stream = myStream
+
+      // callback to renderer
+      const cb = (model) => evt.sender.send(dataEvent, { data: JSON.parse(model) })
 
       // when a `/${kind}/close` message is received, tear down the watcher
       const cleanup = () => {
         closedOnPurpose = true
         if (stream) {
-          stream.off("data", cb)
-          stream.end()
+          ipcMain.removeListener(closeEvent, cleanup)
+          myStream.off("data", cb)
+          myStream.end()
         }
       }
 
       ipcMain.once(closeEvent, cleanup)
 
       // when we get a serialized model, send an event back to the sender
-      const cb = (model) => evt.sender.send(dataEvent, { data: JSON.parse(model) })
       stream.on("data", cb)
 
-      stream.on("close", async () => {
+      stream.once("close", async () => {
         if (!closedOnPurpose) {
-          await new Promise((resolve) => setTimeout(resolve, 2000))
-          ipcMain.off(closeEvent, cleanup)
+          cleanup()
+          closedOnPurpose = false
+
+          // double-check that a purposeful close hasn't been
+          // requested in the interim (this function is async...)
           if (!closedOnPurpose) {
+            await new Promise((resolve) => setTimeout(resolve, 2000))
             init()
           }
         }

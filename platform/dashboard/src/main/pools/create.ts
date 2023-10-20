@@ -12,7 +12,7 @@ export default async function onPoolCreate(yaml: string) {
       child.stdin.write(yaml)
       child.stdin.end()
 
-      child.on("close", (code) => {
+      child.once("close", (code) => {
         if (code === 0) {
           resolve(true)
         } else {

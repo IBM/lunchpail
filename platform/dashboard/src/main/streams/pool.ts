@@ -78,7 +78,10 @@ export default function startWorkerPoolStatusStream() {
   child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
 
   const splitter = child.stdout.pipe(split2(recordSep)).pipe(transformLineToEvent(fieldSep))
-  splitter.on("error", console.error)
-  splitter.on("close", () => child.kill())
+  splitter.once("error", console.error)
+  splitter.once("close", () => {
+    splitter.off("error", console.error)
+    child.kill()
+  })
   return splitter
 }

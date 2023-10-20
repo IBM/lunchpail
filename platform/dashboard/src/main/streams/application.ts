@@ -59,8 +59,11 @@ export default function startApplicationSpecStream() {
     child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
 
     const splitter = child.stdout.pipe(split2()).pipe(transformLineToEvent(sep))
-    splitter.on("error", console.error)
-    splitter.on("close", () => child.kill())
+    splitter.once("error", console.error)
+    splitter.once("close", () => {
+      splitter.off("error", console.error)
+      child.kill()
+    })
     return splitter
   } catch (err) {
     console.error(err)
