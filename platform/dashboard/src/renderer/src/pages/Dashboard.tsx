@@ -715,7 +715,14 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   protected override mainContentBody() {
     switch (currentKind(this.props)) {
       case "welcome":
-        return <Welcome />
+        return (
+          <Welcome
+            appMd5={this.state?.appMd5}
+            applications={this.state?.latestApplicationNames}
+            datasets={this.datasetsList}
+            workerpools={this.workerpoolsList}
+          />
+        )
       case "applications":
         return this.applications()
       case "datasets":
