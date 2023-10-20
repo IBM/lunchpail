@@ -18,11 +18,24 @@ export function isHealthy(status: null | ControlPlaneStatus) {
   return status?.controlPlane && status?.runtime
 }
 
+export function isNeedingInit(status: null | ControlPlaneStatus) {
+  // for now this is the opposite of isHealthy()... we need some
+  // refinments to be able to distinguish healthy from not even there
+  return !status?.controlPlane || !status?.runtime
+}
+
 function controlPlaneStatus(status: null | ControlPlaneStatus) {
   return (
-    <Link to={hash("welcome")}>
-      {status === null ? "Not Provisioned" : isHealthy(status) ? "Healthy" : "Unhealthy"}
-    </Link>
+    <span>
+      <Link to={hash("welcome")}>Job Manager</Link> &mdash;{" "}
+      {status === null
+        ? "Not Provisioned"
+        : isHealthy(status)
+        ? "Healthy"
+        : isNeedingInit(status)
+        ? "Not ready"
+        : "Unhealthy"}
+    </span>
   )
 }
 
@@ -31,7 +44,7 @@ export default function ControlPlaneStatusSummary() {
   const settings = useContext(Settings)
 
   return (
-    <IconWithLabel icon={isHealthy(status) ? <HealthyIcon /> : <UnhealthyIcon />}>
+    <IconWithLabel icon={settings?.demoMode[0] ? undefined : isHealthy(status) ? <HealthyIcon /> : <UnhealthyIcon />}>
       {settings?.demoMode[0] ? demoModeStatus() : controlPlaneStatus(status)}
     </IconWithLabel>
   )

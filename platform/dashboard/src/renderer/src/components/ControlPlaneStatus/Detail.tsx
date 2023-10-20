@@ -22,7 +22,7 @@ export default function ControlPlaneStatusDetail() {
         Object.entries(status).map(([key, value]) =>
           descriptionGroup(camelCaseSplit(key), value, undefined, descriptions[key]),
         ),
-        { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true },
+        { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true, isFluid: true },
       )
     }
   } else {

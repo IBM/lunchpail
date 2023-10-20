@@ -14,12 +14,15 @@ import {
   MenuToggle,
   MenuToggleElement,
   Spinner,
+  Text,
+  TextContent,
 } from "@patternfly/react-core"
 
 import Detail from "./Detail"
 import { isHealthy } from "./Summary"
 
 import Status from "../../Status"
+import Settings from "../../Settings"
 
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon"
 
@@ -32,71 +35,85 @@ function header(props: { refreshing: Refreshing; refresh(): void; update(): void
     setIsOpen(!isOpen)
   }
 
+  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
+    <MenuToggle
+      ref={toggleRef}
+      isExpanded={isOpen}
+      onClick={onToggle}
+      variant="plain"
+      aria-label="Control plane action menu toggle"
+    >
+      <EllipsisVIcon aria-hidden="true" />
+    </MenuToggle>
+  )
+
   const dropdownItems = (
     <>
       <DropdownItem key="refresh" description="Re-scan for the latest status" onClick={props.refresh}>
         Refresh
       </DropdownItem>
-      <Divider component="li" />
-      <DropdownGroup label="Manage" labelHeadingLevel="h3">
-        {isHealthy(status) && (
-          <DropdownItem key="update" description="Update control plane to the latest software" onClick={props.update}>
-            Update
-          </DropdownItem>
-        )}
-        <DropdownItem key="destroy" description="Tear down this control plane" onClick={props.destroy}>
-          Destroy
-        </DropdownItem>
-      </DropdownGroup>
+      {isHealthy(status) && (
+        <>
+          <Divider component="li" />
+          <DropdownGroup label="Manage" labelHeadingLevel="h3">
+            <DropdownItem key="update" description="Update control plane to the latest software" onClick={props.update}>
+              Update
+            </DropdownItem>
+            <DropdownItem key="destroy" description="Tear down this control plane" onClick={props.destroy}>
+              Destroy
+            </DropdownItem>
+          </DropdownGroup>
+        </>
+      )}
     </>
   )
 
   const actions = props.refreshing ? (
-    <Spinner size="md" />
-  ) : (
-    <Dropdown
-      onSelect={onToggle}
-      toggle={(toggleRef: Ref<MenuToggleElement>) => (
-        <MenuToggle
-          ref={toggleRef}
-          isExpanded={isOpen}
-          onClick={onToggle}
-          variant="plain"
-          aria-label="Card header without title example kebab toggle"
-        >
-          <EllipsisVIcon aria-hidden="true" />
-        </MenuToggle>
-      )}
-      isOpen={isOpen}
-      onOpenChange={(isOpen: boolean) => setIsOpen(isOpen)}
+    <div
+      style={{ paddingBlockStart: "6px", paddingBlockEnd: "6px", paddingInlineEnd: "16px", paddingInlineStart: "16px" }}
     >
+      <Spinner size="md" />
+    </div>
+  ) : (
+    <Dropdown onSelect={onToggle} toggle={toggle} isOpen={isOpen} onOpenChange={(isOpen: boolean) => setIsOpen(isOpen)}>
       <DropdownList>{dropdownItems}</DropdownList>
     </Dropdown>
   )
 
   return (
-    <CardHeader actions={status ? { hasNoOffset: true, actions } : undefined} isToggleRightAligned>
-      <CardTitle>Your Personal Job Manager</CardTitle>
-    </CardHeader>
+    <>
+      <CardHeader actions={status ? { hasNoOffset: true, actions } : undefined} isToggleRightAligned>
+        <CardTitle>Job Manager {props.refreshing && refreshingMessage({ refreshing: props.refreshing })}</CardTitle>
+      </CardHeader>
+    </>
   )
 }
 
 function body() {
   return (
-    <CardBody>
-      <Detail />
-    </CardBody>
+    <>
+      <CardBody>
+        <TextContent>
+          <Text component="p">I am here to manage and observe your resources.</Text>
+        </TextContent>
+      </CardBody>
+      <CardBody isFilled>
+        <Detail />
+      </CardBody>
+    </>
   )
 }
 
-function bodyWhileRefreshing({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
-  return <CardBody>{refreshing[0].toUpperCase() + refreshing.slice(1)}</CardBody>
+function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
+  return <Text component="small"> &mdash; {refreshing[0].toUpperCase() + refreshing.slice(1)}</Text>
 }
 
 function footer(props: { refreshing: Refreshing; initialize(): void }) {
   const { status } = useContext(Status)
+  const settings = useContext(Settings)
 
   return (
+    !settings?.demoMode[0] &&
     !props.refreshing &&
     !isHealthy(status) && (
       <CardFooter>
@@ -112,40 +129,34 @@ export default function ControlPlaneStatusCard() {
   const { refreshStatus } = useContext(Status)
   const [refreshing, setRefreshing] = useState<Refreshing>(null)
 
-  const refresh = async () => {
-    if (!refreshing) {
-      setRefreshing("refreshing")
-      await refreshStatus()
-      setRefreshing(null)
-    }
-  }
+  useEffect(() => {
+    async function effect() {
+      if (refreshing === "updating" || refreshing === "initializing") {
+        await window.jaas.controlplane.init()
+      } else if (refreshing === "destroying") {
+        await window.jaas.controlplane.destroy()
+      }
 
-  const update = async (msg: Refreshing = "updating") => {
+      setRefreshing(null)
+      refreshStatus()
+    }
+    effect()
+  }, [refreshing])
+
+  const setTo = (msg: Refreshing) => () => {
     if (!refreshing) {
       setRefreshing(msg)
-      await window.jaas.controlplane.init()
-      setRefreshing(null)
-      refreshStatus()
     }
   }
 
-  const initialize = () => update("initializing")
-
-  const destroy = async () => {
-    if (!refreshing) {
-      setRefreshing("destroying")
-      await window.jaas.controlplane.destroy()
-      setRefreshing(null)
-      refreshStatus()
-    }
-  }
-
-  useEffect(() => {}, [refreshing])
+  const refresh = setTo("refreshing")
+  const update = setTo("updating")
+  const initialize = setTo("initializing")
+  const destroy = setTo("destroying")
 
   return (
-    <Card isLarge>
+    <Card>
       {header({ refreshing, refresh, update, destroy })}
-      {refreshing && bodyWhileRefreshing({ refreshing })}
       {body()}
       {footer({ refreshing, initialize })}
     </Card>

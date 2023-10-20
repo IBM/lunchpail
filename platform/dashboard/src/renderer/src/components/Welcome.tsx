@@ -1,15 +1,13 @@
-import { Bullseye, Grid, GridItem } from "@patternfly/react-core"
+import { Gallery } from "@patternfly/react-core"
 
 import ControlPlaneStatus from "./ControlPlaneStatus/Card"
 
+const width = { default: "35em" as const }
+
 export default function Welcome() {
   return (
-    <Bullseye>
-      <Grid>
-        <GridItem>
-          <ControlPlaneStatus />
-        </GridItem>
-      </Grid>
-    </Bullseye>
+    <Gallery hasGutter minWidths={width} maxWidths={width}>
+      <ControlPlaneStatus />
+    </Gallery>
   )
 }
