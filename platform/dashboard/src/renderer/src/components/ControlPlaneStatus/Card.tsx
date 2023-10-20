@@ -41,7 +41,7 @@ function header(props: { refreshing: Refreshing; refresh(): void; update(): void
       isExpanded={isOpen}
       onClick={onToggle}
       variant="plain"
-      aria-label="Control plane action menu toggle"
+      aria-label="Job manager action menu toggle"
     >
       <EllipsisVIcon aria-hidden="true" />
     </MenuToggle>
@@ -56,10 +56,10 @@ function header(props: { refreshing: Refreshing; refresh(): void; update(): void
         <>
           <Divider component="li" />
           <DropdownGroup label="Manage" labelHeadingLevel="h3">
-            <DropdownItem key="update" description="Update control plane to the latest software" onClick={props.update}>
+            <DropdownItem key="update" description="Update to the latest software" onClick={props.update}>
               Update
             </DropdownItem>
-            <DropdownItem key="destroy" description="Tear down this control plane" onClick={props.destroy}>
+            <DropdownItem key="destroy" description="Tear down this job manager" onClick={props.destroy}>
               Destroy
             </DropdownItem>
           </DropdownGroup>
