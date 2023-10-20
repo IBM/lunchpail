@@ -1,5 +1,5 @@
 appId: com.ibm.research.jaas
-productName: BlueJays
+productName: BlueJay
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: bluejays
+  executableName: bluejay
 nsis:
   artifactName: ${name}-${version}-${arch}-setup.${ext}
   shortcutName: ${productName}

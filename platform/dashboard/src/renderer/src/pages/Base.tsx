@@ -1,7 +1,10 @@
+import { Link } from "react-router-dom"
 import { Fragment, PureComponent, ReactNode } from "react"
 
 import {
+  Brand,
   Divider,
+  Flex,
   Masthead,
   MastheadMain,
   MastheadBrand,
@@ -26,10 +29,11 @@ import { navigateToWorkerPools } from "../navigate/home"
 
 import type { LocationProps } from "../router/withLocation"
 
-import { name, description, version } from "../../../../package.json"
+import { name, description, homepage, version } from "../../../../package.json"
 import SmallLabel from "../components/SmallLabel"
 import ControlPlaneStatus from "../components/ControlPlaneStatus/Summary"
 
+import icon from "../images/icon.png"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
 export interface BaseState {}
@@ -57,7 +61,7 @@ export default abstract class Base<
   protected pageTitle() {
     return (
       <span>
-        {name[0].toUpperCase() + name.slice(1)} &mdash; <span className="codeflare--secondary-text">{description}</span>
+        <span className="codeflare--secondary-text">{description}</span>
       </span>
     )
   }
@@ -67,7 +71,13 @@ export default abstract class Base<
       <Masthead display={this.inline}>
         {this.headerToggle()}
         <MastheadMain>
-          <MastheadBrand>{this.pageTitle()}</MastheadBrand>
+          <MastheadBrand>
+            <Link to={homepage} target="_blank">
+              <Flex>
+                <Brand src={icon} alt={name} heights={{ default: "2.5em" }} />
+              </Flex>
+            </Link>
+          </MastheadBrand>
         </MastheadMain>
         <MastheadContent>{this.headerToolbar()}</MastheadContent>
       </Masthead>
@@ -86,7 +96,7 @@ export default abstract class Base<
   }
 
   protected headerToolbarLeftGroup() {
-    return <></>
+    return this.pageTitle()
   }
 
   protected headerToolbarRightGroup() {
