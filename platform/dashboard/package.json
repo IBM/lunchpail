@@ -1,7 +1,7 @@
 {
-  "name": "BlueJay",
+  "name": "jay",
   "version": "0.0.10",
-  "description": "Jobs at Your Service",
+  "description": "Just Jobs",
   "main": "./out/main/index.js",
   "author": "@starpit",
   "homepage": "https://github.ibm.com/cloud-computer/codeflare-platform",

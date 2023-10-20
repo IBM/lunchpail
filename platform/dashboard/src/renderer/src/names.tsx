@@ -28,12 +28,16 @@ export const singular: Record<NamedKind, string> = {
   platformreposecrets: "Repo Secret",
 }
 
+function capitalize(str: string) {
+  return str[0].toUpperCase() + str.slice(1)
+}
+
 export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
   welcome: (
     <span>
-      <strong>{name}</strong> helps you to manage your Jobs by picking <Link to={hash("datasets")}>Data</Link> to
-      analyze, and then assigning <Link to={hash("workerpools")}>Workers</Link> to process the tasks in a selected set
-      of data.
+      <strong>{capitalize(name)}</strong> helps you to manage your Jobs by picking{" "}
+      <Link to={hash("datasets")}>Data</Link> to analyze, and then assigning{" "}
+      <Link to={hash("workerpools")}>Workers</Link> to process the tasks in a selected set of data.
     </span>
   ),
   applications: (
