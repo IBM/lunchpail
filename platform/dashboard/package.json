@@ -1,7 +1,7 @@
 {
-  "name": "jaas",
+  "name": "BlueJays",
   "version": "0.0.10",
-  "description": "Jobs as a Service",
+  "description": "Your personal jobs manager",
   "main": "./out/main/index.js",
   "author": "@starpit",
   "homepage": "https://www.electronjs.org",
@@ -18,8 +18,10 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "./hack/postinstall.sh; electron-builder install-app-deps",
     "build:win": "npm run build && electron-builder --win --config",
-    "build:darwin": "electron-vite build && electron-builder --mac --config",
-    "build:Linux": "electron-vite build && electron-builder --linux --config"
+    "build:mac": "electron-vite build && electron-builder --mac --config",
+    "build:darwin": "npm run build:mac",
+    "build:linux": "electron-vite build && electron-builder --linux --config",
+    "build:Linux": "npm run build:linux"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",

@@ -26,7 +26,7 @@ import { navigateToWorkerPools } from "../navigate/home"
 
 import type { LocationProps } from "../router/withLocation"
 
-import { version } from "../../../../package.json"
+import { name, version } from "../../../../package.json"
 import SmallLabel from "../components/SmallLabel"
 import ControlPlaneStatus from "../components/ControlPlaneStatus/Summary"
 
@@ -55,7 +55,7 @@ export default abstract class Base<
   protected readonly returnToWorkerPools = () => navigateToWorkerPools(this.props)
 
   protected pageTitle() {
-    return "Jobs as a Service"
+    return name
   }
 
   private header() {

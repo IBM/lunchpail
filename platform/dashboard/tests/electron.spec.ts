@@ -2,9 +2,11 @@
 import { test } from "@playwright/test"
 import { _electron as electron } from "playwright"
 
+import { name } from "../package.json"
+
 test("dashboard launched", async () => {
-  const linux = `dist/linux-unpacked/jaas`
-  const mac = `dist/mac-${process.arch}/JaaS.app/Contents/MacOS/JaaS`
+  const linux = `dist/linux-unpacked/${name.toLowerCase()}`
+  const mac = `dist/mac-${process.arch}/${name}.app/Contents/MacOS/${name}`
 
   // Launch Electron app.
   const electronApp = await electron.launch({ executablePath: process.platform === "darwin" ? mac : linux })

@@ -3,12 +3,9 @@ import { useContext } from "react"
 import Status from "../../Status"
 import Settings from "../../Settings"
 
+import camelCaseSplit from "../../util/camel-split"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 import { descriptions } from "@jaas/common/status/ControlPlaneStatus"
-
-function camelCaseSplit(str: string) {
-  return str.replace(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/g, " ")
-}
 
 export default function ControlPlaneStatusDetail() {
   const { status } = useContext(Status)
