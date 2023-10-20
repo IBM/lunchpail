@@ -46,6 +46,10 @@
   color: var(--pf-v5-global--disabled-color--300);
 }
 
+.codeflare--secondary-text {
+  color: var(--pf-v5-global--Color--200);
+}
+
 [data-jaas-status="Failed"],
 [data-jaas-status="MissingCredentials"],
 .codeflare--status-offline {

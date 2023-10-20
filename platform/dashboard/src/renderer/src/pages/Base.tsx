@@ -26,7 +26,7 @@ import { navigateToWorkerPools } from "../navigate/home"
 
 import type { LocationProps } from "../router/withLocation"
 
-import { name, version } from "../../../../package.json"
+import { name, description, version } from "../../../../package.json"
 import SmallLabel from "../components/SmallLabel"
 import ControlPlaneStatus from "../components/ControlPlaneStatus/Summary"
 
@@ -55,7 +55,11 @@ export default abstract class Base<
   protected readonly returnToWorkerPools = () => navigateToWorkerPools(this.props)
 
   protected pageTitle() {
-    return name
+    return (
+      <span>
+        {name[0].toUpperCase() + name.slice(1)} &mdash; <span className="codeflare--secondary-text">{description}</span>
+      </span>
+    )
   }
 
   private header() {
