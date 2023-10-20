@@ -16,23 +16,19 @@ function transformLineToEvent() {
       // Splits the string by spaces
       const [, label, storageType, endpoint, bucket, inbox, status, isReadOnly] = chunk.toString().split(/\s+/)
 
-      if (inbox === "") {
-        callback(null, "")
-      } else {
-        const model: DataSetEvent = {
-          inbox: parseInt(inbox, 10),
-          outbox: 0,
-          label,
-          storageType,
-          endpoint,
-          bucket,
-          status,
-          isReadOnly: isReadOnly === "true",
-          timestamp: Date.now(),
-        }
-
-        callback(null, JSON.stringify(model))
+      const model: DataSetEvent = {
+        inbox: parseInt(inbox, 10),
+        outbox: 0,
+        label,
+        storageType,
+        endpoint,
+        bucket,
+        status,
+        isReadOnly: isReadOnly === "true",
+        timestamp: Date.now(),
       }
+
+      callback(null, JSON.stringify(model))
     },
   })
 }
