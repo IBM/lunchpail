@@ -4,7 +4,8 @@ metadata:
   name: default-ray-fluentbit-config
   namespace: {{ .Values.namespace }}
   labels:
-    app.kubernetes.io/component: fluentbit
+    app.kubernetes.io/name: fluentbit
+    app.kubernetes.io/component: defaults
     app.kubernetes.io/part-of: codeflare.dev
 data:
   priority: "100"

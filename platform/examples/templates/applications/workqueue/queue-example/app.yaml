@@ -3,6 +3,9 @@ kind: Application
 metadata:
   name: queue-example
   namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: examples
+    app.kubernetes.io/part-of: codeflare.dev
 spec:
   api: workqueue
   image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
