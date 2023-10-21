@@ -6,7 +6,7 @@ import { name } from "../../../package.json"
 import type { CredentialsKind, NamedKind, NonResourceKind, NavigableKind, ResourceKind } from "./Kind"
 
 export const nonResourceNames: Record<NonResourceKind, string> = {
-  welcome: "Welcome",
+  jobmanager: "Job Manager",
 }
 
 export const resourceNames: Record<ResourceKind, string> = {
@@ -33,7 +33,7 @@ function capitalize(str: string) {
 }
 
 export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
-  welcome: (
+  jobmanager: (
     <span>
       <strong>{capitalize(name)}</strong> helps you to manage your Jobs by picking{" "}
       <Link to={hash("datasets")}>Data</Link> to analyze, and then assigning{" "}

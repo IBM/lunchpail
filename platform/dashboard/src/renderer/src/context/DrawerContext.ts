@@ -1,11 +1,11 @@
-import type Kind from "../Kind"
+import type { NavigableKind } from "../Kind"
 
 export type DrawerState = {
   /** Selected id currently shown in Drawer */
   id: string
 
   /** Selected kind currently shown in Drawer */
-  kind: Kind
+  kind: NavigableKind
 }
 
 export type DrilldownProps = {

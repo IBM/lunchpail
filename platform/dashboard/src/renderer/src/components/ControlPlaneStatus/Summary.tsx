@@ -27,7 +27,7 @@ export function isNeedingInit(status: null | ControlPlaneStatus) {
 function controlPlaneStatus(status: null | ControlPlaneStatus) {
   return (
     <span>
-      <Link to={hash("welcome")}>Job Manager</Link> &mdash;{" "}
+      <Link to={hash("jobmanager")}>Job Manager</Link> &mdash;{" "}
       {status === null
         ? "Not Provisioned"
         : isHealthy(status)

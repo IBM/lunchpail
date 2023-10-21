@@ -1,19 +1,19 @@
 import { PureComponent } from "react"
-import { Card, CardHeader, CardTitle, CardBody, CardFooter } from "@patternfly/react-core"
+import { Card, CardHeader, CardTitle, CardBody, CardFooter, DescriptionListProps } from "@patternfly/react-core"
 
 import type { MouseEvent, ReactNode } from "react"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import { dl } from "./DescriptionGroup"
 
-import type Kind from "../Kind"
+import type { NavigableKind as Kind } from "../Kind"
 import type { DrilldownProps } from "../context/DrawerContext"
 
 import "./CardInGallery.scss"
 
 type BaseProps = DrilldownProps
 
-export default abstract class CardInGallery<Props> extends PureComponent<Props & BaseProps> {
+export default abstract class CardInGallery<Props = unknown> extends PureComponent<Props & BaseProps> {
   protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
 
   protected abstract kind(): Kind
@@ -35,18 +35,24 @@ export default abstract class CardInGallery<Props> extends PureComponent<Props &
 
   private header() {
     return (
-      <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
-        <span className="codeflare--card-icon">{this.icon()}</span>
-      </CardHeader>
+      this.icon() && (
+        <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
+          <span className="codeflare--card-icon">{this.icon()}</span>
+        </CardHeader>
+      )
     )
   }
 
-  private title() {
+  protected title(): ReactNode {
     return this.label()
   }
 
+  protected descriptionListProps(): DescriptionListProps {
+    return { isCompact: true }
+  }
+
   private body() {
-    return dl(this.groups(), { isCompact: true })
+    return dl(this.groups(), this.descriptionListProps())
   }
 
   protected footer(): null | ReactNode {

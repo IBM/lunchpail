@@ -13,6 +13,10 @@
   overflow: hidden;
   .codeflare--detail-view-body {
     overflow: auto;
+    flex: 1;
+  }
+  .codeflare--detail-view-footer {
+    flex: unset;
   }
 }
 

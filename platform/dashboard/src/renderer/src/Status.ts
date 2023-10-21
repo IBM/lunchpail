@@ -5,11 +5,18 @@ import type ControlPlaneStatus from "@jay/common/status/ControlPlaneStatus"
 
 export { ControlPlaneStatus }
 
-type StatusCtxType = { status: null | ControlPlaneStatus; refreshStatus(): void }
-const StatusCtx = createContext<StatusCtxType>({ status: null, refreshStatus: () => {} })
+type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
+
+export type StatusCtxType = {
+  status: null | ControlPlaneStatus
+  refreshing: Refreshing
+  setTo(refreshing: Refreshing): void
+}
+const StatusCtx = createContext<StatusCtxType>({ status: null, refreshing: null, setTo: () => {} })
 export default StatusCtx
 
 export function statusState(demoMode: State<boolean>) {
+  const [refreshing, setRefreshing] = useState<Refreshing>(null)
   const status = useState<null | ControlPlaneStatus>(null)
   const [, setStatus] = status
 
@@ -28,10 +35,25 @@ export function statusState(demoMode: State<boolean>) {
     checkControlPlaneStatus()
   }, [demoMode[0]])
 
+  useEffect(() => {
+    async function effect() {
+      if (refreshing === "updating" || refreshing === "initializing") {
+        await window.jay.controlplane.init()
+        setRefreshing("refreshing")
+      } else if (refreshing === "destroying") {
+        await window.jay.controlplane.destroy()
+        setRefreshing("refreshing")
+      } else if (refreshing === "refreshing") {
+        await checkControlPlaneStatus()
+        setRefreshing(null)
+      }
+    }
+    effect()
+  }, [refreshing])
+
   return {
     status: status[0],
-    refreshStatus: () => {
-      checkControlPlaneStatus()
-    },
+    refreshing: refreshing,
+    setTo: (refreshing: Refreshing) => setRefreshing(refreshing),
   }
 }

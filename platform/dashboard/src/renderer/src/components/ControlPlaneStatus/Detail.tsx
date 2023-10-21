@@ -1,28 +1,49 @@
-import { useContext } from "react"
+import { Button, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core"
 
-import Status from "../../Status"
-import Settings from "../../Settings"
+import { isHealthy } from "./Summary"
+import { summaryGroups } from "./Card"
+import { StatusCtxType } from "../../Status"
 
 import camelCaseSplit from "../../util/camel-split"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 import { descriptions } from "@jay/common/status/ControlPlaneStatus"
 
-export default function ControlPlaneStatusDetail() {
-  const { status } = useContext(Status)
-  const settings = useContext(Settings)
-
-  if (!settings?.demoMode[0]) {
-    if (!status) {
-      return "The control plane is offline."
-    } else {
-      return dl(
-        Object.entries(status).map(([key, value]) =>
+export default function Detail(demoMode: boolean, status: StatusCtxType) {
+  const rest =
+    demoMode || !status.status
+      ? []
+      : Object.entries(status.status).map(([key, value]) =>
           descriptionGroup(camelCaseSplit(key), value, undefined, descriptions[key]),
-        ),
-        { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true, isFluid: true },
-      )
-    }
-  } else {
-    return "Currently running in offline demo mode."
-  }
+        )
+
+  const init = () => status.setTo("updating")
+  const destroy = () => status.setTo("destroying")
+
+  const actions =
+    status.status && isHealthy(status.status) ? (
+      <Toolbar>
+        <ToolbarContent>
+          <ToolbarItem>
+            <Button
+              key="update"
+              variant="secondary"
+              onClick={init}
+              isLoading={status.refreshing === "initializing" || status.refreshing === "updating"}
+            >
+              {status.refreshing === "updating" ? "Updating" : "Update"}
+            </Button>
+          </ToolbarItem>
+
+          <ToolbarItem>
+            <Button key="destroy" variant="danger" onClick={destroy} isLoading={status.refreshing === "destroying"}>
+              {status.refreshing === "destroying" ? "Destroying" : "Destroy"}
+            </Button>
+          </ToolbarItem>
+        </ToolbarContent>
+      </Toolbar>
+    ) : undefined
+
+  const body = dl([...summaryGroups(demoMode, status.status), ...rest])
+
+  return { actions, body }
 }

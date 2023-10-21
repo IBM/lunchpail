@@ -4,6 +4,8 @@ import { Gallery } from "@patternfly/react-core"
 import { resourceNames } from "../names"
 import ControlPlaneStatus from "./ControlPlaneStatus/Card"
 
+import type { DrilldownProps } from "../context/DrawerContext"
+
 import { Card, CardBody, CardHeader, CardTitle, Title } from "@patternfly/react-core"
 function CountCard(props: PropsWithChildren<{ count: number }>) {
   return (
@@ -18,9 +20,9 @@ function CountCard(props: PropsWithChildren<{ count: number }>) {
   )
 }
 
-const width = { default: "35em" as const }
+const width = { default: "18em" as const }
 
-type Props = {
+type Props = DrilldownProps & {
   appMd5: string
   applications: string[]
   datasets: string[]
@@ -30,9 +32,11 @@ type Props = {
 export default function Welcome(props: Props) {
   return (
     <Gallery hasGutter minWidths={width} maxWidths={width}>
-      <ControlPlaneStatus />
+      <ControlPlaneStatus {...props} />
       {Object.entries(resourceNames).map(([kind, name]) => (
-        <CountCard count={props[kind]?.length || 0}>{name}</CountCard>
+        <CountCard key={kind} count={props[kind]?.length || 0}>
+          {name}
+        </CountCard>
       ))}
     </Gallery>
   )

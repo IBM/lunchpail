@@ -1,164 +1,97 @@
-import { Ref, useContext, useEffect, useState } from "react"
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Divider,
-  Dropdown,
-  DropdownGroup,
-  DropdownList,
-  DropdownItem,
-  MenuToggle,
-  MenuToggleElement,
-  Spinner,
-  Text,
-  TextContent,
-} from "@patternfly/react-core"
+import type { MouseEvent } from "react"
+import { useContext } from "react"
+import { Button, Text } from "@patternfly/react-core"
 
-import Detail from "./Detail"
+import names from "../../names"
 import { isHealthy } from "./Summary"
+import CardInGallery from "../CardInGallery"
 
-import Status from "../../Status"
+import Status, { ControlPlaneStatus } from "../../Status"
 import Settings from "../../Settings"
 
-import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon"
+import { descriptionGroup } from "../DescriptionGroup"
+
+import type { DrilldownProps } from "../../context/DrawerContext"
 
 type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
-
-function header(props: { refreshing: Refreshing; refresh(): void; update(): void; destroy(): void }) {
-  const { status } = useContext(Status)
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const onToggle = () => {
-    setIsOpen(!isOpen)
-  }
-
-  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
-    <MenuToggle
-      ref={toggleRef}
-      isExpanded={isOpen}
-      onClick={onToggle}
-      variant="plain"
-      aria-label="Job manager action menu toggle"
-    >
-      <EllipsisVIcon aria-hidden="true" />
-    </MenuToggle>
-  )
-
-  const dropdownItems = (
-    <>
-      <DropdownItem key="refresh" description="Re-scan for the latest status" onClick={props.refresh}>
-        Refresh
-      </DropdownItem>
-      {isHealthy(status) && (
-        <>
-          <Divider component="li" />
-          <DropdownGroup label="Manage" labelHeadingLevel="h3">
-            <DropdownItem key="update" description="Update to the latest software" onClick={props.update}>
-              Update
-            </DropdownItem>
-            <DropdownItem key="destroy" description="Tear down this job manager" onClick={props.destroy}>
-              Destroy
-            </DropdownItem>
-          </DropdownGroup>
-        </>
-      )}
-    </>
-  )
-
-  const actions = props.refreshing ? (
-    <div
-      style={{ paddingBlockStart: "6px", paddingBlockEnd: "6px", paddingInlineEnd: "16px", paddingInlineStart: "16px" }}
-    >
-      <Spinner size="md" />
-    </div>
-  ) : (
-    <Dropdown onSelect={onToggle} toggle={toggle} isOpen={isOpen} onOpenChange={(isOpen: boolean) => setIsOpen(isOpen)}>
-      <DropdownList>{dropdownItems}</DropdownList>
-    </Dropdown>
-  )
-
-  return (
-    <>
-      <CardHeader actions={status ? { hasNoOffset: true, actions } : undefined} isToggleRightAligned>
-        <CardTitle>Job Manager {props.refreshing && refreshingMessage({ refreshing: props.refreshing })}</CardTitle>
-      </CardHeader>
-    </>
-  )
-}
-
-function body() {
-  return (
-    <>
-      <CardBody>
-        <TextContent>
-          <Text component="p">I am here to manage and observe your resources.</Text>
-        </TextContent>
-      </CardBody>
-      <CardBody isFilled>
-        <Detail />
-      </CardBody>
-    </>
-  )
-}
 
 function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
   return <Text component="small"> &mdash; {refreshing[0].toUpperCase() + refreshing.slice(1)}</Text>
 }
 
-function footer(props: { refreshing: Refreshing; initialize(): void }) {
-  const { status } = useContext(Status)
-  const settings = useContext(Settings)
+type Props = {
+  demoMode: boolean
+  status: null | ControlPlaneStatus
 
-  return (
-    !settings?.demoMode[0] &&
-    !props.refreshing &&
-    !isHealthy(status) && (
-      <CardFooter>
-        <Button isBlock size="lg" onClick={props.initialize}>
-          Initialize
-        </Button>
-      </CardFooter>
-    )
-  )
+  refreshing: Refreshing
+  initialize: (evt: MouseEvent<unknown>) => void
 }
 
-export default function ControlPlaneStatusCard() {
-  const { refreshStatus } = useContext(Status)
-  const [refreshing, setRefreshing] = useState<Refreshing>(null)
+export function summaryGroups(demoMode: boolean, status: null | ControlPlaneStatus) {
+  const statusMessage = demoMode ? "Demo mode" : !status ? "Checking..." : isHealthy(status) ? "Healthy" : "Not ready"
 
-  useEffect(() => {
-    async function effect() {
-      if (refreshing === "updating" || refreshing === "initializing") {
-        await window.jay.controlplane.init()
-      } else if (refreshing === "destroying") {
-        await window.jay.controlplane.destroy()
-      }
+  return [descriptionGroup("Status", statusMessage)]
+}
 
-      setRefreshing(null)
-      refreshStatus()
-    }
-    effect()
-  }, [refreshing])
-
-  const setTo = (msg: Refreshing) => () => {
-    if (!refreshing) {
-      setRefreshing(msg)
-    }
+class ControlPlaneStatusCard extends CardInGallery<Props> {
+  protected override kind() {
+    return "jobmanager" as const
   }
 
-  const refresh = setTo("refreshing")
-  const update = setTo("updating")
-  const initialize = setTo("initializing")
-  const destroy = setTo("destroying")
+  protected override label() {
+    return names[this.kind()]
+  }
+
+  protected override title() {
+    return (
+      <span>
+        {this.label()} {this.props.refreshing && refreshingMessage({ refreshing: this.props.refreshing })}
+      </span>
+    )
+  }
+
+  protected override icon() {
+    return ""
+  }
+
+  protected override descriptionListProps() {
+    return { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true }
+  }
+
+  protected override groups() {
+    return summaryGroups(this.props.demoMode, this.props.status)
+  }
+
+  protected override footer() {
+    return (
+      !this.props.demoMode &&
+      (!isHealthy(this.props.status) || this.props.refreshing === "initializing") && (
+        <Button isBlock onClick={this.props.initialize} isLoading={this.props.refreshing === "initializing"}>
+          {!this.props.refreshing ? "Initialize" : "Initializing"}
+        </Button>
+      )
+    )
+  }
+}
+
+export default function ControlPlaneStatusCardFn(props: DrilldownProps) {
+  const { status, refreshing, setTo } = useContext(Status)
+  const settings = useContext(Settings)
+
+  const mouseSetTo = (msg: Refreshing) => (evt: MouseEvent<unknown>) => {
+    evt.stopPropagation()
+    setTo(msg)
+  }
+
+  const initialize = mouseSetTo("initializing")
 
   return (
-    <Card>
-      {header({ refreshing, refresh, update, destroy })}
-      {body()}
-      {footer({ refreshing, initialize })}
-    </Card>
+    <ControlPlaneStatusCard
+      {...props}
+      status={status}
+      demoMode={settings?.demoMode[0] ?? false}
+      refreshing={refreshing}
+      initialize={initialize}
+    />
   )
 }

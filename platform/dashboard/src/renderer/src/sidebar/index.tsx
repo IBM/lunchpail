@@ -58,8 +58,8 @@ function SidebarCredentialsNavGroup(props: Props) {
 
 function SidebarHelloNavGroup(props: Pick<Props, "location">) {
   return (
-    <NavItem to="#welcome" isActive={isShowingKind("welcome", props)}>
-      {nonResourceNames.welcome}
+    <NavItem to="#jobmanager" isActive={isShowingKind("jobmanager", props)}>
+      {nonResourceNames.jobmanager}
     </NavItem>
   )
 }

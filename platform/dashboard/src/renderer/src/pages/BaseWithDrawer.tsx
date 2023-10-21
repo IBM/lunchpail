@@ -23,8 +23,10 @@ const EmptyStateIcon = lazy(() => import("@patternfly/react-core").then((_) => (
 import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
 
 import Base from "./Base"
+import Settings from "../Settings"
+import Status, { StatusCtxType } from "../Status"
 
-import type { NamedKind } from "../Kind"
+import type { NavigableKind } from "../Kind"
 import type { BaseState } from "./Base"
 import type { LocationProps } from "../router/withLocation"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -36,6 +38,7 @@ import type WorkerPoolProps from "../components/WorkerPool/Props"
 import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
+import JobManagerDetail from "../components/ControlPlaneStatus/Detail"
 
 import names from "../names"
 import { hashIfNeeded } from "../navigate/kind"
@@ -81,11 +84,11 @@ export default abstract class BaseWithDrawer<
     return this.props.searchParams.get("id")
   }
 
-  private get currentlySelectedKind(): NamedKind {
-    return this.props.searchParams.get("kind") as NamedKind
+  private get currentlySelectedKind(): NavigableKind {
+    return this.props.searchParams.get("kind") as NavigableKind
   }
 
-  protected closeDetailViewIfShowing(id: string, kind: NamedKind) {
+  protected closeDetailViewIfShowing(id: string, kind: NavigableKind) {
     if (this.currentlySelectedId === id && this.currentlySelectedKind === kind) {
       this.returnHome()
     }
@@ -96,40 +99,53 @@ export default abstract class BaseWithDrawer<
     const id = this.currentlySelectedId
     const kind = this.currentlySelectedKind
 
-    const content =
+    const contentFn = (demoMode: boolean, status: StatusCtxType) =>
       id !== null && kind === "applications"
         ? ApplicationDetail(this.getApplication(id))
         : id !== null && kind === "datasets"
         ? DataSetDetail(this.getDataSet(id))
         : id !== null && kind === "workerpools"
         ? WorkerPoolDetail(this.getWorkerPool(id), this.props)
+        : kind === "jobmanager"
+        ? JobManagerDetail(demoMode, status)
         : { actions: undefined as ReactNode, body: undefined as ReactNode }
 
     return (
-      <DrawerPanelContent className="codeflare--detail-view">
-        <DrawerHead>
-          <Breadcrumb>
-            <BreadcrumbItem>Resources</BreadcrumbItem>
-            <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
-          </Breadcrumb>
-          <Title headingLevel="h2" size="2xl">
-            {id}
-          </Title>
+      <Settings.Consumer>
+        {(settings) => (
+          <Status.Consumer>
+            {(status) => {
+              const content = contentFn(settings?.demoMode[0] ?? false, status)
+              return (
+                <DrawerPanelContent className="codeflare--detail-view">
+                  <DrawerHead>
+                    <Breadcrumb>
+                      <BreadcrumbItem>Resources</BreadcrumbItem>
+                      <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
+                    </Breadcrumb>
+                    <Title headingLevel="h2" size="2xl">
+                      {id}
+                    </Title>
 
-          <DrawerActions>
-            <DrawerCloseButton onClick={this.returnHome} />
-          </DrawerActions>
-        </DrawerHead>
-        <DrawerPanelBody className="codeflare--detail-view-body">
-          {content.body ?? this.detailNotFound()}
-        </DrawerPanelBody>
-        {"actions" in content && content.actions && (
-          <>
-            <Divider />
-            <DrawerPanelBody>{content.actions}</DrawerPanelBody>
-          </>
+                    <DrawerActions>
+                      <DrawerCloseButton onClick={this.returnHome} />
+                    </DrawerActions>
+                  </DrawerHead>
+                  <DrawerPanelBody className="codeflare--detail-view-body">
+                    {content.body ?? this.detailNotFound()}
+                  </DrawerPanelBody>
+                  {"actions" in content && content.actions && (
+                    <>
+                      <Divider />
+                      <DrawerPanelBody className="codeflare--detail-view-footer">{content.actions}</DrawerPanelBody>
+                    </>
+                  )}
+                </DrawerPanelContent>
+              )
+            }}
+          </Status.Consumer>
         )}
-      </DrawerPanelContent>
+      </Settings.Consumer>
     )
   }
 
