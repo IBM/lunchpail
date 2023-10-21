@@ -1,7 +1,7 @@
 import { datasets } from "./Card"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 /**
  * If we can find a "foo.py", then append it to the repo, so that

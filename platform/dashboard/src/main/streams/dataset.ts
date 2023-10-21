@@ -4,7 +4,7 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-import type DataSetEvent from "@jaas/common/events/DataSetEvent"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a

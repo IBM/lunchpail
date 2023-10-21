@@ -1,7 +1,7 @@
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
-import type EventSourceLike from "@jaas/common/events/EventSourceLike"
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type EventSourceLike from "@jay/common/events/EventSourceLike"
+import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import Base from "./base"
 import { ns } from "./misc"

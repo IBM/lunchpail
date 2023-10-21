@@ -4,7 +4,7 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-import type PlatformRepoSecretEvent from "@jaas/common/events/PlatformRepoSecretEvent"
+import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a

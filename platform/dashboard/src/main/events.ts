@@ -8,6 +8,10 @@ import startPlatformRepoSecretStream from "./streams/platformreposecret"
 
 import { Status, getStatusFromMain } from "./controlplane/status"
 
+import type JayApi from "@jay/common/api/jay"
+import type Kind from "@jay/common/Kind"
+import type { JayResourceApi } from "@jay/common/api/jay"
+
 /*async function initEventSource(res: Response, stream: Writable) {
   await res.set({
     "Cache-Control": "no-cache",
@@ -58,10 +62,6 @@ app.get("/api/newpool", async () => {
 })
 
 */
-
-/** Valid resource types. TODO share this with renderer */
-const kinds = ["datasets", "queues", "workerpools", "applications", "platformreposecrets"] as const
-type Kind = (typeof kinds)[number]
 
 function streamForKind(kind: Kind): import("stream").Transform {
   switch (kind) {
@@ -145,6 +145,8 @@ function initStreamForResourceKind(kind: Kind) {
   })
 }
 
+const kinds: Kind[] = ["datasets", "queues", "workerpools", "applications", "platformreposecrets"]
+
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
   // resource
@@ -192,35 +194,40 @@ function onFromClientSide(this: Kind, _: "message", cb: (...args: unknown[]) => 
   }
 }
 
-const apiImpl = {
-  controlplane: {
-    async status() {
-      const isReady = (await ipcRenderer.invoke("/controlplane/status")) as Status
-      return isReady
+const apiImpl: JayApi = Object.assign(
+  {
+    controlplane: {
+      async status() {
+        const isReady = (await ipcRenderer.invoke("/controlplane/status")) as Status
+        return isReady
+      },
+      async init() {
+        const response = await ipcRenderer.invoke("/controlplane/init")
+        return response
+      },
+      async destroy() {
+        const response = await ipcRenderer.invoke("/controlplane/destroy")
+        return response
+      },
     },
-    async init() {
-      const response = await ipcRenderer.invoke("/controlplane/init")
-      return response
-    },
-    async destroy() {
-      const response = await ipcRenderer.invoke("/controlplane/destroy")
-      return response
+
+    createResource: (yaml: string) => {
+      return ipcRenderer.invoke("/create", yaml)
     },
   },
-}
-
-kinds.forEach((kind) => {
-  apiImpl[kind] = {
-    on: onFromClientSide.bind(kind),
-  }
-
-  apiImpl["createResource"] = (yaml: string) => {
-    ipcRenderer.invoke("/create", yaml)
-  }
-})
+  kinds.reduce(
+    (M, kind) =>
+      Object.assign(M, {
+        [kind]: {
+          on: onFromClientSide.bind(kind),
+        },
+      }),
+    {} as Record<Kind, JayResourceApi>,
+  ),
+)
 
 /**
- * This is the JaasAPI renderer-side implementation. TODO, we need to
+ * This is the JaYAPI renderer-side implementation. TODO, we need to
  * find a way to share datatypes with the renderer.
  */
 export default apiImpl

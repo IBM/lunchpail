@@ -1,6 +1,6 @@
-import type DataSetEvent from "@jaas/common/events/DataSetEvent"
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
 type Props = Pick<DataSetEvent, "idx" | "label"> & {
   events: DataSetEvent[]

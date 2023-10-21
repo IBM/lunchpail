@@ -5,7 +5,7 @@ import Settings from "../../Settings"
 
 import camelCaseSplit from "../../util/camel-split"
 import { dl, descriptionGroup } from "../DescriptionGroup"
-import { descriptions } from "@jaas/common/status/ControlPlaneStatus"
+import { descriptions } from "@jay/common/status/ControlPlaneStatus"
 
 export default function ControlPlaneStatusDetail() {
   const { status } = useContext(Status)

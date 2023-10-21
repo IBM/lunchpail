@@ -6,7 +6,7 @@ import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "../../n
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">

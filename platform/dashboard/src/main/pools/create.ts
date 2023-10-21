@@ -1,7 +1,7 @@
 /**
  * Create a WorkerPool using the given `yaml` spec.
  */
-export default async function onPoolCreate(yaml: string) {
+export default async function onPoolCreate(yaml: string): Promise<boolean> {
   const { spawn } = await import("node:child_process")
   return new Promise((resolve, reject) => {
     try {

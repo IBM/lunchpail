@@ -5,15 +5,15 @@ import { Dashboard } from "./Dashboard"
 
 import type Kind from "../Kind"
 import type { EventProps } from "./Dashboard"
-import type { Handler } from "@jaas/common/events/EventSourceLike"
-import type EventSourceLike from "@jaas/common/events/EventSourceLike"
-import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
+import type { Handler } from "@jay/common/events/EventSourceLike"
+import type EventSourceLike from "@jay/common/events/EventSourceLike"
+import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 
 let props: null | EventProps<EventSourceLike> = null
 
 const createResource: CreateResourceHandler = async (_, yaml) => {
   // browser apis: await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
-  window.jaas.createResource(yaml)
+  window.jay.createResource(yaml)
 }
 
 class ElectronEventSource implements EventSourceLike {
@@ -28,7 +28,7 @@ class ElectronEventSource implements EventSourceLike {
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      this.off = window.jaas[this.kind].on(evt, (_, model) => {
+      this.off = window.jay[this.kind].on(evt, (_, model) => {
         // ugh, this is highly imperfect. currently the UI code
         // expects to be given something that looks like a
         // MessageEvent

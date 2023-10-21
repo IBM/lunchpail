@@ -132,9 +132,9 @@ export default function ControlPlaneStatusCard() {
   useEffect(() => {
     async function effect() {
       if (refreshing === "updating" || refreshing === "initializing") {
-        await window.jaas.controlplane.init()
+        await window.jay.controlplane.init()
       } else if (refreshing === "destroying") {
-        await window.jaas.controlplane.destroy()
+        await window.jay.controlplane.destroy()
       }
 
       setRefreshing(null)

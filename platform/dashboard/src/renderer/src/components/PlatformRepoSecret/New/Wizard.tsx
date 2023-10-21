@@ -26,7 +26,7 @@ import Settings from "../../../Settings"
 
 import type { Dispatch, SetStateAction } from "react"
 import type { LocationProps } from "../../../router/withLocation"
-import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
+import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
@@ -194,7 +194,7 @@ metadata:
   name: ${values.name}
   namespace: ${this.props.namespace}
   labels:
-    app.kubernetes.io/managed-by: jaas
+    app.kubernetes.io/managed-by: jay
 spec:
   repo: ${values.repo}
   secret:
@@ -207,7 +207,7 @@ metadata:
   name: ${values.name}
   namespace: ${this.props.namespace}
   labels:
-    app.kubernetes.io/managed-by: jaas
+    app.kubernetes.io/managed-by: jay
 type: Opaque
 data:
   user: ${btoa(values.user)}

@@ -1,5 +1,5 @@
-import type DataSetEvent from "@jaas/common/events/DataSetEvent"
-import type EventSourceLike from "@jaas/common/events/EventSourceLike"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
 

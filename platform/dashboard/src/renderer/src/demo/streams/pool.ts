@@ -1,8 +1,8 @@
 import type DemoQueueEventSource from "./queue"
 import type DemoDataSetEventSource from "./dataset"
-import type EventSourceLike from "@jaas/common/events/EventSourceLike"
-import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
-import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
+import type EventSourceLike from "@jay/common/events/EventSourceLike"
+import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
+import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
 import Base from "./base"
 import { ns } from "./misc"

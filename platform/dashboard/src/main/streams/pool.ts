@@ -4,7 +4,7 @@ import { spawn } from "child_process"
 
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
+import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a

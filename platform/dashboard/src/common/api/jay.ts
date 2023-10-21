@@ -1,13 +1,18 @@
+import type Kind from "../Kind"
+
+type OnModelUpdateFn = (_: unknown, model: { data: string }) => void
+type CleanupFn = () => void
+
 /** Jobs as a Service API to server-side resource functionality */
-export interface JaasResourceApi {
+export interface JayResourceApi {
   /** Handle events with the given callback `cb` */
-  on(source: "message", cb: (...args: unknown[]) => void): void
+  on(source: "message", cb: OnModelUpdateFn): CleanupFn
 }
 
 /** Jobs as a Service API to server-side control plane functionality */
 export interface ControlPlaneApi {
   /** @return status of the control plane */
-  status(): Promise<import("../Status").StatusType>
+  status(): Promise<import("../status/ControlPlaneStatus").default>
 
   /** Bring up the control plane */
   init(): Promise<void>
@@ -16,20 +21,11 @@ export interface ControlPlaneApi {
   destroy(): Promise<void>
 }
 
-/** Valid resource types */
-type Kind = "workerpools" | "queues" | "datasets" | "applications"
-
 /** Jobs as a Service API to server-side functionality */
-export interface JaasApi extends Record<Kind, JaasResourceApi> {
+export default interface JayApi extends Record<Kind, JayResourceApi> {
   /** Create a resource */
-  createResource(yaml: string): Promise<void>
+  createResource(yaml: string): Promise<boolean>
 
   /** Jobs as a Service API to server-side control plane functionality */
   controlplane: ControlPlaneApi
-}
-
-declare global {
-  interface Window {
-    jaas: JaasApi
-  }
 }

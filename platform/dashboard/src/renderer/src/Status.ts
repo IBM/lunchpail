@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react"
 
 import type { State } from "./Settings"
-import type ControlPlaneStatus from "@jaas/common/status/ControlPlaneStatus"
+import type ControlPlaneStatus from "@jay/common/status/ControlPlaneStatus"
 
 export { ControlPlaneStatus }
 
@@ -18,7 +18,7 @@ export function statusState(demoMode: State<boolean>) {
   async function checkControlPlaneStatus() {
     if (!demoMode[0]) {
       // determine current cluster status
-      const status = await window.jaas.controlplane.status()
+      const status = await window.jay.controlplane.status()
       setStatus(status)
       console.log("Control Plane Status", status)
     }

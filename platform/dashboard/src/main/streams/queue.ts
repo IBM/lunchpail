@@ -2,7 +2,7 @@ import split2 from "split2"
 import { Transform } from "stream"
 import { spawn } from "child_process"
 
-import type QueueEvent from "@jaas/common/events/QueueEvent"
+import type QueueEvent from "@jay/common/events/QueueEvent"
 
 /**
  * @return a NodeJS stream Transform that turns a raw line into a

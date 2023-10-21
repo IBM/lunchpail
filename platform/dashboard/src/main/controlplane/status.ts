@@ -1,6 +1,6 @@
 import { doesClusterExist } from "./management"
 import { isRuntimeProvisioned } from "./runtime"
-import type ControlPlaneStatus from "@jaas/common/status/ControlPlaneStatus"
+import type ControlPlaneStatus from "@jay/common/status/ControlPlaneStatus"
 
 /**
  * Check to see if we have a control plane cluster and facilities running
