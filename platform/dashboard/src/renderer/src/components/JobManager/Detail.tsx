@@ -1,4 +1,4 @@
-import { Button } from "@patternfly/react-core"
+import { Button, Tooltip } from "@patternfly/react-core"
 
 import Status from "../../Status"
 import Settings from "../../Settings"
@@ -38,27 +38,29 @@ export default function JobManagerDetail() {
             const actions =
               status.status && isHealthy(status.status)
                 ? [
-                    <Button
-                      size="sm"
-                      key="update"
-                      variant="secondary"
-                      onClick={init}
-                      isLoading={initButtonIsLoading}
-                      icon={initButtonIsLoading ? <></> : <SyncIcon />}
-                    >
-                      {status.refreshing === "updating" ? "Updating" : "Update"}
-                    </Button>,
+                    <Tooltip key="refresh" content="Reload the Job Manager with the initial configuration">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={init}
+                        isLoading={initButtonIsLoading}
+                        icon={initButtonIsLoading ? <></> : <SyncIcon />}
+                      >
+                        {status.refreshing === "updating" ? "Refreshing" : "Refresh"}
+                      </Button>
+                    </Tooltip>,
 
-                    <Button
-                      size="sm"
-                      key="destroy"
-                      variant="danger"
-                      onClick={destroy}
-                      isLoading={destroyButtonIsLoading}
-                      icon={destroyButtonIsLoading ? <></> : <TrashIcon />}
-                    >
-                      {status.refreshing === "destroying" ? "Destroying" : "Destroy"}
-                    </Button>,
+                    <Tooltip key="delete" content="Deprovision the Job Manager">
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={destroy}
+                        isLoading={destroyButtonIsLoading}
+                        icon={destroyButtonIsLoading ? <></> : <TrashIcon />}
+                      >
+                        {status.refreshing === "destroying" ? "Deleting" : "Delete"}
+                      </Button>
+                    </Tooltip>,
                   ]
                 : undefined
 
