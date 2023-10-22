@@ -2,7 +2,6 @@ import type { MouseEvent } from "react"
 import { useContext } from "react"
 import { Button, Text } from "@patternfly/react-core"
 
-import names from "../../names"
 import { isHealthy } from "./Summary"
 import CardInGallery from "../CardInGallery"
 
@@ -37,8 +36,8 @@ export default function JobManagerCardFn(props: BaseProps) {
 
   const initialize = mouseSetTo("initializing")
 
-  const kind = "jobmanager" as const
-  const label = names[kind]
+  const kind = "controlplane"
+  const label = "Job Manager"
   const title = (
     <span>
       {label} {refreshing && refreshingMessage({ refreshing: refreshing })}

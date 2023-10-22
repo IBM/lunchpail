@@ -36,7 +36,7 @@ import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 import JobManagerDetail from "../components/JobManager/Detail"
 
-import names from "../names"
+import names, { resourceNames } from "../names"
 import { hashIfNeeded } from "../navigate/kind"
 import { isShowingDetails, navigateToDetails } from "../navigate/details"
 
@@ -104,21 +104,23 @@ export default abstract class BaseWithDrawer<
     const kind = this.currentlySelectedKind
 
     const body =
-      id !== null && kind === "applications"
-        ? ApplicationDetail(this.getApplication(id))
-        : id !== null && kind === "datasets"
-        ? DataSetDetail(this.withLocation(this.getDataSet(id)))
-        : id !== null && kind === "workerpools"
-        ? WorkerPoolDetail(this.getWorkerPool(id), this.props)
-        : kind === "jobmanager"
-        ? JobManagerDetail()
-        : this.detailNotFound()
+      id !== null && kind === "applications" ? (
+        ApplicationDetail(this.getApplication(id))
+      ) : id !== null && kind === "datasets" ? (
+        DataSetDetail(this.withLocation(this.getDataSet(id)))
+      ) : id !== null && kind === "workerpools" ? (
+        WorkerPoolDetail(this.getWorkerPool(id), this.props)
+      ) : kind === "controlplane" ? (
+        <JobManagerDetail />
+      ) : (
+        this.detailNotFound()
+      )
 
     return (
       <DrawerPanelContent className="codeflare--detail-view">
         <DrawerHead>
           <Breadcrumb>
-            <BreadcrumbItem>Resources</BreadcrumbItem>
+            {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
             <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
           </Breadcrumb>
           <Title headingLevel="h2" size="2xl">

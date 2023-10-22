@@ -17,7 +17,7 @@ export const namedKinds = [...resourceKinds, ...credentialsKinds] as const
 export type NamedKind = (typeof namedKinds)[number]
 
 /** Navigable, but not representing a resource */
-export type NonResourceKind = "jobmanager"
+export type NonResourceKind = "controlplane"
 
 /** Resources that will appear in the Nav UI */
 export type NavigableKind = NamedKind | NonResourceKind

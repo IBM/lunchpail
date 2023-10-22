@@ -27,7 +27,7 @@ export function isNeedingInit(status: null | JobManagerStatus) {
 function jobManagerHealth(status: null | JobManagerStatus) {
   return (
     <span>
-      <Link to={hash("jobmanager")}>Job Manager</Link> &mdash;{" "}
+      <Link to={hash("controlplane")}>Job Manager</Link> &mdash;{" "}
       {status === null
         ? "Not Provisioned"
         : isHealthy(status)

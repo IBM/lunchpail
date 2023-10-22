@@ -709,7 +709,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
   protected override mainContentBody() {
     switch (currentKind(this.props)) {
-      case "jobmanager":
+      case "controlplane":
         return (
           <Welcome
             appMd5={this.state?.appMd5}

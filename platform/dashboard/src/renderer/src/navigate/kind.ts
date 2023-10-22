@@ -1,7 +1,7 @@
 import type { NavigableKind } from "../Kind"
 import type { LocationProps } from "../router/withLocation"
 
-const defaultKind: NavigableKind = "jobmanager"
+const defaultKind: NavigableKind = "controlplane"
 
 export function hash(kind: NavigableKind) {
   return "#" + kind
