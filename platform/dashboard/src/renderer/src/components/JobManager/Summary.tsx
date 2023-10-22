@@ -2,7 +2,7 @@ import { useContext } from "react"
 import { Link } from "react-router-dom"
 
 import Settings from "../../Settings"
-import Status, { ControlPlaneStatus } from "../../Status"
+import Status, { JobManagerStatus } from "../../Status"
 
 import { hash } from "../../navigate/kind"
 import IconWithLabel from "../IconWithLabel"
@@ -14,17 +14,17 @@ function demoModeStatus() {
   return "Offline Demo"
 }
 
-export function isHealthy(status: null | ControlPlaneStatus) {
-  return status?.controlPlane && status?.runtime
+export function isHealthy(status: null | JobManagerStatus) {
+  return status?.cluster && status?.runtime
 }
 
-export function isNeedingInit(status: null | ControlPlaneStatus) {
+export function isNeedingInit(status: null | JobManagerStatus) {
   // for now this is the opposite of isHealthy()... we need some
   // refinments to be able to distinguish healthy from not even there
-  return !status?.controlPlane || !status?.runtime
+  return !status?.cluster || !status?.runtime
 }
 
-function controlPlaneStatus(status: null | ControlPlaneStatus) {
+function jobManagerHealth(status: null | JobManagerStatus) {
   return (
     <span>
       <Link to={hash("jobmanager")}>Job Manager</Link> &mdash;{" "}
@@ -39,13 +39,13 @@ function controlPlaneStatus(status: null | ControlPlaneStatus) {
   )
 }
 
-export default function ControlPlaneStatusSummary() {
+export default function JobManagerhealthSummary() {
   const { status } = useContext(Status)
   const settings = useContext(Settings)
 
   return (
     <IconWithLabel icon={settings?.demoMode[0] ? undefined : isHealthy(status) ? <HealthyIcon /> : <UnhealthyIcon />}>
-      {settings?.demoMode[0] ? demoModeStatus() : controlPlaneStatus(status)}
+      {settings?.demoMode[0] ? demoModeStatus() : jobManagerHealth(status)}
     </IconWithLabel>
   )
 }

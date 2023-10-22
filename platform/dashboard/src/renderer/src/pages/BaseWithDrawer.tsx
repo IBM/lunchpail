@@ -38,7 +38,7 @@ import type WorkerPoolProps from "../components/WorkerPool/Props"
 import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
-import JobManagerDetail from "../components/ControlPlaneStatus/Detail"
+import JobManagerDetail from "../components/JobManager/Detail"
 
 import names from "../names"
 import { hashIfNeeded } from "../navigate/kind"

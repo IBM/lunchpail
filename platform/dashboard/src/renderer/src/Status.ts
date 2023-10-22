@@ -1,14 +1,14 @@
 import { createContext, useEffect, useState } from "react"
 
 import type { State } from "./Settings"
-import type ControlPlaneStatus from "@jay/common/status/ControlPlaneStatus"
+import type JobManagerStatus from "@jay/common/status/JobManagerStatus"
 
-export { ControlPlaneStatus }
+export { JobManagerStatus }
 
 type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
 
 export type StatusCtxType = {
-  status: null | ControlPlaneStatus
+  status: null | JobManagerStatus
   refreshing: Refreshing
   setTo(refreshing: Refreshing): void
 }
@@ -17,12 +17,12 @@ export default StatusCtx
 
 export function statusState(demoMode: State<boolean>) {
   const [refreshing, setRefreshing] = useState<Refreshing>(null)
-  const status = useState<null | ControlPlaneStatus>(null)
+  const status = useState<null | JobManagerStatus>(null)
   const [, setStatus] = status
 
   // launch an effect that triggers a control plane readiness check
   // whenever entering non-demo/live mode
-  async function checkControlPlaneStatus() {
+  async function checkJobManagerStatus() {
     if (!demoMode[0]) {
       // determine current cluster status
       const status = await window.jay.controlplane.status()
@@ -32,7 +32,7 @@ export function statusState(demoMode: State<boolean>) {
   }
 
   useEffect(() => {
-    checkControlPlaneStatus()
+    checkJobManagerStatus()
   }, [demoMode[0]])
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function statusState(demoMode: State<boolean>) {
         await window.jay.controlplane.destroy()
         setRefreshing("refreshing")
       } else if (refreshing === "refreshing") {
-        await checkControlPlaneStatus()
+        await checkJobManagerStatus()
         setRefreshing(null)
       }
     }

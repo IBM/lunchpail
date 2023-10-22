@@ -31,7 +31,7 @@ import type { LocationProps } from "../router/withLocation"
 
 import { name, description, homepage, version } from "../../../../package.json"
 import SmallLabel from "../components/SmallLabel"
-import ControlPlaneStatus from "../components/ControlPlaneStatus/Summary"
+import JobManagerHealth from "../components/JobManager/Summary"
 
 import icon from "../images/icon.png"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
@@ -108,15 +108,15 @@ export default abstract class Base<
   }
 
   protected headerToolbarRightItems() {
-    return [this.controlPlaneStatusToolbarItem()]
+    return [this.jobManagerHealthToolbarItem()]
   }
 
-  protected controlPlaneStatusToolbarItem() {
+  protected jobManagerHealthToolbarItem() {
     return (
       <ToolbarItem key="control-plane-status">
         <TextContent>
           <Text component="small">
-            <ControlPlaneStatus />
+            <JobManagerHealth />
           </Text>
         </TextContent>
       </ToolbarItem>

@@ -6,7 +6,7 @@ import names from "../../names"
 import { isHealthy } from "./Summary"
 import CardInGallery from "../CardInGallery"
 
-import Status, { ControlPlaneStatus } from "../../Status"
+import Status, { JobManagerStatus } from "../../Status"
 import Settings from "../../Settings"
 
 import { descriptionGroup } from "../DescriptionGroup"
@@ -21,19 +21,19 @@ function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing>
 
 type Props = {
   demoMode: boolean
-  status: null | ControlPlaneStatus
+  status: null | JobManagerStatus
 
   refreshing: Refreshing
   initialize: (evt: MouseEvent<unknown>) => void
 }
 
-export function summaryGroups(demoMode: boolean, status: null | ControlPlaneStatus) {
+export function summaryGroups(demoMode: boolean, status: null | JobManagerStatus) {
   const statusMessage = demoMode ? "Demo mode" : !status ? "Checking..." : isHealthy(status) ? "Healthy" : "Not ready"
 
   return [descriptionGroup("Status", statusMessage)]
 }
 
-class ControlPlaneStatusCard extends CardInGallery<Props> {
+class JobManagerCard extends CardInGallery<Props> {
   protected override kind() {
     return "jobmanager" as const
   }
@@ -74,7 +74,7 @@ class ControlPlaneStatusCard extends CardInGallery<Props> {
   }
 }
 
-export default function ControlPlaneStatusCardFn(props: DrilldownProps) {
+export default function JobManagerCardFn(props: DrilldownProps) {
   const { status, refreshing, setTo } = useContext(Status)
   const settings = useContext(Settings)
 
@@ -86,7 +86,7 @@ export default function ControlPlaneStatusCardFn(props: DrilldownProps) {
   const initialize = mouseSetTo("initializing")
 
   return (
-    <ControlPlaneStatusCard
+    <JobManagerCard
       {...props}
       status={status}
       demoMode={settings?.demoMode[0] ?? false}

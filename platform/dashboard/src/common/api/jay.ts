@@ -12,7 +12,7 @@ export interface JayResourceApi {
 /** Jobs as a Service API to server-side control plane functionality */
 export interface ControlPlaneApi {
   /** @return status of the control plane */
-  status(): Promise<import("../status/ControlPlaneStatus").default>
+  status(): Promise<import("../status/JobManagerStatus").default>
 
   /** Bring up the control plane */
   init(): Promise<void>

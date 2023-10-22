@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react"
 import { Gallery } from "@patternfly/react-core"
 
 import { resourceNames } from "../names"
-import ControlPlaneStatus from "./ControlPlaneStatus/Card"
+import JobManagerCard from "./JobManager/Card"
 
 import type { DrilldownProps } from "../context/DrawerContext"
 
@@ -32,7 +32,8 @@ type Props = DrilldownProps & {
 export default function Welcome(props: Props) {
   return (
     <Gallery hasGutter minWidths={width} maxWidths={width}>
-      <ControlPlaneStatus {...props} />
+      <JobManagerCard {...props} />
+
       {Object.entries(resourceNames).map(([kind, name]) => (
         <CountCard key={kind} count={props[kind]?.length || 0}>
           {name}

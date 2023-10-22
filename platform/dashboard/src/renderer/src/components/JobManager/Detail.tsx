@@ -6,7 +6,7 @@ import { StatusCtxType } from "../../Status"
 
 import camelCaseSplit from "../../util/camel-split"
 import { dl, descriptionGroup } from "../DescriptionGroup"
-import { descriptions } from "@jay/common/status/ControlPlaneStatus"
+import { descriptions } from "@jay/common/status/JobManagerStatus"
 
 export default function Detail(demoMode: boolean, status: StatusCtxType) {
   const rest =
