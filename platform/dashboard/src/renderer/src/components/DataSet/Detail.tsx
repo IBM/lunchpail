@@ -1,5 +1,6 @@
 import Sparkline from "../Sparkline"
 import DeleteButton from "../DeleteButton"
+import DrawerContent from "../Drawer/Content"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import type Props from "./Props"
@@ -42,17 +43,17 @@ function detailGroups(props: Props) {
 function deleteAction(props: Props) {
   const last = lastEvent(props)
   if (last) {
-    return <DeleteButton kind="dataset" name={last.label} namespace={last.namespace} />
+    return [<DeleteButton kind="dataset" name={last.label} namespace={last.namespace} />]
   } else {
-    return undefined
+    return []
   }
 }
 
 /** Common actions */
 function actions(props: Props) {
-  return [deleteAction(props)].filter(Boolean)
+  return [...deleteAction(props)]
 }
 
 export default function DataSetDetail(props: Props | undefined) {
-  return { body: props && dl(detailGroups(props)), actions: props && actions(props) }
+  return <DrawerContent body={props && dl(detailGroups(props))} actions={props && actions(props)} />
 }

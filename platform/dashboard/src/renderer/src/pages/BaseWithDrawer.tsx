@@ -4,7 +4,6 @@ import type { ReactNode } from "react"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  Divider,
   Title,
   Drawer,
   DrawerContent,
@@ -12,7 +11,6 @@ import {
   DrawerActions,
   DrawerCloseButton,
   DrawerHead,
-  DrawerPanelBody,
   DrawerPanelContent,
 } from "@patternfly/react-core"
 
@@ -23,8 +21,6 @@ const EmptyStateIcon = lazy(() => import("@patternfly/react-core").then((_) => (
 import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
 
 import Base from "./Base"
-import Settings from "../Settings"
-import Status, { StatusCtxType } from "../Status"
 
 import type { NavigableKind } from "../Kind"
 import type { BaseState } from "./Base"
@@ -99,7 +95,7 @@ export default abstract class BaseWithDrawer<
     const id = this.currentlySelectedId
     const kind = this.currentlySelectedKind
 
-    const contentFn = (demoMode: boolean, status: StatusCtxType) =>
+    const body =
       id !== null && kind === "applications"
         ? ApplicationDetail(this.getApplication(id))
         : id !== null && kind === "datasets"
@@ -107,49 +103,31 @@ export default abstract class BaseWithDrawer<
         : id !== null && kind === "workerpools"
         ? WorkerPoolDetail(this.getWorkerPool(id), this.props)
         : kind === "jobmanager"
-        ? JobManagerDetail(demoMode, status)
-        : { actions: undefined as ReactNode, body: undefined as ReactNode }
+        ? JobManagerDetail()
+        : this.detailNotFound()
 
     return (
-      <Settings.Consumer>
-        {(settings) => (
-          <Status.Consumer>
-            {(status) => {
-              const content = contentFn(settings?.demoMode[0] ?? false, status)
-              return (
-                <DrawerPanelContent className="codeflare--detail-view">
-                  <DrawerHead>
-                    <Breadcrumb>
-                      <BreadcrumbItem>Resources</BreadcrumbItem>
-                      <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
-                    </Breadcrumb>
-                    <Title headingLevel="h2" size="2xl">
-                      {id}
-                    </Title>
+      <DrawerPanelContent className="codeflare--detail-view">
+        <DrawerHead>
+          <Breadcrumb>
+            <BreadcrumbItem>Resources</BreadcrumbItem>
+            <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
+          </Breadcrumb>
+          <Title headingLevel="h2" size="2xl">
+            {id}
+          </Title>
 
-                    <DrawerActions>
-                      <DrawerCloseButton onClick={this.returnHome} />
-                    </DrawerActions>
-                  </DrawerHead>
-                  <DrawerPanelBody className="codeflare--detail-view-body">
-                    {content.body ?? this.detailNotFound()}
-                  </DrawerPanelBody>
-                  {"actions" in content && content.actions && (
-                    <>
-                      <Divider />
-                      <DrawerPanelBody className="codeflare--detail-view-footer">{content.actions}</DrawerPanelBody>
-                    </>
-                  )}
-                </DrawerPanelContent>
-              )
-            }}
-          </Status.Consumer>
-        )}
-      </Settings.Consumer>
+          <DrawerActions>
+            <DrawerCloseButton onClick={this.returnHome} />
+          </DrawerActions>
+        </DrawerHead>
+
+        {body}
+      </DrawerPanelContent>
     )
   }
 
-  private detailNotFound() {
+  private detailNotFound(): ReactNode {
     return (
       <Suspense fallback={<></>}>
         <EmptyState>

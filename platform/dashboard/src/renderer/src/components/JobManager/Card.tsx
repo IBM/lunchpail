@@ -65,8 +65,9 @@ class JobManagerCard extends CardInGallery<Props> {
   protected override footer() {
     return (
       !this.props.demoMode &&
+      this.props.status &&
       (!isHealthy(this.props.status) || this.props.refreshing === "initializing") && (
-        <Button isBlock onClick={this.props.initialize} isLoading={this.props.refreshing === "initializing"}>
+        <Button isBlock size="lg" onClick={this.props.initialize} isLoading={this.props.refreshing === "initializing"}>
           {!this.props.refreshing ? "Initialize" : "Initializing"}
         </Button>
       )

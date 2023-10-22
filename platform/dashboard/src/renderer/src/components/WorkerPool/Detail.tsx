@@ -1,4 +1,5 @@
 import DeleteButton from "../DeleteButton"
+import DrawerContent from "../Drawer/Content"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import { LinkToNewRepoSecret } from "../../navigate/newreposecret"
@@ -58,5 +59,5 @@ function actions(props: Props, locationProps: LocationProps) {
 
 /** The body and actions to show in the WorkerPool Details view */
 export default function WorkerPoolDetail(props: Props | undefined, locationProps: LocationProps) {
-  return { body: props && dl(detailGroups(props)), actions: props && actions(props, locationProps) }
+  return <DrawerContent body={props && dl(detailGroups(props))} actions={props && actions(props, locationProps)} />
 }
