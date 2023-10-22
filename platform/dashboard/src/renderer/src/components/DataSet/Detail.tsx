@@ -2,9 +2,10 @@ import Sparkline from "../Sparkline"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
 import { dl, descriptionGroup } from "../DescriptionGroup"
+import { NewPoolButton, lastEvent, commonGroups } from "./common"
 
 import type Props from "./Props"
-import { lastEvent, commonGroups } from "./common"
+import type { LocationProps } from "../../router/withLocation"
 
 function bucket(props: Props) {
   const last = lastEvent(props)
@@ -42,14 +43,14 @@ function detailGroups(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   const last = lastEvent(props)
-  return !last ? [] : [<DeleteButton kind="dataset" name={last.label} namespace={last.namespace} />]
+  return !last ? [] : [<DeleteButton key="delete" kind="dataset" name={last.label} namespace={last.namespace} />]
 }
 
 /** Common actions */
-function actions(props: Props) {
-  return [...deleteAction(props)]
+function actions(props: Props & Pick<LocationProps, "location" | "searchParams">) {
+  return [<NewPoolButton key="new-pool" {...props} />, ...deleteAction(props)]
 }
 
-export default function DataSetDetail(props: Props | undefined) {
+export default function DataSetDetail(props: (Props & Pick<LocationProps, "location" | "searchParams">) | undefined) {
   return <DrawerContent body={props && dl(detailGroups(props))} actions={props && actions(props)} />
 }

@@ -2,10 +2,13 @@ import None from "../None"
 import Queue from "../Queue"
 import names from "../../names"
 import { descriptionGroup } from "../DescriptionGroup"
+
+import { LinkToNewPool } from "../../navigate/newpool"
 import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "../../navigate/details"
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"
+import type { LocationProps } from "../../router/withLocation"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
@@ -26,12 +29,12 @@ function associatedApplicationsFilter(this: LabelAndApplications, app: Applicati
   return null
 }
 
-export function numAssociatedApplicationEvents(props: LabelAndApplications) {
+function numAssociatedApplicationEvents(props: LabelAndApplications) {
   const filter = associatedApplicationsFilter.bind(props)
   return props.applications.reduce((N, app) => (filter(app) ? N + 1 : N), 0)
 }
 
-export function associatedApplicationEvents(props: LabelAndApplications) {
+function associatedApplicationEvents(props: LabelAndApplications) {
   return props.applications.filter(associatedApplicationsFilter.bind(props))
 }
 
@@ -79,4 +82,18 @@ function unassigned(props: LabelEventsDataSetIndex) {
 
 export function commonGroups(props: Props): ReactNode[] {
   return [associatedApplications(props), associatedWorkerPools(props), unassigned(props)]
+}
+
+export function NewPoolButton(props: Props & Pick<LocationProps, "location" | "searchParams">) {
+  return (
+    numAssociatedApplicationEvents(props) > 0 && (
+      <LinkToNewPool
+        key="new-pool-button"
+        location={props.location}
+        searchParams={props.searchParams}
+        dataset={props.label}
+        startOrAdd={numAssociatedWorkerPools(props) > 0 ? "add" : "start"}
+      />
+    )
+  )
 }

@@ -90,6 +90,14 @@ export default abstract class BaseWithDrawer<
     }
   }
 
+  private withLocation<T>(props: T): undefined | (T & Pick<Props, "location" | "searchParams">) {
+    if (props) {
+      return Object.assign({}, props, { location: this.props.location, searchParams: this.props.searchParams })
+    } else {
+      return undefined
+    }
+  }
+
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   private panelContent() {
     const id = this.currentlySelectedId
@@ -99,7 +107,7 @@ export default abstract class BaseWithDrawer<
       id !== null && kind === "applications"
         ? ApplicationDetail(this.getApplication(id))
         : id !== null && kind === "datasets"
-        ? DataSetDetail(this.getDataSet(id))
+        ? DataSetDetail(this.withLocation(this.getDataSet(id)))
         : id !== null && kind === "workerpools"
         ? WorkerPoolDetail(this.getWorkerPool(id), this.props)
         : kind === "jobmanager"
