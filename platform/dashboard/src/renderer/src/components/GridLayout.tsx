@@ -1,4 +1,3 @@
-import { PureComponent } from "react"
 import { Flex, FlexItem } from "@patternfly/react-core"
 
 import SmallLabel from "./SmallLabel"
@@ -8,8 +7,16 @@ type Props = QueueProps & {
   queueNum: number
 }
 
+function Name(props: Pick<Props, "queueNum">) {
+  return (
+    <SmallLabel size="xxs" align="right">
+      {props.queueNum}
+    </SmallLabel>
+  )
+}
+
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */
-export default class GridLayout extends PureComponent<Props> {
+export default function GridLayout(props: Props) {
   /* private count(model: Props["inbox"]) {
     return Object.values(model).reduce((sum, depth) => sum + depth, 0)
   } */
@@ -18,27 +25,15 @@ export default class GridLayout extends PureComponent<Props> {
     return this.count(this.props.inbox)
   } */
 
-  public name() {
-    return (
-      <SmallLabel size="xxs" align="right">
-        {this.props.queueNum}
-      </SmallLabel>
-    )
-  }
+  return (
+    <Flex gap={{ default: "gapXs" }} alignItems={{ default: "alignItemsCenter" }} className="codeflare--workqueues-row">
+      <FlexItem className="codeflare--workqueues-cell">
+        <Name queueNum={props.queueNum} />
+      </FlexItem>
 
-  public override render() {
-    return (
-      <Flex
-        gap={{ default: "gapXs" }}
-        alignItems={{ default: "alignItemsCenter" }}
-        className="codeflare--workqueues-row"
-      >
-        <FlexItem className="codeflare--workqueues-cell">{this.name()}</FlexItem>
-
-        <FlexItem className="codeflare--workqueues-cell">
-          <Queue inbox={this.props.inbox} datasetIndex={this.props.datasetIndex} gridTypeData="plain" />
-        </FlexItem>
-      </Flex>
-    )
-  }
+      <FlexItem className="codeflare--workqueues-cell">
+        <Queue inbox={props.inbox} datasetIndex={props.datasetIndex} gridTypeData="plain" />
+      </FlexItem>
+    </Flex>
+  )
 }

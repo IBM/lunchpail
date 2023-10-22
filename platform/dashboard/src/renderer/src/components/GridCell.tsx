@@ -1,4 +1,3 @@
-import { PureComponent } from "react"
 import { Tooltip } from "@patternfly/react-core"
 import SpinnerIcon from "@patternfly/react-icons/dist/esm/icons/spinner2-icon"
 
@@ -15,39 +14,35 @@ type Props = {
   stackDepth: number
 }
 
-export default class GridCell extends PureComponent<Props> {
-  private innerText() {
-    return (
-      <span>
-        {this.props.type === "processing" ? (
-          <SpinnerIcon />
-        ) : this.props.type === "outbox" ? (
-          "↑"
-        ) : this.props.type === "inbox" ? (
-          "↓"
-        ) : (
-          "\u00a0"
-        )}
-      </span>
-    )
-  }
+function InnerText(props: Props) {
+  return (
+    <span>
+      {props.type === "processing" ? (
+        <SpinnerIcon />
+      ) : props.type === "outbox" ? (
+        "↑"
+      ) : props.type === "inbox" ? (
+        "↓"
+      ) : (
+        "\u00a0"
+      )}
+    </span>
+  )
+}
 
-  public render() {
-    return (
-      <Tooltip
-        content={`This cell represents ${this.props.stackDepth.toString()} ${
-          this.props.stackDepth === 1 ? "task" : "tasks"
-        }.`}
+export default function GridCell(props: Props) {
+  return (
+    <Tooltip
+      content={`This cell represents ${props.stackDepth.toString()} ${props.stackDepth === 1 ? "task" : "tasks"}.`}
+    >
+      <div
+        className="codeflare--grid-cell"
+        data-type={props.type || "plain"}
+        data-dataset={props.dataset}
+        data-depth={props.stackDepth}
       >
-        <div
-          className="codeflare--grid-cell"
-          data-type={this.props.type || "plain"}
-          data-dataset={this.props.dataset}
-          data-depth={this.props.stackDepth}
-        >
-          {this.innerText()}
-        </div>
-      </Tooltip>
-    )
-  }
+        <InnerText {...props} />
+      </div>
+    </Tooltip>
+  )
 }
