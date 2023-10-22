@@ -26,7 +26,6 @@ import { singular as names } from "../../../names"
 import { Input, NumberInput, Select } from "../../Forms"
 
 import type { LocationProps } from "../../../router/withLocation"
-import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 type Props = Pick<LocationProps, "searchParams"> & {
@@ -44,9 +43,6 @@ type Props = Pick<LocationProps, "searchParams"> & {
 
   /** Handler to call when this dialog closes */
   onCancel(): void
-
-  /** Handler for NewWorkerPool */
-  createResource: CreateResourceHandler
 }
 
 type State = {
@@ -191,7 +187,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   private readonly doCreate = async (values: FormContextProps["values"]) => {
     console.log("new worker pool request", values) // make eslint happy
     try {
-      await this.props.createResource(values, this.workerPoolYaml(values))
+      await window.jay.create(values, this.workerPoolYaml(values))
     } catch (errorInCreateRequest) {
       if (errorInCreateRequest) {
         this.setState({ errorInCreateRequest })

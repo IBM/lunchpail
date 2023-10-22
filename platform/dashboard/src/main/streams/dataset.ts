@@ -14,12 +14,13 @@ function transformLineToEvent() {
   return new Transform({
     transform(chunk, _, callback) {
       // Splits the string by spaces
-      const [, label, storageType, endpoint, bucket, inbox, status, isReadOnly] = chunk.toString().split(/\s+/)
+      const [namespace, label, storageType, endpoint, bucket, inbox, status, isReadOnly] = chunk.toString().split(/\s+/)
 
       const model: DataSetEvent = {
         inbox: parseInt(inbox, 10),
         outbox: 0,
         label,
+        namespace,
         storageType,
         endpoint,
         bucket,

@@ -34,7 +34,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     return this.workerpools
   }
 
-  private randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool): WorkerPoolStatusEvent {
+  private randomWorkerPoolStatusEvent(workerpool: DemoWorkerPool, status = "Running"): WorkerPoolStatusEvent {
     const nWorkers = workerpool.numWorkers
 
     return {
@@ -46,14 +46,14 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       nodeClass: "md",
       supportsGpu: false,
       age: "",
-      status: "Running",
+      status,
       ready: Math.round(Math.random() * nWorkers),
       size: nWorkers,
     }
   }
 
-  private sendEventFor = (workerpool: Readonly<DemoWorkerPool>): void => {
-    const model = this.randomWorkerPoolStatusEvent(workerpool)
+  private sendEventFor = (workerpool: Readonly<DemoWorkerPool>, status?: string): void => {
+    const model = this.randomWorkerPoolStatusEvent(workerpool, status)
     setTimeout(() =>
       this.handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) }))),
     )
@@ -117,6 +117,11 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     const { datasets, queues } = this
 
     const once = () => {
+      // check if we're dead
+      if (!this.workerpools.find((_) => _.name === pool.name)) {
+        return
+      }
+
       // find work in an inbox and start processing it
       for (let poolDatasetIndex = 0; poolDatasetIndex < pool.datasets.length; poolDatasetIndex++) {
         const datasetLabel = pool.datasets[poolDatasetIndex]
@@ -155,7 +160,19 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     }
   }
 
-  public createResource(...params: Parameters<CreateResourceHandler>) {
+  public delete(props: { name: string; namespace: string }) {
+    const poolIdx = this.workerpools.findIndex((_) => _.name === props.name)
+    if (poolIdx >= 0) {
+      this.sendEventFor(this.workerpools[poolIdx], "Terminating")
+      this.workerpools.splice(poolIdx, 1)
+      this.simulators.splice(poolIdx, 1)
+      return true
+    } else {
+      return false
+    }
+  }
+
+  public create(...params: Parameters<CreateResourceHandler>) {
     const values = params[0]
     const numWorkers = parseInt(values.count, 10)
 
@@ -178,5 +195,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     this.workerpools.push(pool)
     this.sendEventFor(pool)
     this.initSimulator(pool)
+
+    return true
   }
 }

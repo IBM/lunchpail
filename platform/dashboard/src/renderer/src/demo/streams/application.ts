@@ -19,6 +19,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
    */
   private readonly applications = this.apis.map((api, idx) => ({
     name: uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + idx }),
+    namespace: ns,
     description: lorem.generateSentences(2),
     api,
     inputMd: this.inputMd[idx],
@@ -26,24 +27,29 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     image: lorem.generateWords(2).replace(/\s/g, "-"),
   }))
 
-  private randomApplicationSpecEvent({
-    api,
-    name,
-    image,
-    repoPath,
-    description,
-    inputMd,
-  }: {
-    api: string
-    name: string
-    image: string
-    repoPath: string
-    description: string
-    inputMd: string
-  }): ApplicationSpecEvent {
+  private randomApplicationSpecEvent(
+    {
+      api,
+      name,
+      namespace,
+      image,
+      repoPath,
+      description,
+      inputMd,
+    }: {
+      api: string
+      name: string
+      namespace: string
+      image: string
+      repoPath: string
+      description: string
+      inputMd: string
+    },
+    status = "Ready",
+  ): ApplicationSpecEvent {
     return {
       timestamp: Date.now(),
-      namespace: ns,
+      namespace,
       application: name,
       description,
       api,
@@ -53,24 +59,39 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       supportsGpu: false,
       "data sets": { md: inputMd },
       age: new Date().toLocaleString(),
-      status: "Ready",
+      status,
     }
+  }
+
+  private sendEventFor = (application: (typeof this.applications)[number], status?: string) => {
+    const model = this.randomApplicationSpecEvent(application, status)
+    this.handlers.forEach((handler) => handler(new MessageEvent("application", { data: JSON.stringify(model) })))
   }
 
   protected override initInterval(intervalMillis: number) {
     if (!this.interval) {
-      const { applications, handlers, randomApplicationSpecEvent } = this
+      const { applications, sendEventFor } = this
 
       this.interval = setInterval(
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * applications.length)
-          const application = applications[whichToUpdate]
-          const model = randomApplicationSpecEvent(application)
-          handlers.forEach((handler) => handler(new MessageEvent("application", { data: JSON.stringify(model) })))
+          sendEventFor(applications[whichToUpdate])
           return interval
         })(), // () means invoke the interval right away
         intervalMillis,
       )
+    }
+  }
+
+  public override delete(props: { name: string; namespace: string }) {
+    const idx = this.applications.findIndex((_) => _.name === props.name && _.namespace === props.namespace)
+    if (idx >= 0) {
+      const model = this.applications[idx]
+      this.applications.splice(idx, 1)
+      this.sendEventFor(model, "Terminating")
+      return true
+    } else {
+      return false
     }
   }
 }

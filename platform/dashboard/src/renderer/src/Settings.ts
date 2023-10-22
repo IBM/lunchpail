@@ -64,9 +64,17 @@ function state<T extends string | boolean | number>(
   return [...state, (_, val: T) => state[1](val)]
 }
 
+function onChangeDemoMode(useDemoMode: boolean) {
+  if (useDemoMode) {
+    window.jay = window.demo
+  } else {
+    window.jay = window.live
+  }
+}
+
 export function demoModeState() {
   // default to true
-  return state<boolean>("demoMode", true)
+  return state<boolean>("demoMode", true, onChangeDemoMode)
 }
 
 export function prsUserState() {

@@ -26,7 +26,6 @@ import Settings from "../../../Settings"
 
 import type { Dispatch, SetStateAction } from "react"
 import type { LocationProps } from "../../../router/withLocation"
-import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
@@ -43,9 +42,6 @@ type Props = Pick<LocationProps, "searchParams"> & {
 
   /** Handler to call when this dialog closes */
   onCancel(): void
-
-  /** Handler for Submit */
-  createResource: CreateResourceHandler
 }
 
 type State = {
@@ -129,7 +125,7 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
 
   private readonly doCreate = async (values: FormContextProps["values"]) => {
     try {
-      await this.props.createResource(values, this.yaml(values))
+      await window.jay.create(values, this.yaml(values))
     } catch (errorInCreateRequest) {
       if (errorInCreateRequest) {
         this.setState({ errorInCreateRequest })

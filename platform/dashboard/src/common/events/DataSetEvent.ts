@@ -2,6 +2,9 @@ type DataSetEvent = {
   /** Name of this dataset */
   label: string
 
+  /** Namespace of this dataset */
+  namespace: string
+
   /** Optionally, to force that this dataset has a particular index in the UI (e.g. for UI coloring) */
   idx?: number
 

@@ -7,14 +7,8 @@ import type Kind from "../Kind"
 import type { EventProps } from "./Dashboard"
 import type { Handler } from "@jay/common/events/EventSourceLike"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
-import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 
 let props: null | EventProps<EventSourceLike> = null
-
-const createResource: CreateResourceHandler = async (_, yaml) => {
-  // browser apis: await fetch(`/api/newpool?yaml=${encodeURIComponent(yaml)}`)
-  window.jay.createResource(yaml)
-}
 
 class ElectronEventSource implements EventSourceLike {
   public constructor(private readonly kind: Kind) {}
@@ -37,7 +31,6 @@ class ElectronEventSource implements EventSourceLike {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public removeEventListener(evt: "message" | "error" /*, handler: Handler*/) {
     if (evt === "message") {
       if (this.off) {
@@ -45,6 +38,7 @@ class ElectronEventSource implements EventSourceLike {
       }
     }
   }
+
   public close() {}
 }
 
@@ -86,13 +80,5 @@ export default function LiveDashboard() {
   const navigate = useNavigate()
   const searchParams = useSearchParams()
 
-  return (
-    <Dashboard
-      {...init()}
-      createResource={createResource}
-      location={location}
-      navigate={navigate}
-      searchParams={searchParams[0]}
-    />
-  )
+  return <Dashboard {...init()} location={location} navigate={navigate} searchParams={searchParams[0]} />
 }

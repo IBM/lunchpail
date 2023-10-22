@@ -20,7 +20,6 @@ import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 import type Kind from "../Kind"
 import type { LocationProps } from "../router/withLocation"
 
-import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type { Handler, EventLike } from "@jay/common/events/EventSourceLike"
 import type QueueEvent from "@jay/common/events/QueueEvent"
@@ -42,11 +41,7 @@ import "./Dashboard.scss"
 /** one EventSource per resource Kind */
 export type EventProps<Source extends EventSourceLike = EventSourceLike> = Record<Kind, Source>
 
-type Props = LocationProps &
-  EventProps & {
-    /** Handler for NewWorkerPool */
-    createResource: CreateResourceHandler
-  }
+type Props = LocationProps & EventProps
 
 type State = BaseWithDrawerState & {
   /** Events for DataSets, indexed by DataSetEvent.label */
@@ -753,7 +748,6 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               appMd5={this.state?.appMd5}
               applications={this.state?.latestApplicationEvents}
               datasets={this.datasetsList}
-              createResource={this.props.createResource}
               searchParams={this.props.searchParams}
             />
           ) : (
@@ -762,7 +756,6 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               namespace={this.props.searchParams.get("namespace") || "default"}
               onSuccess={this.returnToWorkerPools}
               onCancel={this.returnHome}
-              createResource={this.props.createResource}
               searchParams={this.props.searchParams}
             />
           )}

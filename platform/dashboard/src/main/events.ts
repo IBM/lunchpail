@@ -8,9 +8,9 @@ import startPlatformRepoSecretStream from "./streams/platformreposecret"
 
 import { Status, getStatusFromMain } from "./controlplane/status"
 
-import type JayApi from "@jay/common/api/jay"
 import type Kind from "@jay/common/Kind"
-import type { JayResourceApi } from "@jay/common/api/jay"
+import type JayApi from "@jay/common/api/jay"
+import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 
 /*async function initEventSource(res: Response, stream: Writable) {
   await res.set({
@@ -153,7 +153,12 @@ export function initEvents() {
   kinds.forEach(initStreamForResourceKind)
 
   // resource create request
-  ipcMain.handle("/create", (_, yaml: string) => import("./pools/create").then((_) => _.default(yaml)))
+  ipcMain.handle("/create", (_, yaml: string) => import("./create").then((_) => _.onCreate(yaml, "apply")))
+
+  // resource delete request
+  ipcMain.handle("/delete", (_, props: string) =>
+    import("./create").then((_) => _.onDelete(JSON.parse(props) as DeleteProps)),
+  )
 
   // control plane status request
   ipcMain.handle("/controlplane/status", getStatusFromMain)
@@ -211,8 +216,12 @@ const apiImpl: JayApi = Object.assign(
       },
     },
 
-    createResource: (yaml: string) => {
+    create: (_, yaml: string) => {
       return ipcRenderer.invoke("/create", yaml)
+    },
+
+    delete: (props: DeleteProps) => {
+      return ipcRenderer.invoke("/delete", JSON.stringify(props))
     },
   },
   kinds.reduce(

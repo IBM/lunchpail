@@ -1,3 +1,4 @@
+import DeleteButton from "../DeleteButton"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import { LinkToNewRepoSecret } from "../../navigate/newreposecret"
@@ -34,15 +35,25 @@ function detailGroups(props: Props) {
 }
 
 /** Any suggestions/corrective action buttons */
-function actions(props: Props, locationProps: LocationProps) {
+function correctiveActions(props: Props, locationProps: LocationProps) {
   const latestStatus = props.statusHistory[props.statusHistory.length - 1]
   if (latestStatus?.status === "CloneFailed" && latestStatus?.reason === "AccessDenied") {
     const repoMatch = latestStatus?.message?.match(/(https:\/\/[^/]+)/)
     const repo = repoMatch ? repoMatch[1] : undefined
-    return <LinkToNewRepoSecret repo={repo} namespace={props.model.namespace} {...locationProps} startOrAdd="fix" />
+    return [<LinkToNewRepoSecret repo={repo} namespace={props.model.namespace} {...locationProps} startOrAdd="fix" />]
   } else {
-    return
+    return []
   }
+}
+
+/** Delete this resource */
+function deleteAction(props: Props) {
+  return <DeleteButton kind="workerpool.codeflare.dev" name={props.model.label} namespace={props.model.namespace} />
+}
+
+/** Common actions */
+function actions(props: Props, locationProps: LocationProps) {
+  return [...correctiveActions(props, locationProps), deleteAction(props)]
 }
 
 /** The body and actions to show in the WorkerPool Details view */

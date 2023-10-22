@@ -2,6 +2,7 @@ import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
+import { ns } from "./misc"
 
 export const colors = ["pink", "green", "purple"]
 
@@ -14,6 +15,7 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
     .fill(0)
     .map((_, idx) => ({
       label: colors[idx],
+      namespace: ns,
       storageType: "COS",
       status: "Ready",
       endpoint: this.endpoints[idx],
@@ -28,25 +30,42 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
     return this.datasets
   }
 
+  private sendEventFor = (dataset: (typeof this.datasets)[number], status = dataset.status) => {
+    const model: DataSetEvent = Object.assign({}, dataset, {
+      status,
+      timestamp: Date.now(),
+      //inbox: ~~(Math.random() * 20),
+      //outbox: ~~(Math.random() * 2),
+    })
+    this.handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+  }
+
   protected override initInterval(intervalMillis: number) {
     if (!this.interval) {
-      const { datasets, handlers } = this
+      const { datasets, sendEventFor } = this
 
       this.interval = setInterval(
         (function interval() {
           const whichToUpdate = Math.floor(Math.random() * datasets.length)
           const dataset = datasets[whichToUpdate]
           dataset.inbox++
-          const model: DataSetEvent = Object.assign({}, dataset, {
-            timestamp: Date.now(),
-            //inbox: ~~(Math.random() * 20),
-            //outbox: ~~(Math.random() * 2),
-          })
-          handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify(model) })))
+          sendEventFor(dataset)
           return interval
         })(), // () means invoke the interval right away
         intervalMillis,
       )
+    }
+  }
+
+  public override delete(props: { name: string; namespace: string }) {
+    const idx = this.datasets.findIndex((_) => _.label === props.name && _.namespace === props.namespace)
+    if (idx >= 0) {
+      const model = this.datasets[idx]
+      this.datasets.splice(idx, 1)
+      this.sendEventFor(model, "Terminating")
+      return true
+    } else {
+      return false
     }
   }
 }

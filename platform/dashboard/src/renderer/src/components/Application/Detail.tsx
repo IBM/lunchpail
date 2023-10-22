@@ -1,18 +1,21 @@
 import { datasets } from "./Card"
+import DeleteButton from "../DeleteButton"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+
+type Props = ApplicationSpecEvent
 
 /**
  * If we can find a "foo.py", then append it to the repo, so that
  * users can click to see the source directly.
  */
-function repoPlusSource(props: ApplicationSpecEvent) {
+function repoPlusSource(props: Props) {
   const source = props.command.match(/\s(\w+\.py)\s/)
   return props.repo + (source ? "/" + source[1] : "")
 }
 
-function detailGroups(props: ApplicationSpecEvent) {
+function detailGroups(props: Props) {
   return Object.entries(props)
     .filter(
       ([term]) =>
@@ -28,6 +31,16 @@ function detailGroups(props: ApplicationSpecEvent) {
     )
 }
 
-export default function ApplicationDetail(props: ApplicationSpecEvent | undefined) {
-  return { body: props && dl(detailGroups(props)) }
+/** Delete this resource */
+function deleteAction(props: Props) {
+  return <DeleteButton kind="application.codeflare.dev" name={props.application} namespace={props.namespace} />
+}
+
+/** Common actions */
+function actions(props: Props) {
+  return [deleteAction(props)]
+}
+
+export default function ApplicationDetail(props: Props | undefined) {
+  return { body: props && dl(detailGroups(props)), actions: props && actions(props) }
 }

@@ -1,4 +1,5 @@
 import Sparkline from "../Sparkline"
+import DeleteButton from "../DeleteButton"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 
 import type Props from "./Props"
@@ -37,6 +38,21 @@ function detailGroups(props: Props) {
   ]
 }
 
+/** Delete this resource */
+function deleteAction(props: Props) {
+  const last = lastEvent(props)
+  if (last) {
+    return <DeleteButton kind="dataset" name={last.label} namespace={last.namespace} />
+  } else {
+    return undefined
+  }
+}
+
+/** Common actions */
+function actions(props: Props) {
+  return [deleteAction(props)].filter(Boolean)
+}
+
 export default function DataSetDetail(props: Props | undefined) {
-  return { body: props && dl(detailGroups(props)) }
+  return { body: props && dl(detailGroups(props)), actions: props && actions(props) }
 }

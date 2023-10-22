@@ -10,10 +10,10 @@ import jay from "../main/events"
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("jay", jay)
+    contextBridge.exposeInMainWorld("live", jay)
   } catch (error) {
     console.error(error)
   }
 } else {
-  window.jay = jay
+  window.live = jay
 }

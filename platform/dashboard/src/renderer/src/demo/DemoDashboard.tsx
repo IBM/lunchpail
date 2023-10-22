@@ -8,9 +8,10 @@ import DemoDataSetEventSource from "./streams/dataset"
 import DemoWorkerPoolStatusEventSource from "./streams/pool"
 import DemoApplicationSpecEventSource from "./streams/application"
 
-import type { EventProps } from "../pages/Dashboard"
+import type Kind from "@jay/common/Kind"
+import type DemoEventSource from "./streams/base"
 
-let props: null | (EventProps & { workerpools: DemoWorkerPoolStatusEventSource }) = null
+let props: null | (Record<Kind, DemoEventSource> & { workerpools: DemoWorkerPoolStatusEventSource }) = null
 
 function init() {
   if (props === null) {
@@ -38,13 +39,34 @@ export default function DemoDashboard() {
   const searchParams = useSearchParams()
 
   const props = init()
-  return (
-    <Dashboard
-      {...props}
-      createResource={props.workerpools.createResource.bind(props.workerpools)}
-      location={location}
-      navigate={navigate}
-      searchParams={searchParams[0]}
-    />
-  )
+
+  window.jay = window.demo = Object.assign({}, props, {
+    create: props.workerpools.create.bind(props.workerpools),
+    delete(dprops: import("@jay/common/api/jay").DeleteProps) {
+      if (/workerpool/.test(dprops.kind)) {
+        return props.workerpools.delete(dprops)
+      } else if (/application/.test(dprops.kind)) {
+        return props.applications.delete(dprops)
+      } else if (/dataset/.test(dprops.kind)) {
+        return props.datasets.delete(dprops)
+      } else {
+        return false
+      }
+    },
+    controlplane: {
+      async status() {
+        return {
+          location: "demo",
+          cluster: true,
+          runtime: true,
+          examples: false,
+          defaults: false,
+        }
+      },
+      init() {},
+      destroy() {},
+    },
+  })
+
+  return <Dashboard {...props} location={location} navigate={navigate} searchParams={searchParams[0]} />
 }

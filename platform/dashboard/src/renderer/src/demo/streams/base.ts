@@ -1,6 +1,6 @@
 type Handler = (evt: MessageEvent) => void
 
-export default abstract class BaseEventSource {
+export default abstract class DemoEventSource {
   /** Listeners for our ApplicationSpecEvent stream */
   protected readonly handlers: Handler[] = []
 
@@ -8,6 +8,11 @@ export default abstract class BaseEventSource {
   protected interval: null | ReturnType<typeof setInterval> = null
 
   protected abstract initInterval(intervalMillis: number): void
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public delete(_props: { name: string; namespace: string }): boolean {
+    return false
+  }
 
   public constructor(private readonly intervalMillis = 2000) {}
 
@@ -25,6 +30,12 @@ export default abstract class BaseEventSource {
         this.handlers.splice(idx, 1)
       }
     }
+  }
+
+  public on(source: "message", cb: import("@jay/common/api/jay").OnModelUpdateFn) {
+    const mycb: Handler = (evt) => cb({}, evt)
+    addEventListener(source, mycb)
+    return () => removeEventListener(source, mycb)
   }
 
   public close() {
