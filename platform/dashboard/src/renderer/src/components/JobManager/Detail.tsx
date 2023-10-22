@@ -32,6 +32,9 @@ export default function JobManagerDetail() {
             const init = () => status.setTo("updating")
             const destroy = () => status.setTo("destroying")
 
+            const initButtonIsLoading = status.refreshing === "initializing" || status.refreshing === "updating"
+            const destroyButtonIsLoading = status.refreshing === "destroying"
+
             const actions =
               status.status && isHealthy(status.status)
                 ? [
@@ -39,9 +42,9 @@ export default function JobManagerDetail() {
                       size="sm"
                       key="update"
                       variant="secondary"
-                      icon={<SyncIcon />}
                       onClick={init}
-                      isLoading={status.refreshing === "initializing" || status.refreshing === "updating"}
+                      isLoading={initButtonIsLoading}
+                      icon={initButtonIsLoading ? <></> : <SyncIcon />}
                     >
                       {status.refreshing === "updating" ? "Updating" : "Update"}
                     </Button>,
@@ -50,9 +53,9 @@ export default function JobManagerDetail() {
                       size="sm"
                       key="destroy"
                       variant="danger"
-                      icon={<TrashIcon />}
                       onClick={destroy}
-                      isLoading={status.refreshing === "destroying"}
+                      isLoading={destroyButtonIsLoading}
+                      icon={destroyButtonIsLoading ? <></> : <TrashIcon />}
                     >
                       {status.refreshing === "destroying" ? "Destroying" : "Destroy"}
                     </Button>,

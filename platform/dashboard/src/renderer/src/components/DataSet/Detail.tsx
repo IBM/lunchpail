@@ -42,11 +42,7 @@ function detailGroups(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   const last = lastEvent(props)
-  if (last) {
-    return [<DeleteButton kind="dataset" name={last.label} namespace={last.namespace} />]
-  } else {
-    return []
-  }
+  return !last ? [] : [<DeleteButton kind="dataset" name={last.label} namespace={last.namespace} />]
 }
 
 /** Common actions */

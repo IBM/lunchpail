@@ -1,82 +1,55 @@
-import { PureComponent } from "react"
 import { Card, CardHeader, CardTitle, CardBody, CardFooter, DescriptionListProps } from "@patternfly/react-core"
 
-import type { MouseEvent, ReactNode } from "react"
+import type { ReactNode } from "react"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
-
-import { dl } from "./DescriptionGroup"
 
 import type { NavigableKind as Kind } from "../Kind"
 import type { DrilldownProps } from "../context/DrawerContext"
 
+import { dl } from "./DescriptionGroup"
+
 import "./CardInGallery.scss"
 
-type BaseProps = DrilldownProps
+export type BaseProps = DrilldownProps
 
-export default abstract class CardInGallery<Props = unknown> extends PureComponent<Props & BaseProps> {
-  protected readonly stopPropagation = (evt: MouseEvent<HTMLElement>) => evt.stopPropagation()
+type Props = BaseProps & {
+  kind: Kind
+  label: string
+  title?: ReactNode
+  icon?: ReactNode
+  groups: ReactNode[]
+  footer?: ReactNode
+  actions?: CardHeaderActionsObject
+  descriptionListProps?: DescriptionListProps
+}
 
-  protected abstract kind(): Kind
+const defaultDescriptionListProps: DescriptionListProps = {
+  isCompact: true,
+}
 
-  protected abstract label(): string
+export default function CardInGallery(props: Props) {
+  const onClick = () => props.showDetails({ id: props.label, kind: props.kind })
 
-  protected abstract icon(): ReactNode
+  const header = props.icon && (
+    <CardHeader actions={props.actions} className="codeflare--card-header-no-wrap">
+      <span className="codeflare--card-icon">{props.icon}</span>
+    </CardHeader>
+  )
 
-  /** DescriptionList groups to display in the Card summary */
-  protected abstract groups(): ReactNode[]
+  const body = dl(props.groups, props.descriptionListProps ?? defaultDescriptionListProps)
 
-  protected actions(): undefined | CardHeaderActionsObject {
-    return undefined
-  }
-
-  private readonly onClick = () => {
-    this.props.showDetails({ id: this.label(), kind: this.kind() })
-  }
-
-  private header() {
-    return (
-      this.icon() && (
-        <CardHeader actions={this.actions()} className="codeflare--card-header-no-wrap">
-          <span className="codeflare--card-icon">{this.icon()}</span>
-        </CardHeader>
-      )
-    )
-  }
-
-  protected title(): ReactNode {
-    return this.label()
-  }
-
-  protected descriptionListProps(): DescriptionListProps {
-    return { isCompact: true }
-  }
-
-  private body() {
-    return dl(this.groups(), this.descriptionListProps())
-  }
-
-  protected footer(): null | ReactNode {
-    return null
-  }
-
-  private card() {
-    return (
-      <Card
-        isClickable
-        isSelectable
-        isSelectableRaised
-        isSelected={this.props.currentlySelectedId === this.label() && this.props.currentlySelectedKind === this.kind()}
-        onClick={this.onClick}
-      >
-        {this.header()}
-        <CardTitle>{this.title()}</CardTitle>
-        <CardBody>{this.body()}</CardBody>
-        {this.footer() && <CardFooter>{this.footer()}</CardFooter>}
-      </Card>
-    )
-  }
-
-  public override render() {
-    return this.card()
-  }
+  return (
+    <Card
+      isClickable
+      isSelectable
+      isSelectableRaised
+      isSelected={props.currentlySelectedId === props.label && props.currentlySelectedKind === props.kind}
+      onClick={onClick}
+    >
+      {header}
+      <CardTitle>{props.title ?? props.label}</CardTitle>
+      <CardBody>{body}</CardBody>
+      {props.footer && <CardFooter>{props.footer}</CardFooter>}
+    </Card>
+  )
 }

@@ -4,6 +4,7 @@ import CardInGallery from "../CardInGallery"
 import { descriptionGroup } from "../DescriptionGroup"
 import { linkToAllDataSetDetails } from "../../navigate/details"
 
+import type { BaseProps } from "../CardInGallery"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import ApplicationIcon from "./Icon"
@@ -20,25 +21,16 @@ export function datasets(props: ApplicationSpecEvent) {
   )
 }
 
-export default class Application extends CardInGallery<ApplicationSpecEvent> {
-  protected override kind() {
-    return "applications" as const
-  }
+export default function ApplicationCard(props: BaseProps & ApplicationSpecEvent) {
+  const kind = "applications" as const
+  const icon = <ApplicationIcon {...props} />
+  const label = props.application
+  const groups = [
+    descriptionGroup("api", props.api, undefined, "The API used by this Application to distribute work."),
+    datasets(props),
+    props.description && descriptionGroup("Description", props.description),
+    //props.supportsGpu && descriptionGroup("Benefits from GPU", props.supportsGpu),
+  ]
 
-  protected override icon() {
-    return <ApplicationIcon {...this.props} />
-  }
-
-  protected override label() {
-    return this.props.application
-  }
-
-  protected override groups() {
-    return [
-      descriptionGroup("api", this.props.api, undefined, "The API used by this Application to distribute work."),
-      datasets(this.props),
-      this.props.description && descriptionGroup("Description", this.props.description),
-      //this.props.supportsGpu && descriptionGroup("Benefits from GPU", this.props.supportsGpu),
-    ]
-  }
+  return <CardInGallery {...props} kind={kind} label={label} icon={icon} groups={groups} />
 }
