@@ -1,3 +1,3 @@
-type Action = "apply" | "delete"
+type Action = "apply" | "delete" | "update"
 
 export default Action

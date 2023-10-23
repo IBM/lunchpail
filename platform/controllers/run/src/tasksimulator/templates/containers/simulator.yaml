@@ -1,0 +1,38 @@
+{{- define "codeflare.dev/containers/simulator" }}
+- name: simulator
+  image: ghcr.io/project-codeflare/codeflare-s3-syncer-component:dev
+  command: ["/bin/bash", "-c"]
+  args:
+    - |
+      echo "Started TaskSimulator injectedTasksPerInterval=$TASKS frequencyInSeconds=$FREQUENCY"
+      printenv
+
+      config=/tmp/rclone.conf
+      remote=s3:/${!REMOTE_PATH_VAR}/inbox
+      cat <<EOF > $config
+      [s3]
+      type = s3
+      provider = Other
+      env_auth = false
+      endpoint = ${!S3_ENDPOINT_VAR}
+      access_key_id = ${!AWS_ACCESS_KEY_ID_VAR}
+      secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
+      acl = public-read
+      EOF
+
+      while true
+      do
+        task=/tmp/task-$(cat /proc/sys/kernel/random/uuid).txt
+        echo "Injecting task=$task"
+        echo "Simulated" > $task
+        rclone --config $config sync $PROGRESS $task $remote
+        
+        sleep ${FREQUENCY-5}
+      done
+  env:
+    - name: TASKS
+      value: {{ quote .Values.injectedTasksPerInterval }}
+    - name: FREQUENCY
+      value: {{ quote .Values.frequencyInSeconds }}
+    {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
+{{- end }}

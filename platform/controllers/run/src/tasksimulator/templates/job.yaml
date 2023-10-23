@@ -1,0 +1,20 @@
+{{- define "codeflare.dev/TaskSimulatorJob" }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: tasksimulator
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: codeflare.dev
+    {{ if .Values.datasets }}
+{{ .Values.datasets | b64dec | indent 4 }}
+    {{ end }}
+spec:
+  restartPolicy: Never
+  containers:
+    {{- include "codeflare.dev/containers/simulator" . | indent 4 }}
+{{- end }}

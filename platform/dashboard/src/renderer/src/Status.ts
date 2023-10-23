@@ -37,7 +37,10 @@ export function statusState(demoMode: State<boolean>) {
 
   useEffect(() => {
     async function effect() {
-      if (refreshing === "updating" || refreshing === "initializing") {
+      if (refreshing === "updating") {
+        await window.jay.controlplane.update()
+        setRefreshing("refreshing")
+      } else if (refreshing === "initializing") {
         await window.jay.controlplane.init()
         setRefreshing("refreshing")
       } else if (refreshing === "destroying") {

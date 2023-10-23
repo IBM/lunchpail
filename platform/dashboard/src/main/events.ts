@@ -102,33 +102,28 @@ function initStreamForResourceKind(kind: Kind) {
     // stream close due to premature exit of kubectl
     let closedOnPurpose = false
 
-    let stream: null | ReturnType<typeof streamForKind> = null
-
     const init = () => {
       const myStream = streamForKind(kind)
-      stream = myStream
 
       // callback to renderer
       const cb = (model) => evt.sender.send(dataEvent, { data: JSON.parse(model) })
 
       // when a `/${kind}/close` message is received, tear down the watcher
-      const cleanup = () => {
+      const myCleanup = () => {
         closedOnPurpose = true
-        if (stream) {
-          ipcMain.removeListener(closeEvent, cleanup)
-          myStream.off("data", cb)
-          myStream.end()
-        }
+        ipcMain.removeListener(closeEvent, myCleanup)
+        myStream.off("data", cb)
+        myStream.end()
       }
 
-      ipcMain.once(closeEvent, cleanup)
+      ipcMain.once(closeEvent, myCleanup)
 
       // when we get a serialized model, send an event back to the sender
-      stream.on("data", cb)
+      myStream.on("data", cb)
 
-      stream.once("close", async () => {
+      myStream.once("close", async () => {
         if (!closedOnPurpose) {
-          cleanup()
+          myCleanup()
           closedOnPurpose = false
 
           // double-check that a purposeful close hasn't been
@@ -169,6 +164,12 @@ export function initEvents() {
     return true
   })
 
+  // control plane update (to latest version) request
+  ipcMain.handle("/controlplane/update", async () => {
+    await import("./controlplane/install").then((_) => _.default("lite", "update"))
+    return true
+  })
+
   // control plane teardown request
   ipcMain.handle("/controlplane/destroy", async () => {
     await import("./controlplane/install").then((_) => _.default("lite", "delete"))
@@ -203,16 +204,17 @@ const apiImpl: JayApi = Object.assign(
   {
     controlplane: {
       async status() {
-        const isReady = (await ipcRenderer.invoke("/controlplane/status")) as Status
-        return isReady
+        const status = (await ipcRenderer.invoke("/controlplane/status")) as Status
+        return status
       },
-      async init() {
-        const response = await ipcRenderer.invoke("/controlplane/init")
-        return response
+      init() {
+        return ipcRenderer.invoke("/controlplane/init")
       },
-      async destroy() {
-        const response = await ipcRenderer.invoke("/controlplane/destroy")
-        return response
+      update() {
+        return ipcRenderer.invoke("/controlplane/update")
+      },
+      destroy() {
+        return ipcRenderer.invoke("/controlplane/destroy")
       },
     },
 

@@ -4,21 +4,24 @@ metadata:
   name: codeflare-run-controller
   namespace: {{ .Values.controllers.namespace }}
   labels:
+    app.kubernetes.io/name: run-controller
     app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: run-controller
+    app.kubernetes.io/component: controller
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
+      app.kubernetes.io/name: run-controller
       app.kubernetes.io/part-of: codeflare.dev
-      app.kubernetes.io/component: run-controller
+      app.kubernetes.io/component: controller
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: run-controller
         app.kubernetes.io/part-of: codeflare.dev
-        app.kubernetes.io/component: run-controller
+        app.kubernetes.io/component: controller
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: codeflare-run-controller-account

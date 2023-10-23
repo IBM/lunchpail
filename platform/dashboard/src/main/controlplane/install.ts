@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import createKindClusterIfNeeded from "./kind"
-import apply, { deleteJaaSManagedResources } from "./apply"
+import apply, { deleteJaaSManagedResources, restartControllers } from "./apply"
 
 import type Action from "./action"
 import type { ApplyProps } from "./apply"
@@ -47,6 +47,10 @@ async function applyAll(config: Config, props: ApplyProps) {
 
   for await (const yaml of yamls) {
     await apply(yaml, props)
+  }
+
+  if (props.action === "update") {
+    await restartControllers(props)
   }
 
   await props.kubeconfig.cleanup()

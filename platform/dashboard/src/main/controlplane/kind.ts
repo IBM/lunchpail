@@ -14,10 +14,14 @@ async function installKindCliIfNeeded() {
 /**
  * Create kind cluster with the given `clusterName`
  */
-function createKindCluster(clusterName = defaultClusterName) {
+async function createKindCluster(clusterName = defaultClusterName) {
   // TODO
   if (clusterName) {
-    //
+    const execPromise = promisify(exec)
+    const response = await execPromise("kind get clusters")
+    if (/No kind/.test(response.stdout) || !response.stdout.includes(clusterName)) {
+      await execPromise(`kind create cluster -n ${clusterName}`)
+    }
   }
 }
 

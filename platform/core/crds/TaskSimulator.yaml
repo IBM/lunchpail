@@ -1,0 +1,80 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: tasksimulators.codeflare.dev
+spec:
+  # group name to use for REST API: /apis/<group>/<version>
+  group: codeflare.dev
+  # list of versions supported by this CustomResourceDefinition
+  versions:
+    - name: v1alpha1
+      # Each version can be enabled/disabled by Served flag.
+      served: true
+      # One and only one version must be marked as the storage version.
+      storage: true
+      subresources:
+        # enables the status subresource
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [dataset, rate]
+              properties:
+                dataset:
+                  type: string
+                rate:
+                  type: object
+                  required: [tasks]
+                  properties:
+                    tasks:
+                      type: number
+                    frequencyInSeconds:
+                      type: number
+
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - Queued
+                    - Running
+                    - Completed
+                    - Failed
+                    
+      additionalPrinterColumns:
+        - name: DataSet
+          type: string
+          jsonPath: .spec.dataset
+        - name: Status
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+        - name: Reason
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/reason"
+          priority: 1 # -o wide only
+        - name: Message
+          type: string
+          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
+          priority: 1 # -o wide only
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+
+  # either Namespaced or Cluster
+  scope: Namespaced
+  names:
+    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    plural: tasksimulators
+    # singular name to be used as an alias on the CLI and for display
+    singular: tasksimulator
+    # kind is normally the CamelCased singular type. Your resource manifests use this.
+    kind: TaskSimulator
+    # shortNames allow shorter string to match your resource on the CLI
+    # shortNames:
+    # - ts

@@ -64,6 +64,7 @@ export default function DemoDashboard() {
         }
       },
       init() {},
+      update() {},
       destroy() {},
     },
   })

@@ -20,6 +20,9 @@ export interface ControlPlaneApi {
   /** Bring up the control plane */
   init(): void | Promise<void>
 
+  /** Refresh up the control plane to the latest version */
+  update(): void | Promise<void>
+
   /** Tear down the control plane */
   destroy(): void | Promise<void>
 }

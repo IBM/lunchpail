@@ -14,7 +14,7 @@ do
 
         # current unassigned work items
         files=$(ls "$inbox" | grep -v queues)
-        nFiles=$(echo -n "$files" | wc -l)
+        nFiles=$(echo "$files" | wc -l)
         report_size $nFiles
 
         # current number of consumers/workers

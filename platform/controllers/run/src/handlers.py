@@ -18,15 +18,33 @@ from sequence import create_run_sequence
 from workqueue import create_run_workqueue
 
 from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
+from tasksimulator import create_tasksimulator
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
+# A TaskSimulator has been deleted
+@kopf.on.delete('tasksimulators.codeflare.dev')
+def delete_tasksimulator_kopf(name: str, namespace: str, patch, **kwargs):
+    logging.info(f"Handling TaskSimulator delete name={name} namespace={namespace}")
+    set_status_immediately(customApi, name, namespace, "Terminating", "tasksimulators")
+
+# A TaskSimulator has been created
+@kopf.on.create('tasksimulators.codeflare.dev')
+def create_tasksimulator_kopf(name: str, namespace: str, uid: str, spec, patch, **kwargs):
+    logging.info(f"Handling TaskSimulator create name={name} namespace={namespace}")
+    set_status_immediately(customApi, name, namespace, 'Pending', 'tasksimulators')
+    dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, [], [])
+    create_tasksimulator(customApi, name, namespace, uid, spec, dataset_labels, patch)
+
+    # TODO: this needs to feed off the pods
+    set_status_immediately(customApi, name, namespace, 'Running', 'tasksimulators')
+
 # A WorkerPool has been deleted.
 @kopf.on.delete('workerpools.codeflare.dev')
 def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
-    logging.info(f"Handling WorkerPool delete name={name}")
+    logging.info(f"Handling WorkerPool delete name={name} namespace={namespace}")
     set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
 
 # A WorkerPool has been created.

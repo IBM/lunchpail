@@ -18,7 +18,11 @@ export default async function apply(yaml: string, props: ApplyProps) {
   const yamlFile = await file()
   await writeFile(yamlFile.path, yaml)
 
-  const ok = await execPromise(`kubectl ${props.action} --kubeconfig ${props.kubeconfig.path} -f ${yamlFile.path}`)
+  const ok = await execPromise(
+    `kubectl ${props.action === "update" ? "apply" : props.action} --kubeconfig ${props.kubeconfig.path} -f ${
+      yamlFile.path
+    }`,
+  )
     .then((resp) => {
       console.log(resp)
       return true
@@ -41,7 +45,7 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
   const execPromise = promisify(exec)
 
   await Promise.all(
-    ["platformreposecrets", "secrets"].flatMap(async (kind) => {
+    ["tasksimulators", "platformreposecrets", "secrets"].flatMap(async (kind) => {
       const resources = await execPromise(
         `kubectl get --kubeconfig ${props.kubeconfig.path} ${kind} -A --ignore-not-found -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace --no-headers`,
       )
@@ -76,5 +80,12 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
         ),
       )
     }),
+  )
+}
+
+export async function restartControllers(props: ApplyProps) {
+  const execPromise = promisify(exec)
+  await execPromise(
+    `kubectl rollout restart deployment -n codeflare-system --kubeconfig ${props.kubeconfig.path} -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/component=controller`,
   )
 }
