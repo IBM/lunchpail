@@ -48,9 +48,15 @@ function deleteAction(props: Props) {
 
 /** Common actions */
 function actions(props: Props & Pick<LocationProps, "location" | "searchParams">) {
-  return [<NewPoolButton key="new-pool" {...props} />, ...deleteAction(props)]
+  return [<NewPoolButton key="new-pool" {...props} />]
 }
 
 export default function DataSetDetail(props: (Props & Pick<LocationProps, "location" | "searchParams">) | undefined) {
-  return <DrawerContent body={props && dl(detailGroups(props))} actions={props && actions(props)} />
+  return (
+    <DrawerContent
+      body={props && dl(detailGroups(props))}
+      actions={props && actions(props)}
+      rightActions={props && deleteAction(props)}
+    />
+  )
 }

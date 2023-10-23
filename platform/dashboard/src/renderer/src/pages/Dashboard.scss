@@ -46,6 +46,13 @@
   color: var(--pf-v5-global--disabled-color--300);
 }
 
+.codeflare--danger-icon {
+  color: var(--pf-v5-global--danger-color--200);
+  &:hover {
+    color: var(--pf-v5-global--danger-color--100);
+  }
+}
+
 .codeflare--secondary-text {
   color: var(--pf-v5-global--Color--200);
 }

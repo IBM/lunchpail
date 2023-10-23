@@ -38,10 +38,10 @@ function deleteAction(props: Props) {
 }
 
 /** Common actions */
-function actions(props: Props) {
+function rightActions(props: Props) {
   return [deleteAction(props)]
 }
 
 export default function ApplicationDetail(props: Props | undefined) {
-  return <DrawerContent body={props && dl(detailGroups(props))} actions={props && actions(props)} />
+  return <DrawerContent body={props && dl(detailGroups(props))} rightActions={props && rightActions(props)} />
 }

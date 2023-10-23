@@ -48,22 +48,26 @@ export default function JobManagerDetail() {
               {status.refreshing === "updating" ? "Refreshing" : "Refresh"}
             </Button>
           </Tooltip>,
-
-          <Tooltip key="delete" content="Deprovision the Job Manager">
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={destroy}
-              isLoading={destroyButtonIsLoading}
-              icon={destroyButtonIsLoading ? <></> : <TrashIcon />}
-            >
-              {status.refreshing === "destroying" ? "Deleting" : "Delete"}
-            </Button>
-          </Tooltip>,
         ]
       : undefined
 
+  const rightActions = actions
+    ? [
+        <Tooltip key="delete" content="Deprovision the Job Manager">
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={destroy}
+            isLoading={destroyButtonIsLoading}
+            icon={destroyButtonIsLoading ? <></> : <TrashIcon />}
+          >
+            {status.refreshing === "destroying" ? "Deprovisioning" : "Deprovision"}
+          </Button>
+        </Tooltip>,
+      ]
+    : undefined
+
   const body = dl([...summaryGroups(demoMode, status.status), ...rest])
 
-  return <DrawerContent body={body} actions={actions} />
+  return <DrawerContent body={body} actions={actions} rightActions={rightActions} />
 }
