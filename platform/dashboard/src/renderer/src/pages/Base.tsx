@@ -143,6 +143,7 @@ export default abstract class Base<
               <Settings.Consumer>
                 {(settings) => (
                   <Switch
+                    ouiaId="demo-mode-switch"
                     hasCheckIcon
                     label="Demo Mode"
                     isChecked={settings?.demoMode[0]}
@@ -155,6 +156,7 @@ export default abstract class Base<
               <Settings.Consumer>
                 {(settings) => (
                   <Switch
+                    ouiaId="dark-mode-switch"
                     hasCheckIcon
                     label="Dark Mode"
                     isChecked={settings?.darkMode[0]}
