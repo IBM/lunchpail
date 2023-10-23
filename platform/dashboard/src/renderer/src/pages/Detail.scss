@@ -11,9 +11,19 @@
 /** To get inner scrolling on panel body */
 .codeflare--detail-view {
   overflow: hidden;
+
   .codeflare--detail-view-body {
-    overflow: auto;
+    overflow: hidden;
     flex: 1;
+
+    /* helps with inner scrolling of the `section` */
+    display: flex;
+    flex-direction: column;
+
+    section {
+      /* we want inner scrolling here */
+      overflow: auto;
+    }
   }
   .codeflare--detail-view-footer {
     flex: unset;

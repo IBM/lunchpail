@@ -1,5 +1,5 @@
 import type { ReactNode, ReactElement } from "react"
-import { Divider, DrawerPanelBody } from "@patternfly/react-core"
+import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleText } from "@patternfly/react-core"
 
 import DrawerToolbar from "./Toolbar"
 
@@ -11,7 +11,13 @@ export default function DrawerContent(props: {
 }) {
   return (
     <>
-      <DrawerPanelBody className="codeflare--detail-view-body">{props.body}</DrawerPanelBody>
+      <DrawerPanelBody className="codeflare--detail-view-body" hasNoPadding>
+        <Tabs>
+          <Tab title={<TabTitleText>Summary</TabTitleText>} eventKey={0}>
+            <DrawerPanelBody>{props.body}</DrawerPanelBody>
+          </Tab>
+        </Tabs>
+      </DrawerPanelBody>
 
       {((props.actions && props.actions?.length > 0) || (props.rightActions && props.rightActions?.length > 0)) && (
         <>
