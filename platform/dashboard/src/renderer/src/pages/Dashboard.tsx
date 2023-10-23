@@ -1,6 +1,5 @@
 import md5 from "md5"
-import { Fragment, ReactNode, Suspense, lazy } from "react"
-import { Gallery } from "@patternfly/react-core"
+import { Fragment, Suspense, lazy } from "react"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
 import names, { subtitles } from "../names"
@@ -9,12 +8,13 @@ import { isShowingWizard } from "../navigate/wizard"
 import isShowingNewPool from "../navigate/newpool"
 import BaseWithDrawer, { BaseWithDrawerState } from "./BaseWithDrawer"
 
-import Welcome from "../components/Welcome"
 import Application from "../components/Application/Card"
 import DataSet from "../components/DataSet/Card"
 import WorkerPool from "../components/WorkerPool/Card"
+import JobManagerCard from "../components/JobManager/Card"
 
 import Sidebar from "../sidebar"
+import Gallery from "../components/Gallery"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import type Kind from "../Kind"
@@ -452,41 +452,20 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   private lexicoApp = (a: ApplicationSpecEvent, b: ApplicationSpecEvent) => a.application.localeCompare(b.application)
   private lexicoWP = (a: WorkerPoolModel, b: WorkerPoolModel) => a.label.localeCompare(b.label)
 
-  /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
-  private readonly galleryMinWidths = {
-    default: "18em",
-  }
-
-  /** Helpful to fix the size of the gallery nodes. Otherwise, PatternFly's Gallery gets jiggy when you open/close the drawer */
-  private readonly galleryMaxWidths = {
-    default: "18em",
-  }
-
-  /** Render a PatternFly Gallery of the given nodes */
-  private gallery(nodes: ReactNode[]) {
-    return (
-      <Gallery hasGutter minWidths={this.galleryMinWidths} maxWidths={this.galleryMaxWidths}>
-        {nodes}
-      </Gallery>
-    )
-  }
-
   private applications() {
-    return this.gallery(
-      (this.state?.latestApplicationEvents || [])
-        .filter(
-          (evt) =>
-            !this.state?.filterState.applications.length ||
-            this.state.filterState.showingAllApplications ||
-            this.state.filterState.applications.includes(evt.application),
-        )
-        .sort(this.lexicoApp)
-        .map((evt) => <Application key={evt.application} {...evt} {...this.drilldownProps()} />),
-    )
+    return (this.state?.latestApplicationEvents || [])
+      .filter(
+        (evt) =>
+          !this.state?.filterState.applications.length ||
+          this.state.filterState.showingAllApplications ||
+          this.state.filterState.applications.includes(evt.application),
+      )
+      .sort(this.lexicoApp)
+      .map((evt) => <Application key={evt.application} {...evt} {...this.drilldownProps()} />)
   }
 
   private datasets() {
-    return this.gallery([
+    return [
       ...Object.entries(this.state?.datasetEvents || {})
         .sort(this.lexico)
         .map(
@@ -509,7 +488,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
               />
             ),
         ),
-    ])
+    ]
   }
 
   private toWorkerPoolModel(
@@ -586,15 +565,15 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }
 
   private platformreposecrets() {
-    return this.gallery([
+    return [
       ...Object.values(this.state?.platformreposecretEvents || {})
         .filter((events) => events.length > 0)
         .map((events) => events[events.length - 1].name),
-    ])
+    ]
   }
 
   private workerpools() {
-    return this.gallery([
+    return [
       <NewWorkerPoolCard
         key="new-worker-pool-card"
         location={this.props.location}
@@ -614,7 +593,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
             />
           ),
       ),
-    ])
+    ]
   }
 
   protected override sidebar() {
@@ -708,17 +687,13 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
   }*/
 
   protected override mainContentBody() {
+    return <Gallery>{this.galleryItems()}</Gallery>
+  }
+
+  private galleryItems() {
     switch (currentKind(this.props)) {
       case "controlplane":
-        return (
-          <Welcome
-            appMd5={this.state?.appMd5}
-            applications={this.state?.latestApplicationNames}
-            datasets={this.datasetsList}
-            workerpools={this.workerpoolsList}
-            {...this.drilldownProps()}
-          />
-        )
+        return <JobManagerCard {...this.drilldownProps()} />
       case "applications":
         return this.applications()
       case "datasets":
