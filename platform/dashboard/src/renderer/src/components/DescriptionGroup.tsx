@@ -122,14 +122,6 @@ export function descriptionGroup(
   return null
 }
 
-function nameGroup(name: string) {
-  return descriptionGroup("Name", name)
-}
-
 export function dl(groups: ReactNode[], props?: DescriptionListProps) {
   return <DescriptionList {...props}>{groups}</DescriptionList>
-}
-
-export function dlForName(name: string) {
-  return dl([nameGroup(name), <div />], { displaySize: "lg", isHorizontal: true, isFluid: true })
 }
