@@ -4,8 +4,8 @@ import { Button, Tooltip } from "@patternfly/react-core"
 import Status from "../../Status"
 import Settings from "../../Settings"
 
-import { isHealthy } from "./Summary"
 import { summaryGroups } from "./Card"
+import { isHealthy } from "./HealthBadge"
 import DrawerContent from "../Drawer/Content"
 
 import camelCaseSplit from "../../util/camel-split"

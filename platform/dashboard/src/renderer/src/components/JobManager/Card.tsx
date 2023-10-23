@@ -2,7 +2,7 @@ import type { MouseEvent } from "react"
 import { useContext } from "react"
 import { Button, Text } from "@patternfly/react-core"
 
-import { isHealthy } from "./Summary"
+import { isHealthy } from "./HealthBadge"
 import CardInGallery from "../CardInGallery"
 
 import Status, { JobManagerStatus } from "../../Status"

@@ -2,6 +2,7 @@ import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavLi
 
 import { resourceKinds, credentialsKinds } from "../Kind"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
+import ControlPlaneHealthBadge from "../components/JobManager/HealthBadge"
 import { nonResourceNames, resourceNames, credentialsNames } from "../names"
 
 import type { LocationProps } from "../router/withLocation"
@@ -18,7 +19,7 @@ type Props = Pick<LocationProps, "location"> & {
   filterState?: ActiveFilters
 }
 
-const marginLeft = { marginLeft: "1em" as const }
+const marginLeft = { marginLeft: "0.5em" as const }
 
 function SidebarNavItems<
   Kinds extends typeof resourceKinds | typeof credentialsKinds,
@@ -60,6 +61,8 @@ function SidebarHelloNavGroup(props: Pick<Props, "location">) {
   return (
     <NavItem to="#controlplane" isActive={isShowingKind("controlplane", props)}>
       {nonResourceNames.controlplane}
+      <span style={marginLeft} />
+      <ControlPlaneHealthBadge />
     </NavItem>
   )
 }
