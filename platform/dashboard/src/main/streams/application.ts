@@ -21,10 +21,10 @@ function transformLineToEvent(sep: string) {
 
       const model: ApplicationSpecEvent = {
         timestamp: Date.now(),
-        namespace: ns,
         application,
         description,
         api,
+        namespace: ns,
         command,
         supportsGpu: /true/i.test(supportsGpu),
         image,
