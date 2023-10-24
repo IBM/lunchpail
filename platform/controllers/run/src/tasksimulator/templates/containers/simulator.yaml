@@ -22,10 +22,13 @@
 
       while true
       do
-        task=/tmp/task-$(cat /proc/sys/kernel/random/uuid).txt
-        echo "Injecting task=$task"
-        echo "Simulated" > $task
-        rclone --config $config sync $PROGRESS $task $remote
+        for i in $(seq 1 $TASKS)
+        do
+          task=/tmp/task-$(cat /proc/sys/kernel/random/uuid).txt
+          echo "Injecting task=$task"
+          echo "Simulated" > $task
+          rclone --config $config sync $PROGRESS $task $remote
+        done
         
         sleep ${FREQUENCY-5}
       done
