@@ -26,6 +26,7 @@ import type QueueEvent from "@jay/common/events/QueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
+import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
@@ -53,11 +54,17 @@ type State = BaseWithDrawerState & {
   /** Events for PlatformRepoSecrets, indexed by PlatformRepoSecretEvent.name */
   platformreposecretEvents: Record<string, PlatformRepoSecretEvent[]>
 
+  /** Events for TaskSimulators, indexed by TaskSimulatorEvent.name */
+  tasksimulatorEvents: Record<string, TaskSimulatorEvent[]>
+
   /** Events for Pools, indexed by WorkerPoolModel.label */
   poolEvents: Record<string, WorkerPoolStatusEvent[]>
 
   /** Latest relationship between DataSet and WorkerPoolStatusEvent */
   datasetToPool: Record<string, WorkerPoolStatusEvent[]>
+
+  /** Latest relationship between DataSet and TaskSimulatorEvent */
+  datasetToTaskSimulators: Record<string, TaskSimulatorEvent[]>
 
   /** Latest event for each Application */
   latestApplicationEvents: ApplicationSpecEvent[]
@@ -160,6 +167,44 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
 
       return {
         platformreposecretEvents: Object.assign({}, curState?.platformreposecretEvents),
+      }
+    })
+  }
+
+  private readonly onTaskSimulatorEvent = (evt: EventLike) => {
+    const event = JSON.parse(evt.data) as TaskSimulatorEvent
+
+    this.setState((curState) => {
+      if (event.status === "Terminating") {
+        // this.closeDetailViewIfShowing(event.name, "tasksimulators")
+
+        if (curState.datasetToTaskSimulators[event.dataset]) {
+          curState.datasetToTaskSimulators[event.dataset] = curState.datasetToTaskSimulators[event.dataset].filter(
+            (_) => _.name !== event.name,
+          )
+        }
+
+        delete curState.tasksimulatorEvents[event.name]
+      } else {
+        if (!curState.tasksimulatorEvents[event.name]) {
+          curState.tasksimulatorEvents[event.name] = []
+        }
+        curState.tasksimulatorEvents[event.name].push(event)
+
+        if (!curState.datasetToTaskSimulators[event.dataset]) {
+          curState.datasetToTaskSimulators[event.dataset] = [event]
+        } else {
+          const idx = curState.datasetToTaskSimulators[event.dataset].findIndex((_) => _.name === event.name)
+          if (idx < 0) {
+            curState.datasetToTaskSimulators[event.dataset].push(event)
+          } else {
+            curState.datasetToTaskSimulators[event.dataset][idx] = event
+          }
+        }
+      }
+
+      return {
+        tasksimulatorEvents: Object.assign({}, curState?.tasksimulatorEvents),
       }
     })
   }
@@ -405,6 +450,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.initEventStream(this.props.workerpools, this.onPoolEvent)
     this.initEventStream(this.props.applications, this.onApplicationEvent)
     this.initEventStream(this.props.platformreposecrets, this.onPlatformRepoSecretEvent)
+    this.initEventStream(this.props.tasksimulators, this.onTaskSimulatorEvent)
   }
 
   public componentWillUnmount() {
@@ -413,6 +459,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
     this.props.workerpools.removeEventListener("message", this.onPoolEvent)
     this.props.applications.removeEventListener("message", this.onApplicationEvent)
     this.props.platformreposecrets.removeEventListener("message", this.onPlatformRepoSecretEvent)
+    this.props.tasksimulators.removeEventListener("message", this.onTaskSimulatorEvent)
   }
 
   public componentDidMount() {
@@ -420,8 +467,10 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       datasetEvents: {},
       queueEvents: {},
       platformreposecretEvents: {},
+      tasksimulatorEvents: {},
       poolEvents: {},
       datasetToPool: {},
+      datasetToTaskSimulators: {},
       latestApplicationEvents: [],
       datasetIndex: {},
       workerpoolIndex: {},
@@ -477,6 +526,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
                 key={label}
                 idx={either(events[events.length - 1].idx, idx)}
                 workerpools={this.state?.datasetToPool[label] || []}
+                tasksimulators={this.state?.datasetToTaskSimulators[label] || []}
                 applications={this.state?.latestApplicationEvents || []}
                 label={label}
                 events={events}
@@ -750,6 +800,7 @@ export class Dashboard extends BaseWithDrawer<Props, State> {
       : {
           idx: either(events[events.length - 1].idx, this.state.datasetIndex[id]),
           workerpools: this.state?.datasetToPool[id] || [],
+          tasksimulators: this.state?.datasetToTaskSimulators[id] || [],
           applications: this.state?.latestApplicationEvents || [],
           label: id,
           events: events,

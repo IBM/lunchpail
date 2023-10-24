@@ -50,14 +50,23 @@ function deleteAction(last: null | DataSetEvent) {
 }
 
 /** Launch a TaskSimulator for this dataset */
-function taskSimulatorAction(last: null | DataSetEvent) {
-  return !last ? [] : [<TaskSimulatorButton key="task-simulator" name={last.label} namespace={last.namespace} />]
+function taskSimulatorAction(last: null | DataSetEvent, props: Props) {
+  return !last
+    ? []
+    : [
+        <TaskSimulatorButton
+          key="task-simulator"
+          name={last.label}
+          namespace={last.namespace}
+          simulators={props.tasksimulators}
+        />,
+      ]
 }
 
 /** Right-aligned actions */
 function rightActions(props: Props) {
   const last = lastEvent(props)
-  return [...taskSimulatorAction(last), ...deleteAction(last)]
+  return [...taskSimulatorAction(last, props), ...deleteAction(last)]
 }
 
 /** Left-aligned actions */

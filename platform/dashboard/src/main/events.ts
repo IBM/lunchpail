@@ -4,11 +4,12 @@ import startPoolStream from "./streams/pool"
 import startQueueStream from "./streams/queue"
 import startDataSetStream from "./streams/dataset"
 import startApplicationStream from "./streams/application"
+import startTaskSimulatorStream from "./streams/tasksimulator"
 import startPlatformRepoSecretStream from "./streams/platformreposecret"
 
 import { Status, getStatusFromMain } from "./controlplane/status"
 
-import type Kind from "@jay/common/Kind"
+import type WatchedKind from "@jay/common/Kind"
 import type JayApi from "@jay/common/api/jay"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 
@@ -63,7 +64,7 @@ app.get("/api/newpool", async () => {
 
 */
 
-function streamForKind(kind: Kind): import("stream").Transform {
+function streamForKind(kind: WatchedKind): import("stream").Transform {
   switch (kind) {
     case "datasets":
       return startDataSetStream()
@@ -75,6 +76,8 @@ function streamForKind(kind: Kind): import("stream").Transform {
       return startPlatformRepoSecretStream()
     case "applications":
       return startApplicationStream()
+    case "tasksimulators":
+      return startTaskSimulatorStream()
   }
 }
 
@@ -84,7 +87,7 @@ function streamForKind(kind: Kind): import("stream").Transform {
  * a watcher against the given `kind` of resource. It will pass back
  * any messages to the sender of that message.
  */
-function initStreamForResourceKind(kind: Kind) {
+function initStreamForResourceKind(kind: WatchedKind) {
   const openEvent = `/${kind}/open`
   const dataEvent = `/${kind}/event`
   const closeEvent = `/${kind}/close`
@@ -140,7 +143,15 @@ function initStreamForResourceKind(kind: Kind) {
   })
 }
 
-const kinds: Kind[] = ["datasets", "queues", "workerpools", "applications", "platformreposecrets"]
+/** TODO this is cloned from @jay/common/Kind.watchedKinds. Vite currently isn't happy with importing non-type bits from common */
+const kinds: WatchedKind[] = [
+  "datasets",
+  "queues",
+  "workerpools",
+  "applications",
+  "platformreposecrets",
+  "tasksimulators",
+]
 
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
@@ -183,7 +194,7 @@ export function initEvents() {
  * will call us back on the `/event` channel, and then we pass these
  * return messages, in turn, back to the UI via the given `cb` callback.
  */
-function onFromClientSide(this: Kind, _: "message", cb: (...args: unknown[]) => void) {
+function onFromClientSide(this: WatchedKind, _: "message", cb: (...args: unknown[]) => void) {
   ipcRenderer.on(`/${this}/event`, cb)
   ipcRenderer.send(`/${this}/open`)
 
@@ -233,7 +244,7 @@ const apiImpl: JayApi = Object.assign(
           on: onFromClientSide.bind(kind),
         },
       }),
-    {} as Record<Kind, JayResourceApi>,
+    {} as Record<WatchedKind, JayResourceApi>,
   ),
 )
 

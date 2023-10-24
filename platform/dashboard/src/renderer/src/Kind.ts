@@ -23,7 +23,7 @@ export type NonResourceKind = "controlplane"
 export type NavigableKind = NamedKind | NonResourceKind
 
 /** All resources, including those tracked by not directly appearing in the UI */
-export const kinds = [...namedKinds, "queues"] as const
+export const kinds = [...namedKinds, "queues", "tasksimulators"] as const
 
 /** All resources, including those tracked by not directly appearing in the UI */
 type Kind = (typeof kinds)[number]

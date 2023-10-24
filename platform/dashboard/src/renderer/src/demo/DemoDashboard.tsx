@@ -20,6 +20,7 @@ function init() {
     const workerpools = new DemoWorkerPoolStatusEventSource(datasets, queues)
     const applications = new DemoApplicationSpecEventSource()
     const platformreposecrets = new NothingEventSource()
+    const tasksimulators = new NothingEventSource()
 
     props = {
       datasets,
@@ -27,6 +28,7 @@ function init() {
       queues,
       applications,
       platformreposecrets,
+      tasksimulators,
     }
   }
 
