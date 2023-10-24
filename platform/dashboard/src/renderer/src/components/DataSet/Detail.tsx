@@ -1,11 +1,15 @@
 import Sparkline from "../Sparkline"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
+import TaskSimulatorButton from "./TaskSimulatorButton"
 import { dl, descriptionGroup } from "../DescriptionGroup"
 import { NewPoolButton, lastEvent, commonGroups } from "./common"
 
 import type Props from "./Props"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type { LocationProps } from "../../router/withLocation"
+
+type DataSetDetailProps = Props & Pick<LocationProps, "location" | "searchParams">
 
 function bucket(props: Props) {
   const last = lastEvent(props)
@@ -40,23 +44,33 @@ function detailGroups(props: Props) {
   ]
 }
 
-/** Delete this resource */
-function deleteAction(props: Props) {
-  const last = lastEvent(props)
+/** Delete this dataset */
+function deleteAction(last: null | DataSetEvent) {
   return !last ? [] : [<DeleteButton key="delete" kind="dataset" name={last.label} namespace={last.namespace} />]
 }
 
-/** Common actions */
-function actions(props: Props & Pick<LocationProps, "location" | "searchParams">) {
+/** Launch a TaskSimulator for this dataset */
+function taskSimulatorAction(last: null | DataSetEvent) {
+  return !last ? [] : [<TaskSimulatorButton key="task-simulator" name={last.label} namespace={last.namespace} />]
+}
+
+/** Right-aligned actions */
+function rightActions(props: Props) {
+  const last = lastEvent(props)
+  return [...taskSimulatorAction(last), ...deleteAction(last)]
+}
+
+/** Left-aligned actions */
+function leftActions(props: DataSetDetailProps) {
   return [<NewPoolButton key="new-pool" {...props} />]
 }
 
-export default function DataSetDetail(props: (Props & Pick<LocationProps, "location" | "searchParams">) | undefined) {
+export default function DataSetDetail(props: DataSetDetailProps | undefined) {
   return (
     <DrawerContent
       body={props && dl(detailGroups(props))}
-      actions={props && actions(props)}
-      rightActions={props && deleteAction(props)}
+      actions={props && leftActions(props)}
+      rightActions={props && rightActions(props)}
     />
   )
 }

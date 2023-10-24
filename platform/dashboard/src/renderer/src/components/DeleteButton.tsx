@@ -24,8 +24,7 @@ export default function DeleteButton(props: import("@jay/common/api/jay").Delete
       }
     >
       <Button
-        size="sm"
-        key="delete"
+        size="lg"
         variant="plain"
         data-kind={props.kind}
         data-name={props.name}

@@ -8,10 +8,10 @@ import DemoDataSetEventSource from "./streams/dataset"
 import DemoWorkerPoolStatusEventSource from "./streams/pool"
 import DemoApplicationSpecEventSource from "./streams/application"
 
-import type Kind from "@jay/common/Kind"
+import type WatchedKind from "@jay/common/Kind"
 import type DemoEventSource from "./streams/base"
 
-let props: null | (Record<Kind, DemoEventSource> & { workerpools: DemoWorkerPoolStatusEventSource }) = null
+let props: null | (Record<WatchedKind, DemoEventSource> & { workerpools: DemoWorkerPoolStatusEventSource }) = null
 
 function init() {
   if (props === null) {
