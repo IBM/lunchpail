@@ -5,8 +5,8 @@ import { singular } from "../../names"
 
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 
-import OnIcon from "@patternfly/react-icons/dist/esm/icons/lightbulb-icon"
-import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-lightbulb-icon"
+import OnIcon from "@patternfly/react-icons/dist/esm/icons/sun-icon"
+import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-sun-icon"
 
 function yaml(name: string, namespace: string) {
   return `

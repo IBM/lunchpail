@@ -31,7 +31,7 @@ export default function DeleteButton(props: import("@jay/common/api/jay").Delete
         data-namespace={props.namespace}
         onClick={onClick}
       >
-        <TrashIcon className="codeflare--danger-icon" />
+        <TrashIcon />
       </Button>
     </Tooltip>
   )
