@@ -12,7 +12,7 @@ function statusGroup(props: Props) {
 }
 
 function reasonGroups(props: Props) {
-  const latestStatus = props.statusHistory[props.statusHistory.length - 1]
+  const latestStatus = props.status
   if (latestStatus?.reason) {
     return [descriptionGroup("Reason", titleCaseSplit(latestStatus.reason))]
   } else {
@@ -21,7 +21,7 @@ function reasonGroups(props: Props) {
 }
 
 function messageGroups(props: Props) {
-  const latestStatus = props.statusHistory[props.statusHistory.length - 1]
+  const latestStatus = props.status
   if (latestStatus?.message) {
     return [descriptionGroup("Message", titleCaseSplit(latestStatus.message))]
   } else {
@@ -36,7 +36,7 @@ function detailGroups(props: Props) {
 
 /** Any suggestions/corrective action buttons */
 function correctiveActions(props: Props) {
-  const latestStatus = props.statusHistory[props.statusHistory.length - 1]
+  const latestStatus = props.status
   if (latestStatus?.status === "CloneFailed" && latestStatus?.reason === "AccessDenied") {
     const repoMatch = latestStatus?.message?.match(/(https:\/\/[^/]+)/)
     const repo = repoMatch ? repoMatch[1] : undefined

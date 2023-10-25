@@ -21,21 +21,21 @@ function completionRate(props: Props) {
 }
 
 function latestApplications(props: Props) {
-  if (props.statusHistory.length > 0) {
-    return props.statusHistory[props.statusHistory.length - 1].applications
+  if (props.status) {
+    return props.status.applications
   }
   return null
 }
 
 function latestDataSets(props: Props) {
-  if (props.statusHistory.length > 0) {
-    return props.statusHistory[props.statusHistory.length - 1].datasets
+  if (props.status) {
+    return props.status.datasets
   }
   return null
 }
 
 function size(props: Props) {
-  return !props.statusHistory?.length ? 0 : props.statusHistory[props.statusHistory.length - 1].size
+  return !props.status ? 0 : props.status.size
 }
 
 /** One row per worker, within row, one cell per inbox or outbox enqueued task */
@@ -65,7 +65,7 @@ export function statusActions(
   props: Props,
   textComponent?: import("@patternfly/react-core").TextProps["component"],
 ): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
-  const latestStatus = props.statusHistory[props.statusHistory.length - 1]
+  const latestStatus = props.status
 
   return {
     hasNoOffset: true,

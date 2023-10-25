@@ -8,5 +8,5 @@ export default interface Props {
   datasetIndex: Record<string, number>
 
   /** This will be ordered from least recent to most recent */
-  statusHistory: WorkerPoolStatusEvent[]
+  status?: WorkerPoolStatusEvent
 }

@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
-import { Fragment, Suspense, lazy, useCallback, useEffect, useState } from "react"
+import { Fragment, Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react"
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
 import names, { subtitles } from "../names"
@@ -8,7 +8,7 @@ import { isShowingWizard } from "../navigate/wizard"
 import isShowingNewPool from "../navigate/newpool"
 import navigateToHome, { navigateToWorkerPools } from "../navigate/home"
 
-import PageWithDrawer, { closeDetailViewIfShowing, drilldownProps } from "./PageWithDrawer"
+import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
 import Application from "../components/Application/Card"
 import DataSet from "../components/DataSet/Card"
@@ -19,10 +19,12 @@ import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
-import type Kind from "../Kind"
+import allEventsHandler from "../events/all"
+import singletonEventHandler from "../events/singleton"
 
+import type Kind from "../Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
-import type { Handler, EventLike } from "@jay/common/events/EventSourceLike"
+import type { EventLike } from "@jay/common/events/EventSourceLike"
 import type QueueEvent from "@jay/common/events/QueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
@@ -48,38 +50,6 @@ function either<T>(x: T | undefined, y: T): T {
 }
 
 export function Dashboard(props: Props) {
-  /** Events for DataSets, indexed by DataSetEvent.label */
-  const [datasetEvents, setDatasetEvents] = useState<Record<string, DataSetEvent[]>>({})
-
-  /** Events for Queues, indexed by WorkerPoolModel.label */
-  const [queueEvents, setQueueEvents] = useState<Record<string, QueueEvent[]>>({})
-
-  /** Events for PlatformRepoSecrets, indexed by PlatformRepoSecretEvent.name */
-  const [platformreposecretEvents, setPlatformreposecretEvents] = useState<Record<string, PlatformRepoSecretEvent[]>>(
-    {},
-  )
-
-  /** Events for TaskSimulators, indexed by TaskSimulatorEvent.name */
-  const [tasksimulatorEvents, setTaskSimulatorEvents] = useState<Record<string, TaskSimulatorEvent[]>>({})
-
-  /** Events for Pools, indexed by WorkerPoolModel.label */
-  const [poolEvents, setPoolEvents] = useState<Record<string, WorkerPoolStatusEvent[]>>({})
-
-  /** Latest relationship between DataSet and WorkerPoolStatusEvent */
-  const [datasetToPool, setDataSetToPool] = useState<Record<string, WorkerPoolStatusEvent[]>>({})
-
-  /** Latest relationship between DataSet and TaskSimulatorEvent */
-  const [datasetToTaskSimulators, setDataSetToTaskSimulators] = useState<Record<string, TaskSimulatorEvent[]>>({})
-
-  /** Latest event for each Application */
-  const [latestApplicationEvents, setLatestApplicationEvents] = useState<ApplicationSpecEvent[]>([])
-
-  /** Map DataSetEvent.label to a dense index */
-  const [datasetIndex, setDatasetIndex] = useState<Record<string, number>>({})
-
-  /** Map WorkerPool label to a dense index */
-  const [workerpoolIndex, setWorkerPoolIndex] = useState<Record<string, number>>({})
-
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -93,249 +63,124 @@ export function Dashboard(props: Props) {
     [location, navigate, searchParams],
   )
 
-  const onDataSetEvent = useCallback(
-    (evt: EventLike) => {
-      const datasetEvent = JSON.parse(evt.data) as DataSetEvent
-      const { label } = datasetEvent
+  // State
+  const [poolEvents, setPoolEvents] = useState<WorkerPoolStatusEvent[]>([])
+  const [queueEvents, setQueueEvents] = useState<QueueEvent[]>([])
+  const [datasetEvents, setDataSetEvents] = useState<DataSetEvent[]>([])
+  const [applicationEvents, setApplicationEvents] = useState<ApplicationSpecEvent[]>([])
+  const [tasksimulatorEvents, setTaskSimulatorEvents] = useState<TaskSimulatorEvent[]>([])
+  const [platformreposecretEvents, setPlatformRepoSecretEvents] = useState<PlatformRepoSecretEvent[]>([])
 
-      if (datasetEvent.status === "Terminating") {
-        closeDetailViewIfShowing(label, "datasets", returnHome)
-
-        delete datasetIndex[label]
-        delete datasetEvents[label]
-      } else {
-        let myIdx = datasetIndex[label]
-        if (myIdx === undefined) {
-          myIdx = either(datasetEvent.idx, Object.keys(datasetIndex).length)
-          datasetIndex[label] = myIdx
-        }
-
-        if (!(label in datasetEvents)) {
-          datasetEvents[label] = []
-        }
-        datasetEvents[label].push(datasetEvent)
-      }
-
-      setDatasetIndex(Object.assign({}, datasetIndex))
-      setDatasetEvents(Object.assign({}, datasetEvents))
-    },
-    [searchParams],
-  )
-
-  const onQueueEvent = useCallback(
-    (evt: EventLike) => {
-      const queueEvent = JSON.parse(evt.data) as QueueEvent
-      const { workerpool } = queueEvent
-
-      let myIdx = workerpoolIndex[workerpool]
-      if (myIdx === undefined) {
-        myIdx = Object.keys(workerpoolIndex).length
-        workerpoolIndex[workerpool] = myIdx
-      }
-
-      if (!(workerpool in queueEvents)) {
-        queueEvents[workerpool] = []
-      }
-
-      const myEvents = queueEvents[workerpool]
-      if (myEvents.length > 0 && myEvents[myEvents.length - 1].timestamp === queueEvent.timestamp) {
-        // hmm, debounce
-        return
-      }
-
-      queueEvents[workerpool].push(queueEvent)
-
-      setQueueEvents(Object.assign({}, queueEvents))
-      setWorkerPoolIndex(Object.assign({}, workerpoolIndex))
-    },
-    [searchParams],
-  )
-
-  const onPlatformRepoSecretEvent = useCallback(
-    (evt: EventLike) => {
-      const event = JSON.parse(evt.data) as PlatformRepoSecretEvent
-
-      setPlatformreposecretEvents((platformreposecretEvents) => {
-        if (event.status === "Terminating") {
-          closeDetailViewIfShowing(event.name, "platformreposecrets", returnHome)
-          delete platformreposecretEvents[event.name]
-        } else {
-          if (!platformreposecretEvents[event.name]) {
-            platformreposecretEvents[event.name] = []
-          }
-          platformreposecretEvents[event.name].push(event)
-        }
-
-        return Object.assign({}, platformreposecretEvents)
-      })
-    },
-    [searchParams],
-  )
-
-  const onTaskSimulatorEvent = useCallback(
-    (evt: EventLike) => {
-      const event = JSON.parse(evt.data) as TaskSimulatorEvent
-
-      if (event.status === "Terminating") {
-        // closeDetailViewIfShowing(event.name, "tasksimulators", returnHome)
-
-        if (datasetToTaskSimulators[event.dataset]) {
-          datasetToTaskSimulators[event.dataset] = datasetToTaskSimulators[event.dataset].filter(
-            (_) => _.name !== event.name,
-          )
-        }
-
-        delete tasksimulatorEvents[event.name]
-      } else {
-        if (!tasksimulatorEvents[event.name]) {
-          tasksimulatorEvents[event.name] = []
-        }
-        tasksimulatorEvents[event.name].push(event)
-
-        if (!datasetToTaskSimulators[event.dataset]) {
-          datasetToTaskSimulators[event.dataset] = [event]
-        } else {
-          const idx = datasetToTaskSimulators[event.dataset].findIndex((_) => _.name === event.name)
-          if (idx < 0) {
-            datasetToTaskSimulators[event.dataset].push(event)
-          } else {
-            datasetToTaskSimulators[event.dataset][idx] = event
-          }
-        }
-      }
-
-      setTaskSimulatorEvents(Object.assign({}, tasksimulatorEvents))
-      setDataSetToTaskSimulators(Object.assign({}, datasetToTaskSimulators))
-    },
-    [searchParams],
-  )
-
-  const onPoolEvent = useCallback(
-    (evt: EventLike) => {
-      const poolEvent = JSON.parse(evt.data) as WorkerPoolStatusEvent
-
-      if (poolEvent.status === "Terminating") {
-        closeDetailViewIfShowing(poolEvent.workerpool, "workerpools", returnHome)
-        delete poolEvents[poolEvent.workerpool]
-
-        for (const dataset of Object.keys(datasetToPool)) {
-          datasetToPool[dataset] = datasetToPool[dataset].filter((_) => _.workerpool !== poolEvent.workerpool)
-        }
-
-        setPoolEvents(Object.assign({}, poolEvents))
-        setDataSetToPool(Object.assign({}, datasetToPool))
-      } else if (!(poolEvent.workerpool in poolEvents)) {
-        poolEvents[poolEvent.workerpool] = []
-      }
-
-      const events = poolEvents[poolEvent.workerpool]
-      if (events.length === 0 || events[events.length - 1] !== poolEvent) {
-        // weird debounce
-        poolEvents[poolEvent.workerpool].push(poolEvent)
-      }
-
-      // keep track of the relationship between DataSet and
-      // WorkerPools that are processing that DataSet
-      poolEvent.datasets.forEach((dataset) => {
-        if (!datasetToPool[dataset]) {
-          datasetToPool[dataset] = []
-        }
-        // idx: index of this event's workerpool in the model for this dataset
-        const idx = datasetToPool[dataset].findIndex((_) => _.workerpool === poolEvent.workerpool)
-        if (idx < 0) {
-          datasetToPool[dataset].push(poolEvent)
-        } else {
-          datasetToPool[dataset][idx] = poolEvent
-        }
-      })
-
-      setPoolEvents(Object.assign({}, poolEvents))
-      setDataSetToPool(Object.assign({}, datasetToPool))
-    },
-    [searchParams],
-  )
-
-  const onApplicationEvent = useCallback(
-    (evt: EventLike) => {
-      const applicationEvent = JSON.parse(evt.data) as ApplicationSpecEvent
-
-      setLatestApplicationEvents((latestApplicationEvents) => {
-        if (applicationEvent.status === "Terminating") {
-          // this Application has been deleted
-          closeDetailViewIfShowing(applicationEvent.application, "applications", returnHome)
-
-          const foundIdx = latestApplicationEvents.findIndex((_) => _.application === applicationEvent.application)
-          if (foundIdx >= 0) {
-            latestApplicationEvents.splice(foundIdx, 1)
-          }
-        } else if (latestApplicationEvents.length === 0) {
-          return [applicationEvent]
-        } else {
-          const idx = latestApplicationEvents.findIndex((_) => _.application === applicationEvent.application)
-          if (idx < 0) {
-            latestApplicationEvents.push(applicationEvent)
-          } else {
-            latestApplicationEvents[idx] = applicationEvent
-          }
-        }
-
-        return latestApplicationEvents.slice()
-      })
-    },
-    [searchParams],
-  )
-
-  function initEventStream(source: EventSourceLike, handler: Handler) {
-    source.addEventListener("message", handler, false)
-    // source.addEventListener("error", console.error) // TODO
+  /** Event handlers */
+  const handlers: Record<Kind, (evt: EventLike) => void> = {
+    applications: singletonEventHandler("application", "applications", setApplicationEvents, returnHome),
+    datasets: singletonEventHandler("label", "datasets", setDataSetEvents, returnHome),
+    queues: allEventsHandler(setQueueEvents),
+    workerpools: singletonEventHandler("workerpool", "workerpools", setPoolEvents, returnHome),
+    tasksimulators: singletonEventHandler("name", "tasksimulators", setTaskSimulatorEvents, returnHome),
+    platformreposecrets: singletonEventHandler("name", "platformreposecrets", setPlatformRepoSecretEvents, returnHome),
   }
 
-  function initEventStreams() {
-    initEventStream(props.queues, onQueueEvent)
-    initEventStream(props.datasets, onDataSetEvent)
-    initEventStream(props.workerpools, onPoolEvent)
-    initEventStream(props.applications, onApplicationEvent)
-    initEventStream(props.platformreposecrets, onPlatformRepoSecretEvent)
-    initEventStream(props.tasksimulators, onTaskSimulatorEvent)
-
-    // return a cleanup function
-    return () => {
-      props.datasets.removeEventListener("message", onDataSetEvent)
-      props.queues.removeEventListener("message", onQueueEvent)
-      props.workerpools.removeEventListener("message", onPoolEvent)
-      props.applications.removeEventListener("message", onApplicationEvent)
-      props.platformreposecrets.removeEventListener("message", onPlatformRepoSecretEvent)
-      props.tasksimulators.removeEventListener("message", onTaskSimulatorEvent)
-    }
+  /** @return the QueueEvents associated with a given WorkerPool */
+  function queueEventsForWorkerPool(workerpool: string) {
+    return queueEvents.filter((_) => _.workerpool === workerpool)
   }
+
+  /** A memo of the mapping from DataSet to TaskSimulatorEvents */
+  const datasetToTaskSimulators = useMemo(
+    () =>
+      tasksimulatorEvents.reduce(
+        (M, event) => {
+          if (!M[event.dataset]) {
+            M[event.dataset] = []
+          }
+          M[event.dataset].push(event)
+          return M
+        },
+        {} as Record<string, TaskSimulatorEvent[]>,
+      ),
+    [tasksimulatorEvents],
+  )
+
+  /** A memo of the mapping from DataSet to WorkerPools */
+  const datasetToPool = useMemo(
+    () =>
+      poolEvents.reduce(
+        (M, event) => {
+          event.datasets.forEach((dataset) => {
+            if (!M[dataset]) {
+              M[dataset] = []
+            }
+            M[dataset].push(event)
+          })
+          return M
+        },
+        {} as Record<string, WorkerPoolStatusEvent[]>,
+      ),
+    [poolEvents],
+  )
+
+  /**
+   * A memo of the mapping from DataSet to its position in the UI --
+   * this helps us to keep coloring consistent across the views -- we
+   * will use the index into a color lookup table in the CSS (see
+   * GridCell.scss).
+   */
+  const datasetIndex = useMemo(
+    () =>
+      datasetEvents.reduce(
+        (M, event, idx) => {
+          M[event.label] = either(event.idx, idx)
+          return M
+        },
+        {} as Record<string, number>,
+      ),
+    [datasetEvents],
+  )
+
+  /** A memo of the latest WorkerPoolModels, one per worker pool */
+  const latestWorkerPoolModels: WorkerPoolModelWithHistory[] = useMemo(
+    () =>
+      poolEvents
+        .map((pool) => {
+          const queueEventsForOneWorkerPool = queueEventsForWorkerPool(pool.workerpool)
+          return toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
+        })
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [poolEvents, queueEvents],
+  )
 
   // this registers what is in effect a componentDidMount handler
-  useEffect(initEventStreams, [])
+  useEffect(function onMount() {
+    Object.entries(handlers).forEach(([kind, handler]) => {
+      props[kind].addEventListener("message", handler, false)
+    })
 
-  const lexico = (a: [string, unknown], b: [string, unknown]) => a[0].localeCompare(b[0])
-  const lexicoApp = (a: ApplicationSpecEvent, b: ApplicationSpecEvent) => a.application.localeCompare(b.application)
-  const lexicoWP = (a: WorkerPoolModel, b: WorkerPoolModel) => a.label.localeCompare(b.label)
+    // return a cleanup function to be called when the component unmounts
+    return () =>
+      Object.entries(handlers).forEach(([kind, handler]) => props[kind].removeEventListener("message", handler))
+  }, [])
 
   function applications() {
-    return latestApplicationEvents
-      .sort(lexicoApp)
+    return applicationEvents
+      .sort((a, b) => a.application.localeCompare(b.application))
       .map((evt) => <Application key={evt.application} {...evt} {...drilldownProps()} />)
   }
 
   function datasets() {
     return [
-      ...Object.entries(datasetEvents)
-        .sort(lexico)
-        .map(([label, events], idx) => (
+      ...datasetEvents
+        .sort()
+        .map((event) => (
           <DataSet
-            key={label}
-            idx={either(events[events.length - 1].idx, idx)}
-            workerpools={datasetToPool[label] || []}
-            tasksimulators={datasetToTaskSimulators[label] || []}
-            applications={latestApplicationEvents}
-            label={label}
-            events={events}
-            numEvents={events.length}
+            key={event.label}
+            idx={either(event.idx, datasetIndex[event.label])}
+            workerpools={datasetToPool[event.label] || []}
+            tasksimulators={datasetToTaskSimulators[event.label] || []}
+            applications={applicationEvents}
+            label={event.label}
+            events={[event]}
+            numEvents={1}
             datasetIndex={datasetIndex}
             {...drilldownProps()}
           />
@@ -343,6 +188,11 @@ export function Dashboard(props: Props) {
     ]
   }
 
+  /**
+   * Ugh, this is an ugly remnant of earlier models -- it helps
+   * conform the clean models here to what WorkerPool card/detail
+   * models need for their plots. TODO...
+   */
   function toWorkerPoolModel(
     pool: WorkerPoolStatusEvent,
     queueEventsForOneWorkerPool: QueueEvent[] = [],
@@ -380,6 +230,7 @@ export function Dashboard(props: Props) {
     }
   }
 
+  /** Used by the ugly toWorkerPoolModel. hopefully this will go away at some point */
   function backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
     A: T,
   ): T {
@@ -389,37 +240,25 @@ export function Dashboard(props: Props) {
     return A
   }
 
-  const latestWorkerPoolModel: WorkerPoolModelWithHistory[] = Object.values(poolEvents)
-    .filter((poolEventsForOneWorkerPool) => poolEventsForOneWorkerPool.length > 0)
-    .map((poolEventsForOneWorkerPool) => {
-      const pool = poolEventsForOneWorkerPool[poolEventsForOneWorkerPool.length - 1]
-      const queueEventsForOneWorkerPool = queueEvents[pool.workerpool]
-      return toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
-    })
-    .sort(lexicoWP)
-
-  const applicationsList: string[] = latestApplicationEvents.map((_) => _.application)
+  const applicationsList: string[] = applicationEvents.map((_) => _.application)
   const datasetsList: string[] = Object.keys(datasetIndex)
-  const workerpoolsList: string[] = latestWorkerPoolModel.map((_) => _.label)
-  const platformRepoSecretsList: string[] = Object.keys(platformreposecretEvents)
+  const workerpoolsList: string[] = latestWorkerPoolModels.map((_) => _.label)
+  const platformRepoSecretsList: string[] = platformreposecretEvents.map((_) => _.name)
 
   function platformreposecrets() {
-    return [
-      ...Object.values(platformreposecretEvents)
-        .filter((events) => events.length > 0)
-        .map((events) => events[events.length - 1].name),
-    ]
+    // TODO... cards
+    return platformreposecretEvents.map((_) => _.name)
   }
 
   function workerpools() {
     return [
       <NewWorkerPoolCard key="new-worker-pool-card" />,
-      ...latestWorkerPoolModel.map((w) => (
+      ...latestWorkerPoolModels.map((w) => (
         <WorkerPool
           key={w.label}
           model={w}
           datasetIndex={datasetIndex}
-          statusHistory={poolEvents[w.label] || []}
+          status={poolEvents.find((_) => _.workerpool === w.label)}
           {...drilldownProps()}
         />
       )),
@@ -434,9 +273,6 @@ export function Dashboard(props: Props) {
       platformreposecrets={platformRepoSecretsList}
     />
   )
-
-  const title = names[currentKind()]
-  const subtitle = subtitles[currentKind()]
 
   function galleryItems() {
     switch (currentKind()) {
@@ -471,7 +307,7 @@ export function Dashboard(props: Props) {
           <NewWorkerPoolWizard
             onSuccess={returnToWorkerPools}
             onCancel={returnHome}
-            applications={latestApplicationEvents}
+            applications={applicationEvents}
             datasets={datasetsList}
           />
         ) : (
@@ -486,19 +322,22 @@ export function Dashboard(props: Props) {
     </Suspense>
   )
 
+  /** Helps will drilldown to Details */
   function getApplication(id: string): ApplicationSpecEvent | undefined {
-    return latestApplicationEvents.find((_) => _.application === id)
+    return applicationEvents.find((_) => _.application === id)
   }
 
+  /** Helps will drilldown to Details */
   function getDataSet(id: string) {
-    const events = datasetEvents[id]
+    const event = datasetEvents.find((_) => _.label === id)
+    const events = event ? [event] : undefined
     return !events || events.length === 0
       ? undefined
       : {
           idx: either(events[events.length - 1].idx, datasetIndex[id]),
           workerpools: datasetToPool[id] || [],
           tasksimulators: datasetToTaskSimulators[id] || [],
-          applications: latestApplicationEvents || [],
+          applications: applicationEvents || [],
           label: id,
           events: events,
           numEvents: events.length,
@@ -506,18 +345,27 @@ export function Dashboard(props: Props) {
         }
   }
 
+  /** Helps will drilldown to Details */
   function getWorkerPool(id: string) {
-    const model = latestWorkerPoolModel.find((_) => _.label === id)
+    const model = latestWorkerPoolModels.find((_) => _.label === id)
     return !model
       ? undefined
       : {
           model,
-          statusHistory: poolEvents[id] || [],
+          status: poolEvents.find((_) => _.workerpool === id),
           datasetIndex: datasetIndex,
         }
   }
 
-  const pwdProps = { getApplication, getDataSet, getWorkerPool, modal, sidebar, subtitle, title }
+  const pwdProps = {
+    getApplication,
+    getDataSet,
+    getWorkerPool,
+    modal,
+    sidebar,
+    subtitle: subtitles[currentKind()],
+    title: names[currentKind()],
+  }
   return (
     <PageWithDrawer {...pwdProps}>
       <MainContentBody />
