@@ -1,4 +1,4 @@
-import { useCallback, lazy, Suspense } from "react"
+import { useCallback } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import type { PropsWithChildren } from "react"
@@ -16,12 +16,6 @@ import {
   DrawerPanelContent,
 } from "@patternfly/react-core"
 
-const EmptyState = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyState })))
-const EmptyStateHeader = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateHeader })))
-const EmptyStateBody = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateBody })))
-const EmptyStateIcon = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateIcon })))
-import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
-
 import PageWithMastheadAndModal from "./PageWithMastheadAndModal"
 
 import type { NavigableKind } from "../Kind"
@@ -35,6 +29,7 @@ import DataSetDetail from "../components/DataSet/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 import JobManagerDetail from "../components/JobManager/Detail"
+import DetailNotFound from "../components/Drawer/DetailNotFound"
 
 import names, { resourceNames } from "../names"
 
@@ -166,21 +161,6 @@ export default function PageWithDrawer(props: Props) {
 
         {body}
       </DrawerPanelContent>
-    )
-  }
-
-  function DetailNotFound() {
-    return (
-      <Suspense fallback={<></>}>
-        <EmptyState>
-          <EmptyStateHeader
-            titleText="Resource not found"
-            headingLevel="h4"
-            icon={<EmptyStateIcon icon={SearchIcon} />}
-          />
-          <EmptyStateBody>It may still be loading. Hang tight.</EmptyStateBody>
-        </EmptyState>
-      </Suspense>
     )
   }
 

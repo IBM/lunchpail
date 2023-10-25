@@ -2,6 +2,7 @@ import type { ReactNode, ReactElement } from "react"
 import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleText } from "@patternfly/react-core"
 
 import DrawerToolbar from "./Toolbar"
+import DetailNotFound from "./DetailNotFound"
 
 /** Content to be shown inside the "sidebar" drawer */
 export default function DrawerContent(props: {
@@ -14,7 +15,7 @@ export default function DrawerContent(props: {
       <DrawerPanelBody className="codeflare--detail-view-body" hasNoPadding>
         <Tabs>
           <Tab title={<TabTitleText>Summary</TabTitleText>} eventKey={0}>
-            <DrawerPanelBody>{props.body}</DrawerPanelBody>
+            <DrawerPanelBody>{props.body || <DetailNotFound />}</DrawerPanelBody>
           </Tab>
         </Tabs>
       </DrawerPanelBody>
