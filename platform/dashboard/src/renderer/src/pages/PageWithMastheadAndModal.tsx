@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Fragment, ReactNode, PropsWithChildren } from "react"
+import { useContext, type ReactNode, type PropsWithChildren } from "react"
 
 import {
   Brand,
@@ -105,8 +105,10 @@ function HeaderToolbarRightItems() {
 }
 
 function Footer(props: Pick<Props, "footerLeft" | "footerRight">): ReactNode {
+  const settings = useContext(Settings)
   const left = props.footerLeft
   const right = props.footerRight
+
   return (
     <Toolbar>
       <ToolbarContent>
@@ -114,37 +116,29 @@ function Footer(props: Pick<Props, "footerLeft" | "footerRight">): ReactNode {
           <ToolbarItem>
             <SmallLabel>v{version}</SmallLabel>
           </ToolbarItem>
-          {left || <Fragment />}
+          {left || <></>}
         </ToolbarGroup>
 
         <ToolbarGroup align={alignRight}>
-          {right || <Fragment />}
+          {right || <></>}
 
           <ToolbarItem align={alignRight}>
-            <Settings.Consumer>
-              {(settings) => (
-                <Switch
-                  ouiaId="demo-mode-switch"
-                  hasCheckIcon
-                  label="Demo Mode"
-                  isChecked={settings?.demoMode[0]}
-                  onChange={settings?.demoMode[2]}
-                />
-              )}
-            </Settings.Consumer>
+            <Switch
+              ouiaId="demo-mode-switch"
+              hasCheckIcon
+              label="Demo Mode"
+              isChecked={settings?.demoMode[0]}
+              onChange={settings?.demoMode[2]}
+            />
           </ToolbarItem>
           <ToolbarItem align={alignRight}>
-            <Settings.Consumer>
-              {(settings) => (
-                <Switch
-                  ouiaId="dark-mode-switch"
-                  hasCheckIcon
-                  label="Dark Mode"
-                  isChecked={settings?.darkMode[0]}
-                  onChange={settings?.darkMode[2]}
-                />
-              )}
-            </Settings.Consumer>
+            <Switch
+              ouiaId="dark-mode-switch"
+              hasCheckIcon
+              label="Dark Mode"
+              isChecked={settings?.darkMode[0]}
+              onChange={settings?.darkMode[2]}
+            />
           </ToolbarItem>
         </ToolbarGroup>
       </ToolbarContent>

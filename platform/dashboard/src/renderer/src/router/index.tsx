@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"
+import { lazy, useContext, Suspense } from "react"
 import { createBrowserRouter } from "react-router-dom"
 
 import DemoDashboard from "../demo/DemoDashboard"
@@ -14,13 +14,9 @@ const errorElement = (
 )
 
 function Dashboard() {
-  return (
-    <Suspense fallback={<div />}>
-      <Settings.Consumer>
-        {(settings) => (settings && settings.demoMode[0] ? <DemoDashboard /> : <LiveDashboard />)}
-      </Settings.Consumer>
-    </Suspense>
-  )
+  const settings = useContext(Settings)
+
+  return <Suspense fallback={<></>}>{settings?.demoMode[0] ? <DemoDashboard /> : <LiveDashboard />}</Suspense>
 }
 
 export default createBrowserRouter([

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useState } from "react"
 import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
 import yamlLanguage from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
@@ -235,18 +235,16 @@ data:
     })
   }
 
+  const settings = useContext(Settings)
+
   return (
-    <Settings.Consumer>
-      {(settings) => (
-        <FormContextProvider initialValues={defaults(settings?.prsUser[0])}>
-          {(ctrl) => (
-            <Wizard header={header()} onClose={props.onCancel}>
-              {step1(wrapWithSettings(ctrl, settings?.prsUser[1]))}
-              {review(ctrl)}
-            </Wizard>
-          )}
-        </FormContextProvider>
+    <FormContextProvider initialValues={defaults(settings?.prsUser[0])}>
+      {(ctrl) => (
+        <Wizard header={header()} onClose={props.onCancel}>
+          {step1(wrapWithSettings(ctrl, settings?.prsUser[1]))}
+          {review(ctrl)}
+        </Wizard>
       )}
-    </Settings.Consumer>
+    </FormContextProvider>
   )
 }
