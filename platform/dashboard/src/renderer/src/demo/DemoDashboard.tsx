@@ -1,5 +1,3 @@
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
-
 import { Dashboard } from "../pages/Dashboard"
 
 import NothingEventSource from "./streams/nothing"
@@ -36,40 +34,38 @@ function init() {
 }
 
 export default function DemoDashboard() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const searchParams = useSearchParams()
-
   const props = init()
 
-  window.jay = window.demo = Object.assign({}, props, {
-    create: props.workerpools.create.bind(props.workerpools),
-    delete(dprops: import("@jay/common/api/jay").DeleteProps) {
-      if (/workerpool/.test(dprops.kind)) {
-        return props.workerpools.delete(dprops)
-      } else if (/application/.test(dprops.kind)) {
-        return props.applications.delete(dprops)
-      } else if (/dataset/.test(dprops.kind)) {
-        return props.datasets.delete(dprops)
-      } else {
-        return false
-      }
-    },
-    controlplane: {
-      async status() {
-        return {
-          location: "demo",
-          cluster: true,
-          runtime: true,
-          examples: false,
-          defaults: false,
+  if (!window.demo) {
+    window.jay = window.demo = Object.assign({}, props, {
+      create: props.workerpools.create.bind(props.workerpools),
+      delete(dprops: import("@jay/common/api/jay").DeleteProps) {
+        if (/workerpool/.test(dprops.kind)) {
+          return props.workerpools.delete(dprops)
+        } else if (/application/.test(dprops.kind)) {
+          return props.applications.delete(dprops)
+        } else if (/dataset/.test(dprops.kind)) {
+          return props.datasets.delete(dprops)
+        } else {
+          return false
         }
       },
-      init() {},
-      update() {},
-      destroy() {},
-    },
-  })
+      controlplane: {
+        async status() {
+          return {
+            location: "demo",
+            cluster: true,
+            runtime: true,
+            examples: false,
+            defaults: false,
+          }
+        },
+        init() {},
+        update() {},
+        destroy() {},
+      },
+    })
+  }
 
-  return <Dashboard {...props} location={location} navigate={navigate} searchParams={searchParams[0]} />
+  return <Dashboard {...props} />
 }

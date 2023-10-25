@@ -8,7 +8,6 @@ import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "../../n
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "../GridCell"
-import type { LocationProps } from "../../router/withLocation"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
@@ -84,13 +83,11 @@ export function commonGroups(props: Props): ReactNode[] {
   return [associatedApplications(props), associatedWorkerPools(props), unassigned(props)]
 }
 
-export function NewPoolButton(props: Props & Pick<LocationProps, "location" | "searchParams">) {
+export function NewPoolButton(props: Props) {
   return (
     numAssociatedApplicationEvents(props) > 0 && (
       <LinkToNewPool
         key="new-pool-button"
-        location={props.location}
-        searchParams={props.searchParams}
         dataset={props.label}
         startOrAdd={numAssociatedWorkerPools(props) > 0 ? "add" : "start"}
       />

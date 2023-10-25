@@ -1,5 +1,3 @@
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
-
 import { kinds } from "../Kind"
 import { Dashboard } from "./Dashboard"
 
@@ -76,9 +74,5 @@ function init(): EventProps<EventSourceLike> {
 }
 
 export default function LiveDashboard() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const searchParams = useSearchParams()
-
-  return <Dashboard {...init()} location={location} navigate={navigate} searchParams={searchParams[0]} />
+  return <Dashboard {...init()} />
 }

@@ -1,9 +1,7 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
-
-import type { LocationProps } from "../router/withLocation"
 
 import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
 import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
@@ -14,12 +12,14 @@ type StartOrAdd = "start" | "add" | "create" | "fix"
 /** URI ?view=wizard */
 const view = "wizard"
 
-export function isShowingWizard(props: Pick<LocationProps, "searchParams">) {
-  return props.searchParams.get("view") === view
+export function isShowingWizard() {
+  const searchParams = useSearchParams()[0]
+  return searchParams.get("view") === view
 }
 
-export function isShowingTask(task: string, props: Pick<LocationProps, "searchParams">) {
-  return props.searchParams.get("task") === task
+export function isShowingTask(task: string) {
+  const searchParams = useSearchParams()[0]
+  return searchParams.get("task") === task
 }
 
 function href(task: string, returnTo?: string, hash?: string, qs: string[] = []) {
@@ -50,7 +50,7 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
 }
 
 /** Base/public props for subclasses */
-export type WizardProps = Omit<import("../router/withLocation").LocationProps, "navigate"> & {
+export type WizardProps = {
   startOrAdd?: StartOrAdd
 }
 
@@ -68,8 +68,10 @@ type Props = WizardProps & {
  * otherwise, present as if we are augmenting an existing thing.
  */
 export default function LinkToNewWizard(props: Props) {
-  const currentHash = props.location.hash
-  const currentSearch = props.searchParams
+  const location = useLocation()
+  const currentHash = location.hash
+  const currentSearch = useSearchParams()[0]
+
   const returnTo = encodeURIComponent(`?${currentSearch}`)
   const theHref = href(props.task, returnTo, currentHash, props.qs)
 

@@ -6,7 +6,6 @@ import { LinkToNewRepoSecret } from "../../navigate/newreposecret"
 import { statusActions, summaryGroups, titleCaseSplit } from "./Summary"
 
 import type Props from "./Props"
-import type { LocationProps } from "../../router/withLocation"
 
 function statusGroup(props: Props) {
   return statusActions(props).actions.map((action) => [descriptionGroup(action.key, action)])
@@ -36,12 +35,12 @@ function detailGroups(props: Props) {
 }
 
 /** Any suggestions/corrective action buttons */
-function correctiveActions(props: Props, locationProps: LocationProps) {
+function correctiveActions(props: Props) {
   const latestStatus = props.statusHistory[props.statusHistory.length - 1]
   if (latestStatus?.status === "CloneFailed" && latestStatus?.reason === "AccessDenied") {
     const repoMatch = latestStatus?.message?.match(/(https:\/\/[^/]+)/)
     const repo = repoMatch ? repoMatch[1] : undefined
-    return [<LinkToNewRepoSecret repo={repo} namespace={props.model.namespace} {...locationProps} startOrAdd="fix" />]
+    return [<LinkToNewRepoSecret repo={repo} namespace={props.model.namespace} startOrAdd="fix" />]
   } else {
     return []
   }
@@ -64,16 +63,16 @@ function rightActions(props: Props) {
 }
 
 /** Common actions */
-function leftActions(props: Props, locationProps: LocationProps) {
-  return [...correctiveActions(props, locationProps)]
+function leftActions(props: Props) {
+  return [...correctiveActions(props)]
 }
 
 /** The body and actions to show in the WorkerPool Details view */
-export default function WorkerPoolDetail(props: Props | undefined, locationProps: LocationProps) {
+export default function WorkerPoolDetail(props: Props | undefined) {
   return (
     <DrawerContent
       body={props && dl(detailGroups(props))}
-      actions={props && leftActions(props, locationProps)}
+      actions={props && leftActions(props)}
       rightActions={props && rightActions(props)}
     />
   )

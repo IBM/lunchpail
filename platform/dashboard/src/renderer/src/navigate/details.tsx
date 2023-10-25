@@ -5,7 +5,7 @@ import { stopPropagation } from "."
 
 import type { NavigableKind as Kind } from "../Kind"
 import type { FunctionComponent } from "react"
-import type { LocationProps } from "../router/withLocation"
+import type LocationProps from "./LocationProps"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
@@ -15,8 +15,8 @@ function href({ id, kind }: Entity, props: string | Pick<LocationProps, "locatio
   return `?id=${id}&kind=${kind}&view=detail${typeof props === "string" ? props : props.location.hash}`
 }
 
-export function isShowingDetails(props: Pick<LocationProps, "searchParams">) {
-  return props.searchParams.get("view") === "detail"
+export function isShowingDetails(searchParams: URLSearchParams) {
+  return searchParams.get("view") === "detail"
 }
 
 export function navigateToDetails(entity: Entity, props: Pick<LocationProps, "navigate" | "location">) {

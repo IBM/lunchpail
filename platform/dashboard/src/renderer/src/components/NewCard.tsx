@@ -10,15 +10,13 @@ import {
 } from "@patternfly/react-core"
 
 import type { PropsWithChildren } from "react"
-import type { LocationProps } from "../router/withLocation"
 
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-type Props = Omit<LocationProps, "navigate"> &
-  PropsWithChildren<{
-    title: string
-    description: string
-  }>
+type Props = PropsWithChildren<{
+  title: string
+  description: string
+}>
 
 export default function NewCard(props: Props) {
   return (

@@ -1,12 +1,11 @@
 import LinkToNewWizard, { isShowingTask } from "./wizard"
 
 import type { WizardProps } from "./wizard"
-import type { LocationProps } from "../router/withLocation"
 
 const task = "newpool"
 
-export default function isShowingNewPool(props: Pick<LocationProps, "searchParams">) {
-  return isShowingTask(task, props)
+export default function isShowingNewPool() {
+  return isShowingTask(task)
 }
 
 /**

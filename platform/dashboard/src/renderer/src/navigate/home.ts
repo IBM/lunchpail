@@ -1,5 +1,5 @@
 import { hash } from "./kind"
-import type { LocationProps } from "../router/withLocation"
+import type LocationProps from "./LocationProps"
 
 function returnTo(props: LocationProps, hash = props.location.hash) {
   const returnTo = props.searchParams.get("returnTo")

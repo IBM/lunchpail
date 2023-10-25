@@ -1,5 +1,6 @@
-import { PureComponent } from "react"
 import removeAccents from "remove-accents"
+import { useSearchParams } from "react-router-dom"
+import { useCallback, useEffect, useState } from "react"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
@@ -25,13 +26,9 @@ import ApplicationIcon from "../../Application/Icon"
 import { singular as names } from "../../../names"
 import { Input, NumberInput, Select } from "../../Forms"
 
-import type { LocationProps } from "../../../router/withLocation"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
-type Props = Pick<LocationProps, "searchParams"> & {
-  /** Md5 of current application names */
-  appMd5: string
-
+type Props = {
   /** Currently available Applications */
   applications: ApplicationSpecEvent[]
 
@@ -45,12 +42,11 @@ type Props = Pick<LocationProps, "searchParams"> & {
   onCancel(): void
 }
 
-type State = {
+export default function NewWorkerPoolWizard(props: Props) {
   /** Error in the request to create a pool? */
-  errorInCreateRequest?: unknown
-}
+  const [, setErrorInCreateRequest] = useState<null | unknown>(null)
+  const [searchParams] = useSearchParams()
 
-export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   /* private chooseAppIfExists(available: Props["applications"], desired: null | string) {
     if (desired && available.find((_) => _.application === desired)) {
       return desired
@@ -59,7 +55,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     }
   } */
 
-  private chooseDataSetIfExists(available: Props["datasets"], desired: null | string) {
+  function chooseDataSetIfExists(available: Props["datasets"], desired: null | string) {
     if (desired && available.includes(desired)) {
       return desired
     } else {
@@ -67,25 +63,25 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     }
   }
 
-  /* private get searchedApplication() {
-    const app = this.props.searchParams.get("application")
-    if (!app || !this.props.applications.find((_) => _.application === app)) {
+  /* function get searchedApplication() {
+    const app = searchParams.get("application")
+    if (!app || !props.applications.find((_) => _.application === app)) {
       return null
     } else {
       return app
     }
   } */
 
-  private get searchedDataSet() {
-    const dataset = this.props.searchParams.get("dataset")
-    if (!dataset || !this.props.datasets.includes(dataset)) {
+  function searchedDataSet() {
+    const dataset = searchParams.get("dataset")
+    if (!dataset || !props.datasets.includes(dataset)) {
       return null
     } else {
       return dataset
     }
   }
 
-  private supportsDataSet(app: ApplicationSpecEvent, dataset: string) {
+  function supportsDataSet(app: ApplicationSpecEvent, dataset: string) {
     const datasets = app["data sets"]
     return (
       datasets &&
@@ -97,21 +93,21 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     )
   }
 
-  private get compatibleApplications() {
-    const dataset = this.searchedDataSet
+  function compatibleApplications() {
+    const dataset = searchedDataSet()
     if (dataset) {
-      return this.props.applications.filter((app) => this.supportsDataSet(app, dataset))
+      return props.applications.filter((app) => supportsDataSet(app, dataset))
     } else {
-      return this.props.applications
+      return props.applications
     }
   }
 
-  private chooseIfSingleton(A: ApplicationSpecEvent[]): string {
+  function chooseIfSingleton(A: ApplicationSpecEvent[]): string {
     return A.length === 1 ? A[0].application : ""
   }
 
   /** Initial value for form */
-  private get defaults() {
+  function defaults() {
     return {
       poolName: removeAccents(
         uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
@@ -119,19 +115,17 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
       count: String(1),
       size: "xs",
       supportsGpu: false.toString(),
-      application: this.chooseIfSingleton(this.compatibleApplications),
+      application: chooseIfSingleton(compatibleApplications()),
       dataset:
-        this.props.datasets.length === 1
-          ? this.props.datasets[0]
-          : this.chooseDataSetIfExists(this.props.datasets, this.searchedDataSet),
+        props.datasets.length === 1 ? props.datasets[0] : chooseDataSetIfExists(props.datasets, searchedDataSet()),
     }
   }
 
-  public componentDidMount() {
+  useEffect(() => {
     SyntaxHighlighter.registerLanguage("yaml", yaml)
-  }
+  }, [])
 
-  private name(ctrl: FormContextProps) {
+  function name(ctrl: FormContextProps) {
     return (
       <Input
         fieldId="poolName"
@@ -142,36 +136,36 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     )
   }
 
-  private application(ctrl: FormContextProps) {
+  function application(ctrl: FormContextProps) {
     return (
       <Select
         fieldId="application"
         label={names.applications}
         description={`Choose the ${names.applications} code this pool should run`}
         ctrl={ctrl}
-        options={this.compatibleApplications.map((_) => ({
+        options={compatibleApplications().map((_) => ({
           value: _.application,
           description: <div className="codeflare--max-width-30em">{_.description}</div>,
         }))}
-        icons={this.compatibleApplications.map(ApplicationIcon)}
+        icons={compatibleApplications().map(ApplicationIcon)}
       />
     )
   }
 
-  private dataset(ctrl: FormContextProps) {
+  function dataset(ctrl: FormContextProps) {
     return (
       <Select
         fieldId="dataset"
         label={names.datasets}
         description={`Choose the ${names.datasets} this pool should process`}
         ctrl={ctrl}
-        options={this.props.datasets.sort()}
+        options={props.datasets.sort()}
         icons={<DataSetIcon />}
       />
     )
   }
 
-  private numWorkers(ctrl: FormContextProps) {
+  function numWorkers(ctrl: FormContextProps) {
     return (
       <NumberInput
         fieldId="count"
@@ -184,47 +178,46 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     )
   }
 
-  private readonly doCreate = async (values: FormContextProps["values"]) => {
-    console.log("new worker pool request", values) // make eslint happy
-    try {
-      await window.jay.create(values, this.workerPoolYaml(values))
-    } catch (errorInCreateRequest) {
-      if (errorInCreateRequest) {
-        this.setState({ errorInCreateRequest })
-        // TODO visualize this!!
+  const doCreate = useCallback(
+    async (values: FormContextProps["values"]) => {
+      console.log("new worker pool request", values) // make eslint happy
+      try {
+        await window.jay.create(values, workerPoolYaml(values))
+      } catch (errorInCreateRequest) {
+        if (errorInCreateRequest) {
+          setErrorInCreateRequest(errorInCreateRequest)
+          // TODO visualize this!!
+        }
       }
-    }
-    this.props.onSuccess()
-  }
+      props.onSuccess()
+    },
+    [props.onSuccess],
+  )
 
-  private header() {
+  function header() {
     return (
       <WizardHeader
         title="Create Worker Pool"
         description="Configure a pool of compute resources to process Tasks in a Queue."
-        onClose={this.props.onCancel}
+        onClose={props.onCancel}
       />
     )
   }
 
-  private isStep1Valid(ctrl: FormContextProps) {
+  function isStep1Valid(ctrl: FormContextProps) {
     return ctrl.values.poolName && ctrl.values.application && ctrl.values.dataset
   }
 
-  private step1(ctrl: FormContextProps) {
+  function step1(ctrl: FormContextProps) {
     return (
-      <WizardStep
-        id="new-worker-pool-step-configure"
-        name="Configure"
-        footer={{ isNextDisabled: !this.isStep1Valid(ctrl) }}
-      >
+      <WizardStep id="new-worker-pool-step-configure" name="Configure" footer={{ isNextDisabled: !isStep1Valid(ctrl) }}>
         <Form>
           <FormSection>
             <Grid hasGutter md={6}>
-              <GridItem span={12}>{this.name(ctrl)}</GridItem>
-              <GridItem>{this.application(ctrl)}</GridItem>
-              <GridItem>{this.dataset(ctrl)}</GridItem>
-              <GridItem>{this.numWorkers(ctrl)}</GridItem>
+              <GridItem span={12}>{name(ctrl)}</GridItem>
+              <GridItem>{application(ctrl)}</GridItem>
+              <GridItem>{dataset(ctrl)}</GridItem>
+              <GridItem>{numWorkers(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
@@ -233,7 +226,7 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  /*private step2(ctrl: FormContextProps) {
+  /*function step2(ctrl: FormContextProps) {
     return (
       <WizardStep id="new-worker-pool-step-locate" name="Choose a Location">
         TODO
@@ -241,8 +234,8 @@ export default class NewWorkerPoolWizard extends PureComponent<Props, State> {
     )
   }*/
 
-  private workerPoolYaml(values: FormContextProps["values"]) {
-    const applicationSpec = this.props.applications.find((_) => _.application === values.application)
+  function workerPoolYaml(values: FormContextProps["values"]) {
+    const applicationSpec = props.applications.find((_) => _.application === values.application)
     if (!applicationSpec) {
       console.error("Internal error: Application spec not found", values.application)
       // TODO how do we report this to the UI?
@@ -268,35 +261,33 @@ spec:
 `
   }
 
-  private review(ctrl: FormContextProps) {
+  function review(ctrl: FormContextProps) {
     return (
       <WizardStep
         id="new-worker-pool-step-review"
         name="Review"
-        footer={{ nextButtonText: "Create Worker Pool", onNext: () => this.doCreate(ctrl.values) }}
+        footer={{ nextButtonText: "Create Worker Pool", onNext: () => doCreate(ctrl.values) }}
       >
         <TextContent>
           <Text component="p">Confirm the settings for your new worker pool.</Text>
         </TextContent>
 
         <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
-          {this.workerPoolYaml(ctrl.values)}
+          {workerPoolYaml(ctrl.values)}
         </SyntaxHighlighter>
       </WizardStep>
     )
   }
 
-  public render() {
-    return (
-      <FormContextProvider initialValues={this.defaults}>
-        {(ctrl) => (
-          <Wizard header={this.header()} onClose={this.props.onCancel}>
-            {this.step1(ctrl)}
-            {/*this.step2(ctrl)*/}
-            {this.review(ctrl)}
-          </Wizard>
-        )}
-      </FormContextProvider>
-    )
-  }
+  return (
+    <FormContextProvider initialValues={defaults()}>
+      {(ctrl) => (
+        <Wizard header={header()} onClose={props.onCancel}>
+          {step1(ctrl)}
+          {/*step2(ctrl)*/}
+          {review(ctrl)}
+        </Wizard>
+      )}
+    </FormContextProvider>
+  )
 }

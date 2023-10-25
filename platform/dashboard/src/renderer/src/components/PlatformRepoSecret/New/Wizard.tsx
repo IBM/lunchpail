@@ -1,7 +1,7 @@
-import { PureComponent } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
-import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
+import yamlLanguage from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
 import { nord as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
 
 import {
@@ -25,12 +25,11 @@ import { singular as names } from "../../../names"
 import Settings from "../../../Settings"
 
 import type { Dispatch, SetStateAction } from "react"
-import type { LocationProps } from "../../../router/withLocation"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
 
-type Props = Pick<LocationProps, "searchParams"> & {
+type Props = {
   /** Force the use of this repo */
   repo?: string | null
 
@@ -44,20 +43,18 @@ type Props = Pick<LocationProps, "searchParams"> & {
   onCancel(): void
 }
 
-type State = {
+export default function NewRepoSecretWizard(props: Props) {
   /** Error in the request to create a pool? */
-  errorInCreateRequest?: unknown
+  const [, setErrorInCreateRequest] = useState<null | unknown>(null)
 
   /** Showing password in cleartext? */
-  clearText?: boolean
-}
+  const [clearText, setClearText] = useState(false)
 
-export default class NewRepoSecretWizard extends PureComponent<Props, State> {
   /** Initial value for form */
-  private defaults(user = "") {
+  function defaults(user = "") {
     return {
       name:
-        (this.props.repo || "")
+        (props.repo || "")
           .replace(/\./g, "-")
           .replace(/^http?s:\/\//, "")
           .replace(/$/, "-") +
@@ -67,17 +64,17 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
         ),
       count: String(1),
       size: "xs",
-      repo: this.props.repo || "",
+      repo: props.repo || "",
       user,
       pat: "",
     }
   }
 
-  public componentDidMount() {
-    SyntaxHighlighter.registerLanguage("yaml", yaml)
-  }
+  useEffect(() => {
+    SyntaxHighlighter.registerLanguage("yaml", yamlLanguage)
+  }, [])
 
-  private name(ctrl: FormContextProps) {
+  function name(ctrl: FormContextProps) {
     return (
       <Input
         fieldId="name"
@@ -88,10 +85,10 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
     )
   }
 
-  private repo(ctrl: FormContextProps) {
+  function repo(ctrl: FormContextProps) {
     return (
       <Input
-        readOnlyVariant={this.props.repo ? "default" : undefined}
+        readOnlyVariant={props.repo ? "default" : undefined}
         fieldId="repo"
         label="GitHub provider"
         description="Base URI of your GitHub provider, e.g. https://github.mycompany.com"
@@ -100,22 +97,22 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
     )
   }
 
-  private user(ctrl: FormContextProps) {
+  function user(ctrl: FormContextProps) {
     return <Input fieldId="user" label="GitHub user" description="Your username in that GitHub provider" ctrl={ctrl} />
   }
 
-  private readonly toggleClearText = () => this.setState((curState) => ({ clearText: !curState?.clearText }))
+  const toggleClearText = useCallback(() => setClearText((curState) => !curState), [])
 
-  private pat(ctrl: FormContextProps) {
+  function pat(ctrl: FormContextProps) {
     return (
       <Input
-        type={!this.state?.clearText ? "password" : undefined}
+        type={!clearText ? "password" : undefined}
         fieldId="pat"
         label="GitHub personal access token"
         description="Your username in that GitHub provider"
         customIcon={
-          <Button style={{ padding: 0 }} variant="plain" onClick={this.toggleClearText}>
-            {!this.state?.clearText ? <EyeSlashIcon /> : <EyeIcon />}
+          <Button style={{ padding: 0 }} variant="plain" onClick={toggleClearText}>
+            {!clearText ? <EyeSlashIcon /> : <EyeIcon />}
           </Button>
         }
         ctrl={ctrl}
@@ -123,46 +120,42 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
     )
   }
 
-  private readonly doCreate = async (values: FormContextProps["values"]) => {
+  const doCreate = useCallback(async (values: FormContextProps["values"]) => {
     try {
-      await window.jay.create(values, this.yaml(values))
+      await window.jay.create(values, yaml(values))
     } catch (errorInCreateRequest) {
       if (errorInCreateRequest) {
-        this.setState({ errorInCreateRequest })
+        setErrorInCreateRequest(errorInCreateRequest)
         // TODO visualize this!!
       }
     }
-    this.props.onSuccess()
-  }
+    props.onSuccess()
+  }, [])
 
-  private header() {
+  function header() {
     return (
       <WizardHeader
         title="Create Repo Secret"
         description="Configure a pattern matcher that provides access to source code in a given GitHub provider."
-        onClose={this.props.onCancel}
+        onClose={props.onCancel}
       />
     )
   }
 
-  private isStep1Valid(ctrl: FormContextProps) {
+  function isStep1Valid(ctrl: FormContextProps) {
     return ctrl.values.name && ctrl.values.repo && ctrl.values.user && ctrl.values.pat
   }
 
-  private step1(ctrl: FormContextProps) {
+  function step1(ctrl: FormContextProps) {
     return (
-      <WizardStep
-        id="new-repo-secret-step-configure"
-        name="Configure"
-        footer={{ isNextDisabled: !this.isStep1Valid(ctrl) }}
-      >
+      <WizardStep id="new-repo-secret-step-configure" name="Configure" footer={{ isNextDisabled: !isStep1Valid(ctrl) }}>
         <Form>
           <FormSection>
             <Grid hasGutter md={6}>
-              <GridItem span={12}>{this.name(ctrl)}</GridItem>
-              <GridItem span={12}>{this.repo(ctrl)}</GridItem>
-              <GridItem>{this.user(ctrl)}</GridItem>
-              <GridItem>{this.pat(ctrl)}</GridItem>
+              <GridItem span={12}>{name(ctrl)}</GridItem>
+              <GridItem span={12}>{repo(ctrl)}</GridItem>
+              <GridItem>{user(ctrl)}</GridItem>
+              <GridItem>{pat(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
@@ -171,7 +164,7 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  /*private step2(ctrl: FormContextProps) {
+  /*function step2(ctrl: FormContextProps) {
     return (
       <WizardStep id="new-worker-pool-step-locate" name="Choose a Location">
         TODO
@@ -179,7 +172,7 @@ export default class NewRepoSecretWizard extends PureComponent<Props, State> {
     )
   }*/
 
-  private yaml(values: FormContextProps["values"]) {
+  function yaml(values: FormContextProps["values"]) {
     const apiVersion = "codeflare.dev/v1alpha1"
     const kind = "PlatformRepoSecret"
 
@@ -188,20 +181,20 @@ apiVersion: ${apiVersion}
 kind: ${kind}
 metadata:
   name: ${values.name}
-  namespace: ${this.props.namespace}
+  namespace: ${props.namespace}
   labels:
     app.kubernetes.io/managed-by: jay
 spec:
   repo: ${values.repo}
   secret:
     name: ${values.name}
-    namespace: ${this.props.namespace}
+    namespace: ${props.namespace}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: ${values.name}
-  namespace: ${this.props.namespace}
+  namespace: ${props.namespace}
   labels:
     app.kubernetes.io/managed-by: jay
 type: Opaque
@@ -211,25 +204,25 @@ data:
 `.trim()
   }
 
-  private review(ctrl: FormContextProps) {
+  function review(ctrl: FormContextProps) {
     return (
       <WizardStep
         id="step-review"
         name="Review"
-        footer={{ nextButtonText: "Create Repo Secret", onNext: () => this.doCreate(ctrl.values) }}
+        footer={{ nextButtonText: "Create Repo Secret", onNext: () => doCreate(ctrl.values) }}
       >
         <TextContent>
           <Text component="p">Confirm the settings for your new repo secret.</Text>
         </TextContent>
 
         <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
-          {this.yaml(ctrl.values)}
+          {yaml(ctrl.values)}
         </SyntaxHighlighter>
       </WizardStep>
     )
   }
 
-  private wrapWithSettings(ctrl: FormContextProps, setUser: Dispatch<SetStateAction<string>> | undefined) {
+  function wrapWithSettings(ctrl: FormContextProps, setUser: Dispatch<SetStateAction<string>> | undefined) {
     const { setValue: origSetValue } = ctrl
     return Object.assign({}, ctrl, {
       setValue(fieldId: string, value: string) {
@@ -242,20 +235,18 @@ data:
     })
   }
 
-  public render() {
-    return (
-      <Settings.Consumer>
-        {(settings) => (
-          <FormContextProvider initialValues={this.defaults(settings?.prsUser[0])}>
-            {(ctrl) => (
-              <Wizard header={this.header()} onClose={this.props.onCancel}>
-                {this.step1(this.wrapWithSettings(ctrl, settings?.prsUser[1]))}
-                {this.review(ctrl)}
-              </Wizard>
-            )}
-          </FormContextProvider>
-        )}
-      </Settings.Consumer>
-    )
-  }
+  return (
+    <Settings.Consumer>
+      {(settings) => (
+        <FormContextProvider initialValues={defaults(settings?.prsUser[0])}>
+          {(ctrl) => (
+            <Wizard header={header()} onClose={props.onCancel}>
+              {step1(wrapWithSettings(ctrl, settings?.prsUser[1]))}
+              {review(ctrl)}
+            </Wizard>
+          )}
+        </FormContextProvider>
+      )}
+    </Settings.Consumer>
+  )
 }

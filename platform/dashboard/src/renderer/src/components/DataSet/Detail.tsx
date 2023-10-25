@@ -7,9 +7,8 @@ import { NewPoolButton, lastEvent, commonGroups } from "./common"
 
 import type Props from "./Props"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
-import type { LocationProps } from "../../router/withLocation"
 
-type DataSetDetailProps = Props & Pick<LocationProps, "location" | "searchParams">
+type DataSetDetailProps = Props
 
 function bucket(props: Props) {
   const last = lastEvent(props)

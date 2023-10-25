@@ -1,5 +1,6 @@
+import { useLocation } from "react-router-dom"
+
 import type { NavigableKind } from "../Kind"
-import type { LocationProps } from "../router/withLocation"
 
 const defaultKind: NavigableKind = "controlplane"
 
@@ -15,10 +16,11 @@ export function hashIfNeeded(kind: NavigableKind) {
   return kind === defaultKind ? "#" : "#" + kind
 }
 
-export function currentKind(props: Pick<LocationProps, "location">): NavigableKind {
-  return (props.location.hash.slice(1) as NavigableKind) || defaultKind
+export function currentKind(): NavigableKind {
+  const location = useLocation()
+  return (location.hash.slice(1) as NavigableKind) || defaultKind
 }
 
-export default function isShowingKind(kind: NavigableKind, props: Pick<LocationProps, "location">) {
-  return kind === currentKind(props)
+export default function isShowingKind(kind: NavigableKind) {
+  return kind === currentKind()
 }

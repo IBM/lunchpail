@@ -2,15 +2,13 @@ import CardInGallery from "../CardInGallery"
 
 import type DataSetProps from "./Props"
 import type { BaseProps } from "../CardInGallery"
-import type { LocationProps } from "../../router/withLocation"
 
 import { commonGroups, numAssociatedWorkerPools } from "./common"
 
 import DataSetIcon from "./Icon"
 
 type Props = BaseProps &
-  DataSetProps &
-  Pick<LocationProps, "location" | "searchParams"> & {
+  DataSetProps & {
     /** To help with keeping react re-rendering happy */
     numEvents: number
   }
