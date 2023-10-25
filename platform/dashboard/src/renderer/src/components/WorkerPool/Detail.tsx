@@ -49,15 +49,32 @@ function correctiveActions(props: Props, locationProps: LocationProps) {
 
 /** Delete this resource */
 function deleteAction(props: Props) {
-  return <DeleteButton kind="workerpool.codeflare.dev" name={props.model.label} namespace={props.model.namespace} />
+  return (
+    <DeleteButton
+      key="delete"
+      kind="workerpool.codeflare.dev"
+      name={props.model.label}
+      namespace={props.model.namespace}
+    />
+  )
+}
+
+function rightActions(props: Props) {
+  return [deleteAction(props)]
 }
 
 /** Common actions */
-function actions(props: Props, locationProps: LocationProps) {
-  return [...correctiveActions(props, locationProps), deleteAction(props)]
+function leftActions(props: Props, locationProps: LocationProps) {
+  return [...correctiveActions(props, locationProps)]
 }
 
 /** The body and actions to show in the WorkerPool Details view */
 export default function WorkerPoolDetail(props: Props | undefined, locationProps: LocationProps) {
-  return <DrawerContent body={props && dl(detailGroups(props))} actions={props && actions(props, locationProps)} />
+  return (
+    <DrawerContent
+      body={props && dl(detailGroups(props))}
+      actions={props && leftActions(props, locationProps)}
+      rightActions={props && rightActions(props)}
+    />
+  )
 }
