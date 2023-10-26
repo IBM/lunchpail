@@ -77,7 +77,7 @@ export default function WorkerPoolDetail(props: Props | undefined) {
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
-      raw={props}
+      raw={props?.status}
       actions={props && leftActions(props)}
       rightActions={props && rightActions(props)}
     />
