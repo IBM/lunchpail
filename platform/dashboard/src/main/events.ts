@@ -1,6 +1,5 @@
 import { ipcMain, ipcRenderer } from "electron"
 
-import startQueueStream from "./streams/queue"
 import startDataSetStream from "./streams/dataset"
 import startStreamForKind from "./streams/kubernetes"
 import startTaskSimulatorStream from "./streams/tasksimulator"
@@ -68,7 +67,7 @@ function streamForKind(kind: WatchedKind): import("stream").Transform {
     case "datasets":
       return startDataSetStream()
     case "queues":
-      return startQueueStream()
+      return startStreamForKind("queues.codeflare.dev", true)
     case "workerpools":
       return startStreamForKind("workerpools.codeflare.dev")
     case "platformreposecrets":

@@ -1,28 +1,38 @@
+import type WithTimestamp from "./WithTimestamp"
+import type KubernetesResource from "./KubernetesResource"
+
 /**
  * An update as to the depth of a queue
  */
-export default interface QueueEvent {
-  /** Millis since epoch */
-  timestamp: number
+type QueueEvent = WithTimestamp<
+  KubernetesResource<
+    {
+      /** Name of DataSet that this queue is helping to process */
+      dataset: string
+    },
+    {
+      /** The number of enqueued tasks */
+      "codeflare.dev/inbox": string
 
-  /** Run that this queue is part of */
-  run: string
+      /** The number of in-progress tasks */
+      "codeflare.dev/processing": string
 
-  /** Name of WorkerPool that this queue is part of */
-  workerpool: string
+      /** The number of completed tasks */
+      "codeflare.dev/outbox": string
+    },
+    {
+      labels: {
+        /** The Run this queue is part of */
+        "app.kubernetes.io/part-of": string
 
-  /** Index of this worker in this WorkerPool */
-  workerIndex: number
+        /** The WorkerPool this queue is part of */
+        "app.kubernetes.io/name": string
 
-  /** Name of DataSet that this queue is helping to process */
-  dataset: string
+        /** This queue is assigned to the given indexed worker */
+        "codeflare.dev/worker-index": string
+      }
+    }
+  >
+>
 
-  /** Queue depth of the inbox */
-  inbox: number
-
-  /** Number of completed tasks by this worker */
-  outbox: number
-
-  /** Number of in-process tasks by this worker */
-  processing: number
-}
+export default QueueEvent

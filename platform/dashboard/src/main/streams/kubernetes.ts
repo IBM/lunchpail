@@ -7,13 +7,13 @@ import filterOutMissingCRDs from "./filter-missing-crd-errors"
 /**
  * @return a NodeJS `Stream` that emits a stream of serialized `ApplicationSpecEvent` data
  */
-export default function startStreamForKind(kind: string) {
+export default function startStreamForKind(kind: string, withTimestamp = false) {
   try {
     const child = spawn("kubectl", ["get", kind, "-A", "--no-headers", "--watch", "-o=json"])
 
     child.stderr.pipe(filterOutMissingCRDs).pipe(process.stderr)
 
-    const splitter = child.stdout.pipe(split2()).pipe(transformToJSON())
+    const splitter = child.stdout.pipe(split2()).pipe(transformToJSON(withTimestamp))
     splitter.once("error", console.error)
     splitter.once("close", () => {
       splitter.off("error", console.error)

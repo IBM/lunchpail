@@ -15,11 +15,12 @@
  */
 
 import { Transform } from "stream"
+import type WithTimestamp from "@jay/common/events/WithTimestamp"
 
 /**
  * A simple streaming JSON parser, yielding one callback per JSON struct.
  */
-export default function transformToJSON() {
+export default function transformToJSON(withTimestamp = false) {
   let escaping = false
   let inQuotes = false
   let depth = 0
@@ -46,13 +47,14 @@ export default function transformToJSON() {
         }
         if (!inQuotes && ch === "}") {
           if (--depth === 0) {
-            structs.push(bundle)
+            const event = JSON.parse(bundle)
+            structs.push(withTimestamp ? ({ timestamp: Date.now(), event } as WithTimestamp<unknown>) : event)
             bundle = ""
           }
         }
       }
 
-      callback(null, structs.length > 0 ? JSON.stringify(structs.map((_) => JSON.parse(_))) : "")
+      callback(null, structs.length > 0 ? JSON.stringify(structs) : "")
     },
   })
 }

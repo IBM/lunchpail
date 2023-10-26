@@ -23,6 +23,15 @@ import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
 import singletonJsonEventHandler from "../events/singleton-json"
 
+import {
+  queueDataSet,
+  queueInbox,
+  queueOutbox,
+  queueProcessing,
+  queueWorkerIndex,
+  queueWorkerPool,
+} from "../events/QueueEvent"
+
 import type Kind from "../Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type { EventLike } from "@jay/common/events/EventSourceLike"
@@ -84,7 +93,7 @@ export function Dashboard(props: Props) {
 
   /** @return the QueueEvents associated with a given WorkerPool */
   function queueEventsForWorkerPool(workerpool: string) {
-    return queueEvents.filter((_) => _.workerpool === workerpool)
+    return queueEvents.filter((_) => queueWorkerPool(_) === workerpool)
   }
 
   /** A memo of the mapping from DataSet to TaskSimulatorEvents */
@@ -200,20 +209,26 @@ export function Dashboard(props: Props) {
   ): WorkerPoolModelWithHistory {
     const model = queueEventsForOneWorkerPool.reduce(
       (M, queueEvent) => {
-        if (!M.inbox[queueEvent.workerIndex]) {
-          M.inbox[queueEvent.workerIndex] = {}
-        }
-        M.inbox[queueEvent.workerIndex][queueEvent.dataset] = queueEvent.inbox
+        const dataset = queueDataSet(queueEvent)
+        const inbox = queueInbox(queueEvent)
+        const outbox = queueOutbox(queueEvent)
+        const processing = queueProcessing(queueEvent)
+        const workerIndex = queueWorkerIndex(queueEvent)
 
-        if (!M.outbox[queueEvent.workerIndex]) {
-          M.outbox[queueEvent.workerIndex] = {}
+        if (!M.inbox[workerIndex]) {
+          M.inbox[workerIndex] = {}
         }
-        M.outbox[queueEvent.workerIndex][queueEvent.dataset] = queueEvent.outbox
+        M.inbox[workerIndex][dataset] = inbox
 
-        if (!M.processing[queueEvent.workerIndex]) {
-          M.processing[queueEvent.workerIndex] = {}
+        if (!M.outbox[workerIndex]) {
+          M.outbox[workerIndex] = {}
         }
-        M.processing[queueEvent.workerIndex][queueEvent.dataset] = queueEvent.processing
+        M.outbox[workerIndex][dataset] = outbox
+
+        if (!M.processing[workerIndex]) {
+          M.processing[workerIndex] = {}
+        }
+        M.processing[workerIndex][dataset] = processing
 
         return M
       },
@@ -226,7 +241,7 @@ export function Dashboard(props: Props) {
       inbox: backfill(model.inbox),
       outbox: backfill(model.outbox),
       processing: backfill(model.processing),
-      events: queueEventsForOneWorkerPool,
+      events: queueEventsForOneWorkerPool.map((_) => ({ outbox: queueOutbox(_), timestamp: _.timestamp })),
       numEvents: queueEventsForOneWorkerPool.length,
     }
   }
@@ -340,9 +355,9 @@ export function Dashboard(props: Props) {
           tasksimulators: datasetToTaskSimulators[id] || [],
           applications: applicationEvents || [],
           label: id,
-          events: events,
+          events,
           numEvents: events.length,
-          datasetIndex: datasetIndex,
+          datasetIndex,
         }
   }
 

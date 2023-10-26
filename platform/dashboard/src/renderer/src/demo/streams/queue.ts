@@ -13,20 +13,34 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
   private queueEvent(workerpool: DemoWorkerPool, dataset: string, workerIndex: number): QueueEvent {
     return {
       timestamp: Date.now(),
-      run: runs[0], // TODO multiple demo runs?
-      workerIndex,
-      workerpool: workerpool.name,
-      dataset,
-      inbox: workerpool.inboxes[workerIndex][dataset] || 0,
-      outbox: workerpool.outboxes[workerIndex][dataset] || 0,
-      processing: workerpool.processing[workerIndex][dataset] || 0,
+      event: {
+        metadata: {
+          name: `queue-${runs[0]}-${dataset}`,
+          namespace: "none", // FIXME?
+          creationTimestamp: new Date().toUTCString(),
+          labels: {
+            "app.kubernetes.io/part-of": runs[0], // TODO multiple demo runs?
+            "app.kubernetes.io/name": workerpool.name,
+            "codeflare.dev/worker-index": String(workerIndex),
+          },
+          annotations: {
+            "codeflare.dev/status": "Running",
+            "codeflare.dev/inbox": String(workerpool.inboxes[workerIndex][dataset] || 0),
+            "codeflare.dev/outbox": String(workerpool.outboxes[workerIndex][dataset] || 0),
+            "codeflare.dev/processing": String(workerpool.processing[workerIndex][dataset] || 0),
+          },
+        },
+        spec: {
+          dataset,
+        },
+      },
     }
   }
 
   public sendUpdate(workerpool: DemoWorkerPool, datasetLabel: string, workerIndex: number) {
     const model = this.queueEvent(workerpool, datasetLabel, workerIndex)
     setTimeout(() =>
-      this.handlers.forEach((handler) => handler(new MessageEvent("queue", { data: JSON.stringify(model) }))),
+      this.handlers.forEach((handler) => handler(new MessageEvent("queue", { data: JSON.stringify([model]) }))),
     )
   }
 }
