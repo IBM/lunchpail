@@ -12,16 +12,16 @@ type DataSetDetailProps = Props
 
 function bucket(props: Props) {
   const last = lastEvent(props)
-  return descriptionGroup("Bucket", last ? last.bucket : "unknown")
+  return descriptionGroup("Bucket", last ? last.spec.local.bucket : "unknown")
 }
 
 function storageType(props: Props) {
   const last = lastEvent(props)
-  return descriptionGroup("Storage Type", last ? last.storageType : "unknown")
+  return descriptionGroup("Storage Type", last ? last.spec.local.type : "unknown")
 }
 
 function inboxHistory(props: Props) {
-  return props.events.map((_) => _.inbox)
+  return props.events.map((_) => parseInt(_.metadata.annotations["codeflare.dev/unassigned"], 10))
 }
 
 function unassignedChart(props: Props) {
@@ -45,7 +45,9 @@ function detailGroups(props: Props) {
 
 /** Delete this dataset */
 function deleteAction(last: null | DataSetEvent) {
-  return !last ? [] : [<DeleteButton key="delete" kind="dataset" name={last.label} namespace={last.namespace} />]
+  return !last
+    ? []
+    : [<DeleteButton key="delete" kind="dataset" name={last.metadata.name} namespace={last.metadata.namespace} />]
 }
 
 /** Launch a TaskSimulator for this dataset */
@@ -55,8 +57,8 @@ function taskSimulatorAction(last: null | DataSetEvent, props: Props) {
     : [
         <TaskSimulatorButton
           key="task-simulator"
-          name={last.label}
-          namespace={last.namespace}
+          name={last.metadata.name}
+          namespace={last.metadata.namespace}
           simulators={props.tasksimulators}
         />,
       ]

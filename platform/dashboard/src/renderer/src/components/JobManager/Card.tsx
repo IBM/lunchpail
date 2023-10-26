@@ -37,10 +37,10 @@ export default function JobManagerCardFn(props: BaseProps) {
   const initialize = mouseSetTo("initializing")
 
   const kind = "controlplane"
-  const label = "Job Manager"
+  const name = "Job Manager"
   const title = (
     <span>
-      {label} {refreshing && refreshingMessage({ refreshing: refreshing })}
+      {name} {refreshing && refreshingMessage({ refreshing: refreshing })}
     </span>
   )
 
@@ -58,7 +58,7 @@ export default function JobManagerCardFn(props: BaseProps) {
     <CardInGallery
       {...props}
       kind={kind}
-      label={label}
+      name={name}
       title={title}
       groups={groups}
       footer={footer}

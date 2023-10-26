@@ -1,16 +1,5 @@
-export default interface PlatformRepoSecretEvent {
-  /** Millis since epoch */
-  timestamp: number
+import type KubernetesResource from "./KubernetesResource"
 
-  /** Namespace of PlatformRepoSecret */
-  namespace: string
+type PlatformRepoSecretEvent = KubernetesResource<unknown>
 
-  /** Name of PlatformRepoSecret */
-  name: string
-
-  /** Status of Application */
-  status: string
-
-  /** Age of PlatformRepoSecret */
-  age: string
-}
+export default PlatformRepoSecretEvent

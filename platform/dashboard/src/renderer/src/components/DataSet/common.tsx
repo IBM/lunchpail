@@ -12,28 +12,28 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">
-type LabelAndApplications = Pick<Props, "label" | "applications">
-type LabelEventsDataSetIndex = JustEvents & Pick<Props, "label" | "datasetIndex">
+type NameAndApplications = Pick<Props, "name" | "applications">
+type NameEventsDataSetIndex = JustEvents & Pick<Props, "name" | "datasetIndex">
 
 export function lastEvent(props: JustEvents) {
   return props.events.length === 0 ? null : props.events[props.events.length - 1]
 }
 
-function associatedApplicationsFilter(this: LabelAndApplications, app: ApplicationSpecEvent) {
-  const { label } = this
+function associatedApplicationsFilter(this: NameAndApplications, app: ApplicationSpecEvent) {
+  const { name } = this
   if (app.spec.inputs) {
     const { xs, sm, md, lg, xl } = app.spec.inputs[0].sizes
-    return xs === label || sm === label || md === label || lg === label || xl === label
+    return xs === name || sm === name || md === name || lg === name || xl === name
   }
   return null
 }
 
-function numAssociatedApplicationEvents(props: LabelAndApplications) {
+function numAssociatedApplicationEvents(props: NameAndApplications) {
   const filter = associatedApplicationsFilter.bind(props)
   return props.applications.reduce((N, app) => (filter(app) ? N + 1 : N), 0)
 }
 
-function associatedApplicationEvents(props: LabelAndApplications) {
+function associatedApplicationEvents(props: NameAndApplications) {
   return props.applications.filter(associatedApplicationsFilter.bind(props))
 }
 
@@ -62,19 +62,19 @@ export function numAssociatedWorkerPools(props: Props) {
 
 function inboxCount(props: JustEvents) {
   const last = lastEvent(props)
-  return last?.inbox ?? 0
+  return last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
 }
 
-function cells(count: number, gridDataType: GridTypeData, props: LabelEventsDataSetIndex) {
+function cells(count: number, gridDataType: GridTypeData, props: NameEventsDataSetIndex) {
   if (!count) {
-    return <Queue inbox={{ [props.label]: 0 }} datasetIndex={props.datasetIndex} gridTypeData="placeholder" />
+    return <Queue inbox={{ [props.name]: 0 }} datasetIndex={props.datasetIndex} gridTypeData="placeholder" />
   }
   return (
-    <Queue inbox={{ [props.label]: inboxCount(props) }} datasetIndex={props.datasetIndex} gridTypeData={gridDataType} />
+    <Queue inbox={{ [props.name]: inboxCount(props) }} datasetIndex={props.datasetIndex} gridTypeData={gridDataType} />
   )
 }
 
-function unassigned(props: LabelEventsDataSetIndex) {
+function unassigned(props: NameEventsDataSetIndex) {
   const count = inboxCount(props)
   return descriptionGroup("Tasks", count === 0 ? None() : cells(count, "unassigned", props), count)
 }
@@ -88,7 +88,7 @@ export function NewPoolButton(props: Props) {
     numAssociatedApplicationEvents(props) > 0 && (
       <LinkToNewPool
         key="new-pool-button"
-        dataset={props.label}
+        dataset={props.name}
         startOrAdd={numAssociatedWorkerPools(props) > 0 ? "add" : "start"}
       />
     )

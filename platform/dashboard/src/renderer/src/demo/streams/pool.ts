@@ -6,6 +6,7 @@ import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent
 
 import Base from "./base"
 import { ns } from "./misc"
+import { inbox, inboxIncr } from "./dataset"
 import getNormallyDistributedRandomNumber from "../util/rand"
 
 export type DemoWorkerPool = {
@@ -100,10 +101,11 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
           // eslint-disable-next-line no-async-promise-executor
           new Promise(async () => {
             const datasetLabel = pool.dataset
-            const dataset = datasets.sets.find((_) => _.label === datasetLabel)
-            if (dataset && dataset.inbox > 0) {
-              dataset.inbox--
-              pool.inboxes[workerIndex][dataset.label] = (pool.inboxes[workerIndex][dataset.label] || 0) + 1
+            const dataset = datasets.sets.find((_) => _.metadata.name === datasetLabel)
+            if (dataset && inbox(dataset) > 0) {
+              inboxIncr(dataset, -1)
+              pool.inboxes[workerIndex][dataset.metadata.name] =
+                (pool.inboxes[workerIndex][dataset.metadata.name] || 0) + 1
               queues.sendUpdate(pool, datasetLabel, workerIndex)
             }
 
@@ -142,10 +144,10 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
             pool.outboxes[workerIndex][datasetLabel] = (pool.outboxes[workerIndex][datasetLabel] || 0) + 1 // outbox++
             pool.processing[workerIndex][datasetLabel]-- // processing--
 
-            const dataset = datasets.sets.find((_) => _.label === datasetLabel)
+            const dataset = datasets.sets.find((_) => _.metadata.name === datasetLabel)
             if (dataset) {
               // mark it as done in the dataset, too
-              dataset.outbox++
+              // dataset.outbox++
             }
 
             queues.sendUpdate(pool, datasetLabel, workerIndex)

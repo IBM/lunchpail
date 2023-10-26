@@ -1,19 +1,8 @@
-export default interface TaskSimulatorEvent {
-  /** Millis since epoch */
-  timestamp: number
+import type KubernetesResource from "./KubernetesResource"
 
-  /** Name of TaskSimulator */
-  name: string
-
-  /** Namespace of TaskSimulator */
-  namespace: string
-
+type TaskSimulatorEvent = KubernetesResource<{
   /** DataSet that this TaskSimulator populates */
   dataset: string
+}>
 
-  /** Status of TaskSimulator */
-  status: string
-
-  /** Age of TaskSimulator */
-  age: string
-}
+export default TaskSimulatorEvent

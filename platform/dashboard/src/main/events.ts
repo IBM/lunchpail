@@ -1,10 +1,6 @@
 import { ipcMain, ipcRenderer } from "electron"
 
-import startDataSetStream from "./streams/dataset"
 import startStreamForKind from "./streams/kubernetes"
-import startTaskSimulatorStream from "./streams/tasksimulator"
-import startPlatformRepoSecretStream from "./streams/platformreposecret"
-
 import { Status, getStatusFromMain } from "./controlplane/status"
 
 import type WatchedKind from "@jay/common/Kind"
@@ -65,17 +61,17 @@ app.get("/api/newpool", async () => {
 function streamForKind(kind: WatchedKind): import("stream").Transform {
   switch (kind) {
     case "datasets":
-      return startDataSetStream()
+      return startStreamForKind("dataset")
     case "queues":
       return startStreamForKind("queues.codeflare.dev", true)
     case "workerpools":
       return startStreamForKind("workerpools.codeflare.dev")
     case "platformreposecrets":
-      return startPlatformRepoSecretStream()
+      return startStreamForKind("platformreposecrets.codeflare.dev")
     case "applications":
       return startStreamForKind("application.codeflare.dev")
     case "tasksimulators":
-      return startTaskSimulatorStream()
+      return startStreamForKind("tasksimulators.codeflare.dev")
   }
 }
 

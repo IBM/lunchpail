@@ -14,7 +14,7 @@ export type BaseProps = DrilldownProps
 
 type Props = BaseProps & {
   kind: Kind
-  label: string
+  name: string
   title?: ReactNode
   icon?: ReactNode
   groups: ReactNode[]
@@ -28,7 +28,7 @@ const defaultDescriptionListProps: DescriptionListProps = {
 }
 
 export default function CardInGallery(props: Props) {
-  const onClick = () => props.showDetails({ id: props.label, kind: props.kind })
+  const onClick = () => props.showDetails({ id: props.name, kind: props.kind })
 
   const header = props.icon && (
     <CardHeader actions={props.actions} className="codeflare--card-header-no-wrap">
@@ -43,11 +43,11 @@ export default function CardInGallery(props: Props) {
       isClickable
       isSelectable
       isSelectableRaised
-      isSelected={props.currentlySelectedId === props.label && props.currentlySelectedKind === props.kind}
+      isSelected={props.currentlySelectedId === props.name && props.currentlySelectedKind === props.kind}
       onClick={onClick}
     >
       {header}
-      <CardTitle>{props.title ?? props.label}</CardTitle>
+      <CardTitle>{props.title ?? props.name}</CardTitle>
       <CardBody>{body}</CardBody>
       {props.footer && <CardFooter>{props.footer}</CardFooter>}
     </Card>

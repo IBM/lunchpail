@@ -3,7 +3,14 @@ import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
-type Props = Pick<DataSetEvent, "idx" | "label"> & {
+type Props = {
+  /** Name of DataSet */
+  name: DataSetEvent["metadata"]["name"]
+
+  /** To keep a consistent color across views, we assign each dataset an index */
+  idx: number
+
+  /** */
   events: DataSetEvent[]
 
   /** Latest set of Applications */

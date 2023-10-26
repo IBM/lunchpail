@@ -24,7 +24,7 @@ export function datasets(props: ApplicationSpecEvent) {
 export default function ApplicationCard(props: BaseProps & ApplicationSpecEvent) {
   const kind = "applications" as const
   const icon = <ApplicationIcon {...props} />
-  const label = props.metadata.name
+  const name = props.metadata.name
   const groups = [
     descriptionGroup("api", props.spec.api, undefined, "The API used by this Application to distribute work."),
     datasets(props),
@@ -32,5 +32,5 @@ export default function ApplicationCard(props: BaseProps & ApplicationSpecEvent)
     //props.supportsGpu && descriptionGroup("Benefits from GPU", props.supportsGpu),
   ]
 
-  return <CardInGallery {...props} kind={kind} label={label} icon={icon} groups={groups} />
+  return <CardInGallery {...props} kind={kind} name={name} icon={icon} groups={groups} />
 }

@@ -21,7 +21,6 @@ import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
-import singletonJsonEventHandler from "../events/singleton-json"
 
 import {
   queueDataSet,
@@ -83,12 +82,12 @@ export function Dashboard(props: Props) {
 
   /** Event handlers */
   const handlers: Record<Kind, (evt: EventLike) => void> = {
-    applications: singletonJsonEventHandler("applications", setApplicationEvents, returnHome),
-    datasets: singletonEventHandler("label", "datasets", setDataSetEvents, returnHome),
+    applications: singletonEventHandler("applications", setApplicationEvents, returnHome),
+    datasets: singletonEventHandler("datasets", setDataSetEvents, returnHome),
     queues: allEventsHandler(setQueueEvents),
-    workerpools: singletonJsonEventHandler("workerpools", setPoolEvents, returnHome),
-    tasksimulators: singletonEventHandler("name", "tasksimulators", setTaskSimulatorEvents, returnHome),
-    platformreposecrets: singletonEventHandler("name", "platformreposecrets", setPlatformRepoSecretEvents, returnHome),
+    workerpools: singletonEventHandler("workerpools", setPoolEvents, returnHome),
+    tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
+    platformreposecrets: singletonEventHandler("platformreposecrets", setPlatformRepoSecretEvents, returnHome),
   }
 
   /** @return the QueueEvents associated with a given WorkerPool */
@@ -101,10 +100,10 @@ export function Dashboard(props: Props) {
     () =>
       tasksimulatorEvents.reduce(
         (M, event) => {
-          if (!M[event.dataset]) {
-            M[event.dataset] = []
+          if (!M[event.spec.dataset]) {
+            M[event.spec.dataset] = []
           }
-          M[event.dataset].push(event)
+          M[event.spec.dataset].push(event)
           return M
         },
         {} as Record<string, TaskSimulatorEvent[]>,
@@ -140,7 +139,7 @@ export function Dashboard(props: Props) {
     () =>
       datasetEvents.reduce(
         (M, event, idx) => {
-          M[event.label] = either(event.idx, idx)
+          M[event.metadata.name] = either(event.spec.idx, idx)
           return M
         },
         {} as Record<string, number>,
@@ -183,12 +182,12 @@ export function Dashboard(props: Props) {
         .sort()
         .map((event) => (
           <DataSet
-            key={event.label}
-            idx={either(event.idx, datasetIndex[event.label])}
-            workerpools={datasetToPool[event.label] || []}
-            tasksimulators={datasetToTaskSimulators[event.label] || []}
+            key={event.metadata.name}
+            idx={either(event.spec.idx, datasetIndex[event.metadata.name])}
+            workerpools={datasetToPool[event.metadata.name] || []}
+            tasksimulators={datasetToTaskSimulators[event.metadata.name] || []}
             applications={applicationEvents}
-            label={event.label}
+            name={event.metadata.name}
             events={[event]}
             numEvents={1}
             datasetIndex={datasetIndex}
@@ -259,11 +258,11 @@ export function Dashboard(props: Props) {
   const applicationsList: string[] = applicationEvents.map((_) => _.metadata.name)
   const datasetsList: string[] = Object.keys(datasetIndex)
   const workerpoolsList: string[] = latestWorkerPoolModels.map((_) => _.label)
-  const platformRepoSecretsList: string[] = platformreposecretEvents.map((_) => _.name)
+  const platformRepoSecretsList: string[] = platformreposecretEvents.map((_) => _.metadata.name)
 
   function platformreposecrets() {
     // TODO... cards
-    return platformreposecretEvents.map((_) => _.name)
+    return platformreposecretEvents.map((_) => _.metadata.name)
   }
 
   function workerpools() {
@@ -345,16 +344,16 @@ export function Dashboard(props: Props) {
 
   /** Helps will drilldown to Details */
   function getDataSet(id: string) {
-    const event = datasetEvents.find((_) => _.label === id)
+    const event = datasetEvents.find((_) => _.metadata.name === id)
     const events = event ? [event] : undefined
     return !events || events.length === 0
       ? undefined
       : {
-          idx: either(events[events.length - 1].idx, datasetIndex[id]),
+          idx: either(events[events.length - 1].spec.idx, datasetIndex[id]),
           workerpools: datasetToPool[id] || [],
           tasksimulators: datasetToTaskSimulators[id] || [],
           applications: applicationEvents || [],
-          label: id,
+          name: id,
           events,
           numEvents: events.length,
           datasetIndex,
