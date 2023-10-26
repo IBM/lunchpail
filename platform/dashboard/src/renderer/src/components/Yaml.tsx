@@ -4,6 +4,8 @@ import { PrismAsyncLight as SyntaxHighlighter, type SyntaxHighlighterProps } fro
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
 import { coy as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
 
+import "./Yaml.scss"
+
 type Props = Partial<SyntaxHighlighterProps> & {
   content: string
 }

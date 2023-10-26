@@ -22,6 +22,7 @@
 
     section {
       /* we want inner scrolling here */
+      flex: 1;
       overflow: auto;
     }
   }
