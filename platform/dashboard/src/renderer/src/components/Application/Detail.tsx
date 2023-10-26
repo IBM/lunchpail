@@ -12,29 +12,27 @@ type Props = ApplicationSpecEvent
  * users can click to see the source directly.
  */
 function repoPlusSource(props: Props) {
-  const source = props.command.match(/\s(\w+\.py)\s/)
-  return props.repo + (source ? "/" + source[1] : "")
+  const source = props.spec.command.match(/\s(\w+\.py)\s/)
+  return props.spec.repo + (source ? "/" + source[1] : "")
 }
 
 function detailGroups(props: Props) {
-  return Object.entries(props)
-    .filter(
-      ([term]) =>
-        term !== "application" && term !== "timestamp" && term !== "showDetails" && term !== "currentSelection",
-    )
+  return Object.entries(props.spec)
     .filter(([, value]) => value)
     .map(([term, value]) =>
       term === "repo"
         ? descriptionGroup(term, repoPlusSource(props))
-        : term === "data sets"
+        : term === "inputs"
         ? datasets(props)
-        : typeof value !== "function" && descriptionGroup(term, value),
+        : typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value),
     )
 }
 
 /** Delete this resource */
 function deleteAction(props: Props) {
-  return <DeleteButton kind="application.codeflare.dev" name={props.application} namespace={props.namespace} />
+  return (
+    <DeleteButton kind="application.codeflare.dev" name={props.metadata.name} namespace={props.metadata.namespace} />
+  )
 }
 
 /** Common actions */

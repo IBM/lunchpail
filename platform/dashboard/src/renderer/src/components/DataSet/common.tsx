@@ -21,8 +21,8 @@ export function lastEvent(props: JustEvents) {
 
 function associatedApplicationsFilter(this: LabelAndApplications, app: ApplicationSpecEvent) {
   const { label } = this
-  if (app["data sets"]) {
-    const { xs, sm, md, lg, xl } = app["data sets"]
+  if (app.spec.inputs) {
+    const { xs, sm, md, lg, xl } = app.spec.inputs[0].sizes
     return xs === label || sm === label || md === label || lg === label || xl === label
   }
   return null

@@ -13,8 +13,9 @@ function statusGroup(props: Props) {
 
 function reasonGroups(props: Props) {
   const latestStatus = props.status
-  if (latestStatus?.reason) {
-    return [descriptionGroup("Reason", titleCaseSplit(latestStatus.reason))]
+  const reason = latestStatus?.metadata.annotations["codeflare.dev/reason"]
+  if (reason) {
+    return [descriptionGroup("Reason", titleCaseSplit(reason))]
   } else {
     return []
   }
@@ -22,8 +23,9 @@ function reasonGroups(props: Props) {
 
 function messageGroups(props: Props) {
   const latestStatus = props.status
-  if (latestStatus?.message) {
-    return [descriptionGroup("Message", titleCaseSplit(latestStatus.message))]
+  const message = latestStatus?.metadata.annotations["codeflare.dev/message"]
+  if (message) {
+    return [descriptionGroup("Message", titleCaseSplit(message))]
   } else {
     return []
   }
@@ -37,8 +39,11 @@ function detailGroups(props: Props) {
 /** Any suggestions/corrective action buttons */
 function correctiveActions(props: Props) {
   const latestStatus = props.status
-  if (latestStatus?.status === "CloneFailed" && latestStatus?.reason === "AccessDenied") {
-    const repoMatch = latestStatus?.message?.match(/(https:\/\/[^/]+)/)
+  const status = latestStatus?.metadata.annotations["codeflare.dev/status"]
+  const reason = latestStatus?.metadata.annotations["codeflare.dev/reason"]
+  const message = latestStatus?.metadata.annotations["codeflare.dev/message"]
+  if (status === "CloneFailed" && reason === "AccessDenied") {
+    const repoMatch = message?.match(/(https:\/\/[^/]+)/)
     const repo = repoMatch ? repoMatch[1] : undefined
     return [<LinkToNewRepoSecret repo={repo} namespace={props.model.namespace} startOrAdd="fix" />]
   } else {

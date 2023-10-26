@@ -8,7 +8,7 @@ import sparkImageUrl from "../../images/spark.svg"
 import pytorchImageUrl from "../../images/pytorch.svg"
 
 export default function applicationIcon(props: ApplicationSpecEvent) {
-  switch (props.api) {
+  switch (props.spec.api) {
     case "ray":
       return <img className="codeflare--card-icon-image" src={rayImageUrl} />
     case "torch":

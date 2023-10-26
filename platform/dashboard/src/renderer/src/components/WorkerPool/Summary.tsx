@@ -22,20 +22,20 @@ function completionRate(props: Props) {
 
 function latestApplications(props: Props) {
   if (props.status) {
-    return props.status.applications
+    return [props.status.spec.application.name]
   }
   return null
 }
 
 function latestDataSets(props: Props) {
   if (props.status) {
-    return props.status.datasets
+    return [props.status.spec.dataset]
   }
   return null
 }
 
-function size(props: Props) {
-  return !props.status ? 0 : props.status.size
+function count(props: Props) {
+  return !props.status ? 0 : props.status.spec.workers.count
 }
 
 /** One row per worker, within row, one cell per inbox or outbox enqueued task */
@@ -66,6 +66,8 @@ export function statusActions(
   textComponent?: import("@patternfly/react-core").TextProps["component"],
 ): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
   const latestStatus = props.status
+  const status = latestStatus?.metadata.annotations["codeflare.dev/status"] || "Unknown"
+  const message = latestStatus?.metadata.annotations["codeflare.dev/message"]
 
   return {
     hasNoOffset: true,
@@ -74,11 +76,11 @@ export function statusActions(
       : [
           <IconWithLabel
             key="Status"
-            popoverHeader={titleCaseSplit(latestStatus?.status)}
-            popoverBody={latestStatus?.message}
-            status={/Failed/.test(latestStatus?.status) ? "Failed" : latestStatus?.status}
+            popoverHeader={titleCaseSplit(status)}
+            popoverBody={message}
+            status={/Failed/.test(status) ? "Failed" : status}
           >
-            <Text component={textComponent}>{titleCaseSplit(latestStatus?.status)}</Text>
+            <Text component={textComponent}>{titleCaseSplit(status)}</Text>
           </IconWithLabel>,
         ],
   }
@@ -93,6 +95,6 @@ export function summaryGroups(props: Props) {
     datasets && descriptionGroup(names["datasets"], linkToAllDataSetDetails(datasets)),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
-    descriptionGroup(`Queued Work (${pluralize("worker", size(props))})`, enqueued(props)),
+    descriptionGroup(`Queued Work (${pluralize("worker", count(props))})`, enqueued(props)),
   ]
 }

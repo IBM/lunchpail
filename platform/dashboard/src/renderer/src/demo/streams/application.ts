@@ -48,24 +48,29 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     status = "Ready",
   ): ApplicationSpecEvent {
     return {
-      timestamp: Date.now(),
-      namespace,
-      application: name,
-      description,
-      api,
-      image,
-      repo: `https://github.com/${repoPath}`,
-      command: `python ${name}.py`,
-      supportsGpu: false,
-      "data sets": { md: inputMd },
-      age: new Date().toLocaleString(),
-      status,
+      metadata: {
+        name,
+        namespace,
+        creationTimestamp: new Date().toLocaleString(),
+        annotations: {
+          "codeflare.dev/status": status,
+        },
+      },
+      spec: {
+        description,
+        api,
+        image,
+        repo: `https://github.com/${repoPath}`,
+        command: `python ${name}.py`,
+        supportsGpu: false,
+        inputs: [{ sizes: { md: inputMd } }],
+      },
     }
   }
 
   private sendEventFor = (application: (typeof this.applications)[number], status?: string) => {
     const model = this.randomApplicationSpecEvent(application, status)
-    this.handlers.forEach((handler) => handler(new MessageEvent("application", { data: JSON.stringify(model) })))
+    this.handlers.forEach((handler) => handler(new MessageEvent("application", { data: JSON.stringify([model]) })))
   }
 
   protected override initInterval(intervalMillis: number) {

@@ -1,19 +1,6 @@
-/**
- * An update as to the spec of an Application
- */
-export default interface ApplicationSpecEvent {
-  /** Millis since epoch */
-  timestamp: number
+import type KubernetesResource from "./KubernetesResource"
 
-  /** Namespace of Application */
-  namespace: string
-
-  /** Name of Application */
-  application: string
-
-  /** Status of Application */
-  status: string
-
+type ApplicationSpecEvent = KubernetesResource<{
   /** Brief description of this Application */
   description: string
 
@@ -32,10 +19,7 @@ export default interface ApplicationSpecEvent {
   /** Does this pool support GPU tasks? */
   supportsGpu: boolean
 
-  defaultSize?: "xs" | "sm" | "md" | "lg" | "xl"
+  inputs?: { sizes: { xs?: string; sm?: string; md?: string; lg?: string; xl?: string } }[]
+}>
 
-  "data sets"?: { xs?: string; sm?: string; md?: string; lg?: string; xl?: string }
-
-  /** Age of Application */
-  age: string
-}
+export default ApplicationSpecEvent

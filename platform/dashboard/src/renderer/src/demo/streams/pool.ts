@@ -11,8 +11,8 @@ import getNormallyDistributedRandomNumber from "../util/rand"
 export type DemoWorkerPool = {
   name: string
   numWorkers: number
-  applications: string[]
-  datasets: string[]
+  application: string
+  dataset: string
   inboxes: Record<string, number>[]
   outboxes: Record<string, number>[]
   processing: Record<string, number>[]
@@ -38,24 +38,31 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     const nWorkers = workerpool.numWorkers
 
     return {
-      timestamp: Date.now(),
-      namespace: ns,
-      workerpool: workerpool.name,
-      applications: workerpool.applications,
-      datasets: workerpool.datasets,
-      nodeClass: "md",
-      supportsGpu: false,
-      age: "",
-      status,
-      ready: Math.round(Math.random() * nWorkers),
-      size: nWorkers,
+      metadata: {
+        name: workerpool.name,
+        namespace: ns,
+        creationTimestamp: new Date().toUTCString(),
+        annotations: {
+          "codeflare.dev/status": status,
+          "codeflare.dev/ready": Math.round(Math.random() * nWorkers).toString(),
+        },
+      },
+      spec: {
+        application: { name: workerpool.application },
+        dataset: workerpool.dataset,
+        workers: {
+          size: "md",
+          supportsGpu: false,
+          count: nWorkers,
+        },
+      },
     }
   }
 
   private sendEventFor = (workerpool: Readonly<DemoWorkerPool>, status?: string): void => {
     const model = this.randomWorkerPoolStatusEvent(workerpool, status)
     setTimeout(() =>
-      this.handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify(model) }))),
+      this.handlers.forEach((handler) => handler(new MessageEvent("pool", { data: JSON.stringify([model]) }))),
     )
   }
 
@@ -92,8 +99,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
 
           // eslint-disable-next-line no-async-promise-executor
           new Promise(async () => {
-            const poolDataSetIndex = Math.floor(Math.random() * pool.datasets.length)
-            const datasetLabel = pool.datasets[poolDataSetIndex]
+            const datasetLabel = pool.dataset
             const dataset = datasets.sets.find((_) => _.label === datasetLabel)
             if (dataset && dataset.inbox > 0) {
               dataset.inbox--
@@ -123,8 +129,9 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       }
 
       // find work in an inbox and start processing it
-      for (let poolDatasetIndex = 0; poolDatasetIndex < pool.datasets.length; poolDatasetIndex++) {
-        const datasetLabel = pool.datasets[poolDatasetIndex]
+      const datasetsArr = [pool.dataset]
+      for (let poolDatasetIndex = 0; poolDatasetIndex < datasetsArr.length; poolDatasetIndex++) {
+        const datasetLabel = datasetsArr[poolDatasetIndex]
         if (pool.inboxes[workerIndex][datasetLabel] > 0) {
           pool.inboxes[workerIndex][datasetLabel]-- // inbox--
           pool.processing[workerIndex][datasetLabel] = (pool.processing[workerIndex][datasetLabel] || 0) + 1 // processing++
@@ -179,8 +186,8 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     const pool = {
       name: values.poolName,
       numWorkers,
-      applications: [values.application],
-      datasets: [values.dataset],
+      application: values.application,
+      dataset: values.dataset,
       inboxes: Array(numWorkers)
         .fill(0)
         .map(() => ({})),

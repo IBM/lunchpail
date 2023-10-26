@@ -52,15 +52,13 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
   )
 }
 
-export const linkToApplicationDetails: FunctionComponent<Pick<ApplicationSpecEvent, "application">> = ({
-  application: id,
-}) => {
+function linkToApplicationDetails(id: string) {
   return linkToDetails({ id, kind: "applications" })
 }
 
 export function linkToAllApplicationDetails(applications: ApplicationSpecEvent[] | string[]) {
   return applications.map((application) =>
-    linkToApplicationDetails(typeof application === "string" ? { application } : application),
+    linkToApplicationDetails(typeof application === "string" ? application : application.metadata.name),
   )
 }
 
@@ -77,5 +75,5 @@ export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({
 }
 
 export function linkToAllWorkerPoolDetails(pools: WorkerPoolStatusEvent[]) {
-  return pools.map((pool) => linkToWorkerPoolDetails({ id: pool.workerpool }))
+  return pools.map((pool) => linkToWorkerPoolDetails({ id: pool.metadata.name }))
 }

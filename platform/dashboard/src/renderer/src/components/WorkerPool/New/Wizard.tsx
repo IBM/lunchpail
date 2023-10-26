@@ -82,7 +82,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   }
 
   function supportsDataSet(app: ApplicationSpecEvent, dataset: string) {
-    const datasets = app["data sets"]
+    const datasets = app.spec.inputs ? app.spec.inputs[0].sizes : undefined
     return (
       datasets &&
       (datasets.xs === dataset ||
@@ -103,7 +103,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   }
 
   function chooseIfSingleton(A: ApplicationSpecEvent[]): string {
-    return A.length === 1 ? A[0].application : ""
+    return A.length === 1 ? A[0].metadata.name : ""
   }
 
   /** Initial value for form */
@@ -144,8 +144,8 @@ export default function NewWorkerPoolWizard(props: Props) {
         description={`Choose the ${names.applications} code this pool should run`}
         ctrl={ctrl}
         options={compatibleApplications().map((_) => ({
-          value: _.application,
-          description: <div className="codeflare--max-width-30em">{_.description}</div>,
+          value: _.metadata.name,
+          description: <div className="codeflare--max-width-30em">{_.spec.description}</div>,
         }))}
         icons={compatibleApplications().map(ApplicationIcon)}
       />
@@ -235,14 +235,14 @@ export default function NewWorkerPoolWizard(props: Props) {
   }*/
 
   function workerPoolYaml(values: FormContextProps["values"]) {
-    const applicationSpec = props.applications.find((_) => _.application === values.application)
+    const applicationSpec = props.applications.find((_) => _.metadata.name === values.application)
     if (!applicationSpec) {
       console.error("Internal error: Application spec not found", values.application)
       // TODO how do we report this to the UI?
     }
 
     // TODO re: internal-error
-    const namespace = applicationSpec ? applicationSpec.namespace : "internal-error"
+    const namespace = applicationSpec ? applicationSpec.metadata.namespace : "internal-error"
 
     return `
 apiVersion: codeflare.dev/v1alpha1

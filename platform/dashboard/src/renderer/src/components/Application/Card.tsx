@@ -10,7 +10,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import ApplicationIcon from "./Icon"
 
 export function datasets(props: ApplicationSpecEvent) {
-  const datasets = props["data sets"]
+  const datasets = props.spec.inputs ? props.spec.inputs[0].sizes : undefined
   const datasetNames = !datasets ? [] : Object.values(datasets).filter(Boolean)
 
   return descriptionGroup(
@@ -24,11 +24,11 @@ export function datasets(props: ApplicationSpecEvent) {
 export default function ApplicationCard(props: BaseProps & ApplicationSpecEvent) {
   const kind = "applications" as const
   const icon = <ApplicationIcon {...props} />
-  const label = props.application
+  const label = props.metadata.name
   const groups = [
-    descriptionGroup("api", props.api, undefined, "The API used by this Application to distribute work."),
+    descriptionGroup("api", props.spec.api, undefined, "The API used by this Application to distribute work."),
     datasets(props),
-    props.description && descriptionGroup("Description", props.description),
+    props.spec.description && descriptionGroup("Description", props.spec.description),
     //props.supportsGpu && descriptionGroup("Benefits from GPU", props.supportsGpu),
   ]
 

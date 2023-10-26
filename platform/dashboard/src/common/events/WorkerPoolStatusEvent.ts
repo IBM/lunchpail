@@ -1,43 +1,28 @@
+import type KubernetesResource from "./KubernetesResource"
+
 /**
  * An update as to the status of a WorkerPool
  */
-export default interface WorkerPoolStatusEvent {
-  /** Millis since epoch */
-  timestamp: number
-
-  /** Namespace of WorkerPool */
-  namespace: string
-
-  /** Name of WorkerPool */
-  workerpool: string
-
+type WorkerPoolStatusEvent = KubernetesResource<{
   /** Applications that this WorkerPool supports */
-  applications: string[]
+  application: {
+    name: string
+  }
 
   /** DataSets that this WorkerPool supports */
-  datasets: string[]
+  dataset: string
 
-  /** Machine type */
-  nodeClass: string
+  /** Attributes of the workers */
+  workers: {
+    /** Current worker count of pool */
+    count: number
 
-  /** Does this pool support GPU tasks? */
-  supportsGpu: boolean
+    /** Machine type */
+    size: string
 
-  /** Age of pool */
-  age: string
+    /** Does this pool support GPU tasks? */
+    supportsGpu: boolean
+  }
+}>
 
-  /** Status of pool, e.g. "Ready" | "CloneFailed" */
-  status: string
-
-  /** Categorical Reason to help understand a failure, e.g. "AccessDenied" stemming from status=CloneFailed */
-  reason?: string
-
-  /** Failure message or other status details */
-  message?: string
-
-  /** Ready worker count of pool */
-  ready: number
-
-  /** Current worker count of pool */
-  size: number
-}
+export default WorkerPoolStatusEvent

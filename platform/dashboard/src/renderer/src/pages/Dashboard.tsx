@@ -21,6 +21,7 @@ import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
+import singletonJsonEventHandler from "../events/singleton-json"
 
 import type Kind from "../Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
@@ -73,10 +74,10 @@ export function Dashboard(props: Props) {
 
   /** Event handlers */
   const handlers: Record<Kind, (evt: EventLike) => void> = {
-    applications: singletonEventHandler("application", "applications", setApplicationEvents, returnHome),
+    applications: singletonJsonEventHandler("applications", setApplicationEvents, returnHome),
     datasets: singletonEventHandler("label", "datasets", setDataSetEvents, returnHome),
     queues: allEventsHandler(setQueueEvents),
-    workerpools: singletonEventHandler("workerpool", "workerpools", setPoolEvents, returnHome),
+    workerpools: singletonJsonEventHandler("workerpools", setPoolEvents, returnHome),
     tasksimulators: singletonEventHandler("name", "tasksimulators", setTaskSimulatorEvents, returnHome),
     platformreposecrets: singletonEventHandler("name", "platformreposecrets", setPlatformRepoSecretEvents, returnHome),
   }
@@ -107,7 +108,7 @@ export function Dashboard(props: Props) {
     () =>
       poolEvents.reduce(
         (M, event) => {
-          event.datasets.forEach((dataset) => {
+          [event.spec.dataset].forEach((dataset) => {
             if (!M[dataset]) {
               M[dataset] = []
             }
@@ -143,7 +144,7 @@ export function Dashboard(props: Props) {
     () =>
       poolEvents
         .map((pool) => {
-          const queueEventsForOneWorkerPool = queueEventsForWorkerPool(pool.workerpool)
+          const queueEventsForOneWorkerPool = queueEventsForWorkerPool(pool.metadata.name)
           return toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
         })
         .sort((a, b) => a.label.localeCompare(b.label)),
@@ -163,8 +164,8 @@ export function Dashboard(props: Props) {
 
   function applications() {
     return applicationEvents
-      .sort((a, b) => a.application.localeCompare(b.application))
-      .map((evt) => <Application key={evt.application} {...evt} {...drilldownProps()} />)
+      .sort((a, b) => a.metadata.name.localeCompare(b.metadata.name))
+      .map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />)
   }
 
   function datasets() {
@@ -220,8 +221,8 @@ export function Dashboard(props: Props) {
     )
 
     return {
-      label: pool.workerpool,
-      namespace: pool.namespace,
+      label: pool.metadata.name,
+      namespace: pool.metadata.namespace,
       inbox: backfill(model.inbox),
       outbox: backfill(model.outbox),
       processing: backfill(model.processing),
@@ -240,7 +241,7 @@ export function Dashboard(props: Props) {
     return A
   }
 
-  const applicationsList: string[] = applicationEvents.map((_) => _.application)
+  const applicationsList: string[] = applicationEvents.map((_) => _.metadata.name)
   const datasetsList: string[] = Object.keys(datasetIndex)
   const workerpoolsList: string[] = latestWorkerPoolModels.map((_) => _.label)
   const platformRepoSecretsList: string[] = platformreposecretEvents.map((_) => _.name)
@@ -258,7 +259,7 @@ export function Dashboard(props: Props) {
           key={w.label}
           model={w}
           datasetIndex={datasetIndex}
-          status={poolEvents.find((_) => _.workerpool === w.label)}
+          status={poolEvents.find((_) => _.metadata.name === w.label)}
           {...drilldownProps()}
         />
       )),
@@ -324,7 +325,7 @@ export function Dashboard(props: Props) {
 
   /** Helps will drilldown to Details */
   function getApplication(id: string): ApplicationSpecEvent | undefined {
-    return applicationEvents.find((_) => _.application === id)
+    return applicationEvents.find((_) => _.metadata.name === id)
   }
 
   /** Helps will drilldown to Details */
@@ -352,7 +353,7 @@ export function Dashboard(props: Props) {
       ? undefined
       : {
           model,
-          status: poolEvents.find((_) => _.workerpool === id),
+          status: poolEvents.find((_) => _.metadata.name === id),
           datasetIndex: datasetIndex,
         }
   }
