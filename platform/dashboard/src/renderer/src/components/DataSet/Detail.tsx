@@ -1,4 +1,7 @@
+import { useContext } from "react"
+
 import Sparkline from "../Sparkline"
+import Settings from "../../Settings"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
 import TaskSimulatorButton from "./TaskSimulatorButton"
@@ -52,7 +55,11 @@ function deleteAction(last: null | DataSetEvent) {
 
 /** Launch a TaskSimulator for this dataset */
 function taskSimulatorAction(last: null | DataSetEvent, props: Props) {
-  return !last
+  const settings = useContext(Settings)
+  const inDemoMode = settings?.demoMode[0]
+
+  // don't show task simulator button when in demo mode
+  return !last || inDemoMode
     ? []
     : [
         <TaskSimulatorButton
