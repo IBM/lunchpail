@@ -5,13 +5,11 @@ import Settings from "../../Settings"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
 import TaskSimulatorButton from "./TaskSimulatorButton"
-import { dl, descriptionGroup } from "../DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 import { NewPoolButton, lastEvent, commonGroups } from "./common"
 
 import type Props from "./Props"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
-
-type DataSetDetailProps = Props
 
 function bucket(props: Props) {
   const last = lastEvent(props)
@@ -78,14 +76,15 @@ function rightActions(props: Props) {
 }
 
 /** Left-aligned actions */
-function leftActions(props: DataSetDetailProps) {
+function leftActions(props: Props) {
   return [<NewPoolButton key="new-pool" {...props} />]
 }
 
-export default function DataSetDetail(props: DataSetDetailProps | undefined) {
+export default function DataSetDetail(props: Props | undefined) {
   return (
     <DrawerContent
-      body={props && dl(detailGroups(props))}
+      summary={props && <DescriptionList groups={detailGroups(props)} />}
+      raw={props && lastEvent(props)}
       actions={props && leftActions(props)}
       rightActions={props && rightActions(props)}
     />

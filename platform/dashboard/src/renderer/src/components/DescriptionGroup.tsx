@@ -122,6 +122,6 @@ export function descriptionGroup(
   return null
 }
 
-export function dl(groups: ReactNode[], props?: DescriptionListProps) {
-  return <DescriptionList {...props}>{groups}</DescriptionList>
+export function dl(props: { groups: ReactNode[]; props?: DescriptionListProps }) {
+  return <DescriptionList {...props.props}>{props.groups}</DescriptionList>
 }

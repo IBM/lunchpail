@@ -1,10 +1,7 @@
 import removeAccents from "remove-accents"
 import { useSearchParams } from "react-router-dom"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
-import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
-import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
-import { nord as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/styles/prism"
 
 import {
   Form,
@@ -23,6 +20,7 @@ import {
 import DataSetIcon from "../../DataSet/Icon"
 import ApplicationIcon from "../../Application/Icon"
 
+import Yaml from "../../Yaml"
 import { singular as names } from "../../../names"
 import { Input, NumberInput, Select } from "../../Forms"
 
@@ -120,10 +118,6 @@ export default function NewWorkerPoolWizard(props: Props) {
         props.datasets.length === 1 ? props.datasets[0] : chooseDataSetIfExists(props.datasets, searchedDataSet()),
     }
   }
-
-  useEffect(() => {
-    SyntaxHighlighter.registerLanguage("yaml", yaml)
-  }, [])
 
   function name(ctrl: FormContextProps) {
     return (
@@ -272,9 +266,7 @@ spec:
           <Text component="p">Confirm the settings for your new worker pool.</Text>
         </TextContent>
 
-        <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers>
-          {workerPoolYaml(ctrl.values)}
-        </SyntaxHighlighter>
+        <Yaml content={workerPoolYaml(ctrl.values)} />
       </WizardStep>
     )
   }

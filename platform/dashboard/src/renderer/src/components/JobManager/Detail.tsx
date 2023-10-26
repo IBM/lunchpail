@@ -9,7 +9,7 @@ import { isHealthy } from "./HealthBadge"
 import DrawerContent from "../Drawer/Content"
 
 import camelCaseSplit from "../../util/camel-split"
-import { dl, descriptionGroup } from "../DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 import { descriptions } from "@jay/common/status/JobManagerStatus"
 
 import SyncIcon from "@patternfly/react-icons/dist/esm/icons/sync-icon"
@@ -67,7 +67,7 @@ export default function JobManagerDetail() {
       ]
     : undefined
 
-  const body = dl([...summaryGroups(demoMode, status.status), ...rest])
+  const summary = <DescriptionList groups={[...summaryGroups(demoMode, status.status), ...rest]} />
 
-  return <DrawerContent body={body} actions={actions} rightActions={rightActions} />
+  return <DrawerContent summary={summary} actions={actions} rightActions={rightActions} />
 }

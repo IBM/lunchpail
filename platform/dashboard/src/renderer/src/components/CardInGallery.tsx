@@ -6,7 +6,7 @@ import type { CardHeaderActionsObject } from "@patternfly/react-core"
 import type { NavigableKind as Kind } from "../Kind"
 import type { DrilldownProps } from "../context/DrawerContext"
 
-import { dl } from "./DescriptionGroup"
+import { dl as DescriptionList } from "./DescriptionGroup"
 
 import "./CardInGallery.scss"
 
@@ -36,7 +36,9 @@ export default function CardInGallery(props: Props) {
     </CardHeader>
   )
 
-  const body = dl(props.groups, props.descriptionListProps ?? defaultDescriptionListProps)
+  const body = (
+    <DescriptionList groups={props.groups} props={props.descriptionListProps ?? defaultDescriptionListProps} />
+  )
 
   return (
     <Card

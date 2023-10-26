@@ -166,7 +166,7 @@ export function Dashboard(props: Props) {
           },
           {} as Record<string, DataSetEvent>,
         ),
-      ),
+      ).sort((a, b) => a.metadata.name.localeCompare(b.metadata.name)),
     [datasetEvents],
   )
 
@@ -202,29 +202,25 @@ export function Dashboard(props: Props) {
   }, [])
 
   function applications() {
-    return applicationEvents
-      .sort((a, b) => a.metadata.name.localeCompare(b.metadata.name))
-      .map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />)
+    return applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />)
   }
 
   function datasets() {
     return [
-      ...latestDataSetEvents
-        .sort()
-        .map((event) => (
-          <DataSet
-            key={event.metadata.name}
-            idx={either(event.spec.idx, datasetIndex[event.metadata.name])}
-            workerpools={datasetToPool[event.metadata.name] || []}
-            tasksimulators={datasetToTaskSimulators[event.metadata.name] || []}
-            applications={applicationEvents}
-            name={event.metadata.name}
-            events={[event]}
-            numEvents={1}
-            datasetIndex={datasetIndex}
-            {...drilldownProps()}
-          />
-        )),
+      ...latestDataSetEvents.map((event) => (
+        <DataSet
+          key={event.metadata.name}
+          idx={either(event.spec.idx, datasetIndex[event.metadata.name])}
+          workerpools={datasetToPool[event.metadata.name] || []}
+          tasksimulators={datasetToTaskSimulators[event.metadata.name] || []}
+          applications={applicationEvents}
+          name={event.metadata.name}
+          events={[event]}
+          numEvents={1}
+          datasetIndex={datasetIndex}
+          {...drilldownProps()}
+        />
+      )),
     ]
   }
 
@@ -306,38 +302,47 @@ export function Dashboard(props: Props) {
   )
 
   /** Helps will drilldown to Details */
-  function getApplication(id: string): ApplicationSpecEvent | undefined {
-    return applicationEvents.find((_) => _.metadata.name === id)
-  }
+  const getApplication = useCallback(
+    (id: string) => {
+      return applicationEvents.find((_) => _.metadata.name === id)
+    },
+    [applicationEvents],
+  )
 
   /** Helps will drilldown to Details */
-  function getDataSet(id: string) {
-    const events = datasetEvents.filter((_) => _.metadata.name === id)
-    return events.length === 0
-      ? undefined
-      : {
-          idx: either(events[events.length - 1].spec.idx, datasetIndex[id]),
-          workerpools: datasetToPool[id] || [],
-          tasksimulators: datasetToTaskSimulators[id] || [],
-          applications: applicationEvents || [],
-          name: id,
-          events,
-          numEvents: events.length,
-          datasetIndex,
-        }
-  }
+  const getDataSet = useCallback(
+    (id: string) => {
+      const events = datasetEvents.filter((_) => _.metadata.name === id)
+      return events.length === 0
+        ? undefined
+        : {
+            idx: either(events[events.length - 1].spec.idx, datasetIndex[id]),
+            workerpools: datasetToPool[id] || [],
+            tasksimulators: datasetToTaskSimulators[id] || [],
+            applications: applicationEvents || [],
+            name: id,
+            events,
+            numEvents: events.length,
+            datasetIndex,
+          }
+    },
+    [datasetEvents],
+  )
 
   /** Helps will drilldown to Details */
-  function getWorkerPool(id: string) {
-    const model = latestWorkerPoolModels.find((_) => _.label === id)
-    return !model
-      ? undefined
-      : {
-          model,
-          status: poolEvents.find((_) => _.metadata.name === id),
-          datasetIndex: datasetIndex,
-        }
-  }
+  const getWorkerPool = useCallback(
+    (id: string) => {
+      const model = latestWorkerPoolModels.find((_) => _.label === id)
+      return !model
+        ? undefined
+        : {
+            model,
+            status: poolEvents.find((_) => _.metadata.name === id),
+            datasetIndex: datasetIndex,
+          }
+    },
+    [latestWorkerPoolModels],
+  )
 
   const pwdProps = {
     getApplication,

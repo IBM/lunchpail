@@ -1,7 +1,7 @@
 import { datasets } from "./Card"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
-import { dl, descriptionGroup } from "../DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
@@ -41,5 +41,11 @@ function rightActions(props: Props) {
 }
 
 export default function ApplicationDetail(props: Props | undefined) {
-  return <DrawerContent body={props && dl(detailGroups(props))} rightActions={props && rightActions(props)} />
+  return (
+    <DrawerContent
+      summary={props && <DescriptionList groups={detailGroups(props)} />}
+      raw={props}
+      rightActions={props && rightActions(props)}
+    />
+  )
 }

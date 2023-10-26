@@ -1,6 +1,6 @@
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
-import { dl, descriptionGroup } from "../DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
 import { LinkToNewRepoSecret } from "../../navigate/newreposecret"
 import { statusActions, summaryGroups, titleCaseSplit } from "./Summary"
@@ -76,7 +76,8 @@ function leftActions(props: Props) {
 export default function WorkerPoolDetail(props: Props | undefined) {
   return (
     <DrawerContent
-      body={props && dl(detailGroups(props))}
+      summary={props && <DescriptionList groups={detailGroups(props)} />}
+      raw={props}
       actions={props && leftActions(props)}
       rightActions={props && rightActions(props)}
     />

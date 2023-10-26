@@ -132,52 +132,51 @@ export default function PageWithDrawer(props: Props) {
     [location, navigate, searchParams],
   )
 
-  /** @return the content to be shown in the drawer (*not* in the main body section) */
-  function PanelContent() {
-    const id = currentlySelectedId(searchParams)
-    const kind = currentlySelectedKind(searchParams)
+  const id = currentlySelectedId(searchParams)
+  const kind = currentlySelectedKind(searchParams)
 
-    const body =
-      id !== null && kind === "applications" ? (
-        ApplicationDetail(props.getApplication(id))
-      ) : id !== null && kind === "datasets" ? (
-        DataSetDetail(props.getDataSet(id))
-      ) : id !== null && kind === "workerpools" ? (
-        WorkerPoolDetail(props.getWorkerPool(id))
-      ) : kind === "controlplane" ? (
-        <JobManagerDetail />
-      ) : (
-        <DetailNotFound />
-      )
-
-    return (
-      <DrawerPanelContent className="codeflare--detail-view">
-        <DrawerHead>
-          <Breadcrumb>
-            {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
-            <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
-          </Breadcrumb>
-          <Title headingLevel="h2" size="2xl">
-            {id}
-          </Title>
-
-          <DrawerActions>
-            <DrawerCloseButton onClick={returnHome} />
-          </DrawerActions>
-        </DrawerHead>
-
-        {body}
-      </DrawerPanelContent>
+  // memo: we only need to regenerate the drawer content if the currently selected content has changed
+  const body =
+    id !== null && kind === "applications" ? (
+      ApplicationDetail(props.getApplication(id))
+    ) : id !== null && kind === "datasets" ? (
+      DataSetDetail(props.getDataSet(id))
+    ) : id !== null && kind === "workerpools" ? (
+      WorkerPoolDetail(props.getWorkerPool(id))
+    ) : kind === "controlplane" ? (
+      <JobManagerDetail />
+    ) : (
+      <DetailNotFound />
     )
-  }
 
-  const body = (
-    <Drawer isExpanded={isShowingDetails(searchParams)} isInline>
-      <DrawerContent panelContent={<PanelContent />} colorVariant="light-200">
-        <DrawerContentBody hasPadding>{props.children}</DrawerContentBody>
-      </DrawerContent>
-    </Drawer>
+  /** @return the content to be shown in the drawer (*not* in the main body section) */
+  const panelContent = (
+    <DrawerPanelContent className="codeflare--detail-view">
+      <DrawerHead>
+        <Breadcrumb>
+          {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
+          <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
+        </Breadcrumb>
+        <Title headingLevel="h2" size="2xl">
+          {id}
+        </Title>
+
+        <DrawerActions>
+          <DrawerCloseButton onClick={returnHome} />
+        </DrawerActions>
+      </DrawerHead>
+
+      {body}
+    </DrawerPanelContent>
   )
 
-  return <PageWithMastheadAndModal {...props}>{body}</PageWithMastheadAndModal>
+  return (
+    <PageWithMastheadAndModal {...props}>
+      <Drawer isExpanded={isShowingDetails(searchParams)} isInline>
+        <DrawerContent panelContent={panelContent} colorVariant="light-200">
+          <DrawerContentBody hasPadding>{props.children}</DrawerContentBody>
+        </DrawerContent>
+      </Drawer>
+    </PageWithMastheadAndModal>
+  )
 }
