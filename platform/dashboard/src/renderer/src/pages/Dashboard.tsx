@@ -83,7 +83,7 @@ export function Dashboard(props: Props) {
   /** Event handlers */
   const handlers: Record<Kind, (evt: EventLike) => void> = {
     applications: singletonEventHandler("applications", setApplicationEvents, returnHome),
-    datasets: singletonEventHandler("datasets", setDataSetEvents, returnHome),
+    datasets: allEventsHandler(setDataSetEvents),
     queues: allEventsHandler(setQueueEvents),
     workerpools: singletonEventHandler("workerpools", setPoolEvents, returnHome),
     tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
@@ -138,11 +138,34 @@ export function Dashboard(props: Props) {
   const datasetIndex = useMemo(
     () =>
       datasetEvents.reduce(
-        (M, event, idx) => {
-          M[event.metadata.name] = either(event.spec.idx, idx)
+        (M, event) => {
+          if (!(event.metadata.name in M.index)) {
+            M.index[event.metadata.name] = either(event.spec.idx, M.next++)
+          }
           return M
         },
-        {} as Record<string, number>,
+        { next: 0, index: {} as Record<string, number> },
+      ).index,
+    [datasetEvents],
+  )
+
+  /**
+   * The DataSetEvents model keeps track of all events (e.g. so we can
+   * display timelines). It is helpful to memoize just the latest
+   * event for each DataSet resource.
+   */
+  const latestDataSetEvents = useMemo(
+    () =>
+      Object.values(
+        datasetEvents.reduceRight(
+          (M, event) => {
+            if (!(event.metadata.name in M)) {
+              M[event.metadata.name] = event
+            }
+            return M
+          },
+          {} as Record<string, DataSetEvent>,
+        ),
       ),
     [datasetEvents],
   )
@@ -157,6 +180,14 @@ export function Dashboard(props: Props) {
         })
         .sort((a, b) => a.label.localeCompare(b.label)),
     [poolEvents, queueEvents],
+  )
+
+  const applicationsList = useMemo(() => applicationEvents.map((_) => _.metadata.name), [applicationEvents])
+  const datasetsList = useMemo(() => Object.keys(datasetIndex), [datasetIndex])
+  const workerpoolsList = useMemo(() => latestWorkerPoolModels.map((_) => _.label), [latestWorkerPoolModels])
+  const platformRepoSecretsList = useMemo(
+    () => platformreposecretEvents.map((_) => _.metadata.name),
+    [platformreposecretEvents],
   )
 
   // this registers what is in effect a componentDidMount handler
@@ -178,7 +209,7 @@ export function Dashboard(props: Props) {
 
   function datasets() {
     return [
-      ...datasetEvents
+      ...latestDataSetEvents
         .sort()
         .map((event) => (
           <DataSet
@@ -196,69 +227,6 @@ export function Dashboard(props: Props) {
         )),
     ]
   }
-
-  /**
-   * Ugh, this is an ugly remnant of earlier models -- it helps
-   * conform the clean models here to what WorkerPool card/detail
-   * models need for their plots. TODO...
-   */
-  function toWorkerPoolModel(
-    pool: WorkerPoolStatusEvent,
-    queueEventsForOneWorkerPool: QueueEvent[] = [],
-  ): WorkerPoolModelWithHistory {
-    const model = queueEventsForOneWorkerPool.reduce(
-      (M, queueEvent) => {
-        const dataset = queueDataSet(queueEvent)
-        const inbox = queueInbox(queueEvent)
-        const outbox = queueOutbox(queueEvent)
-        const processing = queueProcessing(queueEvent)
-        const workerIndex = queueWorkerIndex(queueEvent)
-
-        if (!M.inbox[workerIndex]) {
-          M.inbox[workerIndex] = {}
-        }
-        M.inbox[workerIndex][dataset] = inbox
-
-        if (!M.outbox[workerIndex]) {
-          M.outbox[workerIndex] = {}
-        }
-        M.outbox[workerIndex][dataset] = outbox
-
-        if (!M.processing[workerIndex]) {
-          M.processing[workerIndex] = {}
-        }
-        M.processing[workerIndex][dataset] = processing
-
-        return M
-      },
-      { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace">,
-    )
-
-    return {
-      label: pool.metadata.name,
-      namespace: pool.metadata.namespace,
-      inbox: backfill(model.inbox),
-      outbox: backfill(model.outbox),
-      processing: backfill(model.processing),
-      events: queueEventsForOneWorkerPool.map((_) => ({ outbox: queueOutbox(_), timestamp: _.timestamp })),
-      numEvents: queueEventsForOneWorkerPool.length,
-    }
-  }
-
-  /** Used by the ugly toWorkerPoolModel. hopefully this will go away at some point */
-  function backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
-    A: T,
-  ): T {
-    for (let idx = 0; idx < A.length; idx++) {
-      if (!(idx in A)) A[idx] = {}
-    }
-    return A
-  }
-
-  const applicationsList: string[] = applicationEvents.map((_) => _.metadata.name)
-  const datasetsList: string[] = Object.keys(datasetIndex)
-  const workerpoolsList: string[] = latestWorkerPoolModels.map((_) => _.label)
-  const platformRepoSecretsList: string[] = platformreposecretEvents.map((_) => _.metadata.name)
 
   function platformreposecrets() {
     // TODO... cards
@@ -344,9 +312,8 @@ export function Dashboard(props: Props) {
 
   /** Helps will drilldown to Details */
   function getDataSet(id: string) {
-    const event = datasetEvents.find((_) => _.metadata.name === id)
-    const events = event ? [event] : undefined
-    return !events || events.length === 0
+    const events = datasetEvents.filter((_) => _.metadata.name === id)
+    return events.length === 0
       ? undefined
       : {
           idx: either(events[events.length - 1].spec.idx, datasetIndex[id]),
@@ -386,4 +353,62 @@ export function Dashboard(props: Props) {
       <MainContentBody />
     </PageWithDrawer>
   )
+}
+
+/** Used by the ugly toWorkerPoolModel. hopefully this will go away at some point */
+function backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
+  A: T,
+): T {
+  for (let idx = 0; idx < A.length; idx++) {
+    if (!(idx in A)) A[idx] = {}
+  }
+  return A
+}
+
+/**
+ * Ugh, this is an ugly remnant of earlier models -- it helps
+ * conform the clean models here to what WorkerPool card/detail
+ * models need for their plots. TODO...
+ */
+function toWorkerPoolModel(
+  pool: WorkerPoolStatusEvent,
+  queueEventsForOneWorkerPool: QueueEvent[] = [],
+): WorkerPoolModelWithHistory {
+  const model = queueEventsForOneWorkerPool.reduce(
+    (M, queueEvent) => {
+      const dataset = queueDataSet(queueEvent)
+      const inbox = queueInbox(queueEvent)
+      const outbox = queueOutbox(queueEvent)
+      const processing = queueProcessing(queueEvent)
+      const workerIndex = queueWorkerIndex(queueEvent)
+
+      if (!M.inbox[workerIndex]) {
+        M.inbox[workerIndex] = {}
+      }
+      M.inbox[workerIndex][dataset] = inbox
+
+      if (!M.outbox[workerIndex]) {
+        M.outbox[workerIndex] = {}
+      }
+      M.outbox[workerIndex][dataset] = outbox
+
+      if (!M.processing[workerIndex]) {
+        M.processing[workerIndex] = {}
+      }
+      M.processing[workerIndex][dataset] = processing
+
+      return M
+    },
+    { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace">,
+  )
+
+  return {
+    label: pool.metadata.name,
+    namespace: pool.metadata.namespace,
+    inbox: backfill(model.inbox),
+    outbox: backfill(model.outbox),
+    processing: backfill(model.processing),
+    events: queueEventsForOneWorkerPool.map((_) => ({ outbox: queueOutbox(_), timestamp: _.timestamp })),
+    numEvents: queueEventsForOneWorkerPool.length,
+  }
 }
