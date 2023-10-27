@@ -52,10 +52,7 @@ function deleteAction(last: null | DataSetEvent) {
 }
 
 /** Launch a TaskSimulator for this dataset */
-function taskSimulatorAction(last: null | DataSetEvent, props: Props) {
-  const settings = useContext(Settings)
-  const inDemoMode = settings?.demoMode[0]
-
+function taskSimulatorAction(inDemoMode: boolean, last: null | DataSetEvent, props: Props) {
   // don't show task simulator button when in demo mode
   return !last || inDemoMode
     ? []
@@ -70,9 +67,9 @@ function taskSimulatorAction(last: null | DataSetEvent, props: Props) {
 }
 
 /** Right-aligned actions */
-function rightActions(props: Props) {
+function rightActions(inDemoMode: boolean, props: Props) {
   const last = lastEvent(props)
-  return [...taskSimulatorAction(last, props), ...deleteAction(last)]
+  return [...taskSimulatorAction(inDemoMode, last, props), ...deleteAction(last)]
 }
 
 /** Left-aligned actions */
@@ -81,12 +78,15 @@ function leftActions(props: Props) {
 }
 
 export default function DataSetDetail(props: Props | undefined) {
+  const settings = useContext(Settings)
+  const inDemoMode = settings?.demoMode[0] ?? false
+
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props && lastEvent(props)}
       actions={props && leftActions(props)}
-      rightActions={props && rightActions(props)}
+      rightActions={props && rightActions(inDemoMode, props)}
     />
   )
 }
