@@ -1,7 +1,7 @@
 {
   "name": "jay",
   "version": "0.0.10",
-  "description": "Jobs Platform",
+  "description": "Jobs as a Service",
   "main": "./out/main/index.js",
   "author": "@starpit",
   "homepage": "https://github.ibm.com/cloud-computer/codeflare-platform",
