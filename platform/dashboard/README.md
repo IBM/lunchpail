@@ -12,7 +12,7 @@ your laptop. Then:
 
 ```bash
 # Replace this with your fork of the repo
-git clone https://github.ibm.com/cloud-computer/codeflare-platform
+git clone git@github.ibm.com:cloud-computer/codeflare-platform.git
 cd codeflare-platform/dashboard
 ```
 
