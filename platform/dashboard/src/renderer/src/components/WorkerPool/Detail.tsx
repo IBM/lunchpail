@@ -73,7 +73,7 @@ function leftActions(props: Props) {
 }
 
 /** The body and actions to show in the WorkerPool Details view */
-export default function WorkerPoolDetail(props: Props | undefined) {
+function WorkerPoolDetail(props: Props) {
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
@@ -82,4 +82,8 @@ export default function WorkerPoolDetail(props: Props | undefined) {
       rightActions={props && rightActions(props)}
     />
   )
+}
+
+export default function MaybeWorkerPoolDetail(props: Props | undefined) {
+  return props && <WorkerPoolDetail {...props} />
 }

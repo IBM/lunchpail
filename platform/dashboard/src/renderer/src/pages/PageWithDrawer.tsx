@@ -136,7 +136,7 @@ export default function PageWithDrawer(props: Props) {
   const kind = currentlySelectedKind(searchParams)
 
   // memo: we only need to regenerate the drawer content if the currently selected content has changed
-  const body =
+  const drilldownDetailContentcontentForDrawer =
     id !== null && kind === "applications" ? (
       ApplicationDetail(props.getApplication(id))
     ) : id !== null && kind === "datasets" ? (
@@ -145,9 +145,7 @@ export default function PageWithDrawer(props: Props) {
       WorkerPoolDetail(props.getWorkerPool(id))
     ) : kind === "controlplane" ? (
       <JobManagerDetail />
-    ) : (
-      <DetailNotFound />
-    )
+    ) : undefined
 
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   const panelContent = (
@@ -166,7 +164,7 @@ export default function PageWithDrawer(props: Props) {
         </DrawerActions>
       </DrawerHead>
 
-      {body}
+      {drilldownDetailContentcontentForDrawer || <DetailNotFound />}
     </DrawerPanelContent>
   )
 

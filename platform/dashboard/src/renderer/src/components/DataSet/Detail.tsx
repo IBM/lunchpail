@@ -77,7 +77,7 @@ function leftActions(props: Props) {
   return [<NewPoolButton key="new-pool" {...props} />]
 }
 
-export default function DataSetDetail(props: Props | undefined) {
+function DataSetDetail(props: Props) {
   const settings = useContext(Settings)
   const inDemoMode = settings?.demoMode[0] ?? false
 
@@ -89,4 +89,8 @@ export default function DataSetDetail(props: Props | undefined) {
       rightActions={props && rightActions(inDemoMode, props)}
     />
   )
+}
+
+export default function MaybeDataSetDetail(props?: Props) {
+  return props && <DataSetDetail {...props} />
 }

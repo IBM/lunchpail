@@ -40,7 +40,7 @@ function rightActions(props: Props) {
   return [deleteAction(props)]
 }
 
-export default function ApplicationDetail(props: Props | undefined) {
+function ApplicationDetail(props: Props) {
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
@@ -48,4 +48,8 @@ export default function ApplicationDetail(props: Props | undefined) {
       rightActions={props && rightActions(props)}
     />
   )
+}
+
+export default function MaybeApplicationDetail(props: Props | undefined) {
+  return props && <ApplicationDetail {...props} />
 }
