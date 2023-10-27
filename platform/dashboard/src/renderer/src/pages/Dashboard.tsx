@@ -194,11 +194,11 @@ export function Dashboard(props: Props) {
       Object.entries(handlers).forEach(([kind, handler]) => props[kind].removeEventListener("message", handler))
   }, [])
 
-  function applications() {
+  function applicationCards() {
     return applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />)
   }
 
-  function datasets() {
+  function datasetCards() {
     return [
       ...latestDataSetEvents.map((event) => (
         <DataSet
@@ -217,12 +217,12 @@ export function Dashboard(props: Props) {
     ]
   }
 
-  function platformreposecrets() {
+  function platformreposecretCards() {
     // TODO... cards
     return platformreposecretEvents.map((_) => _.metadata.name)
   }
 
-  function workerpools() {
+  function workerpoolCards() {
     return [
       <NewWorkerPoolCard key="new-worker-pool-card" />,
       ...latestWorkerPoolModels.map((w) => (
@@ -251,13 +251,13 @@ export function Dashboard(props: Props) {
       case "controlplane":
         return <JobManagerCard {...drilldownProps()} />
       case "applications":
-        return applications()
+        return applicationCards()
       case "datasets":
-        return datasets()
+        return datasetCards()
       case "workerpools":
-        return workerpools()
+        return workerpoolCards()
       case "platformreposecrets":
-        return platformreposecrets()
+        return platformreposecretCards()
     }
   }
 
@@ -290,7 +290,7 @@ export function Dashboard(props: Props) {
             datasetIndex,
           }
     },
-    [datasetEvents],
+    [datasetEvents, applicationEvents],
   )
 
   /** Helps will drilldown to Details */

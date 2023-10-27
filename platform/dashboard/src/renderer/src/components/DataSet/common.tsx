@@ -19,8 +19,8 @@ export function lastEvent(props: JustEvents) {
   return props.events.length === 0 ? null : props.events[props.events.length - 1]
 }
 
-function associatedApplicationsFilter(this: NameAndApplications, app: ApplicationSpecEvent) {
-  const { name } = this
+function associatedApplicationsFilter(props: NameAndApplications, app: ApplicationSpecEvent) {
+  const { name } = props
   if (app.spec.inputs) {
     const { xs, sm, md, lg, xl } = app.spec.inputs[0].sizes
     return xs === name || sm === name || md === name || lg === name || xl === name
@@ -29,12 +29,11 @@ function associatedApplicationsFilter(this: NameAndApplications, app: Applicatio
 }
 
 function numAssociatedApplicationEvents(props: NameAndApplications) {
-  const filter = associatedApplicationsFilter.bind(props)
-  return props.applications.reduce((N, app) => (filter(app) ? N + 1 : N), 0)
+  return props.applications.reduce((N, app) => (associatedApplicationsFilter(props, app) ? N + 1 : N), 0)
 }
 
 function associatedApplicationEvents(props: NameAndApplications) {
-  return props.applications.filter(associatedApplicationsFilter.bind(props))
+  return props.applications.filter((app) => associatedApplicationsFilter(props, app))
 }
 
 function associatedApplications(props: Props) {
