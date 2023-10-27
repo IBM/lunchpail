@@ -1,4 +1,4 @@
-# Jobs as Service Client
+# Jobs as a Service Client
 
 An Electron application that provides a client-side user experience
 for Jobs as a Service.
@@ -7,8 +7,14 @@ for Jobs as a Service.
 
 First, make sure you have a recent version of
 [NodeJS](https://nodejs.org/en) and
-(Yarn)(https://classic.yarnpkg.com/lang/en/docs/install) installed on
+[Yarn](https://classic.yarnpkg.com/lang/en/docs/install) installed on
 your laptop. Then:
+
+```bash
+# Replace this with your fork of the repo
+git clone https://github.ibm.com/cloud-computer/codeflare-platform
+cd codeflare-platform/dashboard
+```
 
 ```bash
 # This will install the dependencies
