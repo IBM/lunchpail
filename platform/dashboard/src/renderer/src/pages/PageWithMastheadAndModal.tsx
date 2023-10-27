@@ -1,10 +1,7 @@
-import { Link } from "react-router-dom"
 import { useContext, type ReactNode, type PropsWithChildren } from "react"
 
 import {
-  Brand,
   Divider,
-  Flex,
   Masthead,
   MastheadMain,
   MastheadBrand,
@@ -24,10 +21,9 @@ import {
 
 import Settings from "../Settings"
 
-import { name, description, homepage, version } from "../../../../package.json"
+import { description, version } from "../../../../package.json"
 import SmallLabel from "../components/SmallLabel"
 
-import icon from "../images/icon.png"
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
 export const inline = { default: "inline" as const }
@@ -49,26 +45,12 @@ function HeaderToggle() {
   )
 }
 
-function PageTitle() {
-  return (
-    <span>
-      <span className="codeflare--secondary-text">{description}</span>
-    </span>
-  )
-}
-
 function Header() {
   return (
     <Masthead display={inline}>
       <HeaderToggle />
       <MastheadMain>
-        <MastheadBrand>
-          <Link to={homepage} target="_blank">
-            <Flex>
-              <Brand src={icon} alt={name} heights={{ default: "2.5em" }} />
-            </Flex>
-          </Link>
-        </MastheadBrand>
+        <MastheadBrand>{description}</MastheadBrand>
       </MastheadMain>
       <MastheadContent>
         <HeaderToolbar />
@@ -89,7 +71,7 @@ function HeaderToolbar() {
 }
 
 function HeaderToolbarLeftGroup() {
-  return <PageTitle />
+  return <></>
 }
 
 function HeaderToolbarRightGroup() {
