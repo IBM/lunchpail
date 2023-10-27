@@ -1,4 +1,3 @@
-import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { RouterProvider } from "react-router-dom"
 
@@ -18,13 +17,11 @@ function App() {
   const statusCtx = statusState(demoMode)
 
   return (
-    <StrictMode>
-      <Settings.Provider value={{ darkMode, demoMode, prsUser }}>
-        <Status.Provider value={statusCtx}>
-          <RouterProvider router={router} />
-        </Status.Provider>
-      </Settings.Provider>
-    </StrictMode>
+    <Settings.Provider value={{ darkMode, demoMode, prsUser }}>
+      <Status.Provider value={statusCtx}>
+        <RouterProvider router={router} />
+      </Status.Provider>
+    </Settings.Provider>
   )
 }
 

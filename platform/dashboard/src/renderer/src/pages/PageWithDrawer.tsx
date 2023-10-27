@@ -1,4 +1,4 @@
-import { useContext, useEffect, useCallback } from "react"
+import { useCallback } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import type { PropsWithChildren } from "react"
@@ -16,7 +16,6 @@ import {
   DrawerPanelContent,
 } from "@patternfly/react-core"
 
-import Settings from "../Settings"
 import PageWithMastheadAndModal from "./PageWithMastheadAndModal"
 
 import type { NavigableKind } from "../Kind"
@@ -120,12 +119,6 @@ function openDrawer(returnHome: () => void, location: ReturnType<typeof Location
 
 export default function PageWithDrawer(props: Props) {
   const { location, navigate, searchParams } = LocationProps()
-
-  // when switching into or out of demo mode, close the drawer, as it
-  // will show resource no longer relevant
-  useEffect(() => {
-    navigateToHome({ location, navigate, searchParams })
-  }, [useContext(Settings)?.demoMode[0]])
 
   const returnHome = useCallback(
     () => navigateToHome({ location, navigate, searchParams }),
