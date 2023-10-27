@@ -1,3 +1,6 @@
+import { useCallback } from "react"
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
+
 import { hash } from "./kind"
 import type LocationProps from "./LocationProps"
 
@@ -13,4 +16,23 @@ export default function navigateToHome(props: LocationProps) {
 
 export function navigateToWorkerPools(props: LocationProps) {
   returnTo(props, hash("workerpools"))
+}
+
+export function returnHomeCallback() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  return useCallback(() => navigateToHome({ location, navigate, searchParams }), [location, navigate, searchParams])
+}
+
+export function returnToWorkerPoolsCallback() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  return useCallback(
+    () => navigateToWorkerPools({ location, navigate, searchParams }),
+    [location, navigate, searchParams],
+  )
 }

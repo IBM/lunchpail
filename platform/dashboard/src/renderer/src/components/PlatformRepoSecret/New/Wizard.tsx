@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom"
 import { useCallback, useContext, useEffect, useState } from "react"
 import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -30,12 +31,6 @@ import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
 
 type Props = {
-  /** Force the use of this repo */
-  repo?: string | null
-
-  /** Namespace in which to create this resource */
-  namespace: string
-
   /** Handler to call when this dialog closes */
   onSuccess(): void
 
@@ -44,17 +39,25 @@ type Props = {
 }
 
 export default function NewRepoSecretWizard(props: Props) {
+  const [searchParams] = useSearchParams()
+
   /** Error in the request to create a pool? */
   const [, setErrorInCreateRequest] = useState<null | unknown>(null)
 
   /** Showing password in cleartext? */
   const [clearText, setClearText] = useState(false)
 
+  /** Force the use of this repo */
+  const repo = searchParams.get("repo")
+
+  /** Namespace in which to create this resource */
+  const namespace = searchParams.get("namespace") || "default"
+
   /** Initial value for form */
   function defaults(user = "") {
     return {
       name:
-        (props.repo || "")
+        (repo || "")
           .replace(/\./g, "-")
           .replace(/^http?s:\/\//, "")
           .replace(/$/, "-") +
@@ -64,7 +67,7 @@ export default function NewRepoSecretWizard(props: Props) {
         ),
       count: String(1),
       size: "xs",
-      repo: props.repo || "",
+      repo: repo || "",
       user,
       pat: "",
     }
@@ -85,10 +88,10 @@ export default function NewRepoSecretWizard(props: Props) {
     )
   }
 
-  function repo(ctrl: FormContextProps) {
+  function repoInput(ctrl: FormContextProps) {
     return (
       <Input
-        readOnlyVariant={props.repo ? "default" : undefined}
+        readOnlyVariant={repo ? "default" : undefined}
         fieldId="repo"
         label="GitHub provider"
         description="Base URI of your GitHub provider, e.g. https://github.mycompany.com"
@@ -153,7 +156,7 @@ export default function NewRepoSecretWizard(props: Props) {
           <FormSection>
             <Grid hasGutter md={6}>
               <GridItem span={12}>{name(ctrl)}</GridItem>
-              <GridItem span={12}>{repo(ctrl)}</GridItem>
+              <GridItem span={12}>{repoInput(ctrl)}</GridItem>
               <GridItem>{user(ctrl)}</GridItem>
               <GridItem>{pat(ctrl)}</GridItem>
             </Grid>
@@ -181,20 +184,20 @@ apiVersion: ${apiVersion}
 kind: ${kind}
 metadata:
   name: ${values.name}
-  namespace: ${props.namespace}
+  namespace: ${namespace}
   labels:
     app.kubernetes.io/managed-by: jay
 spec:
   repo: ${values.repo}
   secret:
     name: ${values.name}
-    namespace: ${props.namespace}
+    namespace: ${namespace}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: ${values.name}
-  namespace: ${props.namespace}
+  namespace: ${namespace}
   labels:
     app.kubernetes.io/managed-by: jay
 type: Opaque

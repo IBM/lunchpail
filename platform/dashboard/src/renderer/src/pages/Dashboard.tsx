@@ -1,12 +1,8 @@
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
-import { Fragment, Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react"
-const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import names, { subtitles } from "../names"
 import { currentKind } from "../navigate/kind"
-import { isShowingWizard } from "../navigate/wizard"
-import isShowingNewPool from "../navigate/newpool"
-import navigateToHome, { navigateToWorkerPools } from "../navigate/home"
+import { returnHomeCallback } from "../navigate/home"
 
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
@@ -17,6 +13,7 @@ import JobManagerCard from "../components/JobManager/Card"
 
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
+import DashboardModal from "./DashboardModal"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 
 import allEventsHandler from "../events/all"
@@ -42,11 +39,6 @@ import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
-// strange: in non-demo mode, FilterChips stays stuck in the Suspense
-// const FilterChips = lazy(() => import("../components/FilterChips"))
-const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wizard"))
-const NewRepoSecretWizard = lazy(() => import("../components/PlatformRepoSecret/New/Wizard"))
-
 import "./Dashboard.scss"
 
 /** one EventSource per resource Kind */
@@ -59,18 +51,7 @@ function either<T>(x: T | undefined, y: T): T {
 }
 
 export function Dashboard(props: Props) {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-
-  const returnHome = useCallback(
-    () => navigateToHome({ location, navigate, searchParams }),
-    [location, navigate, searchParams],
-  )
-  const returnToWorkerPools = useCallback(
-    () => navigateToWorkerPools({ location, navigate, searchParams }),
-    [location, navigate, searchParams],
-  )
+  const returnHome = returnHomeCallback()
 
   // State
   const [poolEvents, setPoolEvents] = useState<WorkerPoolStatusEvent[]>([])
@@ -90,10 +71,22 @@ export function Dashboard(props: Props) {
     platformreposecrets: singletonEventHandler("platformreposecrets", setPlatformRepoSecretEvents, returnHome),
   }
 
-  /** @return the QueueEvents associated with a given WorkerPool */
-  function queueEventsForWorkerPool(workerpool: string) {
-    return queueEvents.filter((_) => queueWorkerPool(_) === workerpool)
-  }
+  /** A memo of the mapping from WorkerPool to associated QueueEvents */
+  const queueEventsForWorkerPool = useMemo(
+    () =>
+      queueEvents.reduce(
+        (M, event) => {
+          const workerpool = queueWorkerPool(event)
+          if (!M[workerpool]) {
+            M[workerpool] = []
+          }
+          M[workerpool].push(event)
+          return M
+        },
+        {} as Record<string, QueueEvent[]>,
+      ),
+    [queueEvents],
+  )
 
   /** A memo of the mapping from DataSet to TaskSimulatorEvents */
   const datasetToTaskSimulators = useMemo(
@@ -175,7 +168,7 @@ export function Dashboard(props: Props) {
     () =>
       poolEvents
         .map((pool) => {
-          const queueEventsForOneWorkerPool = queueEventsForWorkerPool(pool.metadata.name)
+          const queueEventsForOneWorkerPool = queueEventsForWorkerPool[pool.metadata.name]
           return toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
         })
         .sort((a, b) => a.label.localeCompare(b.label)),
@@ -272,35 +265,6 @@ export function Dashboard(props: Props) {
     return <Gallery>{galleryItems()}</Gallery>
   }
 
-  const modal = (
-    <Suspense fallback={<Fragment />}>
-      <Modal
-        variant="large"
-        showClose={false}
-        hasNoBodyWrapper
-        aria-label="wizard-modal"
-        onEscapePress={returnHome}
-        isOpen={isShowingWizard()}
-      >
-        {isShowingNewPool() ? (
-          <NewWorkerPoolWizard
-            onSuccess={returnToWorkerPools}
-            onCancel={returnHome}
-            applications={applicationEvents}
-            datasets={datasetsList}
-          />
-        ) : (
-          <NewRepoSecretWizard
-            repo={searchParams.get("repo")}
-            namespace={searchParams.get("namespace") || "default"}
-            onSuccess={returnToWorkerPools}
-            onCancel={returnHome}
-          />
-        )}
-      </Modal>
-    </Suspense>
-  )
-
   /** Helps will drilldown to Details */
   const getApplication = useCallback(
     (id: string) => {
@@ -348,7 +312,7 @@ export function Dashboard(props: Props) {
     getApplication,
     getDataSet,
     getWorkerPool,
-    modal,
+    modal: <DashboardModal applications={applicationEvents} datasets={datasetsList} />,
     sidebar,
     subtitle: subtitles[currentKind()],
     title: names[currentKind()],
