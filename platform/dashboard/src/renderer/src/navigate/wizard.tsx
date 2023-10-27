@@ -1,6 +1,7 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
+import type Kind from "../Kind"
 import { stopPropagation } from "."
 
 import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
@@ -12,18 +13,17 @@ type StartOrAdd = "start" | "add" | "create" | "fix"
 /** URI ?view=wizard */
 const view = "wizard"
 
-export function isShowingWizard() {
+export function isShowingWizard(kind?: Kind): Kind | void {
   const searchParams = useSearchParams()[0]
-  return searchParams.get("view") === view
+  const currentView = searchParams.get("view")
+  const currentKind = searchParams.get("kind")
+  if (currentView === view && (!kind || currentKind === kind)) {
+    return currentKind as Kind
+  }
 }
 
-export function isShowingTask(task: string) {
-  const searchParams = useSearchParams()[0]
-  return searchParams.get("task") === task
-}
-
-function href(task: string, returnTo?: string, hash?: string, qs: string[] = []) {
-  const queries = [`view=${view}`, `task=${task}`, ...qs, returnTo ? `returnTo=${returnTo}` : undefined].filter(Boolean)
+function href(kind: Kind, returnTo?: string, hash?: string, qs: string[] = []) {
+  const queries = [`view=${view}`, `kind=${kind}`, ...qs, returnTo ? `returnTo=${returnTo}` : undefined].filter(Boolean)
 
   return "?" + queries.join("&") + (hash ?? "")
 }
@@ -56,7 +56,7 @@ export type WizardProps = {
 
 /** Internal props */
 type Props = WizardProps & {
-  task: string
+  kind: Kind
   linkText: string
   qs: string[]
 }
@@ -73,7 +73,7 @@ export default function LinkToNewWizard(props: Props) {
   const currentSearch = useSearchParams()[0]
 
   const returnTo = encodeURIComponent(`?${currentSearch}`)
-  const theHref = href(props.task, returnTo, currentHash, props.qs)
+  const theHref = href(props.kind, returnTo, currentHash, props.qs)
 
   const button = (
     <Button

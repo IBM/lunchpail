@@ -86,7 +86,10 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
       this.sendEventFor(model, "Terminating")
       return true
     } else {
-      return false
+      return {
+        code: 404,
+        message: "Resource not found",
+      }
     }
   }
 }

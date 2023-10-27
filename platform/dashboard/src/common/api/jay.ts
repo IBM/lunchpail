@@ -1,4 +1,5 @@
 import type Kind from "../Kind"
+import ExecResponse from "@jay/common/events/ExecResponse"
 
 export type OnModelUpdateFn = (_: unknown, model: { data: string }) => void
 type CleanupFn = () => void
@@ -32,10 +33,10 @@ export type DeleteProps = { kind: string; name: string; namespace: string }
 /** Jobs as a Service API to server-side functionality */
 export default interface JayApi extends Record<Kind, JayResourceApi> {
   /** Create a resource */
-  create(values: Record<string, string>, yaml: string): boolean | Promise<boolean>
+  create(values: Record<string, string>, yaml: string): ExecResponse | Promise<ExecResponse>
 
   /** Delete a resource */
-  delete(props: DeleteProps): boolean | Promise<boolean>
+  delete(props: DeleteProps): ExecResponse | Promise<ExecResponse>
 
   /** Jobs as a Service API to server-side control plane functionality */
   controlplane: ControlPlaneApi

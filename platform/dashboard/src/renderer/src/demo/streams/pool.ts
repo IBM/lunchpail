@@ -1,5 +1,6 @@
 import type DemoQueueEventSource from "./queue"
 import type DemoDataSetEventSource from "./dataset"
+import type ExecResponse from "@jay/common/events/ExecResponse"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
@@ -169,7 +170,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     }
   }
 
-  public delete(props: { name: string; namespace: string }) {
+  public delete(props: { name: string; namespace: string }): ExecResponse {
     const poolIdx = this.workerpools.findIndex((_) => _.name === props.name)
     if (poolIdx >= 0) {
       this.sendEventFor(this.workerpools[poolIdx], "Terminating")
@@ -177,11 +178,14 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       this.simulators.splice(poolIdx, 1)
       return true
     } else {
-      return false
+      return {
+        code: 404,
+        message: "Resource not found",
+      }
     }
   }
 
-  public create(...params: Parameters<CreateResourceHandler>) {
+  public create(...params: Parameters<CreateResourceHandler>): ExecResponse {
     const values = params[0]
     const numWorkers = parseInt(values.count, 10)
 

@@ -1,12 +1,4 @@
-import LinkToNewWizard, { isShowingTask } from "./wizard"
-
-import type { WizardProps } from "./wizard"
-
-const task = "newpool"
-
-export default function isShowingNewPool() {
-  return isShowingTask(task)
-}
+import LinkToNewWizard, { type WizardProps } from "./wizard"
 
 /**
  * @return a UI component that links to the `NewWorkerPoolWizard`. If
@@ -28,5 +20,5 @@ export function LinkToNewPool(
       : "Create Worker Pool"
   const qs = [props.dataset ? `dataset=${props.dataset}` : ""]
 
-  return <LinkToNewWizard {...props} task={task} linkText={linkText} qs={qs} />
+  return <LinkToNewWizard {...props} kind="workerpools" linkText={linkText} qs={qs} />
 }

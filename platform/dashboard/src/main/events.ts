@@ -5,6 +5,7 @@ import { Status, getStatusFromMain } from "./controlplane/status"
 
 import type WatchedKind from "@jay/common/Kind"
 import type JayApi from "@jay/common/api/jay"
+import ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 
 /*async function initEventSource(res: Response, stream: Writable) {
@@ -223,11 +224,11 @@ const apiImpl: JayApi = Object.assign(
       },
     },
 
-    create: (_, yaml: string) => {
+    create: (_, yaml: string): Promise<ExecResponse> => {
       return ipcRenderer.invoke("/create", yaml)
     },
 
-    delete: (props: DeleteProps) => {
+    delete: (props: DeleteProps): Promise<ExecResponse> => {
       return ipcRenderer.invoke("/delete", JSON.stringify(props))
     },
   },

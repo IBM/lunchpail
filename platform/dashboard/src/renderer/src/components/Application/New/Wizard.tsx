@@ -1,11 +1,10 @@
 import { useSearchParams } from "react-router-dom"
 import { useCallback, useContext, useState } from "react"
-import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator"
+import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import {
   Alert,
   AlertGroup,
-  Button,
   Form,
   FormContextProvider,
   FormContextProps,
@@ -20,13 +19,9 @@ import {
 } from "@patternfly/react-core"
 
 import Yaml from "../../Yaml"
-import { Input, remember } from "../../Forms"
-import { singular as names } from "../../../names"
-
 import Settings from "../../../Settings"
-
-import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
-import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
+import { singular } from "../../../names"
+import { Checkbox, Input, TextArea, remember } from "../../Forms"
 
 type Props = {
   /** Handler to call when this dialog closes */
@@ -36,40 +31,24 @@ type Props = {
   onCancel(): void
 }
 
-export default function NewRepoSecretWizard(props: Props) {
+export default function NewApplicationWizard(props: Props) {
   const [searchParams] = useSearchParams()
 
   /** Error in the request to create a pool? */
   const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
 
-  /** Showing password in cleartext? */
-  const [clearText, setClearText] = useState(false)
-
-  /** Force the use of this repo */
-  const repo = searchParams.get("repo")
-
-  /** Namespace in which to create this resource */
-  const namespace = searchParams.get("namespace") || "default"
-
   /** Initial value for form */
   function defaults(previousFormSerialized?: string) {
-    const previousValues = previousFormSerialized ? JSON.parse(previousFormSerialized) : {}
+    const previousForm = previousFormSerialized ? JSON.parse(previousFormSerialized) : {}
+    const previousValues = previousForm?.applications
 
     return {
-      name:
-        (repo || "")
-          .replace(/\./g, "-")
-          .replace(/^http?s:\/\//, "")
-          .replace(/$/, "-") +
-        uniqueNamesGenerator({ dictionaries: [adjectives, animals], length: 2, style: "lowerCase" }).replace(
-          /[ _]/g,
-          "-",
-        ),
-      count: String(1),
-      size: "xs",
-      repo: repo || "",
-      user: previousValues?.platformreposecrets?.user,
-      pat: "",
+      name: previousValues?.name ?? uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
+      namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+      repo: previousValues?.repo ?? "",
+      image: previousValues?.image ?? "",
+      description: previousValues?.description ?? "",
+      supportsGpu: previousValues?.supportsGpu ?? "false",
     }
   }
 
@@ -77,8 +56,19 @@ export default function NewRepoSecretWizard(props: Props) {
     return (
       <Input
         fieldId="name"
-        label="Repo Secret name"
-        description={`Choose a name for your ${names.platformreposecrets}`}
+        label="Application name"
+        description={`Choose a name for your ${singular.applications}`}
+        ctrl={ctrl}
+      />
+    )
+  }
+
+  function namespace(ctrl: FormContextProps) {
+    return (
+      <Input
+        fieldId="namespace"
+        label="Namespace"
+        description={`The namespace in which to register this ${singular.applications}`}
         ctrl={ctrl}
       />
     )
@@ -87,33 +77,35 @@ export default function NewRepoSecretWizard(props: Props) {
   function repoInput(ctrl: FormContextProps) {
     return (
       <Input
-        readOnlyVariant={repo ? "default" : undefined}
         fieldId="repo"
-        label="GitHub provider"
-        description="Base URI of your GitHub provider, e.g. https://github.mycompany.com"
+        label="Source code"
+        description="URI to your GitHub repo, which can include the full path to a subdirectory, as you browse"
         ctrl={ctrl}
       />
     )
   }
 
-  function user(ctrl: FormContextProps) {
-    return <Input fieldId="user" label="GitHub user" description="Your username in that GitHub provider" ctrl={ctrl} />
+  function image(ctrl: FormContextProps) {
+    return <Input fieldId="image" label="Image" description="The base image to run your code on" ctrl={ctrl} />
   }
 
-  const toggleClearText = useCallback(() => setClearText((curState) => !curState), [])
-
-  function pat(ctrl: FormContextProps) {
+  function description(ctrl: FormContextProps) {
     return (
-      <Input
-        type={!clearText ? "password" : undefined}
-        fieldId="pat"
-        label="GitHub personal access token"
-        description="Your username in that GitHub provider"
-        customIcon={
-          <Button style={{ padding: 0 }} variant="plain" onClick={toggleClearText}>
-            {!clearText ? <EyeSlashIcon /> : <EyeIcon />}
-          </Button>
-        }
+      <TextArea
+        fieldId="description"
+        label="Description"
+        description={`Describe the details of your ${singular.applications}`}
+        ctrl={ctrl}
+      />
+    )
+  }
+
+  function supportsGpu(ctrl: FormContextProps) {
+    return (
+      <Checkbox
+        fieldId="supportsGpu"
+        label="Supports GPU?"
+        description={`Does your ${singular.applications} support execution on GPUs?`}
         ctrl={ctrl}
       />
     )
@@ -132,6 +124,7 @@ export default function NewRepoSecretWizard(props: Props) {
         props.onSuccess()
       }
     } catch (errorInCreateRequest) {
+      console.error(errorInCreateRequest)
       if (errorInCreateRequest) {
         setErrorInCreateRequest(errorInCreateRequest)
         // TODO visualize this!!
@@ -142,15 +135,15 @@ export default function NewRepoSecretWizard(props: Props) {
   function header() {
     return (
       <WizardHeader
-        title="Create Repo Secret"
-        description="Configure a pattern matcher that provides access to source code in a given GitHub provider."
+        title={`Register ${singular.applications}`}
+        description={`Teach us how to process data by registering an ${singular.applications}`}
         onClose={props.onCancel}
       />
     )
   }
 
   function isStep1Valid(ctrl: FormContextProps) {
-    return ctrl.values.name && ctrl.values.repo && ctrl.values.user && ctrl.values.pat
+    return ctrl.values.name && ctrl.values.repo && ctrl.values.image
   }
 
   function step1(ctrl: FormContextProps) {
@@ -159,10 +152,12 @@ export default function NewRepoSecretWizard(props: Props) {
         <Form>
           <FormSection>
             <Grid hasGutter md={6}>
-              <GridItem span={12}>{name(ctrl)}</GridItem>
+              <GridItem span={6}>{name(ctrl)}</GridItem>
+              <GridItem span={6}>{namespace(ctrl)}</GridItem>
               <GridItem span={12}>{repoInput(ctrl)}</GridItem>
-              <GridItem>{user(ctrl)}</GridItem>
-              <GridItem>{pat(ctrl)}</GridItem>
+              <GridItem span={6}>{image(ctrl)}</GridItem>
+              <GridItem span={6}>{supportsGpu(ctrl)}</GridItem>
+              <GridItem span={12}>{description(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
@@ -181,33 +176,23 @@ export default function NewRepoSecretWizard(props: Props) {
 
   function yaml(values: FormContextProps["values"]) {
     const apiVersion = "codeflare.dev/v1alpha1"
-    const kind = "PlatformRepoSecret"
+    const kind = singular.applications
 
     return `
 apiVersion: ${apiVersion}
 kind: ${kind}
 metadata:
   name: ${values.name}
-  namespace: ${namespace}
+  namespace: ${values.namespace}
   labels:
     app.kubernetes.io/managed-by: jay
 spec:
+  api: workqueue
   repo: ${values.repo}
-  secret:
-    name: ${values.name}
-    namespace: ${namespace}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ${values.name}
-  namespace: ${namespace}
-  labels:
-    app.kubernetes.io/managed-by: jay
-type: Opaque
-data:
-  user: ${btoa(values.user)}
-  pat: ${btoa(values.pat)}
+  image: ${values.image}
+  supportsGpu: ${values.supportsGpu}
+  description: >-
+    ${values.description?.trim()}
 `.trim()
   }
 
@@ -217,7 +202,7 @@ data:
         id="step-review"
         name="Review"
         status={errorInCreateRequest ? "error" : "default"}
-        footer={{ nextButtonText: "Create Repo Secret", onNext: () => doCreate(ctrl.values) }}
+        footer={{ nextButtonText: `Create ${singular.applications}`, onNext: () => doCreate(ctrl.values) }}
       >
         {errorInCreateRequest ? (
           <AlertGroup isToast>
@@ -243,12 +228,16 @@ data:
 
   return (
     <FormContextProvider initialValues={defaults(settings?.form[0])}>
-      {(ctrl) => (
-        <Wizard header={header()} onClose={props.onCancel} onStepChange={clearError}>
-          {step1(remember("platformreposecrets", ctrl, settings?.form))}
-          {review(ctrl)}
-        </Wizard>
-      )}
+      {(ctrlWithoutMemory) => {
+        const ctrl = remember("applications", ctrlWithoutMemory, settings?.form)
+
+        return (
+          <Wizard header={header()} onClose={props.onCancel} onStepChange={clearError}>
+            {step1(ctrl)}
+            {review(ctrl)}
+          </Wizard>
+        )
+      }}
     </FormContextProvider>
   )
 }

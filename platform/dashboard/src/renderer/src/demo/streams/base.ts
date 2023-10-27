@@ -1,3 +1,5 @@
+import type ExecResponse from "@jay/common/events/ExecResponse"
+
 type Handler = (evt: MessageEvent) => void
 
 export default abstract class DemoEventSource {
@@ -10,8 +12,11 @@ export default abstract class DemoEventSource {
   protected abstract initInterval(intervalMillis: number): void
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public delete(_props: { name: string; namespace: string }): boolean {
-    return false
+  public delete(_props: { name: string; namespace: string }): ExecResponse {
+    return {
+      code: 1,
+      message: "Unsupported operation",
+    }
   }
 
   public constructor(private readonly intervalMillis = 2000) {}

@@ -1,6 +1,8 @@
-import { PropsWithChildren, ReactNode, useState } from "react"
+import { PropsWithChildren, ReactNode, useCallback, useState } from "react"
 
 import {
+  Checkbox as PFCheckbox,
+  CheckboxProps,
   FormContextProps,
   FormGroup,
   FormHelperText,
@@ -12,9 +14,14 @@ import {
   SelectOption,
   SelectOptionProps,
   SelectList,
+  TextArea as PFTextArea,
+  TextAreaProps,
   TextInput,
   TextInputProps,
 } from "@patternfly/react-core"
+
+import type Kind from "../Kind"
+import type { State } from "../Settings"
 
 type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
 type FormProps = { fieldId: string; label: string; description: string }
@@ -36,6 +43,11 @@ function Group(props: GroupProps) {
 }
 
 export function Input(props: FormProps & Pick<TextInputProps, "type" | "readOnlyVariant" | "customIcon"> & Ctrl) {
+  const onChange = useCallback(
+    (_, value: string) => props.ctrl.setValue(props.fieldId, value),
+    [props.ctrl.setValue, props.fieldId],
+  )
+
   return (
     <Group {...props}>
       <TextInput
@@ -47,7 +59,45 @@ export function Input(props: FormProps & Pick<TextInputProps, "type" | "readOnly
         name={props.fieldId}
         aria-describedby={`${props.fieldId}-helper`}
         value={props.ctrl.values[props.fieldId]}
-        onChange={(_, value) => props.ctrl.setValue(props.fieldId, value)}
+        onChange={onChange}
+      />
+    </Group>
+  )
+}
+
+export function TextArea(props: FormProps & TextAreaProps & Ctrl) {
+  const onChange = useCallback(
+    (_, value: string) => props.ctrl.setValue(props.fieldId, value),
+    [props.ctrl.setValue, props.fieldId],
+  )
+
+  return (
+    <Group {...props}>
+      <PFTextArea
+        isRequired
+        id={props.fieldId}
+        name={props.fieldId}
+        value={props.ctrl.values[props.fieldId]}
+        onChange={onChange}
+      />
+    </Group>
+  )
+}
+
+export function Checkbox(props: FormProps & Omit<CheckboxProps, "id"> & Ctrl) {
+  const onChange = useCallback(
+    (_, value: boolean) => props.ctrl.setValue(props.fieldId, String(value)),
+    [props.ctrl.setValue, props.fieldId],
+  )
+
+  return (
+    <Group {...props}>
+      <PFCheckbox
+        isRequired
+        id={props.fieldId}
+        name={props.fieldId}
+        isChecked={props.ctrl.values[props.fieldId] === "true"}
+        onChange={onChange}
       />
     </Group>
   )
@@ -114,9 +164,12 @@ export function Select(
 export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; min?: number; max?: number }) {
   const [value, setValue] = useState<number | "">(props.defaultValue !== undefined ? props.defaultValue : 1)
 
-  const onChange = (evt: React.FormEvent<HTMLInputElement>) => {
-    props.ctrl.setValue(props.fieldId, evt.currentTarget.value)
-  }
+  const onChange = useCallback(
+    (evt: React.FormEvent<HTMLInputElement>) => {
+      props.ctrl.setValue(props.fieldId, evt.currentTarget.value)
+    },
+    [props.ctrl.setValue, props.fieldId],
+  )
 
   const onClick = (incr: number) => () => {
     const newValue = (value as number) + incr
@@ -138,4 +191,28 @@ export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; m
       />
     </Group>
   )
+}
+
+/**
+ * Take a FormContextProps controller `ctrl` and intercept `setValue`
+ * calls to also record them in our persistent state `formState`.
+ */
+export function remember(kind: Kind, ctrl: FormContextProps, formState: State<string> | undefined) {
+  // origSetValue updates the local copy in the FormContextProvider
+  const { setValue: origSetValue } = ctrl
+
+  return Object.assign({}, ctrl, {
+    setValue(fieldId: string, value: string) {
+      origSetValue(fieldId, value)
+      if (formState) {
+        // remember user setting
+        const form = JSON.parse(formState[0] || "{}")
+        if (!form[kind]) {
+          form[kind] = {}
+        }
+        form[kind][fieldId] = value
+        formState[1](JSON.stringify(form))
+      }
+    },
+  })
 }

@@ -15,6 +15,7 @@ import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 import DashboardModal from "./DashboardModal"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
+import NewApplicationCard from "../components/Application/New/Card"
 
 import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
@@ -195,7 +196,10 @@ export function Dashboard(props: Props) {
   }, [])
 
   function applicationCards() {
-    return applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />)
+    return [
+      <NewApplicationCard key="new-application-card" />,
+      ...applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />),
+    ]
   }
 
   function datasetCards() {
@@ -224,7 +228,7 @@ export function Dashboard(props: Props) {
 
   function workerpoolCards() {
     return [
-      <NewWorkerPoolCard key="new-worker-pool-card" />,
+      <NewWorkerPoolCard key="new-workerpool-card" />,
       ...latestWorkerPoolModels.map((w) => (
         <WorkerPool
           key={w.label}

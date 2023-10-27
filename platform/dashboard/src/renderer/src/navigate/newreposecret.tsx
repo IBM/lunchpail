@@ -1,12 +1,4 @@
-import LinkToNewWizard, { isShowingTask } from "./wizard"
-
-import type { WizardProps } from "./wizard"
-
-const task = "newreposecret"
-
-export default function isShowingNewRepoSecret() {
-  return isShowingTask(task)
-}
+import LinkToNewWizard, { type WizardProps } from "./wizard"
 
 /**
  * @return a UI component that links to the `NewWorkerPoolWizard`. If
@@ -22,10 +14,10 @@ export function LinkToNewRepoSecret(
   },
 ) {
   const linkText = props.startOrAdd === "fix" ? "Add Repo Secret" : "Create Repo Secret"
-  const qs = [`namespace=${props.namespace}`].filter(Boolean)
+  const qs = [`namespace=${props.namespace}`]
   if (props.repo) {
     qs.push(`repo=${props.repo}`)
   }
 
-  return <LinkToNewWizard {...props} task={task} linkText={linkText} qs={qs} />
+  return <LinkToNewWizard {...props} kind="platformreposecrets" linkText={linkText} qs={qs} />
 }

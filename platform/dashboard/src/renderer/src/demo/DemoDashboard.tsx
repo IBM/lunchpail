@@ -47,7 +47,10 @@ export default function DemoDashboard() {
         } else if (/dataset/.test(dprops.kind)) {
           return props.datasets.delete(dprops)
         } else {
-          return false
+          return {
+            code: 404,
+            message: "Resource not found",
+          }
         }
       },
       controlplane: {

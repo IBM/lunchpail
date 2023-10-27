@@ -4,6 +4,8 @@ import { useCallback, useState } from "react"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
 import {
+  Alert,
+  AlertGroup,
   Form,
   FormContextProvider,
   FormContextProps,
@@ -42,7 +44,7 @@ type Props = {
 
 export default function NewWorkerPoolWizard(props: Props) {
   /** Error in the request to create a pool? */
-  const [, setErrorInCreateRequest] = useState<null | unknown>(null)
+  const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
   const [searchParams] = useSearchParams()
 
   /* private chooseAppIfExists(available: Props["applications"], desired: null | string) {
@@ -172,11 +174,20 @@ export default function NewWorkerPoolWizard(props: Props) {
     )
   }
 
+  const clearError = useCallback(() => setErrorInCreateRequest(null), [])
+
   const doCreate = useCallback(
     async (values: FormContextProps["values"]) => {
       console.log("new worker pool request", values) // make eslint happy
       try {
-        await window.jay.create(values, workerPoolYaml(values))
+        const response = await window.jay.create(values, yaml(values))
+        if (response !== true) {
+          console.error(response)
+          setErrorInCreateRequest(new Error(response.message))
+        } else {
+          setErrorInCreateRequest(null)
+          props.onSuccess()
+        }
       } catch (errorInCreateRequest) {
         if (errorInCreateRequest) {
           setErrorInCreateRequest(errorInCreateRequest)
@@ -228,7 +239,7 @@ export default function NewWorkerPoolWizard(props: Props) {
     )
   }*/
 
-  function workerPoolYaml(values: FormContextProps["values"]) {
+  function yaml(values: FormContextProps["values"]) {
     const applicationSpec = props.applications.find((_) => _.metadata.name === values.application)
     if (!applicationSpec) {
       console.error("Internal error: Application spec not found", values.application)
@@ -260,13 +271,25 @@ spec:
       <WizardStep
         id="new-worker-pool-step-review"
         name="Review"
+        status={errorInCreateRequest ? "error" : "default"}
         footer={{ nextButtonText: "Create Worker Pool", onNext: () => doCreate(ctrl.values) }}
       >
+        {errorInCreateRequest ? (
+          <AlertGroup isToast>
+            <Alert
+              variant="danger"
+              title={hasMessage(errorInCreateRequest) ? errorInCreateRequest.message : "Internal error"}
+            />
+          </AlertGroup>
+        ) : (
+          <></>
+        )}
+
         <TextContent>
           <Text component="p">Confirm the settings for your new worker pool.</Text>
         </TextContent>
 
-        <Yaml content={workerPoolYaml(ctrl.values)} />
+        <Yaml content={yaml(ctrl.values)} />
       </WizardStep>
     )
   }
@@ -274,7 +297,7 @@ spec:
   return (
     <FormContextProvider initialValues={defaults()}>
       {(ctrl) => (
-        <Wizard header={header()} onClose={props.onCancel}>
+        <Wizard header={header()} onClose={props.onCancel} onStepChange={clearError}>
           {step1(ctrl)}
           {/*step2(ctrl)*/}
           {review(ctrl)}
@@ -282,4 +305,8 @@ spec:
       )}
     </FormContextProvider>
   )
+}
+
+function hasMessage(obj: unknown): obj is { message: string } {
+  return typeof (obj as { message: string }).message === "string"
 }

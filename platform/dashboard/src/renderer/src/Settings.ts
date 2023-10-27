@@ -6,13 +6,13 @@ export type State<T> = [T, Dispatch<SetStateAction<T>>, (evt: unknown, val: T) =
 type SettingsType = null | {
   darkMode: State<boolean>
   demoMode: State<boolean>
-  prsUser: State<string>
+  form: State<string>
 }
 
 const Settings = createContext<SettingsType>(null)
 export default Settings
 
-type SettingsKey = "darkMode" | "demoMode" | "platformreposecret.user"
+type SettingsKey = keyof NonNullable<SettingsType>
 
 /** Restore previously selected Setting */
 function restore(key: SettingsKey) {
@@ -77,8 +77,8 @@ export function demoModeState() {
   return state<boolean>("demoMode", true, onChangeDemoMode)
 }
 
-export function prsUserState() {
-  return state<string>("platformreposecret.user", "")
+export function formState() {
+  return state<string>("form", "")
 }
 
 function onChangeDarkMode(useDarkMode: boolean) {
