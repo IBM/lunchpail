@@ -2,6 +2,7 @@ import { useCallback, useState, type ReactNode, type ReactElement } from "react"
 import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleText } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
+import trimJunk from "./trim-junk"
 import DrawerToolbar from "./Toolbar"
 import DetailNotFound from "./DetailNotFound"
 
@@ -23,7 +24,7 @@ function ContentTabs(props: TabsProps) {
       {props.raw && (
         <Tab title={<TabTitleText>YAML</TabTitleText>} eventKey={1}>
           <DrawerPanelBody hasNoPadding>
-            <Yaml obj={props.raw} />
+            <Yaml obj={trimJunk(props.raw)} />
           </DrawerPanelBody>
         </Tab>
       )}
