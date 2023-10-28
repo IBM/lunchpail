@@ -142,7 +142,7 @@ export default function PageWithDrawer(props: Props) {
 
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   const panelContent = (
-    <DrawerPanelContent className="codeflare--detail-view">
+    <DrawerPanelContent className="codeflare--detail-view" isResizable>
       <DrawerHead>
         <Breadcrumb>
           {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
