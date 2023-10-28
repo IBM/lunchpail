@@ -57,6 +57,7 @@ function deleteAction(props: Props) {
     <DeleteButton
       key="delete"
       kind="workerpool.codeflare.dev"
+      uiKind="workerpools"
       name={props.model.label}
       namespace={props.model.namespace}
     />

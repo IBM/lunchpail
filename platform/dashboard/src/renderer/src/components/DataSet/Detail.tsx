@@ -48,7 +48,15 @@ function detailGroups(props: Props) {
 function deleteAction(last: null | DataSetEvent) {
   return !last
     ? []
-    : [<DeleteButton key="delete" kind="dataset" name={last.metadata.name} namespace={last.metadata.namespace} />]
+    : [
+        <DeleteButton
+          key="delete"
+          kind="dataset"
+          uiKind="datasets"
+          name={last.metadata.name}
+          namespace={last.metadata.namespace}
+        />,
+      ]
 }
 
 /** Launch a TaskSimulator for this dataset */

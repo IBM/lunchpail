@@ -31,7 +31,12 @@ function detailGroups(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   return (
-    <DeleteButton kind="application.codeflare.dev" name={props.metadata.name} namespace={props.metadata.namespace} />
+    <DeleteButton
+      kind="application.codeflare.dev"
+      uiKind="applications"
+      name={props.metadata.name}
+      namespace={props.metadata.namespace}
+    />
   )
 }
 
