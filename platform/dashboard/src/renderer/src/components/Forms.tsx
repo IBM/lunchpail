@@ -3,8 +3,9 @@ import { PropsWithChildren, ReactNode, useCallback, useState } from "react"
 import {
   Checkbox as PFCheckbox,
   CheckboxProps,
-  FormContextProps,
+  type FormContextProps,
   FormGroup,
+  type FormGroupProps,
   FormHelperText,
   HelperText,
   HelperTextItem,
@@ -12,26 +13,32 @@ import {
   NumberInput as PFNumberInput,
   Select as PFSelect,
   SelectOption,
-  SelectOptionProps,
+  type SelectOptionProps,
   SelectList,
   TextArea as PFTextArea,
-  TextAreaProps,
+  type TextAreaProps,
   TextInput,
-  TextInputProps,
+  type TextInputProps,
 } from "@patternfly/react-core"
 
 import type Kind from "../Kind"
 import type { State } from "../Settings"
 
 type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
-type FormProps = { fieldId: string; label: string; description: string }
+type FormProps = FormGroupProps & { description: string } & Required<Pick<FormGroupProps, "fieldId">>
 type GroupProps = PropsWithChildren<FormProps>
 
 import "./Forms.scss"
 
 function Group(props: GroupProps) {
   return (
-    <FormGroup isRequired label={props.label} fieldId={props.fieldId} data-has-pointer-events="true">
+    <FormGroup
+      isRequired={props.isRequired ?? true}
+      label={props.label}
+      fieldId={props.fieldId}
+      labelInfo={props.labelInfo}
+      data-has-pointer-events="true"
+    >
       {props.children}
       <FormHelperText>
         <HelperText>
@@ -74,7 +81,6 @@ export function TextArea(props: FormProps & TextAreaProps & Ctrl) {
   return (
     <Group {...props}>
       <PFTextArea
-        isRequired
         rows={props.rows}
         aria-label={`${props.fieldId} text area`}
         value={props.ctrl.values[props.fieldId] ?? ""}
@@ -84,18 +90,25 @@ export function TextArea(props: FormProps & TextAreaProps & Ctrl) {
   )
 }
 
-export function Checkbox(props: FormProps & Omit<CheckboxProps, "id"> & Ctrl) {
+export function Checkbox(
+  props: FormProps & Omit<CheckboxProps, "id"> & Ctrl & { onToggle?: (value: boolean) => void },
+) {
   const onChange = useCallback(
-    (_, value: boolean) => props.ctrl.setValue(props.fieldId, String(value)),
+    (_, value: boolean) => {
+      props.ctrl.setValue(props.fieldId, String(value))
+      if (props.onToggle) {
+        props.onToggle(value)
+      }
+    },
     [props.ctrl.setValue, props.fieldId],
   )
 
   return (
     <Group {...props}>
       <PFCheckbox
-        isRequired
         id={props.fieldId}
         name={props.fieldId}
+        isDisabled={props.isDisabled}
         isChecked={props.ctrl.values[props.fieldId] === "true"}
         onChange={onChange}
       />
