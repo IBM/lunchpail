@@ -3,12 +3,18 @@ import ExecResponse from "@jay/common/events/ExecResponse"
 /**
  * Create a resource using the given `yaml` spec.
  */
-export async function onCreate(yaml: string, action: "apply" | "delete" = "apply"): Promise<ExecResponse> {
+export async function onCreate(
+  yaml: string,
+  action: "apply" | "delete" = "apply",
+  dryRun = false,
+): Promise<ExecResponse> {
   const { spawn } = await import("node:child_process")
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
-      const child = spawn("kubectl", [action, "-f", "-"], { stdio: ["pipe", "inherit", "pipe"] })
+      const child = spawn("kubectl", [action, "-f", "-", ...(dryRun === false ? [] : ["--dry-run"])], {
+        stdio: ["pipe", "inherit", "pipe"],
+      })
 
       // send the yaml to the kubectl apply across stdin
       child.stdin.write(yaml)

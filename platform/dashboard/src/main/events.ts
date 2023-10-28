@@ -154,7 +154,9 @@ export function initEvents() {
   kinds.forEach(initStreamForResourceKind)
 
   // resource create request
-  ipcMain.handle("/create", (_, yaml: string) => import("./create").then((_) => _.onCreate(yaml, "apply")))
+  ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
+    import("./create").then((_) => _.onCreate(yaml, "apply", dryRun)),
+  )
 
   // resource delete request
   ipcMain.handle("/delete", (_, props: string) =>
@@ -224,8 +226,8 @@ const apiImpl: JayApi = Object.assign(
       },
     },
 
-    create: (_, yaml: string): Promise<ExecResponse> => {
-      return ipcRenderer.invoke("/create", yaml)
+    create: (_, yaml: string, dryRun = false): Promise<ExecResponse> => {
+      return ipcRenderer.invoke("/create", yaml, dryRun)
     },
 
     delete: (props: DeleteProps): Promise<ExecResponse> => {
