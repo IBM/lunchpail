@@ -15,6 +15,9 @@ function Name(props: Pick<Props, "queueNum">) {
   )
 }
 
+const gapXs = { default: "gapXs" as const }
+const alignItemsCenter = { default: "alignItemsCenter" as const }
+
 /** Each item grid is a Queue component. Each Queue will be printed on its own column */
 export default function GridLayout(props: Props) {
   /* private count(model: Props["inbox"]) {
@@ -26,7 +29,7 @@ export default function GridLayout(props: Props) {
   } */
 
   return (
-    <Flex gap={{ default: "gapXs" }} alignItems={{ default: "alignItemsCenter" }} className="codeflare--workqueues-row">
+    <Flex gap={gapXs} alignItems={alignItemsCenter} className="codeflare--workqueues-row">
       <FlexItem className="codeflare--workqueues-cell">
         <Name queueNum={props.queueNum} />
       </FlexItem>

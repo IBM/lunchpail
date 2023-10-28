@@ -1,18 +1,20 @@
+import wordWrap from "word-wrap"
 import { useSearchParams } from "react-router-dom"
 import { useCallback, useContext, useState } from "react"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import {
   Alert,
-  AlertGroup,
   Form,
+  FormAlert,
   FormContextProvider,
   FormContextProps,
   FormSection,
   Grid,
   GridItem,
-  TextContent,
-  Text,
+  Hint,
+  HintTitle,
+  HintBody,
   Wizard,
   WizardHeader,
   WizardStep,
@@ -22,6 +24,10 @@ import Yaml from "../../Yaml"
 import Settings from "../../../Settings"
 import { singular } from "../../../names"
 import { Checkbox, Input, TextArea, remember } from "../../Forms"
+
+import DoubleCheckIcon from "@patternfly/react-icons/dist/esm/icons/check-double-icon"
+
+import "../../Wizard.scss"
 
 type Props = {
   /** Handler to call when this dialog closes */
@@ -46,7 +52,8 @@ export default function NewApplicationWizard(props: Props) {
       name: previousValues?.name ?? uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
       namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
       repo: previousValues?.repo ?? "",
-      image: previousValues?.image ?? "",
+      image: previousValues?.image ?? "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
+      command: previousValues?.command ?? "",
       description: previousValues?.description ?? "",
       supportsGpu: previousValues?.supportsGpu ?? "false",
     }
@@ -89,6 +96,17 @@ export default function NewApplicationWizard(props: Props) {
     return <Input fieldId="image" label="Image" description="The base image to run your code on" ctrl={ctrl} />
   }
 
+  function command(ctrl: FormContextProps) {
+    return (
+      <Input
+        fieldId="command"
+        label="Command line"
+        description={`The command line used to launch your ${singular.applications}`}
+        ctrl={ctrl}
+      />
+    )
+  }
+
   function description(ctrl: FormContextProps) {
     return (
       <TextArea
@@ -96,6 +114,7 @@ export default function NewApplicationWizard(props: Props) {
         label="Description"
         description={`Describe the details of your ${singular.applications}`}
         ctrl={ctrl}
+        rows={4}
       />
     )
   }
@@ -143,7 +162,7 @@ export default function NewApplicationWizard(props: Props) {
   }
 
   function isStep1Valid(ctrl: FormContextProps) {
-    return ctrl.values.name && ctrl.values.repo && ctrl.values.image
+    return ctrl.values.name && ctrl.values.repo && ctrl.values.image && ctrl.values.command
   }
 
   function step1(ctrl: FormContextProps) {
@@ -156,8 +175,9 @@ export default function NewApplicationWizard(props: Props) {
               <GridItem span={6}>{namespace(ctrl)}</GridItem>
               <GridItem span={12}>{repoInput(ctrl)}</GridItem>
               <GridItem span={6}>{image(ctrl)}</GridItem>
+              <GridItem span={6}>{command(ctrl)}</GridItem>
               <GridItem span={6}>{supportsGpu(ctrl)}</GridItem>
-              <GridItem span={12}>{description(ctrl)}</GridItem>
+              <GridItem span={6}>{description(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
@@ -190,9 +210,10 @@ spec:
   api: workqueue
   repo: ${values.repo}
   image: ${values.image}
+  command: /opt/codeflare/worker/bin/watcher.sh ${values.command}
   supportsGpu: ${values.supportsGpu}
   description: >-
-    ${values.description?.trim()}
+${wordWrap(values.description, { trim: true, indent: "    ", width: 60 })}
 `.trim()
   }
 
@@ -205,19 +226,21 @@ spec:
         footer={{ nextButtonText: `Create ${singular.applications}`, onNext: () => doCreate(ctrl.values) }}
       >
         {errorInCreateRequest ? (
-          <AlertGroup isToast>
+          <FormAlert className="codeflare--form-alert">
             <Alert
+              isInline
               variant="danger"
               title={hasMessage(errorInCreateRequest) ? errorInCreateRequest.message : "Internal error"}
             />
-          </AlertGroup>
+          </FormAlert>
         ) : (
           <></>
         )}
 
-        <TextContent>
-          <Text component="p">Confirm the settings for your new repo secret.</Text>
-        </TextContent>
+        <Hint actions={<DoubleCheckIcon />}>
+          <HintTitle>Review</HintTitle>
+          <HintBody>Confirm the settings for your new repo secret.</HintBody>
+        </Hint>
 
         <Yaml content={yaml(ctrl.values)} />
       </WizardStep>

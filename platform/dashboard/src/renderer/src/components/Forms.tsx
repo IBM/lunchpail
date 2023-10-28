@@ -55,10 +55,10 @@ export function Input(props: FormProps & Pick<TextInputProps, "type" | "readOnly
         type={props.type ?? "text"}
         readOnlyVariant={props.readOnlyVariant}
         customIcon={props.customIcon}
-        id={props.fieldId}
+        aria-label={`${props.fieldId} text input`}
         name={props.fieldId}
         aria-describedby={`${props.fieldId}-helper`}
-        value={props.ctrl.values[props.fieldId]}
+        value={props.ctrl.values[props.fieldId] ?? ""}
         onChange={onChange}
       />
     </Group>
@@ -75,9 +75,9 @@ export function TextArea(props: FormProps & TextAreaProps & Ctrl) {
     <Group {...props}>
       <PFTextArea
         isRequired
-        id={props.fieldId}
-        name={props.fieldId}
-        value={props.ctrl.values[props.fieldId]}
+        rows={props.rows}
+        aria-label={`${props.fieldId} text area`}
+        value={props.ctrl.values[props.fieldId] ?? ""}
         onChange={onChange}
       />
     </Group>

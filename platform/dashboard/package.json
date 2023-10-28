@@ -41,7 +41,8 @@
     "remove-accents": "^0.5.0",
     "split2": "^4.2.0",
     "tmp-promise": "^3.0.3",
-    "unique-names-generator": "^4.7.1"
+    "unique-names-generator": "^4.7.1",
+    "word-wrap": "^1.2.5"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
