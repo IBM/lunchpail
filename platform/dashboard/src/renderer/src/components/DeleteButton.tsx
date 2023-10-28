@@ -8,8 +8,7 @@ import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
 export default function DeleteButton(props: import("@jay/common/api/jay").DeleteProps & { uiKind: Kind }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-
-  const handleModalToggle = useCallback(() => setIsModalOpen(!isModalOpen), [isModalOpen, setIsModalOpen])
+  const handleModalToggle = useCallback(() => setIsModalOpen((curState) => !curState), [setIsModalOpen])
 
   const { kind, name, namespace } = props
   const onDelete = useCallback(() => {
@@ -17,7 +16,7 @@ export default function DeleteButton(props: import("@jay/common/api/jay").Delete
     if (kind && name && namespace) {
       window.jay.delete({ kind, name, namespace })
     }
-  }, [kind, name, namespace])
+  }, [handleModalToggle, kind, name, namespace])
 
   return (
     <>
