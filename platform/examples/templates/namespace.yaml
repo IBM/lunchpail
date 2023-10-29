@@ -3,4 +3,6 @@ kind: Namespace
 metadata:
   name: {{ .Values.namespace }}
   labels:
+    app.kubernetes.io/component: noncore
+    app.kubernetes.io/managed-by: codeflare.dev
     monitor-pods-datasets: enabled # datashim support for "dataset.0.id" pod labels -> volume/volumeMunt

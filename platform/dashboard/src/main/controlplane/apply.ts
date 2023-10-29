@@ -83,6 +83,14 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
   )
 }
 
+/** Wait for our namespaces to go away */
+export async function waitForNamespaceTermination(props: ApplyProps, component: "core" | "noncore") {
+  const execPromise = promisify(exec)
+  await execPromise(
+    `kubectl wait ns --kubeconfig ${props.kubeconfig.path} -l app.kubernetes.io/managed-by=codeflare.dev,app.kubernetes.io/component=${component} --for=delete --timeout=240s`,
+  )
+}
+
 export async function restartControllers(props: ApplyProps) {
   const execPromise = promisify(exec)
   await execPromise(

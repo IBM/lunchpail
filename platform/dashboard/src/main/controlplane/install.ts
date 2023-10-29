@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import createKindClusterIfNeeded from "./kind"
-import apply, { deleteJaaSManagedResources, restartControllers } from "./apply"
+import apply, { deleteJaaSManagedResources, restartControllers, waitForNamespaceTermination } from "./apply"
 
 import type Action from "./action"
 import type { ApplyProps } from "./apply"
@@ -37,19 +37,30 @@ async function examples() {
 
 /** Install/delete all of the requested control plane components */
 async function applyAll(config: Config, props: ApplyProps) {
-  const yamls = await Promise.all([core(config), defaults(), examples()])
+  const coreYamls = await Promise.all([core(config)])
+  const noncoreYamls = await Promise.all([defaults(), examples()])
 
   if (props.action === "delete") {
-    // we need to unwind things in the reverse order we applied them
-    yamls.reverse()
     await deleteJaaSManagedResources(props)
-  }
 
-  for await (const yaml of yamls) {
-    await apply(yaml, props)
-  }
+    // we need to unwind things in the reverse order we applied them
+    for await (const yaml of noncoreYamls) {
+      await apply(yaml, props)
+    }
+    await waitForNamespaceTermination(props, "noncore")
 
-  if (props.action === "update") {
+    for await (const yaml of coreYamls) {
+      await apply(yaml, props)
+    }
+    await waitForNamespaceTermination(props, "core")
+  } else {
+    for await (const yaml of coreYamls) {
+      await apply(yaml, props)
+    }
+    for await (const yaml of noncoreYamls) {
+      await apply(yaml, props)
+    }
+
     await restartControllers(props)
   }
 
