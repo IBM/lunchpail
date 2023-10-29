@@ -13,7 +13,7 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
-    "dev": "electron-vite dev --watch --no-clearScreen",
+    "dev": "if [[ ! -f ./resources/jaas-lite.yml ]]; then npm run build:installers; fi; electron-vite dev --watch --no-clearScreen",
     "test": "npm run build",
     "build:installers": "./hack/generate-installers.sh",
     "build": "npm run typecheck && npm run build:installers && electron-vite build",
