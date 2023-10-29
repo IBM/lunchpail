@@ -294,7 +294,7 @@ export function Dashboard(props: Props) {
             datasetIndex,
           }
     },
-    [datasetEvents, applicationEvents],
+    [datasetEvents, applicationEvents, datasetToTaskSimulators],
   )
 
   /** Helps will drilldown to Details */
