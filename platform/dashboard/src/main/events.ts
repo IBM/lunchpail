@@ -111,7 +111,7 @@ function initStreamForResourceKind(kind: WatchedKind) {
         closedOnPurpose = true
         ipcMain.removeListener(closeEvent, myCleanup)
         myStream.off("data", cb)
-        myStream.end()
+        myStream.destroy()
       }
 
       ipcMain.once(closeEvent, myCleanup)
@@ -124,10 +124,10 @@ function initStreamForResourceKind(kind: WatchedKind) {
           myCleanup()
           closedOnPurpose = false
 
-          // double-check that a purposeful close hasn't been
-          // requested in the interim (this function is async...)
+          await new Promise((resolve) => setTimeout(resolve, 2000))
           if (!closedOnPurpose) {
-            await new Promise((resolve) => setTimeout(resolve, 2000))
+            // ^^^ double-check that a purposeful close hasn't been
+            // requested in the interim (this function is async...)
             init()
           }
         }

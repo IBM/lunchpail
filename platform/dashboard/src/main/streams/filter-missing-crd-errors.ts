@@ -7,14 +7,14 @@ import { Transform } from "stream"
  * missing. This is a `stream.Transformer` that will filter out those
  * messages.
  */
-const filterOutMissingCRDs = new Transform({
-  transform(chunk: Buffer, _: string, callback) {
-    if (chunk.indexOf("error: the server doesn't have a resource type") < 0) {
-      callback(null, chunk)
-    } else {
-      callback(null, "")
-    }
-  },
-})
-
-export default filterOutMissingCRDs
+export default function filterOutMissingCRDs() {
+  return new Transform({
+    transform(chunk: Buffer, _: string, callback) {
+      if (chunk.indexOf("error: the server doesn't have a resource type") < 0) {
+        callback(null, chunk)
+      } else {
+        callback(null, "")
+      }
+    },
+  })
+}
