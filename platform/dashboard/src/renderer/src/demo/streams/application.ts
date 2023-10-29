@@ -6,7 +6,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import Base from "./base"
 import { ns } from "./misc"
 import lorem from "../util/lorem"
-import { colors } from "./dataset"
+import { colors } from "./taskqueue"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
   private readonly apis = ["spark", "ray", "torch", "workqueue"]

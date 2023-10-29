@@ -9,7 +9,7 @@ import "./Sidebar.scss"
 
 type Props = {
   applications: string[]
-  datasets: string[]
+  taskqueues: string[]
   workerpools: string[]
   platformreposecrets: string[]
 }

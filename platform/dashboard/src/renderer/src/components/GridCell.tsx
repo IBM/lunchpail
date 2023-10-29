@@ -8,7 +8,7 @@ type GridType = GridTypeData | "worker"
 
 type Props = {
   type?: GridType
-  dataset?: number
+  taskqueue?: number
 
   /** Represents how many GridCells there are in a stack */
   stackDepth: number
@@ -38,7 +38,7 @@ export default function GridCell(props: Props) {
       <div
         className="codeflare--grid-cell"
         data-type={props.type || "plain"}
-        data-dataset={props.dataset}
+        data-index={props.taskqueue}
         data-depth={props.stackDepth}
       >
         <InnerText {...props} />

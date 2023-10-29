@@ -62,12 +62,12 @@ export function linkToAllApplicationDetails(applications: ApplicationSpecEvent[]
   )
 }
 
-export const linkToDataSetDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
-  return linkToDetails({ id, kind: "datasets" })
+export const linkToTaskQueueDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
+  return linkToDetails({ id, kind: "taskqueues" })
 }
 
-export function linkToAllDataSetDetails(names: string[]) {
-  return names.map((id) => linkToDataSetDetails({ id }))
+export function linkToAllTaskQueueDetails(names: string[]) {
+  return names.map((id) => linkToTaskQueueDetails({ id }))
 }
 
 export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {

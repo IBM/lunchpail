@@ -7,7 +7,7 @@ import GridLayout from "../GridLayout"
 import IconWithLabel from "../IconWithLabel"
 import { descriptionGroup } from "../DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "../CompletionRate"
-import { linkToAllApplicationDetails, linkToAllDataSetDetails } from "../../navigate/details"
+import { linkToAllApplicationDetails, linkToAllTaskQueueDetails } from "../../navigate/details"
 
 import type Props from "./Props"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
@@ -27,7 +27,7 @@ function latestApplications(props: Props) {
   return null
 }
 
-function latestDataSets(props: Props) {
+function latestTaskQueues(props: Props) {
   if (props.status) {
     return [props.status.spec.dataset]
   }
@@ -43,7 +43,7 @@ function enqueued(props: Props) {
   return (
     <div className="codeflare--workqueues">
       {props.model.inbox.map((inbox, i) => (
-        <GridLayout key={i} queueNum={i + 1} inbox={inbox} datasetIndex={props.datasetIndex} gridTypeData="plain" />
+        <GridLayout key={i} queueNum={i + 1} inbox={inbox} taskqueueIndex={props.taskqueueIndex} gridTypeData="plain" />
       ))}
     </div>
   )
@@ -88,11 +88,11 @@ export function statusActions(
 
 export function summaryGroups(props: Props) {
   const applications = latestApplications(props)
-  const datasets = latestDataSets(props)
+  const taskqueues = latestTaskQueues(props)
 
   return [
     applications && descriptionGroup(names["applications"], linkToAllApplicationDetails(applications)),
-    datasets && descriptionGroup(names["datasets"], linkToAllDataSetDetails(datasets)),
+    taskqueues && descriptionGroup(names["taskqueues"], linkToAllTaskQueueDetails(taskqueues)),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
     descriptionGroup(`Queued Work (${pluralize("worker", count(props))})`, enqueued(props)),

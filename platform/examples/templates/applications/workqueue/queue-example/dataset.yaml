@@ -4,7 +4,7 @@ metadata:
   name: queueexample # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
   namespace: {{ .Values.namespace }}
   labels:
-    app.kubernetes.io/component: examples
+    app.kubernetes.io/component: taskqueue
     app.kubernetes.io/part-of: codeflare.dev
 spec:
   local:

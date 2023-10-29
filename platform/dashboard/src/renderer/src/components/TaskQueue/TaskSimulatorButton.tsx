@@ -46,10 +46,10 @@ export default function TaskSimulatorButton(props: {
   const nSimulators = props.simulators.length
   const online = nSimulators > 0
   const message = online
-    ? `This ${singular.datasets} has ${nSimulators} assigned ${
+    ? `This ${singular.taskqueues} has ${nSimulators} assigned ${
         nSimulators === 1 ? "task simulator" : "task simualtors"
       }. Click here to stop ${nSimulators === 1 ? "it" : "them"}.`
-    : `Launch a task simulator against this ${singular.datasets}`
+    : `Launch a task simulator against this ${singular.taskqueues}`
 
   return (
     <Tooltip content={<Text component="p">{message}</Text>}>

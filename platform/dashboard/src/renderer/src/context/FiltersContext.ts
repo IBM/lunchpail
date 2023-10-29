@@ -2,22 +2,22 @@ import { createContext } from "react"
 
 export type ActiveFilters = {
   applications: string[]
-  datasets: string[]
+  taskqueues: string[]
   workerpools: string[]
   showingAllApplications: boolean
-  showingAllDataSets: boolean
+  showingAllTaskQueues: boolean
   showingAllWorkerPools: boolean
 
   addApplicationToFilter: (arg: string) => void
-  addDataSetToFilter: (arg: string) => void
+  addTaskQueueToFilter: (arg: string) => void
   addWorkerPoolToFilter: (arg: string) => void
 
   removeApplicationFromFilter: (arg: string) => void
-  removeDataSetFromFilter: (arg: string) => void
+  removeTaskQueueFromFilter: (arg: string) => void
   removeWorkerPoolFromFilter: (arg: string) => void
 
   toggleShowAllApplications(): void
-  toggleShowAllDataSets(): void
+  toggleShowAllTaskQueues(): void
   toggleShowAllWorkerPools(): void
 
   clearAllFilters: () => void
@@ -25,23 +25,23 @@ export type ActiveFilters = {
 
 export const initialState: ActiveFilters = {
   applications: [],
-  datasets: [],
+  taskqueues: [],
   workerpools: [],
 
   showingAllApplications: false,
-  showingAllDataSets: false,
+  showingAllTaskQueues: false,
   showingAllWorkerPools: false,
 
   addApplicationToFilter: () => {},
-  addDataSetToFilter: () => {},
+  addTaskQueueToFilter: () => {},
   addWorkerPoolToFilter: () => {},
 
   removeApplicationFromFilter: () => {},
-  removeDataSetFromFilter: () => {},
+  removeTaskQueueFromFilter: () => {},
   removeWorkerPoolFromFilter: () => {},
 
   toggleShowAllApplications() {},
-  toggleShowAllDataSets() {},
+  toggleShowAllTaskQueues() {},
   toggleShowAllWorkerPools() {},
 
   clearAllFilters: () => {},

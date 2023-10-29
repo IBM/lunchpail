@@ -7,7 +7,7 @@ import { returnHomeCallback } from "../navigate/home"
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
 import Application from "../components/Application/Card"
-import DataSet from "../components/DataSet/Card"
+import TaskQueue from "../components/TaskQueue/Card"
 import WorkerPool from "../components/WorkerPool/Card"
 import JobManagerCard from "../components/JobManager/Card"
 
@@ -21,7 +21,7 @@ import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
 
 import {
-  queueDataSet,
+  queueTaskQueue,
   queueInbox,
   queueOutbox,
   queueProcessing,
@@ -37,7 +37,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
 import "./Dashboard.scss"
@@ -57,7 +57,7 @@ export function Dashboard(props: Props) {
   // State
   const [poolEvents, setPoolEvents] = useState<WorkerPoolStatusEvent[]>([])
   const [queueEvents, setQueueEvents] = useState<QueueEvent[]>([])
-  const [datasetEvents, setDataSetEvents] = useState<DataSetEvent[]>([])
+  const [taskqueueEvents, setTaskQueueEvents] = useState<TaskQueueEvent[]>([])
   const [applicationEvents, setApplicationEvents] = useState<ApplicationSpecEvent[]>([])
   const [tasksimulatorEvents, setTaskSimulatorEvents] = useState<TaskSimulatorEvent[]>([])
   const [platformreposecretEvents, setPlatformRepoSecretEvents] = useState<PlatformRepoSecretEvent[]>([])
@@ -65,7 +65,7 @@ export function Dashboard(props: Props) {
   /** Event handlers */
   const handlers: Record<Kind, (evt: EventLike) => void> = {
     applications: singletonEventHandler("applications", setApplicationEvents, returnHome),
-    datasets: allEventsHandler(setDataSetEvents),
+    taskqueues: allEventsHandler(setTaskQueueEvents),
     queues: allEventsHandler(setQueueEvents),
     workerpools: singletonEventHandler("workerpools", setPoolEvents, returnHome),
     tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
@@ -89,8 +89,8 @@ export function Dashboard(props: Props) {
     [queueEvents],
   )
 
-  /** A memo of the mapping from DataSet to TaskSimulatorEvents */
-  const datasetToTaskSimulators = useMemo(
+  /** A memo of the mapping from TaskQueue to TaskSimulatorEvents */
+  const taskqueueToTaskSimulators = useMemo(
     () =>
       tasksimulatorEvents.reduce(
         (M, event) => {
@@ -105,16 +105,16 @@ export function Dashboard(props: Props) {
     [tasksimulatorEvents],
   )
 
-  /** A memo of the mapping from DataSet to WorkerPools */
-  const datasetToPool = useMemo(
+  /** A memo of the mapping from TaskQueue to WorkerPools */
+  const taskqueueToPool = useMemo(
     () =>
       poolEvents.reduce(
         (M, event) => {
-          [event.spec.dataset].forEach((dataset) => {
-            if (!M[dataset]) {
-              M[dataset] = []
+          [event.spec.dataset].forEach((taskqueue) => {
+            if (!M[taskqueue]) {
+              M[taskqueue] = []
             }
-            M[dataset].push(event)
+            M[taskqueue].push(event)
           })
           return M
         },
@@ -124,14 +124,14 @@ export function Dashboard(props: Props) {
   )
 
   /**
-   * A memo of the mapping from DataSet to its position in the UI --
+   * A memo of the mapping from TaskQueue to its position in the UI --
    * this helps us to keep coloring consistent across the views -- we
    * will use the index into a color lookup table in the CSS (see
    * GridCell.scss).
    */
-  const datasetIndex = useMemo(
+  const taskqueueIndex = useMemo(
     () =>
-      datasetEvents.reduce(
+      taskqueueEvents.reduce(
         (M, event) => {
           if (!(event.metadata.name in M.index)) {
             M.index[event.metadata.name] = either(event.spec.idx, M.next++)
@@ -140,28 +140,28 @@ export function Dashboard(props: Props) {
         },
         { next: 0, index: {} as Record<string, number> },
       ).index,
-    [datasetEvents],
+    [taskqueueEvents],
   )
 
   /**
-   * The DataSetEvents model keeps track of all events (e.g. so we can
+   * The TaskQueueEvents model keeps track of all events (e.g. so we can
    * display timelines). It is helpful to memoize just the latest
-   * event for each DataSet resource.
+   * event for each TaskQueue resource.
    */
-  const latestDataSetEvents = useMemo(
+  const latestTaskQueueEvents = useMemo(
     () =>
       Object.values(
-        datasetEvents.reduceRight(
+        taskqueueEvents.reduceRight(
           (M, event) => {
             if (!(event.metadata.name in M)) {
               M[event.metadata.name] = event
             }
             return M
           },
-          {} as Record<string, DataSetEvent>,
+          {} as Record<string, TaskQueueEvent>,
         ),
       ).sort((a, b) => a.metadata.name.localeCompare(b.metadata.name)),
-    [datasetEvents],
+    [taskqueueEvents],
   )
 
   /** A memo of the latest WorkerPoolModels, one per worker pool */
@@ -177,7 +177,7 @@ export function Dashboard(props: Props) {
   )
 
   const applicationsList = useMemo(() => applicationEvents.map((_) => _.metadata.name), [applicationEvents])
-  const datasetsList = useMemo(() => Object.keys(datasetIndex), [datasetIndex])
+  const taskqueuesList = useMemo(() => Object.keys(taskqueueIndex), [taskqueueIndex])
   const workerpoolsList = useMemo(() => latestWorkerPoolModels.map((_) => _.label), [latestWorkerPoolModels])
   const platformRepoSecretsList = useMemo(
     () => platformreposecretEvents.map((_) => _.metadata.name),
@@ -202,19 +202,19 @@ export function Dashboard(props: Props) {
     ]
   }
 
-  function datasetCards() {
+  function taskqueueCards() {
     return [
-      ...latestDataSetEvents.map((event) => (
-        <DataSet
+      ...latestTaskQueueEvents.map((event) => (
+        <TaskQueue
           key={event.metadata.name}
-          idx={either(event.spec.idx, datasetIndex[event.metadata.name])}
-          workerpools={datasetToPool[event.metadata.name] || []}
-          tasksimulators={datasetToTaskSimulators[event.metadata.name] || []}
+          idx={either(event.spec.idx, taskqueueIndex[event.metadata.name])}
+          workerpools={taskqueueToPool[event.metadata.name] || []}
+          tasksimulators={taskqueueToTaskSimulators[event.metadata.name] || []}
           applications={applicationEvents}
           name={event.metadata.name}
           events={[event]}
           numEvents={1}
-          datasetIndex={datasetIndex}
+          taskqueueIndex={taskqueueIndex}
           {...drilldownProps()}
         />
       )),
@@ -233,7 +233,7 @@ export function Dashboard(props: Props) {
         <WorkerPool
           key={w.label}
           model={w}
-          datasetIndex={datasetIndex}
+          taskqueueIndex={taskqueueIndex}
           status={poolEvents.find((_) => _.metadata.name === w.label)}
           {...drilldownProps()}
         />
@@ -244,7 +244,7 @@ export function Dashboard(props: Props) {
   const sidebar = (
     <Sidebar
       applications={applicationsList}
-      datasets={datasetsList}
+      taskqueues={taskqueuesList}
       workerpools={workerpoolsList}
       platformreposecrets={platformRepoSecretsList}
     />
@@ -256,8 +256,8 @@ export function Dashboard(props: Props) {
         return <JobManagerCard {...drilldownProps()} />
       case "applications":
         return applicationCards()
-      case "datasets":
-        return datasetCards()
+      case "taskqueues":
+        return taskqueueCards()
       case "workerpools":
         return workerpoolCards()
       case "platformreposecrets":
@@ -278,23 +278,23 @@ export function Dashboard(props: Props) {
   )
 
   /** Helps will drilldown to Details */
-  const getDataSet = useCallback(
+  const getTaskQueue = useCallback(
     (id: string) => {
-      const events = datasetEvents.filter((_) => _.metadata.name === id)
+      const events = taskqueueEvents.filter((_) => _.metadata.name === id)
       return events.length === 0
         ? undefined
         : {
-            idx: either(events[events.length - 1].spec.idx, datasetIndex[id]),
-            workerpools: datasetToPool[id] || [],
-            tasksimulators: datasetToTaskSimulators[id] || [],
+            idx: either(events[events.length - 1].spec.idx, taskqueueIndex[id]),
+            workerpools: taskqueueToPool[id] || [],
+            tasksimulators: taskqueueToTaskSimulators[id] || [],
             applications: applicationEvents || [],
             name: id,
             events,
             numEvents: events.length,
-            datasetIndex,
+            taskqueueIndex,
           }
     },
-    [datasetEvents, applicationEvents, datasetToTaskSimulators],
+    [taskqueueEvents, applicationEvents, taskqueueToTaskSimulators],
   )
 
   /** Helps will drilldown to Details */
@@ -306,7 +306,7 @@ export function Dashboard(props: Props) {
         : {
             model,
             status: poolEvents.find((_) => _.metadata.name === id),
-            datasetIndex: datasetIndex,
+            taskqueueIndex: taskqueueIndex,
           }
     },
     [latestWorkerPoolModels],
@@ -314,9 +314,9 @@ export function Dashboard(props: Props) {
 
   const pwdProps = {
     getApplication,
-    getDataSet,
+    getTaskQueue,
     getWorkerPool,
-    modal: <DashboardModal applications={applicationEvents} datasets={datasetsList} />,
+    modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} />,
     sidebar,
     subtitle: subtitles[currentKind()],
     title: names[currentKind()],
@@ -349,7 +349,7 @@ function toWorkerPoolModel(
 ): WorkerPoolModelWithHistory {
   const model = queueEventsForOneWorkerPool.reduce(
     (M, queueEvent) => {
-      const dataset = queueDataSet(queueEvent)
+      const taskqueue = queueTaskQueue(queueEvent)
       const inbox = queueInbox(queueEvent)
       const outbox = queueOutbox(queueEvent)
       const processing = queueProcessing(queueEvent)
@@ -358,17 +358,17 @@ function toWorkerPoolModel(
       if (!M.inbox[workerIndex]) {
         M.inbox[workerIndex] = {}
       }
-      M.inbox[workerIndex][dataset] = inbox
+      M.inbox[workerIndex][taskqueue] = inbox
 
       if (!M.outbox[workerIndex]) {
         M.outbox[workerIndex] = {}
       }
-      M.outbox[workerIndex][dataset] = outbox
+      M.outbox[workerIndex][taskqueue] = outbox
 
       if (!M.processing[workerIndex]) {
         M.processing[workerIndex] = {}
       }
-      M.processing[workerIndex][dataset] = processing
+      M.processing[workerIndex][taskqueue] = processing
 
       return M
     },

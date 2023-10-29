@@ -24,15 +24,19 @@ import {
 
 import Yaml from "../../Yaml"
 import Settings from "../../../Settings"
-import { singular } from "../../../names"
-import { Checkbox, Input, TextArea, remember } from "../../Forms"
+import names, { singular } from "../../../names"
+import { Checkbox, Input, SelectCheckbox, TextArea, remember } from "../../Forms"
 
+import TaskQueueIcon from "../../TaskQueue/Icon"
 import LightbulbIcon from "@patternfly/react-icons/dist/esm/icons/lightbulb-icon"
 import DoubleCheckIcon from "@patternfly/react-icons/dist/esm/icons/check-double-icon"
 
 import "../../Wizard.scss"
 
 type Props = {
+  /** Currently available TaskQueues */
+  taskqueues: string[]
+
   /** Handler to call when this dialog closes */
   onSuccess(): void
 
@@ -173,7 +177,14 @@ export default function NewApplicationWizard(props: Props) {
     return (
       <WizardHeader
         title={`Register ${singular.applications}`}
-        description={`An ${singular.applications} is a consumer of tasks. Teach us how to process data by registering one here.`}
+        description={
+          <span>
+            An {singular.applications} is the source code that knows how to consume and then process{" "}
+            <strong>Tasks</strong>. Once you have registered your {singular.applications}, you can bring online{" "}
+            <strong>{names.workerpools}</strong> that run the Application against the tasks in a{" "}
+            <strong>Task Queue</strong>.
+          </span>
+        }
         onClose={props.onCancel}
       />
     )
@@ -224,6 +235,27 @@ export default function NewApplicationWizard(props: Props) {
     )
   }
 
+  function additionalTaskQueues(ctrl: FormContextProps) {
+    return (
+      <SelectCheckbox
+        fieldId="taskqueues"
+        label={`Additional Data`}
+        description={`Select the "fixed" ${names.taskqueues} this ${singular.applications} needs access to`}
+        ctrl={ctrl}
+        options={props.taskqueues.sort()}
+        icons={<TaskQueueIcon />}
+      />
+      /*<NumberInput
+        fieldId="taskqueues"
+      label={`Number of Model Data Sets`}
+      labelInfo="e.g. pre-trained models"
+      defaultValue={0}
+        description={`How many data sets does this ${singular.applications} leverage, across all tasks?`}
+      ctrl={ctrl}
+      />*/
+    )
+  }
+
   function useTestQueueCheckbox(ctrl: FormContextProps) {
     return (
       <Checkbox
@@ -239,18 +271,40 @@ export default function NewApplicationWizard(props: Props) {
   }
   function step3(ctrl: FormContextProps) {
     return (
-      <WizardStep id="wizard-step-3" name="Associated Task Queue">
+      <WizardStep id="wizard-step-3" name="Model Data">
         <Hint actions={<LightbulbIcon />} className="codeflare--step-header">
           <span>
-            Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
-            <strong>{singular.datasets}</strong>.
+            If your {singular.applications} needs access to <strong>model data</strong> (as in information that is
+            needed to process all tasks; e.g. a pre-trained model or a chip design that is being tested across multiple
+            configurations), you may supply that information here.
           </span>
         </Hint>
 
         <Form>
           <FormSection>
             <Grid hasGutter md={6}>
-              <GridItem span={12}>{useTestQueueCheckbox(ctrl)}</GridItem>
+              <GridItem span={6}>{additionalTaskQueues(ctrl)}</GridItem>
+            </Grid>
+          </FormSection>
+        </Form>
+      </WizardStep>
+    )
+  }
+
+  function step4(ctrl: FormContextProps) {
+    return (
+      <WizardStep id="wizard-step-4" name="Task Queue">
+        <Hint actions={<LightbulbIcon />} className="codeflare--step-header">
+          <span>
+            Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
+            <strong>{singular.taskqueues}</strong>.
+          </span>
+        </Hint>
+
+        <Form>
+          <FormSection>
+            <Grid hasGutter md={6}>
+              <GridItem span={6}>{useTestQueueCheckbox(ctrl)}</GridItem>
             </Grid>
           </FormSection>
         </Form>
@@ -269,7 +323,7 @@ export default function NewApplicationWizard(props: Props) {
   function yaml(values: FormContextProps["values"]) {
     const apiVersion = "codeflare.dev/v1alpha1"
     const kind = singular.applications
-    const datasetName = values.datasetName ?? values.name.replace(/-/g, "")
+    const taskqueueName = values.taskqueueName ?? values.name.replace(/-/g, "")
 
     return `
 apiVersion: ${apiVersion}
@@ -290,7 +344,7 @@ spec:
   inputs:
     - useas: mount
       sizes:
-        xs: ${datasetName}
+        xs: ${taskqueueName}
     - useas: mount
       sizes:
         xs: hap-models
@@ -300,25 +354,25 @@ ${wordWrap(values.description, { trim: true, indent: "    ", width: 60 })}
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
 metadata:
-  name: ${datasetName}
+  name: ${taskqueueName}
   namespace: ${values.namespace}
   labels:
     codeflare.dev/created-by: user
     app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: ${values.name}
+    app.kubernetes.io/component: taskqueue
 spec:
   local:
     type: "COS"
-    bucket: ${values.datasetBucket ?? values.name}
-    endpoint: ${values.datasetEndpoint ?? "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"}
-    secret-name: ${datasetName + "cfsecret"}
+    bucket: ${values.taskqueueBucket ?? values.name}
+    endpoint: ${values.taskqueueEndpoint ?? "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"}
+    secret-name: ${taskqueueName + "cfsecret"}
     secret-namespace: ${values.namespace}
     provision: "true"
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ${datasetName + "-cfsecret"}
+  name: ${taskqueueName + "-cfsecret"}
   namespace: ${values.namespace}
   labels:
     app.kubernetes.io/component: ${values.name}
@@ -326,8 +380,8 @@ metadata:
     app.kubernetes.io/component: ${values.name}
 type: Opaque
 data:
-  accessKeyID: ${btoa(values.datasetAccessKeyId ?? "codeflarey")}
-  secretAccessKey: ${btoa(values.datasetSecretAccessKey ?? "codeflarey")}
+  accessKeyID: ${btoa(values.taskqueueAccessKeyId ?? "codeflarey")}
+  secretAccessKey: ${btoa(values.taskqueueSecretAccessKey ?? "codeflarey")}
 `.trim()
   }
 
@@ -387,6 +441,7 @@ data:
             {step1(ctrl)}
             {step2(ctrl)}
             {step3(ctrl)}
+            {step4(ctrl)}
             {review(ctrl)}
           </Wizard>
         )

@@ -8,63 +8,12 @@ import type JayApi from "@jay/common/api/jay"
 import ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 
-/*async function initEventSource(res: Response, stream: Writable) {
-  await res.set({
-    "Cache-Control": "no-cache",
-    "Content-Type": "text/event-stream",
-    Connection: "keep-alive",
-  })
-  await res.flushHeaders()
-
-  // If client closes connection, stop sending events
-  res.on("close", () => {
-    stream.end()
-    res.end()
-  })
-}
-
-async function sendEvent(model: unknown, res: Response) {
-  if (model) {
-    await res.write(`data: ${model}\n\n`)
-  }
-}
-
-app.get("/api/datasets", async (req, res) => {
-  const stream = startDataSetStream()
-  stream.on("data", (model) => sendEvent(model, res))
-  await initEventSource(res, stream)
-})
-
-app.get("/api/queues", async (req, res) => {
-  const stream = startQueueStream()
-  stream.on("data", (model) => sendEvent(model, res))
-  await initEventSource(res, stream)
-})
-
-app.get("/api/pools", async (req, res) => {
-  const stream = startPoolStream()
-  stream.on("data", (model) => sendEvent(model, res))
-  await initEventSource(res, stream)
-})
-
-app.get("/api/applications", async (req, res) => {
-  const stream = startApplicationStream()
-  stream.on("data", (model) => sendEvent(model, res))
-  await initEventSource(res, stream)
-})
-
-app.get("/api/newpool", async () => {
-  // TODO
-})
-
-*/
-
 function streamForKind(kind: WatchedKind): import("stream").Transform {
   switch (kind) {
-    case "datasets":
-      return startStreamForKind("dataset")
+    case "taskqueues":
+      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component=taskqueue"] })
     case "queues":
-      return startStreamForKind("queues.codeflare.dev", true)
+      return startStreamForKind("queues.codeflare.dev", { withTimestamp: true })
     case "workerpools":
       return startStreamForKind("workerpools.codeflare.dev")
     case "platformreposecrets":
@@ -140,7 +89,7 @@ function initStreamForResourceKind(kind: WatchedKind) {
 
 /** TODO this is cloned from @jay/common/Kind.watchedKinds. Vite currently isn't happy with importing non-type bits from common */
 const kinds: WatchedKind[] = [
-  "datasets",
+  "taskqueues",
   "queues",
   "workerpools",
   "applications",

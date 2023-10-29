@@ -1,6 +1,6 @@
 import type KubernetesResource from "./KubernetesResource"
 
-type DataSetEvent = KubernetesResource<
+type TaskQueueEvent = KubernetesResource<
   {
     /** Optionally, to force that this dataset has a particular index in the UI (e.g. for UI coloring) */
     idx?: number
@@ -25,4 +25,4 @@ type DataSetEvent = KubernetesResource<
   }
 >
 
-export default DataSetEvent
+export default TaskQueueEvent

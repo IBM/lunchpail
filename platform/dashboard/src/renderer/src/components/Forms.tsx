@@ -1,6 +1,7 @@
-import { PropsWithChildren, ReactNode, useCallback, useState } from "react"
+import { type PropsWithChildren, type ReactNode, type Ref, useCallback, useState } from "react"
 
 import {
+  Badge,
   Checkbox as PFCheckbox,
   CheckboxProps,
   type FormContextProps,
@@ -10,6 +11,7 @@ import {
   HelperText,
   HelperTextItem,
   MenuToggle,
+  type MenuToggleElement,
   NumberInput as PFNumberInput,
   Select as PFSelect,
   SelectOption,
@@ -116,12 +118,40 @@ export function Checkbox(
   )
 }
 
+const width200 = {
+  width: "200px",
+}
+
 export function Select(
   props: FormProps &
     Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string },
 ) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selected, setSelected] = useState<string>(props.selected || "Please select one")
+  const [selected, setSelected] = useState<string>(
+    props.selected || props.ctrl.values[props.fieldId] || "Please select one",
+  )
+
+  const onToggleClick = useCallback(() => setIsOpen((curState) => !curState), [setIsOpen])
+
+  const onSelect = useCallback(
+    (_, value: string | number | undefined) => {
+      if (typeof value === "string") {
+        props.ctrl.setValue(props.fieldId, value)
+        setSelected(value)
+      }
+      setIsOpen(false)
+    },
+    [props.ctrl.setValue, setSelected, setIsOpen],
+  )
+
+  const toggle = useCallback(
+    (ref: Ref<MenuToggleElement>) => (
+      <MenuToggle ref={ref} onClick={onToggleClick} isExpanded={isOpen} style={width200}>
+        {selected}
+      </MenuToggle>
+    ),
+    [isOpen, setIsOpen],
+  )
 
   if (props.ctrl.values[props.fieldId] && props.ctrl.values[props.fieldId] !== selected) {
     setSelected(props.ctrl.values[props.fieldId])
@@ -133,27 +163,10 @@ export function Select(
         id={props.fieldId}
         isOpen={isOpen}
         aria-describedby={`${props.fieldId}-helper`}
-        onOpenChange={(isOpen) => setIsOpen(isOpen)}
+        onOpenChange={setIsOpen}
         selected={selected}
-        onSelect={(_, value) => {
-          if (typeof value === "string") {
-            props.ctrl.setValue(props.fieldId, value)
-          }
-          setSelected(value as string)
-          setIsOpen(false)
-        }}
-        toggle={(ref) => (
-          <MenuToggle
-            ref={ref}
-            onClick={() => setIsOpen(!isOpen)}
-            isExpanded={isOpen}
-            style={{
-              width: "200px",
-            }}
-          >
-            {selected}
-          </MenuToggle>
-        )}
+        onSelect={onSelect}
+        toggle={toggle}
       >
         <SelectList>
           {props.options.map((option, idx) => {
@@ -162,6 +175,80 @@ export function Select(
               <SelectOption
                 key={sprops.value}
                 {...sprops}
+                icon={Array.isArray(props.icons) ? props.icons[idx] : props.icons}
+              >
+                {sprops.value}
+              </SelectOption>
+            )
+          })}
+        </SelectList>
+      </PFSelect>
+    </Group>
+  )
+}
+
+export function SelectCheckbox(
+  props: FormProps &
+    Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string[] },
+) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<string[]>(props.selected || [])
+
+  const onToggleClick = useCallback(() => setIsOpen((curState) => !curState), [])
+
+  const onSelect = useCallback(
+    (_, value: string | number | undefined) => {
+      if (typeof value === "string") {
+        if (selectedItems.includes(value)) {
+          setSelectedItems(selectedItems.filter((id) => id !== value))
+        } else {
+          setSelectedItems([...selectedItems, value])
+        }
+      }
+    },
+    [selectedItems, setSelectedItems],
+  )
+
+  const toggle = useCallback(
+    (ref: Ref<MenuToggleElement>) => (
+      <MenuToggle
+        ref={ref}
+        onClick={onToggleClick}
+        isExpanded={isOpen}
+        style={
+          {
+            width: "200px",
+          } as React.CSSProperties
+        }
+      >
+        Select one or more
+        {selectedItems.length > 0 && <Badge isRead>{selectedItems.length}</Badge>}
+      </MenuToggle>
+    ),
+    [isOpen, onToggleClick],
+  )
+
+  console.error("!!!!!!", selectedItems)
+  return (
+    <Group {...props}>
+      <PFSelect
+        role="menu"
+        id={props.fieldId}
+        isOpen={isOpen}
+        selected={selectedItems}
+        onSelect={onSelect}
+        onOpenChange={setIsOpen}
+        toggle={toggle}
+      >
+        <SelectList>
+          {props.options.map((option, idx) => {
+            const sprops = typeof option === "string" ? { value: option } : option
+            return (
+              <SelectOption
+                key={sprops.value}
+                {...sprops}
+                hasCheckbox
+                isSelected={selectedItems.includes(sprops.value)}
                 icon={Array.isArray(props.icons) ? props.icons[idx] : props.icons}
               >
                 {sprops.value}
@@ -184,11 +271,12 @@ export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; m
     [props.ctrl.setValue, props.fieldId],
   )
 
-  const onClick = (incr: number) => () => {
-    const newValue = (value as number) + incr
-    props.ctrl.setValue(props.fieldId, newValue.toString())
-    setValue(newValue)
-  }
+  const onClick = (incr: number) =>
+    useCallback(() => {
+      const newValue = (value as number) + incr
+      props.ctrl.setValue(props.fieldId, newValue.toString())
+      setValue(newValue)
+    }, [props.ctrl.setValue, props.fieldId, setValue])
   const onMinus = onClick(-1)
   const onPlus = onClick(+1)
 

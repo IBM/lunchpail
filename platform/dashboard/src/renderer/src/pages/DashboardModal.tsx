@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"
+import { createElement, lazy, Suspense } from "react"
 import { Modal } from "@patternfly/react-core"
 
 import type Kind from "../Kind"
@@ -13,32 +13,38 @@ const NewRepoSecretWizard = lazy(() => import("../components/PlatformRepoSecret/
 
 type Props = {
   applications: ApplicationSpecEvent[]
-  datasets: string[]
+  taskqueues: string[]
 }
 
 function Wizard(props: Props & { kind: Kind }) {
   const returnHome = returnHomeCallback()
   const returnToWorkerPools = returnToWorkerPoolsCallback()
 
-  switch (props.kind) {
-    case "workerpools":
-      return (
-        <NewWorkerPoolWizard
-          onSuccess={returnToWorkerPools}
-          onCancel={returnHome}
-          applications={props.applications}
-          datasets={props.datasets}
-        />
-      )
-    case "platformreposecrets":
-      return <NewRepoSecretWizard onSuccess={returnHome} onCancel={returnHome} />
+  const { kind } = props
+  const WizardComponent =
+    kind === "workerpools"
+      ? NewWorkerPoolWizard
+      : kind === "platformreposecrets"
+      ? NewRepoSecretWizard
+      : kind === "applications"
+      ? NewApplicationWizard
+      : undefined
 
-    case "applications":
-      return <NewApplicationWizard onSuccess={returnHome} onCancel={returnHome} />
-
-    default:
-      console.error("Internal error: Wizard modal opened to unsupported resource kind", props.kind)
-      return <div tabIndex={0}>Internal Error: Unsupported Wizard for {props.kind}</div>
+  if (!WizardComponent) {
+    console.error("Internal error: Wizard modal opened to unsupported resource kind", props.kind)
+    return <div tabIndex={0}>Internal Error: Unsupported Wizard for {props.kind}</div>
+  } else {
+    return createElement(
+      WizardComponent,
+      Object.assign(
+        {},
+        {
+          onCancel: returnHome,
+          onSuccess: returnToWorkerPools,
+        },
+        props,
+      ),
+    )
   }
 }
 

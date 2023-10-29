@@ -35,7 +35,7 @@
   @for $idx from 1 through length($cell-colors) {
     $colormap: nth($cell-colors, $idx);
     $color: map.get($colormap, 1000);
-    &[data-dataset="#{$idx - 1}"] {
+    &[data-taskqueue="#{$idx - 1}"] {
       rect,
       polyline {
         stroke: $color !important;

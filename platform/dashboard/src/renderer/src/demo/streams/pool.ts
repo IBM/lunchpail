@@ -1,5 +1,5 @@
 import type DemoQueueEventSource from "./queue"
-import type DemoDataSetEventSource from "./dataset"
+import type DemoTaskQueueEventSource from "./taskqueue"
 import type ExecResponse from "@jay/common/events/ExecResponse"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
@@ -7,14 +7,14 @@ import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent
 
 import Base from "./base"
 import { ns } from "./misc"
-import { inbox, inboxIncr } from "./dataset"
+import { inbox, inboxIncr } from "./taskqueue"
 import getNormallyDistributedRandomNumber from "../util/rand"
 
 export type DemoWorkerPool = {
   name: string
   numWorkers: number
   application: string
-  dataset: string
+  taskqueue: string
   inboxes: Record<string, number>[]
   outboxes: Record<string, number>[]
   processing: Record<string, number>[]
@@ -25,7 +25,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
   private readonly workerpools: DemoWorkerPool[] = []
 
   public constructor(
-    private readonly datasets: DemoDataSetEventSource,
+    private readonly taskqueues: DemoTaskQueueEventSource,
     private readonly queues: DemoQueueEventSource,
     intervalMillis?: number,
   ) {
@@ -51,7 +51,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       },
       spec: {
         application: { name: workerpool.application },
-        dataset: workerpool.dataset,
+        dataset: workerpool.taskqueue,
         workers: {
           size: "md",
           supportsGpu: false,
@@ -89,25 +89,25 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
   private simulators: ReturnType<typeof setInterval>[] = []
 
   private initGrabWorkSimulatorForWorker(pool: DemoWorkerPool, workerIndex: number) {
-    const { queues, datasets } = this
+    const { queues, taskqueues } = this
 
     let active = false
     this.simulators.push(
       setInterval(
         (function interval() {
-          // pull work off a dataset
+          // pull work off a taskqueue
           if (active) return interval
           else active = true
 
           // eslint-disable-next-line no-async-promise-executor
           new Promise(async () => {
-            const datasetLabel = pool.dataset
-            const dataset = datasets.sets.find((_) => _.metadata.name === datasetLabel)
-            if (dataset && inbox(dataset) > 0) {
-              inboxIncr(dataset, -1)
-              pool.inboxes[workerIndex][dataset.metadata.name] =
-                (pool.inboxes[workerIndex][dataset.metadata.name] || 0) + 1
-              queues.sendUpdate(pool, datasetLabel, workerIndex)
+            const taskqueueLabel = pool.taskqueue
+            const taskqueue = taskqueues.sets.find((_) => _.metadata.name === taskqueueLabel)
+            if (taskqueue && inbox(taskqueue) > 0) {
+              inboxIncr(taskqueue, -1)
+              pool.inboxes[workerIndex][taskqueue.metadata.name] =
+                (pool.inboxes[workerIndex][taskqueue.metadata.name] || 0) + 1
+              queues.sendUpdate(pool, taskqueueLabel, workerIndex)
             }
 
             await new Promise((resolve) => setTimeout(resolve, getNormallyDistributedRandomNumber(3000, 1500)))
@@ -123,7 +123,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
   private initDoWorkSimulatorForWorker(pool: DemoWorkerPool, workerIndex: number) {
     const timeOfProcessing = getNormallyDistributedRandomNumber(6000, 3000)
     const timeBetweenProcessing = getNormallyDistributedRandomNumber(6000, 2000)
-    const { datasets, queues } = this
+    const { taskqueues, queues } = this
 
     const once = () => {
       // check if we're dead
@@ -132,26 +132,26 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       }
 
       // find work in an inbox and start processing it
-      const datasetsArr = [pool.dataset]
-      for (let poolDatasetIndex = 0; poolDatasetIndex < datasetsArr.length; poolDatasetIndex++) {
-        const datasetLabel = datasetsArr[poolDatasetIndex]
-        if (pool.inboxes[workerIndex][datasetLabel] > 0) {
-          pool.inboxes[workerIndex][datasetLabel]-- // inbox--
-          pool.processing[workerIndex][datasetLabel] = (pool.processing[workerIndex][datasetLabel] || 0) + 1 // processing++
-          queues.sendUpdate(pool, datasetLabel, workerIndex)
+      const taskqueuesArr = [pool.taskqueue]
+      for (let poolTaskQueueIndex = 0; poolTaskQueueIndex < taskqueuesArr.length; poolTaskQueueIndex++) {
+        const taskqueueLabel = taskqueuesArr[poolTaskQueueIndex]
+        if (pool.inboxes[workerIndex][taskqueueLabel] > 0) {
+          pool.inboxes[workerIndex][taskqueueLabel]-- // inbox--
+          pool.processing[workerIndex][taskqueueLabel] = (pool.processing[workerIndex][taskqueueLabel] || 0) + 1 // processing++
+          queues.sendUpdate(pool, taskqueueLabel, workerIndex)
 
           // after a "think time",
           setTimeout(() => {
-            pool.outboxes[workerIndex][datasetLabel] = (pool.outboxes[workerIndex][datasetLabel] || 0) + 1 // outbox++
-            pool.processing[workerIndex][datasetLabel]-- // processing--
+            pool.outboxes[workerIndex][taskqueueLabel] = (pool.outboxes[workerIndex][taskqueueLabel] || 0) + 1 // outbox++
+            pool.processing[workerIndex][taskqueueLabel]-- // processing--
 
-            const dataset = datasets.sets.find((_) => _.metadata.name === datasetLabel)
-            if (dataset) {
-              // mark it as done in the dataset, too
-              // dataset.outbox++
+            const taskqueue = taskqueues.sets.find((_) => _.metadata.name === taskqueueLabel)
+            if (taskqueue) {
+              // mark it as done in the taskqueue, too
+              // taskqueue.outbox++
             }
 
-            queues.sendUpdate(pool, datasetLabel, workerIndex)
+            queues.sendUpdate(pool, taskqueueLabel, workerIndex)
             setTimeout(once, timeBetweenProcessing)
           }, timeOfProcessing)
 
@@ -193,7 +193,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       name: values.poolName,
       numWorkers,
       application: values.application,
-      dataset: values.dataset,
+      taskqueue: values.taskqueue,
       inboxes: Array(numWorkers)
         .fill(0)
         .map(() => ({})),

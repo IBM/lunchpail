@@ -23,7 +23,7 @@ $label-size: 0.5625rem;
 @for $idx from 1 through length($cell-colors) {
   $colormap: nth($cell-colors, $idx);
   @each $depth, $color in $colormap {
-    .codeflare--grid-cell[data-dataset="#{$idx - 1}"][data-depth="#{$depth}"] {
+    .codeflare--grid-cell[data-index="#{$idx - 1}"][data-depth="#{$depth}"] {
       background-color: $color;
     }
   }

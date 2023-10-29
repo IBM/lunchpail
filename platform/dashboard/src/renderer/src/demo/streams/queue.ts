@@ -10,12 +10,12 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
     // nothing to do; this class will respond to `sendUpdate()` calls from elsewhere
   }
 
-  private queueEvent(workerpool: DemoWorkerPool, dataset: string, workerIndex: number): QueueEvent {
+  private queueEvent(workerpool: DemoWorkerPool, taskqueue: string, workerIndex: number): QueueEvent {
     return {
       timestamp: Date.now(),
       event: {
         metadata: {
-          name: `queue-${runs[0]}-${dataset}`,
+          name: `queue-${runs[0]}-${taskqueue}`,
           namespace: "none", // FIXME?
           creationTimestamp: new Date().toUTCString(),
           labels: {
@@ -25,20 +25,20 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
           },
           annotations: {
             "codeflare.dev/status": "Running",
-            "codeflare.dev/inbox": String(workerpool.inboxes[workerIndex][dataset] || 0),
-            "codeflare.dev/outbox": String(workerpool.outboxes[workerIndex][dataset] || 0),
-            "codeflare.dev/processing": String(workerpool.processing[workerIndex][dataset] || 0),
+            "codeflare.dev/inbox": String(workerpool.inboxes[workerIndex][taskqueue] || 0),
+            "codeflare.dev/outbox": String(workerpool.outboxes[workerIndex][taskqueue] || 0),
+            "codeflare.dev/processing": String(workerpool.processing[workerIndex][taskqueue] || 0),
           },
         },
         spec: {
-          dataset,
+          dataset: taskqueue,
         },
       },
     }
   }
 
-  public sendUpdate(workerpool: DemoWorkerPool, datasetLabel: string, workerIndex: number) {
-    const model = this.queueEvent(workerpool, datasetLabel, workerIndex)
+  public sendUpdate(workerpool: DemoWorkerPool, taskqueueLabel: string, workerIndex: number) {
+    const model = this.queueEvent(workerpool, taskqueueLabel, workerIndex)
     setTimeout(() =>
       this.handlers.forEach((handler) => handler(new MessageEvent("queue", { data: JSON.stringify([model]) }))),
     )

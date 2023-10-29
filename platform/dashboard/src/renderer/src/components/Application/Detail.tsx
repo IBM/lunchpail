@@ -1,4 +1,4 @@
-import { datasets } from "./Card"
+import { taskqueues } from "./Card"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
@@ -23,7 +23,7 @@ function detailGroups(props: Props) {
       term === "repo"
         ? descriptionGroup(term, repoPlusSource(props))
         : term === "inputs"
-        ? datasets(props)
+        ? taskqueues(props)
         : typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value),
     )
 }

@@ -2,7 +2,7 @@ import { Dashboard } from "../pages/Dashboard"
 
 import NothingEventSource from "./streams/nothing"
 import DemoQueueEventSource from "./streams/queue"
-import DemoDataSetEventSource from "./streams/dataset"
+import DemoTaskQueueEventSource from "./streams/taskqueue"
 import DemoWorkerPoolStatusEventSource from "./streams/pool"
 import DemoApplicationSpecEventSource from "./streams/application"
 
@@ -14,14 +14,14 @@ let props: null | (Record<WatchedKind, DemoEventSource> & { workerpools: DemoWor
 function init() {
   if (props === null) {
     const queues = new DemoQueueEventSource()
-    const datasets = new DemoDataSetEventSource()
-    const workerpools = new DemoWorkerPoolStatusEventSource(datasets, queues)
+    const taskqueues = new DemoTaskQueueEventSource()
+    const workerpools = new DemoWorkerPoolStatusEventSource(taskqueues, queues)
     const applications = new DemoApplicationSpecEventSource()
     const platformreposecrets = new NothingEventSource()
     const tasksimulators = new NothingEventSource()
 
     props = {
-      datasets,
+      taskqueues,
       workerpools,
       queues,
       applications,
@@ -44,8 +44,8 @@ export default function DemoDashboard() {
           return props.workerpools.delete(dprops)
         } else if (/application/.test(dprops.kind)) {
           return props.applications.delete(dprops)
-        } else if (/dataset/.test(dprops.kind)) {
-          return props.datasets.delete(dprops)
+        } else if (/taskqueue/.test(dprops.kind)) {
+          return props.taskqueues.delete(dprops)
         } else {
           return {
             code: 404,

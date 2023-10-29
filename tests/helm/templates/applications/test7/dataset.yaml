@@ -4,6 +4,8 @@ kind: Dataset
 metadata:
   name: test7data # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
   namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: taskqueue
 spec:
   local:
     type: "COS"

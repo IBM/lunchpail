@@ -1,4 +1,4 @@
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
@@ -6,20 +6,20 @@ import { ns } from "./misc"
 
 export const colors = ["pink", "green", "purple"]
 
-export function inbox(dataset: DataSetEvent) {
-  return parseInt(dataset.metadata.annotations["codeflare.dev/unassigned"] || "0", 10)
+export function inbox(taskqueue: TaskQueueEvent) {
+  return parseInt(taskqueue.metadata.annotations["codeflare.dev/unassigned"] || "0", 10)
 }
 
-export function inboxIncr(dataset: DataSetEvent, incr = 1) {
-  dataset.metadata.annotations["codeflare.dev/unassigned"] = String(inbox(dataset) + incr)
+export function inboxIncr(taskqueue: TaskQueueEvent, incr = 1) {
+  taskqueue.metadata.annotations["codeflare.dev/unassigned"] = String(inbox(taskqueue) + incr)
 }
 
-export default class DemoDataSetEventSource extends Base implements EventSourceLike {
+export default class DemoTaskQueueEventSource extends Base implements EventSourceLike {
   private readonly endpoints = ["e1", "e2", "e3"]
   private readonly buckets = ["pile1", "pile2", "pile3"]
   private readonly isReadOnly = [true, false, true]
 
-  private readonly datasets: DataSetEvent[] = Array(3)
+  private readonly taskqueues: TaskQueueEvent[] = Array(3)
     .fill(0)
     .map((_, idx) => ({
       metadata: {
@@ -42,33 +42,33 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
       },
     }))
 
-  public get sets(): readonly Omit<DataSetEvent, "timestamp">[] {
-    return this.datasets
+  public get sets(): readonly Omit<TaskQueueEvent, "timestamp">[] {
+    return this.taskqueues
   }
 
   private sendEventFor = (
-    dataset: (typeof this.datasets)[number],
-    status = dataset.metadata.annotations["codeflare.dev/status"],
+    taskqueue: (typeof this.taskqueues)[number],
+    status = taskqueue.metadata.annotations["codeflare.dev/status"],
   ) => {
-    const model: DataSetEvent = Object.assign({}, dataset, {
+    const model: TaskQueueEvent = Object.assign({}, taskqueue, {
       status,
       timestamp: Date.now(),
       //inbox: ~~(Math.random() * 20),
       //outbox: ~~(Math.random() * 2),
     })
-    this.handlers.forEach((handler) => handler(new MessageEvent("dataset", { data: JSON.stringify([model]) })))
+    this.handlers.forEach((handler) => handler(new MessageEvent("taskqueue", { data: JSON.stringify([model]) })))
   }
 
   protected override initInterval(intervalMillis: number) {
     if (!this.interval) {
-      const { datasets, sendEventFor } = this
+      const { taskqueues, sendEventFor } = this
 
       this.interval = setInterval(
         (function interval() {
-          const whichToUpdate = Math.floor(Math.random() * datasets.length)
-          const dataset = datasets[whichToUpdate]
-          inboxIncr(dataset)
-          sendEventFor(dataset)
+          const whichToUpdate = Math.floor(Math.random() * taskqueues.length)
+          const taskqueue = taskqueues[whichToUpdate]
+          inboxIncr(taskqueue)
+          sendEventFor(taskqueue)
           return interval
         })(), // () means invoke the interval right away
         intervalMillis,
@@ -77,12 +77,12 @@ export default class DemoDataSetEventSource extends Base implements EventSourceL
   }
 
   public override delete(props: { name: string; namespace: string }) {
-    const idx = this.datasets.findIndex(
+    const idx = this.taskqueues.findIndex(
       (_) => _.metadata.name === props.name && _.metadata.namespace === props.namespace,
     )
     if (idx >= 0) {
-      const model = this.datasets[idx]
-      this.datasets.splice(idx, 1)
+      const model = this.taskqueues[idx]
+      this.taskqueues.splice(idx, 1)
       this.sendEventFor(model, "Terminating")
       return true
     } else {

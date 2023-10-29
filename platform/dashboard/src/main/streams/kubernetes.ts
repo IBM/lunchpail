@@ -8,12 +8,29 @@ import filterOutMissingCRDs from "./filter-missing-crd-errors"
 // This will need to be adjusted as we add more resources Kinds to track */
 EventEmitter.defaultMaxListeners = 30
 
+type Props = {
+  /** At to the event stream the timestamp each event was received */
+  withTimestamp: boolean
+
+  /** Label selector to filter events */
+  selectors: string[]
+}
+
 /**
- * @return a NodeJS `Stream` that emits a stream of serialized `ApplicationSpecEvent` data
+ * @return a NodeJS `Stream` that emits a stream of serialized JSON
+ * Kubernetes resource models (each one marking some change in the
+ * model), e.g. a stream of serialized `ApplicationSpecEvent`
  */
-export default function startStreamForKind(kind: string, withTimestamp = false) {
+export default function startStreamForKind(kind: string, { withTimestamp = false, selectors }: Partial<Props> = {}) {
   try {
-    const child = spawn("kubectl", ["get", kind, "-A", "--no-headers", "--watch", "-o=json"])
+    const child = spawn("kubectl", [
+      "get",
+      kind,
+      "-A",
+      "--watch",
+      "-o=json",
+      ...(selectors ? ["-l", selectors.join(",")] : []),
+    ])
 
     // pipe transformers
     const errorFilter = filterOutMissingCRDs()

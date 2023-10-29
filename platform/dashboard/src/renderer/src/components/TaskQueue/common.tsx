@@ -13,7 +13,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">
 type NameAndApplications = Pick<Props, "name" | "applications">
-type NameEventsDataSetIndex = JustEvents & Pick<Props, "name" | "datasetIndex">
+type NameEventsTaskQueueIndex = JustEvents & Pick<Props, "name" | "taskqueueIndex">
 
 export function lastEvent(props: JustEvents) {
   return props.events.length === 0 ? null : props.events[props.events.length - 1]
@@ -64,16 +64,20 @@ function inboxCount(props: JustEvents) {
   return last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
 }
 
-function cells(count: number, gridDataType: GridTypeData, props: NameEventsDataSetIndex) {
+function cells(count: number, gridDataType: GridTypeData, props: NameEventsTaskQueueIndex) {
   if (!count) {
-    return <Queue inbox={{ [props.name]: 0 }} datasetIndex={props.datasetIndex} gridTypeData="placeholder" />
+    return <Queue inbox={{ [props.name]: 0 }} taskqueueIndex={props.taskqueueIndex} gridTypeData="placeholder" />
   }
   return (
-    <Queue inbox={{ [props.name]: inboxCount(props) }} datasetIndex={props.datasetIndex} gridTypeData={gridDataType} />
+    <Queue
+      inbox={{ [props.name]: inboxCount(props) }}
+      taskqueueIndex={props.taskqueueIndex}
+      gridTypeData={gridDataType}
+    />
   )
 }
 
-function unassigned(props: NameEventsDataSetIndex) {
+function unassigned(props: NameEventsTaskQueueIndex) {
   const count = inboxCount(props)
   return descriptionGroup("Tasks", count === 0 ? None() : cells(count, "unassigned", props), count)
 }
@@ -87,7 +91,7 @@ export function NewPoolButton(props: Props) {
     numAssociatedApplicationEvents(props) > 0 && (
       <LinkToNewPool
         key="new-pool-button"
-        dataset={props.name}
+        taskqueue={props.name}
         startOrAdd={numAssociatedWorkerPools(props) > 0 ? "add" : "start"}
       />
     )

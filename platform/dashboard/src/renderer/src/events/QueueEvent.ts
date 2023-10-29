@@ -24,7 +24,7 @@ export function queueWorkerPool({ event }: QueueEvent) {
   return event.metadata.labels["app.kubernetes.io/name"]
 }
 
-export function queueDataSet({ event }: QueueEvent) {
+export function queueTaskQueue({ event }: QueueEvent) {
   // FIXME HACK
   // e.g. queue = queue-test7-test7data-0
   //      run = test7

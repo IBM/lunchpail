@@ -9,7 +9,7 @@ import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 import { NewPoolButton, lastEvent, commonGroups } from "./common"
 
 import type Props from "./Props"
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 
 function bucket(props: Props) {
   const last = lastEvent(props)
@@ -30,7 +30,7 @@ function unassignedChart(props: Props) {
 
   return descriptionGroup(
     "Tasks over Time",
-    history.length === 0 ? <></> : <Sparkline data={history} datasetIdx={props.idx} />,
+    history.length === 0 ? <></> : <Sparkline data={history} taskqueueIdx={props.idx} />,
   )
 }
 
@@ -44,23 +44,23 @@ function detailGroups(props: Props) {
   ]
 }
 
-/** Delete this dataset */
-function deleteAction(last: null | DataSetEvent) {
+/** Delete this taskqueue */
+function deleteAction(last: null | TaskQueueEvent) {
   return !last
     ? []
     : [
         <DeleteButton
           key="delete"
-          kind="dataset"
-          uiKind="datasets"
+          kind="taskqueue"
+          uiKind="taskqueues"
           name={last.metadata.name}
           namespace={last.metadata.namespace}
         />,
       ]
 }
 
-/** Launch a TaskSimulator for this dataset */
-function taskSimulatorAction(inDemoMode: boolean, last: null | DataSetEvent, props: Props) {
+/** Launch a TaskSimulator for this taskqueue */
+function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, props: Props) {
   // don't show task simulator button when in demo mode
   return !last || inDemoMode
     ? []
@@ -85,7 +85,7 @@ function leftActions(props: Props) {
   return [<NewPoolButton key="new-pool" {...props} />]
 }
 
-function DataSetDetail(props: Props) {
+function TaskQueueDetail(props: Props) {
   const settings = useContext(Settings)
   const inDemoMode = settings?.demoMode[0] ?? false
 
@@ -99,6 +99,6 @@ function DataSetDetail(props: Props) {
   )
 }
 
-export default function MaybeDataSetDetail(props?: Props) {
-  return props && <DataSetDetail {...props} />
+export default function MaybeTaskQueueDetail(props?: Props) {
+  return props && <TaskQueueDetail {...props} />
 }

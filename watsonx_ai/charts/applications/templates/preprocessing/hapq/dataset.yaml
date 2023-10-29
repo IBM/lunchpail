@@ -3,6 +3,8 @@ kind: Dataset
 metadata:
   name: hapq
   namespace: codeflare-watsonxai-preprocessing
+  labels:
+    app.kubernetes.io/component: taskqueue
 spec:
   local:
     type: "COS"

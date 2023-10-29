@@ -19,7 +19,7 @@ import {
   WizardStep,
 } from "@patternfly/react-core"
 
-import DataSetIcon from "../../DataSet/Icon"
+import TaskQueueIcon from "../../TaskQueue/Icon"
 import ApplicationIcon from "../../Application/Icon"
 
 import Yaml from "../../Yaml"
@@ -32,8 +32,8 @@ type Props = {
   /** Currently available Applications */
   applications: ApplicationSpecEvent[]
 
-  /** Currently available DataSets */
-  datasets: string[]
+  /** Currently available TaskQueues */
+  taskqueues: string[]
 
   /** Handler to call when this dialog closes */
   onSuccess(): void
@@ -55,7 +55,7 @@ export default function NewWorkerPoolWizard(props: Props) {
     }
   } */
 
-  function chooseDataSetIfExists(available: Props["datasets"], desired: null | string) {
+  function chooseTaskQueueIfExists(available: Props["taskqueues"], desired: null | string) {
     if (desired && available.includes(desired)) {
       return desired
     } else {
@@ -72,31 +72,31 @@ export default function NewWorkerPoolWizard(props: Props) {
     }
   } */
 
-  function searchedDataSet() {
-    const dataset = searchParams.get("dataset")
-    if (!dataset || !props.datasets.includes(dataset)) {
+  function searchedTaskQueue() {
+    const taskqueue = searchParams.get("taskqueue")
+    if (!taskqueue || !props.taskqueues.includes(taskqueue)) {
       return null
     } else {
-      return dataset
+      return taskqueue
     }
   }
 
-  function supportsDataSet(app: ApplicationSpecEvent, dataset: string) {
-    const datasets = app.spec.inputs ? app.spec.inputs[0].sizes : undefined
+  function supportsTaskQueue(app: ApplicationSpecEvent, taskqueue: string) {
+    const taskqueues = app.spec.inputs ? app.spec.inputs[0].sizes : undefined
     return (
-      datasets &&
-      (datasets.xs === dataset ||
-        datasets.sm === dataset ||
-        datasets.md === dataset ||
-        datasets.lg === dataset ||
-        datasets.xl === dataset)
+      taskqueues &&
+      (taskqueues.xs === taskqueue ||
+        taskqueues.sm === taskqueue ||
+        taskqueues.md === taskqueue ||
+        taskqueues.lg === taskqueue ||
+        taskqueues.xl === taskqueue)
     )
   }
 
   function compatibleApplications() {
-    const dataset = searchedDataSet()
-    if (dataset) {
-      return props.applications.filter((app) => supportsDataSet(app, dataset))
+    const taskqueue = searchedTaskQueue()
+    if (taskqueue) {
+      return props.applications.filter((app) => supportsTaskQueue(app, taskqueue))
     } else {
       return props.applications
     }
@@ -116,8 +116,10 @@ export default function NewWorkerPoolWizard(props: Props) {
       size: "xs",
       supportsGpu: false.toString(),
       application: chooseIfSingleton(compatibleApplications()),
-      dataset:
-        props.datasets.length === 1 ? props.datasets[0] : chooseDataSetIfExists(props.datasets, searchedDataSet()),
+      taskqueue:
+        props.taskqueues.length === 1
+          ? props.taskqueues[0]
+          : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue()),
     }
   }
 
@@ -148,15 +150,15 @@ export default function NewWorkerPoolWizard(props: Props) {
     )
   }
 
-  function dataset(ctrl: FormContextProps) {
+  function taskqueue(ctrl: FormContextProps) {
     return (
       <Select
-        fieldId="dataset"
-        label={names.datasets}
-        description={`Choose the ${names.datasets} this pool should process`}
+        fieldId="taskqueue"
+        label={names.taskqueues}
+        description={`Choose the ${names.taskqueues} this pool should process`}
         ctrl={ctrl}
-        options={props.datasets.sort()}
-        icons={<DataSetIcon />}
+        options={props.taskqueues.sort()}
+        icons={<TaskQueueIcon />}
       />
     )
   }
@@ -210,7 +212,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   }
 
   function isStep1Valid(ctrl: FormContextProps) {
-    return ctrl.values.poolName && ctrl.values.application && ctrl.values.dataset
+    return ctrl.values.poolName && ctrl.values.application && ctrl.values.taskqueue
   }
 
   function step1(ctrl: FormContextProps) {
@@ -221,7 +223,7 @@ export default function NewWorkerPoolWizard(props: Props) {
             <Grid hasGutter md={6}>
               <GridItem span={12}>{name(ctrl)}</GridItem>
               <GridItem>{application(ctrl)}</GridItem>
-              <GridItem>{dataset(ctrl)}</GridItem>
+              <GridItem>{taskqueue(ctrl)}</GridItem>
               <GridItem>{numWorkers(ctrl)}</GridItem>
             </Grid>
           </FormSection>
@@ -256,7 +258,7 @@ metadata:
   name: ${values.poolName}
   namespace: ${namespace}
 spec:
-  dataset: ${values.dataset}
+  dataset: ${values.taskqueue}
   application:
     name: ${values.application}
   workers:
