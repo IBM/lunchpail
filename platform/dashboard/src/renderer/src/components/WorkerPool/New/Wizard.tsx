@@ -26,21 +26,8 @@ import Yaml from "../../Yaml"
 import { singular as names } from "../../../names"
 import { Input, NumberInput, Select } from "../../Forms"
 
+import type { WizardProps as Props } from "../../../pages/DashboardModal"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
-
-type Props = {
-  /** Currently available Applications */
-  applications: ApplicationSpecEvent[]
-
-  /** Currently available TaskQueues */
-  taskqueues: string[]
-
-  /** Handler to call when this dialog closes */
-  onSuccess(): void
-
-  /** Handler to call when this dialog closes */
-  onCancel(): void
-}
 
 export default function NewWorkerPoolWizard(props: Props) {
   /** Error in the request to create a pool? */

@@ -13,6 +13,7 @@ export const resourceNames: Record<ResourceKind, string> = {
   taskqueues: "Task Queues",
   workerpools: "Worker Pools",
   applications: "Applications",
+  modeldatas: "Model Data",
 }
 
 export const credentialsNames: Record<CredentialsKind, string> = {
@@ -24,6 +25,7 @@ const names: Record<NavigableKind, string> = Object.assign({}, nonResourceNames,
 export const singular: Record<NamedKind, string> = {
   applications: "Application",
   taskqueues: "Task Queue",
+  modeldatas: "Model Data",
   workerpools: "Worker Pool",
   platformreposecrets: "Repo Secret",
 }
@@ -50,6 +52,13 @@ export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
     <span>
       Each <strong>Task Queue</strong> is compatible with one or more{" "}
       <Link to={hash("applications")}>Applications</Link>, and is linked to a place to queue up the to-do tasks.
+    </span>
+  ),
+  modeldatas: (
+    <span>
+      Each <strong>Modal Data</strong> resource stores extra data needed by{" "}
+      <Link to={hash("applications")}>Applications</Link>, beyond that which is provided by an input Task. For example:
+      a pre-trained model or a chip design that is being tested across multiple configurations.
     </span>
   ),
   workerpools: (

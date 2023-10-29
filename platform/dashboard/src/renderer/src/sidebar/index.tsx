@@ -1,19 +1,13 @@
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
-import { resourceKinds, credentialsKinds } from "../Kind"
+import { type NamedKind, resourceKinds, credentialsKinds } from "../Kind"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
 import ControlPlaneHealthBadge from "../components/JobManager/HealthBadge"
 import { nonResourceNames, resourceNames, credentialsNames } from "../names"
 
 import "./Sidebar.scss"
 
-type Props = {
-  applications: string[]
-  taskqueues: string[]
-  workerpools: string[]
-  platformreposecrets: string[]
-}
-
+type Props = Record<NamedKind, string[]>
 const marginLeft = { marginLeft: "0.5em" as const }
 
 function SidebarNavItems<

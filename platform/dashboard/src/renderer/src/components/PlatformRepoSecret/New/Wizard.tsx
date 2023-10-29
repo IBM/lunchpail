@@ -23,18 +23,12 @@ import Yaml from "../../Yaml"
 import { Input, remember } from "../../Forms"
 import { singular as names } from "../../../names"
 
+import type { WizardProps as Props } from "../../../pages/DashboardModal"
+
 import Settings from "../../../Settings"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
-
-type Props = {
-  /** Handler to call when this dialog closes */
-  onSuccess(): void
-
-  /** Handler to call when this dialog closes */
-  onCancel(): void
-}
 
 export default function NewRepoSecretWizard(props: Props) {
   const [searchParams] = useSearchParams()

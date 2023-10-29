@@ -1,5 +1,5 @@
 /** Application-level Resources. Order these as you want them to show up in the Sidebar. */
-export const resourceKinds = ["taskqueues", "workerpools", "applications"] as const
+export const resourceKinds = ["taskqueues", "modeldatas", "workerpools", "applications"] as const
 
 /** Application-level Resources */
 export type ResourceKind = (typeof resourceKinds)[number]

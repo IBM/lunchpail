@@ -5,8 +5,8 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import {
   Alert,
+  AlertActionLink,
   AlertActionCloseButton,
-  Button,
   Form,
   FormAlert,
   FormContextProvider,
@@ -14,9 +14,6 @@ import {
   FormSection,
   Grid,
   GridItem,
-  Hint,
-  HintTitle,
-  HintBody,
   Wizard,
   WizardHeader,
   WizardStep,
@@ -27,22 +24,11 @@ import Settings from "../../../Settings"
 import names, { singular } from "../../../names"
 import { Checkbox, Input, SelectCheckbox, TextArea, remember } from "../../Forms"
 
+import type { WizardProps as Props } from "../../../pages/DashboardModal"
+
 import TaskQueueIcon from "../../TaskQueue/Icon"
-import LightbulbIcon from "@patternfly/react-icons/dist/esm/icons/lightbulb-icon"
-import DoubleCheckIcon from "@patternfly/react-icons/dist/esm/icons/check-double-icon"
 
 import "../../Wizard.scss"
-
-type Props = {
-  /** Currently available TaskQueues */
-  taskqueues: string[]
-
-  /** Handler to call when this dialog closes */
-  onSuccess(): void
-
-  /** Handler to call when this dialog closes */
-  onCancel(): void
-}
 
 const nextIsDisabled = { isNextDisabled: true }
 const nextIsEnabled = { isNextDisabled: false }
@@ -235,24 +221,16 @@ export default function NewApplicationWizard(props: Props) {
     )
   }
 
-  function additionalTaskQueues(ctrl: FormContextProps) {
+  function modelDatas(ctrl: FormContextProps) {
     return (
       <SelectCheckbox
-        fieldId="taskqueues"
-        label={`Additional Data`}
-        description={`Select the "fixed" ${names.taskqueues} this ${singular.applications} needs access to`}
+        fieldId="modeldatas"
+        label={singular.modeldatas}
+        description={`Select the "fixed" ${names.modeldatas} this ${singular.applications} needs access to`}
         ctrl={ctrl}
-        options={props.taskqueues.sort()}
+        options={props.modeldatas.sort()}
         icons={<TaskQueueIcon />}
       />
-      /*<NumberInput
-        fieldId="taskqueues"
-      label={`Number of Model Data Sets`}
-      labelInfo="e.g. pre-trained models"
-      defaultValue={0}
-        description={`How many data sets does this ${singular.applications} leverage, across all tasks?`}
-      ctrl={ctrl}
-      />*/
     )
   }
 
@@ -272,21 +250,30 @@ export default function NewApplicationWizard(props: Props) {
   function step3(ctrl: FormContextProps) {
     return (
       <WizardStep id="wizard-step-3" name="Model Data">
-        <Hint actions={<LightbulbIcon />} className="codeflare--step-header">
-          <span>
-            If your {singular.applications} needs access to <strong>model data</strong> (as in information that is
-            needed to process all tasks; e.g. a pre-trained model or a chip design that is being tested across multiple
-            configurations), you may supply that information here.
-          </span>
-        </Hint>
+        <Alert
+          variant="info"
+          className={props.modeldatas.length === 0 ? "" : "codeflare--step-header"}
+          isInline
+          title="Model Data"
+        >
+          If your {singular.applications} needs access to <strong>model data</strong> (information that is needed to
+          process all tasks; e.g. a pre-trained model or a chip design that is being tested across multiple
+          configurations), you may supply that information here.
+        </Alert>
 
-        <Form>
-          <FormSection>
-            <Grid hasGutter md={6}>
-              <GridItem span={6}>{additionalTaskQueues(ctrl)}</GridItem>
-            </Grid>
-          </FormSection>
-        </Form>
+        {props.modeldatas.length === 0 ? (
+          <Alert variant="warning" title="Warning" isInline>
+            No {names.modeldatas} are registered
+          </Alert>
+        ) : (
+          <Form>
+            <FormSection>
+              <Grid hasGutter md={6}>
+                <GridItem span={6}>{modelDatas(ctrl)}</GridItem>
+              </Grid>
+            </FormSection>
+          </Form>
+        )}
       </WizardStep>
     )
   }
@@ -294,12 +281,10 @@ export default function NewApplicationWizard(props: Props) {
   function step4(ctrl: FormContextProps) {
     return (
       <WizardStep id="wizard-step-4" name="Task Queue">
-        <Hint actions={<LightbulbIcon />} className="codeflare--step-header">
-          <span>
-            Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
-            <strong>{singular.taskqueues}</strong>.
-          </span>
-        </Hint>
+        <Alert variant="info" className="codeflare--step-header" isInline title="Link to a Task Queue">
+          Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
+          <strong>{singular.taskqueues}</strong>.
+        </Alert>
 
         <Form>
           <FormSection>
@@ -396,7 +381,7 @@ data:
         footer={{ nextButtonText: `Create ${singular.applications}`, onNext: () => doCreate(ctrl.values) }}
       >
         {errorInCreateRequest || dryRunSuccess !== null ? (
-          <FormAlert className="codeflare--step-header">
+          <FormAlert>
             <Alert
               isInline
               actionClose={<AlertActionCloseButton onClose={clearError} />}
@@ -414,15 +399,16 @@ data:
           <></>
         )}
 
-        <Hint actions={<DoubleCheckIcon />}>
-          <HintTitle>Review</HintTitle>
-          <HintBody>
+        <FormAlert className="codeflare--step-header">
+          <Alert
+            variant="info"
+            title="Review"
+            isInline
+            actionLinks={<AlertActionLink onClick={doDryRun}>Dry run</AlertActionLink>}
+          >
             Confirm the settings for your new repo secret.{" "}
-            <Button variant="link" isInline onClick={doDryRun}>
-              Dry run
-            </Button>
-          </HintBody>
-        </Hint>
+          </Alert>
+        </FormAlert>
 
         <Yaml content={yaml(ctrl.values)} />
       </WizardStep>

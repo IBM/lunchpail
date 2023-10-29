@@ -14,6 +14,7 @@ import JobManagerCard from "../components/JobManager/Card"
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 import DashboardModal from "./DashboardModal"
+import NewModelDataCards from "../components/ModelData/New/Cards"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 import NewApplicationCard from "../components/Application/New/Card"
 
@@ -37,6 +38,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
+import type ModelDataEvent from "@jay/common/events/ModelDataEvent"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
@@ -58,6 +60,7 @@ export function Dashboard(props: Props) {
   const [poolEvents, setPoolEvents] = useState<WorkerPoolStatusEvent[]>([])
   const [queueEvents, setQueueEvents] = useState<QueueEvent[]>([])
   const [taskqueueEvents, setTaskQueueEvents] = useState<TaskQueueEvent[]>([])
+  const [modeldataEvents, setModelDataEvents] = useState<ModelDataEvent[]>([])
   const [applicationEvents, setApplicationEvents] = useState<ApplicationSpecEvent[]>([])
   const [tasksimulatorEvents, setTaskSimulatorEvents] = useState<TaskSimulatorEvent[]>([])
   const [platformreposecretEvents, setPlatformRepoSecretEvents] = useState<PlatformRepoSecretEvent[]>([])
@@ -66,6 +69,7 @@ export function Dashboard(props: Props) {
   const handlers: Record<Kind, (evt: EventLike) => void> = {
     applications: singletonEventHandler("applications", setApplicationEvents, returnHome),
     taskqueues: allEventsHandler(setTaskQueueEvents),
+    modeldatas: singletonEventHandler("modeldatas", setModelDataEvents, returnHome),
     queues: allEventsHandler(setQueueEvents),
     workerpools: singletonEventHandler("workerpools", setPoolEvents, returnHome),
     tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
@@ -177,6 +181,7 @@ export function Dashboard(props: Props) {
   )
 
   const applicationsList = useMemo(() => applicationEvents.map((_) => _.metadata.name), [applicationEvents])
+  const modeldatasList = useMemo(() => modeldataEvents.map((_) => _.metadata.name), [modeldataEvents])
   const taskqueuesList = useMemo(() => Object.keys(taskqueueIndex), [taskqueueIndex])
   const workerpoolsList = useMemo(() => latestWorkerPoolModels.map((_) => _.label), [latestWorkerPoolModels])
   const platformRepoSecretsList = useMemo(
@@ -199,6 +204,26 @@ export function Dashboard(props: Props) {
     return [
       <NewApplicationCard key="new-application-card" />,
       ...applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />),
+    ]
+  }
+
+  function modeldataCards() {
+    return [
+      ...NewModelDataCards,
+      ...modeldataEvents.map((event) => (
+        <TaskQueue
+          key={event.metadata.name}
+          idx={either(event.spec.idx, taskqueueIndex[event.metadata.name])}
+          workerpools={taskqueueToPool[event.metadata.name] || []}
+          tasksimulators={taskqueueToTaskSimulators[event.metadata.name] || []}
+          applications={applicationEvents}
+          name={event.metadata.name}
+          events={[event]}
+          numEvents={1}
+          taskqueueIndex={taskqueueIndex}
+          {...drilldownProps()}
+        />
+      )),
     ]
   }
 
@@ -244,6 +269,7 @@ export function Dashboard(props: Props) {
   const sidebar = (
     <Sidebar
       applications={applicationsList}
+      modeldatas={modeldatasList}
       taskqueues={taskqueuesList}
       workerpools={workerpoolsList}
       platformreposecrets={platformRepoSecretsList}
@@ -258,6 +284,8 @@ export function Dashboard(props: Props) {
         return applicationCards()
       case "taskqueues":
         return taskqueueCards()
+      case "modeldatas":
+        return modeldataCards()
       case "workerpools":
         return workerpoolCards()
       case "platformreposecrets":
@@ -316,7 +344,7 @@ export function Dashboard(props: Props) {
     getApplication,
     getTaskQueue,
     getWorkerPool,
-    modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} />,
+    modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} modeldatas={modeldatasList} />,
     sidebar,
     subtitle: subtitles[currentKind()],
     title: names[currentKind()],
