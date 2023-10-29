@@ -29,7 +29,13 @@ spec:
         {{- include "volume.workdir.nfs" . | indent 8 }}
       containers:
       - name: controller
-        image: {{ .Values.controllers.run.image }}
+
+        {{ if .Values.global.lite }}
+        image: {{ .Values.controllers.run.image.lite }}
+        {{ else }}
+        image: {{ .Values.controllers.run.image.full }}
+        {{ end }}
+
         env:
           - name: WORKDIR
             value: /workdir

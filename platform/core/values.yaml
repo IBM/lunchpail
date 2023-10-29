@@ -7,11 +7,17 @@ image_cache:
 controllers:
   namespace: codeflare-system
   run:
-    image: ghcr.io/project-codeflare/codeflare-run-controller:dev
+    image:
+      lite: ghcr.io/project-codeflare/codeflare-run-controller-lite:dev
+      full: ghcr.io/project-codeflare/codeflare-run-controller:dev
   application:
-    image: ghcr.io/project-codeflare/codeflare-application-controller:dev
+    image:
+      lite: ghcr.io/project-codeflare/codeflare-application-controller-lite:dev
+      full: ghcr.io/project-codeflare/codeflare-application-controller:dev
   image:
-    image: ghcr.io/project-codeflare/codeflare-image-controller:dev
+    image:
+      lite: ghcr.io/project-codeflare/codeflare-image-controller-lite:dev
+      full: ghcr.io/project-codeflare/codeflare-image-controller:dev
 
 workdir:
   fs: nfs

@@ -16,7 +16,8 @@ fi
 function build {
     local dir="$1"
     local image=$2
-    cd "$dir" && docker build $QUIET -t $image .
+    local dockerfile="${3-Dockerfile}"
+    cd "$dir" && docker build $QUIET -t $image -f "$dockerfile" .
 }
 
 function push {
@@ -37,6 +38,13 @@ function build_controllers {
         local controller=$(basename "$controllerDir")
         local image=${IMAGE_REPO}codeflare-${controller}-controller:$VERSION
         (build "$controllerDir" $image ; push $image) &
+
+        # built "lite" version if Dockerfile.lite exists
+        if [[ -f "$controllerDir"/Dockerfile.lite ]]
+        then
+            local image=${IMAGE_REPO}codeflare-${controller}-controller-lite:$VERSION
+            (build "$controllerDir" $image Dockerfile.lite ; push $image) &
+        fi
     done
 }
 

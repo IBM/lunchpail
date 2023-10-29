@@ -1,0 +1,4 @@
+FROM ghcr.io/project-codeflare/kopf:0.0.1
+
+ADD src /src
+CMD kopf run /src/handlers.py --verbose
