@@ -51,7 +51,9 @@ function Wizard(props: WizardModelProps & { kind: Kind }) {
       Object.assign(
         {
           onCancel: returnHome,
-          onSuccess: returnToWorkerPools,
+
+          // TODO here, we want to returnToKind(kind)
+          onSuccess: kind === "workerpools" ? returnToWorkerPools : returnHome,
         },
         props,
       ),
