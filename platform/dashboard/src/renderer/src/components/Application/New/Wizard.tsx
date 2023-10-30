@@ -1,14 +1,12 @@
 import wordWrap from "word-wrap"
 import { useCallback } from "react"
+import { type FormContextProps } from "@patternfly/react-core"
 import { useLocation, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
-
-import { type FormContextProps } from "@patternfly/react-core"
 
 import names, { singular } from "../../../names"
 import { Checkbox, Input, SelectCheckbox } from "../../Forms"
 import { buttonPropsForNewModelData } from "../../../navigate/newmodeldata"
-
 import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
 import TaskQueueIcon from "../../TaskQueue/Icon"

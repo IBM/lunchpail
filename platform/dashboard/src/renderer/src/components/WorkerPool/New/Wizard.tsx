@@ -1,46 +1,20 @@
 import removeAccents from "remove-accents"
 import { useSearchParams } from "react-router-dom"
-import { useCallback, useState } from "react"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
-import {
-  Alert,
-  AlertGroup,
-  Form,
-  FormContextProvider,
-  FormContextProps,
-  FormSection,
-  Grid,
-  GridItem,
-  TextContent,
-  Text,
-  Wizard,
-  WizardHeader,
-  WizardStep,
-} from "@patternfly/react-core"
+import { type FormContextProps } from "@patternfly/react-core"
 
 import TaskQueueIcon from "../../TaskQueue/Icon"
 import ApplicationIcon from "../../Application/Icon"
 
-import Yaml from "../../Yaml"
-import { singular as names } from "../../../names"
-import { Input, NumberInput, Select } from "../../Forms"
+import { singular } from "../../../names"
+import { NumberInput, Select } from "../../Forms"
+import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
-import type { WizardProps as Props } from "../../../pages/DashboardModal"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 export default function NewWorkerPoolWizard(props: Props) {
-  /** Error in the request to create a pool? */
-  const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
   const [searchParams] = useSearchParams()
-
-  /* private chooseAppIfExists(available: Props["applications"], desired: null | string) {
-    if (desired && available.find((_) => _.application === desired)) {
-      return desired
-    } else {
-      return ""
-    }
-  } */
 
   function chooseTaskQueueIfExists(available: Props["taskqueues"], desired: null | string) {
     if (desired && available.includes(desired)) {
@@ -49,15 +23,6 @@ export default function NewWorkerPoolWizard(props: Props) {
       return ""
     }
   }
-
-  /* function get searchedApplication() {
-    const app = searchParams.get("application")
-    if (!app || !props.applications.find((_) => _.application === app)) {
-      return null
-    } else {
-      return app
-    }
-  } */
 
   function searchedTaskQueue() {
     const taskqueue = searchParams.get("taskqueue")
@@ -110,23 +75,12 @@ export default function NewWorkerPoolWizard(props: Props) {
     }
   }
 
-  function name(ctrl: FormContextProps) {
-    return (
-      <Input
-        fieldId="poolName"
-        label="Pool name"
-        description={`Choose a name for your ${names.workerpools}`}
-        ctrl={ctrl}
-      />
-    )
-  }
-
   function application(ctrl: FormContextProps) {
     return (
       <Select
         fieldId="application"
-        label={names.applications}
-        description={`Choose the ${names.applications} code this pool should run`}
+        label={singular.applications}
+        description={`Choose the ${singular.applications} code this pool should run`}
         ctrl={ctrl}
         options={compatibleApplications().map((_) => ({
           value: _.metadata.name,
@@ -141,8 +95,8 @@ export default function NewWorkerPoolWizard(props: Props) {
     return (
       <Select
         fieldId="taskqueue"
-        label={names.taskqueues}
-        description={`Choose the ${names.taskqueues} this pool should process`}
+        label={singular.taskqueues}
+        description={`Choose the ${singular.taskqueues} this pool should process`}
         ctrl={ctrl}
         options={props.taskqueues.sort()}
         icons={<TaskQueueIcon />}
@@ -163,70 +117,11 @@ export default function NewWorkerPoolWizard(props: Props) {
     )
   }
 
-  const clearError = useCallback(() => setErrorInCreateRequest(null), [])
-
-  const doCreate = useCallback(
-    async (values: FormContextProps["values"]) => {
-      console.log("new worker pool request", values) // make eslint happy
-      try {
-        const response = await window.jay.create(values, yaml(values))
-        if (response !== true) {
-          console.error(response)
-          setErrorInCreateRequest(new Error(response.message))
-        } else {
-          setErrorInCreateRequest(null)
-          props.onSuccess()
-        }
-      } catch (errorInCreateRequest) {
-        if (errorInCreateRequest) {
-          setErrorInCreateRequest(errorInCreateRequest)
-          // TODO visualize this!!
-        }
-      }
-      props.onSuccess()
-    },
-    [props.onSuccess],
-  )
-
-  function header() {
-    return (
-      <WizardHeader
-        title="Create Worker Pool"
-        description="Configure a pool of compute resources to process Tasks in a Queue."
-        onClose={props.onCancel}
-      />
-    )
+  const step1 = {
+    name: "Configure",
+    isValid: (ctrl: FormContextProps) => !!ctrl.values.poolName && !!ctrl.values.application && !!ctrl.values.taskqueue,
+    items: ["name" as const, application, taskqueue, numWorkers],
   }
-
-  function isStep1Valid(ctrl: FormContextProps) {
-    return ctrl.values.poolName && ctrl.values.application && ctrl.values.taskqueue
-  }
-
-  function step1(ctrl: FormContextProps) {
-    return (
-      <WizardStep id="new-worker-pool-step-configure" name="Configure" footer={{ isNextDisabled: !isStep1Valid(ctrl) }}>
-        <Form>
-          <FormSection>
-            <Grid hasGutter md={6}>
-              <GridItem span={12}>{name(ctrl)}</GridItem>
-              <GridItem>{application(ctrl)}</GridItem>
-              <GridItem>{taskqueue(ctrl)}</GridItem>
-              <GridItem>{numWorkers(ctrl)}</GridItem>
-            </Grid>
-          </FormSection>
-        </Form>
-      </WizardStep>
-    )
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  /*function step2(ctrl: FormContextProps) {
-    return (
-      <WizardStep id="new-worker-pool-step-locate" name="Choose a Location">
-        TODO
-      </WizardStep>
-    )
-  }*/
 
   function yaml(values: FormContextProps["values"]) {
     const applicationSpec = props.applications.find((_) => _.metadata.name === values.application)
@@ -255,47 +150,11 @@ spec:
 `
   }
 
-  function review(ctrl: FormContextProps) {
-    return (
-      <WizardStep
-        id="new-worker-pool-step-review"
-        name="Review"
-        status={errorInCreateRequest ? "error" : "default"}
-        footer={{ nextButtonText: "Create Worker Pool", onNext: () => doCreate(ctrl.values) }}
-      >
-        {errorInCreateRequest ? (
-          <AlertGroup isToast>
-            <Alert
-              variant="danger"
-              title={hasMessage(errorInCreateRequest) ? errorInCreateRequest.message : "Internal error"}
-            />
-          </AlertGroup>
-        ) : (
-          <></>
-        )}
-
-        <TextContent>
-          <Text component="p">Confirm the settings for your new worker pool.</Text>
-        </TextContent>
-
-        <Yaml content={yaml(ctrl.values)} />
-      </WizardStep>
-    )
-  }
-
+  const title = `Create ${singular.workerpools}`
+  const steps = [step1]
   return (
-    <FormContextProvider initialValues={defaults()}>
-      {(ctrl) => (
-        <Wizard header={header()} onClose={props.onCancel} onStepChange={clearError}>
-          {step1(ctrl)}
-          {/*step2(ctrl)*/}
-          {review(ctrl)}
-        </Wizard>
-      )}
-    </FormContextProvider>
+    <NewResourceWizard {...props} kind="workerpools" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+      Configure a pool of compute resources to process Tasks in a Queue.
+    </NewResourceWizard>
   )
-}
-
-function hasMessage(obj: unknown): obj is { message: string } {
-  return typeof (obj as { message: string }).message === "string"
 }
