@@ -36,9 +36,6 @@ export default function NewRepoSecretWizard(props: Props) {
   /** Error in the request to create a pool? */
   const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
 
-  /** Showing password in cleartext? */
-  const [clearText, setClearText] = useState(false)
-
   /** Force the use of this repo */
   const repo = searchParams.get("repo")
 
@@ -94,8 +91,9 @@ export default function NewRepoSecretWizard(props: Props) {
     return <Input fieldId="user" label="GitHub user" description="Your username in that GitHub provider" ctrl={ctrl} />
   }
 
+  /** Showing password in cleartext? */
+  const [clearText, setClearText] = useState(false)
   const toggleClearText = useCallback(() => setClearText((curState) => !curState), [])
-
   function pat(ctrl: FormContextProps) {
     return (
       <Input

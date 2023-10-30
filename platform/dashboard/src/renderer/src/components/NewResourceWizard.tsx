@@ -3,6 +3,7 @@ import { type PropsWithChildren, type ReactNode, useCallback, useContext, useMem
 import {
   Alert,
   type AlertProps,
+  type AlertActionLinkProps,
   AlertActionLink,
   AlertActionCloseButton,
   Form,
@@ -40,7 +41,7 @@ type StepProps = {
     title: string
     variant?: AlertProps["variant"]
     body: ReactNode
-    actionLinks?: { onClick: () => void; linkText: string }[]
+    actionLinks?: ((ctrl: FormContextProps) => AlertActionLinkProps & { linkText: string })[]
   }[]
 }
 
@@ -199,11 +200,16 @@ export default function NewResourceWizard(props: Props) {
               key={alert.title}
               variant={alert.variant ?? "info"}
               className={idx < A.length - 1 ? "" : "codeflare--step-header"}
-              actionLinks={alert.actionLinks?.map((action) => (
-                <AlertActionLink key={action.linkText} onClick={action.onClick}>
-                  {action.linkText}
-                </AlertActionLink>
-              ))}
+              actionLinks={alert.actionLinks
+                ?.map((action) => action(ctrl))
+                .map((action) => {
+                  const linkProps: Record<string, unknown> = Object.assign({}, action, { linkText: null })
+                  return (
+                    <AlertActionLink key={action.linkText} {...linkProps}>
+                      {action.linkText}
+                    </AlertActionLink>
+                  )
+                })}
               isInline
               title={alert.title}
             >
@@ -243,7 +249,7 @@ export default function NewResourceWizard(props: Props) {
 
       const header = <WizardHeader title={props.title} description={props.children} onClose={props.onCancel} />
       return (
-        <Wizard header={header} onClose={props.onCancel} onStepChange={clearError}>
+        <Wizard header={header} onClose={props.onCancel} onStepChange={clearError} className="codeflare--wizard">
           {steps(ctrl)}
           {review(ctrl)}
         </Wizard>

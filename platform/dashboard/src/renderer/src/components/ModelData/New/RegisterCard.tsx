@@ -8,9 +8,8 @@ type Props = {
 }
 
 function LinkToNewModelData(props: Props) {
-  const qs: string[] = []
+  const qs: string[] = [`action=${props.action}`]
   if (props.namespace) {
-    qs.push(`action=${props.action}`)
     qs.push(`namespace=${props.namespace}`)
   }
 

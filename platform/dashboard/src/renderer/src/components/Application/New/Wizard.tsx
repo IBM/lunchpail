@@ -1,12 +1,13 @@
 import wordWrap from "word-wrap"
 import { useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useLocation, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import { type FormContextProps } from "@patternfly/react-core"
 
 import names, { singular } from "../../../names"
 import { Checkbox, Input, SelectCheckbox } from "../../Forms"
+import { buttonPropsForNewModelData } from "../../../navigate/newmodeldata"
 
 import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
@@ -53,7 +54,7 @@ function supportsGpu(ctrl: FormContextProps) {
 
 const step1 = {
   name: "Name",
-  isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.namespace,
+  isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
   items: ["name" as const, "namespace" as const, "description" as const],
 }
 
@@ -142,6 +143,7 @@ export default function NewApplicationWizard(props: Props) {
       description: previousValues?.description ?? "",
       supportsGpu: previousValues?.supportsGpu ?? "false",
       useTestQueue: previousValues?.useTestQueue ?? "true",
+      modeldatas: previousValues?.modeldatas ?? "",
     }),
     [searchParams],
   )
@@ -150,7 +152,7 @@ export default function NewApplicationWizard(props: Props) {
     (ctrl: FormContextProps) => (
       <SelectCheckbox
         fieldId="modeldatas"
-        label={singular.modeldatas}
+        label={names.modeldatas}
         description={`Select the "fixed" ${names.modeldatas} this ${singular.applications} needs access to`}
         ctrl={ctrl}
         options={props.modeldatas.sort()}
@@ -160,7 +162,7 @@ export default function NewApplicationWizard(props: Props) {
     [],
   )
 
-  const useTestQueueCheckbox = useCallback(
+  /*const useTestQueueCheckbox = useCallback(
     (ctrl: FormContextProps) => (
       <Checkbox
         fieldId="useTestQueue"
@@ -173,18 +175,22 @@ export default function NewApplicationWizard(props: Props) {
       />
     ),
     [],
-  )
+  )*/
+
+  const location = useLocation()
+  const registerDataset = (ctrl: FormContextProps) =>
+    buttonPropsForNewModelData({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
   const step3 = {
-    name: singular.modeldatas,
+    name: names.modeldatas,
     alerts: [
       {
-        title: singular.modeldatas,
+        title: names.modeldatas,
         body: (
           <span>
-            If your {singular.applications} needs access to a {singular.modeldatas}, i.e. global data needed across all
-            tasks (e.g. a pre-trained model or a chip design that is being tested across multiple configurations), you
-            may supply that information here.
+            If your {singular.applications} needs access to one or more {names.modeldatas}, i.e. global data needed
+            across all tasks (e.g. a pre-trained model or a chip design that is being tested across multiple
+            configurations), you may supply that information here.
           </span>
         ),
       },
@@ -195,13 +201,14 @@ export default function NewApplicationWizard(props: Props) {
               variant: "warning" as const,
               title: "Warning",
               body: <span>No {names.modeldatas} are registered</span>,
+              actionLinks: [registerDataset],
             },
           ]),
     ],
     items: props.modeldatas.length === 0 ? [] : [modelDatas],
   }
 
-  const step4 = {
+  /*const step4 = {
     name: singular.taskqueues,
     alerts: [
       {
@@ -215,10 +222,10 @@ export default function NewApplicationWizard(props: Props) {
       },
     ],
     items: [useTestQueueCheckbox],
-  }
+  }*/
 
   const title = `Register ${singular.applications}`
-  const steps = [step1, step2, step3, step4]
+  const steps = [step1, step2, step3]
   return (
     <NewResourceWizard {...props} kind="applications" title={title} defaults={defaults} yaml={yaml} steps={steps}>
       An {singular.applications} is the source code that knows how to consume and then process <strong>Tasks</strong>.

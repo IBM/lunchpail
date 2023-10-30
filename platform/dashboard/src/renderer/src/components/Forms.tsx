@@ -192,18 +192,21 @@ export function SelectCheckbox(
     Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string[] },
 ) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<string[]>(props.selected || [])
+
+  const previouslySelected =
+    typeof props.ctrl.values[props.fieldId] === "string" ? JSON.parse(props.ctrl.values[props.fieldId]) : []
+  const [selectedItems, setSelectedItems] = useState<string[]>(props.selected || previouslySelected)
 
   const onToggleClick = useCallback(() => setIsOpen((curState) => !curState), [])
 
   const onSelect = useCallback(
     (_, value: string | number | undefined) => {
       if (typeof value === "string") {
-        if (selectedItems.includes(value)) {
-          setSelectedItems(selectedItems.filter((id) => id !== value))
-        } else {
-          setSelectedItems([...selectedItems, value])
-        }
+        const newlySelected = selectedItems.includes(value)
+          ? selectedItems.filter((id) => id !== value)
+          : [...selectedItems, value]
+        setSelectedItems(newlySelected)
+        props.ctrl.setValue(props.fieldId, JSON.stringify(newlySelected))
       }
     },
     [selectedItems, setSelectedItems],
@@ -228,7 +231,6 @@ export function SelectCheckbox(
     [isOpen, onToggleClick],
   )
 
-  console.error("!!!!!!", selectedItems)
   return (
     <Group {...props}>
       <PFSelect
@@ -311,6 +313,7 @@ export function remember(kind: Kind, ctrl: FormContextProps, formState: State<st
         if (!form[kind]) {
           form[kind] = {}
         }
+        console.error("!!!!SET", fieldId, value)
         form[kind][fieldId] = value
         formState[1](JSON.stringify(form))
       }

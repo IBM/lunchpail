@@ -2,6 +2,8 @@ import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
 import type Kind from "../Kind"
+import type LocationProps from "./LocationProps"
+
 import { stopPropagation } from "."
 
 import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
@@ -49,17 +51,36 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
   )
 }
 
+type LinkerProps = {
+  kind: Kind
+  linkText: string
+  qs: string[]
+}
+
+export function linkerButtonProps({ location, searchParams }: Omit<LocationProps, "navigate">, props: LinkerProps) {
+  const currentHash = location.hash
+  const currentSearch = searchParams.toString()
+
+  const returnTo = encodeURIComponent(`?${currentSearch}`)
+  const theHref = href(props.kind, returnTo, currentHash, props.qs)
+
+  return {
+    "data-start-or-add": "create",
+    "data-link-text": props.linkText,
+    "data-href": theHref,
+    onClick: stopPropagation,
+    linkText: props.linkText,
+    component: linker,
+  }
+}
+
 /** Base/public props for subclasses */
 export type WizardProps = {
   startOrAdd?: StartOrAdd
 }
 
 /** Internal props */
-type Props = WizardProps & {
-  kind: Kind
-  linkText: string
-  qs: string[]
-}
+type Props = WizardProps & LinkerProps
 
 /**
  * @return a UI component that links to the a wizard `view`. If
