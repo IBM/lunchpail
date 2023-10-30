@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 
 import names, { subtitles } from "../names"
 import { currentKind } from "../navigate/kind"
@@ -11,6 +11,7 @@ import TaskQueue from "../components/TaskQueue/Card"
 import WorkerPool from "../components/WorkerPool/Card"
 import JobManagerCard from "../components/JobManager/Card"
 
+import Settings from "../Settings"
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 import DashboardModal from "./DashboardModal"
@@ -54,6 +55,9 @@ function either<T>(x: T | undefined, y: T): T {
 }
 
 export function Dashboard(props: Props) {
+  const settings = useContext(Settings)
+  const inDemoMode = settings?.demoMode[0] ?? false
+
   const returnHome = returnHomeCallback()
 
   // State
@@ -202,7 +206,7 @@ export function Dashboard(props: Props) {
 
   function applicationCards() {
     return [
-      <NewApplicationCard key="new-application-card" />,
+      ...[inDemoMode ? [] : [<NewApplicationCard key="new-application-card" />]],
       ...applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />),
     ]
   }
