@@ -63,13 +63,11 @@ const step2 = {
 }
 
 function yaml(values: FormContextProps["values"]) {
-  const apiVersion = "codeflare.dev/v1alpha1"
-  const kind = singular.applications
   const taskqueueName = values.taskqueueName ?? values.name.replace(/-/g, "")
 
   return `
-apiVersion: ${apiVersion}
-kind: ${kind}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
 metadata:
   name: ${values.name}
   namespace: ${values.namespace}
@@ -92,6 +90,17 @@ spec:
         xs: hap-models
   description: >-
 ${wordWrap(values.description, { trim: true, indent: "    ", width: 60 })}
+---
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: ${values.name}
+  namespace: ${values.namespace}
+spec:
+  workers: 0
+  application:
+    name: ${values.name}
+  inbox: "."
 ---
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
