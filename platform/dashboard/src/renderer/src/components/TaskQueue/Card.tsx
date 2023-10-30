@@ -3,7 +3,8 @@ import CardInGallery from "../CardInGallery"
 import type TaskQueueProps from "./Props"
 import type { BaseProps } from "../CardInGallery"
 
-import { commonGroups, numAssociatedWorkerPools } from "./common"
+import TaskSimulatorButton from "./TaskSimulatorButton"
+import { commonGroups, lastEvent, numAssociatedWorkerPools } from "./common"
 
 import TaskQueueIcon from "./Icon"
 
@@ -22,5 +23,13 @@ export default function TaskQueueCard(props: Props) {
 
   // const footer = <NewPoolButton {...props} />
 
-  return <CardInGallery {...props} kind={kind} icon={icon} groups={groups} />
+  const last = lastEvent(props)
+  const actions = !last
+    ? undefined
+    : {
+        hasNoOffset: true,
+        actions: <TaskSimulatorButton event={last} simulators={props.tasksimulators} invisibleIfNoSimulators />,
+      }
+
+  return <CardInGallery {...props} kind={kind} icon={icon} groups={groups} actions={actions} />
 }

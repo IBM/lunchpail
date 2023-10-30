@@ -3,10 +3,17 @@ import { Button, Text, Tooltip } from "@patternfly/react-core"
 
 import { singular } from "../../names"
 
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 
 import OnIcon from "@patternfly/react-icons/dist/esm/icons/sun-icon"
 import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-sun-icon"
+
+type Props = {
+  event: TaskQueueEvent
+  simulators: TaskSimulatorEvent[]
+  invisibleIfNoSimulators?: boolean
+}
 
 function yaml(name: string, namespace: string) {
   return `
@@ -38,26 +45,26 @@ function onClick(evt: MouseEvent) {
   }
 }
 
-export default function TaskSimulatorButton(props: {
-  name: string
-  namespace: string
-  simulators: TaskSimulatorEvent[]
-}) {
+export default function TaskSimulatorButton(props: Props) {
   const nSimulators = props.simulators.length
   const online = nSimulators > 0
   const message = online
     ? `This ${singular.taskqueues} has ${nSimulators} assigned ${
         nSimulators === 1 ? "task simulator" : "task simualtors"
       }. Click here to stop ${nSimulators === 1 ? "it" : "them"}.`
-    : `Launch a task simulator against this ${singular.taskqueues}`
+    : "Launch a task simulator"
+
+  if (!online && props.invisibleIfNoSimulators) {
+    return <></>
+  }
 
   return (
     <Tooltip content={<Text component="p">{message}</Text>}>
       <Button
         size="lg"
         variant="plain"
-        data-name={props.name}
-        data-namespace={props.namespace}
+        data-name={props.event.metadata.name}
+        data-namespace={props.event.metadata.namespace}
         data-action={online ? "delete" : "create"}
         onClick={onClick}
       >

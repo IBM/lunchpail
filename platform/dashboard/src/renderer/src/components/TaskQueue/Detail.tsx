@@ -64,14 +64,7 @@ function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, p
   // don't show task simulator button when in demo mode
   return !last || inDemoMode
     ? []
-    : [
-        <TaskSimulatorButton
-          key="task-simulator"
-          name={last.metadata.name}
-          namespace={last.metadata.namespace}
-          simulators={props.tasksimulators}
-        />,
-      ]
+    : [<TaskSimulatorButton key="task-simulator" event={last} simulators={props.tasksimulators} />]
 }
 
 /** Right-aligned actions */
