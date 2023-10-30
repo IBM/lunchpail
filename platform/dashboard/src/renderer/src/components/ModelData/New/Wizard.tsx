@@ -1,18 +1,13 @@
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
-import { Button, type FormContextProps } from "@patternfly/react-core"
+import { type FormContextProps } from "@patternfly/react-core"
 
 import { singular } from "../../../names"
 import { Checkbox, Input } from "../../Forms"
 
-import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
-
-import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
-import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
-
-const noPadding = { padding: 0 }
+import NewResourceWizard, { password, type WizardProps as Props } from "../../NewResourceWizard"
 
 function endpoint(ctrl: FormContextProps) {
   return (
@@ -110,45 +105,17 @@ export default function NewApplicationWizard(props: Props) {
     [searchParams],
   )
 
-  /** Showing password in cleartext? */
-  const [clearText1, setClearText1] = useState(false)
-  const toggleClearText1 = useCallback(() => setClearText1((curState) => !curState), [])
-  function accessKey(ctrl: FormContextProps) {
-    return (
-      <Input
-        type={!clearText1 ? "password" : undefined}
-        fieldId="accessKey"
-        label="Access Key"
-        description="The access key id for your S3 provider"
-        customIcon={
-          <Button style={noPadding} variant="plain" onClick={toggleClearText1}>
-            {!clearText1 ? <EyeSlashIcon /> : <EyeIcon />}
-          </Button>
-        }
-        ctrl={ctrl}
-      />
-    )
-  }
+  const accessKey = password({
+    fieldId: "accessKey",
+    label: "Access Key",
+    description: "The access key id for your S3 provider",
+  })
 
-  /** Showing password in cleartext? */
-  const [clearText2, setClearText2] = useState(false)
-  const toggleClearText2 = useCallback(() => setClearText2((curState) => !curState), [])
-  function secretAccessKey(ctrl: FormContextProps) {
-    return (
-      <Input
-        type={!clearText2 ? "password" : undefined}
-        fieldId="secretAccessKey"
-        label="Secret Access Key"
-        description="The secret access key id for your S3 provider"
-        customIcon={
-          <Button style={noPadding} variant="plain" onClick={toggleClearText2}>
-            {!clearText2 ? <EyeSlashIcon /> : <EyeIcon />}
-          </Button>
-        }
-        ctrl={ctrl}
-      />
-    )
-  }
+  const secretAccessKey = password({
+    fieldId: "secretAccessKey",
+    label: "Secret Access Key",
+    description: "The secret access key id for your S3 provider",
+  })
 
   const step2Register = {
     name: "Cloud endpoint",

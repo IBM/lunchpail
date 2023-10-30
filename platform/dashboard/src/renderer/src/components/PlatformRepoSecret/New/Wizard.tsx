@@ -1,14 +1,11 @@
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator"
 
-import { Button, type FormContextProps } from "@patternfly/react-core"
+import { type FormContextProps } from "@patternfly/react-core"
 
 import { Input } from "../../Forms"
-import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
-
-import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
-import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
+import NewResourceWizard, { password, type WizardProps as Props } from "../../NewResourceWizard"
 
 export default function NewRepoSecretWizard(props: Props) {
   const [searchParams] = useSearchParams()
@@ -40,6 +37,7 @@ export default function NewRepoSecretWizard(props: Props) {
     [searchParams],
   )
 
+  /** GitHub repo */
   function repoInput(ctrl: FormContextProps) {
     return (
       <Input
@@ -52,29 +50,17 @@ export default function NewRepoSecretWizard(props: Props) {
     )
   }
 
+  /** GitHub user */
   function user(ctrl: FormContextProps) {
     return <Input fieldId="user" label="GitHub user" description="Your username in that GitHub provider" ctrl={ctrl} />
   }
 
-  /** Showing password in cleartext? */
-  const [clearText, setClearText] = useState(false)
-  const toggleClearText = useCallback(() => setClearText((curState) => !curState), [])
-  function pat(ctrl: FormContextProps) {
-    return (
-      <Input
-        type={!clearText ? "password" : undefined}
-        fieldId="pat"
-        label="GitHub personal access token"
-        description="Your username in that GitHub provider"
-        customIcon={
-          <Button style={{ padding: 0 }} variant="plain" onClick={toggleClearText}>
-            {!clearText ? <EyeSlashIcon /> : <EyeIcon />}
-          </Button>
-        }
-        ctrl={ctrl}
-      />
-    )
-  }
+  /** GitHub personal access token */
+  const pat = password({
+    fieldId: "pat",
+    label: "GitHub personal access token",
+    description: "Your username in that GitHub provider",
+  })
 
   const step1 = {
     name: "Configure",

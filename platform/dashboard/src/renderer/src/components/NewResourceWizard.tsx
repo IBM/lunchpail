@@ -2,6 +2,7 @@ import { type PropsWithChildren, type ReactNode, useCallback, useContext, useMem
 
 import {
   Alert,
+  Button,
   type AlertProps,
   type AlertActionLinkProps,
   AlertActionLink,
@@ -25,6 +26,9 @@ import { Input, TextArea, remember } from "./Forms"
 
 import type Kind from "../Kind"
 import type { WizardProps } from "../pages/DashboardModal"
+
+import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
+import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
 
 import "./Wizard.scss"
 
@@ -264,4 +268,32 @@ export default function NewResourceWizard(props: Props) {
 
 function hasMessage(obj: unknown): obj is { message: string } {
   return typeof (obj as { message: string }).message === "string"
+}
+
+const noPadding = { padding: 0 }
+
+/** @return an Input component that allows for toggling clear text mode */
+export function password(props: { fieldId: string; label: string; description: string }) {
+  /** Showing password in clear text? */
+  const [clearText, setClearText] = useState(false)
+
+  /** Toggle `clearText` state */
+  const toggleClearText = useCallback(() => setClearText((curState) => !curState), [])
+
+  return function pat(ctrl: FormContextProps) {
+    return (
+      <Input
+        type={!clearText ? "password" : undefined}
+        fieldId={props.fieldId}
+        label={props.label}
+        description={props.description}
+        customIcon={
+          <Button style={noPadding} variant="plain" onClick={toggleClearText}>
+            {!clearText ? <EyeSlashIcon /> : <EyeIcon />}
+          </Button>
+        }
+        ctrl={ctrl}
+      />
+    )
+  }
 }
