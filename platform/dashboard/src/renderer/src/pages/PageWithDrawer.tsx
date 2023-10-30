@@ -22,9 +22,11 @@ import type { NavigableKind } from "../Kind"
 import type { PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
+import type DataSetProps from "../components/ModelData/Props"
 import type TaskQueueProps from "../components/TaskQueue/Props"
 import type WorkerPoolProps from "../components/WorkerPool/Props"
 
+import DataSetDetail from "../components/ModelData/Detail"
 import TaskQueueDetail from "../components/TaskQueue/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
@@ -42,6 +44,7 @@ import "./Detail.scss"
 type Props = PropsWithChildren<
   PageWithMastheadAndModalProps & {
     getApplication(name: string): ApplicationSpecEvent | undefined
+    getDataSet(name: string): DataSetProps | undefined
     getTaskQueue(name: string): TaskQueueProps | undefined
     getWorkerPool(name: string): WorkerPoolProps | undefined
   }
@@ -132,6 +135,8 @@ export default function PageWithDrawer(props: Props) {
   const drilldownDetailContentcontentForDrawer =
     id !== null && kind === "applications" ? (
       ApplicationDetail(props.getApplication(id))
+    ) : id !== null && kind === "modeldatas" ? (
+      DataSetDetail(props.getDataSet(id))
     ) : id !== null && kind === "taskqueues" ? (
       TaskQueueDetail(props.getTaskQueue(id))
     ) : id !== null && kind === "workerpools" ? (

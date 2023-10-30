@@ -5,7 +5,7 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import { Button, type FormContextProps } from "@patternfly/react-core"
 
 import { singular } from "../../../names"
-import { Input } from "../../Forms"
+import { Checkbox, Input } from "../../Forms"
 
 import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
@@ -40,6 +40,17 @@ const step2Create = {
   name: "Upload the Data",
   isValid: (ctrl: FormContextProps) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
   items: [],
+}
+
+function isReadonly(ctrl: FormContextProps) {
+  return (
+    <Checkbox
+      fieldId="readonly"
+      label="Read-only?"
+      description="Restrict access to disallow changes to the data"
+      ctrl={ctrl}
+    />
+  )
 }
 
 function yaml(values: FormContextProps["values"]) {
@@ -91,6 +102,7 @@ export default function NewApplicationWizard(props: Props) {
       namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
       description: previousValues?.description ?? "",
       endpoint: previousValues?.endpoint ?? "",
+      readonly: previousValues?.readonly ?? "true",
       bucket: previousValues?.bucket ?? "",
       accessKey: previousValues?.accessKey ?? "",
       secretAccessKey: previousValues?.secretAccessKey ?? "",
@@ -139,17 +151,30 @@ export default function NewApplicationWizard(props: Props) {
   }
 
   const step2Register = {
-    name: "Location in the Cloud",
+    name: "Cloud endpoint",
     isValid: (ctrl: FormContextProps) =>
-      !!ctrl.values.endpoint && !!ctrl.values.bucket && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
-    items: [endpoint, accessKey, secretAccessKey, bucket],
+      !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
+    items: [endpoint, accessKey, secretAccessKey],
+  }
+
+  const step3 = {
+    name: "Cloud path",
+    isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
+    items: [bucket],
+  }
+
+  const step4 = {
+    name: "Attributes",
+    isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
+    items: [isReadonly],
   }
 
   // are we registering an existing or creating a new one from data supplied here?
   const action = searchParams.get("action") ?? "register"
 
   const title = `${action === "register" ? "Register" : "Create"} ${singular.modeldatas}`
-  const steps = action === "register" ? [step1, step2Register] : [step1, step2Create]
+  const steps =
+    action === "register" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
 
   return (
     <NewResourceWizard {...props} kind="modeldatas" title={title} defaults={defaults} yaml={yaml} steps={steps}>

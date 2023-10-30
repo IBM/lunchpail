@@ -6,9 +6,10 @@ import { returnHomeCallback } from "../navigate/home"
 
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
-import Application from "../components/Application/Card"
+import DataSet from "../components/ModelData/Card"
 import TaskQueue from "../components/TaskQueue/Card"
 import WorkerPool from "../components/WorkerPool/Card"
+import Application from "../components/Application/Card"
 import JobManagerCard from "../components/JobManager/Card"
 
 import Settings from "../Settings"
@@ -214,20 +215,7 @@ export function Dashboard(props: Props) {
   function modeldataCards() {
     return [
       ...NewModelDataCards,
-      ...modeldataEvents.map((event) => (
-        <TaskQueue
-          key={event.metadata.name}
-          idx={either(event.spec.idx, taskqueueIndex[event.metadata.name])}
-          workerpools={taskqueueToPool[event.metadata.name] || []}
-          tasksimulators={taskqueueToTaskSimulators[event.metadata.name] || []}
-          applications={applicationEvents}
-          name={event.metadata.name}
-          events={[event]}
-          numEvents={1}
-          taskqueueIndex={taskqueueIndex}
-          {...drilldownProps()}
-        />
-      )),
+      ...modeldataEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} {...drilldownProps()} />),
     ]
   }
 
@@ -310,6 +298,14 @@ export function Dashboard(props: Props) {
   )
 
   /** Helps will drilldown to Details */
+  const getDataSet = useCallback(
+    (id: string) => {
+      return modeldataEvents.find((_) => _.metadata.name === id)
+    },
+    [modeldataEvents],
+  )
+
+  /** Helps will drilldown to Details */
   const getTaskQueue = useCallback(
     (id: string) => {
       const events = taskqueueEvents.filter((_) => _.metadata.name === id)
@@ -346,6 +342,7 @@ export function Dashboard(props: Props) {
 
   const pwdProps = {
     getApplication,
+    getDataSet,
     getTaskQueue,
     getWorkerPool,
     modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} modeldatas={modeldatasList} />,

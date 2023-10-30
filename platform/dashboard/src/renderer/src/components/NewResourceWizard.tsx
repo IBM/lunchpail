@@ -98,6 +98,7 @@ export default function NewResourceWizard(props: Props) {
 
       return (
         <WizardStep
+          key="wizard-step-review"
           id="wizard-step-review"
           name="Review"
           status={errorInCreateRequest ? "error" : "default"}

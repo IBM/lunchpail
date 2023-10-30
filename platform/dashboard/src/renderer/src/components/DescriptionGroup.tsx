@@ -86,7 +86,9 @@ function dd(description: ReactNode | Record<string, string>) {
 }
 
 function dt(term: ReactNode, count?: number | string, helperText?: string) {
-  const termUI = <span className="codeflare--capitalize">{dd(term)}</span>
+  const termUI = (
+    <span className="codeflare--capitalize">{typeof term === "string" ? term.replace(/-/g, " ") : dd(term)}</span>
+  )
   const label = count === undefined ? termUI : <SmallLabel count={count}>{termUI}</SmallLabel>
 
   if (!helperText) {
