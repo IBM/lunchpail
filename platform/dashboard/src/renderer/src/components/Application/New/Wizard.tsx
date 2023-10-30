@@ -1,316 +1,74 @@
 import wordWrap from "word-wrap"
+import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
-import { useCallback, useContext, useState } from "react"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
-import {
-  Alert,
-  AlertActionLink,
-  AlertActionCloseButton,
-  Form,
-  FormAlert,
-  FormContextProvider,
-  FormContextProps,
-  FormSection,
-  Grid,
-  GridItem,
-  Wizard,
-  WizardHeader,
-  WizardStep,
-} from "@patternfly/react-core"
+import { type FormContextProps } from "@patternfly/react-core"
 
-import Yaml from "../../Yaml"
-import Settings from "../../../Settings"
 import names, { singular } from "../../../names"
-import { Checkbox, Input, SelectCheckbox, TextArea, remember } from "../../Forms"
+import { Checkbox, Input, SelectCheckbox } from "../../Forms"
 
-import type { WizardProps as Props } from "../../../pages/DashboardModal"
+import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
 import TaskQueueIcon from "../../TaskQueue/Icon"
 
-import "../../Wizard.scss"
+function repoInput(ctrl: FormContextProps) {
+  return (
+    <Input
+      fieldId="repo"
+      label="Source code"
+      labelInfo="e.g. https://github.com/myorg/myproject/tree/main/myappsource"
+      description="URI to your GitHub repo, which can include the full path to a subdirectory"
+      ctrl={ctrl}
+    />
+  )
+}
 
-const nextIsDisabled = { isNextDisabled: true }
-const nextIsEnabled = { isNextDisabled: false }
+function image(ctrl: FormContextProps) {
+  return <Input fieldId="image" label="Image" description="The base image to run your code on" ctrl={ctrl} />
+}
 
-export default function NewApplicationWizard(props: Props) {
-  const [searchParams] = useSearchParams()
+function command(ctrl: FormContextProps) {
+  return (
+    <Input
+      fieldId="command"
+      label="Command line"
+      description={`The command line used to launch your ${singular.applications}`}
+      ctrl={ctrl}
+    />
+  )
+}
 
-  /** Error in the request to create a pool? */
-  const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
+function supportsGpu(ctrl: FormContextProps) {
+  return (
+    <Checkbox
+      fieldId="supportsGpu"
+      label="Supports GPU?"
+      description={`Does your ${singular.applications} support execution on GPUs?`}
+      ctrl={ctrl}
+      isRequired={false}
+    />
+  )
+}
 
-  /** Initial value for form */
-  function defaults(previousFormSerialized?: string) {
-    const previousForm = previousFormSerialized ? JSON.parse(previousFormSerialized) : {}
-    const previousValues = previousForm?.applications
+const step1 = {
+  name: "Name",
+  isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.namespace,
+  items: ["name" as const, "namespace" as const, "description" as const],
+}
 
-    return {
-      name: previousValues?.name ?? uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
-      namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
-      repo: previousValues?.repo ?? "",
-      image: previousValues?.image ?? "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
-      command: previousValues?.command ?? "",
-      description: previousValues?.description ?? "",
-      supportsGpu: previousValues?.supportsGpu ?? "false",
-      useTestQueue: previousValues?.useTestQueue ?? "true",
-    }
-  }
+const step2 = {
+  name: "Code and Dependencies",
+  isValid: (ctrl: FormContextProps) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
+  items: [command, repoInput, image, supportsGpu],
+}
 
-  function name(ctrl: FormContextProps) {
-    return (
-      <Input
-        fieldId="name"
-        label="Application name"
-        description={`Choose a name for your ${singular.applications}`}
-        ctrl={ctrl}
-      />
-    )
-  }
+function yaml(values: FormContextProps["values"]) {
+  const apiVersion = "codeflare.dev/v1alpha1"
+  const kind = singular.applications
+  const taskqueueName = values.taskqueueName ?? values.name.replace(/-/g, "")
 
-  function namespace(ctrl: FormContextProps) {
-    return (
-      <Input
-        fieldId="namespace"
-        label="Namespace"
-        description={`The namespace in which to register this ${singular.applications}`}
-        ctrl={ctrl}
-      />
-    )
-  }
-
-  function repoInput(ctrl: FormContextProps) {
-    return (
-      <Input
-        fieldId="repo"
-        label="Source code"
-        labelInfo="e.g. https://github.com/myorg/myproject/tree/main/myappsource"
-        description="URI to your GitHub repo, which can include the full path to a subdirectory"
-        ctrl={ctrl}
-      />
-    )
-  }
-
-  function image(ctrl: FormContextProps) {
-    return <Input fieldId="image" label="Image" description="The base image to run your code on" ctrl={ctrl} />
-  }
-
-  function command(ctrl: FormContextProps) {
-    return (
-      <Input
-        fieldId="command"
-        label="Command line"
-        description={`The command line used to launch your ${singular.applications}`}
-        ctrl={ctrl}
-      />
-    )
-  }
-
-  function description(ctrl: FormContextProps) {
-    return (
-      <TextArea
-        fieldId="description"
-        label="Description"
-        description={`Describe the details of your ${singular.applications}`}
-        ctrl={ctrl}
-        rows={8}
-      />
-    )
-  }
-
-  function supportsGpu(ctrl: FormContextProps) {
-    return (
-      <Checkbox
-        fieldId="supportsGpu"
-        label="Supports GPU?"
-        description={`Does your ${singular.applications} support execution on GPUs?`}
-        ctrl={ctrl}
-        isRequired={false}
-      />
-    )
-  }
-
-  const clearError = useCallback(() => {
-    setDryRunSuccess(null)
-    setErrorInCreateRequest(null)
-  }, [])
-
-  const [dryRunSuccess, setDryRunSuccess] = useState<null | boolean>(null)
-
-  const doCreate = useCallback(async (values: FormContextProps["values"], dryRun = false) => {
-    try {
-      const response = await window.jay.create(values, yaml(values), dryRun)
-      if (response !== true) {
-        console.error(response)
-        setDryRunSuccess(false)
-        setErrorInCreateRequest(new Error(response.message))
-      } else {
-        setErrorInCreateRequest(null)
-        if (dryRun) {
-          setDryRunSuccess(true)
-        } else {
-          props.onSuccess()
-        }
-      }
-    } catch (errorInCreateRequest) {
-      console.error(errorInCreateRequest)
-      if (errorInCreateRequest) {
-        setErrorInCreateRequest(errorInCreateRequest)
-      }
-    }
-  }, [])
-
-  function header() {
-    return (
-      <WizardHeader
-        title={`Register ${singular.applications}`}
-        description={
-          <span>
-            An {singular.applications} is the source code that knows how to consume and then process{" "}
-            <strong>Tasks</strong>. Once you have registered your {singular.applications}, you can bring online{" "}
-            <strong>{names.workerpools}</strong> that run the Application against the tasks in a{" "}
-            <strong>Task Queue</strong>.
-          </span>
-        }
-        onClose={props.onCancel}
-      />
-    )
-  }
-
-  function isStep1Valid(ctrl: FormContextProps) {
-    return !!ctrl.values.name && !!ctrl.values.namespace
-  }
-
-  function isStep2Valid(ctrl: FormContextProps) {
-    return !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command
-  }
-
-  function step1(ctrl: FormContextProps) {
-    return (
-      <WizardStep id="wizard-step-1" name="Name" footer={!isStep1Valid(ctrl) ? nextIsDisabled : nextIsEnabled}>
-        <Form>
-          <FormSection>
-            <Grid hasGutter md={6}>
-              <GridItem span={12}>{name(ctrl)}</GridItem>
-              <GridItem span={12}>{namespace(ctrl)}</GridItem>
-              <GridItem span={12}>{description(ctrl)}</GridItem>
-            </Grid>
-          </FormSection>
-        </Form>
-      </WizardStep>
-    )
-  }
-
-  function step2(ctrl: FormContextProps) {
-    return (
-      <WizardStep
-        id="wizard-step-2"
-        name="Code and Dependencies"
-        footer={!isStep2Valid(ctrl) ? nextIsDisabled : nextIsEnabled}
-      >
-        <Form>
-          <FormSection>
-            <Grid hasGutter md={6}>
-              <GridItem span={12}>{command(ctrl)}</GridItem>
-              <GridItem span={12}>{repoInput(ctrl)}</GridItem>
-              <GridItem span={12}>{image(ctrl)}</GridItem>
-              <GridItem span={12}>{supportsGpu(ctrl)}</GridItem>
-            </Grid>
-          </FormSection>
-        </Form>
-      </WizardStep>
-    )
-  }
-
-  function modelDatas(ctrl: FormContextProps) {
-    return (
-      <SelectCheckbox
-        fieldId="modeldatas"
-        label={singular.modeldatas}
-        description={`Select the "fixed" ${names.modeldatas} this ${singular.applications} needs access to`}
-        ctrl={ctrl}
-        options={props.modeldatas.sort()}
-        icons={<TaskQueueIcon />}
-      />
-    )
-  }
-
-  function useTestQueueCheckbox(ctrl: FormContextProps) {
-    return (
-      <Checkbox
-        fieldId="useTestQueue"
-        label="Use Internal Test Task Queue?"
-        description="This uses a task queue that requires less configuration, but is less scalable"
-        isChecked={ctrl.values.useTestQueue === "true"}
-        ctrl={ctrl}
-        isDisabled
-        isRequired={true}
-      />
-    )
-  }
-  function step3(ctrl: FormContextProps) {
-    return (
-      <WizardStep id="wizard-step-3" name="Model Data">
-        <Alert
-          variant="info"
-          className={props.modeldatas.length === 0 ? "" : "codeflare--step-header"}
-          isInline
-          title="Model Data"
-        >
-          If your {singular.applications} needs access to <strong>model data</strong> (information that is needed to
-          process all tasks; e.g. a pre-trained model or a chip design that is being tested across multiple
-          configurations), you may supply that information here.
-        </Alert>
-
-        {props.modeldatas.length === 0 ? (
-          <Alert variant="warning" title="Warning" isInline>
-            No {names.modeldatas} are registered
-          </Alert>
-        ) : (
-          <Form>
-            <FormSection>
-              <Grid hasGutter md={6}>
-                <GridItem span={6}>{modelDatas(ctrl)}</GridItem>
-              </Grid>
-            </FormSection>
-          </Form>
-        )}
-      </WizardStep>
-    )
-  }
-
-  function step4(ctrl: FormContextProps) {
-    return (
-      <WizardStep id="wizard-step-4" name="Task Queue">
-        <Alert variant="info" className="codeflare--step-header" isInline title="Link to a Task Queue">
-          Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
-          <strong>{singular.taskqueues}</strong>.
-        </Alert>
-
-        <Form>
-          <FormSection>
-            <Grid hasGutter md={6}>
-              <GridItem span={6}>{useTestQueueCheckbox(ctrl)}</GridItem>
-            </Grid>
-          </FormSection>
-        </Form>
-      </WizardStep>
-    )
-  }
-
-  /*function step2(ctrl: FormContextProps) {
-    return (
-      <WizardStep id="new-worker-pool-step-locate" name="Choose a Location">
-        TODO
-      </WizardStep>
-    )
-  } */
-
-  function yaml(values: FormContextProps["values"]) {
-    const apiVersion = "codeflare.dev/v1alpha1"
-    const kind = singular.applications
-    const taskqueueName = values.taskqueueName ?? values.name.replace(/-/g, "")
-
-    return `
+  return `
 apiVersion: ${apiVersion}
 kind: ${kind}
 metadata:
@@ -368,74 +126,104 @@ data:
   accessKeyID: ${btoa(values.taskqueueAccessKeyId ?? "codeflarey")}
   secretAccessKey: ${btoa(values.taskqueueSecretAccessKey ?? "codeflarey")}
 `.trim()
-  }
-
-  function review(ctrl: FormContextProps) {
-    const doDryRun = () => doCreate(ctrl.values, true)
-
-    return (
-      <WizardStep
-        id="wizard-step-review"
-        name="Review"
-        status={errorInCreateRequest ? "error" : "default"}
-        footer={{ nextButtonText: `Create ${singular.applications}`, onNext: () => doCreate(ctrl.values) }}
-      >
-        {errorInCreateRequest || dryRunSuccess !== null ? (
-          <FormAlert>
-            <Alert
-              isInline
-              actionClose={<AlertActionCloseButton onClose={clearError} />}
-              variant={!errorInCreateRequest && dryRunSuccess ? "success" : "danger"}
-              title={
-                !errorInCreateRequest && dryRunSuccess
-                  ? "Dry run successful"
-                  : hasMessage(errorInCreateRequest)
-                  ? errorInCreateRequest.message
-                  : "Internal error"
-              }
-            />
-          </FormAlert>
-        ) : (
-          <></>
-        )}
-
-        <FormAlert className="codeflare--step-header">
-          <Alert
-            variant="info"
-            title="Review"
-            isInline
-            actionLinks={<AlertActionLink onClick={doDryRun}>Dry run</AlertActionLink>}
-          >
-            Confirm the settings for your new repo secret.{" "}
-          </Alert>
-        </FormAlert>
-
-        <Yaml content={yaml(ctrl.values)} />
-      </WizardStep>
-    )
-  }
-
-  const settings = useContext(Settings)
-
-  return (
-    <FormContextProvider initialValues={defaults(settings?.form[0])}>
-      {(ctrlWithoutMemory) => {
-        const ctrl = remember("applications", ctrlWithoutMemory, settings?.form)
-
-        return (
-          <Wizard header={header()} onClose={props.onCancel} onStepChange={clearError}>
-            {step1(ctrl)}
-            {step2(ctrl)}
-            {step3(ctrl)}
-            {step4(ctrl)}
-            {review(ctrl)}
-          </Wizard>
-        )
-      }}
-    </FormContextProvider>
-  )
 }
 
-function hasMessage(obj: unknown): obj is { message: string } {
-  return typeof (obj as { message: string }).message === "string"
+export default function NewApplicationWizard(props: Props) {
+  const [searchParams] = useSearchParams()
+
+  /** Initial value for form */
+  const defaults = useCallback(
+    (previousValues?: Record<string, string>) => ({
+      name: previousValues?.name ?? uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
+      namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+      repo: previousValues?.repo ?? "",
+      image: previousValues?.image ?? "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
+      command: previousValues?.command ?? "",
+      description: previousValues?.description ?? "",
+      supportsGpu: previousValues?.supportsGpu ?? "false",
+      useTestQueue: previousValues?.useTestQueue ?? "true",
+    }),
+    [searchParams],
+  )
+
+  const modelDatas = useCallback(
+    (ctrl: FormContextProps) => (
+      <SelectCheckbox
+        fieldId="modeldatas"
+        label={singular.modeldatas}
+        description={`Select the "fixed" ${names.modeldatas} this ${singular.applications} needs access to`}
+        ctrl={ctrl}
+        options={props.modeldatas.sort()}
+        icons={<TaskQueueIcon />}
+      />
+    ),
+    [],
+  )
+
+  const useTestQueueCheckbox = useCallback(
+    (ctrl: FormContextProps) => (
+      <Checkbox
+        fieldId="useTestQueue"
+        label="Use Internal Test Task Queue?"
+        description="This uses a task queue that requires less configuration, but is less scalable"
+        isChecked={ctrl.values.useTestQueue === "true"}
+        ctrl={ctrl}
+        isDisabled
+        isRequired={true}
+      />
+    ),
+    [],
+  )
+
+  const step3 = {
+    name: singular.modeldatas,
+    alerts: [
+      {
+        title: singular.modeldatas,
+        body: (
+          <span>
+            If your {singular.applications} needs access to a {singular.modeldatas}, i.e. global data needed across all
+            tasks (e.g. a pre-trained model or a chip design that is being tested across multiple configurations), you
+            may supply that information here.
+          </span>
+        ),
+      },
+      ...(props.modeldatas.length > 0
+        ? []
+        : [
+            {
+              variant: "warning" as const,
+              title: "Warning",
+              body: <span>No {names.modeldatas} are registered</span>,
+            },
+          ]),
+    ],
+    items: props.modeldatas.length === 0 ? [] : [modelDatas],
+  }
+
+  const step4 = {
+    name: singular.taskqueues,
+    alerts: [
+      {
+        title: `Link to a ${singular.taskqueues}`,
+        body: (
+          <span>
+            Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
+            <strong>{singular.taskqueues}</strong>.
+          </span>
+        ),
+      },
+    ],
+    items: [useTestQueueCheckbox],
+  }
+
+  const title = `Register ${singular.applications}`
+  const steps = [step1, step2, step3, step4]
+  return (
+    <NewResourceWizard {...props} kind="applications" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+      An {singular.applications} is the source code that knows how to consume and then process <strong>Tasks</strong>.
+      Once you have registered your {singular.applications}, you can bring online <strong>{names.workerpools}</strong>{" "}
+      that run the {singular.applications} against the tasks in a <strong>{singular.taskqueues}</strong>.
+    </NewResourceWizard>
+  )
 }
