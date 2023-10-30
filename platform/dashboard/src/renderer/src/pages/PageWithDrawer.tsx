@@ -1,9 +1,8 @@
-import { useCallback } from "react"
+import { useCallback, useMemo, useState, type PropsWithChildren } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
-import type { PropsWithChildren } from "react"
-
 import {
+  Button,
   Breadcrumb,
   BreadcrumbItem,
   Title,
@@ -38,6 +37,9 @@ import names, { resourceNames } from "../names"
 import navigateToHome from "../navigate/home"
 import { hashIfNeeded } from "../navigate/kind"
 import { isShowingDetails, navigateToDetails } from "../navigate/details"
+
+import RestoreIcon from "@patternfly/react-icons/dist/esm/icons/window-restore-icon"
+import MaximizeIcon from "@patternfly/react-icons/dist/esm/icons/window-maximize-icon"
 
 import "./Detail.scss"
 
@@ -145,9 +147,18 @@ export default function PageWithDrawer(props: Props) {
       <JobManagerDetail />
     ) : undefined
 
+  /** Is the slide-out drawer maximized? */
+  const [isMaximized, setIsMaximized] = useState(false)
+
+  /** Toggle the `isMaximized` state */
+  const toggleIsMaximized = useCallback(() => setIsMaximized((curState) => !curState), [setIsMaximized])
+
+  /** Width of the drawer: 100% if `isMaximized`, default behavior otherwise */
+  const widths = useMemo(() => (isMaximized ? { default: "width_100" as const } : undefined), [isMaximized])
+
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   const panelContent = (
-    <DrawerPanelContent className="codeflare--detail-view" isResizable>
+    <DrawerPanelContent className="codeflare--detail-view" isResizable={!isMaximized} widths={widths}>
       <DrawerHead>
         <Breadcrumb>
           {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
@@ -158,6 +169,7 @@ export default function PageWithDrawer(props: Props) {
         </Title>
 
         <DrawerActions>
+          <DrawerMaximizeButton isMaximized={isMaximized} onClick={toggleIsMaximized} />
           <DrawerCloseButton onClick={returnHome} />
         </DrawerActions>
       </DrawerHead>
@@ -174,5 +186,12 @@ export default function PageWithDrawer(props: Props) {
         </DrawerContent>
       </Drawer>
     </PageWithMastheadAndModal>
+  )
+}
+
+/** UI to present a window maximize button-icon */
+function DrawerMaximizeButton(props: { isMaximized: boolean; onClick: () => void }) {
+  return (
+    <Button variant="plain" icon={props.isMaximized ? <RestoreIcon /> : <MaximizeIcon />} onClick={props.onClick} />
   )
 }
