@@ -4,7 +4,7 @@ import { descriptionGroup } from "../DescriptionGroup"
 import type { BaseProps } from "../CardInGallery"
 import type DataSetEvent from "@jay/common/events/ModelDataEvent"
 
-import DataSetIcon from "../TaskQueue/Icon"
+import DataSetIcon from "./Icon"
 
 export default function DataSetCard(props: BaseProps & DataSetEvent) {
   const kind = "modeldatas" as const
