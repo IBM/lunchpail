@@ -4,7 +4,7 @@
   command: ["/bin/bash", "-c"]
   args:
     - |
-      echo "Started TaskSimulator injectedTasksPerInterval=$TASKS frequencyInSeconds=$FREQUENCY"
+      echo "Started TaskSimulator injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
       printenv
 
       config=/tmp/rclone.conf
@@ -30,12 +30,12 @@
           rclone --config $config sync $PROGRESS $task $remote
         done
         
-        sleep ${FREQUENCY-5}
+        sleep ${INTERVAL-5}
       done
   env:
     - name: TASKS
       value: {{ quote .Values.injectedTasksPerInterval }}
-    - name: FREQUENCY
-      value: {{ quote .Values.frequencyInSeconds }}
+    - name: INTERVAL
+      value: {{ quote .Values.intervalSeconds }}
     {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
 {{- end }}

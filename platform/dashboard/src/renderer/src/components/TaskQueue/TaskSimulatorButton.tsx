@@ -26,7 +26,7 @@ spec:
   dataset: ${name}
   rate:
     tasks: 1
-    frequencyInSeconds: 5
+    intervalSeconds: 5
 `
   // ^^^ 1 every 5 seconds
 }

@@ -9,7 +9,7 @@ from status import set_status, add_error_condition
 def create_tasksimulator(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch):
     dataset = spec['dataset']
     injectedTasksPerInterval = spec['rate']['tasks']
-    frequencyInSeconds = spec['rate']['frequencyInSeconds'] if "frequencyInSeconds" in spec['rate'] else 10
+    intervalSeconds = spec['rate']['intervalSeconds'] if "intervalSeconds" in spec['rate'] else 10
     
     try:
         out = subprocess.run([
@@ -18,7 +18,7 @@ def create_tasksimulator(customApi, name: str, namespace: str, uid: str, spec, d
             name,
             namespace,
             str(injectedTasksPerInterval),
-            str(frequencyInSeconds),
+            str(intervalSeconds),
             dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
         ], capture_output=True)

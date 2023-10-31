@@ -10,7 +10,7 @@ uid="$1"
 name="$2"
 namespace="$3"
 injectedTasksPerInterval="$4"
-frequencyInSeconds="$5"
+intervalSeconds="$5"
 dataset_name="$6"
 datasets="${7}"
 
@@ -26,7 +26,7 @@ helm install --dry-run --debug $name "$SCRIPTDIR"/tasksimulator/ -n ${namespace}
      --set partOf=$dataset_name \
      --set queue.dataset=$dataset_name \
      --set injectedTasksPerInterval=$injectedTasksPerInterval \
-     --set frequencyInSeconds=$frequencyInSeconds \
+     --set intervalSeconds=$intervalSeconds \
      --set datasets=$datasets \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY

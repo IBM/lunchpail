@@ -32,7 +32,7 @@ spec:
                   properties:
                     tasks:
                       type: number
-                    frequencyInSeconds:
+                    intervalSeconds:
                       type: number
 
             status:
