@@ -7,32 +7,32 @@ import type { KubernetesS3Secret } from "@jay/common/events/KubernetesResource"
 
 import "./S3Browser.scss"
 
-interface MenuHeights {
-  [menuId: string]: number
-}
-
 type InteriorNode = {
   name: string
-  children: BucketItemTree[]
+  children: Tree[]
 }
 
 type LeafNode = InteriorNode & Pick<BucketItem, "lastModified">
 
-type BucketItemTree = LeafNode | InteriorNode
-function isLeafNode(item: BucketItemTree): item is LeafNode {
+type Tree = LeafNode | InteriorNode
+
+function isLeafNode(item: Tree): item is LeafNode {
   const node = item as InteriorNode
   return typeof node.name === "string" && (!Array.isArray(node.children) || node.children.length === 0)
 }
 
+/**
+ * A React component that visualizes the forest given by `props.roots[]`.
+ */
 function NavBrowser(
-  props: { roots: BucketItemTree[]; endpoint: string; bucket: string; accessKey: string; secretKey: string } & Pick<
+  props: { roots: Tree[]; endpoint: string; bucket: string; accessKey: string; secretKey: string } & Pick<
     Required<typeof window.jay>,
     "s3"
   >,
 ) {
   const [menuDrilledIn, setMenuDrilledIn] = useState<string[]>([])
   const [drilldownPath, setDrilldownPath] = useState<string[]>([])
-  const [menuHeights, setMenuHeights] = useState<MenuHeights>({})
+  const [menuHeights, setMenuHeights] = useState<Record<string, number>>({})
   const [activeMenu, setActiveMenu] = useState("nav-drilldown-rootMenu")
 
   const onDrillIn = (_event: KeyboardEvent | MouseEvent, fromItemId: string, toItemId: string, itemId: string) => {
@@ -56,7 +56,7 @@ function NavBrowser(
     }
   }
 
-  function showContent(item: BucketItemTree) {
+  function showContent(item: Tree) {
     const [loading, setLoading] = useState(true)
     const [content, setContent] = useState<string | { error: unknown } | null>(null)
 
@@ -83,7 +83,7 @@ function NavBrowser(
       ) : isError(content) ? (
         "Error loading content: " + content.error
       ) : (
-        prettyPrint(content, item.name)
+        viewContent(content, item.name)
       )
     return (
       <MenuItem
@@ -95,7 +95,7 @@ function NavBrowser(
     )
   }
 
-  function toMenuItems(roots: BucketItemTree[], depth: number, parent?: BucketItemTree) {
+  function toMenuItems(roots: Tree[], depth: number, parent?: Tree) {
     const baseId = `s3nav-drilldown-${depth}-`
 
     return [
@@ -106,12 +106,12 @@ function NavBrowser(
               {parent.name}
             </MenuItem>,
           ]),
-      ...(roots.length === 0 && parent && isViewable(parent.name) ? [showContent(parent)] : []),
+      ...(roots.length === 0 && parent && hasViewableContent(parent.name) ? [showContent(parent)] : []),
       ...roots.map((item, idx) => (
         <MenuItem
           key={item.name}
           itemId={baseId + `item-${idx}`}
-          direction={!isLeafNode(item) || isViewable(item.name) ? "down" : undefined}
+          direction={!isLeafNode(item) || hasViewableContent(item.name) ? "down" : undefined}
           description={!isLeafNode(item) ? "Folder" : filetypeFromName(item.name)}
           drilldownMenu={
             <DrilldownMenu id={baseId + `drilldown-${idx}`}>
@@ -145,6 +145,10 @@ function NavBrowser(
   )
 }
 
+/**
+ * A React component that presents a `<NavBrowser/>` after loading the
+ * `Tree` model.
+ */
 export default function S3Browser(
   props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jay>, "get" | "s3">,
 ) {
@@ -189,7 +193,11 @@ export default function S3Browser(
   }
 }
 
-function toTree(items: BucketItem[]): BucketItemTree[] {
+/**
+ * Take a list of S3 objects and fold them into a `Tree` model based
+ * on the `/` path separators in the `name` field of the `items`.
+ */
+function toTree(items: BucketItem[]): Tree[] {
   const slashes = /\//
   return items.reduce(
     (r, s) => {
@@ -203,7 +211,7 @@ function toTree(items: BucketItem[]): BucketItemTree[] {
       }
       return r
     },
-    { children: [] as BucketItemTree[] },
+    { children: [] as Tree[] },
   ).children
 }
 
@@ -227,12 +235,21 @@ function filetypeFromName(name: string) {
   }
 }
 
-function isViewable(name: string) {
+/**
+ * This is imperfect: i.e. if `filetypeLookup` has a mapping for the
+ * file extension of the file with `name`, then it is viewable by
+ * us, as in the `viewContent()` function knows what to do.
+ */
+function hasViewableContent(name: string) {
   return !!filetypeFromName(name)
 }
 
-function prettyPrint(content: string, itemName: string) {
-  const ext = filetypeFromName(itemName)
+/**
+ * @return a React component to visualize the given `content` for the
+ * S3 `objectName`
+ */
+function viewContent(content: string, objectName: string) {
+  const ext = filetypeFromName(objectName)
   if (/text/i.test(ext)) {
     return <Text component="pre">{content}</Text>
   } else if (/json/i.test(ext)) {
