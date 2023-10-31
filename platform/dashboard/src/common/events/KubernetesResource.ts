@@ -1,4 +1,4 @@
-export default interface KubernetesResource<Spec, Annotations = unknown, Labels = unknown> {
+type KubernetesResource<Spec, Annotations = unknown, Labels = unknown, Top = unknown> = Top & {
   /** Resource metadata */
   metadata: Labels & {
     /** Resource name */
@@ -26,3 +26,8 @@ export default interface KubernetesResource<Spec, Annotations = unknown, Labels 
   /** Resource spec */
   spec: Spec
 }
+
+export type KubernetesSecret<Data> = KubernetesResource<unknown, unknown, unknown, { data: Data }>
+export type KubernetesS3Secret = KubernetesSecret<{ accessKeyID: string; secretAccessKey: string }>
+
+export default KubernetesResource

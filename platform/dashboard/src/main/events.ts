@@ -5,8 +5,9 @@ import { Status, getStatusFromMain } from "./controlplane/status"
 
 import type WatchedKind from "@jay/common/Kind"
 import type JayApi from "@jay/common/api/jay"
-import ExecResponse from "@jay/common/events/ExecResponse"
+import type ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
+import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 function streamForKind(kind: WatchedKind): import("stream").Transform {
   switch (kind) {
@@ -105,6 +106,19 @@ export function initEvents() {
   // resource
   kinds.forEach(initStreamForResourceKind)
 
+  // resource get request
+  ipcMain.handle("/get", (_, props: string) => import("./get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)))
+
+  ipcMain.handle("/s3/listObjects", (_, endpoint: string, accessKey: string, secretKey: string, bucket: string) =>
+    import("./s3/listObjects").then((_) => _.default(endpoint, accessKey, secretKey, bucket)),
+  )
+
+  ipcMain.handle(
+    "/s3/getObject",
+    (_, endpoint: string, accessKey: string, secretKey: string, bucket: string, object: string) =>
+      import("./s3/getObject").then((_) => _.default(endpoint, accessKey, secretKey, bucket, object)),
+  )
+
   // resource create request
   ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
     import("./create").then((_) => _.onCreate(yaml, "apply", dryRun)),
@@ -162,6 +176,7 @@ function onFromClientSide(this: WatchedKind, _: "message", cb: (...args: unknown
 
 const apiImpl: JayApi = Object.assign(
   {
+    /** Jobs as a Service API to server-side control plane functionality */
     controlplane: {
       async status() {
         const status = (await ipcRenderer.invoke("/controlplane/status")) as Status
@@ -178,10 +193,50 @@ const apiImpl: JayApi = Object.assign(
       },
     },
 
+    /**
+     * S3 API
+     */
+    s3: {
+      /** @return list of objects in the given s3 bucket */
+      async listObjects(
+        endpoint: string,
+        accessKey: string,
+        secretKey: string,
+        bucket: string,
+      ): Promise<{ name: string; size: number; lastModified: Date }[]> {
+        return ipcRenderer.invoke("/s3/listObjects", endpoint, accessKey, secretKey, bucket)
+      },
+
+      /** @return object content */
+      async getObject(
+        endpoint: string,
+        accessKey: string,
+        secretKey: string,
+        bucket: string,
+        object: string,
+      ): Promise<string> {
+        return ipcRenderer.invoke("/s3/getObject", endpoint, accessKey, secretKey, bucket, object)
+      },
+    },
+
+    /** Fetch a resource */
+    async get<R extends KubernetesResource<unknown>>(props: DeleteProps): Promise<R> {
+      const response = (await ipcRenderer.invoke("/get", JSON.stringify(props))) as ExecResponse
+      if (response === true) {
+        throw new Error("Internal error")
+      } else if (response.code === 0) {
+        return JSON.parse(response.message) as R
+      } else {
+        throw new Error(response.message)
+      }
+    },
+
+    /** Create a resource */
     create: (_, yaml: string, dryRun = false): Promise<ExecResponse> => {
       return ipcRenderer.invoke("/create", yaml, dryRun)
     },
 
+    /** Delete a resource */
     delete: (props: DeleteProps): Promise<ExecResponse> => {
       return ipcRenderer.invoke("/delete", JSON.stringify(props))
     },

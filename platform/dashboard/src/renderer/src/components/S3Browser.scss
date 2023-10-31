@@ -1,0 +1,17 @@
+$font-size: 0.875rem;
+
+.codeflare--s3-browser {
+  font-size: $font-size !important;
+  button {
+    font-size: $font-size !important;
+  }
+  pre {
+    color: var(--pf-v5-global--Color--light-100) !important;
+  }
+
+  .codeflare--no-hover {
+    &:hover {
+      background: unset;
+    }
+  }
+}

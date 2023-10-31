@@ -37,7 +37,7 @@ export async function onCreate(
   })
 }
 
-function hasMessage(obj: unknown): obj is { message: string } {
+export function hasMessage(obj: unknown): obj is { message: string } {
   return typeof (obj as { message: string }).message === "string"
 }
 

@@ -1,3 +1,4 @@
+import S3Browser from "../S3Browser"
 import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
@@ -22,11 +23,18 @@ function rightActions(props: Props) {
   return [deleteAction(props)]
 }
 
+function otherTabs(props: Props) {
+  return !window.jay.get || !window.jay.s3
+    ? []
+    : [{ title: "Browser", body: <S3Browser {...props.spec.local} get={window.jay.get} s3={window.jay.s3} /> }]
+}
+
 function DataSetDetail(props: Props) {
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props}
+      otherTabs={otherTabs(props)}
       rightActions={props && rightActions(props)}
     />
   )

@@ -6,50 +6,33 @@ import trimJunk from "./trim-junk"
 import DrawerToolbar from "./Toolbar"
 import DetailNotFound from "./DetailNotFound"
 
-type TabsProps = { summary: ReactNode; raw?: object | null }
+type TabProps = { title: string; body: ReactNode }
+type TabsProps = { summary: ReactNode; raw?: object | null; otherTabs?: TabProps[] }
 
-function ContentTabs(props: TabsProps) {
-  const [activeTabKey, setActiveTabKey] = useState<string | number>(0)
+type Props = TabsProps & {
+  /** Actions to be displayed left-justified */
+  actions?: ReactElement[]
 
-  const handleTabClick = useCallback((_event, tabIndex: string | number) => {
-    setActiveTabKey(tabIndex)
-  }, [])
-
-  return (
-    <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
-      <Tab title={<TabTitleText>Summary</TabTitleText>} eventKey={0}>
-        <DrawerPanelBody>{props.summary || <DetailNotFound />}</DrawerPanelBody>
-      </Tab>
-
-      {props.raw && (
-        <Tab title={<TabTitleText>YAML</TabTitleText>} eventKey={1}>
-          <DrawerPanelBody hasNoPadding>
-            <Yaml obj={trimJunk(props.raw)} />
-          </DrawerPanelBody>
-        </Tab>
-      )}
-    </Tabs>
-  )
+  /** Actions to be displayed right-justified */
+  rightActions?: ReactElement[]
 }
 
-function ContentPanelBody(props: TabsProps) {
-  return (
-    <DrawerPanelBody className="codeflare--detail-view-body" hasNoPadding>
-      <ContentTabs {...props} />
-    </DrawerPanelBody>
-  )
-}
-
-/** Content to be shown inside the "sidebar" drawer */
-export default function DrawerContent(
-  props: TabsProps & {
-    actions?: ReactElement[]
-    rightActions?: ReactElement[]
-  },
-) {
+/**
+ * Content to be shown inside the "sidebar" drawer.
+ * |--------------------------|
+ * | DrawerPanelBody          |
+ * |   Tab1 Tab2 TabT3        |
+ * |   Content1               |
+ * |                          |
+ * | actions     rightActions |
+ * |--------------------------|
+ */
+export default function DrawerContent(props: Props) {
   return (
     <>
-      <ContentPanelBody summary={props.summary} raw={props.raw} />
+      <DrawerPanelBody className="codeflare--detail-view-body" hasNoPadding>
+        <TabbedContent summary={props.summary} raw={props.raw} otherTabs={props.otherTabs} />
+      </DrawerPanelBody>
 
       {((props.actions && props.actions?.length > 0) || (props.rightActions && props.rightActions?.length > 0)) && (
         <>
@@ -60,5 +43,35 @@ export default function DrawerContent(
         </>
       )}
     </>
+  )
+}
+
+/**
+ * The Tabs and Body parts of `DrawerContent`
+ */
+function TabbedContent(props: TabsProps) {
+  const [activeTabKey, setActiveTabKey] = useState<string | number>(0)
+
+  const handleTabClick = useCallback(
+    (_event, tabIndex: string | number) => {
+      setActiveTabKey(tabIndex)
+    },
+    [setActiveTabKey],
+  )
+
+  const tabs: TabProps[] = [
+    { title: "Summary", body: props.summary || <DetailNotFound /> },
+    ...(props.otherTabs || []),
+    ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={trimJunk(props.raw)} /> }]),
+  ]
+
+  return (
+    <Tabs activeKey={activeTabKey} onSelect={handleTabClick} mountOnEnter>
+      {tabs.map((tab, idx) => (
+        <Tab key={tab.title} title={<TabTitleText>{tab.title}</TabTitleText>} eventKey={idx}>
+          <DrawerPanelBody>{tab.body}</DrawerPanelBody>
+        </Tab>
+      ))}
+    </Tabs>
   )
 }

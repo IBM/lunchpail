@@ -40,6 +40,7 @@ export default function DemoDashboard() {
   if (!window.demo) {
     window.jay = window.demo = Object.assign({}, props, {
       create: props.workerpools.create.bind(props.workerpools),
+
       delete(dprops: import("@jay/common/api/jay").DeleteProps) {
         if (/workerpool/.test(dprops.kind)) {
           return props.workerpools.delete(dprops)

@@ -1,5 +1,9 @@
 import type Kind from "../Kind"
-import ExecResponse from "@jay/common/events/ExecResponse"
+import type ExecResponse from "../events/ExecResponse"
+import type KubernetesResource from "../events/KubernetesResource"
+
+import type S3Api from "./s3"
+import type ControlPlaneApi from "./ControlPlane"
 
 export type OnModelUpdateFn = (_: unknown, model: { data: string }) => void
 type CleanupFn = () => void
@@ -13,25 +17,13 @@ export interface JayResourceApi {
   on(source: "message", cb: OnModelUpdateFn): CleanupFn
 }
 
-/** Jobs as a Service API to server-side control plane functionality */
-export interface ControlPlaneApi {
-  /** @return status of the control plane */
-  status(): Promise<import("../status/JobManagerStatus").default>
-
-  /** Bring up the control plane */
-  init(): void | Promise<void>
-
-  /** Refresh up the control plane to the latest version */
-  update(): void | Promise<void>
-
-  /** Tear down the control plane */
-  destroy(): void | Promise<void>
-}
-
 export type DeleteProps = { kind: string; name: string; namespace: string }
 
 /** Jobs as a Service API to server-side functionality */
 export default interface JayApi extends Record<Kind, JayResourceApi> {
+  /** Fetch a resource */
+  get?: <R extends KubernetesResource<unknown>>(props: DeleteProps) => R | Promise<R>
+
   /** Create a resource */
   create(values: Record<string, string>, yaml: string, dryRun?: boolean): ExecResponse | Promise<ExecResponse>
 
@@ -40,4 +32,7 @@ export default interface JayApi extends Record<Kind, JayResourceApi> {
 
   /** Jobs as a Service API to server-side control plane functionality */
   controlplane: ControlPlaneApi
+
+  /** S3 API */
+  s3?: S3Api
 }
