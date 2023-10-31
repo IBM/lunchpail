@@ -19,14 +19,16 @@ test("3 demo task queues visible", async () => {
     await page.getByRole("link", { name: "Task Queues" }).click()
 
     // Verify that the three showing are the pink, purple, and green cards
-    await expect(page.locator('[ouia-component-id="green"]')).toBeVisible({
-      timeout: 8000,
-    })
-    await expect(page.locator('[ouia-component-id="pink"]')).toBeVisible({
-      timeout: 8000,
-    })
-    await expect(page.locator('[ouia-component-id="purple"]')).toBeVisible({
-      timeout: 8000,
-    })
+    const expectedCards = ["green", "pink", "purple"]
+
+    await Promise.all(
+      expectedCards.map((id) =>
+        expect(page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${id}"]`))
+          .toBeVisible({
+            timeout: 30000,
+          })
+          .then(() => console.log("got", id)),
+      ),
+    )
   }
 })

@@ -45,7 +45,7 @@ export default function CardInGallery(props: Props) {
       isClickable
       isSelectable
       isSelectableRaised
-      ouia-component-id={props.name}
+      ouiaId={props.name}
       isSelected={props.currentlySelectedId === props.name && props.currentlySelectedKind === props.kind}
       onClick={onClick}
     >
