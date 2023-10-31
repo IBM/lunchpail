@@ -82,7 +82,7 @@ metadata:
     app.kubernetes.io/component: ${values.name}
 type: Opaque
 data:
-  accessKeyID: ${btoa(values.accessKeyId ?? "codeflarey")}
+  accessKeyID: ${btoa(values.accessKey ?? "codeflarey")}
   secretAccessKey: ${btoa(values.secretAccessKey ?? "codeflarey")}
 `.trim()
 }
