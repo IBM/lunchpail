@@ -5,7 +5,7 @@ services:
 
 env:
   - SCRIPT=test.sh
-  - SCRIPT=ibmcloud-gpu.sh
+#  - SCRIPT=ibmcloud-gpu.sh <-- FIXME gpu allocations are failing
   - SCRIPT=dashboard.sh
 
 before_install: ./hack/travis/setup.sh
