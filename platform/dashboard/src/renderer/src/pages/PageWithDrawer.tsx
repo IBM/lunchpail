@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState, type PropsWithChildren } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { useCallback, useMemo, useState, type PropsWithChildren, type ReactNode } from "react"
 
 import {
   Button,
@@ -19,17 +19,8 @@ import PageWithMastheadAndModal from "./PageWithMastheadAndModal"
 
 import type { NavigableKind } from "../Kind"
 import type { PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
-import type DataSetProps from "../components/ModelData/Props"
-import type TaskQueueProps from "../components/TaskQueue/Props"
-import type WorkerPoolProps from "../components/WorkerPool/Props"
 
-import DataSetDetail from "../components/ModelData/Detail"
-import TaskQueueDetail from "../components/TaskQueue/Detail"
-import WorkerPoolDetail from "../components/WorkerPool/Detail"
-import ApplicationDetail from "../components/Application/Detail"
-import JobManagerDetail from "../components/JobManager/Detail"
 import DetailNotFound from "../components/Drawer/DetailNotFound"
 
 import names, { resourceNames } from "../names"
@@ -45,10 +36,7 @@ import "./Detail.scss"
 
 type Props = PropsWithChildren<
   PageWithMastheadAndModalProps & {
-    getApplication(name: string): ApplicationSpecEvent | undefined
-    getDataSet(name: string): DataSetProps | undefined
-    getTaskQueue(name: string): TaskQueueProps | undefined
-    getWorkerPool(name: string): WorkerPoolProps | undefined
+    currentDetail?: ReactNode
   }
 >
 
@@ -130,22 +118,7 @@ export default function PageWithDrawer(props: Props) {
     [location, navigate, searchParams],
   )
 
-  const id = currentlySelectedId(searchParams)
   const kind = currentlySelectedKind(searchParams)
-
-  // memo: we only need to regenerate the drawer content if the currently selected content has changed
-  const drilldownDetailContentcontentForDrawer =
-    id !== null && kind === "applications" ? (
-      ApplicationDetail(props.getApplication(id))
-    ) : id !== null && kind === "modeldatas" ? (
-      DataSetDetail(props.getDataSet(id))
-    ) : id !== null && kind === "taskqueues" ? (
-      TaskQueueDetail(props.getTaskQueue(id))
-    ) : id !== null && kind === "workerpools" ? (
-      WorkerPoolDetail(props.getWorkerPool(id))
-    ) : kind === "controlplane" ? (
-      <JobManagerDetail />
-    ) : undefined
 
   /** Is the slide-out drawer maximized? */
   const [isMaximized, setIsMaximized] = useState(false)
@@ -165,7 +138,7 @@ export default function PageWithDrawer(props: Props) {
           <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
         </Breadcrumb>
         <Title headingLevel="h2" size="2xl">
-          {id}
+          {currentlySelectedId(searchParams)}
         </Title>
 
         <DrawerActions>
@@ -174,12 +147,21 @@ export default function PageWithDrawer(props: Props) {
         </DrawerActions>
       </DrawerHead>
 
-      {drilldownDetailContentcontentForDrawer || <DetailNotFound />}
+      {props.currentDetail || <DetailNotFound />}
     </DrawerPanelContent>
   )
 
+  const modalProps = {
+    modal: props.modal,
+    title: props.title,
+    subtitle: props.subtitle,
+    sidebar: props.sidebar,
+    footerLeft: props.footerLeft,
+    footerRight: props.footerRight,
+  }
+
   return (
-    <PageWithMastheadAndModal {...props}>
+    <PageWithMastheadAndModal {...modalProps}>
       <Drawer isExpanded={isShowingDetails(searchParams)} isInline>
         <DrawerContent panelContent={panelContent} colorVariant="light-200">
           <DrawerContentBody hasPadding>{props.children}</DrawerContentBody>

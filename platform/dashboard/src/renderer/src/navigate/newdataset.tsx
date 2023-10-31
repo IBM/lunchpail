@@ -10,30 +10,30 @@ import type LocationProps from "./LocationProps"
  * otherwise, present as if we are augmenting existing computational
  * resources.
  */
-export function LinkToNewModelData(
+export function LinkToNewDataSet(
   props: WizardProps & {
     action?: "register" | "create"
     namespace: string
   },
 ) {
-  const linkText = `Register ${singular.modeldatas}`
+  const linkText = `Register ${singular.datasets}`
   const qs = [`action=${props.action ?? "register"}`, `namespace=${props.namespace}`]
 
-  return <LinkToNewWizard {...props} kind="modeldatas" linkText={linkText} qs={qs} />
+  return <LinkToNewWizard {...props} kind="datasets" linkText={linkText} qs={qs} />
 }
 
-export function buttonPropsForNewModelData(
+export function buttonPropsForNewDataSet(
   location: Omit<LocationProps, "navigate">,
   props: WizardProps & {
     action?: "register" | "create"
     namespace: string
   },
 ) {
-  const linkText = `Register ${singular.modeldatas}`
+  const linkText = `Register ${singular.datasets}`
   const qs = [`action=${props.action ?? "register"}`, `namespace=${props.namespace}`]
 
   return linkerButtonProps(location, {
-    kind: "modeldatas",
+    kind: "datasets",
     linkText,
     qs,
   })

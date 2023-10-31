@@ -6,7 +6,7 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import names, { singular } from "../../../names"
 import { Checkbox, Input, SelectCheckbox } from "../../Forms"
-import { buttonPropsForNewModelData } from "../../../navigate/newmodeldata"
+import { buttonPropsForNewDataSet } from "../../../navigate/newdataset"
 import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
 import TaskQueueIcon from "../../TaskQueue/Icon"
@@ -150,19 +150,19 @@ export default function NewApplicationWizard(props: Props) {
       description: previousValues?.description ?? "",
       supportsGpu: previousValues?.supportsGpu ?? "false",
       useTestQueue: previousValues?.useTestQueue ?? "true",
-      modeldatas: previousValues?.modeldatas ?? "",
+      datasets: previousValues?.datasets ?? "",
     }),
     [searchParams],
   )
 
-  const modelDatas = useCallback(
+  const datasets = useCallback(
     (ctrl: FormContextProps) => (
       <SelectCheckbox
-        fieldId="modeldatas"
-        label={names.modeldatas}
-        description={`Select the "fixed" ${names.modeldatas} this ${singular.applications} needs access to`}
+        fieldId="datasets"
+        label={names.datasets}
+        description={`Select the "fixed" ${names.datasets} this ${singular.applications} needs access to`}
         ctrl={ctrl}
-        options={props.modeldatas.sort()}
+        options={props.datasets.sort()}
         icons={<TaskQueueIcon />}
       />
     ),
@@ -186,33 +186,33 @@ export default function NewApplicationWizard(props: Props) {
 
   const location = useLocation()
   const registerDataset = (ctrl: FormContextProps) =>
-    buttonPropsForNewModelData({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
+    buttonPropsForNewDataSet({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
   const step3 = {
-    name: names.modeldatas,
+    name: names.datasets,
     alerts: [
       {
-        title: names.modeldatas,
+        title: names.datasets,
         body: (
           <span>
-            If your {singular.applications} needs access to one or more {names.modeldatas}, i.e. global data needed
-            across all tasks (e.g. a pre-trained model or a chip design that is being tested across multiple
-            configurations), you may supply that information here.
+            If your {singular.applications} needs access to one or more {names.datasets}, i.e. global data needed across
+            all tasks (e.g. a pre-trained model or a chip design that is being tested across multiple configurations),
+            you may supply that information here.
           </span>
         ),
       },
-      ...(props.modeldatas.length > 0
+      ...(props.datasets.length > 0
         ? []
         : [
             {
               variant: "warning" as const,
               title: "Warning",
-              body: <span>No {names.modeldatas} are registered</span>,
+              body: <span>No {names.datasets} are registered</span>,
               actionLinks: [registerDataset],
             },
           ]),
     ],
-    items: props.modeldatas.length === 0 ? [] : [modelDatas],
+    items: props.datasets.length === 0 ? [] : [datasets],
   }
 
   /*const step4 = {

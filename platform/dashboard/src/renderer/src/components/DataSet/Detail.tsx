@@ -14,7 +14,7 @@ function detailGroups(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   return (
-    <DeleteButton kind="dataset" uiKind="modeldatas" name={props.metadata.name} namespace={props.metadata.namespace} />
+    <DeleteButton kind="dataset" uiKind="datasets" name={props.metadata.name} namespace={props.metadata.namespace} />
   )
 }
 

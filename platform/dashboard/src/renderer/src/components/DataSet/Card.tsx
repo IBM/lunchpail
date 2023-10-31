@@ -2,12 +2,12 @@ import CardInGallery from "../CardInGallery"
 import { descriptionGroup } from "../DescriptionGroup"
 
 import type { BaseProps } from "../CardInGallery"
-import type DataSetEvent from "@jay/common/events/ModelDataEvent"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 
 import DataSetIcon from "./Icon"
 
 export default function DataSetCard(props: BaseProps & DataSetEvent) {
-  const kind = "modeldatas" as const
+  const kind = "datasets" as const
   const icon = <DataSetIcon />
   const name = props.metadata.name
   const groups = [

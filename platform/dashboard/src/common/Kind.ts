@@ -1,7 +1,7 @@
 /** Resource types that we watch */
 const watchedKinds = [
   "taskqueues",
-  "modeldatas",
+  "datasets",
   "queues",
   "workerpools",
   "applications",

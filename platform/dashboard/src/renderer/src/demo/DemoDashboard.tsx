@@ -22,7 +22,7 @@ function init() {
 
     props = {
       taskqueues,
-      modeldatas: new NothingEventSource(),
+      datasets: new NothingEventSource(),
       workerpools,
       queues,
       applications,

@@ -13,7 +13,7 @@ function streamForKind(kind: WatchedKind): import("stream").Transform {
   switch (kind) {
     case "taskqueues":
       return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component=taskqueue"] })
-    case "modeldatas":
+    case "datasets":
       return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component!=taskqueue"] })
     case "queues":
       return startStreamForKind("queues.codeflare.dev", { withTimestamp: true })
@@ -93,7 +93,7 @@ function initStreamForResourceKind(kind: WatchedKind) {
 /** TODO this is cloned from @jay/common/Kind.watchedKinds. Vite currently isn't happy with importing non-type bits from common */
 const kinds: WatchedKind[] = [
   "taskqueues",
-  "modeldatas",
+  "datasets",
   "queues",
   "workerpools",
   "applications",

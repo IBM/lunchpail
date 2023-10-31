@@ -13,7 +13,7 @@ export const resourceNames: Record<ResourceKind, string> = {
   taskqueues: "Task Queues",
   workerpools: "Worker Pools",
   applications: "Applications",
-  modeldatas: "Datasets",
+  datasets: "Datasets",
 }
 
 export const credentialsNames: Record<CredentialsKind, string> = {
@@ -25,7 +25,7 @@ const names: Record<NavigableKind, string> = Object.assign({}, nonResourceNames,
 export const singular: Record<NamedKind, string> = {
   applications: "Application",
   taskqueues: "Task Queue",
-  modeldatas: "Dataset",
+  datasets: "Dataset",
   workerpools: "Worker Pool",
   platformreposecrets: "Repo Secret",
 }
@@ -54,9 +54,9 @@ export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
       <Link to={hash("applications")}>Applications</Link>, and is linked to a place to queue up the to-do tasks.
     </span>
   ),
-  modeldatas: (
+  datasets: (
     <span>
-      Each <strong>{singular.modeldatas}</strong> resource stores extra data needed by{" "}
+      Each <strong>{singular.datasets}</strong> resource stores extra data needed by{" "}
       <Link to={hash("applications")}>Applications</Link>, beyond that which is provided by an input Task. For example:
       a pre-trained model or a chip design that is being tested across multiple configurations.
     </span>

@@ -2,7 +2,7 @@ import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
 import { Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Text } from "@patternfly/react-core"
 
 import type { BucketItem } from "@jay/common/api/s3"
-import type DataSetEvent from "@jay/common/events/ModelDataEvent"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type { KubernetesS3Secret } from "@jay/common/events/KubernetesResource"
 
 import "./S3Browser.scss"

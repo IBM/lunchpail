@@ -6,7 +6,7 @@ import { returnHomeCallback } from "../navigate/home"
 
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
-import DataSet from "../components/ModelData/Card"
+import DataSet from "../components/DataSet/Card"
 import TaskQueue from "../components/TaskQueue/Card"
 import WorkerPool from "../components/WorkerPool/Card"
 import Application from "../components/Application/Card"
@@ -16,9 +16,15 @@ import Settings from "../Settings"
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 import DashboardModal from "./DashboardModal"
-import NewModelDataCards from "../components/ModelData/New/Cards"
+import NewDataSetCards from "../components/DataSet/New/Cards"
 import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
 import NewApplicationCard from "../components/Application/New/Card"
+
+import DataSetDetail from "../components/DataSet/Detail"
+import TaskQueueDetail from "../components/TaskQueue/Detail"
+import WorkerPoolDetail from "../components/WorkerPool/Detail"
+import ApplicationDetail from "../components/Application/Detail"
+import JobManagerDetail from "../components/JobManager/Detail"
 
 import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
@@ -40,7 +46,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
-import type ModelDataEvent from "@jay/common/events/ModelDataEvent"
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
@@ -65,7 +71,7 @@ export function Dashboard(props: Props) {
   const [poolEvents, setPoolEvents] = useState<WorkerPoolStatusEvent[]>([])
   const [queueEvents, setQueueEvents] = useState<QueueEvent[]>([])
   const [taskqueueEvents, setTaskQueueEvents] = useState<TaskQueueEvent[]>([])
-  const [modeldataEvents, setModelDataEvents] = useState<ModelDataEvent[]>([])
+  const [datasetEvents, setDataSetEvents] = useState<DataSetEvent[]>([])
   const [applicationEvents, setApplicationEvents] = useState<ApplicationSpecEvent[]>([])
   const [tasksimulatorEvents, setTaskSimulatorEvents] = useState<TaskSimulatorEvent[]>([])
   const [platformreposecretEvents, setPlatformRepoSecretEvents] = useState<PlatformRepoSecretEvent[]>([])
@@ -74,7 +80,7 @@ export function Dashboard(props: Props) {
   const handlers: Record<Kind, (evt: EventLike) => void> = {
     applications: singletonEventHandler("applications", setApplicationEvents, returnHome),
     taskqueues: allEventsHandler(setTaskQueueEvents),
-    modeldatas: singletonEventHandler("modeldatas", setModelDataEvents, returnHome),
+    datasets: singletonEventHandler("datasets", setDataSetEvents, returnHome),
     queues: allEventsHandler(setQueueEvents),
     workerpools: singletonEventHandler("workerpools", setPoolEvents, returnHome),
     tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
@@ -186,8 +192,8 @@ export function Dashboard(props: Props) {
   )
 
   const applicationsList = useMemo(() => applicationEvents.map((_) => _.metadata.name), [applicationEvents])
-  const modeldatasList = useMemo(() => modeldataEvents.map((_) => _.metadata.name), [modeldataEvents])
-  const taskqueuesList = useMemo(() => Object.keys(taskqueueIndex), [taskqueueIndex])
+  const datasetsList = useMemo(() => datasetEvents.map((_) => _.metadata.name), [datasetEvents])
+  const taskqueuesList = useMemo(() => Object.keys(taskqueueIndex), [Object.keys(taskqueueIndex).join("-")])
   const workerpoolsList = useMemo(() => latestWorkerPoolModels.map((_) => _.label), [latestWorkerPoolModels])
   const platformRepoSecretsList = useMemo(
     () => platformreposecretEvents.map((_) => _.metadata.name),
@@ -205,22 +211,26 @@ export function Dashboard(props: Props) {
       Object.entries(handlers).forEach(([kind, handler]) => props[kind].removeEventListener("message", handler))
   }, [])
 
-  function applicationCards() {
-    return [
+  const drilldown = drilldownProps()
+
+  const applicationCards = useMemo(
+    () => [
       ...[inDemoMode ? [] : [<NewApplicationCard key="new-application-card" />]],
-      ...applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldownProps()} />),
-    ]
-  }
+      ...applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldown} />),
+    ],
+    [inDemoMode, applicationEvents, drilldown],
+  )
 
-  function modeldataCards() {
-    return [
-      ...NewModelDataCards,
-      ...modeldataEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} {...drilldownProps()} />),
-    ]
-  }
+  const datasetCards = useMemo(
+    () => [
+      ...NewDataSetCards,
+      ...datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} {...drilldown} />),
+    ],
+    [datasetEvents.map((_) => _.metadata.name).join("-"), drilldown],
+  )
 
-  function taskqueueCards() {
-    return [
+  const taskqueueCards = useMemo(
+    () => [
       ...latestTaskQueueEvents.map((event) => (
         <TaskQueue
           key={event.metadata.name}
@@ -232,19 +242,21 @@ export function Dashboard(props: Props) {
           events={[event]}
           numEvents={1}
           taskqueueIndex={taskqueueIndex}
-          {...drilldownProps()}
+          {...drilldown}
         />
       )),
-    ]
-  }
+    ],
+    [latestTaskQueueEvents, taskqueueIndex, taskqueueToPool, taskqueueToTaskSimulators],
+  )
 
-  function platformreposecretCards() {
-    // TODO... cards
-    return platformreposecretEvents.map((_) => _.metadata.name)
-  }
+  // TODO... cards
+  const platformreposecretCards = useMemo(
+    () => platformreposecretEvents.map((_) => _.metadata.name),
+    [platformreposecretEvents],
+  )
 
-  function workerpoolCards() {
-    return [
+  const workerpoolCards = useMemo(
+    () => [
       <NewWorkerPoolCard key="new-workerpool-card" />,
       ...latestWorkerPoolModels.map((w) => (
         <WorkerPool
@@ -252,16 +264,17 @@ export function Dashboard(props: Props) {
           model={w}
           taskqueueIndex={taskqueueIndex}
           status={poolEvents.find((_) => _.metadata.name === w.label)}
-          {...drilldownProps()}
+          {...drilldown}
         />
       )),
-    ]
-  }
+    ],
+    [latestWorkerPoolModels],
+  )
 
   const sidebar = (
     <Sidebar
       applications={applicationsList}
-      modeldatas={modeldatasList}
+      datasets={datasetsList}
       taskqueues={taskqueuesList}
       workerpools={workerpoolsList}
       platformreposecrets={platformRepoSecretsList}
@@ -271,22 +284,18 @@ export function Dashboard(props: Props) {
   function galleryItems() {
     switch (currentKind()) {
       case "controlplane":
-        return <JobManagerCard {...drilldownProps()} />
+        return <JobManagerCard {...drilldown} />
       case "applications":
-        return applicationCards()
+        return applicationCards
       case "taskqueues":
-        return taskqueueCards()
-      case "modeldatas":
-        return modeldataCards()
+        return taskqueueCards
+      case "datasets":
+        return datasetCards
       case "workerpools":
-        return workerpoolCards()
+        return workerpoolCards
       case "platformreposecrets":
-        return platformreposecretCards()
+        return platformreposecretCards
     }
-  }
-
-  function MainContentBody() {
-    return <Gallery>{galleryItems()}</Gallery>
   }
 
   /** Helps will drilldown to Details */
@@ -300,9 +309,9 @@ export function Dashboard(props: Props) {
   /** Helps will drilldown to Details */
   const getDataSet = useCallback(
     (id: string) => {
-      return modeldataEvents.find((_) => _.metadata.name === id)
+      return datasetEvents.find((_) => _.metadata.name === id)
     },
-    [modeldataEvents],
+    [datasetEvents],
   )
 
   /** Helps will drilldown to Details */
@@ -340,19 +349,31 @@ export function Dashboard(props: Props) {
     [latestWorkerPoolModels],
   )
 
+  const { currentlySelectedId: id, currentlySelectedKind: kind } = drilldownProps()
+  const currentDetail =
+    id !== null && kind === "applications" ? (
+      ApplicationDetail(getApplication(id))
+    ) : id !== null && kind === "datasets" ? (
+      DataSetDetail(getDataSet(id))
+    ) : id !== null && kind === "taskqueues" ? (
+      TaskQueueDetail(getTaskQueue(id))
+    ) : id !== null && kind === "workerpools" ? (
+      WorkerPoolDetail(getWorkerPool(id))
+    ) : kind === "controlplane" ? (
+      <JobManagerDetail />
+    ) : undefined
+
   const pwdProps = {
-    getApplication,
-    getDataSet,
-    getTaskQueue,
-    getWorkerPool,
-    modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} modeldatas={modeldatasList} />,
+    currentDetail,
+    modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} datasets={datasetsList} />,
     sidebar,
     subtitle: subtitles[currentKind()],
     title: names[currentKind()],
   }
+
   return (
     <PageWithDrawer {...pwdProps}>
-      <MainContentBody />
+      <Gallery>{galleryItems()}</Gallery>
     </PageWithDrawer>
   )
 }

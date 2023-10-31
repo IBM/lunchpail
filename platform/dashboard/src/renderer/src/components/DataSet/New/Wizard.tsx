@@ -139,22 +139,22 @@ export default function NewApplicationWizard(props: Props) {
   // are we registering an existing or creating a new one from data supplied here?
   const action = searchParams.get("action") ?? "register"
 
-  const title = `${action === "register" ? "Register" : "Create"} ${singular.modeldatas}`
+  const title = `${action === "register" ? "Register" : "Create"} ${singular.datasets}`
   const steps =
     action === "register" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
 
   return (
-    <NewResourceWizard {...props} kind="modeldatas" title={title} defaults={defaults} yaml={yaml} steps={steps}>
-      An {singular.modeldatas} stores information that is not specific to any one Task in a {singular.taskqueues}, e.g.
-      a pre-trained model or a chip design that is being tested across multiple configurations.{" "}
+    <NewResourceWizard {...props} kind="datasets" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+      An {singular.datasets} stores information that is not specific to any one Task in a {singular.taskqueues}, e.g. a
+      pre-trained model or a chip design that is being tested across multiple configurations.{" "}
       {action === "register" ? (
         <span>
-          This wizard helps you to <strong>register an existing {singular.modeldatas}</strong> that is already stored in
+          This wizard helps you to <strong>register an existing {singular.datasets}</strong> that is already stored in
           the Cloud.
         </span>
       ) : (
         <span>
-          This wizard helps you to create a <strong>new {singular.modeldatas}</strong> from data supplied here.
+          This wizard helps you to create a <strong>new {singular.datasets}</strong> from data supplied here.
         </span>
       )}
     </NewResourceWizard>

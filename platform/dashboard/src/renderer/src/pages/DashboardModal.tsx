@@ -7,14 +7,14 @@ import { returnHomeCallback, returnToWorkerPoolsCallback } from "../navigate/hom
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
-const NewModelDataWizard = lazy(() => import("../components/ModelData/New/Wizard"))
+const NewDataSetWizard = lazy(() => import("../components/DataSet/New/Wizard"))
 const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wizard"))
 const NewApplicationWizard = lazy(() => import("../components/Application/New/Wizard"))
 const NewRepoSecretWizard = lazy(() => import("../components/PlatformRepoSecret/New/Wizard"))
 
 type WizardModelProps = {
   applications: ApplicationSpecEvent[]
-  modeldatas: string[]
+  datasets: string[]
   taskqueues: string[]
 }
 
@@ -38,8 +38,8 @@ function Wizard(props: WizardModelProps & { kind: Kind }) {
       ? NewRepoSecretWizard
       : kind === "applications"
       ? NewApplicationWizard
-      : kind === "modeldatas"
-      ? NewModelDataWizard
+      : kind === "datasets"
+      ? NewDataSetWizard
       : undefined
 
   if (!WizardComponent) {

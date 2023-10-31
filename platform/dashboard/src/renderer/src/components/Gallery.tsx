@@ -6,6 +6,10 @@ import { Gallery } from "@patternfly/react-core"
  */
 const width = { default: "18em" as const }
 
-export default function JGallery(props: import("react").PropsWithChildren<unknown>) {
-  return <Gallery {...props} hasGutter minWidths={width} maxWidths={width} />
+export default function JGallery(props: { children: import("react").ReactNode }) {
+  return (
+    <Gallery hasGutter minWidths={width} maxWidths={width}>
+      {props.children}
+    </Gallery>
+  )
 }
