@@ -1,5 +1,5 @@
-import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
+import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
 import { LinkToNewRepoSecret } from "../../navigate/newreposecret"
@@ -54,7 +54,7 @@ function correctiveActions(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   return (
-    <DeleteButton
+    <DeleteResourceButton
       key="delete"
       kind="workerpool.codeflare.dev"
       uiKind="workerpools"

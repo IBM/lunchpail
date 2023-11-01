@@ -1,6 +1,6 @@
 import S3Browser from "../S3Browser"
-import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
+import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
 import type Props from "./Props"
@@ -14,7 +14,12 @@ function detailGroups(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   return (
-    <DeleteButton kind="dataset" uiKind="datasets" name={props.metadata.name} namespace={props.metadata.namespace} />
+    <DeleteResourceButton
+      kind="dataset"
+      uiKind="datasets"
+      name={props.metadata.name}
+      namespace={props.metadata.namespace}
+    />
   )
 }
 

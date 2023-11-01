@@ -1,6 +1,6 @@
 import { taskqueues } from "./Card"
-import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
+import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -31,7 +31,7 @@ function detailGroups(props: Props) {
 /** Delete this resource */
 function deleteAction(props: Props) {
   return (
-    <DeleteButton
+    <DeleteResourceButton
       kind="application.codeflare.dev"
       uiKind="applications"
       name={props.metadata.name}

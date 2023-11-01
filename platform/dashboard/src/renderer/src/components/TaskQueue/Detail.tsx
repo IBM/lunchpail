@@ -2,9 +2,9 @@ import { useContext } from "react"
 
 import Sparkline from "../Sparkline"
 import Settings from "../../Settings"
-import DeleteButton from "../DeleteButton"
 import DrawerContent from "../Drawer/Content"
 import TaskSimulatorButton from "./TaskSimulatorButton"
+import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 import { NewPoolButton, lastEvent, commonGroups } from "./common"
 
@@ -49,7 +49,7 @@ function deleteAction(last: null | TaskQueueEvent) {
   return !last
     ? []
     : [
-        <DeleteButton
+        <DeleteResourceButton
           key="delete"
           kind="taskqueue"
           uiKind="taskqueues"
