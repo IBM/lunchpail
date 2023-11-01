@@ -1,6 +1,9 @@
 /** react-syntax-highlighter override */
-code,
-pre {
-  background: transparent !important;
-  font-size: 0.875rem !important;
+pre.codeflare--syntax-highlighting {
+  font-family: RedHatMono, monospace !important;
+  background-color: var(--pf-v5-global--BackgroundColor--dark-300) !important;
+
+  &[data-has-no-padding="true"] code {
+    padding: 0 !important;
+  }
 }

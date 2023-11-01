@@ -263,7 +263,9 @@ function viewContent(content: string, objectName: string) {
   if (/text/i.test(ext)) {
     return <Text component="pre">{content}</Text>
   } else if (/json/i.test(ext)) {
-    return <Json>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
+    // the Menu bits give us the padding, so we don't need extra
+    // padding from the Json viewer
+    return <Json hasNoPadding>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
   } else {
     return <Text component="pre">{content}</Text>
   }
