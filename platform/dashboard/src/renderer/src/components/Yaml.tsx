@@ -163,7 +163,7 @@ const PatternFlyTheme: Record<string, import("react").CSSProperties> = {
     color: "var(--pf-v5-global--active-color--200)",
   },
   boolean: {
-    color: "var(--pf-v5-global--active-color--200)",
+    color: "var(--pf-v5-global--active-color--400)",
   },
   number: {
     color: "var(--pf-v5-global--active-color--400)",
@@ -221,7 +221,7 @@ const PatternFlyTheme: Record<string, import("react").CSSProperties> = {
     color: "var(--pf-v5-global--palette--light-blue-100)",
   },
   keyword: {
-    color: "var(--pf-v5-global--palette--light-blue-100)",
+    color: "var(--pf-v5-global--palette--orange-200)",
   },
   "class-name": {
     color: "var(--pf-v5-global--palette--light-blue-100)",
