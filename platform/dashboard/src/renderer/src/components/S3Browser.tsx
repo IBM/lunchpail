@@ -23,15 +23,16 @@ function isLeafNode(item: Tree): item is LeafNode {
   return typeof node.name === "string" && (!Array.isArray(node.children) || node.children.length === 0)
 }
 
+type S3Props = { endpoint: string; bucket: string; accessKey: string; secretKey: string } & Pick<
+  Required<typeof window.jay>,
+  "s3"
+>
+type NavBrowserProps = S3Props & { roots: Tree[] }
+
 /**
  * A React component that visualizes the forest given by `props.roots[]`.
  */
-function NavBrowser(
-  props: { roots: Tree[]; endpoint: string; bucket: string; accessKey: string; secretKey: string } & Pick<
-    Required<typeof window.jay>,
-    "s3"
-  >,
-) {
+function NavBrowser(props: NavBrowserProps) {
   const rootMenuId = "s3nav-drilldown-rootMenu"
   const [menuDrilledIn, setMenuDrilledIn] = useState<string[]>([])
   const [drilldownPath, setDrilldownPath] = useState<string[]>([])
@@ -56,50 +57,6 @@ function NavBrowser(
     }
   }
 
-  function showContent(item: Tree, parentMenuId: string) {
-    const [loading, setLoading] = useState(true)
-    const [content, setContent] = useState<string | { error: unknown } | null>(null)
-
-    useEffect(() => {
-      async function fetch() {
-        try {
-          const { accessKey, secretKey, endpoint, bucket } = props
-          const content = await props.s3.getObject(endpoint, accessKey, secretKey, bucket, item.name)
-
-          setContent(content)
-        } catch (error) {
-          setContent({ error })
-        }
-
-        setLoading(false)
-      }
-
-      if (activeMenu === parentMenuId) {
-        // don't fetch the data until we're the active menu
-        fetch()
-      }
-    }, [activeMenu === parentMenuId, item.name, props.endpoint, props.bucket, props.accessKey, props.secretKey])
-
-    const description =
-      loading || !content ? (
-        <Spinner />
-      ) : isError(content) ? (
-        "Error loading content: " + content.error
-      ) : activeMenu !== parentMenuId ? (
-        <></>
-      ) : (
-        viewContent(content, item.name)
-      )
-    return (
-      <MenuItem
-        key={item.name}
-        itemId={`s3nav-content-${item.name}`}
-        description={description}
-        className="codeflare--no-hover"
-      ></MenuItem>
-    )
-  }
-
   function toMenuItems(roots: Tree[], depth: number, parent?: Tree, parentMenuId?: string) {
     const baseId = `s3nav-drilldown-${depth}-`
 
@@ -111,8 +68,8 @@ function NavBrowser(
               {parent.name}
             </MenuItem>,
           ]),
-      ...(roots.length === 0 && parent && parentMenuId && hasViewableContent(parent.name)
-        ? [showContent(parent, parentMenuId)]
+      ...(roots.length === 0 && parent && parentMenuId && hasViewableContent(parent.name) && activeMenu === parentMenuId
+        ? [<ShowContent object={parent.name} {...props} />]
         : []),
       ...roots.map((item, idx) => {
         const drilldownMenuId = baseId + `drilldown-${idx}`
@@ -182,6 +139,7 @@ export default function S3Browser(
         setSecret({ accessKey, secretKey })
         setContent(items)
       } catch (error) {
+        console.error("Error fetching S3 credentials", props, error)
         setContent({ error })
       }
 
@@ -196,6 +154,9 @@ export default function S3Browser(
   } else if (isError(content)) {
     console.error("Error loading secrets", content)
     return "Error loading secrets: " + content.error
+  } else if (content.length === 0) {
+    console.log("No S3 objects found", props)
+    return `No objects found for bucket ${props.bucket}`
   } else {
     return (
       <NavBrowser roots={toTree(content)} {...secret} endpoint={props.endpoint} bucket={props.bucket} s3={props.s3} />
@@ -269,4 +230,46 @@ function viewContent(content: string, objectName: string) {
   } else {
     return <Text component="pre">{content}</Text>
   }
+}
+
+function ShowContent(props: S3Props & { object: string }) {
+  const { s3, endpoint, accessKey, secretKey, bucket } = props
+
+  const [loading, setLoading] = useState(true)
+  const [content, setContent] = useState<string | { error: unknown } | null>(null)
+
+  useEffect(() => {
+    async function fetch() {
+      try {
+        console.log("Fetching S3 content", props)
+        const content = await s3.getObject(endpoint, accessKey, secretKey, bucket, props.object)
+        console.log("Successfully fetched S3 content", props)
+        setContent(content)
+      } catch (error) {
+        console.error("Error fetching S3 content", props, error)
+        setContent({ error })
+      }
+
+      setLoading(false)
+    }
+
+    fetch()
+  }, [props.object, endpoint, bucket, accessKey, secretKey])
+
+  const description =
+    loading || !content ? (
+      <Spinner />
+    ) : isError(content) ? (
+      "Error loading content: " + content.error
+    ) : (
+      viewContent(content, props.object)
+    )
+  return (
+    <MenuItem
+      key={props.object}
+      itemId={`s3nav-content-${props.object}`}
+      description={description}
+      className="codeflare--no-hover"
+    ></MenuItem>
+  )
 }
