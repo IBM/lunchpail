@@ -19,7 +19,10 @@ type ApplicationSpecEvent = KubernetesResource<{
   /** Does this pool support GPU tasks? */
   supportsGpu: boolean
 
-  inputs?: { sizes: { xs?: string; sm?: string; md?: string; lg?: string; xl?: string } }[]
+  inputs?: {
+    schema?: { type: string; json: string }
+    sizes: { xs?: string; sm?: string; md?: string; lg?: string; xl?: string }
+  }[]
 }>
 
 export default ApplicationSpecEvent

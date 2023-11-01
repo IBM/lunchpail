@@ -12,7 +12,7 @@ export async function onCreate(
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
-      const child = spawn("kubectl", [action, "-f", "-", ...(dryRun === false ? [] : ["--dry-run"])], {
+      const child = spawn("kubectl", [action, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])], {
         stdio: ["pipe", "inherit", "pipe"],
       })
 

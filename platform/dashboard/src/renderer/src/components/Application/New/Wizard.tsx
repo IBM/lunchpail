@@ -5,9 +5,9 @@ import { useLocation, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import names, { singular } from "../../../names"
-import { Checkbox, Input, SelectCheckbox } from "../../Forms"
 import { buttonPropsForNewDataSet } from "../../../navigate/newdataset"
 import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
+import { Checkbox, Input, Select, SelectCheckbox, TextArea } from "../../Forms"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
@@ -64,6 +64,11 @@ const step2 = {
   items: [command, repoInput, image, supportsGpu],
 }
 
+function indent(value: string, level: number) {
+  const indentation = Array(level).fill(" ").join("")
+  return value.split(/\n/).map((line) => `${indentation}${line}`)
+}
+
 function yaml(values: FormContextProps["values"]) {
   const taskqueueName = values.taskqueueName ?? values.name.replace(/-/g, "")
 
@@ -85,6 +90,10 @@ spec:
   supportsGpu: ${values.supportsGpu}
   inputs:
     - useas: mount
+      schema:
+        format: parquet
+        json: >-
+${indent(values.inputSchema.replace(/\n/g, ""), 10)}
       sizes:
         xs: ${taskqueueName}
     - useas: mount
@@ -165,6 +174,8 @@ export default function NewApplicationWizard(props: Props) {
         supportsGpu: rsrc?.spec.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
         useTestQueue: previousValues?.useTestQueue ?? "true",
         datasets: previousValues?.datasets ?? "",
+        inputFormat: previousValues?.inputFormat ?? "",
+        inputSchema: previousValues?.inputSchema ?? "",
       }
     },
     [searchParams],
@@ -230,6 +241,37 @@ export default function NewApplicationWizard(props: Props) {
     items: props.datasets.length === 0 ? [] : [datasets],
   }
 
+  const step4 = {
+    name: "Automated Testing",
+    items: [
+      (ctrl: FormContextProps) => (
+        <Select
+          fieldId="inputFormat"
+          label="Input Format"
+          description={`Choose the file format that your ${singular.applications} accpets`}
+          ctrl={ctrl}
+          options={[
+            {
+              value: "Parquet",
+              description:
+                "Apache Parquet is an open source, column-oriented data file format designed for efficient data storage and retrieval. It provides efficient data compression and encoding schemes with enhanced performance to handle complex data in bulk.",
+            },
+          ]}
+        />
+      ),
+
+      (ctrl: FormContextProps) => (
+        <TextArea
+          fieldId="inputSchema"
+          label="Input Schema"
+          description={`The JSON schema of the Tasks accepted by your ${singular.applications}`}
+          ctrl={ctrl}
+          rows={12}
+        />
+      ),
+    ],
+  }
+
   /*const step4 = {
     name: singular.taskqueues,
     alerts: [
@@ -248,7 +290,7 @@ export default function NewApplicationWizard(props: Props) {
 
   const isEditing = searchParams.has("yaml")
   const title = `${isEditing ? "Edit" : "Register"} ${singular.applications}`
-  const steps = [step1, step2, step3]
+  const steps = [step1, step2, step3, step4]
 
   return (
     <NewResourceWizard {...props} kind="applications" title={title} defaults={defaults} yaml={yaml} steps={steps}>

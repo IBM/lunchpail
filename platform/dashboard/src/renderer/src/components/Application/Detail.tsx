@@ -3,6 +3,7 @@ import DrawerContent from "../Drawer/Content"
 import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
+import Yaml from "../YamlFromObject"
 import LinkToNewWizard from "../../navigate/wizard"
 
 import type Props from "@jay/common/events/ApplicationSpecEvent"
@@ -47,10 +48,23 @@ function EditApplication(props: Props) {
 }
 
 function ApplicationDetail(props: Props) {
+  const { inputs } = props.spec
+  const otherTabs =
+    inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
+      ? [
+          {
+            title: "Test Schema",
+            body: <Yaml showLineNumbers={false} obj={JSON.parse(inputs[0].schema.json)} />,
+            hasNoPadding: true,
+          },
+        ]
+      : undefined
+
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props}
+      otherTabs={otherTabs}
       actions={props && [<EditApplication {...props} />]}
       rightActions={props && [deleteAction(props)]}
     />
