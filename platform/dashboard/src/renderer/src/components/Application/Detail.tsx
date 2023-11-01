@@ -3,9 +3,9 @@ import DrawerContent from "../Drawer/Content"
 import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import LinkToNewWizard from "../../navigate/wizard"
 
-type Props = ApplicationSpecEvent
+import type Props from "@jay/common/events/ApplicationSpecEvent"
 
 /**
  * If we can find a "foo.py", then append it to the repo, so that
@@ -16,6 +16,7 @@ function repoPlusSource(props: Props) {
   return props.spec.repo + (source ? "/" + source[1] : "")
 }
 
+/** The DescriptionList groups to show in this Detail view */
 function detailGroups(props: Props) {
   return Object.entries(props.spec)
     .filter(([, value]) => value)
@@ -32,7 +33,7 @@ function detailGroups(props: Props) {
 function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
-      kind="application.codeflare.dev"
+      kind="applications.codeflare.dev"
       uiKind="applications"
       name={props.metadata.name}
       namespace={props.metadata.namespace}
@@ -40,9 +41,9 @@ function deleteAction(props: Props) {
   )
 }
 
-/** Common actions */
-function rightActions(props: Props) {
-  return [deleteAction(props)]
+function EditApplication(props: Props) {
+  const qs = [`yaml=${encodeURIComponent(JSON.stringify(props))}`]
+  return <LinkToNewWizard startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
 }
 
 function ApplicationDetail(props: Props) {
@@ -50,7 +51,8 @@ function ApplicationDetail(props: Props) {
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props}
-      rightActions={props && rightActions(props)}
+      actions={props && [<EditApplication {...props} />]}
+      rightActions={props && [deleteAction(props)]}
     />
   )
 }

@@ -194,7 +194,9 @@ export function SelectCheckbox(
   const [isOpen, setIsOpen] = useState(false)
 
   const previouslySelected =
-    typeof props.ctrl.values[props.fieldId] === "string" ? JSON.parse(props.ctrl.values[props.fieldId]) : []
+    typeof props.ctrl.values[props.fieldId] === "string" && props.ctrl.values[props.fieldId].length > 0
+      ? tryParse(props.ctrl.values[props.fieldId])
+      : []
   const [selectedItems, setSelectedItems] = useState<string[]>(props.selected || previouslySelected)
 
   const onToggleClick = useCallback(() => setIsOpen((curState) => !curState), [])
@@ -309,7 +311,7 @@ export function remember(kind: Kind, ctrl: FormContextProps, formState: State<st
       origSetValue(fieldId, value)
       if (formState) {
         // remember user setting
-        const form = JSON.parse(formState[0] || "{}")
+        const form = tryParse(formState[0] || "{}")
         if (!form[kind]) {
           form[kind] = {}
         }
@@ -319,4 +321,14 @@ export function remember(kind: Kind, ctrl: FormContextProps, formState: State<st
       }
     },
   })
+}
+
+/** Try to parse as JSON */
+function tryParse(value: string) {
+  try {
+    return JSON.parse(value)
+  } catch (err) {
+    console.error(`Error parsing as JSON: '${value}'`)
+    return undefined
+  }
 }

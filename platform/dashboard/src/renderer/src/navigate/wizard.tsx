@@ -7,10 +7,11 @@ import type LocationProps from "./LocationProps"
 import { stopPropagation } from "."
 
 import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
+import EditIcon from "@patternfly/react-icons/dist/esm/icons/edit-icon"
 import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-type StartOrAdd = "start" | "add" | "create" | "fix"
+type StartOrAdd = "start" | "add" | "create" | "fix" | "edit"
 
 /** URI ?view=wizard */
 const view = "wizard"
@@ -38,7 +39,16 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
   const href = props["data-href"]
   const start = props["data-start-or-add"]
 
-  const icon = start === "start" ? <RocketIcon /> : start === "fix" ? <FixIcon /> : <PlusCircleIcon />
+  const icon =
+    start === "start" ? (
+      <RocketIcon />
+    ) : start === "fix" ? (
+      <FixIcon />
+    ) : start === "edit" ? (
+      <EditIcon />
+    ) : (
+      <PlusCircleIcon />
+    )
   const linkText = props["data-link-text"]
 
   return (

@@ -9,6 +9,8 @@ import { Checkbox, Input, SelectCheckbox } from "../../Forms"
 import { buttonPropsForNewDataSet } from "../../../navigate/newdataset"
 import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 
+import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+
 import TaskQueueIcon from "../../TaskQueue/Icon"
 
 function repoInput(ctrl: FormContextProps) {
@@ -141,17 +143,30 @@ export default function NewApplicationWizard(props: Props) {
 
   /** Initial value for form */
   const defaults = useCallback(
-    (previousValues?: Record<string, string>) => ({
-      name: previousValues?.name ?? uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
-      namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
-      repo: previousValues?.repo ?? "",
-      image: previousValues?.image ?? "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
-      command: previousValues?.command ?? "",
-      description: previousValues?.description ?? "",
-      supportsGpu: previousValues?.supportsGpu ?? "false",
-      useTestQueue: previousValues?.useTestQueue ?? "true",
-      datasets: previousValues?.datasets ?? "",
-    }),
+    (previousValues?: Record<string, string>) => {
+      // are we editing an existing resource `rsrc`? if so, populate
+      // the form defaults from its values
+      const yaml = searchParams.get("yaml")
+      const rsrc = yaml ? (JSON.parse(decodeURIComponent(yaml)) as ApplicationSpecEvent) : undefined
+
+      return {
+        name:
+          rsrc?.metadata.name ??
+          previousValues?.name ??
+          uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
+        namespace: rsrc?.metadata.name ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+        repo: rsrc?.spec.repo ?? previousValues?.repo ?? "",
+        image:
+          rsrc?.spec.image ??
+          previousValues?.image ??
+          "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
+        command: rsrc?.spec.command ?? previousValues?.command ?? "",
+        description: rsrc?.spec.description ?? previousValues?.description ?? "",
+        supportsGpu: rsrc?.spec.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
+        useTestQueue: previousValues?.useTestQueue ?? "true",
+        datasets: previousValues?.datasets ?? "",
+      }
+    },
     [searchParams],
   )
 
@@ -231,8 +246,10 @@ export default function NewApplicationWizard(props: Props) {
     items: [useTestQueueCheckbox],
   }*/
 
-  const title = `Register ${singular.applications}`
+  const isEditing = searchParams.has("yaml")
+  const title = `${isEditing ? "Edit" : "Register"} ${singular.applications}`
   const steps = [step1, step2, step3]
+
   return (
     <NewResourceWizard {...props} kind="applications" title={title} defaults={defaults} yaml={yaml} steps={steps}>
       An {singular.applications} is the source code that knows how to consume and then process <strong>Tasks</strong>.
