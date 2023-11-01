@@ -1,6 +1,8 @@
 import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
 import { Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Text } from "@patternfly/react-core"
 
+import Json from "./Json"
+
 import type { BucketItem } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type { KubernetesS3Secret } from "@jay/common/events/KubernetesResource"
@@ -30,10 +32,11 @@ function NavBrowser(
     "s3"
   >,
 ) {
+  const rootMenuId = "s3nav-drilldown-rootMenu"
   const [menuDrilledIn, setMenuDrilledIn] = useState<string[]>([])
   const [drilldownPath, setDrilldownPath] = useState<string[]>([])
   const [menuHeights, setMenuHeights] = useState<Record<string, number>>({})
-  const [activeMenu, setActiveMenu] = useState("nav-drilldown-rootMenu")
+  const [activeMenu, setActiveMenu] = useState(rootMenuId)
 
   const onDrillIn = (_event: KeyboardEvent | MouseEvent, fromItemId: string, toItemId: string, itemId: string) => {
     setMenuDrilledIn((prevMenuDrilledIn) => [...prevMenuDrilledIn, fromItemId])
@@ -48,15 +51,12 @@ function NavBrowser(
   }
 
   const onGetMenuHeight = (menuId: string, height: number) => {
-    if (
-      (menuHeights[menuId] !== height && menuId !== "nav-drilldown-rootMenu") ||
-      (!menuHeights[menuId] && menuId === "nav-drilldown-rootMenu")
-    ) {
+    if ((menuHeights[menuId] !== height && menuId !== rootMenuId) || (!menuHeights[menuId] && menuId === rootMenuId)) {
       setMenuHeights((prevMenuHeights) => ({ ...prevMenuHeights, [menuId]: height }))
     }
   }
 
-  function showContent(item: Tree) {
+  function showContent(item: Tree, parentMenuId: string) {
     const [loading, setLoading] = useState(true)
     const [content, setContent] = useState<string | { error: unknown } | null>(null)
 
@@ -74,28 +74,33 @@ function NavBrowser(
         setLoading(false)
       }
 
-      fetch()
-    }, [item.name, props.endpoint, props.bucket, props.accessKey, props.secretKey])
+      if (activeMenu === parentMenuId) {
+        // don't fetch the data until we're the active menu
+        fetch()
+      }
+    }, [activeMenu === parentMenuId, item.name, props.endpoint, props.bucket, props.accessKey, props.secretKey])
 
     const description =
       loading || !content ? (
         <Spinner />
       ) : isError(content) ? (
         "Error loading content: " + content.error
+      ) : activeMenu !== parentMenuId ? (
+        <></>
       ) : (
         viewContent(content, item.name)
       )
     return (
       <MenuItem
         key={item.name}
-        itemId={`s3nav-content`}
+        itemId={`s3nav-content-${item.name}`}
         description={description}
         className="codeflare--no-hover"
       ></MenuItem>
     )
   }
 
-  function toMenuItems(roots: Tree[], depth: number, parent?: Tree) {
+  function toMenuItems(roots: Tree[], depth: number, parent?: Tree, parentMenuId?: string) {
     const baseId = `s3nav-drilldown-${depth}-`
 
     return [
@@ -106,29 +111,34 @@ function NavBrowser(
               {parent.name}
             </MenuItem>,
           ]),
-      ...(roots.length === 0 && parent && hasViewableContent(parent.name) ? [showContent(parent)] : []),
-      ...roots.map((item, idx) => (
-        <MenuItem
-          key={item.name}
-          itemId={baseId + `item-${idx}`}
-          direction={!isLeafNode(item) || hasViewableContent(item.name) ? "down" : undefined}
-          description={!isLeafNode(item) ? "Folder" : filetypeFromName(item.name)}
-          drilldownMenu={
-            <DrilldownMenu id={baseId + `drilldown-${idx}`}>
-              {toMenuItems(item.children, depth + 1, item)}
-            </DrilldownMenu>
-          }
-        >
-          {item.name}
-        </MenuItem>
-      )),
+      ...(roots.length === 0 && parent && parentMenuId && hasViewableContent(parent.name)
+        ? [showContent(parent, parentMenuId)]
+        : []),
+      ...roots.map((item, idx) => {
+        const drilldownMenuId = baseId + `drilldown-${idx}`
+        return (
+          <MenuItem
+            key={item.name}
+            itemId={baseId + `item-${idx}`}
+            direction={!isLeafNode(item) || hasViewableContent(item.name) ? "down" : undefined}
+            description={!isLeafNode(item) ? "Folder" : filetypeFromName(item.name)}
+            drilldownMenu={
+              <DrilldownMenu id={drilldownMenuId}>
+                {toMenuItems(item.children, depth + 1, item, drilldownMenuId)}
+              </DrilldownMenu>
+            }
+          >
+            {item.name}
+          </MenuItem>
+        )
+      }),
     ]
   }
 
   return (
     <Nav aria-label="s3 file browser" className="codeflare--s3-browser">
       <Menu
-        id="s3nav-drilldown-rootMenu"
+        id={rootMenuId}
         containsDrilldown
         drilldownItemPath={drilldownPath}
         drilledInMenus={menuDrilledIn}
@@ -253,7 +263,7 @@ function viewContent(content: string, objectName: string) {
   if (/text/i.test(ext)) {
     return <Text component="pre">{content}</Text>
   } else if (/json/i.test(ext)) {
-    return <Text component="pre">{JSON.stringify(JSON.parse(content), undefined, 2)}</Text>
+    return <Json>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
   } else {
     return <Text component="pre">{content}</Text>
   }

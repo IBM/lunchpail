@@ -138,7 +138,7 @@ export default function NewResourceWizard(props: Props) {
             </Alert>
           </FormAlert>
 
-          <Yaml content={props.yaml(ctrl.values)} />
+          <Yaml>{props.yaml(ctrl.values)}</Yaml>
         </WizardStep>
       )
     },

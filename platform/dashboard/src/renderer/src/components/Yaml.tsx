@@ -6,8 +6,9 @@ import { coy as syntaxHighlightTheme } from "react-syntax-highlighter/dist/esm/s
 
 import "./Yaml.scss"
 
-type Props = Partial<SyntaxHighlighterProps> & {
-  content: string
+export type Props = Partial<SyntaxHighlighterProps> & {
+  children: string
+  language?: string
 }
 
 export default function Yaml(props: Props) {
@@ -16,8 +17,8 @@ export default function Yaml(props: Props) {
   }, [])
 
   return (
-    <SyntaxHighlighter language="yaml" style={syntaxHighlightTheme} showLineNumbers {...props}>
-      {props.content}
+    <SyntaxHighlighter language={props.language ?? "yaml"} style={syntaxHighlightTheme} showLineNumbers {...props}>
+      {props.children}
     </SyntaxHighlighter>
   )
 }
