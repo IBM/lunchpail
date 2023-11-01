@@ -315,7 +315,6 @@ export function remember(kind: Kind, ctrl: FormContextProps, formState: State<st
         if (!form[kind]) {
           form[kind] = {}
         }
-        console.error("!!!!SET", fieldId, value)
         form[kind][fieldId] = value
         formState[1](JSON.stringify(form))
       }
