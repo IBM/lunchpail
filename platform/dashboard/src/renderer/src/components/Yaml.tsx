@@ -51,7 +51,7 @@ const PatternFlyTheme: Record<string, import("react").CSSProperties> = {
     hyphens: "none",
     maxHeight: "inherit",
     height: "inherit",
-    padding: "0 1em",
+    padding: "0.5em 1em",
     display: "block",
     overflow: "auto",
   },

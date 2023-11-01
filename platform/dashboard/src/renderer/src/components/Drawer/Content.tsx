@@ -6,7 +6,7 @@ import trimJunk from "./trim-junk"
 import DrawerToolbar from "./Toolbar"
 import DetailNotFound from "./DetailNotFound"
 
-type TabProps = { title: string; body: ReactNode }
+type TabProps = { title: string; body: ReactNode; hasNoPadding?: boolean }
 type TabsProps = { summary: ReactNode; raw?: object | null; otherTabs?: TabProps[] }
 
 type Props = TabsProps & {
@@ -62,14 +62,14 @@ function TabbedContent(props: TabsProps) {
   const tabs: TabProps[] = [
     { title: "Summary", body: props.summary || <DetailNotFound /> },
     ...(props.otherTabs || []),
-    ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={trimJunk(props.raw)} /> }]),
+    ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={trimJunk(props.raw)} />, hasNoPadding: true }]),
   ]
 
   return (
     <Tabs activeKey={activeTabKey} onSelect={handleTabClick} mountOnEnter>
       {tabs.map((tab, idx) => (
         <Tab key={tab.title} title={<TabTitleText>{tab.title}</TabTitleText>} eventKey={idx}>
-          <DrawerPanelBody>{tab.body}</DrawerPanelBody>
+          <DrawerPanelBody hasNoPadding={tab.hasNoPadding}>{tab.body}</DrawerPanelBody>
         </Tab>
       ))}
     </Tabs>

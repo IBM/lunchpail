@@ -31,7 +31,13 @@ function rightActions(props: Props) {
 function otherTabs(props: Props) {
   return !window.jay.get || !window.jay.s3
     ? []
-    : [{ title: "Browser", body: <S3Browser {...props.spec.local} get={window.jay.get} s3={window.jay.s3} /> }]
+    : [
+        {
+          title: "Browser",
+          body: <S3Browser {...props.spec.local} get={window.jay.get} s3={window.jay.s3} />,
+          hasNoPadding: true,
+        },
+      ]
 }
 
 function DataSetDetail(props: Props) {
