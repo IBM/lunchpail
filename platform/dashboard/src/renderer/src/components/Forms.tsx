@@ -122,6 +122,10 @@ const width200 = {
   width: "200px",
 }
 
+const selectPopperProps = {
+  width: "400px",
+}
+
 export function Select(
   props: FormProps &
     Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string },
@@ -167,6 +171,7 @@ export function Select(
         selected={selected}
         onSelect={onSelect}
         toggle={toggle}
+        popperProps={selectPopperProps}
       >
         <SelectList>
           {props.options.map((option, idx) => {
