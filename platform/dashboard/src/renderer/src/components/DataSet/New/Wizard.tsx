@@ -1,12 +1,12 @@
 import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
-
 import { type FormContextProps } from "@patternfly/react-core"
 
 import { singular } from "../../../names"
 import { Checkbox, Input } from "../../Forms"
 
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import NewResourceWizard, { password, type WizardProps as Props } from "../../NewResourceWizard"
 
 function endpoint(ctrl: FormContextProps) {
@@ -67,6 +67,7 @@ spec:
     type: "COS"
     bucket: ${values.bucket ?? values.name}
     endpoint: ${values.endpoint ?? "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"}
+    readonly: "${values.readonly ?? "false"}"
     secret-name: ${secretName}
     secret-namespace: ${values.namespace}
     provision: "true"
@@ -92,16 +93,26 @@ export default function NewApplicationWizard(props: Props) {
 
   /** Initial value for form */
   const defaults = useCallback(
-    (previousValues?: Record<string, string>) => ({
-      name: previousValues?.name ?? uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
-      namespace: searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
-      description: previousValues?.description ?? "",
-      endpoint: previousValues?.endpoint ?? "",
-      readonly: previousValues?.readonly ?? "true",
-      bucket: previousValues?.bucket ?? "",
-      accessKey: previousValues?.accessKey ?? "",
-      secretAccessKey: previousValues?.secretAccessKey ?? "",
-    }),
+    (previousValues?: Record<string, string>) => {
+      // are we editing an existing resource `rsrc`? if so, populate
+      // the form defaults from its values
+      const yaml = searchParams.get("yaml")
+      const rsrc = yaml ? (JSON.parse(decodeURIComponent(yaml)) as DataSetEvent) : undefined
+
+      return {
+        name:
+          rsrc?.metadata.name ??
+          previousValues?.name ??
+          uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
+        namespace: rsrc?.metadata.namespace ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+        description: previousValues?.description ?? "",
+        endpoint: rsrc?.spec.local.endpoint ?? previousValues?.endpoint ?? "",
+        readonly: rsrc?.spec.local.readonly?.toString() ?? previousValues?.readonly ?? "true",
+        bucket: rsrc?.spec.local.bucket ?? previousValues?.bucket ?? "",
+        accessKey: previousValues?.accessKey ?? "",
+        secretAccessKey: previousValues?.secretAccessKey ?? "",
+      }
+    },
     [searchParams],
   )
 

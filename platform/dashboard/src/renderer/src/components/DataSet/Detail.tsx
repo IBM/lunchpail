@@ -3,6 +3,8 @@ import DrawerContent from "../Drawer/Content"
 import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
+import LinkToNewWizard from "../../navigate/wizard"
+
 import type Props from "./Props"
 
 function detailGroups(props: Props) {
@@ -23,9 +25,9 @@ function deleteAction(props: Props) {
   )
 }
 
-/** Common actions */
-function rightActions(props: Props) {
-  return [deleteAction(props)]
+function Edit(props: Props) {
+  const qs = [`yaml=${encodeURIComponent(JSON.stringify(props))}`]
+  return <LinkToNewWizard startOrAdd="edit" kind="datasets" linkText="Edit" qs={qs} />
 }
 
 function otherTabs(props: Props) {
@@ -46,7 +48,8 @@ function DataSetDetail(props: Props) {
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props}
       otherTabs={otherTabs(props)}
-      rightActions={props && rightActions(props)}
+      actions={props && [<Edit {...props} />]}
+      rightActions={props && [deleteAction(props)]}
     />
   )
 }

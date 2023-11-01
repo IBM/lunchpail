@@ -42,7 +42,7 @@ function deleteAction(props: Props) {
   )
 }
 
-function EditApplication(props: Props) {
+function Edit(props: Props) {
   const qs = [`yaml=${encodeURIComponent(JSON.stringify(props))}`]
   return <LinkToNewWizard startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
 }
@@ -65,7 +65,7 @@ function ApplicationDetail(props: Props) {
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props}
       otherTabs={otherTabs}
-      actions={props && [<EditApplication {...props} />]}
+      actions={props && [<Edit {...props} />]}
       rightActions={props && [deleteAction(props)]}
     />
   )
