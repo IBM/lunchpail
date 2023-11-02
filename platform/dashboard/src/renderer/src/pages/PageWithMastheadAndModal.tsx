@@ -142,7 +142,7 @@ export default function PageWithMastheadAndModal(props: Props) {
       <PageSection padding={noPadding} isFilled={false}>
         <Divider />
       </PageSection>
-      <PageSection padding={noPadding} hasOverflowScroll isFilled>
+      <PageSection padding={noPadding} hasOverflowScroll isFilled aria-label="Dashboard body">
         {props.children}
       </PageSection>
 
