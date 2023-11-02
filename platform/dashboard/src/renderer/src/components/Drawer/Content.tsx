@@ -6,8 +6,10 @@ import trimJunk from "./trim-junk"
 import DrawerToolbar from "./Toolbar"
 import DetailNotFound from "./DetailNotFound"
 
+import type KubernetesResource from "@jay/common/events/KubernetesResource"
+
 type TabProps = { title: string; body: ReactNode; hasNoPadding?: boolean }
-type TabsProps = { summary: ReactNode; raw?: object | null; otherTabs?: TabProps[] }
+type TabsProps = { summary: ReactNode; raw?: KubernetesResource<unknown> | null; otherTabs?: TabProps[] }
 
 type Props = TabsProps & {
   /** Actions to be displayed left-justified */

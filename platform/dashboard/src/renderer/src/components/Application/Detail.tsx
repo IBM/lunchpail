@@ -6,20 +6,20 @@ import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 import Yaml from "../YamlFromObject"
 import LinkToNewWizard from "../../navigate/wizard"
 
-import type Props from "@jay/common/events/ApplicationSpecEvent"
+import type Props from "./Props"
 
 /**
  * If we can find a "foo.py", then append it to the repo, so that
  * users can click to see the source directly.
  */
 function repoPlusSource(props: Props) {
-  const source = props.spec.command.match(/\s(\w+\.py)\s/)
-  return props.spec.repo + (source ? "/" + source[1] : "")
+  const source = props.application.spec.command.match(/\s(\w+\.py)\s/)
+  return props.application.spec.repo + (source ? "/" + source[1] : "")
 }
 
 /** The DescriptionList groups to show in this Detail view */
 function detailGroups(props: Props) {
-  return Object.entries(props.spec)
+  return Object.entries(props.application.spec)
     .filter(([, value]) => value)
     .map(([term, value]) =>
       term === "repo"
@@ -36,8 +36,8 @@ function deleteAction(props: Props) {
     <DeleteResourceButton
       kind="applications.codeflare.dev"
       uiKind="applications"
-      name={props.metadata.name}
-      namespace={props.metadata.namespace}
+      name={props.application.metadata.name}
+      namespace={props.application.metadata.namespace}
     />
   )
 }
@@ -48,7 +48,7 @@ function Edit(props: Props) {
 }
 
 function ApplicationDetail(props: Props) {
-  const { inputs } = props.spec
+  const { inputs } = props.application.spec
   const otherTabs =
     inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
       ? [
@@ -63,7 +63,7 @@ function ApplicationDetail(props: Props) {
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
-      raw={props}
+      raw={props.application}
       otherTabs={otherTabs}
       actions={props && [<Edit {...props} />]}
       rightActions={props && [deleteAction(props)]}

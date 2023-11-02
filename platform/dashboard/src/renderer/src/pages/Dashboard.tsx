@@ -216,7 +216,15 @@ export function Dashboard(props: Props) {
   const applicationCards = useMemo(
     () => [
       ...[inDemoMode ? [] : [<NewApplicationCard key="new-application-card" />]],
-      ...applicationEvents.map((evt) => <Application key={evt.metadata.name} {...evt} {...drilldown} />),
+      ...applicationEvents.map((evt) => (
+        <Application
+          key={evt.metadata.name}
+          application={evt}
+          {...drilldown}
+          datasets={datasetsList}
+          taskqueues={taskqueuesList}
+        />
+      )),
     ],
     [inDemoMode, applicationEvents, drilldown],
   )
@@ -301,7 +309,8 @@ export function Dashboard(props: Props) {
   /** Helps will drilldown to Details */
   const getApplication = useCallback(
     (id: string) => {
-      return applicationEvents.find((_) => _.metadata.name === id)
+      const application = applicationEvents.find((_) => _.metadata.name === id)
+      return application ? { application, datasets: datasetsList, taskqueues: taskqueuesList } : undefined
     },
     [applicationEvents],
   )
