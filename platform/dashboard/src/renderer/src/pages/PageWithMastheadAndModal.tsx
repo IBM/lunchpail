@@ -74,36 +74,31 @@ function HeaderToolbarLeftGroup() {
 }
 
 function HeaderToolbarRightGroup() {
-  return (
-    <ToolbarGroup align={alignRight} spacer={spacerMd}>
-      <HeaderToolbarRightItems />
-    </ToolbarGroup>
-  )
-}
-
-function HeaderToolbarRightItems() {
   const settings = useContext(Settings)
 
-  return [
-    <ToolbarItem align={alignRight}>
-      <Switch
-        ouiaId="demo-mode-switch"
-        hasCheckIcon
-        label="Demo Mode"
-        isChecked={settings?.demoMode[0]}
-        onChange={settings?.demoMode[2]}
-      />
-    </ToolbarItem>,
-    <ToolbarItem align={alignRight}>
-      <Switch
-        ouiaId="dark-mode-switch"
-        hasCheckIcon
-        label="Dark Mode"
-        isChecked={settings?.darkMode[0]}
-        onChange={settings?.darkMode[2]}
-      />
-    </ToolbarItem>,
-  ]
+  return (
+    <ToolbarGroup align={alignRight} spacer={spacerMd}>
+      <ToolbarItem align={alignRight}>
+        <Switch
+          ouiaId="demo-mode-switch"
+          hasCheckIcon
+          label="Demo Mode"
+          isChecked={settings?.demoMode[0]}
+          onChange={settings?.demoMode[2]}
+        />
+      </ToolbarItem>
+      <ToolbarItem align={alignRight}>
+        <Switch
+          ouiaId="dark-mode-switch"
+          hasCheckIcon
+          label="Dark Mode"
+          isChecked={settings?.darkMode[0]}
+          onChange={settings?.darkMode[2]}
+        />
+      </ToolbarItem>
+      ,
+    </ToolbarGroup>
+  )
 }
 
 type ModalProps = {
