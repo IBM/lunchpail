@@ -10,7 +10,16 @@ def create_tasksimulator(customApi, name: str, namespace: str, uid: str, spec, d
     dataset = spec['dataset']
     injectedTasksPerInterval = spec['rate']['tasks']
     intervalSeconds = spec['rate']['intervalSeconds'] if "intervalSeconds" in spec['rate'] else 10
-    
+
+    if 'schema' in spec:
+        fmt = spec['schema']['format']
+        columns = spec['schema']['columns']
+        columnTypes = spec['schema']['columnTypes']
+    else:
+        fmt = ""
+        columns = []
+        columnTypes = []
+
     try:
         out = subprocess.run([
             "/src/tasksimulator.sh",
@@ -19,6 +28,9 @@ def create_tasksimulator(customApi, name: str, namespace: str, uid: str, spec, d
             namespace,
             str(injectedTasksPerInterval),
             str(intervalSeconds),
+            fmt,
+            " ".join(map(str, columns)), # for CSV header, we want commas, but helm doesn't like commas https://github.com/helm/helm/issues/1556
+            " ".join(map(str, columnTypes)), # for bash loop iteration, hence the space join
             dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
         ], capture_output=True)

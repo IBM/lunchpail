@@ -11,14 +11,17 @@ name="$2"
 namespace="$3"
 injectedTasksPerInterval="$4"
 intervalSeconds="$5"
-dataset_name="$6"
-datasets="${7}"
+format="$6" # format of simulated input, e.g. "parquet"
+columns="$7" # column names of simulated input
+columnTypes="$8" # column types of simulated input
+dataset_name="$9"
+datasets="${10}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
 echo "Dry running to $DRY" 1>&2
 
-helm install --dry-run --debug $name "$SCRIPTDIR"/tasksimulator/ -n ${namespace} \
+helm install --dry-run --debug ${name}-tasksimulator "$SCRIPTDIR"/tasksimulator/ -n ${namespace} \
      --set uid=$uid \
      --set name=$name \
      --set image=$image \
@@ -28,6 +31,9 @@ helm install --dry-run --debug $name "$SCRIPTDIR"/tasksimulator/ -n ${namespace}
      --set injectedTasksPerInterval=$injectedTasksPerInterval \
      --set intervalSeconds=$intervalSeconds \
      --set datasets=$datasets \
+     --set format=$format \
+     --set columns="$columns" \
+     --set columnTypes="$columnTypes" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

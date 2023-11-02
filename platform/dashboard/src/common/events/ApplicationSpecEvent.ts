@@ -20,7 +20,7 @@ type ApplicationSpecEvent = KubernetesResource<{
   supportsGpu: boolean
 
   inputs?: {
-    schema?: { type: string; json: string }
+    schema?: { format: string; json: string }
     sizes: { xs?: string; sm?: string; md?: string; lg?: string; xl?: string }
   }[]
 }>

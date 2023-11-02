@@ -19,7 +19,7 @@ export default function DeleteResourceButton(props: Props) {
   const onDelete = useCallback(() => {
     handleModalToggle()
     if (kind && name && namespace) {
-      window.jay.delete({ kind, name, namespace })
+      window.jay.deleteByName({ kind, name, namespace })
     }
   }, [handleModalToggle, kind, name, namespace])
 

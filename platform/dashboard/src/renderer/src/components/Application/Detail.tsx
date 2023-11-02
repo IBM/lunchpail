@@ -23,7 +23,7 @@ function detailGroups(props: Props) {
     .filter(([, value]) => value)
     .map(([term, value]) =>
       term === "repo"
-        ? descriptionGroup(term, repoPlusSource(props))
+        ? descriptionGroup("Source", repoPlusSource(props))
         : term === "inputs"
         ? taskqueues(props)
         : typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value),
@@ -43,7 +43,7 @@ function deleteAction(props: Props) {
 }
 
 function Edit(props: Props) {
-  const qs = [`yaml=${encodeURIComponent(JSON.stringify(props))}`]
+  const qs = [`yaml=${encodeURIComponent(JSON.stringify(props.application))}`]
   return <LinkToNewWizard startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
 }
 
@@ -53,7 +53,7 @@ function ApplicationDetail(props: Props) {
     inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
       ? [
           {
-            title: "Test Schema",
+            title: "Task Schema",
             body: <Yaml showLineNumbers={false} obj={JSON.parse(inputs[0].schema.json)} />,
             hasNoPadding: true,
           },

@@ -111,7 +111,6 @@ spec:
   workers: 0
   application:
     name: ${values.name}
-  inbox: "."
 ---
 apiVersion: com.ie.ibm.hpsys/v1alpha1
 kind: Dataset
@@ -134,7 +133,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ${taskqueueName + "-cfsecret"}
+  name: ${taskqueueName + "cfsecret"}
   namespace: ${values.namespace}
   labels:
     app.kubernetes.io/component: ${values.name}

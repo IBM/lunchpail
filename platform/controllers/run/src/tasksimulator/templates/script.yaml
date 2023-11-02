@@ -1,0 +1,100 @@
+# a configmap to house the simulator.sh script
+# at some point, we can move this to the image
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ print .Release.Name "-script" }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: tasksimulator
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha1
+      controller: true
+      kind: TaskSimulator
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
+data:
+  simulator.sh: |
+    #!/usr/bin/env bash
+
+    echo "Started TaskSimulator injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
+    printenv
+
+    config=/tmp/rclone.conf
+    remote=s3:/${!REMOTE_PATH_VAR}/inbox
+    cat <<EOF > $config
+    [s3]
+    type = s3
+    provider = Other
+    env_auth = false
+    endpoint = ${!S3_ENDPOINT_VAR}
+    access_key_id = ${!AWS_ACCESS_KEY_ID_VAR}
+    secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
+    acl = public-read
+    EOF
+
+    if [[ -n "$COLUMNS" ]] && [[ -n "$COLUMN_TYPES" ]]
+    then echo "Using schema columns=\"$COLUMNS\" columnTypes=\"$COLUMN_TYPES\""
+    fi
+
+    while true
+    do
+      for i in $(seq 1 $TASKS)
+      do
+        task=/tmp/task-$(cat /proc/sys/kernel/random/uuid).txt
+        echo "Injecting task=$task format=${FORMAT-generic}"
+
+        if [[ $FORMAT = parquet ]] && [[ -n "$COLUMNS" ]] && [[ -n "$COLUMN_TYPES" ]]
+        then
+          # Simulated parquet task
+          echo "Simulating a parquet task"
+          echo "$COLUMNS" | tr " " "," > $task # csv column header
+
+          # for each row
+          for j in $(seq 1 ${NROWS_PER_TASK-10})
+          do
+            # for each column
+            IDX=0
+            for type in $COLUMN_TYPES
+            do
+              case $type in
+                number)
+                  VAL=$RANDOM
+                  ;;
+                string)
+                  VAL="Lorem ipsum dolor sit amet consectetur adipiscing elit. Vestibulum pharetra eros lectus. Nulla bibendum ligula sapien non pellentesque urna vestibulum eu. Duis ut eleifend sem. Nam eget diam euismod lacinia massa quis vestibulum nulla. Aliquam porttitor egestas interdum. Morbi eu porttitor velit. Pellentesque habitant morbi tristique senectus et netus et."
+                  ;;
+                *)
+                  VAL="null"
+                  ;;
+              esac
+
+              if [[ $IDX != 0 ]]; then echo -n "," >> $task; fi
+              echo -n "$VAL" >> $task
+
+              IDX=$((IDX + 1))
+            done
+            echo "" >> $task # end the line
+          done
+          #parquet convert-csv $task -o ${task}.parquet
+          python -c "import pandas as pd; pd.read_csv('$task').to_parquet('$task.parquet')"
+          # python -c 'import pandas as pd; pd.read_csv("/tmp/foo.csv").to_parquet("/tmp/foo.parquet")'
+          otask="$task"
+          task="${task}.parquet"
+          rm -f "$otask"
+        else
+          echo "Simulated generic task" > $task
+        fi
+
+        rclone --config $config sync $PROGRESS $task $remote
+        rm -f "$task"
+      done
+
+      sleep ${INTERVAL-5}
+    done
+
+    echo "Exiting"
+    sleep infinity

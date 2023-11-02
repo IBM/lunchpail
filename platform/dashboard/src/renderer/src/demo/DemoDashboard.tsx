@@ -41,7 +41,12 @@ export default function DemoDashboard() {
     window.jay = window.demo = Object.assign({}, props, {
       create: props.workerpools.create.bind(props.workerpools),
 
-      delete(dprops: import("@jay/common/api/jay").DeleteProps) {
+      delete(/*yaml: string*/) {
+        // TODO
+        throw new Error("Unsupported operation")
+      },
+
+      deleteByName(dprops: import("@jay/common/api/jay").DeleteProps) {
         if (/workerpool/.test(dprops.kind)) {
           return props.workerpools.delete(dprops)
         } else if (/application/.test(dprops.kind)) {

@@ -1,27 +1,58 @@
-import type { MouseEvent } from "react"
+import { useCallback, type MouseEvent } from "react"
 import { Button, Text, Tooltip } from "@patternfly/react-core"
 
 import { singular } from "../../names"
+import { associatedApplications } from "./common"
 
+import type TaskQueueProps from "./Props"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 
 import OnIcon from "@patternfly/react-icons/dist/esm/icons/sun-icon"
 import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-sun-icon"
 
-type Props = {
+type Props = Pick<TaskQueueProps, "name" | "applications" | "tasksimulators"> & {
   event: TaskQueueEvent
-  simulators: TaskSimulatorEvent[]
   invisibleIfNoSimulators?: boolean
 }
 
-function yaml(name: string, namespace: string) {
-  return `
+type TypeSpec = string | (string | TypeSpec)[]
+
+function typeOfScalar(spec: string) {
+  if (spec === "null" || spec === "string") {
+    return spec
+  } else if (spec === "int" || spec === "long") {
+    return "number"
+  } else {
+    console.error("Unknown schema type", spec)
+    return "null"
+  }
+}
+
+function typeOf(spec: TypeSpec) {
+  if (typeof spec === "string") {
+    return typeOfScalar(spec)
+  } else {
+    const nonNull = spec.filter((_) => _ !== "null" && typeof _ === "string") as string[]
+    if (nonNull.length === 0) {
+      // weird
+      return "null"
+    } else {
+      return typeOfScalar(nonNull[0])
+    }
+  }
+}
+
+function yaml(name: string, namespace: string, applications: Props["applications"]) {
+  let yaml = `
 apiVersion: codeflare.dev/v1alpha1
 kind: TaskSimulator
 metadata:
   name: ${name}
   namespace: ${namespace}
+  labels:
+    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/managed-by: jay
+    app.kubernetes.io/component: tasksimulator
 spec:
   dataset: ${name}
   rate:
@@ -29,24 +60,30 @@ spec:
     intervalSeconds: 5
 `
   // ^^^ 1 every 5 seconds
-}
 
-function onClick(evt: MouseEvent) {
-  const name = evt.currentTarget.getAttribute("data-name")
-  const namespace = evt.currentTarget.getAttribute("data-namespace")
-  const action = evt.currentTarget.getAttribute("data-action") as "delete" | "create"
+  const firstApp = applications.length === 0 ? undefined : applications[0]
+  const inputs = !firstApp ? undefined : firstApp.spec.inputs
+  const schema = !inputs || inputs.length === 0 ? undefined : inputs[0].schema
 
-  if (name && namespace) {
-    if (action === "create") {
-      window.jay.create({ name, namespace }, yaml(name, namespace))
-    } else {
-      window.jay.delete({ kind: "tasksimulators.codeflare.dev", name, namespace })
-    }
+  if (schema) {
+    // TODO: finish up schema.fields, populating it from the `schema` variable
+    const json = JSON.parse(schema.json)
+    const columns = json.fields.map((_) => _.name)
+    const columnTypes = json.fields.map((_) => _.type).map(typeOf)
+
+    yaml += `
+  schema:
+    format: ${schema.format}
+    columns: ${JSON.stringify(columns)}
+    columnTypes: ${JSON.stringify(columnTypes)}
+`
   }
+
+  return yaml
 }
 
 export default function TaskSimulatorButton(props: Props) {
-  const nSimulators = props.simulators.length
+  const nSimulators = props.tasksimulators.length
   const online = nSimulators > 0
   const message = online
     ? `This ${singular.taskqueues} has ${nSimulators} assigned ${
@@ -58,16 +95,31 @@ export default function TaskSimulatorButton(props: Props) {
     return <></>
   }
 
+  /** Button onclick handler */
+  const onClick = useCallback(
+    (evt: MouseEvent) => {
+      evt.stopPropagation()
+
+      const { name, namespace } = props.event.metadata
+      const action = online ? "delete" : "create"
+
+      if (name && namespace) {
+        const applications = associatedApplications(props)
+        const yamlString = yaml(name, namespace, applications)
+
+        if (action === "create") {
+          window.jay.create({ name, namespace }, yamlString)
+        } else {
+          window.jay.delete(yamlString)
+        }
+      }
+    },
+    [props.event, props.applications, online, window.jay.create, window.jay.delete],
+  )
+
   return (
     <Tooltip content={<Text component="p">{message}</Text>}>
-      <Button
-        size="lg"
-        variant="plain"
-        data-name={props.event.metadata.name}
-        data-namespace={props.event.metadata.namespace}
-        data-action={online ? "delete" : "create"}
-        onClick={onClick}
-      >
+      <Button size="lg" variant="plain" onClick={onClick}>
         {online ? <OnIcon className="codeflare--status-active" /> : <OffIcon />}
       </Button>
     </Tooltip>

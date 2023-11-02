@@ -26,6 +26,24 @@ spec:
               properties:
                 dataset:
                   type: string
+                schema:
+                  type: object
+                  required: [format, columns, columnTypes]
+                  properties:
+                    format:
+                      type: string
+                    columns:
+                      type: array
+                      items:
+                        type: string
+                    columnTypes:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - "null"
+                          - number
+                          - string
                 rate:
                   type: object
                   required: [tasks]

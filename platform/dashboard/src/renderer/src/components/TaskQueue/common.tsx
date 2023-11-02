@@ -28,16 +28,16 @@ function associatedApplicationsFilter(props: NameAndApplications, app: Applicati
   return null
 }
 
-function numAssociatedApplicationEvents(props: NameAndApplications) {
+function numAssociatedApplications(props: NameAndApplications) {
   return props.applications.reduce((N, app) => (associatedApplicationsFilter(props, app) ? N + 1 : N), 0)
 }
 
-function associatedApplicationEvents(props: NameAndApplications) {
+export function associatedApplications(props: NameAndApplications) {
   return props.applications.filter((app) => associatedApplicationsFilter(props, app))
 }
 
-function associatedApplications(props: Props) {
-  const apps = associatedApplicationEvents(props)
+function applications(props: Props) {
+  const apps = associatedApplications(props)
   return descriptionGroup(
     `Compatible ${names.applications}`,
     apps.length === 0 ? None() : linkToAllApplicationDetails(apps),
@@ -46,7 +46,7 @@ function associatedApplications(props: Props) {
   )
 }
 
-function associatedWorkerPools(props: Props) {
+function workerPools(props: Props) {
   return descriptionGroup(
     `Active ${names.workerpools}`,
     props.workerpools.length === 0 ? None() : linkToAllWorkerPoolDetails(props.workerpools),
@@ -83,12 +83,12 @@ function unassigned(props: NameEventsTaskQueueIndex) {
 }
 
 export function commonGroups(props: Props): ReactNode[] {
-  return [associatedApplications(props), associatedWorkerPools(props), unassigned(props)]
+  return [applications(props), workerPools(props), unassigned(props)]
 }
 
 export function NewPoolButton(props: Props) {
   return (
-    numAssociatedApplicationEvents(props) > 0 && (
+    numAssociatedApplications(props) > 0 && (
       <LinkToNewPool
         key="new-pool-button"
         taskqueue={props.name}

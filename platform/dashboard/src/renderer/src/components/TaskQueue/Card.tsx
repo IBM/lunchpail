@@ -23,7 +23,15 @@ export default function TaskQueueCard(props: Props) {
     ? undefined
     : {
         hasNoOffset: true,
-        actions: <TaskSimulatorButton event={last} simulators={props.tasksimulators} invisibleIfNoSimulators />,
+        actions: (
+          <TaskSimulatorButton
+            name={props.name}
+            event={last}
+            applications={props.applications}
+            tasksimulators={props.tasksimulators}
+            invisibleIfNoSimulators
+          />
+        ),
       }
 
   return <CardInGallery kind="taskqueues" name={props.name} icon={icon} groups={groups} actions={actions} />

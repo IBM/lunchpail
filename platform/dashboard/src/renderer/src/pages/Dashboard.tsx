@@ -149,7 +149,7 @@ export function Dashboard(props: Props) {
       taskqueueEvents.reduce(
         (M, event) => {
           if (!(event.metadata.name in M.index)) {
-            M.index[event.metadata.name] = either(event.spec.idx, M.next++)
+            M.index[event.metadata.name] = either(event.spec?.idx, M.next++)
           }
           return M
         },

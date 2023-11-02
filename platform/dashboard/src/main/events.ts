@@ -124,9 +124,12 @@ export function initEvents() {
     import("./create").then((_) => _.onCreate(yaml, "apply", dryRun)),
   )
 
-  // resource delete request
-  ipcMain.handle("/delete", (_, props: string) =>
-    import("./create").then((_) => _.onDelete(JSON.parse(props) as DeleteProps)),
+  // resource delete request given the yaml spec
+  ipcMain.handle("/delete/yaml", (_, yaml: string) => import("./create").then((_) => _.onDelete(yaml)))
+
+  // resource delete request by name
+  ipcMain.handle("/delete/name", (_, props: string) =>
+    import("./create").then((_) => _.onDeleteByName(JSON.parse(props) as DeleteProps)),
   )
 
   // control plane status request
@@ -237,8 +240,13 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Delete a resource */
-    delete: (props: DeleteProps): Promise<ExecResponse> => {
-      return ipcRenderer.invoke("/delete", JSON.stringify(props))
+    delete: (yaml: string): Promise<ExecResponse> => {
+      return ipcRenderer.invoke("/delete/yaml", yaml)
+    },
+
+    /** Delete a resource by name */
+    deleteByName: (props: DeleteProps): Promise<ExecResponse> => {
+      return ipcRenderer.invoke("/delete/name", JSON.stringify(props))
     },
   },
   kinds.reduce(

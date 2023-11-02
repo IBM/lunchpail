@@ -51,7 +51,7 @@ function deleteAction(last: null | TaskQueueEvent) {
     : [
         <DeleteResourceButton
           key="delete"
-          kind="taskqueue"
+          kind="dataset"
           uiKind="taskqueues"
           name={last.metadata.name}
           namespace={last.metadata.namespace}
@@ -64,7 +64,15 @@ function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, p
   // don't show task simulator button when in demo mode
   return !last || inDemoMode
     ? []
-    : [<TaskSimulatorButton key="task-simulator" event={last} simulators={props.tasksimulators} />]
+    : [
+        <TaskSimulatorButton
+          key="task-simulator"
+          name={props.name}
+          event={last}
+          applications={props.applications}
+          tasksimulators={props.tasksimulators}
+        />,
+      ]
 }
 
 /** Right-aligned actions */

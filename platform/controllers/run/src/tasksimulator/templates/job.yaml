@@ -4,17 +4,31 @@ kind: Pod
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha1
+      controller: true
+      kind: TaskSimulator
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
   labels:
     app.kubernetes.io/component: tasksimulator
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: codeflare.dev
-    {{ if .Values.datasets }}
+    {{- if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 4 }}
-    {{ end }}
+    {{- end }}
 spec:
-  restartPolicy: Never
+  restartPolicy: Always
+  terminationGracePeriodSeconds: 5
   containers:
     {{- include "codeflare.dev/containers/simulator" . | indent 4 }}
+
+  # shell script from configmap
+  volumes:
+  - name: script
+    configMap:
+      name: {{ print .Release.Name "-script" }}
+      defaultMode: 0500
 {{- end }}

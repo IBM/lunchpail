@@ -37,7 +37,7 @@ export default function JobManagerDetail() {
   const actions =
     status.status && isHealthy(status.status)
       ? [
-          <Tooltip key="refresh" content="Reload the Job Manager with the initial configuration">
+          <Tooltip key="refresh" content="Reload the Job Manager with the latest configuration">
             <Button
               size="sm"
               variant="secondary"

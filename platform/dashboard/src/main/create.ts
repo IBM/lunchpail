@@ -44,7 +44,14 @@ export function hasMessage(obj: unknown): obj is { message: string } {
 /**
  * Delete a resource by name
  */
-export async function onDelete({
+export async function onDelete(yaml: string): Promise<ExecResponse> {
+  return onCreate(yaml, "delete")
+}
+
+/**
+ * Delete a resource by name
+ */
+export async function onDeleteByName({
   kind,
   name,
   namespace,

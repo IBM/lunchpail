@@ -70,6 +70,6 @@ function build_test_images {
 }
 
 build_test_images
-build_controllers
 build_components
+build_controllers
 wait

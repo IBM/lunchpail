@@ -28,7 +28,10 @@ export default interface JayApi extends Record<Kind, JayResourceApi> {
   create(values: Record<string, string>, yaml: string, dryRun?: boolean): ExecResponse | Promise<ExecResponse>
 
   /** Delete a resource */
-  delete(props: DeleteProps): ExecResponse | Promise<ExecResponse>
+  delete(yaml: string): ExecResponse | Promise<ExecResponse>
+
+  /** Delete a resource by name */
+  deleteByName(props: DeleteProps): ExecResponse | Promise<ExecResponse>
 
   /** Jobs as a Service API to server-side control plane functionality */
   controlplane: ControlPlaneApi
