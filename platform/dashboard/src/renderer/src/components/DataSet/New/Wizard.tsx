@@ -1,3 +1,4 @@
+import wordWrap from "word-wrap"
 import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
@@ -58,6 +59,9 @@ kind: Dataset
 metadata:
   name: ${values.name}
   namespace: ${values.namespace}
+  annotations:
+    codeflare.dev/description: >-
+${wordWrap(values.description, { trim: true, indent: "      ", width: 60 })}
   labels:
     codeflare.dev/created-by: user
     app.kubernetes.io/part-of: codeflare.dev

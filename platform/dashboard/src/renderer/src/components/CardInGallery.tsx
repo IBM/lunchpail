@@ -1,18 +1,16 @@
+import { useCallback } from "react"
 import { Card, CardHeader, CardTitle, CardBody, CardFooter, DescriptionListProps } from "@patternfly/react-core"
+
+import { drilldownProps } from "../pages/PageWithDrawer"
+import { dl as DescriptionList } from "./DescriptionGroup"
 
 import type { ReactNode } from "react"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
-
 import type { NavigableKind as Kind } from "../Kind"
-import type { DrilldownProps } from "../context/DrawerContext"
-
-import { dl as DescriptionList } from "./DescriptionGroup"
 
 import "./CardInGallery.scss"
 
-export type BaseProps = DrilldownProps
-
-type Props = BaseProps & {
+type Props = {
   kind: Kind
   name: string
   title?: ReactNode
@@ -28,7 +26,11 @@ const defaultDescriptionListProps: DescriptionListProps = {
 }
 
 export default function CardInGallery(props: Props) {
-  const onClick = () => props.showDetails({ id: props.name, kind: props.kind })
+  const { showDetails, currentlySelectedId, currentlySelectedKind } = drilldownProps()
+  const onClick = useCallback(
+    () => showDetails({ id: props.name, kind: props.kind }),
+    [props.name, props.kind, showDetails],
+  )
 
   const header = props.icon && (
     <CardHeader actions={props.actions} className="codeflare--card-header-no-wrap">
@@ -46,7 +48,7 @@ export default function CardInGallery(props: Props) {
       isSelectable
       isSelectableRaised
       ouiaId={props.name}
-      isSelected={props.currentlySelectedId === props.name && props.currentlySelectedKind === props.kind}
+      isSelected={currentlySelectedId === props.name && currentlySelectedKind === props.kind}
       onClick={onClick}
     >
       {header}

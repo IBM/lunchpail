@@ -5,7 +5,6 @@ import { descriptionGroup } from "../DescriptionGroup"
 import { linkToAllTaskQueueDetails } from "../../navigate/details"
 
 import type Props from "./Props"
-import type { BaseProps } from "../CardInGallery"
 
 import ApplicationIcon from "./Icon"
 
@@ -52,17 +51,17 @@ export function datasets(props: Props) {
   )
 }
 
-export default function ApplicationCard(props: BaseProps & Props) {
+export default function ApplicationCard(props: Props) {
   const kind = "applications" as const
   const icon = <ApplicationIcon {...props.application} />
   const name = props.application.metadata.name
   const groups = [
     api(props),
+    props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
     taskqueues(props),
     datasets(props),
-    props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
     //props.supportsGpu && descriptionGroup("Benefits from GPU", props.supportsGpu),
   ]
 
-  return <CardInGallery {...props} kind={kind} name={name} icon={icon} groups={groups} />
+  return <CardInGallery kind={kind} name={name} icon={icon} groups={groups} />
 }

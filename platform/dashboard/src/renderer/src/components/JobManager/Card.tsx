@@ -10,8 +10,6 @@ import Settings from "../../Settings"
 
 import { descriptionGroup } from "../DescriptionGroup"
 
-import type { BaseProps } from "../CardInGallery"
-
 type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
 
 function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
@@ -24,7 +22,7 @@ export function summaryGroups(demoMode: boolean, status: null | JobManagerStatus
   return [descriptionGroup("Status", statusMessage)]
 }
 
-export default function JobManagerCardFn(props: BaseProps) {
+export default function JobManagerCard() {
   const { status, refreshing, setTo } = useContext(Status)
   const settings = useContext(Settings)
   const demoMode = settings?.demoMode[0] ?? false
@@ -56,7 +54,6 @@ export default function JobManagerCardFn(props: BaseProps) {
 
   return (
     <CardInGallery
-      {...props}
       kind={kind}
       name={name}
       title={title}

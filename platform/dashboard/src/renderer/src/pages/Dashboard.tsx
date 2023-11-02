@@ -211,30 +211,19 @@ export function Dashboard(props: Props) {
       Object.entries(handlers).forEach(([kind, handler]) => props[kind].removeEventListener("message", handler))
   }, [])
 
-  const drilldown = drilldownProps()
-
   const applicationCards = useMemo(
     () => [
       ...[inDemoMode ? [] : [<NewApplicationCard key="new-application-card" />]],
       ...applicationEvents.map((evt) => (
-        <Application
-          key={evt.metadata.name}
-          application={evt}
-          {...drilldown}
-          datasets={datasetsList}
-          taskqueues={taskqueuesList}
-        />
+        <Application key={evt.metadata.name} application={evt} datasets={datasetsList} taskqueues={taskqueuesList} />
       )),
     ],
-    [inDemoMode, applicationEvents, drilldown],
+    [inDemoMode, applicationEvents],
   )
 
   const datasetCards = useMemo(
-    () => [
-      ...NewDataSetCards,
-      ...datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} {...drilldown} />),
-    ],
-    [datasetEvents.map((_) => _.metadata.name).join("-"), drilldown],
+    () => [...NewDataSetCards, ...datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} />)],
+    [datasetEvents.map((_) => _.metadata.name).join("-")],
   )
 
   const taskqueueCards = useMemo(
@@ -250,7 +239,6 @@ export function Dashboard(props: Props) {
           events={[event]}
           numEvents={1}
           taskqueueIndex={taskqueueIndex}
-          {...drilldown}
         />
       )),
     ],
@@ -272,7 +260,6 @@ export function Dashboard(props: Props) {
           model={w}
           taskqueueIndex={taskqueueIndex}
           status={poolEvents.find((_) => _.metadata.name === w.label)}
-          {...drilldown}
         />
       )),
     ],
@@ -292,7 +279,7 @@ export function Dashboard(props: Props) {
   function galleryItems() {
     switch (currentKind()) {
       case "controlplane":
-        return <JobManagerCard {...drilldown} />
+        return <JobManagerCard />
       case "applications":
         return applicationCards
       case "taskqueues":
