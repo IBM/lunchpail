@@ -152,10 +152,10 @@ export default function NewApplicationWizard(props: Props) {
 
   const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular.datasets}`
   const steps =
-    action === "register" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
+    action !== "create" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
 
   return (
-    <NewResourceWizard {...props} kind="datasets" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+    <NewResourceWizard {...props} kind="datasets" title={title} defaults={defaults} yaml={yaml} steps={steps} isEdit>
       An {singular.datasets} stores information that is not specific to any one Task in a {singular.taskqueues}, e.g. a
       pre-trained model or a chip design that is being tested across multiple configurations.{" "}
       {action === "register" ? (

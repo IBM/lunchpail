@@ -288,12 +288,20 @@ export default function NewApplicationWizard(props: Props) {
     items: [useTestQueueCheckbox],
   }*/
 
-  const isEditing = searchParams.has("yaml")
-  const title = `${isEditing ? "Edit" : "Register"} ${singular.applications}`
+  const isEdit = searchParams.has("yaml")
+  const title = `${isEdit ? "Edit" : "Register"} ${singular.applications}`
   const steps = [step1, step2, step3, step4]
 
   return (
-    <NewResourceWizard {...props} kind="applications" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+    <NewResourceWizard
+      {...props}
+      kind="applications"
+      title={title}
+      defaults={defaults}
+      yaml={yaml}
+      steps={steps}
+      isEdit={isEdit}
+    >
       An {singular.applications} is the source code that knows how to consume and then process <strong>Tasks</strong>.
       Once you have registered your {singular.applications}, you can bring online <strong>{names.workerpools}</strong>{" "}
       that run the {singular.applications} against the tasks in a <strong>{singular.taskqueues}</strong>.
