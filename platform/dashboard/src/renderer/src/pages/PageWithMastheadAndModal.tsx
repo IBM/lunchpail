@@ -21,8 +21,7 @@ import {
 
 import Settings from "../Settings"
 
-import { description, version } from "../../../../package.json"
-import SmallLabel from "../components/SmallLabel"
+import { description } from "../../../../package.json"
 
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
@@ -83,49 +82,28 @@ function HeaderToolbarRightGroup() {
 }
 
 function HeaderToolbarRightItems() {
-  return []
-}
-
-function Footer(props: Pick<Props, "footerLeft" | "footerRight">): ReactNode {
   const settings = useContext(Settings)
-  const left = props.footerLeft
-  const right = props.footerRight
 
-  return (
-    <Toolbar>
-      <ToolbarContent>
-        <ToolbarGroup align={alignLeft}>
-          <ToolbarItem>
-            <SmallLabel>v{version}</SmallLabel>
-          </ToolbarItem>
-          {left || <></>}
-        </ToolbarGroup>
-
-        <ToolbarGroup align={alignRight}>
-          {right || <></>}
-
-          <ToolbarItem align={alignRight}>
-            <Switch
-              ouiaId="demo-mode-switch"
-              hasCheckIcon
-              label="Demo Mode"
-              isChecked={settings?.demoMode[0]}
-              onChange={settings?.demoMode[2]}
-            />
-          </ToolbarItem>
-          <ToolbarItem align={alignRight}>
-            <Switch
-              ouiaId="dark-mode-switch"
-              hasCheckIcon
-              label="Dark Mode"
-              isChecked={settings?.darkMode[0]}
-              onChange={settings?.darkMode[2]}
-            />
-          </ToolbarItem>
-        </ToolbarGroup>
-      </ToolbarContent>
-    </Toolbar>
-  )
+  return [
+    <ToolbarItem align={alignRight}>
+      <Switch
+        ouiaId="demo-mode-switch"
+        hasCheckIcon
+        label="Demo Mode"
+        isChecked={settings?.demoMode[0]}
+        onChange={settings?.demoMode[2]}
+      />
+    </ToolbarItem>,
+    <ToolbarItem align={alignRight}>
+      <Switch
+        ouiaId="dark-mode-switch"
+        hasCheckIcon
+        label="Dark Mode"
+        isChecked={settings?.darkMode[0]}
+        onChange={settings?.darkMode[2]}
+      />
+    </ToolbarItem>,
+  ]
 }
 
 type ModalProps = {
@@ -169,11 +147,8 @@ export default function PageWithMastheadAndModal(props: Props) {
       <PageSection padding={noPadding} isFilled={false}>
         <Divider />
       </PageSection>
-      <PageSection padding={noPadding} hasOverflowScroll isFilled aria-label="codeflare-dashboard-body">
+      <PageSection padding={noPadding} hasOverflowScroll isFilled>
         {props.children}
-      </PageSection>
-      <PageSection isFilled={false} stickyOnBreakpoint={stickyBottom} padding={noPadding}>
-        <Footer {...props} />
       </PageSection>
 
       {props.modal}
