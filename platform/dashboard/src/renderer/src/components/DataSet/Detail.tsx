@@ -26,7 +26,7 @@ function deleteAction(props: Props) {
 }
 
 function Edit(props: Props) {
-  const qs = [`yaml=${encodeURIComponent(JSON.stringify(props))}`]
+  const qs = [`action=edit&yaml=${encodeURIComponent(JSON.stringify(props))}`]
   return <LinkToNewWizard startOrAdd="edit" kind="datasets" linkText="Edit" qs={qs} />
 }
 

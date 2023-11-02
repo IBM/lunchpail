@@ -150,7 +150,7 @@ export default function NewApplicationWizard(props: Props) {
   // are we registering an existing or creating a new one from data supplied here?
   const action = searchParams.get("action") ?? "register"
 
-  const title = `${action === "register" ? "Register" : "Create"} ${singular.datasets}`
+  const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular.datasets}`
   const steps =
     action === "register" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
 
