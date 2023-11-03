@@ -130,8 +130,15 @@ export default function PageWithDrawer(props: Props) {
   const widths = useMemo(() => (isMaximized ? { default: "width_100" as const } : undefined), [isMaximized])
 
   /** @return the content to be shown in the drawer (*not* in the main body section) */
+  // manually adding custom ouia labels because the Drawer component is not a ouia compatible component
+  // resource: https://www.patternfly.org/developer-resources/open-ui-automation#usage
   const panelContent = (
-    <DrawerPanelContent className="codeflare--detail-view" widths={widths}>
+    <DrawerPanelContent
+      className="codeflare--detail-view"
+      widths={widths}
+      data-ouia-component-type="PF5/DrawerPanelContent"
+      data-ouia-component-id={kind + "." + currentlySelectedId(searchParams)}
+    >
       <DrawerHead>
         <Breadcrumb>
           {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
@@ -162,8 +169,12 @@ export default function PageWithDrawer(props: Props) {
 
   return (
     <PageWithMastheadAndModal {...modalProps}>
-      <Drawer isExpanded={isShowingDetails(searchParams)} isInline>
-        <DrawerContent panelContent={panelContent} colorVariant="light-200">
+      <Drawer isExpanded={isShowingDetails(searchParams)} isInline data-ouia-component-type="PF5/Drawer">
+        <DrawerContent
+          panelContent={panelContent}
+          colorVariant="light-200"
+          data-ouia-component-type="PF5/DrawerContent"
+        >
           <DrawerContentBody hasPadding>{props.children}</DrawerContentBody>
         </DrawerContent>
       </Drawer>
