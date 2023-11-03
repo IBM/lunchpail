@@ -2,6 +2,7 @@ import { useContext } from "react"
 
 import Sparkline from "../Sparkline"
 import Settings from "../../Settings"
+import { BrowserTabs } from "../S3Browser"
 import DrawerContent from "../Drawer/Content"
 import TaskSimulatorButton from "./TaskSimulatorButton"
 import DeleteResourceButton from "../DeleteResourceButton"
@@ -86,6 +87,12 @@ function leftActions(props: Props) {
   return [<NewPoolButton key="new-pool" {...props} />]
 }
 
+/** Tabs specific to this kind of data */
+function otherTabs(props: Props) {
+  const last = lastEvent(props)
+  return !last ? [] : BrowserTabs(last.spec.local)
+}
+
 function TaskQueueDetail(props: Props) {
   const settings = useContext(Settings)
   const inDemoMode = settings?.demoMode[0] ?? false
@@ -96,6 +103,7 @@ function TaskQueueDetail(props: Props) {
       raw={props && lastEvent(props)}
       actions={props && leftActions(props)}
       rightActions={props && rightActions(inDemoMode, props)}
+      otherTabs={otherTabs(props)}
     />
   )
 }

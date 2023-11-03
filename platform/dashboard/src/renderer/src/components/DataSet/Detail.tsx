@@ -1,4 +1,4 @@
-import S3Browser from "../S3Browser"
+import { BrowserTabs } from "../S3Browser"
 import DrawerContent from "../Drawer/Content"
 import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
@@ -30,16 +30,9 @@ function Edit(props: Props) {
   return <LinkToNewWizard startOrAdd="edit" kind="datasets" linkText="Edit" qs={qs} />
 }
 
+/** Tabs specific to this kind of data */
 function otherTabs(props: Props) {
-  return !window.jay.get || !window.jay.s3
-    ? []
-    : [
-        {
-          title: "Browser",
-          body: <S3Browser {...props.spec.local} get={window.jay.get} s3={window.jay.s3} />,
-          hasNoPadding: true,
-        },
-      ]
+  return BrowserTabs(props.spec.local)
 }
 
 function DataSetDetail(props: Props) {
@@ -47,9 +40,9 @@ function DataSetDetail(props: Props) {
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props}
-      otherTabs={otherTabs(props)}
       actions={props && [<Edit {...props} />]}
       rightActions={props && [deleteAction(props)]}
+      otherTabs={otherTabs(props)}
     />
   )
 }

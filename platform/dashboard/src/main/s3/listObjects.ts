@@ -1,3 +1,4 @@
+import Client from "./client"
 import type { BucketItem } from "@jay/common/api/s3"
 
 export default async function listObjects(
@@ -6,14 +7,8 @@ export default async function listObjects(
   secretKey: string,
   bucket: string,
 ): Promise<BucketItem[]> {
-  const { Client } = await import("minio")
-  const s3Client = new Client({
-    endPoint: endpoint.replace(/^https?:\/\//, ""),
-    accessKey,
-    secretKey,
-  })
-
-  const stream = await s3Client.listObjectsV2(bucket, undefined, true)
+  const client = await Client(endpoint, accessKey, secretKey)
+  const stream = await client.listObjectsV2(bucket, undefined, true)
 
   return new Promise((resolve, reject) => {
     const items: BucketItem[] = []

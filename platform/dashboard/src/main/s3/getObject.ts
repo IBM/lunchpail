@@ -1,3 +1,5 @@
+import Client from "./client"
+
 export default async function getObjects(
   endpoint: string,
   accessKey: string,
@@ -5,14 +7,8 @@ export default async function getObjects(
   bucket: string,
   object: string,
 ): Promise<string> {
-  const { Client } = await import("minio")
-  const s3Client = new Client({
-    endPoint: endpoint.replace(/^https?:\/\//, ""),
-    accessKey,
-    secretKey,
-  })
-
-  const stream = await s3Client.getObject(bucket, object)
+  const client = await Client(endpoint, accessKey, secretKey)
+  const stream = await client.getObject(bucket, object)
 
   return new Promise((resolve, reject) => {
     let content = ""

@@ -5,6 +5,7 @@ import Json from "./Json"
 
 import type { BucketItem } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type { KubernetesS3Secret } from "@jay/common/events/KubernetesResource"
 
 import "./S3Browser.scss"
@@ -272,4 +273,17 @@ function ShowContent(props: S3Props & { object: string }) {
       className="codeflare--no-hover"
     ></MenuItem>
   )
+}
+
+/** A Details tab that shows <S3Browser /> */
+export function BrowserTabs(props: (DataSetEvent | TaskQueueEvent)["spec"]["local"]) {
+  return !window.jay.get || !window.jay.s3
+    ? []
+    : [
+        {
+          title: "Browser",
+          body: <S3Browser {...props} get={window.jay.get} s3={window.jay.s3} />,
+          hasNoPadding: true,
+        },
+      ]
 }
