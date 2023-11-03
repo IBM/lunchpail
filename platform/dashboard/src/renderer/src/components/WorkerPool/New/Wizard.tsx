@@ -61,7 +61,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   /** Initial value for form */
   function defaults() {
     return {
-      poolName: removeAccents(
+      name: removeAccents(
         uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
       ),
       count: String(1),
@@ -119,7 +119,7 @@ export default function NewWorkerPoolWizard(props: Props) {
 
   const step1 = {
     name: "Configure",
-    isValid: (ctrl: FormContextProps) => !!ctrl.values.poolName && !!ctrl.values.application && !!ctrl.values.taskqueue,
+    isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
     items: ["name" as const, application, taskqueue, numWorkers],
   }
 
@@ -137,7 +137,7 @@ export default function NewWorkerPoolWizard(props: Props) {
 apiVersion: codeflare.dev/v1alpha1
 kind: WorkerPool
 metadata:
-  name: ${values.poolName}
+  name: ${values.name}
   namespace: ${namespace}
 spec:
   dataset: ${values.taskqueue}
