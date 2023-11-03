@@ -3,7 +3,7 @@ import type QueueEvent from "@jay/common/events/QueueEvent.js"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
-import { runs } from "./misc"
+import { apiVersion, runs } from "./misc"
 
 export default class DemoQueueEventSource extends Base implements EventSourceLike {
   protected override initInterval() {
@@ -14,6 +14,8 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
     return {
       timestamp: Date.now(),
       event: {
+        apiVersion,
+        kind: "Queue",
         metadata: {
           name: `queue-${runs[0]}-${taskqueue}`,
           namespace: "none", // FIXME?

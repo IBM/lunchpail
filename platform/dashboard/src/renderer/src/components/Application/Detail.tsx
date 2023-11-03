@@ -4,6 +4,7 @@ import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
 
 import Yaml from "../YamlFromObject"
+import { yamlFromSpec } from "./New/yaml"
 import LinkToNewWizard from "../../navigate/wizard"
 
 import type Props from "./Props"
@@ -36,6 +37,7 @@ function deleteAction(props: Props) {
     <DeleteResourceButton
       kind="applications.codeflare.dev"
       uiKind="applications"
+      yaml={yamlFromSpec(props.application)}
       name={props.application.metadata.name}
       namespace={props.application.metadata.namespace}
     />

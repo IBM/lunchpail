@@ -5,7 +5,7 @@ import { singular } from "../names"
 
 import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
-type Props = import("@jay/common/api/jay").DeleteProps & { uiKind: import("../Kind").default }
+type Props = import("@jay/common/api/jay").DeleteProps & { uiKind: import("../Kind").default; yaml?: string }
 
 /**
  * Button that offers to delete a resource. It wraps the interacation
@@ -18,7 +18,9 @@ export default function DeleteResourceButton(props: Props) {
   const { kind, name, namespace } = props
   const onDelete = useCallback(() => {
     handleModalToggle()
-    if (kind && name && namespace) {
+    if (props.yaml) {
+      window.jay.delete(props.yaml)
+    } else if (kind && name && namespace) {
       window.jay.deleteByName({ kind, name, namespace })
     }
   }, [handleModalToggle, kind, name, namespace])

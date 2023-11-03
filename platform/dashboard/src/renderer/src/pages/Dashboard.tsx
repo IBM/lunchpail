@@ -26,8 +26,8 @@ import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 import JobManagerDetail from "../components/JobManager/Detail"
 
-import allEventsHandler from "../events/all"
 import singletonEventHandler from "../events/singleton"
+import { allEventsHandler, allTimestampedEventsHandler } from "../events/all"
 
 import {
   queueTaskQueue,
@@ -81,7 +81,7 @@ export function Dashboard(props: Props) {
     applications: singletonEventHandler("applications", setApplicationEvents, returnHome),
     taskqueues: allEventsHandler(setTaskQueueEvents),
     datasets: singletonEventHandler("datasets", setDataSetEvents, returnHome),
-    queues: allEventsHandler(setQueueEvents),
+    queues: allTimestampedEventsHandler(setQueueEvents),
     workerpools: singletonEventHandler("workerpools", setPoolEvents, returnHome),
     tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
     platformreposecrets: singletonEventHandler("platformreposecrets", setPlatformRepoSecretEvents, returnHome),

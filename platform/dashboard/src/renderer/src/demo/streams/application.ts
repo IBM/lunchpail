@@ -4,9 +4,9 @@ import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import Base from "./base"
-import { ns } from "./misc"
 import lorem from "../util/lorem"
 import { colors } from "./taskqueue"
+import { apiVersion, ns } from "./misc"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
   private readonly apis = ["spark", "ray", "torch", "workqueue"]
@@ -48,6 +48,8 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     status = "Ready",
   ): ApplicationSpecEvent {
     return {
+      apiVersion,
+      kind: "Application",
       metadata: {
         name,
         namespace,

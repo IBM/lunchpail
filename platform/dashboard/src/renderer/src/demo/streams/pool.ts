@@ -6,7 +6,7 @@ import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
 import Base from "./base"
-import { ns } from "./misc"
+import { apiVersion, ns } from "./misc"
 import { inbox, inboxIncr } from "./taskqueue"
 import getNormallyDistributedRandomNumber from "../util/rand"
 
@@ -40,6 +40,8 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     const nWorkers = workerpool.numWorkers
 
     return {
+      apiVersion,
+      kind: "WorkerPool",
       metadata: {
         name: workerpool.name,
         namespace: ns,

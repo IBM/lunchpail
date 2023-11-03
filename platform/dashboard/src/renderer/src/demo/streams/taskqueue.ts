@@ -2,7 +2,7 @@ import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
-import { ns } from "./misc"
+import { apiVersion, ns } from "./misc"
 
 export const colors = ["pink", "green", "purple"]
 
@@ -22,6 +22,8 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
   private readonly taskqueues: TaskQueueEvent[] = Array(3)
     .fill(0)
     .map((_, idx) => ({
+      apiVersion,
+      kind: "DataSet",
       metadata: {
         name: colors[idx],
         namespace: ns,

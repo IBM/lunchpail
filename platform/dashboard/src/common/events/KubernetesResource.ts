@@ -1,4 +1,7 @@
 type KubernetesResource<Spec, Annotations = unknown, Labels = unknown, Top = unknown> = Top & {
+  apiVersion: string
+  kind: string
+
   /** Resource metadata */
   metadata: Labels & {
     /** Resource name */
