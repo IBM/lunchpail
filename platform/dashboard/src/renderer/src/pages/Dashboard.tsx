@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 
 import names, { subtitles } from "../names"
 import { currentKind } from "../navigate/kind"
@@ -16,15 +16,15 @@ import Settings from "../Settings"
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 import DashboardModal from "./DashboardModal"
-import NewDataSetCards from "../components/DataSet/New/Cards"
-import NewWorkerPoolCard from "../components/WorkerPool/New/Card"
-import NewApplicationCard from "../components/Application/New/Card"
 
 import DataSetDetail from "../components/DataSet/Detail"
 import TaskQueueDetail from "../components/TaskQueue/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 import JobManagerDetail from "../components/JobManager/Detail"
+
+import { LinkToNewDataSet } from "../components/DataSet/New/Button"
+import { LinkToNewApplication } from "../components/Application/New/Button"
 
 import singletonEventHandler from "../events/singleton"
 import { allEventsHandler, allTimestampedEventsHandler } from "../events/all"
@@ -39,6 +39,7 @@ import {
 } from "../events/QueueEvent"
 
 import type Kind from "../Kind"
+import type { NavigableKind } from "../Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type { EventLike } from "@jay/common/events/EventSourceLike"
 import type QueueEvent from "@jay/common/events/QueueEvent"
@@ -211,21 +212,6 @@ export function Dashboard(props: Props) {
       Object.entries(handlers).forEach(([kind, handler]) => props[kind].removeEventListener("message", handler))
   }, [])
 
-  const applicationCards = useMemo(
-    () => [
-      ...[inDemoMode ? [] : [<NewApplicationCard key="new-application-card" />]],
-      ...applicationEvents.map((evt) => (
-        <Application key={evt.metadata.name} application={evt} datasets={datasetsList} taskqueues={taskqueuesList} />
-      )),
-    ],
-    [inDemoMode, applicationEvents],
-  )
-
-  const datasetCards = useMemo(
-    () => [...NewDataSetCards, ...datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} />)],
-    [datasetEvents.map((_) => _.metadata.name).join("-")],
-  )
-
   const taskqueueCards = useMemo(
     () => [
       ...latestTaskQueueEvents.map((event) => (
@@ -245,16 +231,9 @@ export function Dashboard(props: Props) {
     [latestTaskQueueEvents, taskqueueIndex, taskqueueToPool, taskqueueToTaskSimulators],
   )
 
-  // TODO... cards
-  const platformreposecretCards = useMemo(
-    () => platformreposecretEvents.map((_) => _.metadata.name),
-    [platformreposecretEvents],
-  )
-
   const workerpoolCards = useMemo(
-    () => [
-      <NewWorkerPoolCard key="new-workerpool-card" />,
-      ...latestWorkerPoolModels.map((w) => (
+    () =>
+      latestWorkerPoolModels.map((w) => (
         <WorkerPool
           key={w.label}
           model={w}
@@ -262,7 +241,6 @@ export function Dashboard(props: Props) {
           status={poolEvents.find((_) => _.metadata.name === w.label)}
         />
       )),
-    ],
     [latestWorkerPoolModels],
   )
 
@@ -276,100 +254,102 @@ export function Dashboard(props: Props) {
     />
   )
 
-  function galleryItems() {
-    switch (currentKind()) {
-      case "controlplane":
-        return <JobManagerCard />
-      case "applications":
-        return applicationCards
-      case "taskqueues":
-        return taskqueueCards
-      case "datasets":
-        return datasetCards
-      case "workerpools":
-        return workerpoolCards
-      case "platformreposecrets":
-        return platformreposecretCards
-    }
+  /** Helps will drilldown to Details */
+  function getApplication(id: string) {
+    const application = applicationEvents.find((_) => _.metadata.name === id)
+    return application ? { application, datasets: datasetsList, taskqueues: taskqueuesList } : undefined
   }
 
   /** Helps will drilldown to Details */
-  const getApplication = useCallback(
-    (id: string) => {
-      const application = applicationEvents.find((_) => _.metadata.name === id)
-      return application ? { application, datasets: datasetsList, taskqueues: taskqueuesList } : undefined
-    },
-    [applicationEvents],
-  )
+  function getDataSet(id: string, datasetEvents: DataSetEvent[]) {
+    return datasetEvents.find((_) => _.metadata.name === id)
+  }
 
   /** Helps will drilldown to Details */
-  const getDataSet = useCallback(
-    (id: string) => {
-      return datasetEvents.find((_) => _.metadata.name === id)
-    },
-    [datasetEvents],
-  )
+  function getTaskQueue(id: string) {
+    const events = taskqueueEvents.filter((_) => _.metadata.name === id)
+    return events.length === 0
+      ? undefined
+      : {
+          idx: either(events[events.length - 1].spec.idx, taskqueueIndex[id]),
+          workerpools: taskqueueToPool[id] || [],
+          tasksimulators: taskqueueToTaskSimulators[id] || [],
+          applications: applicationEvents || [],
+          name: id,
+          events,
+          numEvents: events.length,
+          taskqueueIndex,
+        }
+  }
 
   /** Helps will drilldown to Details */
-  const getTaskQueue = useCallback(
-    (id: string) => {
-      const events = taskqueueEvents.filter((_) => _.metadata.name === id)
-      return events.length === 0
-        ? undefined
-        : {
-            idx: either(events[events.length - 1].spec.idx, taskqueueIndex[id]),
-            workerpools: taskqueueToPool[id] || [],
-            tasksimulators: taskqueueToTaskSimulators[id] || [],
-            applications: applicationEvents || [],
-            name: id,
-            events,
-            numEvents: events.length,
-            taskqueueIndex,
-          }
-    },
-    [taskqueueEvents, applicationEvents, taskqueueToTaskSimulators],
-  )
+  function getWorkerPool(id: string) {
+    const model = latestWorkerPoolModels.find((_) => _.label === id)
+    return !model
+      ? undefined
+      : {
+          model,
+          status: poolEvents.find((_) => _.metadata.name === id),
+          taskqueueIndex: taskqueueIndex,
+        }
+  }
 
-  /** Helps will drilldown to Details */
-  const getWorkerPool = useCallback(
-    (id: string) => {
-      const model = latestWorkerPoolModels.find((_) => _.label === id)
-      return !model
-        ? undefined
-        : {
-            model,
-            status: poolEvents.find((_) => _.metadata.name === id),
-            taskqueueIndex: taskqueueIndex,
-          }
+  const content: Record<
+    NavigableKind,
+    { gallery: () => ReactNode; detail?: (id: string) => ReactNode; actions?: () => ReactNode }
+  > = {
+    controlplane: {
+      gallery: () => <JobManagerCard />,
+      detail: () => <JobManagerDetail />,
     },
-    [latestWorkerPoolModels],
-  )
+    applications: {
+      gallery: () =>
+        applicationEvents.map((evt) => (
+          <Application key={evt.metadata.name} application={evt} datasets={datasetsList} taskqueues={taskqueuesList} />
+        )),
+      detail: (id: string) => ApplicationDetail(getApplication(id)),
+      actions: () => !inDemoMode && <LinkToNewApplication startOrAdd="add" />,
+    },
+    taskqueues: {
+      gallery: () => taskqueueCards,
+      detail: (id: string) => TaskQueueDetail(getTaskQueue(id)),
+    },
+    datasets: {
+      gallery: () => datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} />),
+      detail: (id: string) => DataSetDetail(getDataSet(id, datasetEvents)),
+      actions: () => !inDemoMode && <LinkToNewDataSet startOrAdd="add" />,
+    },
+    workerpools: {
+      gallery: () => workerpoolCards,
+      detail: (id: string) => WorkerPoolDetail(getWorkerPool(id)),
+      // actions: () => !inDemoMode && <LinkToNewWorkerPool startOrAdd="add"/>,
+    },
+    platformreposecrets: {
+      gallery: () => platformreposecretEvents.map((_) => _.metadata.name), // TODO...
+    },
+  }
 
+  /** Content to display in the slide-out Drawer panel */
   const { currentlySelectedId: id, currentlySelectedKind: kind } = drilldownProps()
+  const detailContentProvider = id && kind && content[kind]
   const currentDetail =
-    id !== null && kind === "applications" ? (
-      ApplicationDetail(getApplication(id))
-    ) : id !== null && kind === "datasets" ? (
-      DataSetDetail(getDataSet(id))
-    ) : id !== null && kind === "taskqueues" ? (
-      TaskQueueDetail(getTaskQueue(id))
-    ) : id !== null && kind === "workerpools" ? (
-      WorkerPoolDetail(getWorkerPool(id))
-    ) : kind === "controlplane" ? (
-      <JobManagerDetail />
-    ) : undefined
+    detailContentProvider && detailContentProvider.detail ? detailContentProvider.detail(id) : undefined
+
+  const bodyContentProvider = content[currentKind()]
+  const currentActions = bodyContentProvider && bodyContentProvider.actions ? bodyContentProvider.actions() : undefined
 
   const pwdProps = {
     currentDetail,
     modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} datasets={datasetsList} />,
-    sidebar,
-    subtitle: subtitles[currentKind()],
     title: names[currentKind()],
+    subtitle: subtitles[currentKind()],
+    sidebar,
+    actions: currentActions,
   }
 
   return (
     <PageWithDrawer {...pwdProps}>
-      <Gallery>{galleryItems()}</Gallery>
+      <Gallery>{bodyContentProvider.gallery()}</Gallery>
     </PageWithDrawer>
   )
 }

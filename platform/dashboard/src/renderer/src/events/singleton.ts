@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 
-import { isNavigableKind } from "../Kind"
+import { isDetailableKind } from "../Kind"
 import { closeDetailViewIfShowing } from "../pages/PageWithDrawer"
 
 import type Kind from "../Kind"
@@ -24,7 +24,7 @@ export default function singletonJsonEventHandler<T extends KubernetesResource<u
         const status = event.metadata.annotations["codeflare.dev/status"]
 
         if (status === "Terminating") {
-          if (isNavigableKind(kind)) {
+          if (isDetailableKind(kind)) {
             closeDetailViewIfShowing(name, kind, returnHome)
           }
 

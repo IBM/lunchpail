@@ -64,6 +64,7 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
 type LinkerProps = {
   kind: Kind
   linkText: string
+  isInline?: boolean
   qs: string[]
 }
 
@@ -108,8 +109,8 @@ export default function LinkToNewWizard(props: Props) {
 
   const button = (
     <Button
-      isInline={props.startOrAdd === "create"}
-      variant={props.startOrAdd === "create" ? "link" : props.startOrAdd === "fix" ? "danger" : "primary"}
+      isInline={props.isInline}
+      variant={props.isInline ? "link" : props.startOrAdd === "fix" ? "danger" : "primary"}
       size="sm"
       onClick={stopPropagation}
       data-start-or-add={props.startOrAdd || "start"}

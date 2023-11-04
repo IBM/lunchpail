@@ -15,10 +15,9 @@ import {
   DrawerPanelContent,
 } from "@patternfly/react-core"
 
-import PageWithMastheadAndModal from "./PageWithMastheadAndModal"
+import PageWithMastheadAndModal, { type PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 
 import type { NavigableKind } from "../Kind"
-import type { PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 
 import DetailNotFound from "../components/Drawer/DetailNotFound"
@@ -34,8 +33,13 @@ import MaximizeIcon from "@patternfly/react-icons/dist/esm/icons/window-maximize
 
 import "./Detail.scss"
 
+/**
+ * `props.children` is the content to be displayed in the "main",
+ * i.e. not in the slide-out Drawer
+ */
 type Props = PropsWithChildren<
   PageWithMastheadAndModalProps & {
+    /** The current content of the slide-out Drawer panel */
     currentDetail?: ReactNode
   }
 >
@@ -163,8 +167,7 @@ export default function PageWithDrawer(props: Props) {
     title: props.title,
     subtitle: props.subtitle,
     sidebar: props.sidebar,
-    footerLeft: props.footerLeft,
-    footerRight: props.footerRight,
+    actions: props.actions,
   }
 
   return (

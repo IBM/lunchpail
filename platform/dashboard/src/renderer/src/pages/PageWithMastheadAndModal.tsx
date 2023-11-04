@@ -1,6 +1,10 @@
-import { useContext, type ReactNode, type PropsWithChildren } from "react"
+import { useContext, useMemo, type ReactNode, type PropsWithChildren } from "react"
 
 import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardBody,
   Divider,
   Masthead,
   MastheadMain,
@@ -15,17 +19,14 @@ import {
   ToolbarGroup,
   ToolbarContent,
   ToolbarItem,
-  TextContent,
-  Text,
 } from "@patternfly/react-core"
 
 import Settings from "../Settings"
-
 import { description } from "../../../../package.json"
 
-import "./PageWithMastheadAndModal.scss"
-
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
+
+import "./PageWithMastheadAndModal.scss"
 
 export const inline = { default: "inline" as const }
 export const alignLeft = { default: "alignLeft" as const }
@@ -80,7 +81,7 @@ function HeaderToolbarRightGroup() {
 
   return (
     <ToolbarGroup align={alignRight} spacer={spacerMd}>
-      <ToolbarItem align={alignRight}>
+      <ToolbarItem>
         <Switch
           className="codeflare--switch"
           ouiaId="demo-mode-switch"
@@ -89,7 +90,7 @@ function HeaderToolbarRightGroup() {
           onChange={settings?.demoMode[2]}
         />
       </ToolbarItem>
-      <ToolbarItem align={alignRight}>
+      <ToolbarItem>
         <Switch
           className="codeflare--switch"
           ouiaId="dark-mode-switch"
@@ -102,21 +103,33 @@ function HeaderToolbarRightGroup() {
   )
 }
 
-type ModalProps = {
-  modal: ReactNode
+export type PageWithMastheadAndModalProps = {
+  /** Title to be rendered in the header */
   title: ReactNode
+
+  /** Subtitle to be rendered in the header */
   subtitle: ReactNode
+
+  /** Actions to be rendered in the header */
+  actions?: ReactNode
+
+  /** Content to be rendered in a popup modal dialog */
+  modal?: ReactNode
+
+  /** Content to be rendered in the hamburger sidebar */
   sidebar: ReactNode
-  footerLeft: ReactNode
-  footerRight: ReactNode
 }
 
-export type PageWithMastheadAndModalProps = Partial<ModalProps>
-
+/**
+ * `props.children` will be rendered as the main body of the page
+ */
 type Props = PropsWithChildren<PageWithMastheadAndModalProps>
 
 export default function PageWithMastheadAndModal(props: Props) {
-  const chips: ReactNode = undefined
+  const actions = useMemo(
+    () => (!props.actions ? undefined : { hasNoOffset: true, actions: props.actions }),
+    [props.actions],
+  )
 
   return (
     <Page
@@ -126,23 +139,19 @@ export default function PageWithMastheadAndModal(props: Props) {
       defaultManagedSidebarIsOpen={true}
       className="codeflare--dashboard"
     >
-      {chips ? (
-        <>
-          <PageSection variant="light">{chips}</PageSection>
-        </>
-      ) : (
-        <></>
-      )}
       <PageSection variant="light">
-        <TextContent>
-          <Text component="h1">{props.title}</Text>
-          <Text component="p">{props.subtitle}</Text>
-        </TextContent>
+        <Card isPlain isLarge className="codeflare--dashboard-header">
+          <CardHeader actions={actions} className="codeflare--dashboard-header-card-header">
+            <CardTitle component="h1">{props.title}</CardTitle>
+          </CardHeader>
+          <CardBody className="codeflare--dashboard-header-card-body">{props.subtitle}</CardBody>
+        </Card>
       </PageSection>
 
       <PageSection padding={noPadding} isFilled={false}>
         <Divider />
       </PageSection>
+
       <PageSection padding={noPadding} hasOverflowScroll isFilled aria-label="Dashboard body">
         {props.children}
       </PageSection>

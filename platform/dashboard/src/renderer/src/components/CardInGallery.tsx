@@ -44,6 +44,7 @@ export default function CardInGallery(props: Props) {
 
   return (
     <Card
+      isLarge
       isClickable
       isSelectable
       isSelectableRaised

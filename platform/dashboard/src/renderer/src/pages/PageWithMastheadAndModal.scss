@@ -4,3 +4,17 @@
     --pf-v5-c-switch__input--checked__label--Color: var(--pf-v5-global--Color--100);
   }
 }
+
+.codeflare--dashboard-header {
+  padding: 0;
+  .codeflare--dashboard-header-card-header {
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .codeflare--dashboard-header-card-body {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+  }
+}

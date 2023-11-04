@@ -11,7 +11,7 @@ function returnTo(props: LocationProps, hash = props.location.hash) {
 }
 
 export default function navigateToHome(props: LocationProps) {
-  returnTo(props, props.location.hash ?? hash("taskqueues"))
+  returnTo(props, props.location.hash ?? hash("applications"))
 }
 
 export function navigateToWorkerPools(props: LocationProps) {
