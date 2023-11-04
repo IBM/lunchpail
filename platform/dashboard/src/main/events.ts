@@ -56,7 +56,18 @@ function initStreamForResourceKind(kind: WatchedKind) {
       const myStream = streamForKind(kind)
 
       // callback to renderer
-      const cb = (model) => evt.sender.send(dataEvent, { data: JSON.parse(model) })
+      const cb = (model) => {
+        try {
+          evt.sender.send(dataEvent, { data: JSON.parse(model) })
+        } catch (err) {
+          if (!myStream.closed && !myStream.destroyed && !myStream.errored && !evt.sender.isDestroyed()) {
+            // if the stream seems healthy, and we got an error
+            // sending the event back to the renderer, we'd better
+            // report this error
+            console.error(err)
+          }
+        }
+      }
 
       // when a `/${kind}/close` message is received, tear down the watcher
       const myCleanup = () => {
