@@ -41,6 +41,7 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
   return (
     <Button
       key={id}
+      ouiaId={id}
       isInline
       variant="link"
       onClick={stopPropagation}

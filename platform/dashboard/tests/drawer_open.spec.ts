@@ -15,15 +15,16 @@ test("drawer opens", async () => {
 
   // If in demo mode, then continue with test to open drawers
   if (demoModeStatus) {
-    // Get Task Queue tab element from the sidebar and click
-    await page.getByRole("link", { name: "Task Queues" }).click()
+    // Get Applications tab element from the sidebar and click, to
+    // activate the Application gallery
+    await page.getByRole("link", { name: "Applications" }).click()
 
     // click on one of the cards
-    const expectedCards = ["green", "pink", "purple"]
-    await page.locator(`[data-ouia-component-id="${expectedCards[0]}"]`).click()
+    const expectedCard = "worm"
+    await page.locator(`[data-ouia-component-id="${expectedCard}"]`).click()
 
     // check that the drawer for that card opened
-    const id = "taskqueues." + expectedCards[0]
+    const id = "applications." + expectedCard
     const drawer = await page.locator(
       `[data-ouia-component-type="PF5/DrawerPanelContent"][data-ouia-component-id="${id}"]`,
     )
@@ -31,6 +32,6 @@ test("drawer opens", async () => {
 
     // verify that the drawer that opened matched the card that was clicked
     const drawerTitle = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`)
-    await expect(drawerTitle).toContainText(`${expectedCards[0]}`)
+    await expect(drawerTitle).toContainText(expectedCard)
   }
 })

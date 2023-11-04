@@ -15,20 +15,29 @@ test("3 demo task queues visible", async () => {
 
   // If in demo mode, then continue with Task queue card test
   if (demoModeStatus) {
-    // Get Task Queue tab element from the sidebar and click
-    await page.getByRole("link", { name: "Task Queues" }).click()
+    // Get Applications tab element from the sidebar and click, to
+    // activate the Application gallery
+    await page.getByRole("link", { name: "Applications" }).click()
 
     // Verify that the three showing are the pink, purple, and green cards
-    const expectedCards = ["green", "pink", "purple"]
+    const expectedTaskQueues = [
+      { id: "green", count: 1 },
+      { id: "pink", count: 2 },
+      { id: "purple", count: 1 },
+    ]
 
     await Promise.all(
-      expectedCards.map((id) =>
-        expect(page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${id}"]`))
-          .toBeVisible({
-            timeout: 30000,
-          })
-          .then(() => console.log("got", id)),
-      ),
+      expectedTaskQueues.map(({ id, count }) => {
+        const selector = [
+          '[data-ouia-component-type="PF5/Card"]',
+          '[data-ouia-component-type="PF5/DescriptionListGroup"][data-ouia-component-id="Task Queues"]',
+          `[data-ouia-component-type="PF5/Button"][data-ouia-component-id="${id}"]`,
+        ].join(" ")
+
+        return expect(page.locator(selector))
+          .toHaveCount(count, { timeout: 60000 })
+          .then(() => console.log("got taskqueue", id, count))
+      }),
     )
   }
 })

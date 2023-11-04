@@ -27,7 +27,7 @@ test("4 applications visible when in demo mode", async () => {
           .toBeVisible({
             timeout: 30000,
           })
-          .then(() => console.log("got", id)),
+          .then(() => console.log("got application", id)),
       ),
     )
   }

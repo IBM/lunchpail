@@ -17,7 +17,7 @@ import {
 
 import PageWithMastheadAndModal, { type PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 
-import type { NavigableKind } from "../Kind"
+import { isNavigableKind, type DetailableKind } from "../Kind"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 
 import DetailNotFound from "../components/Drawer/DetailNotFound"
@@ -57,7 +57,7 @@ export function returnHome(location: ReturnType<typeof LocationProps>) {
 
 export function closeDetailViewIfShowing(
   id: string,
-  kind: NavigableKind,
+  kind: DetailableKind,
   returnHome: () => void,
   searchParams = new URLSearchParams(window.location.search),
 ) {
@@ -71,7 +71,7 @@ function currentlySelectedId(searchParams: URLSearchParams) {
 }
 
 function currentlySelectedKind(searchParams: URLSearchParams) {
-  return searchParams.get("kind") as NavigableKind
+  return searchParams.get("kind") as DetailableKind
 }
 
 /** Props to add to children to allow them to control the drawer behavior */
@@ -146,7 +146,9 @@ export default function PageWithDrawer(props: Props) {
       <DrawerHead>
         <Breadcrumb>
           {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
-          <BreadcrumbItem to={hashIfNeeded(kind)}>{(kind && names[kind]) || kind}</BreadcrumbItem>
+          <BreadcrumbItem to={isNavigableKind(kind) ? hashIfNeeded(kind) : undefined}>
+            {(kind && names[kind]) || kind}
+          </BreadcrumbItem>
         </Breadcrumb>
         <Title headingLevel="h2" size="2xl">
           {currentlySelectedId(searchParams)}

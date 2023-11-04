@@ -114,8 +114,14 @@ export function descriptionGroup(
 ) {
   const desc = dd(description)
   if (desc != null && desc !== undefined) {
+    // re: data-ouia-component-type: DescriptionListGroup does not yet support ouia-component-type
+    // also no ouiaId support, hence data-ouia-component-id
     return (
-      <DescriptionListGroup key={String(term)}>
+      <DescriptionListGroup
+        key={String(term)}
+        data-ouia-component-type="PF5/DescriptionListGroup"
+        data-ouia-component-id={String(term)}
+      >
         {dt(term, count, helperText)}
         <DescriptionListDescription>{desc}</DescriptionListDescription>
       </DescriptionListGroup>
@@ -125,5 +131,10 @@ export function descriptionGroup(
 }
 
 export function dl(props: { groups: ReactNode[]; props?: DescriptionListProps }) {
-  return <DescriptionList {...props.props}>{props.groups}</DescriptionList>
+  // re: data-ouia-component-type: DescriptionList does not yet support ouia-component-type
+  return (
+    <DescriptionList {...props.props} data-ouia-component-type="PF5/DescriptionList">
+      {props.groups}
+    </DescriptionList>
+  )
 }

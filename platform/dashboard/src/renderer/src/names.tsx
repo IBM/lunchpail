@@ -3,13 +3,21 @@ import { Link } from "react-router-dom"
 import { hash } from "./navigate/kind"
 import { name } from "../../../package.json"
 
-import type { CredentialsKind, NamedKind, NonResourceKind, NavigableKind, ResourceKind } from "./Kind"
+import type {
+  CredentialsKind,
+  NamedKind,
+  NonResourceKind,
+  DetailableKind,
+  NavigableKind,
+  ResourceKind,
+  DetailOnlyKind,
+} from "./Kind"
 
 export const nonResourceNames: Record<NonResourceKind, string> = {
   controlplane: "Control Plane",
 }
 
-export const resourceNames: Record<ResourceKind, string> = {
+export const resourceNames: Record<ResourceKind | DetailOnlyKind, string> = {
   taskqueues: "Task Queues",
   workerpools: "Worker Pools",
   applications: "Applications",
@@ -20,7 +28,7 @@ export const credentialsNames: Record<CredentialsKind, string> = {
   platformreposecrets: "Repo Secrets",
 }
 
-const names: Record<NavigableKind, string> = Object.assign({}, nonResourceNames, resourceNames, credentialsNames)
+const names: Record<DetailableKind, string> = Object.assign({}, nonResourceNames, resourceNames, credentialsNames)
 
 export const singular: Record<NamedKind, string> = {
   applications: "Application",
@@ -37,21 +45,14 @@ function capitalize(str: string) {
 export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
   controlplane: (
     <span>
-      <strong>{capitalize(name)}</strong> helps you to manage your Jobs: pick <Link to={hash("taskqueues")}>Data</Link>{" "}
-      to analyze, and then assign <Link to={hash("workerpools")}>Workers</Link> to process the tasks in a selected set
-      of data.
+      <strong>{capitalize(name)}</strong> helps you to manage your Jobs: pick Data to analyze, and then assign{" "}
+      <Link to={hash("workerpools")}>Workers</Link> to process the tasks in a selected set of data.
     </span>
   ),
   applications: (
     <span>
-      Each <strong>Application</strong> has a base image, a code repository, and some configuration defaults. Each may
-      define one or more compatible <Link to={hash("taskqueues")}>Task Queues</Link>.
-    </span>
-  ),
-  taskqueues: (
-    <span>
-      Each <strong>Task Queue</strong> is compatible with one or more{" "}
-      <Link to={hash("applications")}>Applications</Link>, and is linked to a place to queue up the to-do tasks.
+      Each <strong>{singular.applications}</strong> has a base image, a code repository, and some configuration
+      defaults. Each may define one or more compatible {names.taskqueues}.
     </span>
   ),
   datasets: (
@@ -64,7 +65,7 @@ export const subtitles: Record<NavigableKind, import("react").ReactNode> = {
   workerpools: (
     <span>
       The registered compute pools in your system. Each <strong>Worker Pool</strong> is a set of workers that can
-      process tasks from one or more <Link to={hash("taskqueues")}>Task Queues</Link>.
+      process tasks from one or more {names.taskqueues}.
     </span>
   ),
   platformreposecrets: (

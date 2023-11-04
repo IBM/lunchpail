@@ -7,7 +7,6 @@ import { returnHomeCallback } from "../navigate/home"
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
 import DataSet from "../components/DataSet/Card"
-import TaskQueue from "../components/TaskQueue/Card"
 import WorkerPool from "../components/WorkerPool/Card"
 import Application from "../components/Application/Card"
 import JobManagerCard from "../components/JobManager/Card"
@@ -39,7 +38,7 @@ import {
 } from "../events/QueueEvent"
 
 import type Kind from "../Kind"
-import type { NavigableKind } from "../Kind"
+import type { DetailableKind } from "../Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import type { EventLike } from "@jay/common/events/EventSourceLike"
 import type QueueEvent from "@jay/common/events/QueueEvent"
@@ -159,27 +158,6 @@ export function Dashboard(props: Props) {
     [taskqueueEvents],
   )
 
-  /**
-   * The TaskQueueEvents model keeps track of all events (e.g. so we can
-   * display timelines). It is helpful to memoize just the latest
-   * event for each TaskQueue resource.
-   */
-  const latestTaskQueueEvents = useMemo(
-    () =>
-      Object.values(
-        taskqueueEvents.reduceRight(
-          (M, event) => {
-            if (!(event.metadata.name in M)) {
-              M[event.metadata.name] = event
-            }
-            return M
-          },
-          {} as Record<string, TaskQueueEvent>,
-        ),
-      ).sort((a, b) => a.metadata.name.localeCompare(b.metadata.name)),
-    [taskqueueEvents],
-  )
-
   /** A memo of the latest WorkerPoolModels, one per worker pool */
   const latestWorkerPoolModels: WorkerPoolModelWithHistory[] = useMemo(
     () =>
@@ -212,25 +190,6 @@ export function Dashboard(props: Props) {
       Object.entries(handlers).forEach(([kind, handler]) => props[kind].removeEventListener("message", handler))
   }, [])
 
-  const taskqueueCards = useMemo(
-    () => [
-      ...latestTaskQueueEvents.map((event) => (
-        <TaskQueue
-          key={event.metadata.name}
-          idx={either(event.spec.idx, taskqueueIndex[event.metadata.name])}
-          workerpools={taskqueueToPool[event.metadata.name] || []}
-          tasksimulators={taskqueueToTaskSimulators[event.metadata.name] || []}
-          applications={applicationEvents}
-          name={event.metadata.name}
-          events={[event]}
-          numEvents={1}
-          taskqueueIndex={taskqueueIndex}
-        />
-      )),
-    ],
-    [latestTaskQueueEvents, taskqueueIndex, taskqueueToPool, taskqueueToTaskSimulators],
-  )
-
   const workerpoolCards = useMemo(
     () =>
       latestWorkerPoolModels.map((w) => (
@@ -248,7 +207,6 @@ export function Dashboard(props: Props) {
     <Sidebar
       applications={applicationsList}
       datasets={datasetsList}
-      taskqueues={taskqueuesList}
       workerpools={workerpoolsList}
       platformreposecrets={platformRepoSecretsList}
     />
@@ -295,8 +253,8 @@ export function Dashboard(props: Props) {
   }
 
   const content: Record<
-    NavigableKind,
-    { gallery: () => ReactNode; detail?: (id: string) => ReactNode; actions?: () => ReactNode }
+    DetailableKind,
+    { gallery?: () => ReactNode; detail?: (id: string) => ReactNode; actions?: () => ReactNode }
   > = {
     controlplane: {
       gallery: () => <JobManagerCard />,
@@ -311,7 +269,6 @@ export function Dashboard(props: Props) {
       actions: () => !inDemoMode && <LinkToNewApplication startOrAdd="add" />,
     },
     taskqueues: {
-      gallery: () => taskqueueCards,
       detail: (id: string) => TaskQueueDetail(getTaskQueue(id)),
     },
     datasets: {
@@ -349,7 +306,7 @@ export function Dashboard(props: Props) {
 
   return (
     <PageWithDrawer {...pwdProps}>
-      <Gallery>{bodyContentProvider.gallery()}</Gallery>
+      <Gallery>{bodyContentProvider.gallery && bodyContentProvider.gallery()}</Gallery>
     </PageWithDrawer>
   )
 }
