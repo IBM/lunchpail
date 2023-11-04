@@ -23,6 +23,8 @@ import Settings from "../Settings"
 
 import { description } from "../../../../package.json"
 
+import "./PageWithMastheadAndModal.scss"
+
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
 export const inline = { default: "inline" as const }
@@ -46,7 +48,7 @@ function HeaderToggle() {
 
 function Header() {
   return (
-    <Masthead display={inline}>
+    <Masthead display={inline} className="codeflare--masthead">
       <HeaderToggle />
       <MastheadMain>
         <MastheadBrand>{description}</MastheadBrand>
@@ -80,8 +82,8 @@ function HeaderToolbarRightGroup() {
     <ToolbarGroup align={alignRight} spacer={spacerMd}>
       <ToolbarItem align={alignRight}>
         <Switch
+          className="codeflare--switch"
           ouiaId="demo-mode-switch"
-          hasCheckIcon
           label="Demo Mode"
           isChecked={settings?.demoMode[0]}
           onChange={settings?.demoMode[2]}
@@ -89,14 +91,13 @@ function HeaderToolbarRightGroup() {
       </ToolbarItem>
       <ToolbarItem align={alignRight}>
         <Switch
+          className="codeflare--switch"
           ouiaId="dark-mode-switch"
-          hasCheckIcon
           label="Dark Mode"
           isChecked={settings?.darkMode[0]}
           onChange={settings?.darkMode[2]}
         />
       </ToolbarItem>
-      ,
     </ToolbarGroup>
   )
 }
