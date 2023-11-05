@@ -8,7 +8,7 @@ import { singular } from "../../../names"
 import { Checkbox, Input } from "../../Forms"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
-import NewResourceWizard, { password, type WizardProps as Props } from "../../NewResourceWizard"
+import NewResourceWizard, { password } from "../../NewResourceWizard"
 
 function endpoint(ctrl: FormContextProps) {
   return (
@@ -92,7 +92,7 @@ data:
 `.trim()
 }
 
-export default function NewApplicationWizard(props: Props) {
+export default function NewDataSetWizard() {
   const [searchParams] = useSearchParams()
 
   /** Initial value for form */
@@ -159,7 +159,7 @@ export default function NewApplicationWizard(props: Props) {
     action !== "create" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
 
   return (
-    <NewResourceWizard {...props} kind="datasets" title={title} defaults={defaults} yaml={yaml} steps={steps} isEdit>
+    <NewResourceWizard kind="datasets" title={title} defaults={defaults} yaml={yaml} steps={steps} isEdit>
       An {singular.datasets} stores information that is not specific to any one Task in a {singular.taskqueues}, e.g. a
       pre-trained model or a chip design that is being tested across multiple configurations.{" "}
       {action === "register" ? (

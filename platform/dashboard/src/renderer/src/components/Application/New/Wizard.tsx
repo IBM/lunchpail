@@ -5,8 +5,8 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import yaml, { type YamlProps } from "./yaml"
 import names, { singular } from "../../../names"
+import NewResourceWizard from "../../NewResourceWizard"
 import { buttonPropsForNewDataSet } from "../../../navigate/newdataset"
-import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
 import { Checkbox, Input, Select, SelectCheckbox, TextArea } from "../../Forms"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -62,6 +62,10 @@ const step2 = {
   name: "Code and Dependencies",
   isValid: (ctrl: FormContextProps) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
   items: [command, repoInput, image, supportsGpu],
+}
+
+type Props = {
+  datasets: string[]
 }
 
 export default function NewApplicationWizard(props: Props) {
@@ -213,7 +217,6 @@ export default function NewApplicationWizard(props: Props) {
 
   return (
     <NewResourceWizard
-      {...props}
       kind="applications"
       title={title}
       defaults={defaults}

@@ -7,9 +7,9 @@ import { type FormContextProps } from "@patternfly/react-core"
 import type Props from "../Props"
 import { Input } from "../../Forms"
 import yaml, { type YamlProps } from "./yaml"
-import NewResourceWizard, { password, type WizardProps } from "../../NewResourceWizard"
+import NewResourceWizard, { password } from "../../NewResourceWizard"
 
-export default function NewRepoSecretWizard(props: WizardProps) {
+export default function NewRepoSecretWizard() {
   const [searchParams] = useSearchParams()
 
   /** Initial value for form */
@@ -79,7 +79,7 @@ export default function NewRepoSecretWizard(props: WizardProps) {
   const title = "Create Repo Secret"
   const steps = [step1]
   return (
-    <NewResourceWizard {...props} kind="workerpools" title={title} defaults={defaults} yaml={getYaml} steps={steps}>
+    <NewResourceWizard kind="workerpools" title={title} defaults={defaults} yaml={getYaml} steps={steps}>
       Configure a pattern matcher that provides access to source code in a given GitHub provider.
     </NewResourceWizard>
   )

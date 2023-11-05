@@ -10,9 +10,14 @@ import ApplicationIcon from "../../Application/Icon"
 
 import { singular } from "../../../names"
 import { NumberInput, Select } from "../../Forms"
-import NewResourceWizard, { type WizardProps as Props } from "../../NewResourceWizard"
+import NewResourceWizard from "../../NewResourceWizard"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+
+type Props = {
+  taskqueues: string[]
+  applications: ApplicationSpecEvent[]
+}
 
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()
@@ -116,7 +121,7 @@ spec:
   const title = `Create ${singular.workerpools}`
   const steps = [step1]
   return (
-    <NewResourceWizard {...props} kind="workerpools" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+    <NewResourceWizard kind="workerpools" title={title} defaults={defaults} yaml={yaml} steps={steps}>
       Configure a pool of compute resources to process Tasks in a Queue.
     </NewResourceWizard>
   )

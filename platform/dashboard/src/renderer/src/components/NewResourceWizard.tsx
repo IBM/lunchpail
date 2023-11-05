@@ -23,16 +23,14 @@ import Yaml from "./Yaml"
 import Settings from "../Settings"
 import { singular } from "../names"
 import { Input, TextArea, remember } from "./Forms"
+import { returnHomeCallback } from "../navigate/home"
 
 import type Kind from "../Kind"
-import type { WizardProps } from "../pages/DashboardModal"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
 
 import "./Wizard.scss"
-
-export type { WizardProps }
 
 type KnownFormItem = "name" | "namespace" | "description"
 type FormItem = KnownFormItem | ((ctrl: FormContextProps) => ReactNode)
@@ -49,16 +47,14 @@ type StepProps = {
   }[]
 }
 
-type Props = PropsWithChildren<
-  WizardProps & {
-    kind: Kind
-    title: string
-    isEdit?: boolean
-    defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
-    yaml: (values: FormContextProps["values"]) => string
-    steps: StepProps[]
-  }
->
+type Props = PropsWithChildren<{
+  kind: Kind
+  title: string
+  isEdit?: boolean
+  defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
+  yaml: (values: FormContextProps["values"]) => string
+  steps: StepProps[]
+}>
 
 const nextIsDisabled = { isNextDisabled: true }
 const nextIsEnabled = { isNextDisabled: false }
@@ -74,6 +70,10 @@ export default function NewResourceWizard(props: Props) {
 
   const [dryRunSuccess, setDryRunSuccess] = useState<null | boolean>(null)
 
+  const returnHome = returnHomeCallback()
+  const onCancel = returnHome
+  const onSuccess = returnHome
+
   const doCreate = useCallback(async (values: FormContextProps["values"], dryRun = false) => {
     try {
       const response = await window.jay.create(values, props.yaml(values), dryRun)
@@ -86,7 +86,7 @@ export default function NewResourceWizard(props: Props) {
         if (dryRun) {
           setDryRunSuccess(true)
         } else {
-          props.onSuccess()
+          onSuccess()
         }
       }
     } catch (errorInCreateRequest) {
@@ -256,15 +256,15 @@ export default function NewResourceWizard(props: Props) {
     (ctrlWithoutMemory: FormContextProps) => {
       const ctrl = remember(props.kind, ctrlWithoutMemory, settings?.form)
 
-      const header = <WizardHeader title={props.title} description={props.children} onClose={props.onCancel} />
+      const header = <WizardHeader title={props.title} description={props.children} onClose={onCancel} />
       return (
-        <Wizard header={header} onClose={props.onCancel} onStepChange={clearError} className="codeflare--wizard">
+        <Wizard header={header} onClose={onCancel} onStepChange={clearError} className="codeflare--wizard">
           {steps(ctrl)}
           {review(ctrl)}
         </Wizard>
       )
     },
-    [props.kind, props.onCancel, props.title, props.children, steps, review, clearError, settings?.form],
+    [props.kind, onCancel, props.title, props.children, steps, review, clearError, settings?.form],
   )
 
   return <FormContextProvider initialValues={initialValues}>{form}</FormContextProvider>

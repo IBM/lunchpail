@@ -1,7 +1,8 @@
-import { useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { useContext, useEffect, useMemo, useState, lazy, Suspense, type ReactNode } from "react"
 
 import names, { subtitles } from "../names"
 import { currentKind } from "../navigate/kind"
+import { isShowingWizard } from "../navigate/wizard"
 import { returnHomeCallback } from "../navigate/home"
 
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
@@ -15,7 +16,6 @@ import PlatformRepoSecretCard from "../components/PlatformRepoSecret/Card"
 import Settings from "../Settings"
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
-import DashboardModal from "./DashboardModal"
 
 import DataSetDetail from "../components/DataSet/Detail"
 import TaskQueueDetail from "../components/TaskQueue/Detail"
@@ -23,6 +23,12 @@ import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 import JobManagerDetail from "../components/JobManager/Detail"
 import PlatformRepoSecretDetail from "../components/PlatformRepoSecret/Detail"
+
+const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
+const NewDataSetWizard = lazy(() => import("../components/DataSet/New/Wizard"))
+const NewWorkerPoolWizard = lazy(() => import("../components/WorkerPool/New/Wizard"))
+const NewApplicationWizard = lazy(() => import("../components/Application/New/Wizard"))
+const NewPlatformRepoSecretWizard = lazy(() => import("../components/PlatformRepoSecret/New/Wizard"))
 
 import { LinkToNewDataSet } from "../components/DataSet/New/Button"
 import { LinkToNewApplication } from "../components/Application/New/Button"
@@ -256,7 +262,12 @@ export function Dashboard(props: Props) {
 
   const content: Record<
     DetailableKind,
-    { gallery?: () => ReactNode; detail?: (id: string) => ReactNode; actions?: () => ReactNode }
+    {
+      gallery?: () => ReactNode
+      detail?: (id: string) => ReactNode
+      actions?: () => ReactNode
+      wizard?: () => ReactNode
+    }
   > = {
     controlplane: {
       gallery: () => <JobManagerCard />,
@@ -269,6 +280,7 @@ export function Dashboard(props: Props) {
         )),
       detail: (id: string) => ApplicationDetail(getApplication(id)),
       actions: () => !inDemoMode && <LinkToNewApplication startOrAdd="add" />,
+      wizard: () => <NewApplicationWizard datasets={datasetsList} />,
     },
     taskqueues: {
       detail: (id: string) => TaskQueueDetail(getTaskQueue(id)),
@@ -277,16 +289,19 @@ export function Dashboard(props: Props) {
       gallery: () => datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} />),
       detail: (id: string) => DataSetDetail(getDataSet(id, datasetEvents)),
       actions: () => !inDemoMode && <LinkToNewDataSet startOrAdd="add" />,
+      wizard: () => <NewDataSetWizard />,
     },
     workerpools: {
       gallery: () => workerpoolCards,
       detail: (id: string) => WorkerPoolDetail(getWorkerPool(id)),
       // actions: () => !inDemoMode && <LinkToNewWorkerPool startOrAdd="add"/>,
+      wizard: () => <NewWorkerPoolWizard taskqueues={taskqueuesList} applications={applicationEvents} />,
     },
     platformreposecrets: {
       gallery: () =>
         platformreposecretEvents.map((props) => <PlatformRepoSecretCard key={props.metadata.name} {...props} />),
       detail: (id: string) => PlatformRepoSecretDetail(platformreposecretEvents.find((_) => _.metadata.name === id)),
+      wizard: () => <NewPlatformRepoSecretWizard />,
     },
   }
 
@@ -299,9 +314,27 @@ export function Dashboard(props: Props) {
   const bodyContentProvider = content[currentKind()]
   const currentActions = bodyContentProvider && bodyContentProvider.actions ? bodyContentProvider.actions() : undefined
 
+  const kindForWizard = isShowingWizard()
+  const wizardContentProvider = !!kindForWizard && content[kindForWizard]
+
+  const modal = (
+    <Suspense fallback={<></>}>
+      <Modal
+        variant="large"
+        showClose={false}
+        hasNoBodyWrapper
+        aria-label="wizard-modal"
+        onEscapePress={returnHome}
+        isOpen={!!wizardContentProvider}
+      >
+        {wizardContentProvider ? wizardContentProvider.wizard() : undefined}
+      </Modal>
+    </Suspense>
+  )
+
   const pwdProps = {
     currentDetail,
-    modal: <DashboardModal applications={applicationEvents} taskqueues={taskqueuesList} datasets={datasetsList} />,
+    modal,
     title: names[currentKind()],
     subtitle: subtitles[currentKind()],
     sidebar,
