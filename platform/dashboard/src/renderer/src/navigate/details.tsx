@@ -9,9 +9,9 @@ import type LocationProps from "./LocationProps"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
-type Entity = { id: string; kind: Kind }
+export type Entity = { id: string; kind: Kind }
 
-function href({ id, kind }: Entity, props: string | Pick<LocationProps, "location">) {
+export function href({ id, kind }: Entity, props: string | Pick<LocationProps, "location">) {
   return `?id=${id}&kind=${kind}&view=detail${typeof props === "string" ? props : props.location.hash}`
 }
 

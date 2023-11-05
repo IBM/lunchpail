@@ -80,7 +80,7 @@ export function Dashboard(props: Props) {
   const [queueEvents, setQueueEvents] = useState<QueueEvent[]>([])
   const [taskqueueEvents, setTaskQueueEvents] = useState<TaskQueueEvent[]>([])
   const [datasetEvents, setDataSetEvents] = useState<DataSetEvent[]>([])
-  const [applicationEvents, setApplicationEvents] = useState<ApplicationSpecEvent[]>([])
+  const [unsortedApplicationEvents, setApplicationEvents] = useState<ApplicationSpecEvent[]>([])
   const [tasksimulatorEvents, setTaskSimulatorEvents] = useState<TaskSimulatorEvent[]>([])
   const [platformreposecretEvents, setPlatformRepoSecretEvents] = useState<PlatformRepoSecretEvent[]>([])
 
@@ -94,6 +94,12 @@ export function Dashboard(props: Props) {
     tasksimulators: singletonEventHandler("tasksimulators", setTaskSimulatorEvents, returnHome),
     platformreposecrets: singletonEventHandler("platformreposecrets", setPlatformRepoSecretEvents, returnHome),
   }
+
+  /** Sorted applicationEvents */
+  const applicationEvents = useMemo(
+    () => unsortedApplicationEvents.sort((a, b) => a.metadata.name.localeCompare(b.metadata.name)),
+    [unsortedApplicationEvents],
+  )
 
   /** A memo of the mapping from WorkerPool to associated QueueEvents */
   const queueEventsForWorkerPool = useMemo(

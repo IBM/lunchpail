@@ -44,15 +44,11 @@ type Props = PropsWithChildren<
   }
 >
 
-export function LocationProps() {
+function LocationProps() {
   const location = useLocation()
   const navigate = useNavigate()
   const searchParams = useSearchParams()[0]
   return { location, navigate, searchParams }
-}
-
-export function returnHome(location: ReturnType<typeof LocationProps>) {
-  return () => navigateToHome(location)
 }
 
 export function closeDetailViewIfShowing(

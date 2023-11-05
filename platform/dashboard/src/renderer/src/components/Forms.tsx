@@ -23,8 +23,8 @@ import {
   type TextInputProps,
 } from "@patternfly/react-core"
 
-import type Kind from "../Kind"
 import type { State } from "../Settings"
+import type { DetailableKind } from "../Kind"
 
 type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
 type FormProps = FormGroupProps & { description: string } & Required<Pick<FormGroupProps, "fieldId">>
@@ -302,7 +302,7 @@ export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; m
  * Take a FormContextProps controller `ctrl` and intercept `setValue`
  * calls to also record them in our persistent state `formState`.
  */
-export function remember(kind: Kind, ctrl: FormContextProps, formState: State<string> | undefined) {
+export function remember(kind: DetailableKind, ctrl: FormContextProps, formState: State<string> | undefined) {
   // origSetValue updates the local copy in the FormContextProvider
   const { setValue: origSetValue } = ctrl
 

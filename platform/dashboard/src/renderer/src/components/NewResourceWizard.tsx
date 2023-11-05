@@ -23,9 +23,9 @@ import Yaml from "./Yaml"
 import Settings from "../Settings"
 import { singular } from "../names"
 import { Input, TextArea, remember } from "./Forms"
-import { returnHomeCallback } from "../navigate/home"
+import { returnHomeCallback, returnHomeCallbackWithEntity } from "../navigate/home"
 
-import type Kind from "../Kind"
+import type { DetailableKind } from "../Kind"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
@@ -48,7 +48,7 @@ type StepProps = {
 }
 
 type Props = PropsWithChildren<{
-  kind: Kind
+  kind: DetailableKind
   title: string
   isEdit?: boolean
   defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
@@ -70,9 +70,8 @@ export default function NewResourceWizard(props: Props) {
 
   const [dryRunSuccess, setDryRunSuccess] = useState<null | boolean>(null)
 
-  const returnHome = returnHomeCallback()
-  const onCancel = returnHome
-  const onSuccess = returnHome
+  const onCancel = returnHomeCallback()
+  const onSuccess = returnHomeCallbackWithEntity()
 
   const doCreate = useCallback(async (values: FormContextProps["values"], dryRun = false) => {
     try {
@@ -86,7 +85,7 @@ export default function NewResourceWizard(props: Props) {
         if (dryRun) {
           setDryRunSuccess(true)
         } else {
-          onSuccess()
+          onSuccess({ kind: props.kind, id: values.name })
         }
       }
     } catch (errorInCreateRequest) {
