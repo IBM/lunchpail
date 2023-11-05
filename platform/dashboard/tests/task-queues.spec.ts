@@ -2,7 +2,7 @@
 import { expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
 
-test("3 demo task queues visible", async () => {
+test("task queues links are visible", async () => {
   // Launch Electron app.
   const electronApp = await launchElectron()
 
@@ -10,7 +10,7 @@ test("3 demo task queues visible", async () => {
   const page = await electronApp.firstWindow()
 
   // Check if we are in demo mode (should be true by default)
-  const demoModeStatus = await page.getByLabel("Demo Mode").isChecked()
+  const demoModeStatus = await page.getByLabel("Demo").isChecked()
   console.log(`Demo mode on?: ${demoModeStatus}`)
 
   // If in demo mode, then continue with Task queue card test

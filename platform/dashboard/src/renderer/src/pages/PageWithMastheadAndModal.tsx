@@ -1,4 +1,4 @@
-import { useContext, useMemo, type ReactNode, type PropsWithChildren } from "react"
+import { useMemo, type ReactNode, type PropsWithChildren } from "react"
 
 import {
   Card,
@@ -14,14 +14,10 @@ import {
   Page,
   PageSection,
   PageToggleButton,
-  Switch,
   Toolbar,
-  ToolbarGroup,
   ToolbarContent,
-  ToolbarItem,
 } from "@patternfly/react-core"
 
-import Settings from "../Settings"
 import { description } from "../../../../package.json"
 
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
@@ -30,12 +26,10 @@ import "./PageWithMastheadAndModal.scss"
 
 export const inline = { default: "inline" as const }
 export const alignLeft = { default: "alignLeft" as const }
-export const alignRight = { default: "alignRight" as const }
 export const noPadding = { default: "noPadding" as const }
 export const stickyTop = { default: "top" as const }
 export const stickyBottom = { default: "bottom" as const }
 export const transparent = { backgroundColor: "transparent" as const }
-export const spacerMd = { default: "spacerNone" as const, md: "spacerMd" as const }
 
 function HeaderToggle() {
   return (
@@ -77,30 +71,7 @@ function HeaderToolbarLeftGroup() {
 }
 
 function HeaderToolbarRightGroup() {
-  const settings = useContext(Settings)
-
-  return (
-    <ToolbarGroup align={alignRight} spacer={spacerMd}>
-      <ToolbarItem>
-        <Switch
-          className="codeflare--switch"
-          ouiaId="demo-mode-switch"
-          label="Demo Mode"
-          isChecked={settings?.demoMode[0]}
-          onChange={settings?.demoMode[2]}
-        />
-      </ToolbarItem>
-      <ToolbarItem>
-        <Switch
-          className="codeflare--switch"
-          ouiaId="dark-mode-switch"
-          label="Dark Mode"
-          isChecked={settings?.darkMode[0]}
-          onChange={settings?.darkMode[2]}
-        />
-      </ToolbarItem>
-    </ToolbarGroup>
-  )
+  return <></>
 }
 
 export type PageWithMastheadAndModalProps = {

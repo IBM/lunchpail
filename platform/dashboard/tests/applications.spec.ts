@@ -10,7 +10,7 @@ test("4 applications visible when in demo mode", async () => {
   const page = await electronApp.firstWindow()
 
   // Check if we are in demo mode (should be true by default)
-  const demoModeStatus = await page.getByLabel("Demo Mode").isChecked()
+  const demoModeStatus = await page.getByLabel("Demo").isChecked()
   console.log(`Demo mode on?: ${demoModeStatus}`)
 
   // If in demo mode, then continue with Applications card test

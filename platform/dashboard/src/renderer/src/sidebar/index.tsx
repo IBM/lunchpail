@@ -1,9 +1,10 @@
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
-import { type NavigableKind, resourceKinds, credentialsKinds } from "../Kind"
+import Configuration from "../components/Configuration"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
 import ControlPlaneHealthBadge from "../components/JobManager/HealthBadge"
 import { nonResourceNames, resourceNames, credentialsNames } from "../names"
+import { type NavigableKind, resourceKinds, credentialsKinds } from "../Kind"
 
 import "./Sidebar.scss"
 
@@ -67,8 +68,12 @@ function SidebarNav(props: Props) {
 export default function Sidebar(props: Props) {
   return (
     <PageSidebar className="codeflare--page-sidebar">
-      <PageSidebarBody>
+      <PageSidebarBody isFilled>
         <SidebarNav {...props} />
+      </PageSidebarBody>
+
+      <PageSidebarBody isFilled={false}>
+        <Configuration />
       </PageSidebarBody>
     </PageSidebar>
   )
