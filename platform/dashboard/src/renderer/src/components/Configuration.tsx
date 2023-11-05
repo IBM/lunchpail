@@ -5,13 +5,13 @@ import { Switch, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem } from "@pat
 import Settings from "../Settings"
 
 export const alignRight = { default: "alignRight" as const }
-export const spaceItemsLg = { default: "spaceItemsLg" as const }
+export const spaceItems = { default: "spaceItemsMd" as const }
 
 function Switches() {
   const settings = useContext(Settings)
 
   return (
-    <ToolbarGroup align={alignRight} spaceItems={spaceItemsLg}>
+    <ToolbarGroup align={alignRight} spaceItems={spaceItems}>
       <ToolbarItem>
         <Switch
           className="codeflare--switch"
