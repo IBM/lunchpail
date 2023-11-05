@@ -4,7 +4,6 @@ import { Text } from "@patternfly/react-core"
 import names from "../../names"
 import Sparkline from "../Sparkline"
 import GridLayout from "../GridLayout"
-import IconWithLabel from "../IconWithLabel"
 import { descriptionGroup } from "../DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "../CompletionRate"
 import { linkToAllApplicationDetails, linkToAllTaskQueueDetails } from "../../navigate/details"
@@ -67,21 +66,15 @@ export function statusActions(
 ): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
   const latestStatus = props.status
   const status = latestStatus?.metadata.annotations["codeflare.dev/status"] || "Unknown"
-  const message = latestStatus?.metadata.annotations["codeflare.dev/message"]
 
   return {
     hasNoOffset: true,
     actions: !latestStatus
       ? []
       : [
-          <IconWithLabel
-            key="Status"
-            popoverHeader={titleCaseSplit(status)}
-            popoverBody={message}
-            status={/Failed/.test(status) ? "Failed" : status}
-          >
-            <Text component={textComponent}>{titleCaseSplit(status)}</Text>
-          </IconWithLabel>,
+          <Text key="status" component={textComponent}>
+            {titleCaseSplit(status)}
+          </Text>,
         ],
   }
 }
