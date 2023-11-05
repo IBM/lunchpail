@@ -80,15 +80,15 @@ export default function NewApplicationWizard(props: Props) {
           rsrc?.metadata.name ??
           previousValues?.name ??
           uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
-        namespace: rsrc?.metadata.name ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
-        repo: rsrc?.spec.repo ?? previousValues?.repo ?? "",
+        namespace: rsrc?.metadata?.name ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+        repo: rsrc?.spec?.repo ?? previousValues?.repo ?? "",
         image:
-          rsrc?.spec.image ??
+          rsrc?.spec?.image ??
           previousValues?.image ??
           "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
-        command: rsrc?.spec.command ?? previousValues?.command ?? "",
-        description: rsrc?.spec.description ?? previousValues?.description ?? "",
-        supportsGpu: rsrc?.spec.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
+        command: rsrc?.spec?.command ?? previousValues?.command ?? "",
+        description: rsrc?.spec?.description ?? previousValues?.description ?? "",
+        supportsGpu: rsrc?.spec?.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
         useTestQueue: previousValues?.useTestQueue ?? "true",
         datasets: previousValues?.datasets ?? "",
         inputFormat: previousValues?.inputFormat ?? "",

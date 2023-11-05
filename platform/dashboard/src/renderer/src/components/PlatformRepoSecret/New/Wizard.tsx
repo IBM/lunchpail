@@ -4,36 +4,41 @@ import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generato
 
 import { type FormContextProps } from "@patternfly/react-core"
 
+import type Props from "../Props"
 import { Input } from "../../Forms"
-import NewResourceWizard, { password, type WizardProps as Props } from "../../NewResourceWizard"
+import yaml, { type YamlProps } from "./yaml"
+import NewResourceWizard, { password, type WizardProps } from "../../NewResourceWizard"
 
-export default function NewRepoSecretWizard(props: Props) {
+export default function NewRepoSecretWizard(props: WizardProps) {
   const [searchParams] = useSearchParams()
-
-  /** Force the use of this repo */
-  const repo = searchParams.get("repo")
-
-  /** Namespace in which to create this resource */
-  const namespace = searchParams.get("namespace") || "default"
 
   /** Initial value for form */
   const defaults = useCallback(
-    (previousValues?: Record<string, string>) => ({
-      name:
-        (repo || "")
-          .replace(/\./g, "-")
-          .replace(/^http?s:\/\//, "")
-          .replace(/$/, "-") +
-        uniqueNamesGenerator({ dictionaries: [adjectives, animals], length: 2, style: "lowerCase" }).replace(
-          /[ _]/g,
-          "-",
-        ),
-      count: String(1),
-      size: "xs",
-      repo: repo ?? "",
-      user: previousValues?.user ?? "",
-      pat: "",
-    }),
+    (previousValues?: Record<string, string>) => {
+      // are we editing an existing resource `rsrc`? if so, populate
+      // the form defaults from its values
+      const yaml = searchParams.get("yaml")
+      const rsrc = yaml ? (JSON.parse(decodeURIComponent(yaml)) as Props) : undefined
+
+      const repo = rsrc?.spec.repo ?? searchParams.get("repo") ?? ""
+
+      return {
+        name:
+          rsrc?.metadata?.name ??
+          (repo || "")
+            .replace(/\./g, "-")
+            .replace(/^http?s:\/\//, "")
+            .replace(/$/, "-") +
+            uniqueNamesGenerator({ dictionaries: [adjectives, animals], length: 2, style: "lowerCase" }).replace(
+              /[ _]/g,
+              "-",
+            ),
+        namespace: rsrc?.metadata?.namespace ?? searchParams.get("namespace") ?? "default",
+        repo,
+        user: previousValues?.user ?? "",
+        pat: previousValues?.pat ?? "",
+      }
+    },
     [searchParams],
   )
 
@@ -41,7 +46,7 @@ export default function NewRepoSecretWizard(props: Props) {
   function repoInput(ctrl: FormContextProps) {
     return (
       <Input
-        readOnlyVariant={repo ? "default" : undefined}
+        readOnlyVariant={searchParams.has("repo") ? "default" : undefined}
         fieldId="repo"
         label="GitHub provider"
         description="Base URI of your GitHub provider, e.g. https://github.mycompany.com"
@@ -69,42 +74,12 @@ export default function NewRepoSecretWizard(props: Props) {
     items: ["name" as const, repoInput, user, pat],
   }
 
-  function yaml(values: FormContextProps["values"]) {
-    const apiVersion = "codeflare.dev/v1alpha1"
-    const kind = "PlatformRepoSecret"
-
-    return `
-apiVersion: ${apiVersion}
-kind: ${kind}
-metadata:
-  name: ${values.name}
-  namespace: ${namespace}
-  labels:
-    app.kubernetes.io/managed-by: jay
-spec:
-  repo: ${values.repo}
-  secret:
-    name: ${values.name}
-    namespace: ${namespace}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ${values.name}
-  namespace: ${namespace}
-  labels:
-    app.kubernetes.io/managed-by: jay
-type: Opaque
-data:
-  user: ${btoa(values.user)}
-  pat: ${btoa(values.pat)}
-`.trim()
-  }
+  const getYaml = useCallback((values: Record<string, string>) => yaml(values as unknown as YamlProps), [])
 
   const title = "Create Repo Secret"
   const steps = [step1]
   return (
-    <NewResourceWizard {...props} kind="workerpools" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+    <NewResourceWizard {...props} kind="workerpools" title={title} defaults={defaults} yaml={getYaml} steps={steps}>
       Configure a pattern matcher that provides access to source code in a given GitHub provider.
     </NewResourceWizard>
   )

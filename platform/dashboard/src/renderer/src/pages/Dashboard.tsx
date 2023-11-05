@@ -10,6 +10,7 @@ import DataSet from "../components/DataSet/Card"
 import WorkerPool from "../components/WorkerPool/Card"
 import Application from "../components/Application/Card"
 import JobManagerCard from "../components/JobManager/Card"
+import PlatformRepoSecretCard from "../components/PlatformRepoSecret/Card"
 
 import Settings from "../Settings"
 import Sidebar from "../sidebar"
@@ -21,6 +22,7 @@ import TaskQueueDetail from "../components/TaskQueue/Detail"
 import WorkerPoolDetail from "../components/WorkerPool/Detail"
 import ApplicationDetail from "../components/Application/Detail"
 import JobManagerDetail from "../components/JobManager/Detail"
+import PlatformRepoSecretDetail from "../components/PlatformRepoSecret/Detail"
 
 import { LinkToNewDataSet } from "../components/DataSet/New/Button"
 import { LinkToNewApplication } from "../components/Application/New/Button"
@@ -282,7 +284,9 @@ export function Dashboard(props: Props) {
       // actions: () => !inDemoMode && <LinkToNewWorkerPool startOrAdd="add"/>,
     },
     platformreposecrets: {
-      gallery: () => platformreposecretEvents.map((_) => _.metadata.name), // TODO...
+      gallery: () =>
+        platformreposecretEvents.map((props) => <PlatformRepoSecretCard key={props.metadata.name} {...props} />),
+      detail: (id: string) => PlatformRepoSecretDetail(platformreposecretEvents.find((_) => _.metadata.name === id)),
     },
   }
 
