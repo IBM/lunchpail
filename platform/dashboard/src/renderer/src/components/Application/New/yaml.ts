@@ -4,6 +4,10 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 export type YamlProps = Pick<ApplicationSpecEvent["metadata"], "name" | "namespace"> &
   Pick<ApplicationSpecEvent["spec"], "repo" | "image" | "command" | "description" | "supportsGpu"> & {
+    /** Serialized JSON array of datasets to mount */
+    datasets: string
+
+    /** Serialized JSON of schema to use for TaskSimulator simulated input */
     inputSchema: string
 
     taskqueueName?: string
@@ -18,6 +22,18 @@ export type YamlProps = Pick<ApplicationSpecEvent["metadata"], "name" | "namespa
  */
 export default function yaml(values: YamlProps) {
   const taskqueueName = values.taskqueueName ?? values.name.replace(/-/g, "")
+
+  const datasetsToMount = !values.datasets
+    ? ""
+    : JSON.parse(values.datasets)
+        .map((datasetName) =>
+          `
+- useas: mount
+  sizes:
+    xs: ${datasetName}
+`.trim(),
+        )
+        .join("\n")
 
   return `
 apiVersion: codeflare.dev/v1alpha1
@@ -43,9 +59,7 @@ spec:
 ${indent(values.inputSchema.replace(/\n/g, ""), 10)}
       sizes:
         xs: ${taskqueueName}
-    - useas: mount
-      sizes:
-        xs: hap-models
+${indent(datasetsToMount, 4)}
   description: >-
 ${wordWrap(values.description, { trim: true, indent: "    ", width: 60 })}
 ---
@@ -95,9 +109,12 @@ data:
 
 function indent(value: string, level: number) {
   const indentation = Array(level).fill(" ").join("")
-  return value.split(/\n/).map((line) => `${indentation}${line}`)
+  return value
+    .split(/\n/)
+    .map((line) => `${indentation}${line}`)
+    .join("\n")
 }
 
 export function yamlFromSpec({ metadata, spec }: ApplicationSpecEvent) {
-  return yaml(Object.assign({ inputSchema: "" }, metadata, spec))
+  return yaml(Object.assign({ inputSchema: "", datasets: "" }, metadata, spec))
 }
