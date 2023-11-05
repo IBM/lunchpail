@@ -1,4 +1,4 @@
-import { taskqueues } from "./Card"
+import { datasets, taskqueues } from "./Card"
 import DrawerContent from "../Drawer/Content"
 import DeleteResourceButton from "../DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "../DescriptionGroup"
@@ -22,11 +22,11 @@ function repoPlusSource(props: Props) {
 function detailGroups(props: Props) {
   return Object.entries(props.application.spec)
     .filter(([, value]) => value)
-    .map(([term, value]) =>
+    .flatMap(([term, value]) =>
       term === "repo"
         ? descriptionGroup("Source", repoPlusSource(props))
         : term === "inputs"
-        ? taskqueues(props)
+        ? [taskqueues(props), datasets(props)]
         : typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value),
     )
 }
