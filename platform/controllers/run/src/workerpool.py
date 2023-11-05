@@ -108,7 +108,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
 
 # A pod that is part of a WorkerPool has been created. We now create a
 # Queue resource to help with accounting.
-def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, annotations, labels, spec, patch):
+def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_uid: str, annotations, labels, spec, patch):
     logging.info(f"Handling WorkerPool pod creation pod_name={pod_name} namespace={namespace}")
     pool_name = labels["app.kubernetes.io/name"]
     pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
@@ -135,7 +135,14 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, annota
                 "app.kubernetes.io/part-of": app_name,
                 "app.kubernetes.io/managed-by": "codeflare.dev",
                 "app.kubernetes.io/component": "queue"
-            }
+            },
+            "ownerReferences": [{
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "controller": True,
+                "name": pod_name,
+                "uid": pod_uid,
+            }]
         },
         "spec": {
             "dataset": dataset_name

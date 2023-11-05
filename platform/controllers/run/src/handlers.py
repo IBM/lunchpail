@@ -223,9 +223,9 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
 
 # Watch each managed WorkerPool Pod for creation
 @kopf.on.create('pods', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/component": "workerpool", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
-def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, patch, **kwargs):
+def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, uid, patch, **kwargs):
     try:
-        on_worker_pod_create(v1Api, customApi, name, namespace, annotations, labels, spec, patch)
+        on_worker_pod_create(v1Api, customApi, name, namespace, uid, annotations, labels, spec, patch)
     except Exception as e:
         logging.error(f"Error with WorkerPool Pod creation name={name} namespace={namespace}. {str(e)}")
 
