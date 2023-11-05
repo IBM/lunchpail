@@ -192,6 +192,10 @@ export function Select(
   )
 }
 
+const maxWidth = {
+  maxWidth: "200px",
+} as React.CSSProperties
+
 export function SelectCheckbox(
   props: FormProps &
     Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string[] },
@@ -221,16 +225,7 @@ export function SelectCheckbox(
 
   const toggle = useCallback(
     (ref: Ref<MenuToggleElement>) => (
-      <MenuToggle
-        ref={ref}
-        onClick={onToggleClick}
-        isExpanded={isOpen}
-        style={
-          {
-            width: "200px",
-          } as React.CSSProperties
-        }
-      >
+      <MenuToggle ref={ref} onClick={onToggleClick} isExpanded={isOpen} style={maxWidth}>
         Select one or more
         {selectedItems.length > 0 && <Badge isRead>{selectedItems.length}</Badge>}
       </MenuToggle>
