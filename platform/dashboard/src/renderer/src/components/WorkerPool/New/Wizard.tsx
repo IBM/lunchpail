@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import removeAccents from "remove-accents"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
@@ -16,62 +17,40 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()
 
-  function chooseTaskQueueIfExists(available: Props["taskqueues"], desired: null | string) {
-    if (desired && available.includes(desired)) {
-      return desired
-    } else {
-      return ""
-    }
-  }
+  /** Try to associate with a Task Queue? */
+  const searchedTaskQueue = chooseTaskQueueIfExists(props.taskqueues, searchParams.get("taskqueue"))
 
-  function searchedTaskQueue() {
-    const taskqueue = searchParams.get("taskqueue")
-    if (!taskqueue || !props.taskqueues.includes(taskqueue)) {
-      return null
-    } else {
-      return taskqueue
-    }
-  }
+  /** If we are trying to associate with a particular Task Queue, then filter Applications list down to those compatible with it */
+  const compatibleApplications = searchedTaskQueue
+    ? props.applications.filter((app) => supportsTaskQueue(app, searchedTaskQueue))
+    : props.applications
 
-  function supportsTaskQueue(app: ApplicationSpecEvent, taskqueue: string) {
-    const taskqueues = app.spec.inputs ? app.spec.inputs[0].sizes : undefined
-    return (
-      taskqueues &&
-      (taskqueues.xs === taskqueue ||
-        taskqueues.sm === taskqueue ||
-        taskqueues.md === taskqueue ||
-        taskqueues.lg === taskqueue ||
-        taskqueues.xl === taskqueue)
-    )
-  }
-
-  function compatibleApplications() {
-    const taskqueue = searchedTaskQueue()
-    if (taskqueue) {
-      return props.applications.filter((app) => supportsTaskQueue(app, taskqueue))
-    } else {
-      return props.applications
-    }
-  }
-
-  function chooseIfSingleton(A: ApplicationSpecEvent[]): string {
-    return A.length === 1 ? A[0].metadata.name : ""
-  }
+  /** Presented Select options of Applications */
+  const applicationOptions = useMemo(
+    () =>
+      compatibleApplications.map((_) => ({
+        value: _.metadata.name,
+        description: <div className="codeflare--max-width-30em">{_.spec.description}</div>,
+      })),
+    [searchedTaskQueue, props.applications],
+  )
 
   /** Initial value for form */
   function defaults() {
     return {
-      name: removeAccents(
-        uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
-      ),
+      name:
+        (searchedTaskQueue ? searchedTaskQueue + "-pool-" : "") +
+        removeAccents(
+          uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
+        ),
       count: String(1),
       size: "xs",
       supportsGpu: false.toString(),
-      application: chooseIfSingleton(compatibleApplications()),
+      application: chooseIfSingleton(compatibleApplications),
       taskqueue:
         props.taskqueues.length === 1
           ? props.taskqueues[0]
-          : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue()),
+          : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue),
     }
   }
 
@@ -82,11 +61,8 @@ export default function NewWorkerPoolWizard(props: Props) {
         label={singular.applications}
         description={`Choose the ${singular.applications} code this pool should run`}
         ctrl={ctrl}
-        options={compatibleApplications().map((_) => ({
-          value: _.metadata.name,
-          description: <div className="codeflare--max-width-30em">{_.spec.description}</div>,
-        }))}
-        icons={compatibleApplications().map(ApplicationIcon)}
+        options={applicationOptions}
+        icons={compatibleApplications.map(ApplicationIcon)}
       />
     )
   }
@@ -94,25 +70,12 @@ export default function NewWorkerPoolWizard(props: Props) {
   function taskqueue(ctrl: FormContextProps) {
     return (
       <Select
+        ctrl={ctrl}
         fieldId="taskqueue"
+        icons={<TaskQueueIcon />}
+        options={props.taskqueues}
         label={singular.taskqueues}
         description={`Choose the ${singular.taskqueues} this pool should process`}
-        ctrl={ctrl}
-        options={props.taskqueues.sort()}
-        icons={<TaskQueueIcon />}
-      />
-    )
-  }
-
-  function numWorkers(ctrl: FormContextProps) {
-    return (
-      <NumberInput
-        fieldId="count"
-        label="Worker count"
-        description="Number of Workers in this pool"
-        ctrl={ctrl}
-        defaultValue={ctrl.values.count ? parseInt(ctrl.values.count, 10) : 1}
-        min={1}
       />
     )
   }
@@ -147,7 +110,7 @@ spec:
     count: ${values.count}
     size: ${values.size}
     supportsGpu: ${values.supportsGpu}
-`
+`.trim()
   }
 
   const title = `Create ${singular.workerpools}`
@@ -156,5 +119,46 @@ spec:
     <NewResourceWizard {...props} kind="workerpools" title={title} defaults={defaults} yaml={yaml} steps={steps}>
       Configure a pool of compute resources to process Tasks in a Queue.
     </NewResourceWizard>
+  )
+}
+
+/** @return A[0] if A.length is 1 */
+function chooseIfSingleton(A: ApplicationSpecEvent[]): string {
+  return A.length === 1 ? A[0].metadata.name : ""
+}
+
+/** If the user desires to associate this Worker Pool with a given `desired` Task Queue, make sure it exists */
+function chooseTaskQueueIfExists(available: Props["taskqueues"], desired: null | string) {
+  if (desired && available.includes(desired)) {
+    return desired
+  } else {
+    return ""
+  }
+}
+
+/** @return whether the given Application supports the given Task Queue */
+function supportsTaskQueue(app: ApplicationSpecEvent, taskqueue: string) {
+  const taskqueues = app.spec.inputs ? app.spec.inputs[0].sizes : undefined
+  return (
+    taskqueues &&
+    (taskqueues.xs === taskqueue ||
+      taskqueues.sm === taskqueue ||
+      taskqueues.md === taskqueue ||
+      taskqueues.lg === taskqueue ||
+      taskqueues.xl === taskqueue)
+  )
+}
+
+/** Form element to choose number of workers in this new Worker Pool */
+function numWorkers(ctrl: FormContextProps) {
+  return (
+    <NumberInput
+      min={1}
+      ctrl={ctrl}
+      fieldId="count"
+      label="Worker count"
+      description="Number of Workers in this pool"
+      defaultValue={ctrl.values.count ? parseInt(ctrl.values.count, 10) : 1}
+    />
   )
 }
