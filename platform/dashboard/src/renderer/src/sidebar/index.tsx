@@ -31,16 +31,12 @@ function SidebarNavItems<
 }
 
 function SidebarResourcesNavGroup(props: Props) {
-  return (
-    <NavExpandable title="Resources" isExpanded>
-      <SidebarNavItems kinds={resourceKinds} names={resourceNames} {...props} />
-    </NavExpandable>
-  )
+  return <SidebarNavItems kinds={resourceKinds} names={resourceNames} {...props} />
 }
 
 function SidebarCredentialsNavGroup(props: Props) {
   return (
-    <NavExpandable title="Credentials" isExpanded>
+    <NavExpandable title="Credentials">
       <SidebarNavItems kinds={credentialsKinds} names={credentialsNames} {...props} />
     </NavExpandable>
   )
