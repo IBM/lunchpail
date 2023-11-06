@@ -93,7 +93,7 @@ function otherTabs(props: Props) {
   return !last ? [] : BrowserTabs(last.spec.local)
 }
 
-function TaskQueueDetail(props: Props) {
+export default function TaskQueueDetail(props: Props) {
   const settings = useContext(Settings)
   const inDemoMode = settings?.demoMode[0] ?? false
 
@@ -106,8 +106,4 @@ function TaskQueueDetail(props: Props) {
       otherTabs={otherTabs(props)}
     />
   )
-}
-
-export default function MaybeTaskQueueDetail(props?: Props) {
-  return props && <TaskQueueDetail {...props} />
 }

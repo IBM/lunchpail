@@ -49,7 +49,7 @@ function Edit(props: Props) {
   return <LinkToNewWizard startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
 }
 
-function ApplicationDetail(props: Props) {
+export default function ApplicationDetail(props: Props) {
   const { inputs } = props.application.spec
   const otherTabs =
     inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
@@ -71,8 +71,4 @@ function ApplicationDetail(props: Props) {
       rightActions={props && [deleteAction(props)]}
     />
   )
-}
-
-export default function MaybeApplicationDetail(props: Props | undefined) {
-  return props && <ApplicationDetail {...props} />
 }

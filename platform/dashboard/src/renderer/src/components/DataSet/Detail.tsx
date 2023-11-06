@@ -35,7 +35,7 @@ function otherTabs(props: Props) {
   return BrowserTabs(props.spec.local)
 }
 
-function DataSetDetail(props: Props) {
+export default function DataSetDetail(props: Props) {
   return (
     <DrawerContent
       summary={props && <DescriptionList groups={detailGroups(props)} />}
@@ -45,8 +45,4 @@ function DataSetDetail(props: Props) {
       otherTabs={otherTabs(props)}
     />
   )
-}
-
-export default function MaybeDataSetDetail(props: Props | undefined) {
-  return props && <DataSetDetail {...props} />
 }

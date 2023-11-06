@@ -51,17 +51,20 @@ export function datasets(props: Props) {
   )
 }
 
+function hasWorkerPool(props: Props) {
+  return !!props.workerpools.find((_) => _.spec.application.name === props.application.metadata.name)
+}
+
 export default function ApplicationCard(props: Props) {
-  const kind = "applications" as const
-  const icon = <ApplicationIcon {...props.application} />
+  const icon = <ApplicationIcon application={props.application} hasWorkerPool={hasWorkerPool(props)} />
   const name = props.application.metadata.name
+
   const groups = [
     api(props),
     props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
     taskqueues(props),
     datasets(props),
-    //props.supportsGpu && descriptionGroup("Benefits from GPU", props.supportsGpu),
   ]
 
-  return <CardInGallery kind={kind} name={name} icon={icon} groups={groups} />
+  return <CardInGallery kind="applications" name={name} icon={icon} groups={groups} />
 }

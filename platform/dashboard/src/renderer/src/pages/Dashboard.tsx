@@ -217,60 +217,11 @@ export function Dashboard(props: Props) {
     [latestWorkerPoolModels],
   )
 
-  const sidebar = (
-    <Sidebar
-      applications={applicationsList}
-      datasets={datasetsList}
-      workerpools={workerpoolsList}
-      platformreposecrets={platformRepoSecretsList}
-    />
-  )
-
-  /** Helps will drilldown to Details */
-  function getApplication(id: string) {
-    const application = applicationEvents.find((_) => _.metadata.name === id)
-    return application ? { application, datasets: datasetsList, taskqueues: taskqueuesList } : undefined
-  }
-
-  /** Helps will drilldown to Details */
-  function getDataSet(id: string, datasetEvents: DataSetEvent[]) {
-    return datasetEvents.find((_) => _.metadata.name === id)
-  }
-
-  /** Helps will drilldown to Details */
-  function getTaskQueue(id: string) {
-    const events = taskqueueEvents.filter((_) => _.metadata.name === id)
-    return events.length === 0
-      ? undefined
-      : {
-          idx: either(events[events.length - 1].spec.idx, taskqueueIndex[id]),
-          workerpools: taskqueueToPool[id] || [],
-          tasksimulators: taskqueueToTaskSimulators[id] || [],
-          applications: applicationEvents || [],
-          name: id,
-          events,
-          numEvents: events.length,
-          taskqueueIndex,
-        }
-  }
-
-  /** Helps will drilldown to Details */
-  function getWorkerPool(id: string) {
-    const model = latestWorkerPoolModels.find((_) => _.label === id)
-    return !model
-      ? undefined
-      : {
-          model,
-          status: poolEvents.find((_) => _.metadata.name === id),
-          taskqueueIndex: taskqueueIndex,
-        }
-  }
-
   const content: Record<
     DetailableKind,
     {
       gallery?: () => ReactNode
-      detail?: (id: string) => ReactNode
+      detail?: (id: string) => undefined | ReactNode
       actions?: () => ReactNode
       wizard?: () => ReactNode
     }
@@ -282,24 +233,75 @@ export function Dashboard(props: Props) {
     applications: {
       gallery: () =>
         applicationEvents.map((evt) => (
-          <Application key={evt.metadata.name} application={evt} datasets={datasetsList} taskqueues={taskqueuesList} />
+          <Application
+            key={evt.metadata.name}
+            application={evt}
+            datasets={datasetsList}
+            taskqueues={taskqueuesList}
+            workerpools={poolEvents}
+          />
         )),
-      detail: (id: string) => ApplicationDetail(getApplication(id)),
+      detail: (id: string) => {
+        const application = applicationEvents.find((_) => _.metadata.name === id)
+        if (application) {
+          const props = { application, datasets: datasetsList, taskqueues: taskqueuesList, workerpools: poolEvents }
+          return <ApplicationDetail {...props} />
+        } else {
+          return undefined
+        }
+      },
       actions: () => !inDemoMode && <LinkToNewApplication startOrAdd="add" />,
       wizard: () => <NewApplicationWizard datasets={datasetsList} />,
     },
     taskqueues: {
-      detail: (id: string) => TaskQueueDetail(getTaskQueue(id)),
+      detail: (id: string) => {
+        const events = taskqueueEvents.filter((_) => _.metadata.name === id)
+        if (events.length === 0) {
+          return undefined
+        } else {
+          const props = {
+            idx: either(events[events.length - 1].spec.idx, taskqueueIndex[id]),
+            workerpools: taskqueueToPool[id] || [],
+            tasksimulators: taskqueueToTaskSimulators[id] || [],
+            applications: applicationEvents || [],
+            name: id,
+            events,
+            numEvents: events.length,
+            taskqueueIndex,
+          }
+
+          return TaskQueueDetail(props)
+        }
+      },
     },
     datasets: {
       gallery: () => datasetEvents.map((evt) => <DataSet key={evt.metadata.name} {...evt} />),
-      detail: (id: string) => DataSetDetail(getDataSet(id, datasetEvents)),
+      detail: (id: string) => {
+        const props = datasetEvents.find((_) => _.metadata.name === id)
+        if (props) {
+          return DataSetDetail(props)
+        } else {
+          return undefined
+        }
+      },
       actions: () => !inDemoMode && <LinkToNewDataSet startOrAdd="add" />,
       wizard: () => <NewDataSetWizard />,
     },
     workerpools: {
       gallery: () => workerpoolCards,
-      detail: (id: string) => WorkerPoolDetail(getWorkerPool(id)),
+      detail: (id: string) => {
+        const model = latestWorkerPoolModels.find((_) => _.label === id)
+        if (!model) {
+          return undefined
+        } else {
+          const props = {
+            model,
+            status: poolEvents.find((_) => _.metadata.name === id),
+            taskqueueIndex: taskqueueIndex,
+          }
+          return WorkerPoolDetail(props)
+        }
+      },
       // actions: () => !inDemoMode && <LinkToNewWorkerPool startOrAdd="add"/>,
       wizard: () => <NewWorkerPoolWizard taskqueues={taskqueuesList} applications={applicationEvents} />,
     },
@@ -317,12 +319,13 @@ export function Dashboard(props: Props) {
   const currentDetail =
     detailContentProvider && detailContentProvider.detail ? detailContentProvider.detail(id) : undefined
 
+  /** Content to display in the main gallery */
   const bodyContentProvider = content[currentKind()]
   const currentActions = bodyContentProvider && bodyContentProvider.actions ? bodyContentProvider.actions() : undefined
 
+  /** Content to display in the modal */
   const kindForWizard = isShowingWizard()
   const wizardContentProvider = !!kindForWizard && content[kindForWizard]
-
   const modal = (
     <Suspense fallback={<></>}>
       <Modal
@@ -336,6 +339,15 @@ export function Dashboard(props: Props) {
         {wizardContentProvider ? wizardContentProvider.wizard() : undefined}
       </Modal>
     </Suspense>
+  )
+
+  const sidebar = (
+    <Sidebar
+      applications={applicationsList}
+      datasets={datasetsList}
+      workerpools={workerpoolsList}
+      platformreposecrets={platformRepoSecretsList}
+    />
   )
 
   const pwdProps = {

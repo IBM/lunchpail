@@ -7,17 +7,21 @@ import rayImageUrl from "../../images/ray.png"
 import sparkImageUrl from "../../images/spark.svg"
 import pytorchImageUrl from "../../images/pytorch.svg"
 
-export default function applicationIcon(props: ApplicationSpecEvent) {
-  switch (props.spec.api) {
+export default function applicationIcon(props: { application: ApplicationSpecEvent; hasWorkerPool?: boolean }) {
+  const baseClasses = props.hasWorkerPool ? ["codeflare--active"] : []
+  const className = baseClasses.join(" ")
+  const classNameForImg = ["codeflare--card-icon-image", ...baseClasses].join(" ")
+
+  switch (props.application.spec.api) {
     case "ray":
-      return <img className="codeflare--card-icon-image" src={rayImageUrl} />
+      return <img className={classNameForImg} src={rayImageUrl} />
     case "torch":
-      return <img className="codeflare--card-icon-image" src={pytorchImageUrl} />
+      return <img className={classNameForImg} src={pytorchImageUrl} />
     case "spark":
-      return <img className="codeflare--card-icon-image" src={sparkImageUrl} />
+      return <img className={classNameForImg} src={sparkImageUrl} />
     case "workqueue":
-      return <WorkQueueIcon />
+      return <WorkQueueIcon className={className} />
     default:
-      return <ApplicationIcon />
+      return <ApplicationIcon className={className} />
   }
 }

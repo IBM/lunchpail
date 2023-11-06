@@ -67,7 +67,9 @@ export default function NewWorkerPoolWizard(props: Props) {
         description={`Choose the ${singular.applications} code this pool should run`}
         ctrl={ctrl}
         options={applicationOptions}
-        icons={compatibleApplications.map(ApplicationIcon)}
+        icons={compatibleApplications.map((application) => (
+          <ApplicationIcon application={application} />
+        ))}
       />
     )
   }
