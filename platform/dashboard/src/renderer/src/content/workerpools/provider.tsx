@@ -4,11 +4,25 @@ import WorkerPoolCard from "./components/Card"
 import WorkerPoolDetail from "./components/Detail"
 const NewWorkerPoolWizard = lazy(() => import("./components/New/Wizard"))
 
+import { name, singular } from "./name"
+import { name as taskqueuesName } from "../taskqueues/name"
+
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"
 
 const workerpools: ContentProvider = {
+  name,
+
+  singular,
+
+  description: (
+    <span>
+      The registered compute pools in your system. Each <strong>Worker Pool</strong> is a set of workers that can
+      process tasks from one or more {taskqueuesName}.
+    </span>
+  ),
+
   gallery: (events: ManagedEvents, { taskqueueIndex, latestWorkerPoolModels }: Memos) => {
     return latestWorkerPoolModels.map((w) => (
       <WorkerPoolCard
@@ -19,6 +33,7 @@ const workerpools: ContentProvider = {
       />
     ))
   },
+
   detail: (id: string, events: ManagedEvents, { taskqueueIndex, latestWorkerPoolModels }: Memos) => {
     const model = latestWorkerPoolModels.find((_) => _.label === id)
     if (!model) {
@@ -32,7 +47,7 @@ const workerpools: ContentProvider = {
       return WorkerPoolDetail(props)
     }
   },
-  // actions: () => !inDemoMode && <LinkToNewWorkerPool startOrAdd="add"/>,
+
   wizard: (events: ManagedEvents) => (
     <NewWorkerPoolWizard taskqueues={events.taskqueues} applications={events.applications} />
   ),

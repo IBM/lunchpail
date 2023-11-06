@@ -8,9 +8,13 @@ import { type FormContextProps } from "@patternfly/react-core"
 import TaskQueueIcon from "../../../taskqueues/components/Icon"
 import ApplicationIcon from "../../../applications/components/Icon"
 
-import { singular } from "@jay/renderer/names"
 import { NumberInput, Select } from "@jay/components/Forms"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
+
+import { singular } from "../../name"
+import { singular as taskqueuesSingular } from "../../../taskqueues/name"
+import { singular as workerpoolsSingular } from "../../../workerpools/name"
+import { singular as applicationsSingular } from "../../../applications/name"
 
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -64,8 +68,8 @@ export default function NewWorkerPoolWizard(props: Props) {
     return (
       <Select
         fieldId="application"
-        label={singular.applications}
-        description={`Choose the ${singular.applications} code this pool should run`}
+        label={applicationsSingular}
+        description={`Choose the ${applicationsSingular} code this pool should run`}
         ctrl={ctrl}
         options={applicationOptions}
         icons={compatibleApplications.map((application) => (
@@ -82,8 +86,8 @@ export default function NewWorkerPoolWizard(props: Props) {
         fieldId="taskqueue"
         icons={<TaskQueueIcon />}
         options={props.taskqueues}
-        label={singular.taskqueues}
-        description={`Choose the ${singular.taskqueues} this pool should process`}
+        label={taskqueuesSingular}
+        description={`Choose the ${taskqueuesSingular} this pool should process`}
       />
     )
   }
@@ -121,10 +125,17 @@ spec:
 `.trim()
   }
 
-  const title = `Create ${singular.workerpools}`
+  const title = `Create ${workerpoolsSingular}`
   const steps = [step1]
   return (
-    <NewResourceWizard kind="workerpools" title={title} defaults={defaults} yaml={yaml} steps={steps}>
+    <NewResourceWizard
+      kind="workerpools"
+      title={title}
+      singular={singular}
+      defaults={defaults}
+      yaml={yaml}
+      steps={steps}
+    >
       Configure a pool of compute resources to process Tasks in a Queue.
     </NewResourceWizard>
   )

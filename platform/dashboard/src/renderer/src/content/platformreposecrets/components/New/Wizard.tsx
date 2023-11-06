@@ -9,6 +9,8 @@ import { Input } from "@jay/components/Forms"
 import yaml, { type YamlProps } from "./yaml"
 import NewResourceWizard, { password } from "@jay/components/NewResourceWizard"
 
+import { singular } from "../../name"
+
 export default function NewRepoSecretWizard() {
   const [searchParams] = useSearchParams()
 
@@ -79,7 +81,14 @@ export default function NewRepoSecretWizard() {
   const title = "Create Repo Secret"
   const steps = [step1]
   return (
-    <NewResourceWizard kind="workerpools" title={title} defaults={defaults} yaml={getYaml} steps={steps}>
+    <NewResourceWizard
+      kind="workerpools"
+      title={title}
+      singular={singular}
+      defaults={defaults}
+      yaml={getYaml}
+      steps={steps}
+    >
       Configure a pattern matcher that provides access to source code in a given GitHub provider.
     </NewResourceWizard>
   )

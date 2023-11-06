@@ -4,8 +4,10 @@ import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import { type FormContextProps } from "@patternfly/react-core"
 
-import { singular } from "@jay/renderer/names"
 import { Checkbox, Input } from "@jay/components/Forms"
+
+import { singular } from "../../name"
+import { singular as taskqueuesSingular } from "../../../taskqueues/name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import NewResourceWizard, { password } from "@jay/components/NewResourceWizard"
@@ -154,22 +156,29 @@ export default function NewDataSetWizard() {
   // are we registering an existing or creating a new one from data supplied here?
   const action = searchParams.get("action") ?? "register"
 
-  const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular.datasets}`
+  const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular}`
   const steps =
     action !== "create" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
 
   return (
-    <NewResourceWizard kind="datasets" title={title} defaults={defaults} yaml={yaml} steps={steps} isEdit>
-      An {singular.datasets} stores information that is not specific to any one Task in a {singular.taskqueues}, e.g. a
+    <NewResourceWizard
+      kind="datasets"
+      title={title}
+      singular={singular}
+      defaults={defaults}
+      yaml={yaml}
+      steps={steps}
+      isEdit
+    >
+      An {singular} stores information that is not specific to any one Task in a {taskqueuesSingular}, e.g. a
       pre-trained model or a chip design that is being tested across multiple configurations.{" "}
       {action === "register" ? (
         <span>
-          This wizard helps you to <strong>register an existing {singular.datasets}</strong> that is already stored in
-          the Cloud.
+          This wizard helps you to <strong>register an existing {singular}</strong> that is already stored in the Cloud.
         </span>
       ) : (
         <span>
-          This wizard helps you to create a <strong>new {singular.datasets}</strong> from data supplied here.
+          This wizard helps you to create a <strong>new {singular}</strong> from data supplied here.
         </span>
       )}
     </NewResourceWizard>

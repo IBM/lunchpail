@@ -2,7 +2,6 @@ import { useContext, useEffect, lazy, Suspense } from "react"
 
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
 
-import names, { subtitles } from "../names"
 import { currentKind } from "../navigate/kind"
 import { isShowingWizard } from "../navigate/wizard"
 import { returnHomeCallback } from "../navigate/home"
@@ -34,7 +33,8 @@ export function Dashboard(props: Props) {
   const { events, handlers } = initState()
   const memos = initMemos(events)
 
-  // this registers what is in effect a componentDidMount handler
+  // This registers what is in effect a componentDidMount handler. We
+  // use it to register/deregister our event `handlers`
   useEffect(function onMount() {
     Object.entries(handlers).forEach(([kind, handler]) => {
       props[kind].addEventListener("message", handler, false)
@@ -74,6 +74,7 @@ export function Dashboard(props: Props) {
     </Suspense>
   )
 
+  /** Content to display in the hamburger-menu sidebar (usually coming in on the left) */
   const sidebar = (
     <Sidebar
       datasets={events.datasets.length}
@@ -86,8 +87,8 @@ export function Dashboard(props: Props) {
   const pwdProps = {
     currentDetail,
     modal,
-    title: names[currentKind()],
-    subtitle: subtitles[currentKind()],
+    title: bodyContentProvider.name,
+    subtitle: bodyContentProvider.description,
     sidebar,
     actions: currentActions,
   }

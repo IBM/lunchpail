@@ -1,5 +1,6 @@
-import { singular } from "@jay/renderer/names"
 import LinkToNewWizard, { type WizardProps } from "@jay/renderer/navigate/wizard"
+
+import { singular as datasetsSingular } from "../../name"
 
 type Props = Pick<WizardProps, "startOrAdd"> & {
   action?: "create" | "register"
@@ -12,7 +13,7 @@ export function LinkToNewDataSet(props: Props) {
     qs.push(`namespace=${props.namespace}`)
   }
 
-  const name = singular.datasets
+  const name = datasetsSingular
   const linkText = props.action === "create" ? `Create ${name}` : `Register ${name}`
 
   return <LinkToNewWizard startOrAdd={props.startOrAdd ?? "create"} kind="datasets" linkText={linkText} qs={qs} />

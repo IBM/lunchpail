@@ -21,7 +21,6 @@ import {
 
 import Yaml from "./Yaml"
 import Settings from "../Settings"
-import { singular } from "../names"
 import { Input, TextArea, remember } from "./Forms"
 import { returnHomeCallback, returnHomeCallbackWithEntity } from "../navigate/home"
 
@@ -50,6 +49,7 @@ type StepProps = {
 type Props = PropsWithChildren<{
   kind: DetailableKind
   title: string
+  singular: string
   isEdit?: boolean
   defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
   yaml: (values: FormContextProps["values"]) => string
@@ -107,7 +107,7 @@ export default function NewResourceWizard(props: Props) {
           name="Review"
           status={errorInCreateRequest ? "error" : "default"}
           footer={{
-            nextButtonText: props.isEdit ? "Apply Changes" : `Create ${singular[props.kind]}`,
+            nextButtonText: props.isEdit ? "Apply Changes" : `Create ${props.singular}`,
             onNext: () => doCreate(ctrl.values),
           }}
         >
@@ -137,7 +137,7 @@ export default function NewResourceWizard(props: Props) {
               isInline
               actionLinks={<AlertActionLink onClick={doDryRun}>Dry run</AlertActionLink>}
             >
-              Confirm the settings for your new {singular[props.kind]}.
+              Confirm the settings for your new {props.singular}.
             </Alert>
           </FormAlert>
 
@@ -152,8 +152,8 @@ export default function NewResourceWizard(props: Props) {
     return (
       <Input
         fieldId="name"
-        label={`${singular[props.kind]} name`}
-        description={`Choose a name for your ${singular[props.kind]}`}
+        label={`${props.singular} name`}
+        description={`Choose a name for your ${props.singular}`}
         ctrl={ctrl}
       />
     )
@@ -164,7 +164,7 @@ export default function NewResourceWizard(props: Props) {
       <Input
         fieldId="namespace"
         label="Namespace"
-        description={`The namespace in which to register this ${singular[props.kind]}`}
+        description={`The namespace in which to register this ${props.singular}`}
         ctrl={ctrl}
       />
     )
@@ -175,7 +175,7 @@ export default function NewResourceWizard(props: Props) {
       <TextArea
         fieldId="description"
         label="Description"
-        description={`Describe the details of your ${singular[props.kind]}`}
+        description={`Describe the details of your ${props.singular}`}
         ctrl={ctrl}
         rows={8}
       />

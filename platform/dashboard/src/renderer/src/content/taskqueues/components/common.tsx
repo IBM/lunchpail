@@ -1,10 +1,12 @@
 import None from "@jay/components/None"
 import Queue from "@jay/components/Queue"
-import names from "@jay/renderer/names"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
 import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "@jay/renderer/navigate/details"
+
+import { name as workerpoolsName } from "../../workerpools/name"
+import { name as applicationsName } from "../../applications/name"
 
 import type { ReactNode } from "react"
 import type { GridTypeData } from "@jay/components/GridCell"
@@ -39,7 +41,7 @@ export function associatedApplications(props: NameAndApplications) {
 function applications(props: Props) {
   const apps = associatedApplications(props)
   return descriptionGroup(
-    `Compatible ${names.applications}`,
+    `Compatible ${applicationsName}`,
     apps.length === 0 ? None() : linkToAllApplicationDetails(apps),
     apps.length,
     "The Applications that are capable of processing tasks from this queue.",
@@ -48,7 +50,7 @@ function applications(props: Props) {
 
 function workerPools(props: Props) {
   return descriptionGroup(
-    `Active ${names.workerpools}`,
+    `Active ${workerpoolsName}`,
     props.workerpools.length === 0 ? None() : linkToAllWorkerPoolDetails(props.workerpools),
     props.workerpools.length,
     "The Worker Pools that have been assigned to process tasks from this queue.",

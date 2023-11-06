@@ -4,10 +4,14 @@ import { useLocation, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import yaml, { type YamlProps } from "./yaml"
-import names, { singular } from "@jay/renderer/names"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 import { buttonPropsForNewDataSet } from "@jay/renderer/navigate/newdataset"
 import { Checkbox, Input, Select, SelectCheckbox, TextArea } from "@jay/components/Forms"
+
+import { singular } from "../../name"
+import { name as datasetsName } from "../../../datasets/name"
+import { name as workerpoolsName } from "../../../workerpools/name"
+import { singular as taskqueuesSingular } from "../../../taskqueues/name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -39,7 +43,7 @@ function command(ctrl: FormContextProps) {
     <Input
       fieldId="command"
       label="Command line"
-      description={`The command line used to launch your ${singular.applications}`}
+      description={`The command line used to launch your ${singular}`}
       ctrl={ctrl}
     />
   )
@@ -50,7 +54,7 @@ function supportsGpu(ctrl: FormContextProps) {
     <Checkbox
       fieldId="supportsGpu"
       label="Supports GPU?"
-      description={`Does your ${singular.applications} support execution on GPUs?`}
+      description={`Does your ${singular} support execution on GPUs?`}
       ctrl={ctrl}
       isRequired={false}
     />
@@ -107,8 +111,8 @@ export default function NewApplicationWizard(props: Props) {
     (ctrl: FormContextProps) => (
       <SelectCheckbox
         fieldId="datasets"
-        label={names.datasets}
-        description={`Select the "fixed" ${names.datasets} this ${singular.applications} needs access to`}
+        label={datasetsName}
+        description={`Select the "fixed" ${datasetsName} this ${singular} needs access to`}
         ctrl={ctrl}
         options={props.datasets.map((_) => _.metadata.name).sort()}
         icons={<TaskQueueIcon />}
@@ -137,15 +141,15 @@ export default function NewApplicationWizard(props: Props) {
     buttonPropsForNewDataSet({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
   const step3 = {
-    name: names.datasets,
+    name: datasetsName,
     alerts: [
       {
-        title: names.datasets,
+        title: datasetsName,
         body: (
           <span>
-            If your {singular.applications} needs access to one or more {names.datasets}, i.e. global data needed across
-            all tasks (e.g. a pre-trained model or a chip design that is being tested across multiple configurations),
-            you may supply that information here.
+            If your {singular} needs access to one or more {datasetsName}, i.e. global data needed across all tasks
+            (e.g. a pre-trained model or a chip design that is being tested across multiple configurations), you may
+            supply that information here.
           </span>
         ),
       },
@@ -155,7 +159,7 @@ export default function NewApplicationWizard(props: Props) {
             {
               variant: "warning" as const,
               title: "Warning",
-              body: <span>No {names.datasets} are registered</span>,
+              body: <span>No {datasetsName} are registered</span>,
               actionLinks: [registerDataset],
             },
           ]),
@@ -170,7 +174,7 @@ export default function NewApplicationWizard(props: Props) {
         <Select
           fieldId="inputFormat"
           label="Input Format"
-          description={`Choose the file format that your ${singular.applications} accpets`}
+          description={`Choose the file format that your ${singular} accpets`}
           ctrl={ctrl}
           options={[
             {
@@ -186,7 +190,7 @@ export default function NewApplicationWizard(props: Props) {
         <TextArea
           fieldId="inputSchema"
           label="Input Schema"
-          description={`The JSON schema of the Tasks accepted by your ${singular.applications}`}
+          description={`The JSON schema of the Tasks accepted by your ${singular}`}
           ctrl={ctrl}
           rows={12}
         />
@@ -194,24 +198,8 @@ export default function NewApplicationWizard(props: Props) {
     ],
   }
 
-  /*const step4 = {
-    name: singular.taskqueues,
-    alerts: [
-      {
-        title: `Link to a ${singular.taskqueues}`,
-        body: (
-          <span>
-            Your {singular.applications} should register itself as a <strong>consumer</strong> of tasks from a{" "}
-            <strong>{singular.taskqueues}</strong>.
-          </span>
-        ),
-      },
-    ],
-    items: [useTestQueueCheckbox],
-  }*/
-
   const isEdit = searchParams.has("yaml")
-  const title = `${isEdit ? "Edit" : "Register"} ${singular.applications}`
+  const title = `${isEdit ? "Edit" : "Register"} ${singular}`
   const steps = [step1, step2, step3, step4]
 
   const getYaml = useCallback((values: Record<string, string>) => yaml(values as unknown as YamlProps), [])
@@ -220,14 +208,15 @@ export default function NewApplicationWizard(props: Props) {
     <NewResourceWizard
       kind="applications"
       title={title}
+      singular={singular}
       defaults={defaults}
       yaml={getYaml}
       steps={steps}
       isEdit={isEdit}
     >
-      An {singular.applications} is the source code that knows how to consume and then process <strong>Tasks</strong>.
-      Once you have registered your {singular.applications}, you can bring online <strong>{names.workerpools}</strong>{" "}
-      that run the {singular.applications} against the tasks in a <strong>{singular.taskqueues}</strong>.
+      An {singular} is the source code that knows how to consume and then process <strong>Tasks</strong>. Once you have
+      registered your {singular}, you can bring online <strong>{workerpoolsName}</strong> that run the {singular}{" "}
+      against the tasks in a <strong>{taskqueuesSingular}</strong>.
     </NewResourceWizard>
   )
 }

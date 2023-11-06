@@ -22,7 +22,8 @@ import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 
 import DetailNotFound from "../components/Drawer/DetailNotFound"
 
-import names, { resourceNames } from "../names"
+import { resourceNames } from "../names"
+import providers from "../content/providers"
 
 import navigateToHome from "../navigate/home"
 import { hashIfNeeded } from "../navigate/kind"
@@ -143,7 +144,7 @@ export default function PageWithDrawer(props: Props) {
         <Breadcrumb>
           {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
           <BreadcrumbItem to={isNavigableKind(kind) ? hashIfNeeded(kind) : undefined}>
-            {(kind && names[kind]) || kind}
+            {(kind && providers[kind] && providers[kind].name) ?? kind}
           </BreadcrumbItem>
         </Breadcrumb>
         <Title headingLevel="h2" size="2xl">

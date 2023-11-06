@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Button, Modal, Tooltip } from "@patternfly/react-core"
 
-import { singular } from "../names"
+import providers from "../content/providers"
 
 import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
@@ -49,7 +49,7 @@ export default function DeleteResourceButton(props: Props) {
             </Button>,
           ]}
         >
-          Are you sure you wish to delete the {singular[props.uiKind]} <strong>{props.name}</strong>?
+          Are you sure you wish to delete the {providers[props.uiKind].singular} <strong>{props.name}</strong>?
         </Modal>
       )}
     </>

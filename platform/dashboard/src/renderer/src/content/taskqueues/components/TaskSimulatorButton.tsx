@@ -1,7 +1,7 @@
 import { useCallback, type MouseEvent } from "react"
 import { Button, Text, Tooltip } from "@patternfly/react-core"
 
-import { singular } from "@jay/renderer/names"
+import provider from "../provider"
 import { associatedApplications } from "./common"
 
 import type TaskQueueProps from "./Props"
@@ -86,7 +86,7 @@ export default function TaskSimulatorButton(props: Props) {
   const nSimulators = props.tasksimulators.length
   const online = nSimulators > 0
   const message = online
-    ? `This ${singular.taskqueues} has ${nSimulators} assigned ${
+    ? `This ${provider.singular} has ${nSimulators} assigned ${
         nSimulators === 1 ? "task simulator" : "task simualtors"
       }. Click here to stop ${nSimulators === 1 ? "it" : "them"}.`
     : "Launch a task simulator"

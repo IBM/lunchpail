@@ -1,5 +1,6 @@
-import { singular } from "../names"
 import LinkToNewWizard, { type WizardProps, linkerButtonProps } from "./wizard"
+
+import { singular as datasetsSingular } from "../content/datasets/name"
 
 import type LocationProps from "./LocationProps"
 
@@ -16,7 +17,7 @@ export function LinkToNewDataSet(
     namespace: string
   },
 ) {
-  const linkText = `Register ${singular.datasets}`
+  const linkText = `Register ${datasetsSingular}`
   const qs = [`action=${props.action ?? "register"}`, `namespace=${props.namespace}`]
 
   return <LinkToNewWizard {...props} kind="datasets" linkText={linkText} qs={qs} />
@@ -29,7 +30,7 @@ export function buttonPropsForNewDataSet(
     namespace: string
   },
 ) {
-  const linkText = `Register ${singular.datasets}`
+  const linkText = `Register ${datasetsSingular}`
   const qs = [`action=${props.action ?? "register"}`, `namespace=${props.namespace}`]
 
   return linkerButtonProps(location, {

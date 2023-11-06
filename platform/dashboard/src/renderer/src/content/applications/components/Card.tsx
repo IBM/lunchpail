@@ -1,8 +1,10 @@
 import None from "@jay/components/None"
-import names from "@jay/renderer/names"
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { linkToAllTaskQueueDetails } from "@jay/renderer/navigate/details"
+
+import { name as datasetsName } from "../../datasets/name"
+import { name as taskqueuesName } from "../../taskqueues/name"
 
 import type Props from "./Props"
 
@@ -30,7 +32,7 @@ export function taskqueues(props: Props) {
   return (
     taskqueueNames.length > 0 &&
     descriptionGroup(
-      names.taskqueues,
+      taskqueuesName,
       taskqueueNames.length === 0 ? None() : linkToAllTaskQueueDetails(taskqueueNames),
       taskqueueNames.length,
       "The Task Queues this application is capable of processing, i.e. those that it is compatible with.",
@@ -51,7 +53,7 @@ export function datasets(props: Props) {
   return (
     datasetNames.length > 0 &&
     descriptionGroup(
-      names.datasets,
+      datasetsName,
       datasetNames.length === 0 ? None() : linkToAllTaskQueueDetails(datasetNames),
       datasetNames.length,
       "The Datasets this application requires as input.",

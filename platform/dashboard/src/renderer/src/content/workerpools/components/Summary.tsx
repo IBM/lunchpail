@@ -1,12 +1,14 @@
 import type { ReactNode } from "react"
 import { Text } from "@patternfly/react-core"
 
-import names from "@jay/renderer/names"
 import Sparkline from "@jay/components/Sparkline"
 import GridLayout from "@jay/components/GridLayout"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "@jay/components/CompletionRate"
 import { linkToAllApplicationDetails, linkToAllTaskQueueDetails } from "@jay/renderer/navigate/details"
+
+import { name as taskqueuesName } from "../../taskqueues/name"
+import { name as applicationsName } from "../../applications/name"
 
 import type Props from "./Props"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
@@ -84,8 +86,8 @@ export function summaryGroups(props: Props) {
   const taskqueues = latestTaskQueues(props)
 
   return [
-    applications && descriptionGroup(names["applications"], linkToAllApplicationDetails(applications)),
-    taskqueues && descriptionGroup(names["taskqueues"], linkToAllTaskQueueDetails(taskqueues)),
+    applications && descriptionGroup(applicationsName, linkToAllApplicationDetails(applications)),
+    taskqueues && descriptionGroup(taskqueuesName, linkToAllTaskQueueDetails(taskqueues)),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
     descriptionGroup(`Queued Work (${pluralize("worker", count(props))})`, enqueued(props)),

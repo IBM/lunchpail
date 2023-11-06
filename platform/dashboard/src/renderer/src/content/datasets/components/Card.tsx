@@ -1,7 +1,7 @@
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import { singular } from "@jay/renderer/names"
+import { singular as datasetsSingular } from "../name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 
@@ -14,13 +14,13 @@ export default function DataSetCard(props: DataSetEvent) {
       "endpoint",
       props.spec.local.endpoint,
       undefined,
-      `The S3 endpoint URL of this ${singular.datasets}`,
+      `The S3 endpoint URL of this ${datasetsSingular}`,
     ),
     descriptionGroup(
       "bucket",
       props.spec.local.bucket,
       undefined,
-      `The S3 bucket that this ${singular.datasets} covers`,
+      `The S3 bucket that this ${datasetsSingular} covers`,
     ),
   ]
 

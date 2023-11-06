@@ -2,11 +2,19 @@ import either from "../either"
 
 import TaskQueueDetail from "./components/Detail"
 
+import { name, singular } from "./name"
+
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"
 
 const taskqueues: ContentProvider = {
+  name,
+
+  singular,
+
+  description: "not needed",
+
   detail: (
     id: string,
     allEvents: ManagedEvents,
