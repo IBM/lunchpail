@@ -2,13 +2,13 @@ import { useMemo } from "react"
 
 import either from "./either"
 import { queueWorkerPool } from "../events/QueueEvent"
-import toWorkerPoolModel from "../components/WorkerPool/toWorkerPoolModel"
+import toWorkerPoolModel from "./workerpools/toWorkerPoolModel"
 
 import type ManagedEvents from "./ManagedEvent"
 import type QueueEvent from "@jay/common/events/QueueEvent"
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
-import type { WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
+import type { WorkerPoolModelWithHistory } from "./workerpools/WorkerPoolModel"
 
 type Memos = {
   taskqueueIndex: Record<string, number>

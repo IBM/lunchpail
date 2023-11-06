@@ -2,7 +2,7 @@ import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavLi
 
 import Configuration from "../components/Configuration"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
-import ControlPlaneHealthBadge from "../components/JobManager/HealthBadge"
+import ControlPlaneHealthBadge from "../content/controlplane/components/HealthBadge"
 import { nonResourceNames, resourceNames, credentialsNames } from "../names"
 import { type NavigableKind, resourceKinds, credentialsKinds } from "../Kind"
 

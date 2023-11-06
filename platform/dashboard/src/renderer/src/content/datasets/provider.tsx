@@ -1,10 +1,10 @@
 import { lazy } from "react"
 
-import DataSetCard from "../../components/DataSet/Card"
-import DataSetDetail from "../../components/DataSet/Detail"
-const NewDataSetWizard = lazy(() => import("../../components/DataSet/New/Wizard"))
+import DataSetCard from "./components/Card"
+import DataSetDetail from "./components/Detail"
+const NewDataSetWizard = lazy(() => import("./components/New/Wizard"))
 
-import { LinkToNewDataSet } from "../../components/DataSet/New/Button"
+import { LinkToNewDataSet } from "./components/New/Button"
 
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"

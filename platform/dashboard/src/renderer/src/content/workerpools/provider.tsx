@@ -1,8 +1,8 @@
 import { lazy } from "react"
 
-import WorkerPoolCard from "../../components/WorkerPool/Card"
-import WorkerPoolDetail from "../../components/WorkerPool/Detail"
-const NewWorkerPoolWizard = lazy(() => import("../../components/WorkerPool/New/Wizard"))
+import WorkerPoolCard from "./components/Card"
+import WorkerPoolDetail from "./components/Detail"
+const NewWorkerPoolWizard = lazy(() => import("./components/New/Wizard"))
 
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"

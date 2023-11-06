@@ -1,7 +1,7 @@
-import type ContentProvider from "../ContentProvider"
+import JobManagerCard from "./components/Card"
+import JobManagerDetail from "./components/Detail"
 
-import JobManagerCard from "../../components/JobManager/Card"
-import JobManagerDetail from "../../components/JobManager/Detail"
+import type ContentProvider from "../ContentProvider"
 
 /** ControlPlane ContentProvider */
 const controlplane: ContentProvider = {

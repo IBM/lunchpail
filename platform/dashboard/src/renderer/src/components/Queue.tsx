@@ -1,6 +1,6 @@
 import { Flex, FlexItem } from "@patternfly/react-core"
 
-import { TaskQueueTask } from "./WorkerPoolModel"
+import { TaskQueueTask } from "../content/workerpools/WorkerPoolModel"
 import GridCell, { GridTypeData } from "./GridCell"
 
 import "./Queue.scss"

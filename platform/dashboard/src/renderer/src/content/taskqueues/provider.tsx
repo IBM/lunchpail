@@ -1,6 +1,6 @@
 import either from "../either"
 
-import TaskQueueDetail from "../../components/TaskQueue/Detail"
+import TaskQueueDetail from "./components/Detail"
 
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
