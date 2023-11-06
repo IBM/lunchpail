@@ -216,7 +216,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
 
         run_name = labels["app.kubernetes.io/part-of"]
         logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "" } } }
+        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "", "codeflare.dev/reason": "" } } }
         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
     except Exception as e:
         logging.error(f"Error patching Run on Pod status update name={name} namespace={namespace}. {str(e)}")
@@ -267,6 +267,7 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
                     if "message" in body:
                         patch_body["metadata"]["annotations"]["codeflare.dev/message"] = body["message"]
                     else:
+                        patch_body["metadata"]["annotations"]["codeflare.dev/reason"] = ""
                         patch_body["metadata"]["annotations"]["codeflare.dev/message"] = ""
 
                     logging.info(f"Patching from pod event run_name={run_name} plural={plural} phase={phase}")

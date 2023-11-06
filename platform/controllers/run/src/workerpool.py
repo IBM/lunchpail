@@ -5,7 +5,7 @@ import subprocess
 from kopf import PermanentError, TemporaryError
 
 from clone import clone
-from status import set_status, set_status_immediately, add_error_condition
+from status import set_status, add_error_condition
 from run_id import alloc_run_id
 from run_size import load_run_size_config
 
