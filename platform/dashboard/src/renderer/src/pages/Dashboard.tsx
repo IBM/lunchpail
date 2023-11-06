@@ -101,23 +101,6 @@ export function Dashboard(props: Props) {
     [unsortedApplicationEvents],
   )
 
-  /** A memo of the mapping from WorkerPool to associated QueueEvents */
-  const queueEventsForWorkerPool = useMemo(
-    () =>
-      queueEvents.reduce(
-        (M, event) => {
-          const workerpool = queueWorkerPool(event)
-          if (!M[workerpool]) {
-            M[workerpool] = []
-          }
-          M[workerpool].push(event)
-          return M
-        },
-        {} as Record<string, QueueEvent[]>,
-      ),
-    [queueEvents],
-  )
-
   /** A memo of the mapping from TaskQueue to TaskSimulatorEvents */
   const taskqueueToTaskSimulators = useMemo(
     () =>
@@ -173,16 +156,26 @@ export function Dashboard(props: Props) {
   )
 
   /** A memo of the latest WorkerPoolModels, one per worker pool */
-  const latestWorkerPoolModels: WorkerPoolModelWithHistory[] = useMemo(
-    () =>
-      poolEvents
-        .map((pool) => {
-          const queueEventsForOneWorkerPool = queueEventsForWorkerPool[pool.metadata.name]
-          return toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
-        })
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [poolEvents, queueEvents],
-  )
+  const latestWorkerPoolModels: WorkerPoolModelWithHistory[] = useMemo(() => {
+    const queueEventsForWorkerPool = queueEvents.reduce(
+      (M, event) => {
+        const workerpool = queueWorkerPool(event)
+        if (!M[workerpool]) {
+          M[workerpool] = []
+        }
+        M[workerpool].push(event)
+        return M
+      },
+      {} as Record<string, QueueEvent[]>,
+    )
+
+    return poolEvents
+      .map((pool) => {
+        const queueEventsForOneWorkerPool = queueEventsForWorkerPool[pool.metadata.name]
+        return toWorkerPoolModel(pool, queueEventsForOneWorkerPool)
+      })
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [poolEvents, queueEvents])
 
   // this registers what is in effect a componentDidMount handler
   useEffect(function onMount() {
@@ -334,9 +327,9 @@ export function Dashboard(props: Props) {
 
   const sidebar = (
     <Sidebar
-      applications={applicationEvents.length}
       datasets={datasetEvents.length}
       workerpools={poolEvents.length}
+      applications={applicationEvents.length}
       platformreposecrets={platformreposecretEvents.length}
     />
   )
