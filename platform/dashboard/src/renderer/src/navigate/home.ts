@@ -19,10 +19,6 @@ export default function navigateToHome(props: LocationProps, showThisEntity?: En
   returnTo(props, props.location.hash ?? hash("applications"), showThisEntity)
 }
 
-export function navigateToWorkerPools(props: LocationProps) {
-  returnTo(props, hash("workerpools"))
-}
-
 export function returnHomeCallback() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -38,17 +34,6 @@ export function returnHomeCallbackWithEntity() {
 
   return useCallback(
     (entity: Entity) => navigateToHome({ location, navigate, searchParams }, entity),
-    [location, navigate, searchParams],
-  )
-}
-
-export function returnToWorkerPoolsCallback() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-
-  return useCallback(
-    () => navigateToWorkerPools({ location, navigate, searchParams }),
     [location, navigate, searchParams],
   )
 }
