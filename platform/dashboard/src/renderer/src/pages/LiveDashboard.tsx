@@ -2,11 +2,11 @@ import { kinds } from "../Kind"
 import { Dashboard } from "./Dashboard"
 
 import type Kind from "../Kind"
-import type { EventProps } from "./Dashboard"
+import type { Props } from "./Dashboard"
 import type { Handler } from "@jay/common/events/EventSourceLike"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
-let props: null | EventProps<EventSourceLike> = null
+let props: null | Props<EventSourceLike> = null
 
 class ElectronEventSource implements EventSourceLike {
   public constructor(private readonly kind: Kind) {}
@@ -54,7 +54,7 @@ function newIfNeeded(kind: Kind) {
   return new ElectronEventSource(kind)
 }
 
-function init(): EventProps<EventSourceLike> {
+function init(): Props<EventSourceLike> {
   // initialize streams, one per Kind of resource
   const streams: Record<Kind, ElectronEventSource> = kinds.reduce(
     (M, kind) => {

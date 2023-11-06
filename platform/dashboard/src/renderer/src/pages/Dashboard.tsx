@@ -36,14 +36,9 @@ import { LinkToNewApplication } from "../components/Application/New/Button"
 import singletonEventHandler from "../events/singleton"
 import { allEventsHandler, allTimestampedEventsHandler } from "../events/all"
 
-import {
-  queueTaskQueue,
-  queueInbox,
-  queueOutbox,
-  queueProcessing,
-  queueWorkerIndex,
-  queueWorkerPool,
-} from "../events/QueueEvent"
+import { queueWorkerPool } from "../events/QueueEvent"
+
+import toWorkerPoolModel from "../components/WorkerPool/toWorkerPoolModel"
 
 import type Kind from "../Kind"
 import type { DetailableKind } from "../Kind"
@@ -56,14 +51,19 @@ import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretE
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
+import type { WorkerPoolModelWithHistory } from "../components/WorkerPoolModel"
 
 import "./Dashboard.scss"
 
 /** one EventSource per resource Kind */
-export type EventProps<Source extends EventSourceLike = EventSourceLike> = Record<Kind, Source>
+export type Props<Source extends EventSourceLike = EventSourceLike> = Record<Kind, Source>
 
-type Props = EventProps
+type ContentProvider = {
+  gallery?(): ReactNode
+  detail?(id: string): undefined | ReactNode
+  actions?(): ReactNode
+  wizard?(): ReactNode
+}
 
 function either<T>(x: T | undefined, y: T): T {
   return x === undefined ? y : x
@@ -201,19 +201,8 @@ export function Dashboard(props: Props) {
     [latestWorkerPoolModels],
   )
 
-  const content: Record<
-    DetailableKind,
-    {
-      gallery?: () => ReactNode
-      detail?: (id: string) => undefined | ReactNode
-      actions?: () => ReactNode
-      wizard?: () => ReactNode
-    }
-  > = {
-    controlplane: {
-      gallery: () => <JobManagerCard />,
-      detail: () => <JobManagerDetail />,
-    },
+  const content: Record<DetailableKind, ContentProvider> = {
+    controlplane,
     applications: {
       gallery: () =>
         applicationEvents.map((evt) => (
@@ -350,60 +339,8 @@ export function Dashboard(props: Props) {
   )
 }
 
-/** Used by the ugly toWorkerPoolModel. hopefully this will go away at some point */
-function backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
-  A: T,
-): T {
-  for (let idx = 0; idx < A.length; idx++) {
-    if (!(idx in A)) A[idx] = {}
-  }
-  return A
-}
-
-/**
- * Ugh, this is an ugly remnant of earlier models -- it helps
- * conform the clean models here to what WorkerPool card/detail
- * models need for their plots. TODO...
- */
-function toWorkerPoolModel(
-  pool: WorkerPoolStatusEvent,
-  queueEventsForOneWorkerPool: QueueEvent[] = [],
-): WorkerPoolModelWithHistory {
-  const model = queueEventsForOneWorkerPool.reduce(
-    (M, queueEvent) => {
-      const taskqueue = queueTaskQueue(queueEvent)
-      const inbox = queueInbox(queueEvent)
-      const outbox = queueOutbox(queueEvent)
-      const processing = queueProcessing(queueEvent)
-      const workerIndex = queueWorkerIndex(queueEvent)
-
-      if (!M.inbox[workerIndex]) {
-        M.inbox[workerIndex] = {}
-      }
-      M.inbox[workerIndex][taskqueue] = inbox
-
-      if (!M.outbox[workerIndex]) {
-        M.outbox[workerIndex] = {}
-      }
-      M.outbox[workerIndex][taskqueue] = outbox
-
-      if (!M.processing[workerIndex]) {
-        M.processing[workerIndex] = {}
-      }
-      M.processing[workerIndex][taskqueue] = processing
-
-      return M
-    },
-    { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace">,
-  )
-
-  return {
-    label: pool.metadata.name,
-    namespace: pool.metadata.namespace,
-    inbox: backfill(model.inbox),
-    outbox: backfill(model.outbox),
-    processing: backfill(model.processing),
-    events: queueEventsForOneWorkerPool.map((_) => ({ outbox: queueOutbox(_), timestamp: _.timestamp })),
-    numEvents: queueEventsForOneWorkerPool.length,
-  }
+/** ControlPlane ContentProvider */
+const controlplane: ContentProvider = {
+  gallery: () => <JobManagerCard />,
+  detail: () => <JobManagerDetail />,
 }
