@@ -184,15 +184,6 @@ export function Dashboard(props: Props) {
     [poolEvents, queueEvents],
   )
 
-  const applicationsList = useMemo(() => applicationEvents.map((_) => _.metadata.name), [applicationEvents])
-  const datasetsList = useMemo(() => datasetEvents.map((_) => _.metadata.name), [datasetEvents])
-  const taskqueuesList = useMemo(() => Object.keys(taskqueueIndex), [Object.keys(taskqueueIndex).join("-")])
-  const workerpoolsList = useMemo(() => latestWorkerPoolModels.map((_) => _.label), [latestWorkerPoolModels])
-  const platformRepoSecretsList = useMemo(
-    () => platformreposecretEvents.map((_) => _.metadata.name),
-    [platformreposecretEvents],
-  )
-
   // this registers what is in effect a componentDidMount handler
   useEffect(function onMount() {
     Object.entries(handlers).forEach(([kind, handler]) => {
@@ -236,22 +227,22 @@ export function Dashboard(props: Props) {
           <Application
             key={evt.metadata.name}
             application={evt}
-            datasets={datasetsList}
-            taskqueues={taskqueuesList}
+            datasets={datasetEvents}
+            taskqueues={taskqueueEvents}
             workerpools={poolEvents}
           />
         )),
       detail: (id: string) => {
         const application = applicationEvents.find((_) => _.metadata.name === id)
         if (application) {
-          const props = { application, datasets: datasetsList, taskqueues: taskqueuesList, workerpools: poolEvents }
+          const props = { application, datasets: datasetEvents, taskqueues: taskqueueEvents, workerpools: poolEvents }
           return <ApplicationDetail {...props} />
         } else {
           return undefined
         }
       },
       actions: () => !inDemoMode && <LinkToNewApplication startOrAdd="add" />,
-      wizard: () => <NewApplicationWizard datasets={datasetsList} />,
+      wizard: () => <NewApplicationWizard datasets={datasetEvents} />,
     },
     taskqueues: {
       detail: (id: string) => {
@@ -303,7 +294,7 @@ export function Dashboard(props: Props) {
         }
       },
       // actions: () => !inDemoMode && <LinkToNewWorkerPool startOrAdd="add"/>,
-      wizard: () => <NewWorkerPoolWizard taskqueues={taskqueuesList} applications={applicationEvents} />,
+      wizard: () => <NewWorkerPoolWizard taskqueues={taskqueueEvents} applications={applicationEvents} />,
     },
     platformreposecrets: {
       gallery: () =>
@@ -343,10 +334,10 @@ export function Dashboard(props: Props) {
 
   const sidebar = (
     <Sidebar
-      applications={applicationsList}
-      datasets={datasetsList}
-      workerpools={workerpoolsList}
-      platformreposecrets={platformRepoSecretsList}
+      applications={applicationEvents.length}
+      datasets={datasetEvents.length}
+      workerpools={poolEvents.length}
+      platformreposecrets={platformreposecretEvents.length}
     />
   )
 

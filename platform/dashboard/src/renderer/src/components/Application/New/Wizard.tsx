@@ -9,9 +9,14 @@ import NewResourceWizard from "../../NewResourceWizard"
 import { buttonPropsForNewDataSet } from "../../../navigate/newdataset"
 import { Checkbox, Input, Select, SelectCheckbox, TextArea } from "../../Forms"
 
+import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import TaskQueueIcon from "../../TaskQueue/Icon"
+
+type Props = {
+  datasets: DataSetEvent[]
+}
 
 function repoInput(ctrl: FormContextProps) {
   return (
@@ -64,10 +69,6 @@ const step2 = {
   items: [command, repoInput, image, supportsGpu],
 }
 
-type Props = {
-  datasets: string[]
-}
-
 export default function NewApplicationWizard(props: Props) {
   const [searchParams] = useSearchParams()
 
@@ -109,7 +110,7 @@ export default function NewApplicationWizard(props: Props) {
         label={names.datasets}
         description={`Select the "fixed" ${names.datasets} this ${singular.applications} needs access to`}
         ctrl={ctrl}
-        options={props.datasets.sort()}
+        options={props.datasets.map((_) => _.metadata.name).sort()}
         icons={<TaskQueueIcon />}
       />
     ),

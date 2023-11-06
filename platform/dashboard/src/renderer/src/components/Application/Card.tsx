@@ -21,7 +21,11 @@ export function taskqueues(props: Props) {
   const taskqueues = props.application.spec.inputs
     ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes))
     : undefined
-  const taskqueueNames = !taskqueues ? [] : taskqueues.filter(Boolean).filter((_) => props.taskqueues.includes(_))
+  const taskqueueNames = !taskqueues
+    ? []
+    : taskqueues
+        .filter(Boolean)
+        .filter((taskqueueName) => !!props.taskqueues.find((taskqueue) => taskqueueName === taskqueue.metadata.name))
 
   return (
     taskqueueNames.length > 0 &&
@@ -38,7 +42,11 @@ export function datasets(props: Props) {
   const datasets = props.application.spec.inputs
     ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes))
     : undefined
-  const datasetNames = !datasets ? [] : datasets.filter(Boolean).filter((_) => props.datasets.includes(_))
+  const datasetNames = !datasets
+    ? []
+    : datasets
+        .filter(Boolean)
+        .filter((datasetName) => !!props.datasets.find((dataset) => datasetName === dataset.metadata.name))
 
   return (
     datasetNames.length > 0 &&

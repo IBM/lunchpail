@@ -8,7 +8,7 @@ import { type NavigableKind, resourceKinds, credentialsKinds } from "../Kind"
 
 import "./Sidebar.scss"
 
-type Props = Record<Exclude<NavigableKind, "controlplane">, string[]>
+type Props = Record<Exclude<NavigableKind, "controlplane">, number>
 const marginLeft = { marginLeft: "0.5em" as const }
 
 function SidebarNavItems<
@@ -22,7 +22,7 @@ function SidebarNavItems<
           <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind)}>
             {props.names[kind]}{" "}
             <Badge isRead style={marginLeft}>
-              {props[kind].length}
+              {props[kind]}
             </Badge>
           </NavItem>
         )

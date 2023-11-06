@@ -12,10 +12,11 @@ import { singular } from "../../../names"
 import { NumberInput, Select } from "../../Forms"
 import NewResourceWizard from "../../NewResourceWizard"
 
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 type Props = {
-  taskqueues: string[]
+  taskqueues: TaskQueueEvent[]
   applications: ApplicationSpecEvent[]
 }
 
@@ -54,7 +55,7 @@ export default function NewWorkerPoolWizard(props: Props) {
       application: chooseIfSingleton(compatibleApplications),
       taskqueue:
         props.taskqueues.length === 1
-          ? props.taskqueues[0]
+          ? props.taskqueues[0].metadata.name
           : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue),
     }
   }
@@ -136,7 +137,7 @@ function chooseIfSingleton(A: ApplicationSpecEvent[]): string {
 
 /** If the user desires to associate this Worker Pool with a given `desired` Task Queue, make sure it exists */
 function chooseTaskQueueIfExists(available: Props["taskqueues"], desired: null | string) {
-  if (desired && available.includes(desired)) {
+  if (desired && available.find((_) => _.metadata.name === desired)) {
     return desired
   } else {
     return ""
