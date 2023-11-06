@@ -9,7 +9,7 @@ import type { EventLike } from "@jay/common/events/EventSourceLike"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 /** Remember just the last event for each resource instance in state */
-export default function singletonJsonEventHandler<T extends KubernetesResource<unknown>>(
+export default function singletonJsonEventHandler<T extends KubernetesResource>(
   kind: Kind,
   setState: Dispatch<SetStateAction<T[]>>,
   returnHome: () => void,

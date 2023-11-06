@@ -5,11 +5,11 @@ import type { EventLike } from "@jay/common/events/EventSourceLike"
 import type WithTimestamp from "@jay/common/events/WithTimestamp"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-function status({ metadata }: KubernetesResource<unknown>) {
+function status({ metadata }: KubernetesResource) {
   return metadata.annotations["codeflare.dev/status"]
 }
 
-function same(a: KubernetesResource<unknown>, b: KubernetesResource<unknown>) {
+function same(a: KubernetesResource, b: KubernetesResource) {
   return (
     a.apiVersion === b.apiVersion &&
     a.kind === b.kind &&
@@ -19,7 +19,7 @@ function same(a: KubernetesResource<unknown>, b: KubernetesResource<unknown>) {
 }
 
 /** Remember all events in state */
-export function allEventsHandler<R extends KubernetesResource<unknown>>(setState: Dispatch<SetStateAction<R[]>>) {
+export function allEventsHandler<R extends KubernetesResource>(setState: Dispatch<SetStateAction<R[]>>) {
   return useCallback(
     (evt: EventLike) => {
       const events = JSON.parse(evt.data) as R[]
@@ -34,7 +34,7 @@ export function allEventsHandler<R extends KubernetesResource<unknown>>(setState
 }
 
 /** Remember all timestamped events in state */
-export function allTimestampedEventsHandler<R extends WithTimestamp<KubernetesResource<unknown>>>(
+export function allTimestampedEventsHandler<R extends WithTimestamp<KubernetesResource>>(
   setState: Dispatch<SetStateAction<R[]>>,
 ) {
   return useCallback(

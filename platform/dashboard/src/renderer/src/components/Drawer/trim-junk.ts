@@ -4,7 +4,7 @@ import type KubernetesResource from "@jay/common/events/KubernetesResource"
  * Remove junk annotations from a Kubernetes yaml, for improved
  * presentation.
  */
-export default function trimJunk<S>(resource: KubernetesResource<S>) {
+export default function trimJunk<R extends KubernetesResource>(resource: R) {
   //  return Object.assign({}, yaml, {
   //  return yaml.replace(/^\s+kopf\.zalando\.org\S+$/mg, "")
   const copy = Object.assign({}, resource)

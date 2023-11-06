@@ -4,6 +4,8 @@ import type KubernetesResource from "./KubernetesResource"
  * An update as to the status of a WorkerPool
  */
 type WorkerPoolStatusEvent = KubernetesResource<
+  "codeflare.dev/v1alpha1",
+  "WorkerPool",
   {
     /** Applications that this WorkerPool supports */
     application: {

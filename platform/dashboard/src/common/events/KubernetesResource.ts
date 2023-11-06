@@ -1,6 +1,13 @@
-type KubernetesResource<Spec, Annotations = unknown, Labels = unknown, Top = unknown> = Top & {
-  apiVersion: string
-  kind: string
+type KubernetesResource<
+  ApiVersion extends string = string,
+  Kind extends string = string,
+  Spec = unknown,
+  Annotations = unknown,
+  Labels = unknown,
+  Top = unknown,
+> = Top & {
+  apiVersion: ApiVersion
+  kind: Kind
 
   /** Resource metadata */
   metadata: Labels & {
@@ -30,7 +37,7 @@ type KubernetesResource<Spec, Annotations = unknown, Labels = unknown, Top = unk
   spec: Spec
 }
 
-export type KubernetesSecret<Data> = KubernetesResource<unknown, unknown, unknown, { data: Data }>
+export type KubernetesSecret<Data> = KubernetesResource<"v1", "Secret", unknown, unknown, unknown, { data: Data }>
 export type KubernetesS3Secret = KubernetesSecret<{ accessKeyID: string; secretAccessKey: string }>
 
 export default KubernetesResource

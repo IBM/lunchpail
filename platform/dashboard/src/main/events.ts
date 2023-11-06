@@ -234,7 +234,7 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Fetch a resource */
-    async get<R extends KubernetesResource<unknown>>(props: DeleteProps): Promise<R> {
+    async get<R extends KubernetesResource>(props: DeleteProps): Promise<R> {
       const response = (await ipcRenderer.invoke("/get", JSON.stringify(props))) as ExecResponse
       if (response === true) {
         throw new Error("Internal error")

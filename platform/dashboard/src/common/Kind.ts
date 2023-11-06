@@ -1,5 +1,5 @@
 /** Resource types that we watch */
-const watchedKinds = [
+export const watchedKinds = [
   "taskqueues",
   "datasets",
   "queues",

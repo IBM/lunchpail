@@ -6,6 +6,8 @@ import type KubernetesResource from "./KubernetesResource"
  */
 type QueueEvent = WithTimestamp<
   KubernetesResource<
+    "codeflare.dev/v1alpha1",
+    "Queue",
     {
       /** Name of DataSet that this queue is helping to process */
       dataset: string

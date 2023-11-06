@@ -22,7 +22,7 @@ export type DeleteProps = { kind: string; name: string; namespace: string }
 /** Jobs as a Service API to server-side functionality */
 export default interface JayApi extends Record<Kind, JayResourceApi> {
   /** Fetch a resource */
-  get?: <R extends KubernetesResource<unknown>>(props: DeleteProps) => R | Promise<R>
+  get?: <R extends KubernetesResource>(props: DeleteProps) => R | Promise<R>
 
   /** Create a resource */
   create(values: Record<string, string>, yaml: string, dryRun?: boolean): ExecResponse | Promise<ExecResponse>
