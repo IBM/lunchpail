@@ -86,7 +86,7 @@ function NavBrowser(props: NavBrowserProps) {
               </DrilldownMenu>
             }
           >
-            {item.name}
+            {parent ? item.name.replace(parent.name + "/", "") : item.name}
           </MenuItem>
         )
       }),
