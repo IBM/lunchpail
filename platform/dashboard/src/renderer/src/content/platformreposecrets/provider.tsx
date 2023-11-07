@@ -1,34 +1,17 @@
-import { lazy } from "react"
-
-import PlatformRepoSecretCard from "./components/Card"
-import PlatformRepoSecretDetail from "./components/Detail"
-const NewPlatformRepoSecretWizard = lazy(() => import("./components/New/Wizard"))
-
+import detail from "./detail"
+import wizard from "./wizard"
+import gallery from "./gallery"
+import description from "./description"
 import { name, singular } from "./name"
 
-import type ManagedEvents from "../ManagedEvent"
-import type ContentProvider from "../ContentProvider"
-
-const platformreposecrets: ContentProvider<"platformreposecrets"> = {
+export default {
   kind: "platformreposecrets",
-
   name,
-
   singular,
-
-  description: (
-    <span>The registered GitHub credentials that can be used to clone repositories from a particular GitHub URL.</span>
-  ),
-
+  description,
+  gallery,
+  detail,
+  wizard,
+  actions: undefined,
   isInSidebar: "Credentials",
-
-  gallery: (events: ManagedEvents) =>
-    events.platformreposecrets.map((props) => <PlatformRepoSecretCard key={props.metadata.name} {...props} />),
-
-  detail: (id: string, events: ManagedEvents) =>
-    PlatformRepoSecretDetail(events.platformreposecrets.find((_) => _.metadata.name === id)),
-
-  wizard: () => <NewPlatformRepoSecretWizard />,
 }
-
-export default platformreposecrets

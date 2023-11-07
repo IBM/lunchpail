@@ -1,4 +1,4 @@
-import provider from "../../provider"
+import { singular } from "../../name"
 import LinkToNewWizard, { type WizardProps } from "@jay/renderer/navigate/wizard"
 
 type Props = Pick<WizardProps, "startOrAdd"> & {
@@ -14,7 +14,7 @@ export function LinkToNewApplication(props: Props) {
     <LinkToNewWizard
       startOrAdd={props.startOrAdd ?? "create"}
       kind="applications"
-      linkText={`Register ${provider.singular}`}
+      linkText={`Register ${singular}`}
       qs={qs}
     />
   )

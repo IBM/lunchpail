@@ -17,7 +17,7 @@ test("task queues links are visible", async () => {
   if (demoModeStatus) {
     // Get Applications tab element from the sidebar and click, to
     // activate the Application gallery
-    await page.getByRole("link", { name: "Applications" }).click()
+    await page.getByRole("link", { name: "Code" }).click()
 
     // Verify that the three showing are the pink, purple, and green cards
     const expectedTaskQueues = [

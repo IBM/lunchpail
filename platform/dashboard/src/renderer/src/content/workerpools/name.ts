@@ -1,2 +1,2 @@
-export const name = "Worker Pools"
-export const singular = "Worker Pool"
+export const name = "Compute"
+export const singular = "Compute Pool"

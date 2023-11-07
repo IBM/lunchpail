@@ -50,8 +50,11 @@ function SidebarHelloNavGroup() {
 
 function SidebarNavGroup(props: Props & { group: string; providers: NavigableContentProvider[] }) {
   if (props.group === "root") {
+    // render these at the top-level, without a surrounding NavGroup/NavExpandable
     return <SidebarNavItems key={props.group} {...props} providers={props.providers} />
   } else {
+    // otherwise, wrap the nav items inside a NavExpandable (which is
+    // a NavGroup that can be expanded)
     return (
       <NavExpandable title={props.group} key={props.group}>
         <SidebarNavItems {...props} providers={props.providers} />
