@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 
-import { isDetailableKind } from "../content/providers"
-import { closeDetailViewIfShowing } from "../pages/PageWithDrawer"
+import { isDetailableKind } from "../providers"
+import { closeDetailViewIfShowing } from "../../pages/PageWithDrawer"
 
 import type Kind from "@jay/common/Kind"
 import type { Dispatch, SetStateAction } from "react"

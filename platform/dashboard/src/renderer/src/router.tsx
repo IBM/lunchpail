@@ -1,20 +1,25 @@
 import { lazy, useContext, useEffect, useRef, StrictMode, Suspense } from "react"
 import { createBrowserRouter, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
-import navigateToHome from "../navigate/home"
-import DemoDashboard from "../demo/DemoDashboard"
-import LiveDashboard from "../pages/LiveDashboard"
-const ErrorBoundary = lazy(() => import("../components/ErrorBoundary"))
+import navigateToHome from "./navigate/home"
+import DemoDashboard from "./demo/DemoDashboard"
+import LiveDashboard from "./pages/LiveDashboard"
+const ErrorBoundary = lazy(() => import("./components/ErrorBoundary"))
 
-import Settings from "../Settings"
+import Settings from "./Settings"
 
+/** How we handle a catastrophic failure */
 const errorElement = (
   <Suspense fallback={<></>}>
     <ErrorBoundary />
   </Suspense>
 )
 
-function Dashboard() {
+/**
+ * This is a thin wrapper over the Dashboard impls to allow the user
+ * to choose between Live or Demo mode.
+ */
+function UserChoosesLiveOrDemoDashboard() {
   const settings = useContext(Settings)
 
   // When switching into or out of demo mode, close the drawer, as it
@@ -43,7 +48,7 @@ function Dashboard() {
 export default createBrowserRouter([
   {
     path: "/*",
-    element: <Dashboard />,
+    element: <UserChoosesLiveOrDemoDashboard />,
     errorElement,
   },
   {

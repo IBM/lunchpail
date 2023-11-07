@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 
-import either from "./either"
-import { queueWorkerPool } from "../events/QueueEvent"
+import either from "../util/either"
+import { queueWorkerPool } from "./events/QueueEvent"
 import toWorkerPoolModel from "./workerpools/toWorkerPoolModel"
 
 import type ManagedEvents from "./ManagedEvent"

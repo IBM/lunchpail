@@ -9,8 +9,8 @@ import { returnHomeCallback } from "../navigate/home"
 import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
 
 import Settings from "../Settings"
-import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
+import Sidebar from "../components/Sidebar"
 
 import content from "../content/providers"
 import { initMemos } from "../content/memos"

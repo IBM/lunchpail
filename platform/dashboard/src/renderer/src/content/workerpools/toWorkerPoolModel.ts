@@ -4,7 +4,7 @@ import {
   queueOutbox,
   queueProcessing,
   queueWorkerIndex,
-} from "@jay/renderer/events/QueueEvent"
+} from "@jay/renderer/content/events/QueueEvent"
 
 import type QueueEvent from "@jay/common/events/QueueEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
