@@ -1,6 +1,6 @@
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
-import { type NavigableKind } from "../Kind"
+import { type NavigableKind } from "../content/providers"
 import Configuration from "../components/Configuration"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
 import providers, { type ContentProvider } from "../content/providers"

@@ -1,7 +1,4 @@
 import type WatchedKind from "@jay/common/Kind"
-
-import type Kind from "../Kind"
-import type { NavigableKind } from "../Kind"
 import type ContentProvider from "./ContentProvider"
 
 import datasets from "./datasets/provider"
@@ -25,7 +22,9 @@ export type DetailableKind = keyof typeof providers
 export default providers
 export type { ContentProvider }
 
-export function isNavigableKind(kind: Kind | NavigableKind): kind is NavigableKind {
+export type NavigableKind = Exclude<DetailableKind, "taskqueues">
+
+export function isNavigableKind(kind: WatchedKind | NavigableKind): kind is NavigableKind {
   return providers[kind] && !!providers[kind].isInSidebar
 }
 

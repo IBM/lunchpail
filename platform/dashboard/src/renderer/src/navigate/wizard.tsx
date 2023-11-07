@@ -1,7 +1,7 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
-import type Kind from "../Kind"
+import type Kind from "@jay/common/Kind"
 import type LocationProps from "./LocationProps"
 
 import { stopPropagation } from "."

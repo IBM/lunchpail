@@ -24,7 +24,7 @@ import Settings from "../Settings"
 import { Input, TextArea, remember } from "./Forms"
 import { returnHomeCallback, returnHomeCallbackWithEntity } from "../navigate/home"
 
-import type { DetailableKind } from "../Kind"
+import type { DetailableKind } from "../content/providers"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"

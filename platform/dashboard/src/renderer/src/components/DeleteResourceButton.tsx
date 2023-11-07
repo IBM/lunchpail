@@ -5,7 +5,7 @@ import providers from "../content/providers"
 
 import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
-type Props = import("@jay/common/api/jay").DeleteProps & { uiKind: import("../Kind").default; yaml?: string }
+type Props = import("@jay/common/api/jay").DeleteProps & { uiKind: import("@jay/common/Kind").default; yaml?: string }
 
 /**
  * Button that offers to delete a resource. It wraps the interacation
