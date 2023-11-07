@@ -6,8 +6,11 @@ import { name as datasetsName } from "../datasets/name"
 
 export default (
   <span>
-    Define your <strong>{singular}</strong> to capture what it takes to process tasks: a base image, source code,
-    configuration defaults, and any <Link to={hash("datasets")}>{datasetsName}</Link> needed to process all tasks (such
-    as pre-trained models).
+    Your <strong>{singular}</strong> captures what it takes to process <strong>Tasks</strong>: a base image, source
+    code, configuration defaults, and any{" "}
+    <Link to={hash("datasets")}>
+      <strong>{datasetsName}</strong>
+    </Link>{" "}
+    needed to process all Tasks (such as pre-trained models).
   </span>
 )
