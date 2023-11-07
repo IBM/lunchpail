@@ -12,9 +12,9 @@ import Settings from "../Settings"
 import Sidebar from "../sidebar"
 import Gallery from "../components/Gallery"
 
-import initState from "../content/state"
 import content from "../content/providers"
 import { initMemos } from "../content/memos"
+import initStreamingState from "../content/state"
 
 import type WatchedKind from "@jay/common/Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
@@ -30,7 +30,7 @@ export function Dashboard(props: Props) {
 
   const returnHome = returnHomeCallback()
 
-  const { events, handlers } = initState()
+  const { events, handlers } = initStreamingState()
   const memos = initMemos(events)
 
   // This registers what is in effect a componentDidMount handler. We

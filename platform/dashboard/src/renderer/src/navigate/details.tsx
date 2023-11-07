@@ -6,8 +6,7 @@ import { stopPropagation } from "."
 import { type DetailableKind as Kind } from "../content/providers"
 import type { FunctionComponent } from "react"
 import type LocationProps from "./LocationProps"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 export type Entity = { id: string; kind: Kind }
 
@@ -53,28 +52,8 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
   )
 }
 
-function linkToApplicationDetails(id: string) {
-  return linkToDetails({ id, kind: "applications" })
-}
-
-export function linkToAllApplicationDetails(applications: ApplicationSpecEvent[] | string[]) {
-  return applications.map((application) =>
-    linkToApplicationDetails(typeof application === "string" ? application : application.metadata.name),
+export function linkToAllDetails(kind: Kind, resources: KubernetesResource[] | string[]) {
+  return resources.map((rsrc) =>
+    linkToDetails(typeof rsrc === "string" ? { id: rsrc, kind } : { id: rsrc.metadata.name, kind }),
   )
-}
-
-export const linkToTaskQueueDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
-  return linkToDetails({ id, kind: "taskqueues" })
-}
-
-export function linkToAllTaskQueueDetails(names: string[]) {
-  return names.map((id) => linkToTaskQueueDetails({ id }))
-}
-
-export const linkToWorkerPoolDetails: FunctionComponent<Pick<Entity, "id">> = ({ id }) => {
-  return linkToDetails({ id, kind: "workerpools" })
-}
-
-export function linkToAllWorkerPoolDetails(pools: WorkerPoolStatusEvent[]) {
-  return pools.map((pool) => linkToWorkerPoolDetails({ id: pool.metadata.name }))
 }

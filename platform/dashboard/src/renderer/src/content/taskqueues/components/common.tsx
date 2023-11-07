@@ -3,7 +3,7 @@ import Queue from "@jay/components/Queue"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
-import { linkToAllApplicationDetails, linkToAllWorkerPoolDetails } from "@jay/renderer/navigate/details"
+import { linkToAllDetails } from "@jay/renderer/navigate/details"
 
 import { name as workerpoolsName } from "../../workerpools/name"
 import { name as applicationsName } from "../../applications/name"
@@ -42,7 +42,7 @@ function applications(props: Props) {
   const apps = associatedApplications(props)
   return descriptionGroup(
     `Compatible ${applicationsName}`,
-    apps.length === 0 ? None() : linkToAllApplicationDetails(apps),
+    apps.length === 0 ? None() : linkToAllDetails("applications", apps),
     apps.length,
     "The Applications that are capable of processing tasks from this queue.",
   )
@@ -51,7 +51,7 @@ function applications(props: Props) {
 function workerPools(props: Props) {
   return descriptionGroup(
     `Active ${workerpoolsName}`,
-    props.workerpools.length === 0 ? None() : linkToAllWorkerPoolDetails(props.workerpools),
+    props.workerpools.length === 0 ? None() : linkToAllDetails("workerpools", props.workerpools),
     props.workerpools.length,
     "The Worker Pools that have been assigned to process tasks from this queue.",
   )

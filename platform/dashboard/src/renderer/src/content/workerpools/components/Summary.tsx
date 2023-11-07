@@ -3,9 +3,9 @@ import { Text } from "@patternfly/react-core"
 
 import Sparkline from "@jay/components/Sparkline"
 import GridLayout from "@jay/components/GridLayout"
+import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "@jay/components/CompletionRate"
-import { linkToAllApplicationDetails, linkToAllTaskQueueDetails } from "@jay/renderer/navigate/details"
 
 import { name as taskqueuesName } from "../../taskqueues/name"
 import { name as applicationsName } from "../../applications/name"
@@ -86,8 +86,8 @@ export function summaryGroups(props: Props) {
   const taskqueues = latestTaskQueues(props)
 
   return [
-    applications && descriptionGroup(applicationsName, linkToAllApplicationDetails(applications)),
-    taskqueues && descriptionGroup(taskqueuesName, linkToAllTaskQueueDetails(taskqueues)),
+    applications && descriptionGroup(applicationsName, linkToAllDetails("applications", applications)),
+    taskqueues && descriptionGroup(taskqueuesName, linkToAllDetails("taskqueues", taskqueues)),
     descriptionGroup("Processing", numProcessing(props)),
     descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
     descriptionGroup(`Queued Work (${pluralize("worker", count(props))})`, enqueued(props)),
