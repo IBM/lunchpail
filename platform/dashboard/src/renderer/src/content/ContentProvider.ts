@@ -1,13 +1,13 @@
 import type { ReactNode } from "react"
 
-import type Kind from "@jay/common/Kind"
 import type Memos from "./memos"
+import type Kind from "@jay/common/Kind"
 import type ManagedEvents from "./ManagedEvent"
 
 /**
- * Governs how to render a certain kind of resource, e.g. Applications
+ * Governs how to render a certain `Kind` of resource, e.g. Applications
  */
-type ContentProvider<K extends Kind | "controlplane" = Kind | "controlplane"> = {
+export default interface ContentProvider<K extends Kind | "controlplane" = Kind | "controlplane"> {
   /** Kind of this resource */
   kind: K
 
@@ -35,5 +35,3 @@ type ContentProvider<K extends Kind | "controlplane" = Kind | "controlplane"> = 
   /** Content to show in the popup modal */
   wizard?(events: ManagedEvents): ReactNode
 }
-
-export default ContentProvider

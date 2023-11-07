@@ -13,24 +13,30 @@ import type { EventLike } from "@jay/common/events/EventSourceLike"
 
 import { returnHomeCallback } from "../navigate/home"
 
+/**
+ * This is the callback that should be invoked when data arrives.
+ */
 type EventHandler = (evt: EventLike) => void
 
-export type StateForKind<Kind extends WatchedKind> = readonly [ManagedEvent<Kind>[], EventHandler]
-
+/**
+ * This just says that `ManagedState` has a pair (array of events, handler)
+ * for each `Kind`. The UI can then display the array of events, and it is
+ * the job of the UI (currently `Dashboard.tsx`) to wire the `EventHandler`
+ * up to the streams.
+ */
 type ManagedState = {
-  [Kind in WatchedKind]: StateForKind<Kind>
+  [Kind in WatchedKind]: readonly [ManagedEvent<Kind>[], EventHandler]
 }
 
-type ManagedHandlers = {
-  [Kind in WatchedKind]: EventHandler
-}
-
-export default function initStreamingState(): { events: ManagedEvents; handlers: ManagedHandlers } {
+/**
+ * Initialize React state that hooks up with tracking processes. These
+ * will feed into React state models, as governed by the individual
+ * state handlers, e.g. `applicationsState()`
+ */
+export function initStreamingState(): ManagedState {
   const returnHome = returnHomeCallback()
 
-  // Below, for the convenience of callers, we parcel out ManagedState
-  // into the events (state.kind[0]) and handlers (state.kind[1])
-  const state: ManagedState = {
+  return {
     // future readers: if you want to wire the UI up to backend
     // resource trackers, add your state here
     queues: queueState(),
@@ -41,14 +47,30 @@ export default function initStreamingState(): { events: ManagedEvents; handlers:
     tasksimulators: tasksimulatorState(returnHome),
     platformreposecrets: platformreposecretState(returnHome),
   }
+}
 
-  // just for convenience
+/**
+ * This just says that `ManagedHandlers` has one `EventHandler` per
+ * `Kind`.
+ */
+type ManagedHandlers = {
+  [Kind in WatchedKind]: EventHandler
+}
+
+/**
+ * For the convenience of callers, we parcel out `ManagedState` into
+ * the `events` (state[*].kind[0]) and `handlers` (state[*].kind[1])
+ */
+export default function initEventsAndHandlers(): { events: ManagedEvents; handlers: ManagedHandlers } {
+  const state = initStreamingState()
+
+  // nothing deep here, just for convenience
   const events: ManagedEvents = Object.entries(state).reduce((M, [kind, state]) => {
     M[kind] = state[0]
     return M
   }, {} as ManagedEvents)
 
-  // just for convenience
+  // nothing deep here, just for convenience
   const handlers: ManagedHandlers = Object.entries(state).reduce((M, [kind, state]) => {
     M[kind] = state[1]
     return M
