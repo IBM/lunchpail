@@ -11,7 +11,9 @@ import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"
 
-const workerpools: ContentProvider = {
+const workerpools: ContentProvider<"workerpools"> = {
+  kind: "workerpools",
+
   name,
 
   singular,
@@ -22,6 +24,8 @@ const workerpools: ContentProvider = {
       process tasks from one or more {taskqueuesName}.
     </span>
   ),
+
+  isInSidebar: true,
 
   gallery: (events: ManagedEvents, { taskqueueIndex, latestWorkerPoolModels }: Memos) => {
     return latestWorkerPoolModels.map((w) => (

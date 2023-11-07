@@ -12,7 +12,9 @@ import type ContentProvider from "../ContentProvider"
 import { name, singular } from "./name"
 import { name as taskqueuesName } from "../taskqueues/name"
 
-const applications: ContentProvider = {
+const applications: ContentProvider<"applications"> = {
+  kind: "applications",
+
   name,
 
   singular,
@@ -23,6 +25,8 @@ const applications: ContentProvider = {
       define one or more compatible {taskqueuesName}.
     </span>
   ),
+
+  isInSidebar: true,
 
   gallery: (events: ManagedEvents) =>
     events.applications.map((evt) => (

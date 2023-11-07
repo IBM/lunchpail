@@ -97,7 +97,6 @@ metadata:
   name: ${taskqueueName + "cfsecret"}
   namespace: ${values.namespace}
   labels:
-    app.kubernetes.io/component: ${values.name}
     app.kubernetes.io/part-of: codeflare.dev
     app.kubernetes.io/component: ${values.name}
 type: Opaque

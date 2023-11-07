@@ -13,3 +13,7 @@ export const watchedKinds = [
 type WatchedKind = (typeof watchedKinds)[number]
 
 export default WatchedKind
+
+export function isWatched(kind: WatchedKind | unknown): kind is WatchedKind {
+  return watchedKinds.includes(kind as WatchedKind)
+}

@@ -12,7 +12,9 @@ import { name, singular } from "./name"
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"
 
-const datasets: ContentProvider = {
+const datasets: ContentProvider<"datasets"> = {
+  kind: "datasets",
+
   name,
 
   singular,
@@ -24,6 +26,8 @@ const datasets: ContentProvider = {
       a pre-trained model or a chip design that is being tested across multiple configurations.
     </span>
   ),
+
+  isInSidebar: true,
 
   gallery: (events: ManagedEvents) => events.datasets.map((evt) => <DataSetCard key={evt.metadata.name} {...evt} />),
 

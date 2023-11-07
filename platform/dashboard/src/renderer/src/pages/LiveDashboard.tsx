@@ -1,7 +1,7 @@
-import { kinds } from "../Kind"
 import { Dashboard } from "./Dashboard"
+import { watchedKinds } from "@jay/common/Kind"
 
-import type Kind from "../Kind"
+import type Kind from "@jay/common/Kind"
 import type { Props } from "./Dashboard"
 import type { Handler } from "@jay/common/events/EventSourceLike"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
@@ -56,7 +56,7 @@ function newIfNeeded(kind: Kind) {
 
 function init(): Props<EventSourceLike> {
   // initialize streams, one per Kind of resource
-  const streams: Record<Kind, ElectronEventSource> = kinds.reduce(
+  const streams: Record<Kind, ElectronEventSource> = watchedKinds.reduce(
     (M, kind) => {
       M[kind] = newIfNeeded(kind)
       return M

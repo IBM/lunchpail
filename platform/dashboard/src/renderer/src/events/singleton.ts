@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 
-import { isDetailableKind } from "../Kind"
+import { isDetailableKind } from "../content/providers"
 import { closeDetailViewIfShowing } from "../pages/PageWithDrawer"
 
 import type Kind from "../Kind"

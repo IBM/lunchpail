@@ -1,4 +1,4 @@
-import WatchedKind from "../Kind"
+import WatchedKind from "@jay/common/Kind"
 
 import type QueueEvent from "@jay/common/events/QueueEvent"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"

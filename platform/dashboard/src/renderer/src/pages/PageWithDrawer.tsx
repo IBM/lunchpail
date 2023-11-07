@@ -17,13 +17,11 @@ import {
 
 import PageWithMastheadAndModal, { type PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 
-import { isNavigableKind, type DetailableKind } from "../Kind"
+import { type DetailableKind } from "../content/providers"
+import providers, { isNavigableKind } from "../content/providers"
 import type { DrilldownProps, DrawerState } from "../context/DrawerContext"
 
 import DetailNotFound from "../components/Drawer/DetailNotFound"
-
-import { resourceNames } from "../names"
-import providers from "../content/providers"
 
 import navigateToHome from "../navigate/home"
 import { hashIfNeeded } from "../navigate/kind"
@@ -120,6 +118,11 @@ export default function PageWithDrawer(props: Props) {
   )
 
   const kind = currentlySelectedKind(searchParams)
+  const provider = kind ? providers[kind] : undefined
+
+  if (kind && !provider) {
+    throw new Error(`Missing content provider for ${kind}`)
+  }
 
   /** Is the slide-out drawer maximized? */
   const [isMaximized, setIsMaximized] = useState(false)
@@ -142,9 +145,9 @@ export default function PageWithDrawer(props: Props) {
     >
       <DrawerHead>
         <Breadcrumb>
-          {kind in resourceNames && <BreadcrumbItem>Resources</BreadcrumbItem>}
+          {provider?.isInSidebar === true && <BreadcrumbItem>Resources</BreadcrumbItem>}
           <BreadcrumbItem to={isNavigableKind(kind) ? hashIfNeeded(kind) : undefined}>
-            {(kind && providers[kind] && providers[kind].name) ?? kind}
+            {(kind && providers[kind].name) ?? kind}
           </BreadcrumbItem>
         </Breadcrumb>
         <Title headingLevel="h2" size="2xl">

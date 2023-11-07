@@ -8,7 +8,9 @@ import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"
 
-const taskqueues: ContentProvider = {
+const taskqueues: ContentProvider<"taskqueues"> = {
+  kind: "taskqueues",
+
   name,
 
   singular,

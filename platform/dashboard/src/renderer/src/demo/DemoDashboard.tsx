@@ -8,6 +8,7 @@ import DemoApplicationSpecEventSource from "./streams/application"
 
 import type WatchedKind from "@jay/common/Kind"
 import type DemoEventSource from "./streams/base"
+import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 let props: null | (Record<WatchedKind, DemoEventSource> & { workerpools: DemoWorkerPoolStatusEventSource }) = null
 
@@ -41,9 +42,19 @@ export default function DemoDashboard() {
     window.jay = window.demo = Object.assign({}, props, {
       create: props.workerpools.create.bind(props.workerpools),
 
-      delete(/*yaml: string*/) {
-        // TODO
-        throw new Error("Unsupported operation")
+      async delete(yaml: string) {
+        const { loadAll } = await import("js-yaml")
+        const rsrcs = loadAll(yaml) as KubernetesResource[]
+        await Promise.all(
+          rsrcs.map((rsrc) =>
+            window.demo.deleteByName({
+              kind: rsrc.kind.toLowerCase() + "s",
+              name: rsrc.metadata.name,
+              namespace: rsrc.metadata.namespace,
+            }),
+          ),
+        )
+        return true as const
       },
 
       deleteByName(dprops: import("@jay/common/api/jay").DeleteProps) {

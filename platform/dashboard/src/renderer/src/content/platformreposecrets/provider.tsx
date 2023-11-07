@@ -9,7 +9,9 @@ import { name, singular } from "./name"
 import type ManagedEvents from "../ManagedEvent"
 import type ContentProvider from "../ContentProvider"
 
-const platformreposecrets: ContentProvider = {
+const platformreposecrets: ContentProvider<"platformreposecrets"> = {
+  kind: "platformreposecrets",
+
   name,
 
   singular,
@@ -17,6 +19,8 @@ const platformreposecrets: ContentProvider = {
   description: (
     <span>The registered GitHub credentials that can be used to clone repositories from a particular GitHub URL.</span>
   ),
+
+  isInSidebar: "Credentials",
 
   gallery: (events: ManagedEvents) =>
     events.platformreposecrets.map((props) => <PlatformRepoSecretCard key={props.metadata.name} {...props} />),

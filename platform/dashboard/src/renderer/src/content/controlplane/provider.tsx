@@ -15,10 +15,14 @@ function capitalize(str: string) {
 }
 
 /** ControlPlane ContentProvider */
-const controlplane: ContentProvider = {
+const controlplane: ContentProvider<"controlplane"> = {
+  kind: "controlplane",
+
   name,
 
   singular,
+
+  isInSidebar: true,
 
   description: (
     <span>

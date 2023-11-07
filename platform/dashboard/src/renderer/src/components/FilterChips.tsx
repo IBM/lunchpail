@@ -1,9 +1,9 @@
-import type { FunctionComponent } from "react"
+/*import type { FunctionComponent } from "react"
 import { Chip, ChipGroup, Flex } from "@patternfly/react-core"
 
 import names from "../names"
 import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
-
+*/
 /**
  * Note: we need to pass these in separately, and not pull them from
  * ActiveFiltersCtx, because the user may have opted to Show All,
@@ -11,7 +11,7 @@ import { ActiveFilters, ActiveFitlersCtx } from "../context/FiltersContext"
  * elements not present when the user first clicked Show All. These
  * are the elements to be presented as Chips.
  */
-type Props = {
+/*type Props = {
   applications: string[]
   taskqueues: string[]
   workerpools: string[]
@@ -56,3 +56,4 @@ const FilterChips: FunctionComponent<Props> = (props: Props) => {
 }
 
 export default FilterChips
+*/
