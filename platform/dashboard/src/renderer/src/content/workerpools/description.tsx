@@ -1,9 +1,13 @@
+import { Link } from "react-router-dom"
+import { hash } from "@jay/renderer/navigate/kind"
+
 import { singular } from "./name"
-import { name as taskqueuesName } from "../taskqueues/name"
+import { singular as taskqueuesSingular } from "../taskqueues/name"
+import { singular as applicationSingular } from "../applications/name"
 
 export default (
   <span>
-    The registered compute pools in your system. Each <strong>{singular}</strong> is a set of workers that can process
-    tasks from one or more {taskqueuesName}.
+    Each <strong>{singular}</strong> is a set of workers that can process tasks from a {taskqueuesSingular} using code
+    from given <Link to={hash("applications")}>{applicationSingular}</Link>.
   </span>
 )
