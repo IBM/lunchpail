@@ -2,6 +2,7 @@ import DrawerContent from "@jay/components/Drawer/Content"
 import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
+import { singular } from "../name"
 import { LinkToNewRepoSecret } from "@jay/renderer/navigate/newreposecret"
 import { statusActions, summaryGroups, titleCaseSplit } from "./Summary"
 
@@ -56,8 +57,8 @@ function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
       key="delete"
+      singular={singular}
       kind="workerpool.codeflare.dev"
-      uiKind="workerpools"
       name={props.model.label}
       namespace={props.model.namespace}
     />

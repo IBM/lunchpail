@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom"
 
-import type { NavigableKind } from "../content/providers"
+import type { NavigableKind } from "../content"
 
 const defaultKind: NavigableKind = "controlplane"
 

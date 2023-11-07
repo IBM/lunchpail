@@ -1,4 +1,4 @@
-import type { DetailableKind } from "../content/providers"
+import type { DetailableKind } from "../content"
 
 export type DrawerState = {
   /** Selected id currently shown in Drawer */

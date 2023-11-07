@@ -1,5 +1,6 @@
 import { useContext } from "react"
 
+import { singular } from "../name"
 import Sparkline from "@jay/components/Sparkline"
 import Settings from "@jay/renderer/Settings"
 import { BrowserTabs } from "@jay/components/S3Browser"
@@ -53,7 +54,7 @@ function deleteAction(last: null | TaskQueueEvent) {
         <DeleteResourceButton
           key="delete"
           kind="dataset"
-          uiKind="taskqueues"
+          singular={singular}
           name={last.metadata.name}
           namespace={last.metadata.namespace}
         />,

@@ -3,6 +3,7 @@ import DrawerContent from "@jay/components/Drawer/Content"
 import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
+import { singular } from "../name"
 import LinkToNewWizard from "@jay/renderer/navigate/wizard"
 
 import type Props from "./Props"
@@ -18,7 +19,7 @@ function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
       kind="dataset"
-      uiKind="datasets"
+      singular={singular}
       name={props.metadata.name}
       namespace={props.metadata.namespace}
     />

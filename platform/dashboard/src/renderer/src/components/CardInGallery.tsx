@@ -5,7 +5,7 @@ import { drilldownProps } from "../pages/PageWithDrawer"
 import { dl as DescriptionList } from "./DescriptionGroup"
 
 import type { ReactNode } from "react"
-import type { NavigableKind as Kind } from "../content/providers"
+import type { NavigableKind as Kind } from "../content"
 import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import "./CardInGallery.scss"

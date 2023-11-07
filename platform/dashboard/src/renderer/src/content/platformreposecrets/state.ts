@@ -5,5 +5,5 @@ import singletonEventHandler from "../events/singleton"
 
 export default function init(returnHome: () => void) {
   const [events, setEvents] = useState<PlatformRepoSecretEvent[]>([])
-  return [events, singletonEventHandler("datasets", setEvents, returnHome)] as const
+  return [events, singletonEventHandler("platformreposecrets", setEvents, returnHome)] as const
 }

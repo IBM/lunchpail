@@ -11,14 +11,24 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
   }
 
   private queueEvent(workerpool: DemoWorkerPool, taskqueue: string, workerIndex: number): QueueEvent {
+    const name = `queue-${runs[0]}-${taskqueue}`
+    const namespace = "none" // FIXME?
+
     return {
       timestamp: Date.now(),
+      metadata: {
+        name,
+        namespace,
+        annotations: {
+          "codeflare.dev/status": "Running",
+        },
+      },
       event: {
         apiVersion,
         kind: "Queue",
         metadata: {
-          name: `queue-${runs[0]}-${taskqueue}`,
-          namespace: "none", // FIXME?
+          name,
+          namespace,
           creationTimestamp: new Date().toUTCString(),
           labels: {
             "app.kubernetes.io/part-of": runs[0], // TODO multiple demo runs?

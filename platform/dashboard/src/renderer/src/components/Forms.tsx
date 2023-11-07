@@ -24,7 +24,7 @@ import {
 } from "@patternfly/react-core"
 
 import type { State } from "../Settings"
-import type { DetailableKind } from "../content/providers"
+import type { DetailableKind } from "../content"
 
 type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
 type FormProps = FormGroupProps & { description: string } & Required<Pick<FormGroupProps, "fieldId">>

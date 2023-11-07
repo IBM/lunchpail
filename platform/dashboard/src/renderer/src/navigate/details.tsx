@@ -3,9 +3,9 @@ import { Button } from "@patternfly/react-core"
 
 import { stopPropagation } from "."
 
-import { type DetailableKind as Kind } from "../content/providers"
 import type { FunctionComponent } from "react"
 import type LocationProps from "./LocationProps"
+import { type DetailableKind as Kind } from "../content"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 export type Entity = { id: string; kind: Kind }

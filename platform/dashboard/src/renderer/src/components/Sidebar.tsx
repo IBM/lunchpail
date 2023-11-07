@@ -1,10 +1,12 @@
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
-import { type NavigableKind } from "../content/providers"
+import providers from "../content/providers"
+import type ContentProvider from "../content/ContentProvider"
+import type NavigableKind from "../content/NavigableKind"
+import ControlPlaneHealthBadge from "../content/controlplane/components/HealthBadge"
+
 import Configuration from "../components/Configuration"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
-import providers, { type ContentProvider } from "../content/providers"
-import ControlPlaneHealthBadge from "../content/controlplane/components/HealthBadge"
 
 import "./Sidebar.scss"
 

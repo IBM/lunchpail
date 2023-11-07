@@ -1,11 +1,9 @@
 import { useCallback, useState } from "react"
 import { Button, Modal, Tooltip } from "@patternfly/react-core"
 
-import providers from "../content/providers"
-
 import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
-type Props = import("@jay/common/api/jay").DeleteProps & { uiKind: import("@jay/common/Kind").default; yaml?: string }
+type Props = import("@jay/common/api/jay").DeleteProps & { singular: string; yaml?: string }
 
 /**
  * Button that offers to delete a resource. It wraps the interacation
@@ -49,7 +47,7 @@ export default function DeleteResourceButton(props: Props) {
             </Button>,
           ]}
         >
-          Are you sure you wish to delete the {providers[props.uiKind].singular} <strong>{props.name}</strong>?
+          Are you sure you wish to delete the {props.singular} <strong>{props.name}</strong>?
         </Modal>
       )}
     </>

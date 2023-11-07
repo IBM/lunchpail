@@ -48,7 +48,11 @@ export default function transformToJSON(withTimestamp = false) {
         if (!inQuotes && ch === "}") {
           if (--depth === 0) {
             const event = JSON.parse(bundle)
-            structs.push(withTimestamp ? ({ timestamp: Date.now(), event } as WithTimestamp<unknown>) : event)
+            structs.push(
+              withTimestamp
+                ? ({ timestamp: Date.now(), event, metadata: event.metadata } as WithTimestamp<unknown>)
+                : event,
+            )
             bundle = ""
           }
         }

@@ -14,7 +14,7 @@ import Sidebar from "../components/Sidebar"
 
 import content from "../content/providers"
 import { initMemos } from "../content/memos"
-import initStreamingState from "../content/state"
+import initStreamingState from "../content/init"
 
 import type WatchedKind from "@jay/common/Kind"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"

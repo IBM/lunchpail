@@ -17,8 +17,9 @@ import {
 
 import PageWithMastheadAndModal, { type PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 
-import { type DetailableKind } from "../content/providers"
-import providers, { isNavigableKind } from "../content/providers"
+import type { DetailableKind } from "../content"
+import providers from "../content/providers"
+import { isNavigableKind } from "../content/NavigableKind"
 import type { DrilldownProps, DrawerState } from "./DrawerContext"
 
 import DetailNotFound from "../components/Drawer/DetailNotFound"

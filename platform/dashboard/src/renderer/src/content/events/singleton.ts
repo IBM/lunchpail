@@ -1,26 +1,27 @@
 import { useCallback } from "react"
 
-import { isDetailableKind } from "../providers"
+import { isDetailableKind } from "../DetailableKind"
 import { closeDetailViewIfShowing } from "../../pages/PageWithDrawer"
 
-import type Kind from "@jay/common/Kind"
+import type WatchedKind from "@jay/common/Kind"
+import type { ManagedEvent } from "../ManagedEvent"
 import type { Dispatch, SetStateAction } from "react"
 import type { EventLike } from "@jay/common/events/EventSourceLike"
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 /** Remember just the last event for each resource instance in state */
-export default function singletonJsonEventHandler<T extends KubernetesResource>(
+export default function singletonJsonEventHandler<Kind extends WatchedKind, Event extends ManagedEvent<Kind>>(
   kind: Kind,
-  setState: Dispatch<SetStateAction<T[]>>,
+  setState: Dispatch<SetStateAction<Event[]>>,
   returnHome: () => void,
-  watchTheseValues = [],
+  watchTheseValues: unknown[] = [],
 ) {
   return useCallback(
     (evt: EventLike) => {
-      const events = JSON.parse(evt.data) as T[]
+      const events = JSON.parse(evt.data) as Event[]
 
       for (const event of events) {
         const name = event.metadata.name
+        const namespace = event.metadata.namespace
         const status = event.metadata.annotations["codeflare.dev/status"]
 
         if (status === "Terminating") {
@@ -28,10 +29,10 @@ export default function singletonJsonEventHandler<T extends KubernetesResource>(
             closeDetailViewIfShowing(name, kind, returnHome)
           }
 
-          setState((A) => A.filter((_) => _.metadata.name !== name))
+          setState((A) => A.filter((_) => _.metadata.name !== name || _.metadata.namespace !== namespace))
         } else {
           setState((A) => {
-            const idx = A.findIndex((_) => _.metadata.name === name)
+            const idx = A.findIndex((_) => _.metadata.name === name && _.metadata.namespace === namespace)
             if (idx >= 0) {
               return [...A.slice(0, idx), event, ...A.slice(idx + 1)]
             } else {

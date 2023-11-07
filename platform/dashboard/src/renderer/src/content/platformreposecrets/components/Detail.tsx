@@ -2,6 +2,7 @@ import DrawerContent from "@jay/components/Drawer/Content"
 import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
+import { singular } from "../name"
 import { yamlFromSpec } from "./New/yaml"
 import LinkToNewWizard from "@jay/renderer/navigate/wizard"
 
@@ -16,8 +17,8 @@ function detailGroups(props: Props) {
 function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
+      singular={singular}
       kind="platformreposecrets.codeflare.dev"
-      uiKind="platformreposecrets"
       yaml={yamlFromSpec(props)}
       name={props.metadata.name}
       namespace={props.metadata.namespace}

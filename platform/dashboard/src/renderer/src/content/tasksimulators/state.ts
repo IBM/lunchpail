@@ -5,5 +5,5 @@ import singletonEventHandler from "../events/singleton"
 
 export default function init(returnHome: () => void) {
   const [events, setEvents] = useState<TaskSimulatorEvent[]>([])
-  return [events, singletonEventHandler("datasets", setEvents, returnHome)] as const
+  return [events, singletonEventHandler("tasksimulators", setEvents, returnHome)] as const
 }
