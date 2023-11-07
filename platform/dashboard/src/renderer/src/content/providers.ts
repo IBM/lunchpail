@@ -1,12 +1,12 @@
 import type WatchedKind from "@jay/common/Kind"
 import type ContentProvider from "./ContentProvider"
 
-import datasets from "./datasets/provider"
-import taskqueues from "./taskqueues/provider"
-import workerpools from "./workerpools/provider"
-import controlplane from "./controlplane/provider"
-import applications from "./applications/provider"
-import platformreposecrets from "./platformreposecrets/provider"
+import datasets from "./datasets"
+import taskqueues from "./taskqueues"
+import workerpools from "./workerpools"
+import controlplane from "./controlplane"
+import applications from "./applications"
+import platformreposecrets from "./platformreposecrets"
 
 export type { ContentProvider }
 
