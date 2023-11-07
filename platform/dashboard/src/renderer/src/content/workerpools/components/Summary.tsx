@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { Text } from "@patternfly/react-core"
 
 import Sparkline from "@jay/components/Sparkline"
-import GridLayout from "@jay/components/GridLayout"
+import GridRow from "@jay/components/Grid/Row"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "@jay/components/CompletionRate"
@@ -44,7 +44,7 @@ function enqueued(props: Props) {
   return (
     <div className="codeflare--workqueues">
       {props.model.inbox.map((inbox, i) => (
-        <GridLayout key={i} queueNum={i + 1} inbox={inbox} taskqueueIndex={props.taskqueueIndex} gridTypeData="plain" />
+        <GridRow key={i} queueNum={i + 1} inbox={inbox} taskqueueIndex={props.taskqueueIndex} gridTypeData="plain" />
       ))}
     </div>
   )

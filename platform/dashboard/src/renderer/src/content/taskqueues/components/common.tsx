@@ -1,5 +1,5 @@
 import None from "@jay/components/None"
-import Queue from "@jay/components/Queue"
+import Cells from "@jay/components/Grid/Cells"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
@@ -9,7 +9,7 @@ import { name as workerpoolsName } from "../../workerpools/name"
 import { name as applicationsName } from "../../applications/name"
 
 import type { ReactNode } from "react"
-import type { GridTypeData } from "@jay/components/GridCell"
+import type { GridTypeData } from "@jay/components/Grid/Cell"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
@@ -68,10 +68,10 @@ function inboxCount(props: JustEvents) {
 
 function cells(count: number, gridDataType: GridTypeData, props: NameEventsTaskQueueIndex) {
   if (!count) {
-    return <Queue inbox={{ [props.name]: 0 }} taskqueueIndex={props.taskqueueIndex} gridTypeData="placeholder" />
+    return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={props.taskqueueIndex} gridTypeData="placeholder" />
   }
   return (
-    <Queue
+    <Cells
       inbox={{ [props.name]: inboxCount(props) }}
       taskqueueIndex={props.taskqueueIndex}
       gridTypeData={gridDataType}

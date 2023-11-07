@@ -1,10 +1,10 @@
+import gridCellStacking from "change-maker"
 import { Flex, FlexItem } from "@patternfly/react-core"
 
-import { TaskQueueTask } from "../content/workerpools/WorkerPoolModel"
-import GridCell, { GridTypeData } from "./GridCell"
+import Cell, { GridTypeData } from "./Cell"
+import { TaskQueueTask } from "../../content/workerpools/WorkerPoolModel"
 
-import "./Queue.scss"
-import gridCellStacking from "change-maker"
+import "./Cells.scss"
 
 export type Props = {
   inbox: TaskQueueTask
@@ -20,19 +20,19 @@ export type Props = {
  */
 const coinDenominations: number[] = [1, 10, 100, 1000].map((_) => _ * 100)
 
-export default function Queue(props: Props) {
+export default function Cells(props: Props) {
   /** Render one cell */
   function cell(cellType: GridTypeData, taskqueue: string, labelNum: number, stackDepth: number) {
     return (
       <FlexItem
         key={taskqueue + "." + labelNum + "." + cellType + "." + props.taskqueueIndex[taskqueue] + "." + stackDepth}
       >
-        <GridCell type={cellType} taskqueue={props.taskqueueIndex[taskqueue]} stackDepth={stackDepth} />
+        <Cell type={cellType} taskqueue={props.taskqueueIndex[taskqueue]} stackDepth={stackDepth} />
       </FlexItem>
     )
   }
 
-  /** @return an array of GridCells */
+  /** @return an array of Cells */
   function queue(tasks: TaskQueueTask, cellType: GridTypeData) {
     return Object.entries(tasks || {})
       .filter(([, size]) => size > 0)
@@ -44,10 +44,10 @@ export default function Queue(props: Props) {
         return (
           Object.entries(gridCellStacking("$" + size, coinDenominations))
             .reverse()
-            // Find the number of stacks that are being used to render 'size' GridCells by finding the non-zero values from gridCellStacking()
+            // Find the number of stacks that are being used to render 'size' <Cell/> by finding the non-zero values from gridCellStacking()
             .filter(([, numStacks]) => numStacks > 0)
             .map(([stackDepth, numStacks]) =>
-              // Finally, render 'numStacks' stacks of GridCells. 'stackDepth' represents how many GridCells there are in that stack.
+              // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
               Array(numStacks)
                 .fill(0)
                 .map((_, idx) => cell(cellType, taskqueue, idx, parseInt(stackDepth, 10) / 100)),

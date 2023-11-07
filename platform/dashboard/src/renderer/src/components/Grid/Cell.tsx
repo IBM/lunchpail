@@ -1,7 +1,7 @@
 import { Tooltip } from "@patternfly/react-core"
 import SpinnerIcon from "@patternfly/react-icons/dist/esm/icons/spinner2-icon"
 
-import "./GridCell.scss"
+import "./Cell.scss"
 
 export type GridTypeData = "plain" | "inbox" | "outbox" | "processing" | "waiting" | "placeholder" | "unassigned"
 type GridType = GridTypeData | "worker"
