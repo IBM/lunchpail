@@ -13,5 +13,5 @@ export default {
   detail,
   wizard,
   actions: undefined,
-  isInSidebar: "Credentials",
+  isInSidebar: "Advanced",
 }
