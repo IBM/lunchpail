@@ -10,13 +10,14 @@ import type Props from "./Props"
 
 import ApplicationIcon from "./Icon"
 
-function api(props: Props) {
-  return descriptionGroup(
-    "api",
-    props.application.spec.api,
-    undefined,
-    "The API used by this Application to distribute work.",
-  )
+export function api(props: Props) {
+  const { api } = props.application.spec
+
+  if (api === "workqueue") {
+    return []
+  } else {
+    return [descriptionGroup("api", api, undefined, "The API used by this Application to distribute work.")]
+  }
 }
 
 export function taskqueues(props: Props) {
@@ -70,7 +71,7 @@ export default function ApplicationCard(props: Props) {
   const name = props.application.metadata.name
 
   const groups = [
-    api(props),
+    ...api(props),
     props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
     taskqueues(props),
     datasets(props),

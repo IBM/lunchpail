@@ -1,12 +1,14 @@
-import { datasets, taskqueues } from "./Card"
+import { Text } from "@patternfly/react-core"
+
+import Yaml from "@jay/components/YamlFromObject"
 import DrawerContent from "@jay/components/Drawer/Content"
+import LinkToNewWizard from "@jay/renderer/navigate/wizard"
 import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { singular } from "../name"
-import Yaml from "@jay/components/YamlFromObject"
 import { yamlFromSpec } from "./New/yaml"
-import LinkToNewWizard from "@jay/renderer/navigate/wizard"
+import { api, datasets, taskqueues } from "./Card"
 
 import type Props from "./Props"
 
@@ -21,11 +23,24 @@ function repoPlusSource(props: Props) {
 
 /** The DescriptionList groups to show in this Detail view */
 function detailGroups(props: Props) {
+  const { spec } = props.application
+
+  return [
+    ...api(props),
+    descriptionGroup("description", spec.description),
+    taskqueues(props),
+    datasets(props),
+    descriptionGroup("command", <Text component="pre">{spec.command}</Text>),
+    descriptionGroup("image", spec.image),
+    descriptionGroup("repo", repoPlusSource(props)),
+    descriptionGroup("Supports Gpu?", spec.supportsGpu),
+  ]
   return Object.entries(props.application.spec)
-    .filter(([, value]) => value)
+    .filter(([key, value]) => !!value && key !== "api" && value !== "workqueue")
+    .sort((a, b) => (a[0] === "description" ? -1 : b[1] === "description" ? 1 : a[0].localeCompare(b[0])))
     .flatMap(([term, value]) =>
       term === "repo"
-        ? descriptionGroup("Source", repoPlusSource(props))
+        ? descriptionGroup(term, repoPlusSource(props))
         : term === "inputs"
         ? [taskqueues(props), datasets(props)]
         : typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value),
@@ -48,7 +63,7 @@ function deleteAction(props: Props) {
 /** Button/Action: Edit this resource */
 function Edit(props: Props) {
   const qs = [`yaml=${encodeURIComponent(JSON.stringify(props.application))}`]
-  return <LinkToNewWizard startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
+  return <LinkToNewWizard key="edit" startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
 }
 
 /** Button/Action: Clone this resource */
@@ -57,7 +72,7 @@ function Clone(props: Props) {
     `name=${props.application.metadata.name + "-copy"}`,
     `yaml=${encodeURIComponent(JSON.stringify(props.application))}`,
   ]
-  return <LinkToNewWizard startOrAdd="clone" kind="applications" linkText="Clone" qs={qs} />
+  return <LinkToNewWizard key="clone" startOrAdd="clone" kind="applications" linkText="Clone" qs={qs} />
 }
 
 export default function ApplicationDetail(props: Props) {
@@ -78,7 +93,7 @@ export default function ApplicationDetail(props: Props) {
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props.application}
       otherTabs={otherTabs}
-      actions={props && [<Edit {...props} />, <Clone {...props} />]}
+      actions={props && [Edit(props), Clone(props)]}
       rightActions={props && [deleteAction(props)]}
     />
   )

@@ -25,6 +25,11 @@
       flex: 1;
       overflow: auto;
     }
+
+    pre {
+      white-space: pre-wrap;
+      color: var(--pf-v5-global--disabled-color--100);
+    }
   }
   .codeflare--detail-view-footer {
     flex: unset;
