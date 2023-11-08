@@ -73,6 +73,19 @@ const step2 = {
   items: [command, repoInput, image, supportsGpu],
 }
 
+function filterPreviousDatasetSelectionToInluceOnlyThoseCurrentlyValid(props: Props, previous: undefined | string) {
+  if (previous) {
+    try {
+      const previousArr = JSON.parse(previous)
+      return JSON.stringify(previousArr.filter((_) => props.datasets.find((dataset) => dataset.metadata.name === _)))
+    } catch (err) {
+      console.error("Previous dataset selection is invalid", previous)
+    }
+  }
+
+  return ""
+}
+
 export default function NewApplicationWizard(props: Props) {
   const [searchParams] = useSearchParams()
 
@@ -89,7 +102,7 @@ export default function NewApplicationWizard(props: Props) {
           rsrc?.metadata.name ??
           previousValues?.name ??
           uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
-        namespace: rsrc?.metadata?.name ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+        namespace: rsrc?.metadata?.namespace ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
         repo: rsrc?.spec?.repo ?? previousValues?.repo ?? "",
         image:
           rsrc?.spec?.image ??
@@ -99,7 +112,7 @@ export default function NewApplicationWizard(props: Props) {
         description: rsrc?.spec?.description ?? previousValues?.description ?? "",
         supportsGpu: rsrc?.spec?.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
         useTestQueue: previousValues?.useTestQueue ?? "true",
-        datasets: previousValues?.datasets ?? "",
+        datasets: filterPreviousDatasetSelectionToInluceOnlyThoseCurrentlyValid(props, previousValues?.datasets),
         inputFormat: previousValues?.inputFormat ?? "",
         inputSchema: previousValues?.inputSchema ?? "",
       }
