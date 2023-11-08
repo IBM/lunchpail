@@ -45,6 +45,9 @@ export default function NewWorkerPoolWizard(props: Props) {
     [searchedTaskQueue, props.applications],
   )
 
+  /** Presented Select options of TaskQueues */
+  const taskqueueOptions = useMemo(() => props.taskqueues.map((_) => _.metadata.name), [props.taskqueues])
+
   /** Initial value for form */
   function defaults() {
     return {
@@ -85,7 +88,7 @@ export default function NewWorkerPoolWizard(props: Props) {
         ctrl={ctrl}
         fieldId="taskqueue"
         icons={<TaskQueueIcon />}
-        options={props.taskqueues}
+        options={taskqueueOptions}
         label={taskqueuesSingular}
         description={`Choose the ${taskqueuesSingular} this pool should process`}
       />
