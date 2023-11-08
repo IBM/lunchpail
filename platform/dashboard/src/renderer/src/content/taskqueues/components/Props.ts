@@ -1,3 +1,4 @@
+import type { CurrentSettings } from "@jay/renderer/Settings"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -24,6 +25,9 @@ type Props = {
 
   /** Map TaskQueueEvent to a dense index */
   taskqueueIndex: Record<string, number>
+
+  /** Current Settings context */
+  settings: CurrentSettings
 }
 
 export default Props

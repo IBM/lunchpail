@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import type Memos from "./memos"
 import type Kind from "@jay/common/Kind"
 import type ManagedEvents from "./ManagedEvent"
+import type { CurrentSettings } from "../Settings"
 
 /**
  * Governs how to render a certain `Kind` of resource, e.g. Applications
@@ -27,7 +28,7 @@ export default interface ContentProvider<K extends Kind | "controlplane" = Kind 
   gallery?(events: ManagedEvents, memos: Memos): ReactNode
 
   /** Content to display in the detail view */
-  detail(id: string, events: ManagedEvents, memos: Memos): undefined | ReactNode
+  detail(id: string, events: ManagedEvents, memos: Memos, settings: CurrentSettings): undefined | ReactNode
 
   /** Action buttons to show alongside (usually above) the gallery */
   actions?(settings: { inDemoMode: boolean }): ReactNode

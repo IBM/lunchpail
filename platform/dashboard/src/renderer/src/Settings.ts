@@ -3,16 +3,16 @@ import { createContext, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
 export type State<T> = [T, Dispatch<SetStateAction<T>>, (evt: unknown, val: T) => void]
 
-type SettingsType = null | {
+export type CurrentSettings = null | {
   darkMode: State<boolean>
   demoMode: State<boolean>
   form: State<string>
 }
 
-const Settings = createContext<SettingsType>(null)
+const Settings = createContext<CurrentSettings>(null)
 export default Settings
 
-type SettingsKey = keyof NonNullable<SettingsType>
+type SettingsKey = keyof NonNullable<CurrentSettings>
 
 /** Restore previously selected Setting */
 function restore(key: SettingsKey) {

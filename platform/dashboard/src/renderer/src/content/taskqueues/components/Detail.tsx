@@ -1,8 +1,5 @@
-import { useContext } from "react"
-
 import { singular } from "../name"
 import Sparkline from "@jay/components/Sparkline"
-import Settings from "@jay/renderer/Settings"
 import { BrowserTabs } from "@jay/components/S3Browser"
 import DrawerContent from "@jay/components/Drawer/Content"
 import TaskSimulatorButton from "./TaskSimulatorButton"
@@ -95,8 +92,7 @@ function otherTabs(props: Props) {
 }
 
 export default function TaskQueueDetail(props: Props) {
-  const settings = useContext(Settings)
-  const inDemoMode = settings?.demoMode[0] ?? false
+  const inDemoMode = props.settings?.demoMode[0] ?? false
 
   return (
     <DrawerContent

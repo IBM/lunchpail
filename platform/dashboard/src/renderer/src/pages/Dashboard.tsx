@@ -49,7 +49,9 @@ export function Dashboard(props: Props) {
   const { currentlySelectedId: id, currentlySelectedKind: kind } = drilldownProps()
   const detailContentProvider = id && kind && content[kind]
   const currentDetail =
-    detailContentProvider && detailContentProvider.detail ? detailContentProvider.detail(id, events, memos) : undefined
+    detailContentProvider && detailContentProvider.detail
+      ? detailContentProvider.detail(id, events, memos, settings)
+      : undefined
 
   /** Content to display in the main gallery */
   const bodyContentProvider = content[currentKind()]
