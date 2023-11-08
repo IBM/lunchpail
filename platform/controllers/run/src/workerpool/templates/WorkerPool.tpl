@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ print .Release.Name | trunc 53 }}
   namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/component: workerpool
