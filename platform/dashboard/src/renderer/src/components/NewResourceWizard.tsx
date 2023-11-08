@@ -50,7 +50,7 @@ type Props = PropsWithChildren<{
   kind: DetailableKind
   title: string
   singular: string
-  isEdit?: boolean
+  action?: "edit" | "clone" | "register" | null
   defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
   yaml: (values: FormContextProps["values"]) => string
   steps: StepProps[]
@@ -107,7 +107,12 @@ export default function NewResourceWizard(props: Props) {
           name="Review"
           status={errorInCreateRequest ? "error" : "default"}
           footer={{
-            nextButtonText: props.isEdit ? "Apply Changes" : `Register ${props.singular}`,
+            nextButtonText:
+              props.action === "edit"
+                ? "Apply Changes"
+                : props.action === "clone"
+                ? `Clone ${props.singular}`
+                : `Register ${props.singular}`,
             onNext: () => doCreate(ctrl.values),
           }}
         >

@@ -8,10 +8,11 @@ import { stopPropagation } from "."
 
 import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
 import EditIcon from "@patternfly/react-icons/dist/esm/icons/edit-icon"
+import CloneIcon from "@patternfly/react-icons/dist/esm/icons/clone-icon"
 import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
-type StartOrAdd = "start" | "add" | "create" | "fix" | "edit"
+type StartOrAdd = "start" | "add" | "create" | "fix" | "edit" | "clone"
 
 /** URI ?view=wizard */
 const view = "wizard"
@@ -25,8 +26,11 @@ export function isShowingWizard(kind?: Kind): Kind | void {
   }
 }
 
-function href(kind: Kind, returnTo?: string, hash?: string, qs: string[] = []) {
-  const queries = [`view=${view}`, `kind=${kind}`, ...qs, returnTo ? `returnTo=${returnTo}` : undefined].filter(Boolean)
+function href(kind: Kind, startOrAdd?: StartOrAdd, returnTo?: string, hash?: string, qs: string[] = []) {
+  const ourqs = !startOrAdd || qs.find((_) => /action=/.test(_)) ? qs : [...qs, `action=${startOrAdd}`]
+  const queries = [`view=${view}`, `kind=${kind}`, ...ourqs, returnTo ? `returnTo=${returnTo}` : undefined].filter(
+    Boolean,
+  )
 
   return "?" + queries.join("&") + (hash ?? "")
 }
@@ -46,6 +50,8 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
       <FixIcon />
     ) : start === "edit" ? (
       <EditIcon />
+    ) : start === "clone" ? (
+      <CloneIcon />
     ) : (
       <PlusCircleIcon />
     )
@@ -73,7 +79,7 @@ export function linkerButtonProps({ location, searchParams }: Omit<LocationProps
   const currentSearch = searchParams.toString()
 
   const returnTo = encodeURIComponent(`?${currentSearch}`)
-  const theHref = href(props.kind, returnTo, currentHash, props.qs)
+  const theHref = href(props.kind, "create", returnTo, currentHash, props.qs)
 
   return {
     "data-start-or-add": "create",
@@ -105,12 +111,20 @@ export default function LinkToNewWizard(props: Props) {
   const currentSearch = useSearchParams()[0]
 
   const returnTo = encodeURIComponent(`?${currentSearch}`)
-  const theHref = href(props.kind, returnTo, currentHash, props.qs)
+  const theHref = href(props.kind, props.startOrAdd, returnTo, currentHash, props.qs)
 
   const button = (
     <Button
       isInline={props.isInline}
-      variant={props.isInline ? "link" : props.startOrAdd === "fix" ? "danger" : "primary"}
+      variant={
+        props.isInline
+          ? "link"
+          : props.startOrAdd === "fix"
+          ? "danger"
+          : props.startOrAdd === "clone"
+          ? "secondary"
+          : "primary"
+      }
       size="sm"
       onClick={stopPropagation}
       data-start-or-add={props.startOrAdd || "start"}

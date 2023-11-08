@@ -32,7 +32,7 @@ function detailGroups(props: Props) {
     )
 }
 
-/** Delete this resource */
+/** Button/Action: Delete this resource */
 function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
@@ -45,9 +45,19 @@ function deleteAction(props: Props) {
   )
 }
 
+/** Button/Action: Edit this resource */
 function Edit(props: Props) {
   const qs = [`yaml=${encodeURIComponent(JSON.stringify(props.application))}`]
   return <LinkToNewWizard startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
+}
+
+/** Button/Action: Clone this resource */
+function Clone(props: Props) {
+  const qs = [
+    `name=${props.application.metadata.name + "-copy"}`,
+    `yaml=${encodeURIComponent(JSON.stringify(props.application))}`,
+  ]
+  return <LinkToNewWizard startOrAdd="clone" kind="applications" linkText="Clone" qs={qs} />
 }
 
 export default function ApplicationDetail(props: Props) {
@@ -68,7 +78,7 @@ export default function ApplicationDetail(props: Props) {
       summary={props && <DescriptionList groups={detailGroups(props)} />}
       raw={props.application}
       otherTabs={otherTabs}
-      actions={props && [<Edit {...props} />]}
+      actions={props && [<Edit {...props} />, <Clone {...props} />]}
       rightActions={props && [deleteAction(props)]}
     />
   )

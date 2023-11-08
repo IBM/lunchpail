@@ -97,8 +97,12 @@ export default function NewApplicationWizard(props: Props) {
       const yaml = searchParams.get("yaml")
       const rsrc = yaml ? (JSON.parse(decodeURIComponent(yaml)) as ApplicationSpecEvent) : undefined
 
+      // have we been asked to suggest a particular name?
+      const suggestedName = searchParams.get("name")
+
       return {
         name:
+          suggestedName ??
           rsrc?.metadata.name ??
           previousValues?.name ??
           uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
@@ -211,8 +215,13 @@ export default function NewApplicationWizard(props: Props) {
     ],
   }
 
-  const isEdit = searchParams.has("yaml")
-  const title = `${isEdit ? "Edit" : "Register"} ${singular}`
+  const action =
+    searchParams.get("action") === "edit"
+      ? ("edit" as const)
+      : searchParams.get("action") === "clone"
+      ? ("clone" as const)
+      : ("register" as const)
+  const title = `${action === "edit" ? "Edit" : action === "clone" ? "Clone" : "Register"} ${singular}`
   const steps = [step1, step2, step3, step4]
 
   const getYaml = useCallback((values: Record<string, string>) => yaml(values as unknown as YamlProps), [])
@@ -225,7 +234,7 @@ export default function NewApplicationWizard(props: Props) {
       defaults={defaults}
       yaml={getYaml}
       steps={steps}
-      isEdit={isEdit}
+      action={action}
     >
       An {singular} is the source code that knows how to consume and then process <strong>Tasks</strong>. Once you have
       registered your {singular}, you can bring online <strong>{workerpoolsName}</strong> that run the {singular}{" "}
