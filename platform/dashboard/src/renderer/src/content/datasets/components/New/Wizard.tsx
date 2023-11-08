@@ -168,7 +168,7 @@ export default function NewDataSetWizard() {
       defaults={defaults}
       yaml={yaml}
       steps={steps}
-      isEdit
+      isEdit={action === "edit"}
     >
       An {singular} stores information that is not specific to any one Task in a {taskqueuesSingular}, e.g. a
       pre-trained model or a chip design that is being tested across multiple configurations.{" "}

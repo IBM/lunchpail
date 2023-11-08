@@ -8,7 +8,10 @@ type Props = Pick<WizardProps, "startOrAdd"> & {
 }
 
 export function LinkToNewDataSet(props: Props) {
-  const qs: string[] = [`action=${props.action}`]
+  const qs: string[] = []
+  if (props.action) {
+    qs.push(`action=${props.action}`)
+  }
   if (props.namespace) {
     qs.push(`namespace=${props.namespace}`)
   }

@@ -107,7 +107,7 @@ export default function NewResourceWizard(props: Props) {
           name="Review"
           status={errorInCreateRequest ? "error" : "default"}
           footer={{
-            nextButtonText: props.isEdit ? "Apply Changes" : `Create ${props.singular}`,
+            nextButtonText: props.isEdit ? "Apply Changes" : `Register ${props.singular}`,
             onNext: () => doCreate(ctrl.values),
           }}
         >
