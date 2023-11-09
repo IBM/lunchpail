@@ -5,13 +5,18 @@ import type KubernetesResource from "@jay/common/events/KubernetesResource"
  * presentation.
  */
 export default function trimJunk<R extends KubernetesResource>(resource: R) {
-  //  return Object.assign({}, yaml, {
-  //  return yaml.replace(/^\s+kopf\.zalando\.org\S+$/mg, "")
-  const copy = Object.assign({}, resource)
+  const copy = JSON.parse(JSON.stringify(resource))
+
   if ("metadata" in copy && copy.metadata && typeof copy.metadata === "object") {
     for (const key of Object.keys(copy.metadata)) {
       if (key === "resourceVersion" || key === "generation" || key === "uid" || key === "finalizers") {
         delete copy.metadata[key]
+      } else if (key === "annotations") {
+        for (const akey of Object.keys(copy.metadata.annotations)) {
+          if (/^codeflare.dev/.test(akey)) {
+            //delete copy.metadata.annotations[akey]
+          }
+        }
       }
     }
     if ("annotations" in copy.metadata) {
@@ -28,5 +33,6 @@ export default function trimJunk<R extends KubernetesResource>(resource: R) {
       }
     }
   }
-  return copy
+
+  return JSON.stringify(copy)
 }
