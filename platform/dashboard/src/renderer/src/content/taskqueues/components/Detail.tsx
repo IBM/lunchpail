@@ -21,7 +21,11 @@ function storageType(props: Props) {
 }
 
 function inboxHistory(props: Props) {
-  return props.events.map((_) => parseInt(_.metadata.annotations["codeflare.dev/unassigned"], 10))
+  return props.events.map((_) =>
+    !_.metadata.annotations["codeflare.dev/unassigned"]
+      ? 0
+      : parseInt(_.metadata.annotations["codeflare.dev/unassigned"], 10),
+  )
 }
 
 function unassignedChart(props: Props) {
