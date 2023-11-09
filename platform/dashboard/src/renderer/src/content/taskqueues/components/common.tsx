@@ -9,7 +9,6 @@ import { name as workerpoolsName } from "../../workerpools/name"
 import { name as applicationsName } from "../../applications/name"
 
 import type { ReactNode } from "react"
-import type { GridTypeData } from "@jay/components/Grid/Cell"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
@@ -66,22 +65,16 @@ function inboxCount(props: JustEvents) {
   return last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
 }
 
-function cells(count: number, gridDataType: GridTypeData, props: NameEventsTaskQueueIndex) {
+function cells(count: number, props: NameEventsTaskQueueIndex) {
   if (!count) {
-    return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={props.taskqueueIndex} gridTypeData="placeholder" />
+    return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={props.taskqueueIndex} />
   }
-  return (
-    <Cells
-      inbox={{ [props.name]: inboxCount(props) }}
-      taskqueueIndex={props.taskqueueIndex}
-      gridTypeData={gridDataType}
-    />
-  )
+  return <Cells inbox={{ [props.name]: inboxCount(props) }} taskqueueIndex={props.taskqueueIndex} />
 }
 
 function unassigned(props: NameEventsTaskQueueIndex) {
   const count = inboxCount(props)
-  return descriptionGroup("Tasks", count === 0 ? None() : cells(count, "unassigned", props), count)
+  return descriptionGroup("Tasks", count === 0 ? None() : cells(count, props), count)
 }
 
 export function commonGroups(props: Props): ReactNode[] {

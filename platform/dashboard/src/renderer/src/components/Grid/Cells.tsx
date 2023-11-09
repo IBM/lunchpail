@@ -1,15 +1,20 @@
-import gridCellStacking from "change-maker"
-import { Flex, FlexItem } from "@patternfly/react-core"
+import changeMaker from "change-maker"
+import { Flex } from "@patternfly/react-core"
 
-import Cell, { GridTypeData } from "./Cell"
+import Cell from "./Cell"
 import { TaskQueueTask } from "../../content/workerpools/WorkerPoolModel"
 
 import "./Cells.scss"
 
 export type Props = {
+  /** Number of tasks in the inbox/unassigned */
   inbox: TaskQueueTask
+
+  /**
+   * This helps keep cell coloring consistent across views. Each
+   * taskqueue gets a dense [0,nTaskQueues) index.
+   */
   taskqueueIndex: Record<string, number>
-  gridTypeData: GridTypeData
 }
 
 /**
@@ -20,45 +25,40 @@ export type Props = {
  */
 const coinDenominations: number[] = [1, 10, 100, 1000].map((_) => _ * 100)
 
+/** Render one cell */
+function cell(taskqueue: string, labelNum: number, stackDepth: number, taskqueueIndex: Props["taskqueueIndex"]) {
+  const key = taskqueue + "." + labelNum + "." + taskqueueIndex[taskqueue] + "." + stackDepth
+  return <Cell key={key} taskqueue={taskqueueIndex[taskqueue]} stackDepth={stackDepth} />
+}
+
+/** @return an array of Cells */
+function queue(tasks: TaskQueueTask, taskqueueIndex: Props["taskqueueIndex"]) {
+  return Object.entries(tasks || {})
+    .filter(([, size]) => size > 0)
+    .flatMap(([taskqueue, size]) => {
+      // changeMaker() returns a mapping from coin denomination
+      // the number of such coins ('value'). Currently,
+      // changeMaker() requires that the first paramter be a
+      // currency, so we add the '$' prefix
+      return (
+        Object.entries(changeMaker("$" + size, coinDenominations))
+          .reverse()
+          // Find the number of stacks that are being used to render 'size' <Cell/> by finding the non-zero values from changeMaker()
+          .filter(([, numStacks]) => numStacks > 0)
+          .map(([stackDepth, numStacks]) =>
+            // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
+            Array(numStacks)
+              .fill(0)
+              .map((_, idx) => cell(taskqueue, idx, parseInt(stackDepth, 10) / 100, taskqueueIndex)),
+          )
+      )
+    })
+}
+
 export default function Cells(props: Props) {
-  /** Render one cell */
-  function cell(cellType: GridTypeData, taskqueue: string, labelNum: number, stackDepth: number) {
-    return (
-      <FlexItem
-        key={taskqueue + "." + labelNum + "." + cellType + "." + props.taskqueueIndex[taskqueue] + "." + stackDepth}
-      >
-        <Cell type={cellType} taskqueue={props.taskqueueIndex[taskqueue]} stackDepth={stackDepth} />
-      </FlexItem>
-    )
-  }
-
-  /** @return an array of Cells */
-  function queue(tasks: TaskQueueTask, cellType: GridTypeData) {
-    return Object.entries(tasks || {})
-      .filter(([, size]) => size > 0)
-      .flatMap(([taskqueue, size]) => {
-        // gridCellStacking() returns a mapping from coin denomination
-        // the number of such coins ('value'). Currently,
-        // gridCellStacking() requires that the first paramter be a
-        // currency, so we add the '$' prefix
-        return (
-          Object.entries(gridCellStacking("$" + size, coinDenominations))
-            .reverse()
-            // Find the number of stacks that are being used to render 'size' <Cell/> by finding the non-zero values from gridCellStacking()
-            .filter(([, numStacks]) => numStacks > 0)
-            .map(([stackDepth, numStacks]) =>
-              // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
-              Array(numStacks)
-                .fill(0)
-                .map((_, idx) => cell(cellType, taskqueue, idx, parseInt(stackDepth, 10) / 100)),
-            )
-        )
-      })
-  }
-
   return (
     <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-      {queue(props.inbox, props.gridTypeData)}
+      {queue(props.inbox, props.taskqueueIndex)}
     </Flex>
   )
 }

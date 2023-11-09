@@ -30,7 +30,7 @@ export default function GridLayout(props: Props) {
       </FlexItem>
 
       <FlexItem className="codeflare--workqueues-cell">
-        <Cells inbox={props.inbox} taskqueueIndex={props.taskqueueIndex} gridTypeData="plain" />
+        <Cells inbox={props.inbox} taskqueueIndex={props.taskqueueIndex} />
       </FlexItem>
     </Flex>
   )
