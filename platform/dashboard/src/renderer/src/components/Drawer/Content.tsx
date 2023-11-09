@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode, type ReactElement } from "react"
+import { type ReactNode, type ReactElement } from "react"
 import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleText } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
@@ -52,15 +52,6 @@ export default function DrawerContent(props: Props) {
  * The Tabs and Body parts of `DrawerContent`
  */
 function TabbedContent(props: TabsProps) {
-  const [activeTabKey, setActiveTabKey] = useState<string | number>(0)
-
-  const handleTabClick = useCallback(
-    (_event, tabIndex: string | number) => {
-      setActiveTabKey(tabIndex)
-    },
-    [setActiveTabKey],
-  )
-
   const tabs: TabProps[] = [
     { title: "Summary", body: props.summary || <DetailNotFound /> },
     ...(props.otherTabs || []),
@@ -68,9 +59,15 @@ function TabbedContent(props: TabsProps) {
   ]
 
   return (
-    <Tabs activeKey={activeTabKey} onSelect={handleTabClick} mountOnEnter>
+    <Tabs defaultActiveKey={0} mountOnEnter>
       {tabs.map((tab, idx) => (
-        <Tab key={tab.title} title={<TabTitleText>{tab.title}</TabTitleText>} eventKey={idx}>
+        <Tab
+          key={tab.title}
+          id={`codeflare--drawer-tab-${tab.title}`}
+          arial-label={tab.title}
+          title={<TabTitleText>{tab.title}</TabTitleText>}
+          eventKey={idx}
+        >
           <DrawerPanelBody hasNoPadding={tab.hasNoPadding}>{tab.body}</DrawerPanelBody>
         </Tab>
       ))}
