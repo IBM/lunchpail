@@ -171,7 +171,7 @@ export default function S3Browser(
  */
 function toTree(items: BucketItem[]): Tree[] {
   const slashes = /\//
-  return items.reduce(
+  return items.slice(0, 100).reduce(
     (r, s) => {
       if (s.name) {
         s.name.split(slashes).reduce((q, _, i, a) => {
