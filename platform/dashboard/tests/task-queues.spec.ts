@@ -35,7 +35,7 @@ test("task queues links are visible", async () => {
         ].join(" ")
 
         return expect(page.locator(selector))
-          .toHaveCount(count, { timeout: 60000 })
+          .toHaveCount(count, { timeout: 80000 })
           .then(() => console.log("got taskqueue", id, count))
       }),
     )

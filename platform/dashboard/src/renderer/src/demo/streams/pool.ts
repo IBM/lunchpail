@@ -192,7 +192,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     const numWorkers = parseInt(values.count, 10)
 
     const pool = {
-      name: values.poolName,
+      name: values.name,
       numWorkers,
       application: values.application,
       taskqueue: values.taskqueue,

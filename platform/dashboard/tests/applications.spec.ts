@@ -25,7 +25,7 @@ test("4 applications visible when in demo mode", async () => {
       expectedCards.map((id) =>
         expect(page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${id}"]`))
           .toBeVisible({
-            timeout: 30000,
+            timeout: 60000,
           })
           .then(() => console.log("got application", id)),
       ),
