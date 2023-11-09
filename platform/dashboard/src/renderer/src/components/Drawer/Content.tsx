@@ -59,10 +59,11 @@ function TabbedContent(props: TabsProps) {
   ]
 
   return (
-    <Tabs defaultActiveKey={0} mountOnEnter>
+    <Tabs defaultActiveKey={0} mountOnEnter isFilled>
       {tabs.map((tab, idx) => (
         <Tab
           key={tab.title}
+          ouiaId={tab.title}
           id={`codeflare--drawer-tab-${tab.title}`}
           arial-label={tab.title}
           title={<TabTitleText>{tab.title}</TabTitleText>}

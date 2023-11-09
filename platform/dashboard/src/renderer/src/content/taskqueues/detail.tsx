@@ -7,22 +7,22 @@ import TaskQueueDetail from "./components/Detail"
 
 export default function Detail(
   id: string,
-  allEvents: ManagedEvents,
+  events: ManagedEvents,
   { taskqueueIndex, taskqueueToPool, taskqueueToTaskSimulators }: Memos,
   settings: CurrentSettings,
 ) {
-  const events = allEvents.taskqueues.filter((_) => _.metadata.name === id)
-  if (events.length === 0) {
+  const thisTaskqueueEvents = events.taskqueues.filter((_) => _.metadata.name === id)
+  if (thisTaskqueueEvents.length === 0) {
     return undefined
   } else {
     const props = {
-      idx: either(events[events.length - 1].spec.idx, taskqueueIndex[id]),
+      idx: either(thisTaskqueueEvents[thisTaskqueueEvents.length - 1].spec.idx, taskqueueIndex[id]),
       workerpools: taskqueueToPool[id] || [],
       tasksimulators: taskqueueToTaskSimulators[id] || [],
-      applications: allEvents.applications || [],
+      applications: events.applications || [],
       name: id,
-      events,
-      numEvents: events.length,
+      events: thisTaskqueueEvents,
+      numEvents: thisTaskqueueEvents.length,
       taskqueueIndex,
       settings,
     }

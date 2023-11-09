@@ -8,9 +8,12 @@ import { dl as DescriptionList, descriptionGroup } from "@jay/components/Descrip
 
 import { singular } from "../name"
 import { yamlFromSpec } from "./New/yaml"
-import { api, datasets, taskqueues } from "./Card"
+import { api, datasetsGroup, taskqueues } from "./Card"
 
-import type Props from "./Props"
+import { NewPoolButton } from "../../taskqueues/components/common"
+import { summaryTabContent as queueManagerContent, taskSimulatorAction } from "../../taskqueues/components/Detail"
+
+import { type DetailProps as Props } from "./Props"
 
 /**
  * If we can find a "foo.py", then append it to the repo, so that
@@ -28,23 +31,12 @@ function detailGroups(props: Props) {
   return [
     ...api(props),
     descriptionGroup("description", spec.description),
-    taskqueues(props),
-    datasets(props),
+    datasetsGroup(props),
     descriptionGroup("command", <Text component="pre">{spec.command}</Text>),
     descriptionGroup("image", spec.image),
     descriptionGroup("repo", repoPlusSource(props)),
     descriptionGroup("Supports Gpu?", spec.supportsGpu),
   ]
-  return Object.entries(props.application.spec)
-    .filter(([key, value]) => !!value && key !== "api" && value !== "workqueue")
-    .sort((a, b) => (a[0] === "description" ? -1 : b[1] === "description" ? 1 : a[0].localeCompare(b[0])))
-    .flatMap(([term, value]) =>
-      term === "repo"
-        ? descriptionGroup(term, repoPlusSource(props))
-        : term === "inputs"
-        ? [taskqueues(props), datasets(props)]
-        : typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value),
-    )
 }
 
 /** Button/Action: Delete this resource */
@@ -61,40 +53,91 @@ function deleteAction(props: Props) {
 }
 
 /** Button/Action: Edit this resource */
-function Edit(props: Props) {
+function editAction(props: Props) {
   const qs = [`yaml=${encodeURIComponent(JSON.stringify(props.application))}`]
-  return <LinkToNewWizard key="edit" startOrAdd="edit" kind="applications" linkText="Edit" qs={qs} />
+  return (
+    <LinkToNewWizard key="edit" startOrAdd="edit" kind="applications" linkText="" qs={qs} size="lg" variant="plain" />
+  )
 }
 
 /** Button/Action: Clone this resource */
-function Clone(props: Props) {
+function cloneAction(props: Props) {
   const qs = [
     `name=${props.application.metadata.name + "-copy"}`,
     `yaml=${encodeURIComponent(JSON.stringify(props.application))}`,
   ]
-  return <LinkToNewWizard key="clone" startOrAdd="clone" kind="applications" linkText="Clone" qs={qs} />
+  return (
+    <LinkToNewWizard key="clone" startOrAdd="clone" kind="applications" linkText="" qs={qs} size="lg" variant="plain" />
+  )
+}
+
+/** Tab that shows the Task Schema of this Application */
+function taskSchemaTab(props: Props) {
+  const { inputs } = props.application.spec
+
+  return inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
+    ? [
+        {
+          title: "Task Schema",
+          body: <Yaml showLineNumbers={false} obj={JSON.parse(inputs[0].schema.json)} />,
+          hasNoPadding: true,
+        },
+      ]
+    : []
+}
+
+function taskqueueProps(props: Props): undefined | import("../../taskqueues/components/Props").default {
+  const queues = taskqueues(props)
+
+  return queues.length === 0
+    ? undefined
+    : {
+        name: queues[0],
+        idx: props.memos.taskqueueIndex[queues[0]],
+        events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
+        applications: [props.application],
+        workerpools: props.workerpools,
+        tasksimulators: props.tasksimulators,
+        taskqueueIndex: props.memos.taskqueueIndex,
+        settings: props.settings,
+      }
+}
+
+/** Tab that shows Queues */
+function queuesTab(props: Props) {
+  const queueProps = taskqueueProps(props)
+
+  return !queueProps
+    ? []
+    : [
+        {
+          title: "Queue Manager",
+          body: queueManagerContent(queueProps),
+        },
+      ]
+}
+
+/** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
+function otherTabs(props: Props) {
+  return [...queuesTab(props), ...taskSchemaTab(props)]
 }
 
 export default function ApplicationDetail(props: Props) {
-  const { inputs } = props.application.spec
-  const otherTabs =
-    inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
-      ? [
-          {
-            title: "Task Schema",
-            body: <Yaml showLineNumbers={false} obj={JSON.parse(inputs[0].schema.json)} />,
-            hasNoPadding: true,
-          },
-        ]
-      : undefined
+  const queueProps = taskqueueProps(props)
+  const newPoolAction = !queueProps ? [] : [<NewPoolButton key="new-pool" {...queueProps} />]
+  const inDemoMode = props.settings?.demoMode[0] ?? false
+
+  const tasksim = !queueProps
+    ? []
+    : taskSimulatorAction(inDemoMode, queueProps.events[queueProps.events.length - 1], queueProps)
 
   return (
     <DrawerContent
-      summary={props && <DescriptionList groups={detailGroups(props)} />}
+      summary={<DescriptionList groups={detailGroups(props)} />}
       raw={props.application}
-      otherTabs={otherTabs}
-      actions={props && [Edit(props), Clone(props)]}
-      rightActions={props && [deleteAction(props)]}
+      otherTabs={otherTabs(props)}
+      actions={[...newPoolAction]}
+      rightActions={[...tasksim, editAction(props), cloneAction(props), deleteAction(props)]}
     />
   )
 }

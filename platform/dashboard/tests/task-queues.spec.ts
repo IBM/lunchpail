@@ -1,6 +1,8 @@
 // @ts-check
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import launchElectron from "./launch-electron"
+import expectedApplications from "./applications"
+import navigateToQueueManagerTab from "./queue-manager-tab"
 
 test("task queues links are visible", async () => {
   // Launch Electron app.
@@ -19,25 +21,10 @@ test("task queues links are visible", async () => {
     // activate the Application gallery
     await page.getByRole("link", { name: "Code" }).click()
 
-    // Verify that the three showing are the pink, purple, and green cards
-    const expectedTaskQueues = [
-      { id: "green", count: 1 },
-      { id: "pink", count: 2 },
-      { id: "purple", count: 1 },
-    ]
-
-    await Promise.all(
-      expectedTaskQueues.map(({ id, count }) => {
-        const selector = [
-          '[data-ouia-component-type="PF5/Card"]',
-          '[data-ouia-component-type="PF5/DescriptionListGroup"][data-ouia-component-id="Task Queues"]',
-          `[data-ouia-component-type="PF5/Button"][data-ouia-component-id="${id}"]`,
-        ].join(" ")
-
-        return expect(page.locator(selector))
-          .toHaveCount(count, { timeout: 80000 })
-          .then(() => console.log("got taskqueue", id, count))
-      }),
-    )
+    for await (const { application, taskqueue } of expectedApplications) {
+      console.log(`Waiting for application=${application} taskqueue=${taskqueue}`)
+      await navigateToQueueManagerTab(page, application, taskqueue)
+      console.log(`Got queue manager tab for application=${application} taskqueue=${taskqueue}`)
+    }
   }
 })

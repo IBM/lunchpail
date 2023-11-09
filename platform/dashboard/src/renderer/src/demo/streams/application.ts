@@ -10,7 +10,7 @@ import { apiVersion, ns } from "./misc"
 
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
   private readonly apis = ["spark", "ray", "torch", "workqueue"]
-  private readonly inputMd = [colors[0], colors[1], colors[0], colors[2]]
+  private readonly inputMd = colors
 
   /**
    * Model of current applications. Note the use of a fixed starting

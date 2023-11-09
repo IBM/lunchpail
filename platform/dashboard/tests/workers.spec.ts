@@ -1,16 +1,17 @@
 // @ts-check
 import { ElectronApplication, Page, expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
+import expectedApplications from "./applications"
+import navigateToQueueManagerTab from "./queue-manager-tab"
 
 test.describe.serial("workers tests running sequentially", () => {
   let electronApp: ElectronApplication
   let page: Page
   let demoModeStatus: boolean
-  const expectedApp = "worm"
-  const expectedTaskQueue = "purple"
   let workerName: string
+  const { application: expectedApp, taskqueue: expectedTaskQueue } = expectedApplications[0]
 
-  test("Task Queue link opens associated drawer", async () => {
+  test("Navigate to queue manager for app", async () => {
     // Launch Electron app.
     electronApp = await launchElectron()
 
@@ -24,17 +25,7 @@ test.describe.serial("workers tests running sequentially", () => {
     // get Applications tab element from the sidebar and click to activate Application gallery
     await page.getByRole("link", { name: "Code" }).click()
 
-    // click on the task queue link of one of the cards
-    await page.getByRole("link", { name: expectedTaskQueue }).click()
-
-    // check that the drawer for that task queue view opened
-    const id = "taskqueues." + expectedTaskQueue
-    const drawer = await page.locator(`[data-ouia-component-id="${id}"]`)
-    await expect(drawer).toBeVisible()
-
-    // verify that the drawer that opened matches the task queue that was clicked
-    const drawerTitle = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`)
-    await expect(drawerTitle).toContainText(expectedTaskQueue)
+    await navigateToQueueManagerTab(page, expectedApp, expectedTaskQueue)
   })
 
   test("'Assign Workers' button opens 'Create Compute Pool' modal", async () => {
@@ -61,7 +52,7 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(modalPage).toContainText("Review")
 
     // click 'Register Compute Pool'
-    await page.getByRole("button", { name: "Register Compute Pool" }).click()
+    await page.getByRole("button", { name: "Create Compute Pool" }).click()
 
     // Check that there is a Drawer on the screen, and extract it's name
     const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
@@ -82,10 +73,10 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(workerDrawer).toBeVisible()
 
     // check that there is a card that matches the newly created workerName, expectedApp and expectedTaskQueue
-    const card = await page.locator(`[data-ouia-component-id=${workerName}]`)
+    const card = await page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${workerName}]`)
     await expect(card).toBeVisible()
 
-    const code = await card.locator(`[data-ouia-component-id="Code"]`)
+    const code = await card.locator(`[data-ouia-component-id="Runnable Code"]`)
     const taskqueue = await card.locator(`[data-ouia-component-id="Task Queues"]`)
     await expect(code).toContainText(expectedApp, { timeout: 60000 })
     await expect(taskqueue).toContainText(expectedTaskQueue, { timeout: 60000 })

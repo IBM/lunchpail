@@ -6,9 +6,8 @@ import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
 
 import { name as workerpoolsName } from "../../workerpools/name"
-import { name as applicationsName } from "../../applications/name"
+// import { name as applicationsName } from "../../applications/name"
 
-import type { ReactNode } from "react"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import type Props from "./Props"
@@ -37,7 +36,7 @@ export function associatedApplications(props: NameAndApplications) {
   return props.applications.filter((app) => associatedApplicationsFilter(props, app))
 }
 
-function applications(props: Props) {
+/* function applications(props: Props) {
   const apps = associatedApplications(props)
   return descriptionGroup(
     `Compatible ${applicationsName}`,
@@ -45,9 +44,9 @@ function applications(props: Props) {
     apps.length,
     "The Applications that are capable of processing tasks from this queue.",
   )
-}
+} */
 
-function workerPools(props: Props) {
+export function workerpools(props: Props) {
   return descriptionGroup(
     `Active ${workerpoolsName}`,
     props.workerpools.length === 0 ? None() : linkToAllDetails("workerpools", props.workerpools),
@@ -72,13 +71,9 @@ function cells(count: number, props: NameEventsTaskQueueIndex) {
   return <Cells inbox={{ [props.name]: inboxCount(props) }} taskqueueIndex={props.taskqueueIndex} />
 }
 
-function unassigned(props: NameEventsTaskQueueIndex) {
+export function unassigned(props: NameEventsTaskQueueIndex) {
   const count = inboxCount(props)
   return descriptionGroup("Tasks", count === 0 ? None() : cells(count, props), count)
-}
-
-export function commonGroups(props: Props): ReactNode[] {
-  return [applications(props), workerPools(props), unassigned(props)]
 }
 
 export function NewPoolButton(props: Props) {

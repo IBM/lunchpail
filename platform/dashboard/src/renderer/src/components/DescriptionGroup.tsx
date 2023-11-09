@@ -130,10 +130,14 @@ export function descriptionGroup(
   return null
 }
 
-export function dl(props: { groups: ReactNode[]; props?: DescriptionListProps }) {
+export function dl(props: { groups: ReactNode[]; props?: DescriptionListProps; ouiaId?: string }) {
   // re: data-ouia-component-type: DescriptionList does not yet support ouia-component-type
   return (
-    <DescriptionList {...props.props} data-ouia-component-type="PF5/DescriptionList">
+    <DescriptionList
+      {...props.props}
+      data-ouia-component-type="PF5/DescriptionList"
+      data-ouia-component-id={props.ouiaId}
+    >
       {props.groups}
     </DescriptionList>
   )

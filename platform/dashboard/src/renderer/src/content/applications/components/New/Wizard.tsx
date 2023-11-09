@@ -236,9 +236,9 @@ export default function NewApplicationWizard(props: Props) {
       steps={steps}
       action={action}
     >
-      An {singular} is the source code that knows how to consume and then process <strong>Tasks</strong>. Once you have
-      registered your {singular}, you can bring online <strong>{workerpoolsName}</strong> that run the {singular}{" "}
-      against the tasks in a <strong>{taskqueuesSingular}</strong>.
+      This wizard helps you to register the {singular} that knows how to consume and then process <strong>Tasks</strong>
+      . Once you have registered your {singular}, you can bring online <strong>{workerpoolsName}</strong> that run the{" "}
+      {singular} against the tasks in a <strong>{taskqueuesSingular}</strong>.
     </NewResourceWizard>
   )
 }

@@ -8,8 +8,11 @@
   }
 }
 
-button.pf-m-display-lg {
-  font-size: var(--pf-v5-global--FontSize--lg);
+button,
+a {
+  &.pf-m-display-lg {
+    font-size: var(--pf-v5-global--FontSize--lg);
+  }
 }
 
 .codeflare--text-sm {

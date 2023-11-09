@@ -4,7 +4,7 @@ import type EventSourceLike from "@jay/common/events/EventSourceLike"
 import Base from "./base"
 import { apiVersionDatashim, ns } from "./misc"
 
-export const colors = ["pink", "green", "purple"]
+export const colors = ["pink", "green", "purple", "orange"]
 
 export function inbox(taskqueue: TaskQueueEvent) {
   return parseInt(taskqueue.metadata.annotations["codeflare.dev/unassigned"] || "0", 10)
@@ -19,7 +19,7 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
   private readonly buckets = ["pile1", "pile2", "pile3"]
   private readonly isReadOnly = [true, false, true]
 
-  private readonly taskqueues: TaskQueueEvent[] = Array(3)
+  private readonly taskqueues: TaskQueueEvent[] = Array(colors.length)
     .fill(0)
     .map((_, idx) => ({
       apiVersion: apiVersionDatashim,

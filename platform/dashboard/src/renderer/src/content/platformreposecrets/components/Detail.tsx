@@ -31,17 +31,13 @@ function Edit(props: Props) {
   return <LinkToNewWizard startOrAdd="edit" kind="platformreposecrets" linkText="Edit" qs={qs} />
 }
 
-function PlatformRepoSecretDetail(props: Props) {
+export default function PlatformRepoSecretDetail(props: Props) {
   return (
     <DrawerContent
-      summary={props && <DescriptionList groups={detailGroups(props)} />}
+      summary={<DescriptionList groups={detailGroups(props)} />}
       raw={props}
-      actions={props && [<Edit {...props} />]}
-      rightActions={props && [deleteAction(props)]}
+      actions={[<Edit {...props} />]}
+      rightActions={[deleteAction(props)]}
     />
   )
-}
-
-export default function MaybePlatformRepoSecretDetail(props: Props | undefined) {
-  return props && <PlatformRepoSecretDetail {...props} />
 }

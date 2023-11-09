@@ -26,9 +26,9 @@ function deleteAction(props: Props) {
   )
 }
 
-function Edit(props: Props) {
+function editAction(props: Props) {
   const qs = [`action=edit&yaml=${encodeURIComponent(JSON.stringify(props))}`]
-  return <LinkToNewWizard startOrAdd="edit" kind="datasets" linkText="Edit" qs={qs} />
+  return <LinkToNewWizard key="edit" startOrAdd="edit" kind="datasets" linkText="" qs={qs} size="lg" variant="plain" />
 }
 
 /** Tabs specific to this kind of data */
@@ -39,10 +39,9 @@ function otherTabs(props: Props) {
 export default function DataSetDetail(props: Props) {
   return (
     <DrawerContent
-      summary={props && <DescriptionList groups={detailGroups(props)} />}
+      summary={<DescriptionList groups={detailGroups(props)} />}
       raw={props}
-      actions={props && [<Edit {...props} />]}
-      rightActions={props && [deleteAction(props)]}
+      rightActions={[editAction(props), deleteAction(props)]}
       otherTabs={otherTabs(props)}
     />
   )

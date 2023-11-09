@@ -1,5 +1,5 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom"
-import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
+import { Button, type ButtonProps, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
 import type Kind from "@jay/common/Kind"
 import type LocationProps from "./LocationProps"
@@ -9,7 +9,7 @@ import { stopPropagation } from "."
 import FixIcon from "@patternfly/react-icons/dist/esm/icons/first-aid-icon"
 import EditIcon from "@patternfly/react-icons/dist/esm/icons/edit-icon"
 import CloneIcon from "@patternfly/react-icons/dist/esm/icons/clone-icon"
-import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
+// import RocketIcon from "@patternfly/react-icons/dist/esm/icons/rocket-icon"
 import PlusCircleIcon from "@patternfly/react-icons/dist/esm/icons/plus-circle-icon"
 
 type StartOrAdd = "start" | "add" | "create" | "fix" | "edit" | "clone"
@@ -45,7 +45,7 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
 
   const icon =
     start === "start" ? (
-      <RocketIcon />
+      <></> // <RocketIcon />
     ) : start === "fix" ? (
       <FixIcon />
     ) : start === "edit" ? (
@@ -92,7 +92,7 @@ export function linkerButtonProps({ location, searchParams }: Omit<LocationProps
 }
 
 /** Base/public props for subclasses */
-export type WizardProps = {
+export type WizardProps = ButtonProps & {
   startOrAdd?: StartOrAdd
 }
 
@@ -117,7 +117,9 @@ export default function LinkToNewWizard(props: Props) {
     <Button
       isInline={props.isInline}
       variant={
-        props.isInline
+        props.variant
+          ? props.variant
+          : props.isInline
           ? "link"
           : props.startOrAdd === "fix"
           ? "danger"
@@ -125,7 +127,7 @@ export default function LinkToNewWizard(props: Props) {
           ? "secondary"
           : "primary"
       }
-      size="sm"
+      size={props.size ?? "sm"}
       onClick={stopPropagation}
       data-start-or-add={props.startOrAdd || "start"}
       data-link-text={props.linkText}
@@ -134,8 +136,17 @@ export default function LinkToNewWizard(props: Props) {
     />
   )
 
-  if (props.startOrAdd === "fix") {
-    return <Tooltip content="Click here to attempt this suggested quick fix">{button}</Tooltip>
+  const tooltip =
+    props.startOrAdd === "fix"
+      ? "Attempt this suggested quick fix"
+      : props.startOrAdd === "clone"
+      ? "Clone this resource"
+      : props.startOrAdd === "edit"
+      ? "Edit this resource"
+      : undefined
+
+  if (tooltip) {
+    return <Tooltip content={tooltip}>{button}</Tooltip>
   } else {
     return button
   }

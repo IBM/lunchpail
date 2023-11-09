@@ -6,8 +6,8 @@ import { name as datasetsName } from "../datasets/name"
 
 export default (
   <span>
-    Your <strong>{singular}</strong> captures what it takes to process <strong>Tasks</strong>: a base image, source
-    code, configuration defaults, and any{" "}
+    <strong>{singular}</strong> captures what it takes to process <strong>Tasks</strong>: a base image, source code,
+    configuration defaults, a Task Queue, and any{" "}
     <Link to={hash("datasets")}>
       <strong>{datasetsName}</strong>
     </Link>{" "}

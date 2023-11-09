@@ -112,7 +112,9 @@ export default function NewResourceWizard(props: Props) {
                 ? "Apply Changes"
                 : props.action === "clone"
                 ? `Clone ${props.singular}`
-                : `Register ${props.singular}`,
+                : props.action === "register"
+                ? `Register ${props.singular}`
+                : `Create ${props.singular}`,
             onNext: () => doCreate(ctrl.values),
           }}
         >

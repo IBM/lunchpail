@@ -1,13 +1,15 @@
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type Memos from "../../memos"
+import type ManagedEvents from "../../ManagedEvent"
+import type { CurrentSettings } from "../../../Settings"
 
-type Props = {
-  application: ApplicationSpecEvent
-  datasets: DataSetEvent[]
-  taskqueues: TaskQueueEvent[]
-  workerpools: WorkerPoolStatusEvent[]
+type Props = Pick<ManagedEvents, "workerpools" | "datasets" | "taskqueues" | "tasksimulators"> & {
+  /** Memos to help with the UI */
+  memos: Memos
+
+  /** Application model */
+  application: ManagedEvents["applications"][number]
 }
+
+export type DetailProps = Props & { settings: CurrentSettings }
 
 export default Props

@@ -5,7 +5,7 @@ import DrawerContent from "@jay/components/Drawer/Content"
 import TaskSimulatorButton from "./TaskSimulatorButton"
 import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
-import { NewPoolButton, lastEvent, commonGroups } from "./common"
+import { NewPoolButton, lastEvent, unassigned, workerpools } from "./common"
 
 import type Props from "./Props"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
@@ -39,10 +39,11 @@ function unassignedChart(props: Props) {
 
 function detailGroups(props: Props) {
   return [
+    unassigned(props),
+    unassignedChart(props),
+    workerpools(props),
     storageType(props),
     bucket(props),
-    ...commonGroups(props),
-    unassignedChart(props),
     // completionRateChart(),
   ]
 }
@@ -63,7 +64,7 @@ function deleteAction(last: null | TaskQueueEvent) {
 }
 
 /** Launch a TaskSimulator for this taskqueue */
-function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, props: Props) {
+export function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, props: Props) {
   // don't show task simulator button when in demo mode
   return !last || inDemoMode
     ? []
@@ -95,16 +96,21 @@ function otherTabs(props: Props) {
   return !last ? [] : BrowserTabs(last.spec.local)
 }
 
+/** Summary tab content */
+export function summaryTabContent(props: Props) {
+  return <DescriptionList groups={detailGroups(props)} ouiaId={props.name} />
+}
+
 export default function TaskQueueDetail(props: Props) {
   const inDemoMode = props.settings?.demoMode[0] ?? false
 
   return (
     <DrawerContent
-      summary={props && <DescriptionList groups={detailGroups(props)} />}
-      raw={props && lastEvent(props)}
-      actions={props && leftActions(props)}
-      rightActions={props && rightActions(inDemoMode, props)}
+      summary={summaryTabContent(props)}
+      raw={lastEvent(props)}
       otherTabs={otherTabs(props)}
+      actions={leftActions(props)}
+      rightActions={rightActions(inDemoMode, props)}
     />
   )
 }

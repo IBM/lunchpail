@@ -4,7 +4,7 @@ import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { name as datasetsName } from "../../datasets/name"
-import { name as taskqueuesName } from "../../taskqueues/name"
+// import { name as taskqueuesName } from "../../taskqueues/name"
 
 import type Props from "./Props"
 
@@ -20,43 +20,47 @@ export function api(props: Props) {
   }
 }
 
-export function taskqueues(props: Props) {
-  const taskqueues = props.application.spec.inputs
-    ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes))
-    : undefined
-  const taskqueueNames = !taskqueues
-    ? []
-    : taskqueues
-        .filter(Boolean)
-        .filter((taskqueueName) => !!props.taskqueues.find((taskqueue) => taskqueueName === taskqueue.metadata.name))
+function inputs(props: Props) {
+  return props.application.spec.inputs
+    ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes)).filter(Boolean)
+    : []
+}
 
-  return (
-    taskqueueNames.length > 0 &&
-    descriptionGroup(
-      taskqueuesName,
-      taskqueueNames.length === 0 ? None() : linkToAllDetails("taskqueues", taskqueueNames),
-      taskqueueNames.length,
-      "The Task Queues this application is capable of processing, i.e. those that it is compatible with.",
-    )
+export function taskqueues(props: Props) {
+  return inputs(props).filter(
+    (taskqueueName) => !!props.taskqueues.find((taskqueue) => taskqueueName === taskqueue.metadata.name),
   )
 }
 
-export function datasets(props: Props) {
-  const datasets = props.application.spec.inputs
-    ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes))
-    : undefined
-  const datasetNames = !datasets
-    ? []
-    : datasets
-        .filter(Boolean)
-        .filter((datasetName) => !!props.datasets.find((dataset) => datasetName === dataset.metadata.name))
+function datasets(props: Props) {
+  return inputs(props).filter(
+    (datasetName) => !!props.datasets.find((dataset) => datasetName === dataset.metadata.name),
+  )
+}
+
+/* export function taskqueuesGroup(props: Props) {
+  const queues = taskqueues(props)
 
   return (
-    datasetNames.length > 0 &&
+    queues.length > 0 &&
+    descriptionGroup(
+      taskqueuesName,
+      queues.length === 0 ? None() : linkToAllDetails("taskqueues", queues),
+      queues.length,
+      "The Task Queues this application is capable of processing, i.e. those that it is compatible with.",
+    )
+  )
+} */
+
+export function datasetsGroup(props: Props) {
+  const data = datasets(props)
+
+  return (
+    data.length > 0 &&
     descriptionGroup(
       datasetsName,
-      datasetNames.length === 0 ? None() : linkToAllDetails("datasets", datasetNames),
-      datasetNames.length,
+      data.length === 0 ? None() : linkToAllDetails("datasets", data),
+      data.length,
       "The Datasets this application requires as input.",
     )
   )
@@ -73,8 +77,8 @@ export default function ApplicationCard(props: Props) {
   const groups = [
     ...api(props),
     props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
-    taskqueues(props),
-    datasets(props),
+    // taskqueuesGroup(props),
+    datasetsGroup(props),
   ]
 
   return <CardInGallery kind="applications" name={name} icon={icon} groups={groups} />

@@ -2,5 +2,10 @@ import type ManagedEvents from "../ManagedEvent"
 import PlatformRepoSecretDetail from "./components/Detail"
 
 export default function Gallery(id: string, events: ManagedEvents) {
-  return PlatformRepoSecretDetail(events.platformreposecrets.find((_) => _.metadata.name === id))
+  const secret = events.platformreposecrets.find((_) => _.metadata.name === id)
+  if (secret) {
+    return PlatformRepoSecretDetail(secret)
+  } else {
+    return undefined
+  }
 }
