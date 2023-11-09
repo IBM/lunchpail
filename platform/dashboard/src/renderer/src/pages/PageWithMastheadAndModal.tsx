@@ -97,10 +97,7 @@ export type PageWithMastheadAndModalProps = {
 type Props = PropsWithChildren<PageWithMastheadAndModalProps>
 
 export default function PageWithMastheadAndModal(props: Props) {
-  const actions = useMemo(
-    () => (!props.actions ? undefined : { hasNoOffset: true, actions: props.actions }),
-    [props.actions],
-  )
+  const actions = useMemo(() => (!props.actions ? undefined : { actions: props.actions }), [props.actions])
 
   return (
     <Page
