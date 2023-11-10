@@ -1,8 +1,8 @@
 // @ts-check
 import { ElectronApplication, Page, expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
+import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
-import navigateToQueueManagerTab from "./queue-manager-tab"
 
 test.describe.serial("workers tests running sequentially", () => {
   let electronApp: ElectronApplication
@@ -11,7 +11,7 @@ test.describe.serial("workers tests running sequentially", () => {
   let workerName: string
   const { application: expectedApp, taskqueue: expectedTaskQueue } = expectedApplications[0]
 
-  test("Navigate to queue manager for app", async () => {
+  test("Navigate to Queue tab for application", async () => {
     // Launch Electron app.
     electronApp = await launchElectron()
 
@@ -25,7 +25,7 @@ test.describe.serial("workers tests running sequentially", () => {
     // get Applications tab element from the sidebar and click to activate Application gallery
     await page.getByRole("link", { name: "Code" }).click()
 
-    await navigateToQueueManagerTab(page, expectedApp, expectedTaskQueue)
+    await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
   })
 
   test("'Assign Workers' button opens 'Create Compute Pool' modal", async () => {

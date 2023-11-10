@@ -78,7 +78,7 @@ function taskSchemaTab(props: Props) {
   return inputs && inputs.length > 0 && typeof inputs[0].schema === "object"
     ? [
         {
-          title: "Task Schema",
+          title: "Schema",
           body: <Yaml showLineNumbers={false} obj={JSON.parse(inputs[0].schema.json)} />,
           hasNoPadding: true,
         },
@@ -111,7 +111,7 @@ function queuesTab(props: Props) {
     ? []
     : [
         {
-          title: "Queue Manager",
+          title: "Queue",
           body: queueManagerContent(queueProps),
         },
       ]

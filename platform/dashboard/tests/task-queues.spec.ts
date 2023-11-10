@@ -1,8 +1,8 @@
 // @ts-check
 import { test } from "@playwright/test"
 import launchElectron from "./launch-electron"
+import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
-import navigateToQueueManagerTab from "./queue-manager-tab"
 
 test("task queues links are visible", async () => {
   // Launch Electron app.
@@ -23,7 +23,7 @@ test("task queues links are visible", async () => {
 
     for await (const { application, taskqueue } of expectedApplications) {
       console.log(`Waiting for application=${application} taskqueue=${taskqueue}`)
-      await navigateToQueueManagerTab(page, application, taskqueue)
+      await navigateToQueueTab(page, application, taskqueue)
       console.log(`Got queue manager tab for application=${application} taskqueue=${taskqueue}`)
     }
   }
