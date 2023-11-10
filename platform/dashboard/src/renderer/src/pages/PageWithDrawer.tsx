@@ -146,7 +146,9 @@ export default function PageWithDrawer(props: Props) {
     >
       <DrawerHead>
         <Breadcrumb>
-          {provider?.isInSidebar === true && <BreadcrumbItem>Resources</BreadcrumbItem>}
+          {provider?.isInSidebar && (
+            <BreadcrumbItem>{provider.isInSidebar === true ? "Resources" : provider.isInSidebar}</BreadcrumbItem>
+          )}
           <BreadcrumbItem to={isNavigableKind(kind) ? hashIfNeeded(kind) : undefined}>
             {(kind && providers[kind].name) ?? kind}
           </BreadcrumbItem>
