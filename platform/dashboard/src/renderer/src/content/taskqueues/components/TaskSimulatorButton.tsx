@@ -7,8 +7,8 @@ import { associatedApplications } from "./common"
 import type TaskQueueProps from "./Props"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 
-import OnIcon from "@patternfly/react-icons/dist/esm/icons/sun-icon"
-import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-sun-icon"
+import OnIcon from "@patternfly/react-icons/dist/esm/icons/paper-plane-icon"
+import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-paper-plane-icon"
 
 type Props = Pick<TaskQueueProps, "name" | "applications" | "tasksimulators"> & {
   event: TaskQueueEvent
