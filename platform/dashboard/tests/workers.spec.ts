@@ -8,6 +8,7 @@ test.describe.serial("workers tests running sequentially", () => {
   let demoModeStatus: boolean
   const expectedApp = "worm"
   const expectedTaskQueue = "purple"
+  let workerName: string
 
   test("Task Queue link opens associated drawer", async () => {
     // Launch Electron app.
@@ -47,11 +48,9 @@ test.describe.serial("workers tests running sequentially", () => {
 
   test("'Create Compute Pool' modal is autopopulated", async () => {
     // check that 'Application Code' drop down matches expectedApp
-    // const appCodeMenuToggle = await page.locator(`[.pf-v5-c-menu-toggle][0]`)
     await expect(page.getByRole("button", { name: expectedApp })).toBeVisible()
 
     // check that 'Task Queue' drop down matches expectedTaskQueue
-    // const taskQueueMenuToggle = await page.locator(`[.pf-v5-c-menu-toggle][1]`)
     await expect(page.getByRole("button", { name: expectedTaskQueue })).toBeVisible()
   })
 
@@ -64,13 +63,31 @@ test.describe.serial("workers tests running sequentially", () => {
     // click 'Register Compute Pool'
     await page.getByRole("button", { name: "Register Compute Pool" }).click()
 
-    // // Check that the Drawer updated with new worker information
-    // const drawer = await page.locator(`[data-ouia-component-id="PF5/DrawerPanelContent"]`)
-    // workerName = await drawer.locator(`data-ouia-component-type="PF5/Title"`).innerText()
-    // const workerDrawer = await page.locator(`[data-ouia-component-id="workerpools.${workerName}"]`)
-    // await expect(workerDrawer).toBeDefined()
+    // Check that there is a Drawer on the screen, and extract it's name
+    const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
+    await expect(drawer).toBeVisible()
+    workerName = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`).innerText()
 
-    // // then extract the worker name
-    // await expect(workerDrawer.locator(`[data-ouia-component-type="PF5/Breadcrumb"]`)).toContainText(["Resources", "Compute"])
+    // Check that the Drawer updated with new worker information
+    const workerDrawer = await page.locator(`[data-ouia-component-id="workerpools.${workerName}"]`)
+    await expect(workerDrawer).toBeVisible()
+  })
+
+  test("Check the Compute tab for the new worker we created", async () => {
+    // click back to Compute tab element from the sidebar
+    await page.locator(`[data-ouia-component-type="PF5/NavItem"]`, { hasText: "Compute" }).click()
+
+    // check that the drawer with the worker information is still open
+    const workerDrawer = await page.locator(`[data-ouia-component-id="workerpools.${workerName}"]`)
+    await expect(workerDrawer).toBeVisible()
+
+    // check that there is a card that matches the newly created workerName, expectedApp and expectedTaskQueue
+    const card = await page.locator(`[data-ouia-component-id=${workerName}]`)
+    await expect(card).toBeVisible()
+
+    const code = await card.locator(`[data-ouia-component-id="Code"]`)
+    const taskqueue = await card.locator(`[data-ouia-component-id="Task Queues"]`)
+    await expect(code).toContainText(expectedApp, { timeout: 60000 })
+    await expect(taskqueue).toContainText(expectedTaskQueue, { timeout: 60000 })
   })
 })
