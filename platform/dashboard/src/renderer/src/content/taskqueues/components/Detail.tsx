@@ -31,9 +31,13 @@ function inboxHistory(props: Props) {
 function unassignedChart(props: Props) {
   const history = inboxHistory(props)
 
-  return descriptionGroup(
-    "Tasks over Time",
-    history.length === 0 ? <></> : <Sparkline data={history} taskqueueIdx={props.idx} />,
+  return history.length <= 1 ? (
+    <></>
+  ) : (
+    descriptionGroup(
+      "Tasks over Time",
+      history.length === 0 ? <></> : <Sparkline data={history} taskqueueIdx={props.idx} />,
+    )
   )
 }
 
