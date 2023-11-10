@@ -44,9 +44,7 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
   const start = props["data-start-or-add"]
 
   const icon =
-    start === "start" ? (
-      <></> // <RocketIcon />
-    ) : start === "fix" ? (
+    start === "start" ? undefined : start === "fix" ? ( // <RocketIcon />
       <FixIcon />
     ) : start === "edit" ? (
       <EditIcon />
@@ -60,8 +58,8 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
   return (
     <Link {...props} to={href}>
       <Flex gap={gapSm} flexWrap={noWrap}>
-        <FlexItem>{icon}</FlexItem>
-        <FlexItem>{linkText}</FlexItem>
+        {icon && <FlexItem>{icon}</FlexItem>}
+        {linkText && <FlexItem>{linkText}</FlexItem>}
       </Flex>
     </Link>
   )
