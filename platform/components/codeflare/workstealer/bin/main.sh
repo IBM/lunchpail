@@ -17,30 +17,37 @@ do
         nFiles=$(echo "$files" | wc -l)
         report_size $nFiles
 
-        # current number of consumers/workers
-        nQueues=$(ls "$queues" | wc -l)
-        idx=0
+        echo "Task $files"
 
         # no -n here, since we readline
         echo "$files" |
             while read file
             do
-                queue="$queues/$idx/inbox"
+                # pick a queue randomly
+                worker=$( find $queues/* -maxdepth 0 -type d -print0 | shuf -z -n 1 )
 
-                if [[ -d "$queue" ]] && [[ -n "$file" ]] && [[ -f "$inbox/$file" ]] && [[ ! -e "$file.$RUN_ID" ]]
-                then
-                    echo "Moving task=$file to queue=$queue"
-                    touch "$file.$RUN_ID"
-                    cp "$inbox/$file" "$queue"
+                if [[ -z "$worker" ]]
+                then echo "Warning: queue not ready"
+                else
+                    queue=$worker/inbox
+                    echo "Selected queue=$queue task=$file"
 
-                    if [[ $? = 0 ]]; then
-                        nFiles=$((nFiles - 1))
-                        report_size $nFiles
+                    if [[ -d "$queue" ]] && [[ -n "$file" ]] && [[ -f "$inbox/$file" ]] && [[ ! -e "$file.$RUN_ID" ]]
+                    then
+                        echo "Moving task=$file to queue=$queue"
+                        touch "$file.$RUN_ID"
+                        cp "$inbox/$file" "$queue"
+
+                        if [[ $? = 0 ]]; then
+                            nFiles=$((nFiles - 1))
+                            report_size $nFiles
+                        fi
+                    else
+                        if [[ ! -d "$queue" ]]; then echo "Warning: Not a directory=$queue"; fi
+                        if [[ ! -n "$file" ]]; then echo "Warning: Empty"; fi
+                        if [[ ! -f "$inbox/$file" ]]; then echo "Warning: Not a file task=$inbox/$file"; fi
+                        if [[ -e "$file.$RUN_ID" ]]; then echo "Warning: Already owned $file.$RUN_ID"; fi
                     fi
-
-                    # we currently use round-robin assignment to workers
-                    idx=$((idx + 1))
-                    idx=$((idx % $nQueues))
                 fi
             done
     fi

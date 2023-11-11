@@ -30,7 +30,7 @@ if [[ -z "$JOB_COMPLETION_INDEX" ]]; then
 fi
 
 config=/tmp/rclone.conf
-remote=s3:/${!REMOTE_PATH_VAR}/queues/$JOB_COMPLETION_INDEX
+remote=s3:/${!REMOTE_PATH_VAR}/queues/$POOL.$JOB_COMPLETION_INDEX
 local=$WORKQUEUE/$JOB_COMPLETION_INDEX
 
 cat <<EOF > $config

@@ -58,13 +58,13 @@ function waitForIt {
     for done in "${dones[@]}"; do
         idx=0
         while true; do
-            $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done... $selector$(tput sgr0)"
+            $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done... $selector$(tput sgr0)"
 
             if [[ -n $DEBUG ]] || (( $idx > 10 )); then
                 # if we can't find $done in the logs after a few
                 # iterations, start printing out raw logs to help with
                 # debugging
-                ($KUBECTL -n $ns logs $containers -l $selector --tail=4 || exit 0)
+                ($KUBECTL -n $ns logs $containers -l $selector --tail=10 || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4

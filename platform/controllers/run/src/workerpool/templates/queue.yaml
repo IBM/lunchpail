@@ -1,6 +1,8 @@
 {{- define "codeflare.dev/queue.env" }}
 - name: WORKQUEUE
   value: /queue
+- name: POOL
+  value: {{ .Values.name }}
 {{- end }}
 
 {{- define "codeflare.dev/queue.env.dataset" }}
