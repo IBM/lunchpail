@@ -26,8 +26,10 @@ export function isShowingWizard(kind?: Kind): Kind | void {
   }
 }
 
+const actionEqual = /action=/
+
 function href(kind: Kind, startOrAdd?: StartOrAdd, returnTo?: string, hash?: string, qs: string[] = []) {
-  const ourqs = !startOrAdd || qs.find((_) => /action=/.test(_)) ? qs : [...qs, `action=${startOrAdd}`]
+  const ourqs = !startOrAdd || qs.find((_) => actionEqual.test(_)) ? qs : [...qs, `action=${startOrAdd}`]
   const queries = [`view=${view}`, `kind=${kind}`, ...ourqs, returnTo ? `returnTo=${returnTo}` : undefined].filter(
     Boolean,
   )
@@ -39,7 +41,12 @@ const gapSm = { default: "gapSm" as const }
 const noWrap = { default: "nowrap" as const }
 
 /** A React component that will offer a Link to a given `data-href` */
-function linker(props: { "data-href": string; "data-link-text": string; "data-start-or-add": StartOrAdd }) {
+function linker(props: {
+  "data-href": string
+  "data-link-text": string
+  "data-start-or-add": StartOrAdd
+  linkText?: string
+}) {
   const href = props["data-href"]
   const start = props["data-start-or-add"]
 
@@ -55,8 +62,12 @@ function linker(props: { "data-href": string; "data-link-text": string; "data-st
     )
   const linkText = props["data-link-text"]
 
+  // remove linkText as <Link> isn't happy with it
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { linkText: ignore, ...linkProps } = props
+
   return (
-    <Link {...props} to={href}>
+    <Link {...linkProps} to={href}>
       <Flex gap={gapSm} flexWrap={noWrap}>
         {icon && <FlexItem>{icon}</FlexItem>}
         {linkText && <FlexItem>{linkText}</FlexItem>}

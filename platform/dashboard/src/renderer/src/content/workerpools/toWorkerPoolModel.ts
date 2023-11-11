@@ -54,12 +54,13 @@ export default function toWorkerPoolModel(
 
       return M
     },
-    { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace">,
+    { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace" | "application">,
   )
 
   return {
     label: pool.metadata.name,
     namespace: pool.metadata.namespace,
+    application: pool.spec.application.name,
     inbox: backfill(model.inbox),
     outbox: backfill(model.outbox),
     processing: backfill(model.processing),

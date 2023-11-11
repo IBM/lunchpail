@@ -54,6 +54,9 @@ type Props = PropsWithChildren<{
   defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
   yaml: (values: FormContextProps["values"]) => string
   steps: StepProps[]
+
+  /** On successful resource creation, return to show that new resource in the Details drawer? [default=true] */
+  returnToNewResource?: boolean
 }>
 
 const nextIsDisabled = { isNextDisabled: true }
@@ -71,7 +74,7 @@ export default function NewResourceWizard(props: Props) {
   const [dryRunSuccess, setDryRunSuccess] = useState<null | boolean>(null)
 
   const onCancel = returnHomeCallback()
-  const onSuccess = returnHomeCallbackWithEntity()
+  const onSuccess = props.returnToNewResource === false ? onCancel : returnHomeCallbackWithEntity()
 
   const doCreate = useCallback(async (values: FormContextProps["values"], dryRun = false) => {
     try {

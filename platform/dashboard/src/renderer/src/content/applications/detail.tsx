@@ -8,13 +8,14 @@ export default function Detail(id: string, events: ManagedEvents, memos: Memos, 
   const application = events.applications.find((_) => _.metadata.name === id)
   if (application) {
     const props = {
-      memos,
       settings,
       application,
       datasets: events.datasets,
       taskqueues: events.taskqueues,
       tasksimulators: events.tasksimulators,
       workerpools: events.workerpools,
+      taskqueueIndex: memos.taskqueueIndex,
+      latestWorkerPoolModels: memos.latestWorkerPoolModels,
     }
     return <ApplicationDetail {...props} />
   } else {

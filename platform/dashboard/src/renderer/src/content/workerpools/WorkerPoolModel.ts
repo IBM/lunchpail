@@ -12,6 +12,9 @@ export interface WorkerPoolModel {
 
   /** Namespace in which this model is stored */
   namespace: string
+
+  /** Application to which this pool is assigned */
+  application: string
 }
 
 export type WorkerPoolModelWithHistory = WorkerPoolModel & {

@@ -88,6 +88,7 @@ export default function NewRepoSecretWizard() {
       defaults={defaults}
       yaml={getYaml}
       steps={steps}
+      returnToNewResource={false}
     >
       Configure a pattern matcher that provides access to source code in a given GitHub provider.
     </NewResourceWizard>

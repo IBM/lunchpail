@@ -9,7 +9,7 @@ import DetailNotFound from "./DetailNotFound"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 type TabProps = { title: string; body: ReactNode; hasNoPadding?: boolean }
-type TabsProps = { summary: ReactNode; raw?: KubernetesResource | null; otherTabs?: TabProps[] }
+type TabsProps = { summary?: ReactNode; raw?: KubernetesResource | null; otherTabs?: TabProps[] }
 
 type Props = TabsProps & {
   /** Actions to be displayed left-justified */
@@ -53,7 +53,7 @@ export default function DrawerContent(props: Props) {
  */
 function TabbedContent(props: TabsProps) {
   const tabs: TabProps[] = [
-    { title: "Summary", body: props.summary || <DetailNotFound /> },
+    ...(!props.summary ? [] : [{ title: "Summary", body: props.summary || <DetailNotFound /> }]),
     ...(props.otherTabs || []),
     ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={trimJunk(props.raw)} />, hasNoPadding: true }]),
   ]

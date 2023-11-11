@@ -28,9 +28,9 @@ test.describe.serial("workers tests running sequentially", () => {
     await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
   })
 
-  test("'Assign Workers' button opens 'Create Compute Pool' modal", async () => {
-    // click on 'assign workers' button
-    await page.getByRole("link", { name: "Assign Workers" }).click()
+  test("'Allocate Compute' button opens 'Create Compute Pool' modal", async () => {
+    // click on the button to bring up the new worker pool wizard
+    await page.getByRole("link", { name: "Allocate Compute" }).click()
 
     // check that modal opened
     const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)

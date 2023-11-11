@@ -4,7 +4,7 @@ import launchElectron from "./launch-electron"
 import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
 
-test("task queues links are visible", async () => {
+test("task queues are visible", async () => {
   // Launch Electron app.
   const electronApp = await launchElectron()
 

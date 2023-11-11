@@ -1,4 +1,5 @@
-import { Text } from "@patternfly/react-core"
+import { useLocation, useSearchParams } from "react-router-dom"
+import { Alert, AlertActionLink, DrawerPanelBody, Stack, Tabs, Tab, TabTitleText, Text } from "@patternfly/react-core"
 
 import Yaml from "@jay/components/YamlFromObject"
 import DrawerContent from "@jay/components/Drawer/Content"
@@ -11,7 +12,9 @@ import { yamlFromSpec } from "./New/yaml"
 import { api, datasetsGroup, taskqueues } from "./Card"
 
 import { NewPoolButton } from "../../taskqueues/components/common"
-import { summaryTabContent as queueManagerContent, taskSimulatorAction } from "../../taskqueues/components/Detail"
+import { singular as workerpoolSingular } from "../../workerpools/name"
+import { correctiveLinks, summaryTabContent as computeTabContent } from "../../workerpools/components/Detail"
+import { summaryTabContent as queueTabContent, taskSimulatorAction } from "../../taskqueues/components/Detail"
 
 import { type DetailProps as Props } from "./Props"
 
@@ -93,12 +96,12 @@ function taskqueueProps(props: Props): undefined | import("../../taskqueues/comp
     ? undefined
     : {
         name: queues[0],
-        idx: props.memos.taskqueueIndex[queues[0]],
+        idx: props.taskqueueIndex[queues[0]],
         events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
         applications: [props.application],
         workerpools: props.workerpools,
         tasksimulators: props.tasksimulators,
-        taskqueueIndex: props.memos.taskqueueIndex,
+        taskqueueIndex: props.taskqueueIndex,
         settings: props.settings,
       }
 }
@@ -112,14 +115,83 @@ function queuesTab(props: Props) {
     : [
         {
           title: "Queue",
-          body: queueManagerContent(queueProps),
+          body: queueTabContent(queueProps, true),
         },
       ]
 }
 
+/** Tab that shows Compute */
+function computeTab(props: Props) {
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  const models = props.latestWorkerPoolModels.filter((_) => _.application === props.application.metadata.name)
+  if (models.length === 0) {
+    return []
+  }
+
+  const body = (
+    <Tabs isSecondary mountOnEnter defaultActiveKey={models[0].label}>
+      {models.map((model) => {
+        const model0 = {
+          model,
+          taskqueueIndex: props.taskqueueIndex,
+          status: props.workerpools.find((_) => models[0].label === _.metadata.name),
+        }
+
+        const corrections = correctiveLinks({ location, searchParams }, model0)
+        const tabBody = (
+          <Stack hasGutter>
+            {corrections.length > 0 && (
+              <Alert
+                isInline
+                variant="danger"
+                title={`Unhealthy ${workerpoolSingular}`}
+                actionLinks={corrections.map((_) => (
+                  <AlertActionLink {..._} />
+                ))}
+              >
+                This {workerpoolSingular} is unhealthy. Consider taking the suggested corrective action
+                {corrections.length === 1 ? "" : "s"}.
+              </Alert>
+            )}
+            {computeTabContent(model0, true)}
+          </Stack>
+        )
+
+        return (
+          <Tab
+            key={model.label}
+            title={
+              <TabTitleText>
+                {model.label.replace(props.application.metadata.name.replace(/-/, "") + "-pool-", "")}
+              </TabTitleText>
+            }
+            eventKey={model.label}
+          >
+            <DrawerPanelBody>{tabBody}</DrawerPanelBody>
+          </Tab>
+        )
+      })}
+    </Tabs>
+  )
+
+  return [
+    {
+      title: "Compute",
+      body,
+      hasNoPadding: true,
+    },
+  ]
+}
+
+function codeTab(props: Props) {
+  return { title: singular, body: <DescriptionList groups={detailGroups(props)} /> }
+}
+
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return [...queuesTab(props), ...taskSchemaTab(props)]
+  return [codeTab(props), ...queuesTab(props), ...computeTab(props), ...taskSchemaTab(props)]
 }
 
 export default function ApplicationDetail(props: Props) {
@@ -133,7 +205,6 @@ export default function ApplicationDetail(props: Props) {
 
   return (
     <DrawerContent
-      summary={<DescriptionList groups={detailGroups(props)} />}
       raw={props.application}
       otherTabs={otherTabs(props)}
       actions={[...newPoolAction]}

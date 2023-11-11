@@ -8,11 +8,12 @@ export default function Gallery(events: ManagedEvents, memos: Memos) {
     <ApplicationCard
       key={evt.metadata.name}
       application={evt}
-      memos={memos}
       datasets={events.datasets}
       taskqueues={events.taskqueues}
       tasksimulators={events.tasksimulators}
       workerpools={events.workerpools}
+      taskqueueIndex={memos.taskqueueIndex}
+      latestWorkerPoolModels={memos.latestWorkerPoolModels}
     />
   ))
 }

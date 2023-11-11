@@ -17,7 +17,12 @@ function bucket(props: Props) {
 
 function storageType(props: Props) {
   const last = lastEvent(props)
-  return descriptionGroup("Storage Type", last ? last.spec.local.type : "unknown")
+  if (last) {
+    const storageType = last.spec.local.type
+    return descriptionGroup("Variant", storageType === "COS" ? "S3-based queue" : storageType)
+  } else {
+    return undefined
+  }
 }
 
 function inboxHistory(props: Props) {
@@ -41,13 +46,12 @@ function unassignedChart(props: Props) {
   )
 }
 
-function detailGroups(props: Props) {
+function detailGroups(props: Props, tasksOnly = false) {
   return [
+    storageType(props),
     unassigned(props),
     unassignedChart(props),
-    workerpools(props),
-    storageType(props),
-    bucket(props),
+    ...(tasksOnly ? [] : [workerpools(props), bucket(props)]),
     // completionRateChart(),
   ]
 }
@@ -101,8 +105,8 @@ function otherTabs(props: Props) {
 }
 
 /** Summary tab content */
-export function summaryTabContent(props: Props) {
-  return <DescriptionList groups={detailGroups(props)} ouiaId={props.name} />
+export function summaryTabContent(props: Props, tasksOnly = false) {
+  return <DescriptionList groups={detailGroups(props, tasksOnly)} ouiaId={props.name} />
 }
 
 export default function TaskQueueDetail(props: Props) {

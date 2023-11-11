@@ -3,7 +3,9 @@ import CardInGallery from "@jay/components/CardInGallery"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
+import { singular } from "../name"
 import { name as datasetsName } from "../../datasets/name"
+import { name as workerpoolsName } from "../../workerpools/name"
 // import { name as taskqueuesName } from "../../taskqueues/name"
 
 import type Props from "./Props"
@@ -61,13 +63,34 @@ export function datasetsGroup(props: Props) {
       datasetsName,
       data.length === 0 ? None() : linkToAllDetails("datasets", data),
       data.length,
-      "The Datasets this application requires as input.",
+      `The ${datasetsName} this ${singular} requires as input.`,
     )
   )
 }
 
+export function workerpoolsGroup(props: Props) {
+  const pools = associatedWorkerPools(props)
+
+  return (
+    pools.length > 0 &&
+    descriptionGroup(
+      workerpoolsName,
+      linkToAllDetails(
+        "workerpools",
+        pools.map((_) => _.metadata.name),
+      ),
+      pools.length,
+      `The ${workerpoolsName} assigned to this ${singular}.`,
+    )
+  )
+}
+
+export function associatedWorkerPools(props: Props) {
+  return props.workerpools.filter((_) => _.spec.application.name === props.application.metadata.name)
+}
+
 function hasWorkerPool(props: Props) {
-  return !!props.workerpools.find((_) => _.spec.application.name === props.application.metadata.name)
+  return associatedWorkerPools(props).length > 0
 }
 
 export default function ApplicationCard(props: Props) {
@@ -79,6 +102,7 @@ export default function ApplicationCard(props: Props) {
     props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
     // taskqueuesGroup(props),
     datasetsGroup(props),
+    workerpoolsGroup(props),
   ]
 
   return <CardInGallery kind="applications" name={name} icon={icon} groups={groups} />

@@ -1,4 +1,5 @@
-import LinkToNewWizard, { type WizardProps } from "./wizard"
+import type LocationProps from "./LocationProps"
+import LinkToNewWizard, { type WizardProps, linkerButtonProps } from "./wizard"
 
 /**
  * @return a UI component that links to the `NewWorkerPoolWizard`. If
@@ -20,4 +21,24 @@ export function LinkToNewRepoSecret(
   }
 
   return <LinkToNewWizard {...props} kind="platformreposecrets" linkText={linkText} qs={qs} />
+}
+
+export function buttonPropsForNewRepoSecret(
+  location: Omit<LocationProps, "navigate">,
+  props: WizardProps & {
+    repo?: string
+    namespace: string
+  },
+) {
+  const linkText = `Create Repo Secret`
+  const qs = [`namespace=${props.namespace}`]
+  if (props.repo) {
+    qs.push(`repo=${props.repo}`)
+  }
+
+  return linkerButtonProps(location, {
+    kind: "platformreposecrets",
+    linkText,
+    qs,
+  })
 }
