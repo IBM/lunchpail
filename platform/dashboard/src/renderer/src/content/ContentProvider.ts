@@ -25,7 +25,7 @@ export default interface ContentProvider<K extends Kind | "controlplane" = Kind 
   isInSidebar?: true | string
 
   /** Content to display in the gallery view -- usually a CardInGallery[] */
-  gallery?(events: ManagedEvents, memos: Memos): ReactNode
+  gallery?(events: ManagedEvents, memos: Memos, settings: CurrentSettings): ReactNode
 
   /** Content to display in the detail view */
   detail(id: string, events: ManagedEvents, memos: Memos, settings: CurrentSettings): undefined | ReactNode

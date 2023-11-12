@@ -4,9 +4,11 @@ import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { singular } from "../name"
+import taskqueueProps, { datasets } from "./taskqueueProps"
+
 import { name as datasetsName } from "../../datasets/name"
 import { name as workerpoolsName } from "../../workerpools/name"
-// import { name as taskqueuesName } from "../../taskqueues/name"
+import { unassigned } from "../../taskqueues/components/common"
 
 import type Props from "./Props"
 
@@ -20,24 +22,6 @@ export function api(props: Props) {
   } else {
     return [descriptionGroup("api", api, undefined, "The API used by this Application to distribute work.")]
   }
-}
-
-function inputs(props: Props) {
-  return props.application.spec.inputs
-    ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes)).filter(Boolean)
-    : []
-}
-
-export function taskqueues(props: Props) {
-  return inputs(props).filter(
-    (taskqueueName) => !!props.taskqueues.find((taskqueue) => taskqueueName === taskqueue.metadata.name),
-  )
-}
-
-function datasets(props: Props) {
-  return inputs(props).filter(
-    (datasetName) => !!props.datasets.find((dataset) => datasetName === dataset.metadata.name),
-  )
 }
 
 /* export function taskqueuesGroup(props: Props) {
@@ -96,6 +80,7 @@ function hasWorkerPool(props: Props) {
 export default function ApplicationCard(props: Props) {
   const icon = <ApplicationIcon application={props.application} hasWorkerPool={hasWorkerPool(props)} />
   const name = props.application.metadata.name
+  const queueProps = taskqueueProps(props)
 
   const groups = [
     ...api(props),
@@ -103,6 +88,7 @@ export default function ApplicationCard(props: Props) {
     // taskqueuesGroup(props),
     datasetsGroup(props),
     workerpoolsGroup(props),
+    ...(!queueProps ? [] : [unassigned(queueProps)]),
   ]
 
   return <CardInGallery kind="applications" name={name} icon={icon} groups={groups} />

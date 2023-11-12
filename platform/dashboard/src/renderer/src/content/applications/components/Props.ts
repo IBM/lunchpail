@@ -6,8 +6,8 @@ type Props = Pick<Memos, "taskqueueIndex" | "latestWorkerPoolModels"> &
   Pick<ManagedEvents, "workerpools" | "datasets" | "taskqueues" | "tasksimulators"> & {
     /** Application model */
     application: ManagedEvents["applications"][number]
-  }
 
-export type DetailProps = Props & { settings: CurrentSettings }
+    settings: CurrentSettings
+  }
 
 export default Props

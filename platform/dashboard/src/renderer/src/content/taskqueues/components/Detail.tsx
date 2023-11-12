@@ -15,16 +15,6 @@ function bucket(props: Props) {
   return descriptionGroup("Bucket", last ? last.spec.local.bucket : "unknown")
 }
 
-function storageType(props: Props) {
-  const last = lastEvent(props)
-  if (last) {
-    const storageType = last.spec.local.type
-    return descriptionGroup("Queue Provider", storageType === "COS" ? "S3-based queue" : storageType)
-  } else {
-    return undefined
-  }
-}
-
 function inboxHistory(props: Props) {
   return props.events.map((_) =>
     !_.metadata.annotations["codeflare.dev/unassigned"]
@@ -48,7 +38,6 @@ function unassignedChart(props: Props) {
 
 function detailGroups(props: Props, tasksOnly = false) {
   return [
-    storageType(props),
     unassigned(props),
     ...unassignedChart(props),
     ...(tasksOnly ? [] : [workerpools(props), bucket(props)]),

@@ -97,7 +97,7 @@ export function Dashboard(props: Props) {
 
   return (
     <PageWithDrawer {...pwdProps}>
-      <Gallery>{bodyContentProvider.gallery && bodyContentProvider.gallery(events, memos)}</Gallery>
+      <Gallery>{bodyContentProvider.gallery && bodyContentProvider.gallery(events, memos, settings)}</Gallery>
     </PageWithDrawer>
   )
 }

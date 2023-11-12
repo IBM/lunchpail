@@ -12,10 +12,6 @@ import { name as applicationsName } from "../../applications/name"
 
 import type Props from "./Props"
 
-export function pluralize(text: string, value: number) {
-  return `${value} ${text}${value !== 1 ? "s" : ""}`
-}
-
 function completionRate(props: Props) {
   return <Sparkline data={completionRateHistory(props.model.events)} />
 }

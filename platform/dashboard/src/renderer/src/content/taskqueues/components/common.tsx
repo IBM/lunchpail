@@ -71,9 +71,25 @@ function cells(count: number, props: Props) {
   return <Cells inbox={{ [props.name]: inboxCount(props) }} taskqueueIndex={taskqueueIndex} />
 }
 
+function storageType(props: Props) {
+  const last = lastEvent(props)
+  if (last) {
+    const storageType = last.spec.local.type
+    return storageType === "COS" ? "S3-based queue" : storageType
+  } else {
+    return undefined
+  }
+}
+
 export function unassigned(props: Props) {
   const count = inboxCount(props)
-  return descriptionGroup("Unassigned Tasks", count === 0 ? None() : cells(count, props), count)
+  return descriptionGroup(
+    "Unassigned Tasks",
+    count === 0 ? None() : cells(count, props),
+    count,
+    storageType(props),
+    "Queue Provider",
+  )
 }
 
 export function NewPoolButton(props: Props) {

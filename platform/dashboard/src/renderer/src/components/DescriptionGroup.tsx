@@ -85,7 +85,7 @@ function dd(description: ReactNode | Record<string, string>) {
   return null
 }
 
-function dt(term: ReactNode, count?: number | string, helperText?: string) {
+function dt(term: ReactNode, count?: number | string, helperText?: string, helperTextHeader?: string) {
   const termUI = (
     <span className="codeflare--capitalize">{typeof term === "string" ? term.replace(/-/g, " ") : dd(term)}</span>
   )
@@ -97,7 +97,7 @@ function dt(term: ReactNode, count?: number | string, helperText?: string) {
     return (
       <DescriptionListTermHelpText>
         <Suspense fallback={<div />}>
-          <Popover headerContent={label} bodyContent={helperText}>
+          <Popover headerContent={helperTextHeader ?? label} bodyContent={helperText}>
             <DescriptionListTermHelpTextButton onClick={stopPropagation}>{label}</DescriptionListTermHelpTextButton>
           </Popover>
         </Suspense>
@@ -111,6 +111,7 @@ export function descriptionGroup(
   description: ReactNode | Record<string, string>,
   count?: number | string,
   helperText?: string,
+  helperTextHeader?: string,
 ) {
   const desc = dd(description)
   if (desc != null && desc !== undefined) {
@@ -122,7 +123,7 @@ export function descriptionGroup(
         data-ouia-component-type="PF5/DescriptionListGroup"
         data-ouia-component-id={String(term)}
       >
-        {dt(term, count, helperText)}
+        {dt(term, count, helperText, helperTextHeader)}
         <DescriptionListDescription>{desc}</DescriptionListDescription>
       </DescriptionListGroup>
     )

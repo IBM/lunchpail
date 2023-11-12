@@ -21,7 +21,8 @@ import { dl as DescriptionList, descriptionGroup } from "@jay/components/Descrip
 
 import { singular } from "../name"
 import { yamlFromSpec } from "./New/yaml"
-import { api, datasetsGroup, taskqueues } from "./Card"
+import { api, datasetsGroup } from "./Card"
+import taskqueueProps from "./taskqueueProps"
 
 import WorkerPoolIcon from "../../workerpools/components/Icon"
 import { NewPoolButton } from "../../taskqueues/components/common"
@@ -29,7 +30,7 @@ import { name as workerpoolName, singular as workerpoolSingular } from "../../wo
 import { correctiveLinks, summaryTabContent as computeTabContent } from "../../workerpools/components/Detail"
 import { summaryTabContent as queueTabContent, taskSimulatorAction } from "../../taskqueues/components/Detail"
 
-import { type DetailProps as Props } from "./Props"
+import type Props from "./Props"
 
 /**
  * If we can find a "foo.py", then append it to the repo, so that
@@ -102,22 +103,6 @@ function taskSchemaTab(props: Props) {
     : []
 }
 
-function taskqueueProps(props: Props): undefined | import("../../taskqueues/components/Props").default {
-  const queues = taskqueues(props)
-
-  return queues.length === 0
-    ? undefined
-    : {
-        name: queues[0],
-        idx: props.taskqueueIndex[queues[0]],
-        events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
-        applications: [props.application],
-        workerpools: props.workerpools,
-        tasksimulators: props.tasksimulators,
-        settings: props.settings,
-      }
-}
-
 /** Tab that shows Compute */
 function computeTab(props: Props) {
   const location = useLocation()
@@ -169,9 +154,7 @@ function computeTab(props: Props) {
                   <TabTitleIcon>
                     <WorkerPoolIcon />
                   </TabTitleIcon>
-                  <TabTitleText>
-                    {model.label.replace(props.application.metadata.name.replace(/-/, "") + "-pool-", "")}
-                  </TabTitleText>
+                  <TabTitleText>{model.label.replace(queueProps.name + "-pool-", "")}</TabTitleText>
                 </>
               }
               eventKey={model.label}
@@ -197,11 +180,15 @@ function computeTab(props: Props) {
       hasNoPadding: true,
       actions: (
         <TabAction>
-          <Badge isRead={models.length === 0}>{models.length}</Badge>
+          <Badge isRead={models.length === 0}>{pluralize("worker", models.length)}</Badge>
         </TabAction>
       ),
     },
   ]
+}
+
+function pluralize(text: string, value: number) {
+  return `${value} ${text}${value !== 1 ? "s" : ""}`
 }
 
 function codeTab(props: Props) {
