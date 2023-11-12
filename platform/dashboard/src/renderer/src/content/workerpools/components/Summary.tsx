@@ -87,9 +87,10 @@ export function summaryGroups(props: Props, statusOnly = false) {
   return [
     !statusOnly && applications && descriptionGroup(applicationsName, linkToAllDetails("applications", applications)),
     !statusOnly && taskqueues && descriptionGroup(taskqueuesName, linkToAllDetails("taskqueues", taskqueues)),
+    descriptionGroup("Number of Workers", count(props)),
     descriptionGroup("Tasks Currently Processing", numProcessing(props)),
     props.model.events.length > 1 &&
       descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
-    descriptionGroup(`Queued Work (${pluralize("worker", count(props))})`, enqueued(props)),
+    descriptionGroup("Queued Tasks (by Worker)", enqueued(props)),
   ]
 }

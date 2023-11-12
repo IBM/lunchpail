@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test"
 
-export default async function navigateToQueueManagerTab(page: Page, application: string, taskqueue: string) {
+export default async function navigateToQueues(page: Page, application: string, taskqueue: string) {
   const appCardSelector = [`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${application}"]`].join(" ")
   const appCard = page.locator(appCardSelector)
 
@@ -19,7 +19,7 @@ export default async function navigateToQueueManagerTab(page: Page, application:
   await expect(drawer).toBeVisible()
 
   const queueManagerTab = await drawer.locator(
-    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Queue"]`,
+    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Compute"]`,
   )
   await expect(queueManagerTab).toBeVisible({ timeout: 60000 })
 

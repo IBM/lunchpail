@@ -19,7 +19,7 @@ function storageType(props: Props) {
   const last = lastEvent(props)
   if (last) {
     const storageType = last.spec.local.type
-    return descriptionGroup("Variant", storageType === "COS" ? "S3-based queue" : storageType)
+    return descriptionGroup("Queue Provider", storageType === "COS" ? "S3-based queue" : storageType)
   } else {
     return undefined
   }
@@ -36,21 +36,21 @@ function inboxHistory(props: Props) {
 function unassignedChart(props: Props) {
   const history = inboxHistory(props)
 
-  return history.length <= 1 ? (
-    <></>
-  ) : (
-    descriptionGroup(
-      "Tasks over Time",
-      history.length === 0 ? <></> : <Sparkline data={history} taskqueueIdx={props.idx} />,
-    )
-  )
+  return history.length <= 1
+    ? []
+    : [
+        descriptionGroup(
+          "Tasks over Time",
+          history.length === 0 ? <></> : <Sparkline data={history} taskqueueIdx={props.idx} />,
+        ),
+      ]
 }
 
 function detailGroups(props: Props, tasksOnly = false) {
   return [
     storageType(props),
     unassigned(props),
-    unassignedChart(props),
+    ...unassignedChart(props),
     ...(tasksOnly ? [] : [workerpools(props), bucket(props)]),
     // completionRateChart(),
   ]

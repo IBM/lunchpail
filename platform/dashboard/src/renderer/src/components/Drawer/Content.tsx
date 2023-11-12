@@ -1,5 +1,5 @@
 import { type ReactNode, type ReactElement } from "react"
-import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleText } from "@patternfly/react-core"
+import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleIcon, TabTitleText } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
 import trimJunk from "./trim-junk"
@@ -8,7 +8,7 @@ import DetailNotFound from "./DetailNotFound"
 
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-type TabProps = { title: string; body: ReactNode; hasNoPadding?: boolean }
+type TabProps = { title: string; icon?: ReactNode; body: ReactNode; hasNoPadding?: boolean; actions?: ReactNode }
 type TabsProps = { summary?: ReactNode; raw?: KubernetesResource | null; otherTabs?: TabProps[] }
 
 type Props = TabsProps & {
@@ -59,15 +59,20 @@ function TabbedContent(props: TabsProps) {
   ]
 
   return (
-    <Tabs defaultActiveKey={0} mountOnEnter isFilled>
-      {tabs.map((tab, idx) => (
+    <Tabs defaultActiveKey={tabs[0].title} mountOnEnter isFilled>
+      {tabs.map((tab) => (
         <Tab
           key={tab.title}
           ouiaId={tab.title}
           id={`codeflare--drawer-tab-${tab.title}`}
           arial-label={tab.title}
-          title={<TabTitleText>{tab.title}</TabTitleText>}
-          eventKey={idx}
+          title={
+            <>
+              {tab.icon ? <TabTitleIcon>{tab.icon}</TabTitleIcon> : <></>} <TabTitleText>{tab.title}</TabTitleText>
+            </>
+          }
+          eventKey={tab.title}
+          actions={tab.actions}
         >
           <DrawerPanelBody hasNoPadding={tab.hasNoPadding}>{tab.body}</DrawerPanelBody>
         </Tab>

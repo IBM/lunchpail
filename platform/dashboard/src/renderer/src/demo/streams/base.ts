@@ -19,7 +19,7 @@ export default abstract class DemoEventSource {
     }
   }
 
-  public constructor(private readonly intervalMillis = 2000) {}
+  public constructor(private readonly intervalMillis = 1500) {}
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {

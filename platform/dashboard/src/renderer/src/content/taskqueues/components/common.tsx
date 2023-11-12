@@ -13,7 +13,6 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">
 type NameAndApplications = Pick<Props, "name" | "applications">
-type NameEventsTaskQueueIndex = JustEvents & Pick<Props, "name" | "taskqueueIndex">
 
 export function lastEvent(props: JustEvents) {
   return props.events.length === 0 ? null : props.events[props.events.length - 1]
@@ -64,16 +63,17 @@ function inboxCount(props: JustEvents) {
   return last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
 }
 
-function cells(count: number, props: NameEventsTaskQueueIndex) {
+function cells(count: number, props: Props) {
+  const taskqueueIndex = { [props.name]: 2 }
   if (!count) {
-    return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={props.taskqueueIndex} />
+    return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={taskqueueIndex} />
   }
-  return <Cells inbox={{ [props.name]: inboxCount(props) }} taskqueueIndex={props.taskqueueIndex} />
+  return <Cells inbox={{ [props.name]: inboxCount(props) }} taskqueueIndex={taskqueueIndex} />
 }
 
-export function unassigned(props: NameEventsTaskQueueIndex) {
+export function unassigned(props: Props) {
   const count = inboxCount(props)
-  return descriptionGroup("Tasks", count === 0 ? None() : cells(count, props), count)
+  return descriptionGroup("Unassigned Tasks", count === 0 ? None() : cells(count, props), count)
 }
 
 export function NewPoolButton(props: Props) {

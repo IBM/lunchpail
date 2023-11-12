@@ -23,9 +23,6 @@ type Props = {
   /** Latest set of TaskSimulators aimed at this TaskQueue */
   tasksimulators: TaskSimulatorEvent[]
 
-  /** Map TaskQueueEvent to a dense index */
-  taskqueueIndex: Record<string, number>
-
   /** Current Settings context */
   settings: CurrentSettings
 }

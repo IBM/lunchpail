@@ -1,5 +1,17 @@
 import { useLocation, useSearchParams } from "react-router-dom"
-import { Alert, AlertActionLink, DrawerPanelBody, Stack, Tabs, Tab, TabTitleText, Text } from "@patternfly/react-core"
+import {
+  Alert,
+  AlertActionLink,
+  Badge,
+  DrawerPanelBody,
+  Stack,
+  Tabs,
+  Tab,
+  TabAction,
+  TabTitleIcon,
+  TabTitleText,
+  Text,
+} from "@patternfly/react-core"
 
 import Yaml from "@jay/components/YamlFromObject"
 import DrawerContent from "@jay/components/Drawer/Content"
@@ -11,8 +23,9 @@ import { singular } from "../name"
 import { yamlFromSpec } from "./New/yaml"
 import { api, datasetsGroup, taskqueues } from "./Card"
 
+import WorkerPoolIcon from "../../workerpools/components/Icon"
 import { NewPoolButton } from "../../taskqueues/components/common"
-import { singular as workerpoolSingular } from "../../workerpools/name"
+import { name as workerpoolName, singular as workerpoolSingular } from "../../workerpools/name"
 import { correctiveLinks, summaryTabContent as computeTabContent } from "../../workerpools/components/Detail"
 import { summaryTabContent as queueTabContent, taskSimulatorAction } from "../../taskqueues/components/Detail"
 
@@ -101,23 +114,8 @@ function taskqueueProps(props: Props): undefined | import("../../taskqueues/comp
         applications: [props.application],
         workerpools: props.workerpools,
         tasksimulators: props.tasksimulators,
-        taskqueueIndex: props.taskqueueIndex,
         settings: props.settings,
       }
-}
-
-/** Tab that shows Queues */
-function queuesTab(props: Props) {
-  const queueProps = taskqueueProps(props)
-
-  return !queueProps
-    ? []
-    : [
-        {
-          title: "Queue",
-          body: queueTabContent(queueProps, true),
-        },
-      ]
 }
 
 /** Tab that shows Compute */
@@ -125,62 +123,83 @@ function computeTab(props: Props) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
 
+  const queueProps = taskqueueProps(props)
   const models = props.latestWorkerPoolModels.filter((_) => _.application === props.application.metadata.name)
-  if (models.length === 0) {
+  if (!queueProps) {
     return []
   }
 
+  const computeBody =
+    models.length === 0 ? (
+      <></>
+    ) : (
+      <Tabs mountOnEnter defaultActiveKey={models[0].label}>
+        {models.map((model) => {
+          const workerpoolProps: import("../../workerpools/components/Props").default = {
+            model,
+            taskqueueIndex: props.taskqueueIndex,
+            status: props.workerpools.find((_) => models[0].label === _.metadata.name),
+          }
+
+          const corrections = correctiveLinks({ location, searchParams }, workerpoolProps)
+          const tabBody = (
+            <Stack hasGutter>
+              {corrections.length > 0 && (
+                <Alert
+                  isInline
+                  variant="danger"
+                  title={`Unhealthy ${workerpoolSingular}`}
+                  actionLinks={corrections.map((_) => (
+                    <AlertActionLink {..._} />
+                  ))}
+                >
+                  This {workerpoolSingular} is unhealthy. Consider taking the suggested corrective action
+                  {corrections.length === 1 ? "" : "s"}.
+                </Alert>
+              )}
+              {computeTabContent(workerpoolProps, true)}
+            </Stack>
+          )
+
+          return (
+            <Tab
+              key={model.label}
+              title={
+                <>
+                  <TabTitleIcon>
+                    <WorkerPoolIcon />
+                  </TabTitleIcon>
+                  <TabTitleText>
+                    {model.label.replace(props.application.metadata.name.replace(/-/, "") + "-pool-", "")}
+                  </TabTitleText>
+                </>
+              }
+              eventKey={model.label}
+            >
+              <DrawerPanelBody>{tabBody}</DrawerPanelBody>
+            </Tab>
+          )
+        })}
+      </Tabs>
+    )
+
   const body = (
-    <Tabs isSecondary mountOnEnter defaultActiveKey={models[0].label}>
-      {models.map((model) => {
-        const model0 = {
-          model,
-          taskqueueIndex: props.taskqueueIndex,
-          status: props.workerpools.find((_) => models[0].label === _.metadata.name),
-        }
-
-        const corrections = correctiveLinks({ location, searchParams }, model0)
-        const tabBody = (
-          <Stack hasGutter>
-            {corrections.length > 0 && (
-              <Alert
-                isInline
-                variant="danger"
-                title={`Unhealthy ${workerpoolSingular}`}
-                actionLinks={corrections.map((_) => (
-                  <AlertActionLink {..._} />
-                ))}
-              >
-                This {workerpoolSingular} is unhealthy. Consider taking the suggested corrective action
-                {corrections.length === 1 ? "" : "s"}.
-              </Alert>
-            )}
-            {computeTabContent(model0, true)}
-          </Stack>
-        )
-
-        return (
-          <Tab
-            key={model.label}
-            title={
-              <TabTitleText>
-                {model.label.replace(props.application.metadata.name.replace(/-/, "") + "-pool-", "")}
-              </TabTitleText>
-            }
-            eventKey={model.label}
-          >
-            <DrawerPanelBody>{tabBody}</DrawerPanelBody>
-          </Tab>
-        )
-      })}
-    </Tabs>
+    <Stack>
+      <DrawerPanelBody>{queueTabContent(queueProps, true)}</DrawerPanelBody>
+      {computeBody}
+    </Stack>
   )
 
   return [
     {
-      title: "Compute",
+      title: workerpoolName,
       body,
       hasNoPadding: true,
+      actions: (
+        <TabAction>
+          <Badge isRead={models.length === 0}>{models.length}</Badge>
+        </TabAction>
+      ),
     },
   ]
 }
@@ -191,7 +210,7 @@ function codeTab(props: Props) {
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return [codeTab(props), ...queuesTab(props), ...computeTab(props), ...taskSchemaTab(props)]
+  return [codeTab(props), ...computeTab(props), ...taskSchemaTab(props)]
 }
 
 export default function ApplicationDetail(props: Props) {
