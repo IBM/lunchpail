@@ -116,7 +116,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
     app_name = pool["spec"]["application"]["name"]
     dataset_name = pool["spec"]["dataset"]
     worker_index = annotations["batch.kubernetes.io/job-completion-index"]
-    queue_name = f"queue-{app_name}-{dataset_name}-{worker_index}"
+    queue_name = f"{app_name}-{pool_name}-{worker_index}"
 
     body = {
         "apiVersion": "codeflare.dev/v1alpha1",
