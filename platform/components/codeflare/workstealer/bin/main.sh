@@ -15,9 +15,9 @@ do
         # current unassigned work items
         files=$(ls "$inbox" | grep -v queues)
         nFiles=$(echo "$files" | wc -l)
-        report_size $nFiles
 
-        echo "Task $files"
+        # keep track of how many we have yet to assign
+        nUnassigned=$nFiles
 
         # no -n here, since we readline
         echo "$files" |
@@ -30,12 +30,14 @@ do
                 then echo "Warning: queue not ready"
                 else
                     queue=$worker/inbox
-                    echo "Selected queue=$queue task=$file"
 
-                    if [[ -d "$queue" ]] && [[ -n "$file" ]] && [[ -f "$inbox/$file" ]] && [[ ! -e "$file.$RUN_ID" ]]
+                    if [[ -e "$file.$RUN_ID" ]]
+                    then nUnassigned=$((nUnassigned-1))
+                    elif [[ -d "$queue" ]] && [[ -n "$file" ]] && [[ -f "$inbox/$file" ]]
                     then
                         echo "Moving task=$file to queue=$queue"
                         touch "$file.$RUN_ID"
+                        nUnassigned=$((nUnassigned-1))
                         cp "$inbox/$file" "$queue"
 
                         if [[ $? = 0 ]]; then
@@ -50,6 +52,8 @@ do
                     fi
                 fi
             done
+
+        report_size $nUnassigned
     fi
 
     sleep 5
