@@ -15,6 +15,7 @@ import {
 
 import taskqueueProps from "../taskqueueProps"
 import WorkerPoolIcon from "../../../workerpools/components/Icon"
+import prettyPrintWorkerPoolName from "../../../workerpools/components/pretty-print"
 import { summaryTabContent as queueTabContent } from "../../../taskqueues/components/Detail"
 import { name as workerpoolName, singular as workerpoolSingular } from "../../../workerpools/name"
 import { correctiveLinks, summaryTabContent as computeTabContent } from "../../../workerpools/components/Detail"
@@ -107,9 +108,4 @@ export default function computeTab(props: Props) {
 
 function pluralize(text: string, value: number) {
   return `${value} ${text}${value !== 1 ? "s" : ""}`
-}
-
-/** Remove some internal naming bits, to clean up the presentation */
-export function prettyPrintWorkerPoolName(workerpoolName: string, taskqueueName: string) {
-  return workerpoolName.replace(taskqueueName + "-pool-", "")
 }

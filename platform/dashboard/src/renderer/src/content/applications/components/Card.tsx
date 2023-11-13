@@ -5,11 +5,12 @@ import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { singular } from "../name"
 import taskqueueProps, { datasets } from "./taskqueueProps"
-import { prettyPrintWorkerPoolName } from "./tabs/Compute"
 
 import { name as datasetsName } from "../../datasets/name"
 import { name as workerpoolsName } from "../../workerpools/name"
+
 import { unassigned } from "../../taskqueues/components/common"
+import prettyPrintWorkerPoolName from "../../workerpools/components/pretty-print"
 
 import type Props from "./Props"
 
