@@ -5,6 +5,7 @@ import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { singular } from "../name"
 import taskqueueProps, { datasets } from "./taskqueueProps"
+import { prettyPrintWorkerPoolName } from "./tabs/Compute"
 
 import { name as datasetsName } from "../../datasets/name"
 import { name as workerpoolsName } from "../../workerpools/name"
@@ -52,7 +53,7 @@ export function datasetsGroup(props: Props) {
   )
 }
 
-export function workerpoolsGroup(props: Props) {
+function workerpoolsGroup(props: Props, taskqueueName: string) {
   const pools = associatedWorkerPools(props)
 
   return (
@@ -61,7 +62,8 @@ export function workerpoolsGroup(props: Props) {
       workerpoolsName,
       linkToAllDetails(
         "workerpools",
-        pools.map((_) => _.metadata.name),
+        pools,
+        pools.map((_) => prettyPrintWorkerPoolName(_.metadata.name, taskqueueName)),
       ),
       pools.length,
       `The ${workerpoolsName} assigned to this ${singular}.`,
@@ -87,7 +89,7 @@ export default function ApplicationCard(props: Props) {
     props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
     // taskqueuesGroup(props),
     datasetsGroup(props),
-    workerpoolsGroup(props),
+    ...(!queueProps ? [] : [workerpoolsGroup(props, queueProps.name)]),
     ...(!queueProps ? [] : [unassigned(queueProps)]),
   ]
 

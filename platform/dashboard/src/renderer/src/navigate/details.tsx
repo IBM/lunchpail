@@ -8,7 +8,7 @@ import type LocationProps from "./LocationProps"
 import { type DetailableKind as Kind } from "../content"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-export type Entity = { id: string; kind: Kind }
+export type Entity = { id: string; kind: Kind; linkText?: string }
 
 export function href({ id, kind }: Entity, props: string | Pick<LocationProps, "location">) {
   return `?id=${id}&kind=${kind}&view=detail${typeof props === "string" ? props : props.location.hash}`
@@ -22,19 +22,26 @@ export function navigateToDetails(entity: Entity, props: Pick<LocationProps, "na
   props.navigate(href(entity, props))
 }
 
-export function routerToDetails(props: { "data-id": string; "data-kind": string; "data-hash": string }) {
+export function routerToDetails(props: {
+  "data-id": string
+  "data-kind": string
+  "data-hash": string
+  "data-link-text"?: string
+}) {
   const id = props["data-id"]
   const kind = props["data-kind"] as Kind
   const hash = props["data-hash"]
+  const linkText = props["data-link-text"] ?? id
 
   return (
     <Link {...props} to={href({ id, kind }, hash)}>
-      {id}
+      {linkText}
     </Link>
   )
 }
 
-const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
+/** Present a link to show the Details view of the given resource */
+const linkToDetails: FunctionComponent<Entity> = ({ id, kind, linkText }) => {
   const location = window.location // FIXME: useLocation()
 
   return (
@@ -47,13 +54,19 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind }) => {
       data-id={id}
       data-kind={kind}
       data-hash={location.hash}
+      data-link-text={linkText}
       component={routerToDetails}
     />
   )
 }
 
-export function linkToAllDetails(kind: Kind, resources: KubernetesResource[] | string[]) {
-  return resources.map((rsrc) =>
-    linkToDetails(typeof rsrc === "string" ? { id: rsrc, kind } : { id: rsrc.metadata.name, kind }),
+/** Present a list of links to show the Details view of the given resources */
+export function linkToAllDetails(kind: Kind, resources: KubernetesResource[] | string[], linkTexts: string[] = []) {
+  return resources.map((rsrc, idx) =>
+    linkToDetails(
+      typeof rsrc === "string"
+        ? { id: rsrc, kind, linkText: linkTexts[idx] }
+        : { id: rsrc.metadata.name, kind, linkText: linkTexts[idx] },
+    ),
   )
 }

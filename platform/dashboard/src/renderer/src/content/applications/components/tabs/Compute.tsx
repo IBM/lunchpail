@@ -72,7 +72,7 @@ export default function computeTab(props: Props) {
                   <TabTitleIcon>
                     <WorkerPoolIcon />
                   </TabTitleIcon>
-                  <TabTitleText>{model.label.replace(queueProps.name + "-pool-", "")}</TabTitleText>
+                  <TabTitleText>{prettyPrintWorkerPoolName(model.label, queueProps.name)}</TabTitleText>
                 </>
               }
               eventKey={model.label}
@@ -107,4 +107,9 @@ export default function computeTab(props: Props) {
 
 function pluralize(text: string, value: number) {
   return `${value} ${text}${value !== 1 ? "s" : ""}`
+}
+
+/** Remove some internal naming bits, to clean up the presentation */
+export function prettyPrintWorkerPoolName(workerpoolName: string, taskqueueName: string) {
+  return workerpoolName.replace(taskqueueName + "-pool-", "")
 }
