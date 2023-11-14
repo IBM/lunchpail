@@ -13,11 +13,12 @@ import {
   TabTitleText,
 } from "@patternfly/react-core"
 
+import { datasetsGroup, workerpoolsGroup } from "../Card"
 import taskqueueProps from "../taskqueueProps"
 import WorkerPoolIcon from "../../../workerpools/components/Icon"
 import prettyPrintWorkerPoolName from "../../../workerpools/components/pretty-print"
 import { summaryTabContent as queueTabContent } from "../../../taskqueues/components/Detail"
-import { name as workerpoolName, singular as workerpoolSingular } from "../../../workerpools/name"
+import { singular as workerpoolSingular } from "../../../workerpools/name"
 import { correctiveLinks, summaryTabContent as computeTabContent } from "../../../workerpools/components/Detail"
 
 import type Props from "../Props"
@@ -49,7 +50,7 @@ export default function computeTab(props: Props) {
     models.length === 0 ? (
       <></>
     ) : (
-      <Tabs mountOnEnter defaultActiveKey={models[0].label}>
+      <Tabs isSecondary mountOnEnter defaultActiveKey={models[0].label}>
         {models.map((model) => {
           const workerpoolProps = toWorkerPoolProps(model, props)
 
@@ -95,14 +96,16 @@ export default function computeTab(props: Props) {
 
   const body = (
     <Stack>
-      <DrawerPanelBody>{queueTabContent(queueProps, true)}</DrawerPanelBody>
+      <DrawerPanelBody>
+        {queueTabContent(queueProps, true, [datasetsGroup(props), workerpoolsGroup(props, queueProps.name)])}
+      </DrawerPanelBody>
       {computeBody}
     </Stack>
   )
 
   return [
     {
-      title: workerpoolName,
+      title: "Status",
       body,
       hasNoPadding: true,
       actions: (

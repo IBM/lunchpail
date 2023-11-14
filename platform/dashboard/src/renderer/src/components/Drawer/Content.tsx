@@ -2,7 +2,6 @@ import { type ReactNode, type ReactElement } from "react"
 import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleIcon, TabTitleText } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
-import trimJunk from "./trim-junk"
 import DrawerToolbar from "./Toolbar"
 import DetailNotFound from "./DetailNotFound"
 
@@ -55,7 +54,7 @@ function TabbedContent(props: TabsProps) {
   const tabs: TabProps[] = [
     ...(!props.summary ? [] : [{ title: "Summary", body: props.summary || <DetailNotFound /> }]),
     ...(props.otherTabs || []),
-    ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={trimJunk(props.raw)} />, hasNoPadding: true }]),
+    ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={props.raw} />, hasNoPadding: true }]),
   ]
 
   return (

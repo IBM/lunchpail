@@ -54,7 +54,7 @@ export function datasetsGroup(props: Props) {
   )
 }
 
-function workerpoolsGroup(props: Props, taskqueueName: string) {
+export function workerpoolsGroup(props: Props, taskqueueName: string) {
   const pools = associatedWorkerPools(props)
 
   return (

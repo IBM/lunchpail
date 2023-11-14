@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import { singular } from "../name"
 import Sparkline from "@jay/components/Sparkline"
 import { BrowserTabs } from "@jay/components/S3Browser"
@@ -94,8 +96,8 @@ function otherTabs(props: Props) {
 }
 
 /** Summary tab content */
-export function summaryTabContent(props: Props, tasksOnly = false) {
-  return <DescriptionList groups={detailGroups(props, tasksOnly)} ouiaId={props.name} />
+export function summaryTabContent(props: Props, tasksOnly = false, extraGroups: ReactNode[] = []) {
+  return <DescriptionList groups={[...extraGroups, ...detailGroups(props, tasksOnly)]} ouiaId={props.name} />
 }
 
 export default function TaskQueueDetail(props: Props) {

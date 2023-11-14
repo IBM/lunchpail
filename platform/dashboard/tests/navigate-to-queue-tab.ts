@@ -19,7 +19,7 @@ export default async function navigateToQueues(page: Page, application: string, 
   await expect(drawer).toBeVisible()
 
   const queueManagerTab = await drawer.locator(
-    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Compute"]`,
+    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Status"]`,
   )
   await expect(queueManagerTab).toBeVisible({ timeout: 60000 })
 

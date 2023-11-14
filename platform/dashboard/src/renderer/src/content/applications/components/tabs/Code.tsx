@@ -2,9 +2,9 @@ import { Text } from "@patternfly/react-core"
 
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
+import { api } from "../Card"
 import type Props from "../Props"
 import { singular } from "../../name"
-import { api, datasetsGroup } from "../Card"
 
 export default function codeTab(props: Props) {
   return { title: singular, body: <DescriptionList groups={groups(props)} /> }
@@ -26,7 +26,6 @@ function groups(props: Props) {
   return [
     ...api(props),
     descriptionGroup("description", spec.description),
-    datasetsGroup(props),
     descriptionGroup("command", <Text component="pre">{spec.command}</Text>),
     descriptionGroup("image", spec.image),
     descriptionGroup("repo", repoPlusSource(props)),

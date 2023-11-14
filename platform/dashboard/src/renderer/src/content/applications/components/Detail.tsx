@@ -7,7 +7,7 @@ import { yamlFromSpec } from "./New/yaml"
 import taskqueueProps from "./taskqueueProps"
 
 import codeTab from "./tabs/Code"
-import schemaTab from "./tabs/Schema"
+import yamlTab from "./tabs/Yaml"
 import computeTab from "./tabs/Compute"
 
 import { NewPoolButton } from "../../taskqueues/components/common"
@@ -49,7 +49,7 @@ function cloneAction(props: Props) {
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return [codeTab(props), ...computeTab(props), ...schemaTab(props)]
+  return [codeTab(props), ...computeTab(props), ...yamlTab(props)]
 }
 
 export default function ApplicationDetail(props: Props) {
@@ -63,7 +63,6 @@ export default function ApplicationDetail(props: Props) {
 
   return (
     <DrawerContent
-      raw={props.application}
       otherTabs={otherTabs(props)}
       actions={[...newPoolAction]}
       rightActions={[...tasksim, editAction(props), cloneAction(props), deleteAction(props)]}

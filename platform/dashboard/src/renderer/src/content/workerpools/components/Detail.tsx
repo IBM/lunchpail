@@ -8,8 +8,15 @@ import { LinkToNewRepoSecret, buttonPropsForNewRepoSecret } from "@jay/renderer/
 
 import type Props from "./Props"
 
+function count(props: Props) {
+  return !props.status ? 0 : props.status.spec.workers.count
+}
+
 function statusGroup(props: Props) {
-  return statusActions(props).actions.map((action) => [descriptionGroup(action.key, action)])
+  const nWorkers = count(props)
+  return statusActions(props).actions.map((action) => [
+    descriptionGroup(action.key, action, nWorkers + " worker" + (nWorkers === 1 ? "" : "s")),
+  ])
 }
 
 function reasonGroups(props: Props) {

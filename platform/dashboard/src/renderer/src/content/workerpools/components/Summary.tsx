@@ -30,10 +30,6 @@ function latestTaskQueues(props: Props) {
   return null
 }
 
-function count(props: Props) {
-  return !props.status ? 0 : props.status.spec.workers.count
-}
-
 /** One row per worker, within row, one cell per inbox or outbox enqueued task */
 function enqueued(props: Props) {
   return (
@@ -88,7 +84,7 @@ export function summaryGroups(props: Props, statusOnly = false) {
     statusOnly && enqueuedGroup(props),
     !statusOnly && applications && descriptionGroup(applicationsName, linkToAllDetails("applications", applications)),
     !statusOnly && taskqueues && descriptionGroup(taskqueuesName, linkToAllDetails("taskqueues", taskqueues)),
-    descriptionGroup("Number of Workers", count(props)),
+    // descriptionGroup("Number of Workers", count(props)),
     descriptionGroup("Tasks Currently Processing", numProcessing(props)),
     props.model.events.length > 1 &&
       descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
