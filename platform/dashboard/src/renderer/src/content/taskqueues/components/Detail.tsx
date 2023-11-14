@@ -25,7 +25,7 @@ function inboxHistory(props: Props) {
   )
 }
 
-function unassignedChart(props: Props) {
+export function unassignedChart(props: Props) {
   const history = inboxHistory(props)
 
   return history.length <= 1
@@ -41,7 +41,7 @@ function unassignedChart(props: Props) {
 function detailGroups(props: Props, tasksOnly = false) {
   return [
     unassigned(props),
-    ...unassignedChart(props),
+    // ...unassignedChart(props),
     ...(tasksOnly ? [] : [workerpools(props), bucket(props)]),
     // completionRateChart(),
   ]

@@ -86,7 +86,7 @@ export function unassigned(props: Props) {
   return descriptionGroup(
     "Unassigned Tasks",
     count === 0 ? None() : cells(count, props),
-    count,
+    isNaN(count) ? 0 : count,
     storageType(props),
     "Queue Provider",
   )

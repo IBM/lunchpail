@@ -103,6 +103,8 @@ export default function statusTab(props: Props) {
     </Stack>
   )
 
+  const nWorkers = models.reduce((N, model) => N + model.inbox.length, 0)
+
   return [
     {
       title: "Status",
@@ -110,7 +112,7 @@ export default function statusTab(props: Props) {
       hasNoPadding: true,
       actions: (
         <TabAction>
-          <Badge isRead={models.length === 0}>{pluralize("worker", models.length)}</Badge>
+          <Badge isRead={models.length === 0}>{pluralize("worker", nWorkers)}</Badge>
         </TabAction>
       ),
     },
