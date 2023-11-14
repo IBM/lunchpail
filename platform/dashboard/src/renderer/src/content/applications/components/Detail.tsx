@@ -8,7 +8,7 @@ import taskqueueProps from "./taskqueueProps"
 
 import codeTab from "./tabs/Code"
 import yamlTab from "./tabs/Yaml"
-import computeTab from "./tabs/Compute"
+import statusTab from "./tabs/Status"
 
 import { NewPoolButton } from "../../taskqueues/components/common"
 import { taskSimulatorAction } from "../../taskqueues/components/Detail"
@@ -49,7 +49,7 @@ function cloneAction(props: Props) {
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return [codeTab(props), ...computeTab(props), ...yamlTab(props)]
+  return [codeTab(props), ...statusTab(props), ...yamlTab(props)]
 }
 
 export default function ApplicationDetail(props: Props) {

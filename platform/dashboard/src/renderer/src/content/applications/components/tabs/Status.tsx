@@ -35,8 +35,8 @@ function toWorkerPoolProps(
   }
 }
 
-/** Tab that shows Compute */
-export default function computeTab(props: Props) {
+/** Tab that shows Status of tasks and compute */
+export default function statusTab(props: Props) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
 
