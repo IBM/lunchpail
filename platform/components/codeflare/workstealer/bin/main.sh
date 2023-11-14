@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# avoid "File not found" for the $queues/* glob below
+shopt -s nullglob
+
 inbox="$QUEUE"/"$INBOX"
 queues="$QUEUE"/queues
 
@@ -24,10 +27,12 @@ do
             while read file
             do
                 # pick a queue randomly
-                worker=$( find $queues/* -maxdepth 0 -type d -print0 | shuf -z -n 1 )
+                worker=$( find $queues -path "$queues/*" -maxdepth 1 -type d -print0 | shuf -z -n 1 )
 
                 if [[ -z "$worker" ]]
-                then echo "Warning: queue not ready"
+                then
+                    echo "Warning: no queues ready"
+                    break
                 else
                     queue=$worker/inbox
 
