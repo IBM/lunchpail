@@ -22,6 +22,18 @@ import { correctiveLinks, summaryTabContent as computeTabContent } from "../../.
 
 import type Props from "../Props"
 
+import type { WorkerPoolModelWithHistory } from "../../../workerpools/WorkerPoolModel"
+function toWorkerPoolProps(
+  model: WorkerPoolModelWithHistory,
+  props: Props,
+): import("../../../workerpools/components/Props").default {
+  return {
+    model,
+    taskqueueIndex: props.taskqueueIndex,
+    status: props.workerpools.find((_) => model.label === _.metadata.name),
+  }
+}
+
 /** Tab that shows Compute */
 export default function computeTab(props: Props) {
   const location = useLocation()
@@ -39,11 +51,7 @@ export default function computeTab(props: Props) {
     ) : (
       <Tabs mountOnEnter defaultActiveKey={models[0].label}>
         {models.map((model) => {
-          const workerpoolProps: import("../../../workerpools/components/Props").default = {
-            model,
-            taskqueueIndex: props.taskqueueIndex,
-            status: props.workerpools.find((_) => models[0].label === _.metadata.name),
-          }
+          const workerpoolProps = toWorkerPoolProps(model, props)
 
           const corrections = correctiveLinks({ location, searchParams }, workerpoolProps)
           const tabBody = (

@@ -45,6 +45,10 @@ function enqueued(props: Props) {
   )
 }
 
+export function enqueuedGroup(props: Props) {
+  return descriptionGroup("Tasks assigned to each worker in this pool", enqueued(props))
+}
+
 function numProcessing(props: Props) {
   return (props.model.processing || []).reduce(
     (N: number, processing) => N + Object.values(processing).reduce((M, size) => M + size, 0),
@@ -81,12 +85,13 @@ export function summaryGroups(props: Props, statusOnly = false) {
   const taskqueues = latestTaskQueues(props)
 
   return [
+    statusOnly && enqueuedGroup(props),
     !statusOnly && applications && descriptionGroup(applicationsName, linkToAllDetails("applications", applications)),
     !statusOnly && taskqueues && descriptionGroup(taskqueuesName, linkToAllDetails("taskqueues", taskqueues)),
     descriptionGroup("Number of Workers", count(props)),
     descriptionGroup("Tasks Currently Processing", numProcessing(props)),
     props.model.events.length > 1 &&
       descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
-    descriptionGroup("Queued Tasks (by Worker)", enqueued(props)),
+    !statusOnly && enqueuedGroup(props),
   ]
 }

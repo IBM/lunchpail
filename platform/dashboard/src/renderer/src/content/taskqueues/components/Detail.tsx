@@ -30,7 +30,7 @@ function unassignedChart(props: Props) {
     ? []
     : [
         descriptionGroup(
-          "Tasks over Time",
+          "Unassigned Tasks over Time",
           history.length === 0 ? <></> : <Sparkline data={history} taskqueueIdx={props.idx} />,
         ),
       ]
