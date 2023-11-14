@@ -5,7 +5,6 @@ import { dl as DescriptionList } from "@jay/renderer/components/DescriptionGroup
 
 export default function burndownTab(props: Props) {
   const queueProps = taskqueueProps(props)
-
   const groups = !queueProps ? [] : unassignedChart(queueProps)
 
   return [
