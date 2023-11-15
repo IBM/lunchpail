@@ -2,7 +2,7 @@ import wordWrap from "word-wrap"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
-import { type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
+import { TextContent, type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
 
 import { S3BrowserWithCreds } from "@jay/components/S3Browser"
 import { Checkbox, Input, NonInputElement, Select } from "@jay/components/Forms"
@@ -134,8 +134,7 @@ export default function NewDataSetWizard() {
       <Select
         fieldId="profile"
         label="Profile"
-        labelInfo="~/.aws/config and ~/.aws/credentials"
-        description="Choose an AWS Profile"
+        description="Choose an AWS Profile from ~/.aws/credentials"
         ctrl={ctrl}
         options={profileOptions}
       />
@@ -265,6 +264,20 @@ export default function NewDataSetWizard() {
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
     items: isEdit ? [endpoint, accessKey, secretAccessKey, bucket, browser] : [profile, bucket, browser],
     gridSpans: isEdit ? 12 : [6, 6, 12],
+    alerts: isEdit
+      ? undefined
+      : [
+          {
+            title: "About AWS Profiles",
+            body: (
+              <TextContent>
+                The profiles are enumerated from <strong>~/.aws/config</strong> and <strong>~/.aws/credentials</strong>.
+                You may add an <strong>endpoint_url=</strong> field under a config profile entry if your S3 endpoint is
+                not the standard AWS one.
+              </TextContent>
+            ),
+          },
+        ],
   }
 
   const step4 = {
