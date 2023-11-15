@@ -53,12 +53,12 @@ type StepProps = {
   isValid?: (ctrl: FormContextProps) => boolean
 
   /** Any Alerts to be rendered at the top of the step */
-  alerts?: {
+  alerts?: (Pick<AlertProps, "variant" | "isExpandable"> & {
     title: string
     variant?: AlertProps["variant"]
-    body: ReactNode
+    body: AlertProps["children"]
     actionLinks?: ((ctrl: FormContextProps) => AlertActionLinkProps & { linkText: string })[]
-  }[]
+  })[]
 }
 
 type Props = PropsWithChildren<{
@@ -233,8 +233,11 @@ export default function NewResourceWizard(props: Props) {
         >
           {step.alerts?.map((alert, idx, A) => (
             <Alert
+              isInline
               key={alert.title}
+              title={alert.title}
               variant={alert.variant ?? "info"}
+              isExpandable={alert.isExpandable}
               className={idx < A.length - 1 ? "" : "codeflare--step-header"}
               actionLinks={alert.actionLinks
                 ?.map((action) => action(ctrl))
@@ -246,8 +249,6 @@ export default function NewResourceWizard(props: Props) {
                     </AlertActionLink>
                   )
                 })}
-              isInline
-              title={alert.title}
             >
               {alert.body}
             </Alert>

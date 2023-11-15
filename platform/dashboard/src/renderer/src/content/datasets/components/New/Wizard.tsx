@@ -268,6 +268,7 @@ export default function NewDataSetWizard() {
       ? undefined
       : [
           {
+            isExpandable: true,
             title: "About AWS Profiles",
             body: (
               <TextContent>
