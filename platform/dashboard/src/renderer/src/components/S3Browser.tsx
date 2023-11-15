@@ -121,8 +121,8 @@ export default function S3Browser(
   props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jay>, "get" | "s3">,
 ) {
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<unknown | null>(null)
   const [secret, setSecret] = useState<null | { accessKey: string; secretKey: string }>(null)
-  const [content, setContent] = useState<BucketItem[] | { error: unknown } | null>(null)
 
   useEffect(() => {
     async function fetch() {
@@ -135,13 +135,10 @@ export default function S3Browser(
 
         const accessKey = atob(secret.data.accessKeyID)
         const secretKey = atob(secret.data.secretAccessKey)
-        const items = await props.s3.listObjects(props.endpoint, accessKey, secretKey, props.bucket)
-
         setSecret({ accessKey, secretKey })
-        setContent(items)
       } catch (error) {
         console.error("Error fetching S3 credentials", props, error)
-        setContent({ error })
+        setError(error)
       }
 
       setLoading(false)
@@ -150,7 +147,37 @@ export default function S3Browser(
     fetch()
   }, [props["secret-name"], props["secret-namespace"]])
 
-  if (loading || content === null || secret === null) {
+  if (loading || secret === null) {
+    return <Spinner />
+  } else if (error) {
+    return "Error loading secrets: " + error
+  } else {
+    return <S3BrowserWithCreds {...secret} endpoint={props.endpoint} bucket={props.bucket} s3={props.s3} />
+  }
+}
+
+export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
+  const [loading, setLoading] = useState(true)
+  const [content, setContent] = useState<BucketItem[] | { error: unknown } | null>(null)
+
+  useEffect(() => {
+    async function fetch() {
+      try {
+        const { accessKey, secretKey, endpoint, bucket } = props
+        const items = await props.s3.listObjects(endpoint, accessKey, secretKey, bucket)
+        setContent(items)
+      } catch (error) {
+        console.error("Error listing S3 objects", props, error)
+        setContent({ error })
+      }
+
+      setLoading(false)
+    }
+
+    fetch()
+  }, [props.endpoint, props.accessKey, props.secretKey, props.bucket, setContent, setLoading])
+
+  if (loading || content === null) {
     return <Spinner />
   } else if (isError(content)) {
     console.error("Error loading secrets", content)
@@ -160,7 +187,14 @@ export default function S3Browser(
     return `No objects found for bucket ${props.bucket}`
   } else {
     return (
-      <NavBrowser roots={toTree(content)} {...secret} endpoint={props.endpoint} bucket={props.bucket} s3={props.s3} />
+      <NavBrowser
+        roots={toTree(content)}
+        endpoint={props.endpoint}
+        accessKey={props.accessKey}
+        secretKey={props.secretKey}
+        bucket={props.bucket}
+        s3={props.s3}
+      />
     )
   }
 }

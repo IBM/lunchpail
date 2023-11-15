@@ -27,7 +27,7 @@ import type { State } from "../Settings"
 import type { DetailableKind } from "../content"
 
 type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
-type FormProps = FormGroupProps & { description: string } & Required<Pick<FormGroupProps, "fieldId">>
+type FormProps = FormGroupProps & { description?: string } & Required<Pick<FormGroupProps, "fieldId">>
 type GroupProps = PropsWithChildren<FormProps>
 
 import "./Forms.scss"
@@ -42,15 +42,28 @@ function Group(props: GroupProps) {
       data-has-pointer-events="true"
     >
       {props.children}
-      <FormHelperText>
-        <HelperText>
-          <HelperTextItem>{props.description}</HelperTextItem>
-        </HelperText>
-      </FormHelperText>
+
+      {props.description && (
+        <FormHelperText>
+          <HelperText>
+            <HelperTextItem>{props.description}</HelperTextItem>
+          </HelperText>
+        </FormHelperText>
+      )}
     </FormGroup>
   )
 }
 
+/**
+ * Render some non-input eleent `props.children` so that it has the
+ * same "group" decorations, e.g. a label and description, as normal
+ * form elements.
+ */
+export function NonInputElement(props: PropsWithChildren<FormProps>) {
+  return <Group {...props} isRequired={false} />
+}
+
+/** A text input form element */
 export function Input(props: FormProps & Pick<TextInputProps, "type" | "readOnlyVariant" | "customIcon"> & Ctrl) {
   const onChange = useCallback(
     (_, value: string) => props.ctrl.setValue(props.fieldId, value),
@@ -74,6 +87,7 @@ export function Input(props: FormProps & Pick<TextInputProps, "type" | "readOnly
   )
 }
 
+/** A text area form element */
 export function TextArea(props: FormProps & TextAreaProps & Ctrl) {
   const onChange = useCallback(
     (_, value: string) => props.ctrl.setValue(props.fieldId, value),
@@ -92,6 +106,7 @@ export function TextArea(props: FormProps & TextAreaProps & Ctrl) {
   )
 }
 
+/** A checkbox form element */
 export function Checkbox(
   props: FormProps & Omit<CheckboxProps, "id"> & Ctrl & { onToggle?: (value: boolean) => void },
 ) {
@@ -126,6 +141,7 @@ const selectPopperProps = {
   width: "400px",
 }
 
+/** A select form element */
 export function Select(
   props: FormProps &
     Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; currentSelection?: string },
@@ -196,6 +212,7 @@ const maxWidth = {
   maxWidth: "200px",
 } as React.CSSProperties
 
+/** A multi-select (menu with checkbox) form element */
 export function SelectCheckbox(
   props: FormProps &
     Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string[] },
@@ -265,6 +282,7 @@ export function SelectCheckbox(
   )
 }
 
+/** A number input form element */
 export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; min?: number; max?: number }) {
   const [value, setValue] = useState<number | "">(props.defaultValue !== undefined ? props.defaultValue : 1)
 

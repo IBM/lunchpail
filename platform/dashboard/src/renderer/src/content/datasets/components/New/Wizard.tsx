@@ -4,7 +4,8 @@ import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import { type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
 
-import { Checkbox, Input, Select } from "@jay/components/Forms"
+import { S3BrowserWithCreds } from "@jay/components/S3Browser"
+import { Checkbox, Input, NonInputElement, Select } from "@jay/components/Forms"
 
 import { singular } from "../../name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"
@@ -121,11 +122,13 @@ export default function NewDataSetWizard() {
     }
   }, [window.jay.s3, setProfiles])
 
+  /** The Select choices for the `profile()` select UI */
   const profileOptions = useMemo<SelectOptionProps[]>(
     () => profiles.map((_) => ({ value: _.name, description: _.endpoint })),
     [profiles],
   )
 
+  /** Help choose an AWS profile */
   function profile(ctrl: FormContextProps) {
     return (
       <Select
@@ -139,6 +142,7 @@ export default function NewDataSetWizard() {
     )
   }
 
+  /** Help choose a bucket */
   function bucket(ctrl: FormContextProps) {
     const selected =
       buckets.length === 0
@@ -157,6 +161,36 @@ export default function NewDataSetWizard() {
         currentSelection={selected}
       />
     )
+  }
+
+  /** An S3Browser to help the user validate choices of endpoint/profile/secrets/bucket */
+  function browser(ctrl: FormContextProps) {
+    if (window.jay.s3 && window.jay.get) {
+      const profile = !isEdit ? profiles.find((_) => _.name === ctrl.values.profile) : undefined
+      const endpoint = isEdit ? ctrl.values.endpoint : profile?.endpoint
+      const accessKey = isEdit ? ctrl.values.accessKey : profile?.accessKey
+      const secretKey = isEdit ? ctrl.values.secretAccessKey : profile?.secretKey
+      const bucket = ctrl.values.bucket
+
+      if (endpoint && accessKey && secretKey && bucket) {
+        return (
+          <NonInputElement
+            fieldId="s3browser"
+            label="S3 Browser"
+            labelInfo="This browser is here to help you validate the choices above"
+          >
+            <S3BrowserWithCreds
+              s3={window.jay.s3}
+              endpoint={endpoint}
+              accessKey={accessKey}
+              secretKey={secretKey}
+              bucket={bucket}
+            />
+          </NonInputElement>
+        )
+      }
+    }
+    return <></>
   }
 
   const onChange = useCallback(
@@ -229,8 +263,8 @@ export default function NewDataSetWizard() {
     name: isEdit ? "S3 Credentials and Bucket" : "S3 Provider and Bucket",
     isValid: (ctrl: FormContextProps) =>
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
-    items: isEdit ? [endpoint, accessKey, secretAccessKey, bucket] : [profile, bucket],
-    gridSpans: 6,
+    items: isEdit ? [endpoint, accessKey, secretAccessKey, bucket, browser] : [profile, bucket, browser],
+    gridSpans: isEdit ? 12 : [6, 6, 12],
   }
 
   const step4 = {
