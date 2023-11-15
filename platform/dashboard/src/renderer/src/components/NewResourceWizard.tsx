@@ -14,6 +14,7 @@ import {
   FormSection,
   Grid,
   GridItem,
+  type GridItemProps,
   Wizard,
   WizardHeader,
   WizardStep,
@@ -35,9 +36,23 @@ type KnownFormItem = "name" | "namespace" | "description"
 type FormItem = KnownFormItem | ((ctrl: FormContextProps) => ReactNode)
 
 type StepProps = {
+  /** This will be displayed as the step's name in the left-hand "guide" part of the Wizard UI */
   name: string
+
+  /** Form choices to be displayed in this step */
   items: FormItem[]
+
+  /**
+   * Optionally, you may specify a parallel array to `items` that
+   * indicates the Grid span for each item. If a number, it will be
+   * used for all `items`.
+   */
+  gridSpans?: GridItemProps["span"] | GridItemProps["span"][]
+
+  /** Validator for this step, if valid the user will be allowed to proceed to the Next step */
   isValid?: (ctrl: FormContextProps) => boolean
+
+  /** Any Alerts to be rendered at the top of the step */
   alerts?: {
     title: string
     variant?: AlertProps["variant"]
@@ -241,11 +256,17 @@ export default function NewResourceWizard(props: Props) {
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>
-                {step.items.map((item, idx) => (
-                  <GridItem key={idx} span={12}>
-                    {itemFor(item, ctrl)}
-                  </GridItem>
-                ))}
+                {step.items.map((item, idx) => {
+                  const span =
+                    typeof step.gridSpans === "number"
+                      ? step.gridSpans
+                      : (Array.isArray(step.gridSpans) ? step.gridSpans[idx] : undefined) ?? 12
+                  return (
+                    <GridItem key={idx} span={span}>
+                      {itemFor(item, ctrl)}
+                    </GridItem>
+                  )
+                })}
               </Grid>
             </FormSection>
           </Form>
@@ -264,7 +285,7 @@ export default function NewResourceWizard(props: Props) {
     const values = props.defaults(previousValues)
     const { onChange } = props
     if (onChange) {
-      Object.entries(values).forEach(([fieldId, value]) => onChange(fieldId, value, values))
+      setTimeout(() => Object.entries(values).forEach(([fieldId, value]) => onChange(fieldId, value, values)))
     }
     return values
   }, [props.kind, props.defaults, settings?.form[0]])

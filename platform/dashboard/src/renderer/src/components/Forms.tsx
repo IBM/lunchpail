@@ -128,11 +128,11 @@ const selectPopperProps = {
 
 export function Select(
   props: FormProps &
-    Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; selected?: string },
+    Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; currentSelection?: string },
 ) {
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState<string>(
-    props.selected || props.ctrl.values[props.fieldId] || "Please select one",
+    props.currentSelection ?? props.ctrl.values[props.fieldId] ?? "Please select one",
   )
 
   const onToggleClick = useCallback(() => setIsOpen((curState) => !curState), [setIsOpen])
@@ -157,7 +157,7 @@ export function Select(
     [isOpen, setIsOpen],
   )
 
-  if (props.ctrl.values[props.fieldId] && props.ctrl.values[props.fieldId] !== selected) {
+  if (!props.selected && props.ctrl.values[props.fieldId] && props.ctrl.values[props.fieldId] !== selected) {
     setSelected(props.ctrl.values[props.fieldId])
   }
 

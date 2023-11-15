@@ -98,34 +98,7 @@ export default function NewDataSetWizard() {
 
   const isEdit = searchParams.has("yaml")
 
-  useEffect(() => {
-    if (window.jay.s3) {
-      window.jay.s3.listProfiles().then(setProfiles)
-    }
-  }, [window.jay.s3, setProfiles])
-
-  const profileOptions = useMemo<SelectOptionProps[]>(
-    () => profiles.map((_) => ({ value: _.name, description: _.endpoint })),
-    [profiles],
-  )
-
-  function profile(ctrl: FormContextProps) {
-    return (
-      <Select
-        fieldId="profile"
-        label="Profile"
-        description="Choose an AWS Profile"
-        ctrl={ctrl}
-        options={profileOptions}
-      />
-    )
-  }
-
-  function bucket(ctrl: FormContextProps) {
-    return <Select fieldId="bucket" label="Bucket" description="Name of S3 bucket" ctrl={ctrl} options={buckets} />
-  }
-
-  function refreshBuckets(profile: Omit<Profile, "name">) {
+  async function refreshBuckets(profile: Omit<Profile, "name">) {
     setBuckets([])
     if (window.jay.s3) {
       window.jay.s3
@@ -142,6 +115,50 @@ export default function NewDataSetWizard() {
     }
   }
 
+  useEffect(() => {
+    if (window.jay.s3) {
+      window.jay.s3.listProfiles().then(setProfiles)
+    }
+  }, [window.jay.s3, setProfiles])
+
+  const profileOptions = useMemo<SelectOptionProps[]>(
+    () => profiles.map((_) => ({ value: _.name, description: _.endpoint })),
+    [profiles],
+  )
+
+  function profile(ctrl: FormContextProps) {
+    return (
+      <Select
+        fieldId="profile"
+        label="Profile"
+        labelInfo="~/.aws/config and ~/.aws/credentials"
+        description="Choose an AWS Profile"
+        ctrl={ctrl}
+        options={profileOptions}
+      />
+    )
+  }
+
+  function bucket(ctrl: FormContextProps) {
+    const selected =
+      buckets.length === 0
+        ? "No buckets found"
+        : buckets.find((_) => _.value === ctrl.values.bucket)
+        ? ctrl.values.bucket
+        : undefined
+    const options = selected === "No buckets found" ? [{ value: selected, isDisabled: true }] : buckets
+    return (
+      <Select
+        fieldId="bucket"
+        label="Bucket"
+        description="Name of S3 bucket"
+        ctrl={ctrl}
+        options={options}
+        currentSelection={selected}
+      />
+    )
+  }
+
   const onChange = useCallback(
     (fieldId: string, value: string, values: FormContextProps["values"]) => {
       if (!isEdit) {
@@ -149,6 +166,15 @@ export default function NewDataSetWizard() {
           const profile = profiles.find((_) => _.name === value)
           if (profile) {
             refreshBuckets(profile)
+          } else {
+            if (window.jay.s3)
+              window.jay.s3.listProfiles().then((profiles) => {
+                setProfiles(profiles)
+                const profile = profiles.find((_) => _.name === value)
+                if (profile) {
+                  refreshBuckets(profile)
+                }
+              })
           }
         }
       } else if (fieldId === "endpoint" || fieldId === "accessKey" || fieldId === "secretAccessKey") {
@@ -204,6 +230,7 @@ export default function NewDataSetWizard() {
     isValid: (ctrl: FormContextProps) =>
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
     items: isEdit ? [endpoint, accessKey, secretAccessKey, bucket] : [profile, bucket],
+    gridSpans: 6,
   }
 
   const step4 = {
