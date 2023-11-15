@@ -306,7 +306,7 @@ export function remember(
   kind: DetailableKind,
   ctrl: FormContextProps,
   formState: State<string> | undefined,
-  onChange?: (values: FormContextProps["values"]) => void,
+  onChange?: (fieldId: string, value: string, values: FormContextProps["values"]) => void,
 ) {
   // origSetValue updates the local copy in the FormContextProvider
   const { setValue: origSetValue } = ctrl
@@ -325,7 +325,7 @@ export function remember(
       }
 
       if (onChange) {
-        onChange(ctrl.values)
+        onChange(fieldId, value, ctrl.values)
       }
     },
   })

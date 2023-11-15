@@ -120,6 +120,8 @@ export function initEvents() {
   // resource get request
   ipcMain.handle("/get", (_, props: string) => import("./get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)))
 
+  ipcMain.handle("/s3/listProfiles", () => import("./s3/listProfiles").then((_) => _.default()))
+
   ipcMain.handle("/s3/listBuckets", (_, endpoint: string, accessKey: string, secretKey: string) =>
     import("./s3/listBuckets").then((_) => _.default(endpoint, accessKey, secretKey)),
   )
@@ -215,6 +217,11 @@ const apiImpl: JayApi = Object.assign(
      * S3 API
      */
     s3: {
+      /** @return list of available AWS-style profiles */
+      listProfiles(): Promise<import("@jay/common/api/s3").Profile[]> {
+        return ipcRenderer.invoke("/s3/listProfiles")
+      },
+
       /** @return list of buckets for the given s3 accessKey */
       listBuckets(
         endpoint: string,

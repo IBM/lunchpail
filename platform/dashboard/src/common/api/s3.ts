@@ -2,6 +2,9 @@
  * S3 API
  */
 export default interface S3Api {
+  /** @return list of available AWS-style profiles */
+  listProfiles(): Promise<Profile[]>
+
   /** @return list of buckets for the given s3 accessKey */
   listBuckets(endpoint: string, accessKey: string, secretKey: string): Promise<Bucket[]>
 
@@ -14,3 +17,4 @@ export default interface S3Api {
 
 export type Bucket = { name: string; creationDate: Date }
 export type BucketItem = { name?: string; prefix?: string; size: number; lastModified?: Date }
+export type Profile = { name: string; endpoint: string; accessKey: string; secretKey: string }

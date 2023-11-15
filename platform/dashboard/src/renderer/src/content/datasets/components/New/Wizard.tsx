@@ -1,5 +1,5 @@
 import wordWrap from "word-wrap"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import { type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
@@ -9,6 +9,7 @@ import { Checkbox, Input, Select } from "@jay/components/Forms"
 import { singular } from "../../name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"
 
+import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import NewResourceWizard, { password } from "@jay/components/NewResourceWizard"
 
@@ -93,25 +94,71 @@ data:
 export default function NewDataSetWizard() {
   const [searchParams] = useSearchParams()
   const [buckets, setBuckets] = useState<SelectOptionProps[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
+
+  const isEdit = searchParams.has("yaml")
+
+  useEffect(() => {
+    if (window.jay.s3) {
+      window.jay.s3.listProfiles().then(setProfiles)
+    }
+  }, [window.jay.s3, setProfiles])
+
+  const profileOptions = useMemo<SelectOptionProps[]>(
+    () => profiles.map((_) => ({ value: _.name, description: _.endpoint })),
+    [profiles],
+  )
+
+  function profile(ctrl: FormContextProps) {
+    return (
+      <Select
+        fieldId="profile"
+        label="Profile"
+        description="Choose an AWS Profile"
+        ctrl={ctrl}
+        options={profileOptions}
+      />
+    )
+  }
 
   function bucket(ctrl: FormContextProps) {
     return <Select fieldId="bucket" label="Bucket" description="Name of S3 bucket" ctrl={ctrl} options={buckets} />
   }
 
+  function refreshBuckets(profile: Omit<Profile, "name">) {
+    setBuckets([])
+    if (window.jay.s3) {
+      window.jay.s3
+        .listBuckets(profile.endpoint, profile.accessKey, profile.secretKey)
+        .then((buckets) =>
+          setBuckets(
+            buckets.map((_) => ({ value: _.name, description: "Created on " + _.creationDate.toLocaleString() })),
+          ),
+        )
+        .catch((err) => {
+          console.error(err)
+          setBuckets([])
+        })
+    }
+  }
+
   const onChange = useCallback(
-    (values: FormContextProps["values"]) => {
-      const { endpoint, accessKey, secretAccessKey } = values
-      if (endpoint && accessKey && secretAccessKey && window.jay.s3) {
-        window.jay.s3
-          .listBuckets(endpoint, accessKey, secretAccessKey)
-          .then((buckets) =>
-            setBuckets(
-              buckets.map((_) => ({ value: _.name, description: "Created on " + _.creationDate.toLocaleString() })),
-            ),
-          )
+    (fieldId: string, value: string, values: FormContextProps["values"]) => {
+      if (!isEdit) {
+        if (fieldId === "profile") {
+          const profile = profiles.find((_) => _.name === value)
+          if (profile) {
+            refreshBuckets(profile)
+          }
+        }
+      } else if (fieldId === "endpoint" || fieldId === "accessKey" || fieldId === "secretAccessKey") {
+        const endpoint = fieldId === "endpoint" ? value : values.endpoint
+        const accessKey = fieldId === "accessKey" ? value : values.accessKey
+        const secretKey = fieldId === "secretAccessKey" ? value : values.secretAccessKey
+        refreshBuckets({ endpoint, accessKey, secretKey })
       }
     },
-    [setBuckets, window.jay.s3],
+    [isEdit, profiles, setBuckets, window.jay.s3],
   )
 
   /** Initial value for form */
@@ -129,6 +176,7 @@ export default function NewDataSetWizard() {
           uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
         namespace: rsrc?.metadata.namespace ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
         description: previousValues?.description ?? "",
+        profile: previousValues?.profile ?? "",
         endpoint: rsrc?.spec.local.endpoint ?? previousValues?.endpoint ?? "",
         readonly: rsrc?.spec.local.readonly?.toString() ?? previousValues?.readonly ?? "true",
         bucket: rsrc?.spec.local.bucket ?? previousValues?.bucket ?? "",
@@ -151,17 +199,11 @@ export default function NewDataSetWizard() {
     description: "The secret access key id for your S3 provider",
   })
 
-  const step2Register = {
-    name: "Cloud endpoint",
+  const step2 = {
+    name: isEdit ? "S3 Credentials and Bucket" : "S3 Provider and Bucket",
     isValid: (ctrl: FormContextProps) =>
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
-    items: [endpoint, accessKey, secretAccessKey],
-  }
-
-  const step3 = {
-    name: "Cloud path",
-    isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
-    items: [bucket],
+    items: isEdit ? [endpoint, accessKey, secretAccessKey, bucket] : [profile, bucket],
   }
 
   const step4 = {
@@ -174,8 +216,7 @@ export default function NewDataSetWizard() {
   const action = (searchParams.get("action") as "edit" | "create" | "register") ?? "register"
 
   const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular}`
-  const steps =
-    action !== "create" ? [step1, step2Register, step3, step4] : [step1, step2Create, step2Register, step3, step4]
+  const steps = action !== "create" ? [step1, step2, step4] : [step1, step2Create, step2, step4]
 
   return (
     <NewResourceWizard

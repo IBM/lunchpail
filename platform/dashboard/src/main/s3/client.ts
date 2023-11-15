@@ -32,6 +32,10 @@ async function establishPortForward(
   })
 }
 
+function getMemoKey(endpoint: string, accessKey: string, secretKey: string) {
+  return `${endpoint}.${accessKey}.${secretKey}`
+}
+
 export default async function S3Client(endpoint: string, accessKey: string, secretKey: string) {
   const { Client } = await import("minio")
 
@@ -39,9 +43,10 @@ export default async function S3Client(endpoint: string, accessKey: string, secr
   let port: undefined | number = undefined
   let useSSL = true
 
+  const memoKey = getMemoKey(endpoint, accessKey, secretKey)
   if (endPoint in clients) {
     console.log("Using memoized S3 client", endPoint)
-    return clients[endPoint]
+    return clients[memoKey]
   }
 
   const maybeLocalMatch = endPoint.match(/^([^.]+)\.([^.]+)\.([^.]+)\.cluster.local:(\d+)$/)
@@ -61,7 +66,7 @@ export default async function S3Client(endpoint: string, accessKey: string, secr
     useSSL = false
 
     child.on("close", () => {
-      delete clients[endPoint]
+      delete clients[memoKey]
       delete portforwards[endPoint]
     })
   }
@@ -73,7 +78,7 @@ export default async function S3Client(endpoint: string, accessKey: string, secr
     accessKey,
     secretKey,
   })
-  clients[endPoint] = client
+  clients[memoKey] = client
 
   return client
 }
