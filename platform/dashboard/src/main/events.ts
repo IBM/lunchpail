@@ -120,6 +120,10 @@ export function initEvents() {
   // resource get request
   ipcMain.handle("/get", (_, props: string) => import("./get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)))
 
+  ipcMain.handle("/s3/listBuckets", (_, endpoint: string, accessKey: string, secretKey: string) =>
+    import("./s3/listBuckets").then((_) => _.default(endpoint, accessKey, secretKey)),
+  )
+
   ipcMain.handle("/s3/listObjects", (_, endpoint: string, accessKey: string, secretKey: string, bucket: string) =>
     import("./s3/listObjects").then((_) => _.default(endpoint, accessKey, secretKey, bucket)),
   )
@@ -211,6 +215,15 @@ const apiImpl: JayApi = Object.assign(
      * S3 API
      */
     s3: {
+      /** @return list of buckets for the given s3 accessKey */
+      listBuckets(
+        endpoint: string,
+        accessKey: string,
+        secretKey: string,
+      ): Promise<import("minio").BucketItemFromList[]> {
+        return ipcRenderer.invoke("/s3/listBuckets", endpoint, accessKey, secretKey)
+      },
+
       /** @return list of objects in the given s3 bucket */
       async listObjects(
         endpoint: string,

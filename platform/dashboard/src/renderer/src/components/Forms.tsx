@@ -302,7 +302,12 @@ export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; m
  * Take a FormContextProps controller `ctrl` and intercept `setValue`
  * calls to also record them in our persistent state `formState`.
  */
-export function remember(kind: DetailableKind, ctrl: FormContextProps, formState: State<string> | undefined) {
+export function remember(
+  kind: DetailableKind,
+  ctrl: FormContextProps,
+  formState: State<string> | undefined,
+  onChange?: (values: FormContextProps["values"]) => void,
+) {
   // origSetValue updates the local copy in the FormContextProvider
   const { setValue: origSetValue } = ctrl
 
@@ -317,6 +322,10 @@ export function remember(kind: DetailableKind, ctrl: FormContextProps, formState
         }
         form[kind][fieldId] = value
         formState[1](JSON.stringify(form))
+      }
+
+      if (onChange) {
+        onChange(ctrl.values)
       }
     },
   })

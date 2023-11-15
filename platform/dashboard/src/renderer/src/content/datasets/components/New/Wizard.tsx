@@ -1,10 +1,10 @@
 import wordWrap from "word-wrap"
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
-import { type FormContextProps } from "@patternfly/react-core"
+import { type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
 
-import { Checkbox, Input } from "@jay/components/Forms"
+import { Checkbox, Input, Select } from "@jay/components/Forms"
 
 import { singular } from "../../name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"
@@ -22,10 +22,6 @@ function endpoint(ctrl: FormContextProps) {
       ctrl={ctrl}
     />
   )
-}
-
-function bucket(ctrl: FormContextProps) {
-  return <Input fieldId="bucket" label="Bucket" description="Name of S3 bucket" ctrl={ctrl} />
 }
 
 const step1 = {
@@ -96,6 +92,27 @@ data:
 
 export default function NewDataSetWizard() {
   const [searchParams] = useSearchParams()
+  const [buckets, setBuckets] = useState<SelectOptionProps[]>([])
+
+  function bucket(ctrl: FormContextProps) {
+    return <Select fieldId="bucket" label="Bucket" description="Name of S3 bucket" ctrl={ctrl} options={buckets} />
+  }
+
+  const onChange = useCallback(
+    (values: FormContextProps["values"]) => {
+      const { endpoint, accessKey, secretAccessKey } = values
+      if (endpoint && accessKey && secretAccessKey && window.jay.s3) {
+        window.jay.s3
+          .listBuckets(endpoint, accessKey, secretAccessKey)
+          .then((buckets) =>
+            setBuckets(
+              buckets.map((_) => ({ value: _.name, description: "Created on " + _.creationDate.toLocaleString() })),
+            ),
+          )
+      }
+    },
+    [setBuckets, window.jay.s3],
+  )
 
   /** Initial value for form */
   const defaults = useCallback(
@@ -169,6 +186,7 @@ export default function NewDataSetWizard() {
       yaml={yaml}
       steps={steps}
       action={action === "create" ? "register" : action}
+      onChange={onChange}
     >
       An {singular} stores information that is not specific to any one Task in a {taskqueuesSingular}, e.g. a
       pre-trained model or a chip design that is being tested across multiple configurations.{" "}

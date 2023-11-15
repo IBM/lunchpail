@@ -57,6 +57,9 @@ type Props = PropsWithChildren<{
 
   /** On successful resource creation, return to show that new resource in the Details drawer? [default=true] */
   returnToNewResource?: boolean
+
+  /** Callback when a form value changes */
+  onChange?(values: FormContextProps["values"]): void
 }>
 
 const nextIsDisabled = { isNextDisabled: true }
@@ -258,12 +261,16 @@ export default function NewResourceWizard(props: Props) {
     const previousForm = previousFormSerialized ? JSON.parse(previousFormSerialized) : {}
     const previousValues = previousForm[props.kind]
 
-    return props.defaults(previousValues)
+    const values = props.defaults(previousValues)
+    if (props.onChange) {
+      props.onChange(values)
+    }
+    return values
   }, [props.kind, props.defaults, settings?.form[0]])
 
   const form = useCallback(
     (ctrlWithoutMemory: FormContextProps) => {
-      const ctrl = remember(props.kind, ctrlWithoutMemory, settings?.form)
+      const ctrl = remember(props.kind, ctrlWithoutMemory, settings?.form, props.onChange)
 
       const header = <WizardHeader title={props.title} description={props.children} onClose={onCancel} />
       return (
