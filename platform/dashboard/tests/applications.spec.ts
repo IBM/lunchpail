@@ -16,7 +16,7 @@ test("4 applications visible when in demo mode", async () => {
   // If in demo mode, then continue with Applications card test
   if (demoModeStatus) {
     // Get Applications tab element from the sidebar and click
-    await page.getByRole("link", { name: "Code" }).click()
+    await page.getByRole("link", { name: "Definitions" }).click()
 
     // Verify that the four showing are the salamander, pig, grasshopper, and worm cards
     const expectedCards = ["salamander", "pig", "grasshopper", "worm"]

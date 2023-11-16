@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom"
 
 import type { NavigableKind } from "../content"
 
-const defaultKind: NavigableKind = "controlplane"
+const defaultKind: NavigableKind = "applications"
 
 export function hash(kind: NavigableKind) {
   return "#" + kind

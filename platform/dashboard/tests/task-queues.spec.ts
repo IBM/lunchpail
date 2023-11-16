@@ -19,7 +19,7 @@ test("task queues are visible", async () => {
   if (demoModeStatus) {
     // Get Applications tab element from the sidebar and click, to
     // activate the Application gallery
-    await page.getByRole("link", { name: "Code" }).click()
+    await page.getByRole("link", { name: "Definitions" }).click()
 
     for await (const { application, taskqueue } of expectedApplications) {
       console.log(`Waiting for application=${application} taskqueue=${taskqueue}`)

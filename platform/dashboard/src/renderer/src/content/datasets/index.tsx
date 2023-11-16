@@ -6,7 +6,7 @@ import description from "./description"
 import { name, singular } from "./name"
 
 export default {
-  kind: "datasets",
+  kind: "datasets" as const,
   name,
   singular,
   description,
@@ -14,5 +14,5 @@ export default {
   detail,
   actions,
   wizard,
-  isInSidebar: true,
+  isInSidebar: true as const,
 }

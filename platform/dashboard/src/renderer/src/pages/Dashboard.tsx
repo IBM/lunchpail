@@ -89,7 +89,7 @@ export function Dashboard(props: Props) {
   const pwdProps = {
     currentDetail,
     modal,
-    title: bodyContentProvider.name,
+    title: bodyContentProvider.title ?? bodyContentProvider.name,
     subtitle: bodyContentProvider.description,
     sidebar,
     actions: currentActions,

@@ -4,10 +4,9 @@ import { dl as DescriptionList, descriptionGroup } from "@jay/components/Descrip
 
 import { api } from "../Card"
 import type Props from "../Props"
-import { singular } from "../../name"
 
 export default function codeTab(props: Props) {
-  return { title: singular, body: <DescriptionList groups={groups(props)} /> }
+  return { title: "Code", body: <DescriptionList groups={groups(props)} /> }
 }
 
 /**

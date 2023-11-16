@@ -22,7 +22,7 @@ test.describe.serial("Drawer tests running sequentially", () => {
     // If in demo mode, then continue with test to open drawers
     if (demoModeStatus) {
       // get Applications tab element from the sidebar and click to activate Application gallery
-      await page.getByRole("link", { name: "Code" }).click()
+      await page.getByRole("link", { name: "Definitions" }).click()
 
       // click on one of the cards
       await page.locator(`[data-ouia-component-id="${expectedCard}"]`).click()

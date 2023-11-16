@@ -18,11 +18,17 @@ export default interface ContentProvider<K extends Kind | "controlplane" = Kind 
   /** Singular name of this resource */
   singular: string
 
+  /** Optionally, a Title to display in banners; defaults to `name` */
+  title?: string
+
   /** Subtitle when showing a gallery of this kind of resource */
   description: ReactNode
 
   /** Show this kind of resource in the Sidebar? If `true`, show at the top level; otherwise, show in the given group */
   isInSidebar?: true | string
+
+  /** If we are showing in the Sidebar, what is our sort priority? (higher will float upwards in the sidebar) */
+  sidebarPriority?: number
 
   /** Content to display in the gallery view -- usually a CardInGallery[] */
   gallery?(events: ManagedEvents, memos: Memos, settings: CurrentSettings): ReactNode

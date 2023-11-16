@@ -23,14 +23,14 @@ test.describe.serial("workers tests running sequentially", () => {
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
     // get Applications tab element from the sidebar and click to activate Application gallery
-    await page.getByRole("link", { name: "Code" }).click()
+    await page.getByRole("link", { name: "Definitions" }).click()
 
     await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
   })
 
   test("'Allocate Compute' button opens 'Create Compute Pool' modal", async () => {
     // click on the button to bring up the new worker pool wizard
-    await page.getByRole("link", { name: "Allocate Compute" }).click()
+    await page.getByRole("link", { name: "Allocate Pool" }).click()
 
     // check that modal opened
     const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
@@ -52,7 +52,7 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(modalPage).toContainText("Review")
 
     // click 'Register Compute Pool'
-    await page.getByRole("button", { name: "Create Compute Pool" }).click()
+    await page.getByRole("button", { name: "Create Pool" }).click()
 
     // Check that there is a Drawer on the screen, and extract it's name
     const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
@@ -76,7 +76,7 @@ test.describe.serial("workers tests running sequentially", () => {
     const card = await page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${workerName}]`)
     await expect(card).toBeVisible()
 
-    const code = await card.locator(`[data-ouia-component-id="Runnable Code"]`)
+    const code = await card.locator(`[data-ouia-component-id="Definitions"]`)
     await expect(code).toContainText(expectedApp, { timeout: 60000 })
 
     // we have removed taskqueues from the Card

@@ -1,5 +1,6 @@
 import LinkToNewWizard, { type WizardProps } from "./wizard"
-import { name as workerpoolName, singular as workerpoolSingular } from "../content/workerpools/name"
+
+import { singular as workerpoolSingular } from "../content/workerpools/name"
 
 /**
  * @return a UI component that links to the `NewWorkerPoolWizard`. If
@@ -13,12 +14,10 @@ export function LinkToNewPool(
     taskqueue?: string
   },
 ) {
-  const linkText =
-    props.startOrAdd === "start"
-      ? "Allocate " + workerpoolName
-      : props.startOrAdd === "add"
-      ? "Add " + workerpoolName
-      : "Create " + workerpoolSingular
+  const verb = props.startOrAdd === "start" ? "Allocate" : props.startOrAdd === "add" ? "Add" : "Create"
+
+  const linkText = `${verb} ${workerpoolSingular}`
+
   const qs = [props.taskqueue ? `taskqueue=${props.taskqueue}` : ""]
 
   return <LinkToNewWizard {...props} kind="workerpools" linkText={linkText} qs={qs} />

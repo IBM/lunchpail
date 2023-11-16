@@ -58,37 +58,41 @@ function SidebarNavGroup(props: Props & { group: string; providers: NavigableCon
     // otherwise, wrap the nav items inside a NavExpandable (which is
     // a NavGroup that can be expanded)
     return (
-      <NavExpandable title={props.group} key={props.group}>
+      <NavExpandable title={props.group} key={props.group} isExpanded={props.group !== "Advanced"}>
         <SidebarNavItems {...props} providers={props.providers} />
       </NavExpandable>
     )
   }
 }
 
+function prio(provider: ContentProvider) {
+  return provider.sidebarPriority ?? (provider.isInSidebar === true ? 10 : 0)
+}
+
 function SidebarNav(props: Props) {
-  const groups = Object.values(providers).reduce(
-    (G, provider) => {
-      const group = provider.isInSidebar === true ? "root" : provider.isInSidebar
-      if (group) {
-        if (!(group in G)) {
-          G[group] = []
+  const groups = Object.values(providers)
+    .sort((a, b) => prio(b) - prio(a))
+    .reduce(
+      (G, provider) => {
+        const group = provider.isInSidebar === true ? "root" : provider.isInSidebar
+        if (group) {
+          if (!(group in G)) {
+            G[group] = []
+          }
+          G[group].push(provider as NavigableContentProvider)
         }
-        G[group].push(provider as NavigableContentProvider)
-      }
-      return G
-    },
-    {} as Record<string, NavigableContentProvider[]>,
-  )
+        return G
+      },
+      {} as Record<string, NavigableContentProvider[]>,
+    )
 
   return (
     <Nav>
       <NavList>
         <SidebarHelloNavGroup />
-        {Object.entries(groups)
-          .sort(([g1], [g2]) => (g1 === "root" ? -1 : g2 === "root" ? 1 : g1.localeCompare(g2)))
-          .map(([group, providers]) => (
-            <SidebarNavGroup key={group} {...props} group={group} providers={providers} />
-          ))}
+        {Object.entries(groups).map(([group, providers]) => (
+          <SidebarNavGroup key={group} {...props} group={group} providers={providers} />
+        ))}
       </NavList>
     </Nav>
   )

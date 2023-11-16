@@ -8,7 +8,7 @@ import NewResourceWizard from "@jay/components/NewResourceWizard"
 import { buttonPropsForNewDataSet } from "@jay/renderer/navigate/newdataset"
 import { Checkbox, Input, Select, SelectCheckbox, TextArea } from "@jay/components/Forms"
 
-import { singular } from "../../name"
+import { titleSingular as singular } from "../../title"
 import { name as datasetsName } from "../../../datasets/name"
 import { name as workerpoolsName } from "../../../workerpools/name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"

@@ -5,7 +5,7 @@ import description from "./description"
 import { name, singular } from "./name"
 
 export default {
-  kind: "platformreposecrets",
+  kind: "platformreposecrets" as const,
   name,
   singular,
   description,

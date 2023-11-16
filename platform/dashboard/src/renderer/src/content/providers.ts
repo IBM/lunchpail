@@ -5,10 +5,12 @@ import controlplane from "./controlplane"
 import applications from "./applications"
 import platformreposecrets from "./platformreposecrets"
 
+import type ContentProvider from "./ContentProvider"
+
 /**
  * These are the resource Kinds for which we have UI componetry.
  */
-export default {
+const providers = {
   controlplane,
   platformreposecrets,
   applications,
@@ -16,3 +18,9 @@ export default {
   datasets,
   workerpools,
 }
+
+type Provider = keyof typeof providers
+
+const uiProviders: Record<Provider, ContentProvider> = providers
+
+export default uiProviders

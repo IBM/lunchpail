@@ -1,15 +1,18 @@
 import { Link } from "react-router-dom"
 import { hash } from "@jay/renderer/navigate/kind"
 
-import { singular } from "./name"
-import { singular as applicationSingular } from "../applications/name"
+import { group } from "./group"
+import { name, singular } from "./name"
+import { titleSingular as applicationsTitleSingular } from "../applications/title"
 
 export default (
   <span>
-    Each <strong>{singular}</strong> is a set of workers specialized to process tasks using code from a given set of{" "}
+    Each <strong>{singular}</strong> is a set of running <strong>{group}</strong> specialized to process Tasks using a
+    given{" "}
     <Link to={hash("applications")}>
-      <strong>{applicationSingular}</strong>
+      <strong>{applicationsTitleSingular}</strong>
     </Link>
-    . You may allocate more than one {singular} to a given task, and can bring them up and tear them down on the fly.
+    . You may allocate multiple {name} to process the tasks of a given {applicationsTitleSingular}, and can bring them
+    up and tear them down as needed.
   </span>
 )
