@@ -7,7 +7,6 @@ import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
-import { name as taskqueuesName } from "../../taskqueues/name"
 import { name as applicationsName } from "../../applications/name"
 
 import type Props from "./Props"
@@ -19,13 +18,6 @@ function completionRate(props: Props) {
 function latestApplications(props: Props) {
   if (props.status) {
     return [props.status.spec.application.name]
-  }
-  return null
-}
-
-function latestTaskQueues(props: Props) {
-  if (props.status) {
-    return [props.status.spec.dataset]
   }
   return null
 }
@@ -78,12 +70,10 @@ export function statusActions(
 
 export function summaryGroups(props: Props, statusOnly = false) {
   const applications = latestApplications(props)
-  const taskqueues = latestTaskQueues(props)
 
   return [
     statusOnly && enqueuedGroup(props),
     !statusOnly && applications && descriptionGroup(applicationsName, linkToAllDetails("applications", applications)),
-    !statusOnly && taskqueues && descriptionGroup(taskqueuesName, linkToAllDetails("taskqueues", taskqueues)),
     // descriptionGroup("Number of Workers", count(props)),
     descriptionGroup("Tasks Currently Processing", numProcessing(props)),
     props.model.events.length > 1 &&
