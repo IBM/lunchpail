@@ -22,7 +22,7 @@ const controlplane: ContentProvider<"controlplane"> = {
 
   singular,
 
-  isInSidebar: true,
+  isInSidebar: "Advanced",
 
   description: (
     <span>

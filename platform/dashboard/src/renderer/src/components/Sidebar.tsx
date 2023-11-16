@@ -84,9 +84,11 @@ function SidebarNav(props: Props) {
     <Nav>
       <NavList>
         <SidebarHelloNavGroup />
-        {Object.entries(groups).map(([group, providers]) => (
-          <SidebarNavGroup key={group} {...props} group={group} providers={providers} />
-        ))}
+        {Object.entries(groups)
+          .sort(([g1], [g2]) => (g1 === "root" ? -1 : g2 === "root" ? 1 : g1.localeCompare(g2)))
+          .map(([group, providers]) => (
+            <SidebarNavGroup key={group} {...props} group={group} providers={providers} />
+          ))}
       </NavList>
     </Nav>
   )
