@@ -6,7 +6,8 @@ import { currentKind } from "../navigate/kind"
 import { isShowingWizard } from "../navigate/wizard"
 import { returnHomeCallback } from "../navigate/home"
 
-import PageWithDrawer, { drilldownProps } from "./PageWithDrawer"
+import drilldownProps from "./DrilldownProps"
+import PageWithDrawer from "./PageWithDrawer"
 
 import Settings from "../Settings"
 import Gallery from "../components/Gallery"

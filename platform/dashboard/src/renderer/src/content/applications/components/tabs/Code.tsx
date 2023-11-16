@@ -1,12 +1,13 @@
 import { Text } from "@patternfly/react-core"
 
+import DrawerTab from "@jay/components/Drawer/Tab"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import { api } from "../Card"
+import { api } from "../common"
 import type Props from "../Props"
 
 export default function codeTab(props: Props) {
-  return { title: "Code", body: <DescriptionList groups={groups(props)} /> }
+  return DrawerTab({ title: "Code", body: <DescriptionList groups={groups(props)} /> })
 }
 
 /**

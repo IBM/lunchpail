@@ -11,8 +11,8 @@ import yamlTab from "./tabs/Yaml"
 import statusTab from "./tabs/Status"
 import burndownTab from "./tabs/Burndown"
 
-import { NewPoolButton } from "../../taskqueues/components/common"
-import { taskSimulatorAction } from "../../taskqueues/components/Detail"
+import NewPoolButton from "../../taskqueues/components/NewPoolButton"
+import taskSimulatorAction from "../../taskqueues/components/TaskSimulatorAction"
 
 import type Props from "./Props"
 
@@ -50,7 +50,9 @@ function cloneAction(props: Props) {
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return [codeTab(props), ...statusTab(props), ...burndownTab(props), ...yamlTab(props)]
+  return [codeTab(props), statusTab(props), burndownTab(props), yamlTab(props)].filter(
+    (_): _ is Exclude<typeof _, undefined> => !!_,
+  )
 }
 
 export default function ApplicationDetail(props: Props) {
@@ -64,6 +66,7 @@ export default function ApplicationDetail(props: Props) {
 
   return (
     <DrawerContent
+      defaultActiveKey="Code"
       otherTabs={otherTabs(props)}
       actions={[...newPoolAction]}
       rightActions={[...tasksim, editAction(props), cloneAction(props), deleteAction(props)]}

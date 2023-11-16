@@ -33,7 +33,8 @@ function editAction(props: Props) {
 
 /** Tabs specific to this kind of data */
 function otherTabs(props: Props) {
-  return BrowserTabs(props.spec.local)
+  const tab = BrowserTabs(props.spec.local)
+  return tab ? [tab] : undefined
 }
 
 export default function DataSetDetail(props: Props) {

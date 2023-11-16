@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { Card, CardHeader, CardTitle, CardBody, CardFooter, DescriptionListProps } from "@patternfly/react-core"
 
-import { drilldownProps } from "../pages/PageWithDrawer"
+import drilldownProps from "../pages/DrilldownProps"
 import { dl as DescriptionList } from "./DescriptionGroup"
 
 import type { ReactNode } from "react"

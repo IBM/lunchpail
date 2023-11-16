@@ -309,15 +309,17 @@ function ShowContent(props: S3Props & { object: string }) {
   )
 }
 
+import DrawerTab from "@jay/components/Drawer/Tab"
+
 /** A Details tab that shows <S3Browser /> */
 export function BrowserTabs(props: (DataSetEvent | TaskQueueEvent)["spec"]["local"]) {
-  return !window.jay.get || !window.jay.s3
-    ? []
-    : [
-        {
-          title: "Browser",
-          body: <S3Browser {...props} get={window.jay.get} s3={window.jay.s3} />,
-          hasNoPadding: true,
-        },
-      ]
+  if (window.jay.get && window.jay.s3) {
+    return DrawerTab({
+      hasNoPadding: true,
+      title: "Browser",
+      body: <S3Browser {...props} get={window.jay.get} s3={window.jay.s3} />,
+    })
+  } else {
+    return undefined
+  }
 }

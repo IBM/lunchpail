@@ -1,5 +1,5 @@
 import { type ReactNode, type ReactElement } from "react"
-import { Divider, DrawerPanelBody, Tabs, Tab, TabTitleIcon, TabTitleText } from "@patternfly/react-core"
+import { Divider, DrawerPanelBody, Tabs, type Tab } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
 import DrawerToolbar from "./Toolbar"
@@ -7,8 +7,13 @@ import DetailNotFound from "./DetailNotFound"
 
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-type TabProps = { title: string; icon?: ReactNode; body: ReactNode; hasNoPadding?: boolean; actions?: ReactNode }
-type TabsProps = { summary?: ReactNode; raw?: KubernetesResource | null; otherTabs?: TabProps[] }
+import DrawerTab from "./Tab"
+type TabsProps = {
+  summary?: ReactNode
+  raw?: KubernetesResource | null
+  defaultActiveKey?: string
+  otherTabs?: ReactElement<typeof Tab>[]
+}
 
 type Props = TabsProps & {
   /** Actions to be displayed left-justified */
@@ -16,6 +21,9 @@ type Props = TabsProps & {
 
   /** Actions to be displayed right-justified */
   rightActions?: ReactElement[]
+
+  /** Override default initial tab */
+  defaultActiveKey?: string
 }
 
 /**
@@ -32,7 +40,12 @@ export default function DrawerContent(props: Props) {
   return (
     <>
       <DrawerPanelBody className="codeflare--detail-view-body" hasNoPadding>
-        <TabbedContent summary={props.summary} raw={props.raw} otherTabs={props.otherTabs} />
+        <TabbedContent
+          summary={props.summary}
+          raw={props.raw}
+          otherTabs={props.otherTabs}
+          defaultActiveKey={props.defaultActiveKey}
+        />
       </DrawerPanelBody>
 
       {((props.actions && props.actions?.length > 0) || (props.rightActions && props.rightActions?.length > 0)) && (
@@ -51,31 +64,15 @@ export default function DrawerContent(props: Props) {
  * The Tabs and Body parts of `DrawerContent`
  */
 function TabbedContent(props: TabsProps) {
-  const tabs: TabProps[] = [
-    ...(!props.summary ? [] : [{ title: "Summary", body: props.summary || <DetailNotFound /> }]),
+  const tabs = [
+    ...(!props.summary ? [] : [DrawerTab({ title: "Summary", body: props.summary || <DetailNotFound /> })]),
     ...(props.otherTabs || []),
-    ...(!props.raw ? [] : [{ title: "YAML", body: <Yaml obj={props.raw} />, hasNoPadding: true }]),
+    ...(!props.raw ? [] : [DrawerTab({ title: "YAML", body: <Yaml obj={props.raw} />, hasNoPadding: true })]),
   ]
 
   return (
-    <Tabs defaultActiveKey={tabs[0].title} mountOnEnter isFilled>
-      {tabs.map((tab) => (
-        <Tab
-          key={tab.title}
-          ouiaId={tab.title}
-          id={`codeflare--drawer-tab-${tab.title}`}
-          arial-label={tab.title}
-          title={
-            <>
-              {tab.icon ? <TabTitleIcon>{tab.icon}</TabTitleIcon> : <></>} <TabTitleText>{tab.title}</TabTitleText>
-            </>
-          }
-          eventKey={tab.title}
-          actions={tab.actions}
-        >
-          <DrawerPanelBody hasNoPadding={tab.hasNoPadding}>{tab.body}</DrawerPanelBody>
-        </Tab>
-      ))}
+    <Tabs defaultActiveKey={props.defaultActiveKey ?? "Summary"} mountOnEnter isFilled>
+      {tabs}
     </Tabs>
   )
 }

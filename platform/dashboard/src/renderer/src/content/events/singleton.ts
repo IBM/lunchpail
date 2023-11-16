@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 
 import { isDetailableKind } from "../DetailableKind"
-import { closeDetailViewIfShowing } from "../../pages/PageWithDrawer"
+import closeDetailViewIfShowing from "../../pages/close-detail"
 
 import type WatchedKind from "@jay/common/Kind"
 import type { ManagedEvent } from "../ManagedEvent"
