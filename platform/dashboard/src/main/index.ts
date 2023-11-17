@@ -1,6 +1,8 @@
-import { app, shell, BrowserWindow } from "electron"
 import { join } from "path"
+import contextMenu from "electron-context-menu"
+import { app, shell, BrowserWindow } from "electron"
 import { electronApp, optimizer, is } from "@electron-toolkit/utils"
+
 import icon from "../../resources/icon.png?asset"
 
 import { initEvents } from "./events"
@@ -40,6 +42,9 @@ function createWindow(firstTime = true): void {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"))
   }
 }
+
+// install a right-click context menu
+contextMenu()
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

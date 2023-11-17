@@ -30,6 +30,7 @@
     "@patternfly/react-core": "^5.1.1",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "change-maker": "^1.2.0",
+    "electron-context-menu": "^3.6.1",
     "electron-updater": "^6.1.4",
     "ini": "^4.1.1",
     "is-url-superb": "^6.1.0",
