@@ -6,15 +6,12 @@ import apply, { deleteJaaSManagedResources, restartControllers, waitForNamespace
 import type Action from "./action"
 import type { ApplyProps } from "./apply"
 
-type Config = "lite" | "full"
+type Config = "lite"
 
 /** Install/delete the core from the control plane */
-async function core(config: Config) {
-  const { default: yaml } = await (config === "lite"
-    ? // @ts-ignore
-      import("../../../resources/jaas-lite.yml?raw")
-    : // @ts-ignore
-      import("../../../resources/jaas-full.yml?raw"))
+async function core(/* config: Config */) {
+  // @ts-ignore
+  const { default: yaml } = import("../../../resources/jaas-lite.yml?raw")
 
   return yaml
 }
@@ -36,8 +33,8 @@ async function examples() {
 }
 
 /** Install/delete all of the requested control plane components */
-async function applyAll(config: Config, props: ApplyProps) {
-  const coreYamls = await Promise.all([core(config)])
+async function applyAll(_config: Config, props: ApplyProps) {
+  const coreYamls = await Promise.all([core()])
   const noncoreYamls = await Promise.all([defaults(), examples()])
 
   if (props.action === "delete") {
