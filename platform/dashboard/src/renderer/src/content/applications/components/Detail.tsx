@@ -1,9 +1,6 @@
+import removeUndefined from "@jay/util/remove-undefined"
 import DrawerContent from "@jay/components/Drawer/Content"
-import LinkToNewWizard from "@jay/renderer/navigate/wizard"
-import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 
-import { singular } from "../name"
-import { yamlFromSpec } from "./New/yaml"
 import taskqueueProps from "./taskqueueProps"
 
 import codeTab from "./tabs/Code"
@@ -11,48 +8,18 @@ import yamlTab from "./tabs/Yaml"
 import statusTab from "./tabs/Status"
 import burndownTab from "./tabs/Burndown"
 
+import editAction from "./actions/edit"
+import cloneAction from "./actions/clone"
+import deleteAction from "./actions/delete"
+
 import NewPoolButton from "../../taskqueues/components/NewPoolButton"
 import taskSimulatorAction from "../../taskqueues/components/TaskSimulatorAction"
 
 import type Props from "./Props"
 
-/** Button/Action: Delete this resource */
-function deleteAction(props: Props) {
-  return (
-    <DeleteResourceButton
-      singular={singular}
-      kind="applications.codeflare.dev"
-      yaml={yamlFromSpec(props.application)}
-      name={props.application.metadata.name}
-      namespace={props.application.metadata.namespace}
-    />
-  )
-}
-
-/** Button/Action: Edit this resource */
-function editAction(props: Props) {
-  const qs = [`yaml=${encodeURIComponent(JSON.stringify(props.application))}`]
-  return (
-    <LinkToNewWizard key="edit" startOrAdd="edit" kind="applications" linkText="" qs={qs} size="lg" variant="plain" />
-  )
-}
-
-/** Button/Action: Clone this resource */
-function cloneAction(props: Props) {
-  const qs = [
-    `name=${props.application.metadata.name + "-copy"}`,
-    `yaml=${encodeURIComponent(JSON.stringify(props.application))}`,
-  ]
-  return (
-    <LinkToNewWizard key="clone" startOrAdd="clone" kind="applications" linkText="" qs={qs} size="lg" variant="plain" />
-  )
-}
-
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return [codeTab(props), statusTab(props), burndownTab(props), yamlTab(props)].filter(
-    (_): _ is Exclude<typeof _, undefined> => !!_,
-  )
+  return removeUndefined([codeTab(props), statusTab(props), burndownTab(props), yamlTab(props)])
 }
 
 export default function ApplicationDetail(props: Props) {
