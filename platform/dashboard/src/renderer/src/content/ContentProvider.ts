@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 
 import type Memos from "./memos"
-import type Kind from "@jay/common/Kind"
+import type { Kind } from "./providers"
 import type ManagedEvents from "./ManagedEvent"
 import type { CurrentSettings } from "../Settings"
 

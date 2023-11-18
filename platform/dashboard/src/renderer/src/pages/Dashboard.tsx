@@ -83,6 +83,7 @@ export function Dashboard(props: Props) {
       datasets={events.datasets.length}
       workerpools={events.workerpools.length}
       applications={events.applications.length}
+      workdispatchers={events.workdispatchers.length}
       platformreposecrets={events.platformreposecrets.length}
     />
   )

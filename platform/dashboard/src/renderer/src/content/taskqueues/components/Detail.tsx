@@ -5,7 +5,7 @@ import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { lastEvent } from "./common"
 import NewPoolButton from "./NewPoolButton"
 import summaryTabContent from "./tabs/Summary"
-import taskSimulatorAction from "./TaskSimulatorAction"
+// import taskSimulatorAction from "./TaskSimulatorAction"
 
 import type Props from "./Props"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
@@ -26,9 +26,9 @@ function deleteAction(last: null | TaskQueueEvent) {
 }
 
 /** Right-aligned actions */
-function rightActions(inDemoMode: boolean, props: Props) {
+function rightActions(props: Props) {
   const last = lastEvent(props)
-  return [...taskSimulatorAction(inDemoMode, last, props), ...deleteAction(last)]
+  return [...deleteAction(last)]
 }
 
 /** Left-aligned actions */
@@ -44,15 +44,13 @@ function otherTabs(props: Props) {
 }
 
 export default function TaskQueueDetail(props: Props) {
-  const inDemoMode = props.settings?.demoMode[0] ?? false
-
   return (
     <DrawerContent
       summary={summaryTabContent(props)}
       raw={lastEvent(props)}
       otherTabs={otherTabs(props)}
       actions={leftActions(props)}
-      rightActions={rightActions(inDemoMode, props)}
+      rightActions={rightActions(props)}
     />
   )
 }

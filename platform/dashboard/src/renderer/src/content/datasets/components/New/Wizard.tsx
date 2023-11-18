@@ -5,6 +5,7 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import { TextContent, type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
 
 import { S3BrowserWithCreds } from "@jay/components/S3Browser"
+import password from "@jay/components/Forms/Password"
 import { Checkbox, Input, NonInputElement, Select } from "@jay/components/Forms"
 
 import { singular } from "../../name"
@@ -12,7 +13,7 @@ import { singular as taskqueuesSingular } from "../../../taskqueues/name"
 
 import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
-import NewResourceWizard, { password } from "@jay/components/NewResourceWizard"
+import NewResourceWizard from "@jay/components/NewResourceWizard"
 
 function endpoint(ctrl: FormContextProps) {
   return (
@@ -147,8 +148,8 @@ export default function NewDataSetWizard() {
       buckets.length === 0
         ? "No buckets found"
         : buckets.find((_) => _.value === ctrl.values.bucket)
-        ? ctrl.values.bucket
-        : undefined
+          ? ctrl.values.bucket
+          : undefined
     const options = selected === "No buckets found" ? [{ value: selected, isDisabled: true }] : buckets
     return (
       <Select

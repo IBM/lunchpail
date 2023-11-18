@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavList } from "@patternfly/react-core"
 
 import providers from "../content/providers"
@@ -70,21 +71,25 @@ function prio(provider: ContentProvider) {
 }
 
 function SidebarNav(props: Props) {
-  const groups = Object.values(providers)
-    .sort((a, b) => prio(b) - prio(a))
-    .reduce(
-      (G, provider) => {
-        const group = provider.isInSidebar === true ? "root" : provider.isInSidebar
-        if (group) {
-          if (!(group in G)) {
-            G[group] = []
-          }
-          G[group].push(provider as NavigableContentProvider)
-        }
-        return G
-      },
-      {} as Record<string, NavigableContentProvider[]>,
-    )
+  const groups = useMemo(
+    () =>
+      Object.values(providers)
+        .sort((a, b) => prio(b) - prio(a))
+        .reduce(
+          (G, provider) => {
+            const group = provider.isInSidebar === true ? "root" : provider.isInSidebar
+            if (group) {
+              if (!(group in G)) {
+                G[group] = []
+              }
+              G[group].push(provider as NavigableContentProvider)
+            }
+            return G
+          },
+          {} as Record<string, NavigableContentProvider[]>,
+        ),
+    [providers],
+  )
 
   return (
     <Nav>

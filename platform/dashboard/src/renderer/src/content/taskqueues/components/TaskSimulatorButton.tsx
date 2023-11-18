@@ -1,14 +1,14 @@
-import { useCallback, type MouseEvent } from "react"
-import { Button, Text, Tooltip } from "@patternfly/react-core"
+// import { useCallback, type MouseEvent } from "react"
+// import { Button, Text, Tooltip } from "@patternfly/react-core"
 
-import { singular } from "../name"
-import { associatedApplications } from "./common"
+// import { singular } from "../name"
+// import { associatedApplications } from "./common"
 
 import type TaskQueueProps from "./Props"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 
-import OnIcon from "@patternfly/react-icons/dist/esm/icons/paper-plane-icon"
-import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-paper-plane-icon"
+// import OnIcon from "@patternfly/react-icons/dist/esm/icons/paper-plane-icon"
+// import OffIcon from "@patternfly/react-icons/dist/esm/icons/outlined-paper-plane-icon"
 
 type Props = Pick<TaskQueueProps, "name" | "applications" | "tasksimulators"> & {
   event: TaskQueueEvent
@@ -42,7 +42,7 @@ function typeOf(spec: TypeSpec) {
   }
 }
 
-function yaml(name: string, namespace: string, applications: Props["applications"]) {
+export function yaml(name: string, namespace: string, applications: Props["applications"]) {
   let yaml = `
 apiVersion: codeflare.dev/v1alpha1
 kind: TaskSimulator
@@ -82,7 +82,7 @@ spec:
   return yaml
 }
 
-export default function TaskSimulatorButton(props: Props) {
+/*export default function TaskSimulatorButton(props: Props) {
   const nSimulators = props.tasksimulators.length
   const online = nSimulators > 0
   const message = online
@@ -95,7 +95,7 @@ export default function TaskSimulatorButton(props: Props) {
     return <></>
   }
 
-  /** Button onclick handler */
+  // Button onclick handler
   const onClick = useCallback(
     (evt: MouseEvent) => {
       evt.stopPropagation()
@@ -125,3 +125,4 @@ export default function TaskSimulatorButton(props: Props) {
     </Tooltip>
   )
 }
+*/

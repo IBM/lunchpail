@@ -5,11 +5,6 @@ import {
   Checkbox as PFCheckbox,
   CheckboxProps,
   type FormContextProps,
-  FormGroup,
-  type FormGroupProps,
-  FormHelperText,
-  HelperText,
-  HelperTextItem,
   MenuToggle,
   type MenuToggleElement,
   NumberInput as PFNumberInput,
@@ -23,36 +18,12 @@ import {
   type TextInputProps,
 } from "@patternfly/react-core"
 
+import Group from "./Forms/Group"
+
 import type { State } from "../Settings"
 import type { DetailableKind } from "../content"
 
-type Ctrl = { ctrl: Pick<FormContextProps, "values" | "setValue"> }
-type FormProps = FormGroupProps & { description?: string } & Required<Pick<FormGroupProps, "fieldId">>
-type GroupProps = PropsWithChildren<FormProps>
-
-import "./Forms.scss"
-
-function Group(props: GroupProps) {
-  return (
-    <FormGroup
-      isRequired={props.isRequired ?? true}
-      label={props.label}
-      fieldId={props.fieldId}
-      labelInfo={props.labelInfo}
-      data-has-pointer-events="true"
-    >
-      {props.children}
-
-      {props.description && (
-        <FormHelperText>
-          <HelperText>
-            <HelperTextItem>{props.description}</HelperTextItem>
-          </HelperText>
-        </FormHelperText>
-      )}
-    </FormGroup>
-  )
-}
+import type { Ctrl, FormProps } from "./Forms/Props"
 
 /**
  * Render some non-input eleent `props.children` so that it has the
@@ -306,7 +277,7 @@ export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; m
     <Group {...props}>
       <PFNumberInput
         value={value}
-        min={props.min}
+        min={props.min ?? 0}
         max={props.max}
         onMinus={onMinus}
         onPlus={onPlus}
@@ -320,11 +291,11 @@ export function NumberInput(props: FormProps & Ctrl & { defaultValue?: number; m
  * Take a FormContextProps controller `ctrl` and intercept `setValue`
  * calls to also record them in our persistent state `formState`.
  */
-export function remember(
+export function remember<Values extends Pick<FormContextProps, "setValue" | "values">>(
   kind: DetailableKind,
-  ctrl: FormContextProps,
+  ctrl: Values,
   formState: State<string> | undefined,
-  onChange?: (fieldId: string, value: string, values: FormContextProps["values"]) => void,
+  onChange?: (fieldId: string, value: string, values: Values["values"]) => void,
 ) {
   // origSetValue updates the local copy in the FormContextProvider
   const { setValue: origSetValue } = ctrl

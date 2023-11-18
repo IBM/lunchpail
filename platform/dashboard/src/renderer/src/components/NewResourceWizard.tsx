@@ -1,8 +1,15 @@
-import { type PropsWithChildren, type ReactNode, useCallback, useContext, useMemo, useState } from "react"
+import {
+  type PropsWithChildren,
+  type ReactNode,
+  type ReactElement,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react"
 
 import {
   Alert,
-  Button,
   type AlertProps,
   type AlertActionLinkProps,
   AlertActionLink,
@@ -10,7 +17,7 @@ import {
   Form,
   FormAlert,
   FormContextProvider,
-  FormContextProps,
+  type FormContextProps,
   FormSection,
   Grid,
   GridItem,
@@ -27,20 +34,33 @@ import { returnHomeCallback, returnHomeCallbackWithEntity } from "../navigate/ho
 
 import type { DetailableKind } from "../content"
 
-import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
-import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"
-
 import "./Wizard.scss"
 
-type KnownFormItem = "name" | "namespace" | "description"
-type FormItem = KnownFormItem | ((ctrl: FormContextProps) => ReactNode)
+/**
+ * This is a generic version of FormContextProps that allows the
+ * concrete impls to have type safety over their form values.
+ */
+export type DefaultValues<Values extends FormContextProps["values"] = FormContextProps["values"]> = {
+  setValue: FormContextProps["setValue"]
+  values: Values
+}
 
-type StepProps = {
+/** We have some built-in support for these common Form elements ("FormItem") */
+type KnownFormItem = "name" | "namespace" | "description"
+
+/** An element of a Form, e.g. an Input or TextArea, etc. */
+type FormItem<Values extends DefaultValues> = KnownFormItem | ((ctrl: Values) => ReactNode)
+
+/** One step in the Wizard */
+type StepProps<Values extends DefaultValues> = {
   /** This will be displayed as the step's name in the left-hand "guide" part of the Wizard UI */
   name: string
 
-  /** Form choices to be displayed in this step */
-  items: FormItem[]
+  /**
+   * Form choices to be displayed in this step. Either an array of
+   * `FormItem` or a function that returns this array.
+   */
+  items: FormItem<Values>[] | ((values: Values["values"]) => FormItem<Values>[])
 
   /**
    * Optionally, you may specify a parallel array to `items` that
@@ -50,37 +70,37 @@ type StepProps = {
   gridSpans?: GridItemProps["span"] | GridItemProps["span"][]
 
   /** Validator for this step, if valid the user will be allowed to proceed to the Next step */
-  isValid?: (ctrl: FormContextProps) => boolean
+  isValid?: (ctrl: Values) => boolean
 
   /** Any Alerts to be rendered at the top of the step */
   alerts?: (Pick<AlertProps, "variant" | "isExpandable"> & {
     title: string
     variant?: AlertProps["variant"]
     body: AlertProps["children"]
-    actionLinks?: ((ctrl: FormContextProps) => AlertActionLinkProps & { linkText: string })[]
+    actionLinks?: ((ctrl: Values) => AlertActionLinkProps & { linkText: string })[]
   })[]
 }
 
-type Props = PropsWithChildren<{
+type Props<Values extends DefaultValues> = PropsWithChildren<{
   kind: DetailableKind
   title: string
   singular: string
   action?: "edit" | "clone" | "register" | null
-  defaults: (previousValues: undefined | Record<string, string>) => Record<string, string>
-  yaml: (values: FormContextProps["values"]) => string
-  steps: StepProps[]
+  defaults: (previousValues: undefined | Values["values"]) => Values["values"]
+  yaml: (values: Values["values"]) => string
+  steps: StepProps<Values>[]
 
   /** On successful resource creation, return to show that new resource in the Details drawer? [default=true] */
   returnToNewResource?: boolean
 
   /** Callback when a form value changes */
-  onChange?(fieldId: string, value: string, values: FormContextProps["values"]): void
+  onChange?(fieldId: string, value: string, values: Values["values"]): void
 }>
 
 const nextIsDisabled = { isNextDisabled: true }
 const nextIsEnabled = { isNextDisabled: false }
 
-export default function NewResourceWizard(props: Props) {
+export default function NewResourceWizard<Values extends DefaultValues = DefaultValues>(props: Props<Values>) {
   /** Error in the request to create a pool? */
   const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
 
@@ -94,7 +114,7 @@ export default function NewResourceWizard(props: Props) {
   const onCancel = returnHomeCallback()
   const onSuccess = props.returnToNewResource === false ? onCancel : returnHomeCallbackWithEntity()
 
-  const doCreate = useCallback(async (values: FormContextProps["values"], dryRun = false) => {
+  const doCreate = useCallback(async (values: Values["values"], dryRun = false) => {
     try {
       const response = await window.jay.create(values, props.yaml(values), dryRun)
       if (response !== true) {
@@ -118,7 +138,7 @@ export default function NewResourceWizard(props: Props) {
   }, [])
 
   const review = useCallback(
-    (ctrl: FormContextProps) => {
+    (ctrl: Values) => {
       const doDryRun = () => doCreate(ctrl.values, true)
 
       return (
@@ -132,10 +152,10 @@ export default function NewResourceWizard(props: Props) {
               props.action === "edit"
                 ? "Apply Changes"
                 : props.action === "clone"
-                ? `Clone ${props.singular}`
-                : props.action === "register"
-                ? `Register ${props.singular}`
-                : `Create ${props.singular}`,
+                  ? `Clone ${props.singular}`
+                  : props.action === "register"
+                    ? `Register ${props.singular}`
+                    : `Create ${props.singular}`,
             onNext: () => doCreate(ctrl.values),
           }}
         >
@@ -149,8 +169,8 @@ export default function NewResourceWizard(props: Props) {
                   !errorInCreateRequest && dryRunSuccess
                     ? "Dry run successful"
                     : hasMessage(errorInCreateRequest)
-                    ? errorInCreateRequest.message
-                    : "Internal error"
+                      ? errorInCreateRequest.message
+                      : "Internal error"
                 }
               />
             </FormAlert>
@@ -176,7 +196,7 @@ export default function NewResourceWizard(props: Props) {
     [props.kind, clearError, doCreate, dryRunSuccess],
   )
 
-  function name(ctrl: FormContextProps) {
+  function name(ctrl: Values) {
     return (
       <Input
         fieldId="name"
@@ -187,7 +207,7 @@ export default function NewResourceWizard(props: Props) {
     )
   }
 
-  function namespace(ctrl: FormContextProps) {
+  function namespace(ctrl: Values) {
     return (
       <Input
         fieldId="namespace"
@@ -198,7 +218,7 @@ export default function NewResourceWizard(props: Props) {
     )
   }
 
-  function description(ctrl: FormContextProps) {
+  function description(ctrl: Values) {
     return (
       <TextArea
         fieldId="description"
@@ -210,7 +230,7 @@ export default function NewResourceWizard(props: Props) {
     )
   }
 
-  const itemFor = useCallback((item: FormItem, ctrl: FormContextProps) => {
+  const itemFor = useCallback((item: FormItem<Values>, ctrl: Values) => {
     if (item === "name") {
       return name(ctrl)
     } else if (item === "namespace") {
@@ -223,7 +243,7 @@ export default function NewResourceWizard(props: Props) {
   }, [])
 
   const steps = useCallback(
-    (ctrl: FormContextProps) => {
+    (ctrl: Values) => {
       return props.steps.map((step) => (
         <WizardStep
           key={step.name}
@@ -257,7 +277,7 @@ export default function NewResourceWizard(props: Props) {
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>
-                {step.items.map((item, idx) => {
+                {(Array.isArray(step.items) ? step.items : step.items(ctrl.values)).map((item, idx) => {
                   const span =
                     typeof step.gridSpans === "number"
                       ? step.gridSpans
@@ -292,7 +312,7 @@ export default function NewResourceWizard(props: Props) {
   }, [props.kind, props.defaults, settings?.form[0]])
 
   const form = useCallback(
-    (ctrlWithoutMemory: FormContextProps) => {
+    (ctrlWithoutMemory: Values) => {
       const ctrl = remember(props.kind, ctrlWithoutMemory, settings?.form, props.onChange)
 
       const header = <WizardHeader title={props.title} description={props.children} onClose={onCancel} />
@@ -306,37 +326,14 @@ export default function NewResourceWizard(props: Props) {
     [props.kind, onCancel, props.title, props.children, steps, review, clearError, settings?.form],
   )
 
-  return <FormContextProvider initialValues={initialValues}>{form}</FormContextProvider>
+  // re: typecast, FormContextProvider is not generic over values
+  return (
+    <FormContextProvider initialValues={initialValues}>
+      {form as unknown as (ctrl: FormContextProps) => ReactElement}
+    </FormContextProvider>
+  )
 }
 
 function hasMessage(obj: unknown): obj is { message: string } {
   return typeof (obj as { message: string }).message === "string"
-}
-
-const noPadding = { padding: 0 }
-
-/** @return an Input component that allows for toggling clear text mode */
-export function password(props: { fieldId: string; label: string; description: string }) {
-  /** Showing password in clear text? */
-  const [clearText, setClearText] = useState(false)
-
-  /** Toggle `clearText` state */
-  const toggleClearText = useCallback(() => setClearText((curState) => !curState), [])
-
-  return function pat(ctrl: FormContextProps) {
-    return (
-      <Input
-        type={!clearText ? "password" : undefined}
-        fieldId={props.fieldId}
-        label={props.label}
-        description={props.description}
-        customIcon={
-          <Button style={noPadding} variant="plain" onClick={toggleClearText}>
-            {!clearText ? <EyeSlashIcon /> : <EyeIcon />}
-          </Button>
-        }
-        ctrl={ctrl}
-      />
-    )
-  }
 }

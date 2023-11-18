@@ -4,6 +4,7 @@ import taskqueuesState from "./taskqueues/state"
 import workerpoolsState from "./workerpools/state"
 import applicationsState from "./applications/state"
 import tasksimulatorState from "./tasksimulators/state"
+import workdispatcherState from "./workdispatchers/state"
 import platformreposecretState from "./platformreposecrets/state"
 
 import type WatchedKind from "@jay/common/Kind"
@@ -44,6 +45,7 @@ export default function initStreamingState(): ManagedState {
     workerpools: workerpoolsState(returnHome),
     applications: applicationsState(returnHome),
     tasksimulators: tasksimulatorState(returnHome),
+    workdispatchers: workdispatcherState(returnHome),
     platformreposecrets: platformreposecretState(returnHome),
   }
 }

@@ -7,6 +7,7 @@ export const watchedKinds = [
   "applications",
   "platformreposecrets",
   "tasksimulators",
+  "workdispatchers",
 ] as const
 
 /** Valid resource types */

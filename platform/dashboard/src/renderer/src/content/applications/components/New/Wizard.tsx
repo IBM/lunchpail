@@ -22,6 +22,10 @@ type Props = {
   datasets: DataSetEvent[]
 }
 
+function getYaml(values: Record<string, string>) {
+  return yaml(values as unknown as YamlProps)
+}
+
 function repoInput(ctrl: FormContextProps) {
   return (
     <Input
@@ -219,12 +223,10 @@ export default function NewApplicationWizard(props: Props) {
     searchParams.get("action") === "edit"
       ? ("edit" as const)
       : searchParams.get("action") === "clone"
-      ? ("clone" as const)
-      : ("register" as const)
+        ? ("clone" as const)
+        : ("register" as const)
   const title = `${action === "edit" ? "Edit" : action === "clone" ? "Clone" : "Register"} ${singular}`
   const steps = [step1, step2, step3, step4]
-
-  const getYaml = useCallback((values: Record<string, string>) => yaml(values as unknown as YamlProps), [])
 
   return (
     <NewResourceWizard

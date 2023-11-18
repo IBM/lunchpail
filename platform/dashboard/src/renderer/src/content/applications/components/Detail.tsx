@@ -9,11 +9,12 @@ import statusTab from "./tabs/Status"
 import burndownTab from "./tabs/Burndown"
 
 import editAction from "./actions/edit"
-import cloneAction from "./actions/clone"
+// import cloneAction from "./actions/clone"
 import deleteAction from "./actions/delete"
 
 import NewPoolButton from "../../taskqueues/components/NewPoolButton"
-import taskSimulatorAction from "../../taskqueues/components/TaskSimulatorAction"
+// import taskSimulatorAction from "../../taskqueues/components/TaskSimulatorAction"
+import NewWorkDispatcherButton from "./actions/NewWorkDispatcher"
 
 import type Props from "./Props"
 
@@ -25,18 +26,16 @@ function otherTabs(props: Props) {
 export default function ApplicationDetail(props: Props) {
   const queueProps = taskqueueProps(props)
   const newPoolAction = !queueProps ? [] : [<NewPoolButton key="new-pool" {...queueProps} />]
-  const inDemoMode = props.settings?.demoMode[0] ?? false
-
-  const tasksim = !queueProps
+  const newDispatcherAction = !queueProps
     ? []
-    : taskSimulatorAction(inDemoMode, queueProps.events[queueProps.events.length - 1], queueProps)
+    : [<NewWorkDispatcherButton key="new-dispatcher" {...props} queueProps={queueProps} />]
 
   return (
     <DrawerContent
       defaultActiveKey="Code"
       otherTabs={otherTabs(props)}
-      actions={[...newPoolAction]}
-      rightActions={[...tasksim, editAction(props), cloneAction(props), deleteAction(props)]}
+      actions={[...newDispatcherAction, ...newPoolAction]}
+      rightActions={[editAction(props), /* cloneAction(props), */ deleteAction(props)]}
     />
   )
 }

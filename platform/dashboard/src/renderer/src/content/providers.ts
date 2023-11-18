@@ -3,6 +3,7 @@ import taskqueues from "./taskqueues"
 import workerpools from "./workerpools"
 import controlplane from "./controlplane"
 import applications from "./applications"
+import workdispatchers from "./workdispatchers"
 import platformreposecrets from "./platformreposecrets"
 
 import type ContentProvider from "./ContentProvider"
@@ -17,10 +18,11 @@ const providers = {
   taskqueues,
   datasets,
   workerpools,
+  workdispatchers,
 }
 
-type Provider = keyof typeof providers
+export type Kind = keyof typeof providers
 
-const uiProviders: Record<Provider, ContentProvider> = providers
+const uiProviders: Record<Kind, ContentProvider> = providers
 
 export default uiProviders

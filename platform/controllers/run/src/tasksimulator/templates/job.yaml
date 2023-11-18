@@ -16,6 +16,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: codeflare.dev
+    app.kubernetes.io/role: workdispatcher
     {{- if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 4 }}
     {{- end }}

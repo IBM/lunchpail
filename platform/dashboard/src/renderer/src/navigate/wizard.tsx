@@ -1,7 +1,7 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { Button, type ButtonProps, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
-import type Kind from "@jay/common/Kind"
+import type Kind from "../content/NavigableKind"
 import type LocationProps from "./LocationProps"
 
 import { stopPropagation } from "."
@@ -129,12 +129,12 @@ export default function LinkToNewWizard(props: Props) {
         props.variant
           ? props.variant
           : props.isInline
-          ? "link"
-          : props.startOrAdd === "fix"
-          ? "danger"
-          : props.startOrAdd === "clone"
-          ? "secondary"
-          : "primary"
+            ? "link"
+            : props.startOrAdd === "fix"
+              ? "danger"
+              : props.startOrAdd === "clone"
+                ? "secondary"
+                : "primary"
       }
       size={props.size ?? "sm"}
       onClick={stopPropagation}
@@ -149,10 +149,10 @@ export default function LinkToNewWizard(props: Props) {
     props.startOrAdd === "fix"
       ? "Attempt this suggested quick fix"
       : props.startOrAdd === "clone"
-      ? "Clone this resource"
-      : props.startOrAdd === "edit"
-      ? "Edit this resource"
-      : undefined
+        ? "Clone this resource"
+        : props.startOrAdd === "edit"
+          ? "Edit this resource"
+          : undefined
 
   if (tooltip) {
     return <Tooltip content={tooltip}>{button}</Tooltip>

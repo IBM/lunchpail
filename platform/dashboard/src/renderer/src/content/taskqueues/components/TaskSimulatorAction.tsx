@@ -1,10 +1,10 @@
-import TaskSimulatorButton from "./TaskSimulatorButton"
+/*import TaskSimulatorButton from "./TaskSimulatorButton"
 
 import type Props from "./Props"
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
+import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"*/
 
 /** Launch a TaskSimulator for this taskqueue */
-export default function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, props: Props) {
+/*export default function taskSimulatorAction(inDemoMode: boolean, last: null | TaskQueueEvent, props: Props) {
   // don't show task simulator button when in demo mode
   return !last || inDemoMode
     ? []
@@ -18,3 +18,4 @@ export default function taskSimulatorAction(inDemoMode: boolean, last: null | Ta
         />,
       ]
 }
+*/
