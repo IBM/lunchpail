@@ -8,7 +8,7 @@ import TaskQueueDetail from "./components/Detail"
 export default function Detail(
   id: string,
   events: ManagedEvents,
-  { taskqueueIndex, taskqueueToPool, taskqueueToTaskSimulators }: Memos,
+  { taskqueueIndex, taskqueueToPool, taskqueueToWorkDispatchers }: Memos,
   settings: CurrentSettings,
 ) {
   const thisTaskqueueEvents = events.taskqueues.filter((_) => _.metadata.name === id)
@@ -18,7 +18,7 @@ export default function Detail(
     const props = {
       idx: either(thisTaskqueueEvents[thisTaskqueueEvents.length - 1].spec.idx, taskqueueIndex[id]),
       workerpools: taskqueueToPool[id] || [],
-      tasksimulators: taskqueueToTaskSimulators[id] || [],
+      workdispatchers: taskqueueToWorkDispatchers[id] || [],
       applications: events.applications || [],
       name: id,
       events: thisTaskqueueEvents,

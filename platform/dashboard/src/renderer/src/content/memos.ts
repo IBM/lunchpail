@@ -6,26 +6,26 @@ import toWorkerPoolModel from "./workerpools/toWorkerPoolModel"
 
 import type ManagedEvents from "./ManagedEvent"
 import type QueueEvent from "@jay/common/events/QueueEvent"
-import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
+import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 import type { WorkerPoolModelWithHistory } from "./workerpools/WorkerPoolModel"
 
 type Memos = {
   taskqueueIndex: Record<string, number>
   taskqueueToPool: Record<string, WorkerPoolStatusEvent[]>
-  taskqueueToTaskSimulators: Record<string, TaskSimulatorEvent[]>
+  taskqueueToWorkDispatchers: Record<string, WorkDispatcherEvent[]>
   latestWorkerPoolModels: WorkerPoolModelWithHistory[]
 }
 
 export default Memos
 
 export function initMemos(events: ManagedEvents): Memos {
-  const { tasksimulators, workerpools, queues, taskqueues } = events
+  const { workdispatchers, workerpools, queues, taskqueues } = events
 
-  /** A memo of the mapping from TaskQueue to TaskSimulatorEvents */
-  const taskqueueToTaskSimulators = useMemo(
+  /** A memo of the mapping from TaskQueue to WorkDispatcherEvents */
+  const taskqueueToWorkDispatchers = useMemo(
     () =>
-      tasksimulators.reduce(
+      workdispatchers.reduce(
         (M, event) => {
           if (!M[event.spec.dataset]) {
             M[event.spec.dataset] = []
@@ -33,9 +33,9 @@ export function initMemos(events: ManagedEvents): Memos {
           M[event.spec.dataset].push(event)
           return M
         },
-        {} as Record<string, TaskSimulatorEvent[]>,
+        {} as Record<string, WorkDispatcherEvent[]>,
       ),
-    [tasksimulators],
+    [workdispatchers],
   )
 
   /** A memo of the mapping from TaskQueue to WorkerPools */
@@ -101,7 +101,7 @@ export function initMemos(events: ManagedEvents): Memos {
   return {
     taskqueueIndex,
     taskqueueToPool,
-    taskqueueToTaskSimulators,
+    taskqueueToWorkDispatchers,
     latestWorkerPoolModels,
   }
 }

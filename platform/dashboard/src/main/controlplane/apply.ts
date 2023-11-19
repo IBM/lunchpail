@@ -45,7 +45,7 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
   const execPromise = promisify(exec)
 
   await Promise.all(
-    ["tasksimulators", "platformreposecrets", "secrets"].flatMap(async (kind) => {
+    ["workdispatchers", "platformreposecrets", "secrets"].flatMap(async (kind) => {
       const resources = await execPromise(
         `kubectl get --kubeconfig ${props.kubeconfig.path} ${kind} -A --ignore-not-found -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace --no-headers`,
       )

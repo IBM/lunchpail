@@ -24,22 +24,24 @@ config.load_incluster_config()
 v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
-# A TaskSimulator has been deleted
-@kopf.on.delete('tasksimulators.codeflare.dev')
-def delete_tasksimulator_kopf(name: str, namespace: str, patch, **kwargs):
-    logging.info(f"Handling TaskSimulator delete name={name} namespace={namespace}")
-    set_status_immediately(customApi, name, namespace, "Terminating", "tasksimulators")
+# A WorkDispatcher has been deleted
+@kopf.on.delete('workdispatchers.codeflare.dev')
+def delete_workdispatcher_kopf(name: str, namespace: str, patch, **kwargs):
+    logging.info(f"Handling WorkDispatcher delete name={name} namespace={namespace}")
+    set_status_immediately(customApi, name, namespace, "Terminating", "workdispatchers")
 
-# A TaskSimulator has been created
-@kopf.on.create('tasksimulators.codeflare.dev')
-def create_tasksimulator_kopf(name: str, namespace: str, uid: str, spec, patch, **kwargs):
-    logging.info(f"Handling TaskSimulator create name={name} namespace={namespace}")
-    set_status_immediately(customApi, name, namespace, 'Pending', 'tasksimulators')
+# A WorkDispatcher has been created
+@kopf.on.create('workdispatchers.codeflare.dev')
+def create_workdispatcher_kopf(name: str, namespace: str, uid: str, spec, patch, **kwargs):
+    logging.info(f"Handling WorkDispatcher create name={name} namespace={namespace}")
+    set_status_immediately(customApi, name, namespace, 'Pending', 'workdispatchers')
     dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, [], [])
-    create_tasksimulator(customApi, name, namespace, uid, spec, dataset_labels, patch)
+
+    if spec['method'] == "tasksimulator":
+        create_tasksimulator(customApi, name, namespace, uid, spec, dataset_labels, patch)
 
     # TODO: this needs to feed off the pods
-    set_status_immediately(customApi, name, namespace, 'Running', 'tasksimulators')
+    set_status_immediately(customApi, name, namespace, 'Running', 'workdispatchers')
 
 # A WorkerPool has been deleted.
 @kopf.on.delete('workerpools.codeflare.dev')

@@ -26,7 +26,6 @@ function init() {
       queues,
       applications,
       platformreposecrets: new NothingEventSource(),
-      tasksimulators: new NothingEventSource(),
       workdispatchers: new NothingEventSource(),
     }
   }

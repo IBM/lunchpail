@@ -12,7 +12,7 @@ export default function Gallery(events: ManagedEvents, memos: Memos, settings: C
       settings={settings}
       datasets={events.datasets}
       taskqueues={events.taskqueues}
-      tasksimulators={events.tasksimulators}
+      workdispatchers={events.workdispatchers}
       workerpools={events.workerpools}
       taskqueueIndex={memos.taskqueueIndex}
       latestWorkerPoolModels={memos.latestWorkerPoolModels}

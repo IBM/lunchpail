@@ -13,7 +13,6 @@ import editAction from "./actions/edit"
 import deleteAction from "./actions/delete"
 
 import NewPoolButton from "../../taskqueues/components/NewPoolButton"
-// import taskSimulatorAction from "../../taskqueues/components/TaskSimulatorAction"
 import NewWorkDispatcherButton from "./actions/NewWorkDispatcher"
 
 import type Props from "./Props"

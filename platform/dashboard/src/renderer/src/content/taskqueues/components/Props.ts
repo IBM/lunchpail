@@ -1,6 +1,6 @@
 import type { CurrentSettings } from "@jay/renderer/Settings"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type TaskSimulatorEvent from "@jay/common/events/TaskSimulatorEvent"
+import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
@@ -20,8 +20,8 @@ type Props = {
   /** Latest set of WorkerPools aimed at processing this TaskQueue */
   workerpools: WorkerPoolStatusEvent[]
 
-  /** Latest set of TaskSimulators aimed at this TaskQueue */
-  tasksimulators: TaskSimulatorEvent[]
+  /** Latest set of WorkDispatchers aimed at this TaskQueue */
+  workdispatchers: WorkDispatcherEvent[]
 
   /** Current Settings context */
   settings: CurrentSettings

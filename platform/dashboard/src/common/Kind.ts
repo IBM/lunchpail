@@ -6,7 +6,6 @@ export const watchedKinds = [
   "workerpools",
   "applications",
   "platformreposecrets",
-  "tasksimulators",
   "workdispatchers",
 ] as const
 

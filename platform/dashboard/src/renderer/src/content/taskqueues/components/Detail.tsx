@@ -5,7 +5,6 @@ import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 import { lastEvent } from "./common"
 import NewPoolButton from "./NewPoolButton"
 import summaryTabContent from "./tabs/Summary"
-// import taskSimulatorAction from "./TaskSimulatorAction"
 
 import type Props from "./Props"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"

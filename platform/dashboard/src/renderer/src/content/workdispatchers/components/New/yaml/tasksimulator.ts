@@ -35,7 +35,7 @@ export default function taskSimulatorYaml(
 ) {
   let yaml = `
 apiVersion: codeflare.dev/v1alpha1
-kind: TaskSimulator
+kind: WorkDispatcher
 metadata:
   name: ${name}
   namespace: ${namespace}
@@ -44,6 +44,7 @@ metadata:
     app.kubernetes.io/component: tasksimulator
     app.kubernetes.io/managed-by: jay
 spec:
+  method: tasksimulator
   dataset: ${taskqueue}
   rate:
     tasks: ${tasks}

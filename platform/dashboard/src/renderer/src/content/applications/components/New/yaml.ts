@@ -7,7 +7,7 @@ export type YamlProps = Pick<ApplicationSpecEvent["metadata"], "name" | "namespa
     /** Serialized JSON array of datasets to mount */
     datasets: string
 
-    /** Serialized JSON of schema to use for TaskSimulator simulated input */
+    /** Serialized JSON of schema to use for WorkDispatcher method=tasksimulator simulated input */
     inputSchema: string
 
     taskqueueName?: string

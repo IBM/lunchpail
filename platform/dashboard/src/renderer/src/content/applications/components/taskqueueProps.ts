@@ -30,7 +30,7 @@ export default function taskqueueProps(props: Props): undefined | import("../../
         events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
         applications: [props.application],
         workerpools: props.workerpools.filter((_) => _.spec.application.name === props.application.metadata.name),
-        tasksimulators: props.tasksimulators,
+        workdispatchers: props.workdispatchers,
         settings: props.settings,
       }
 }

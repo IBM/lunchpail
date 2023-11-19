@@ -24,9 +24,7 @@ function streamForKind(kind: WatchedKind): import("stream").Transform {
     case "applications":
       return startStreamForKind("applications.codeflare.dev", { selectors: ["app.kubernetes.io/role!=workdispatcher"] })
     case "workdispatchers":
-      return startStreamForKind("tasksimulators.codeflare.dev")
-    case "tasksimulators":
-      return startStreamForKind("tasksimulators.codeflare.dev")
+      return startStreamForKind("workdispatchers.codeflare.dev")
   }
 }
 
@@ -111,7 +109,6 @@ const kinds: WatchedKind[] = [
   "workerpools",
   "applications",
   "platformreposecrets",
-  "tasksimulators",
   "workdispatchers",
 ]
 
