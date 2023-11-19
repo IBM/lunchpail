@@ -11,7 +11,7 @@ type Config = "lite"
 /** Install/delete the core from the control plane */
 async function core(/* config: Config */) {
   // @ts-ignore
-  const { default: yaml } = import("../../../resources/jaas-lite.yml?raw")
+  const { default: yaml } = await import("../../../resources/jaas-lite.yml?raw")
 
   return yaml
 }
