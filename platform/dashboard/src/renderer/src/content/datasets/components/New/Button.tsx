@@ -2,7 +2,7 @@ import LinkToNewWizard, { type WizardProps } from "@jay/renderer/navigate/wizard
 
 import { singular as datasetsSingular } from "../../name"
 
-type Props = Pick<WizardProps, "startOrAdd"> & {
+type Props = Pick<WizardProps, "startOrAdd" | "isInline"> & {
   action?: "create" | "register"
   namespace?: string
 }
@@ -17,7 +17,15 @@ export function LinkToNewDataSet(props: Props) {
   }
 
   const name = datasetsSingular
-  const linkText = props.action === "create" ? `Create ${name}` : `Register ${name}`
+  const linkText = props.action === "create" ? `Link ${name}` : `Register ${name}`
 
-  return <LinkToNewWizard startOrAdd={props.startOrAdd ?? "create"} kind="datasets" linkText={linkText} qs={qs} />
+  return (
+    <LinkToNewWizard
+      isInline={props.isInline}
+      startOrAdd={props.startOrAdd ?? "create"}
+      kind="datasets"
+      linkText={linkText}
+      qs={qs}
+    />
+  )
 }

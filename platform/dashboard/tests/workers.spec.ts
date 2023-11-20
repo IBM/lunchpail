@@ -25,14 +25,17 @@ test.describe.serial("workers tests running sequentially", () => {
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
     // get Applications tab element from the sidebar and click to activate Application gallery
-    await page.getByRole("link", { name }).click()
+    await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
 
     await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
   })
 
   test("'Add Compute' button opens 'Create Compute Pool' modal", async () => {
+    const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
+    await expect(drawer).toBeVisible()
+
     // click on the button to bring up the new worker pool wizard
-    await page.getByRole("link", { name: "Add Compute" }).click()
+    await drawer.getByRole("link", { name: "Add Compute" }).click()
 
     // check that modal opened
     const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
@@ -68,7 +71,13 @@ test.describe.serial("workers tests running sequentially", () => {
 
   test("Check the Compute tab for the new worker we created", async () => {
     // click back to Compute tab element from the sidebar
-    await page.locator(`[data-ouia-component-type="PF5/NavItem"]`, { hasText: "Compute" }).click()
+    console.error("A")
+    const advanced = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Advanced" })
+    console.error("B")
+    await advanced.click()
+    console.error("C")
+    await advanced.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute" }).click()
+    console.error("D")
 
     // check that the drawer with the worker information is still open
     const workerDrawer = await page.locator(`[data-ouia-component-id="workerpools.${workerName}"]`)

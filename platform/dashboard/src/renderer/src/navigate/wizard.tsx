@@ -68,10 +68,14 @@ function linker(props: {
 
   return (
     <Link {...linkProps} to={href}>
-      <Flex gap={gapSm} flexWrap={noWrap}>
-        {icon && <FlexItem>{icon}</FlexItem>}
-        {linkText && <FlexItem>{linkText}</FlexItem>}
-      </Flex>
+      {!icon ? (
+        linkText
+      ) : (
+        <Flex gap={gapSm} flexWrap={noWrap}>
+          {icon && <FlexItem>{icon}</FlexItem>}
+          {linkText && <FlexItem>{linkText}</FlexItem>}
+        </Flex>
+      )}
     </Link>
   )
 }

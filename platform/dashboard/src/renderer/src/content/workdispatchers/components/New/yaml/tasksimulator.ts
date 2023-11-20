@@ -45,6 +45,7 @@ metadata:
     app.kubernetes.io/managed-by: jay
 spec:
   method: tasksimulator
+  application: ${application.metadata.name}
   dataset: ${taskqueue}
   rate:
     tasks: ${tasks}

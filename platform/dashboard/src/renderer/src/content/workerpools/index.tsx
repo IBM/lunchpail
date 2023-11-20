@@ -3,7 +3,6 @@ import wizard from "./wizard"
 import gallery from "./gallery"
 import description from "./description"
 
-import { group } from "./group"
 import { name, singular } from "./name"
 
 export default {
@@ -15,6 +14,5 @@ export default {
   detail,
   wizard,
   actions: undefined,
-  isInSidebar: group,
-  sidebarPriority: 100,
+  isInSidebar: "Advanced",
 }

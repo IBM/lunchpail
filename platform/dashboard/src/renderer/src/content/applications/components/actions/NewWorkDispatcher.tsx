@@ -3,7 +3,7 @@ import LinkToNewWizard from "@jay/renderer/navigate/wizard"
 
 /** Button/Action: Allocate WorkDispatcher */
 export default function NewWorkDispatcherButton(
-  props: Props & { queueProps: import("../../../taskqueues/components/Props").default },
+  props: Props & { isInline?: boolean; queueProps: import("../../../taskqueues/components/Props").default },
 ) {
   const qs = [
     `application=${props.application.metadata.name}`,
@@ -13,9 +13,10 @@ export default function NewWorkDispatcherButton(
   return (
     <LinkToNewWizard
       key="new-work-dispatcher"
-      startOrAdd="start"
+      isInline={props.isInline}
+      startOrAdd={props.isInline ? "create" : "start"}
       kind="workdispatchers"
-      linkText="Queue up Tasks"
+      linkText={props.isInline ? "Configure Work Dispatcher" : "Queue up Tasks"}
       qs={qs}
     />
   )

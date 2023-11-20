@@ -4,7 +4,7 @@ import { Gallery } from "@patternfly/react-core"
  * Helpful to fix the size of the gallery nodes. Otherwise,
  * PatternFly's Gallery gets jiggy when you open/close the drawer
  */
-const width = { default: "18em" as const }
+const width = { default: "29em" }
 
 export default function JGallery(props: { children: import("react").ReactNode }) {
   return (

@@ -13,7 +13,7 @@ import "./CardInGallery.scss"
 type Props = {
   kind: Kind
   name: string
-  title?: ReactNode
+  title?: string
   icon?: ReactNode
   groups: ReactNode[]
   footer?: ReactNode

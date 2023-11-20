@@ -23,12 +23,14 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [method, dataset, rate] # tasksimulator
+                - required: [application, method, dataset, rate] # tasksimulator
               properties:
                 method:
                   type: string
                   enum: [tasksimulator]
 
+                application:
+                  type: string
                 dataset:
                   type: string
                 schema:

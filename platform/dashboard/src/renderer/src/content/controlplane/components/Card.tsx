@@ -34,11 +34,7 @@ export default function JobManagerCard() {
 
   const kind = "controlplane"
   const name = "Job Manager"
-  const title = (
-    <span>
-      {name} {refreshing && refreshingMessage({ refreshing: refreshing })}
-    </span>
-  )
+  const title = `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
 
   const descriptionListProps = { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true }
 

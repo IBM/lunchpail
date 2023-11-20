@@ -14,7 +14,7 @@ export default function codeTab(props: Props) {
  * If we can find a "foo.py", then append it to the repo, so that
  * users can click to see the source directly.
  */
-function repoPlusSource(props: Props) {
+export function repoPlusSource(props: Props) {
   const source = props.application.spec.command.match(/\s(\w+\.py)\s/)
   return props.application.spec.repo + (source ? "/" + source[1] : "")
 }

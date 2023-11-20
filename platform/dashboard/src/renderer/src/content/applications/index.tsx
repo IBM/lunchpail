@@ -4,7 +4,6 @@ import actions from "./actions"
 import gallery from "./gallery"
 import description from "./description"
 
-import { group } from "./group"
 import { title } from "./title"
 import { name, singular } from "./name"
 
@@ -18,6 +17,6 @@ export default {
   detail,
   actions,
   wizard,
-  isInSidebar: group,
+  isInSidebar: true as const,
   sidebarPriority: 100,
 }
