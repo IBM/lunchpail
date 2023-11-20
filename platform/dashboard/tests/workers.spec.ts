@@ -4,6 +4,8 @@ import launchElectron from "./launch-electron"
 import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
 
+import { name } from "../src/renderer/src/content/applications/name"
+
 test.describe.serial("workers tests running sequentially", () => {
   let electronApp: ElectronApplication
   let page: Page
@@ -23,7 +25,7 @@ test.describe.serial("workers tests running sequentially", () => {
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
     // get Applications tab element from the sidebar and click to activate Application gallery
-    await page.getByRole("link", { name: "Definitions" }).click()
+    await page.getByRole("link", { name }).click()
 
     await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
   })
@@ -76,7 +78,7 @@ test.describe.serial("workers tests running sequentially", () => {
     const card = await page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${workerName}]`)
     await expect(card).toBeVisible()
 
-    const code = await card.locator(`[data-ouia-component-id="Definitions"]`)
+    const code = await card.locator(`[data-ouia-component-id="${name}"]`)
     await expect(code).toContainText(expectedApp, { timeout: 60000 })
 
     // we have removed taskqueues from the Card

@@ -2,6 +2,8 @@
 import { ElectronApplication, Page, expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
 
+import { name } from "../src/renderer/src/content/applications/name"
+
 test.describe.serial("Drawer tests running sequentially", () => {
   let electronApp: ElectronApplication
   let page: Page
@@ -22,7 +24,7 @@ test.describe.serial("Drawer tests running sequentially", () => {
     // If in demo mode, then continue with test to open drawers
     if (demoModeStatus) {
       // get Applications tab element from the sidebar and click to activate Application gallery
-      await page.getByRole("link", { name: "Definitions" }).click()
+      await page.getByRole("link", { name }).click()
 
       // click on one of the cards
       await page.locator(`[data-ouia-component-id="${expectedCard}"]`).click()

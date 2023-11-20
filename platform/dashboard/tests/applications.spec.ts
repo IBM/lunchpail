@@ -2,6 +2,8 @@
 import { expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
 
+import { name } from "../src/renderer/src/content/applications/name"
+
 test("4 applications visible when in demo mode", async () => {
   // Launch Electron app.
   const electronApp = await launchElectron()
@@ -16,7 +18,7 @@ test("4 applications visible when in demo mode", async () => {
   // If in demo mode, then continue with Applications card test
   if (demoModeStatus) {
     // Get Applications tab element from the sidebar and click
-    await page.getByRole("link", { name: "Definitions" }).click()
+    await page.getByRole("link", { name }).click()
 
     // Verify that the four showing are the salamander, pig, grasshopper, and worm cards
     const expectedCards = ["salamander", "pig", "grasshopper", "worm"]

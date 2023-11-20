@@ -4,6 +4,8 @@ import launchElectron from "./launch-electron"
 import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
 
+import { name } from "../src/renderer/src/content/applications/name"
+
 test("task queues are visible", async () => {
   // Launch Electron app.
   const electronApp = await launchElectron()
@@ -19,7 +21,7 @@ test("task queues are visible", async () => {
   if (demoModeStatus) {
     // Get Applications tab element from the sidebar and click, to
     // activate the Application gallery
-    await page.getByRole("link", { name: "Definitions" }).click()
+    await page.getByRole("link", { name }).click()
 
     for await (const { application, taskqueue } of expectedApplications) {
       console.log(`Waiting for application=${application} taskqueue=${taskqueue}`)
