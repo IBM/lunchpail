@@ -59,7 +59,7 @@ function method(ctrl: Values) {
     <Tiles
       fieldId="method"
       label="Method of Task Injection"
-      description={`How do you wish to provide Tasks to your ${applicationsSingular}`}
+      description={`How do you wish to provide Tasks to your ${applicationsSingular}?`}
       ctrl={ctrl}
       options={methods}
     />

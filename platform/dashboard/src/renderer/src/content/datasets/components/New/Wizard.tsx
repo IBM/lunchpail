@@ -2,14 +2,16 @@ import wordWrap from "word-wrap"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
-import { TextContent, type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
+import { TextContent, type FormContextProps } from "@patternfly/react-core"
 
 import { S3BrowserWithCreds } from "@jay/components/S3Browser"
-import Password from "@jay/components/Forms/Password"
+import { isNonEmptyArray } from "@jay/common/util/NonEmptyArray"
+
 import Input from "@jay/components/Forms/Input"
-import Select from "@jay/components/Forms/Select"
 import Checkbox from "@jay/components/Forms/Checkbox"
+import Password from "@jay/components/Forms/Password"
 import NonInputElement from "@jay/components/Forms/NonInputElement"
+import Tiles, { type TileOption } from "@jay/components/Forms/Tiles"
 
 import { singular } from "../../name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"
@@ -34,12 +36,6 @@ const step1 = {
   name: "Name",
   isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
   items: ["name" as const, "namespace" as const, "description" as const],
-}
-
-const step2Create = {
-  name: "Upload the Data",
-  isValid: (ctrl: FormContextProps) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
-  items: [],
 }
 
 function isReadonly(ctrl: FormContextProps) {
@@ -98,7 +94,7 @@ data:
 
 export default function NewDataSetWizard() {
   const [searchParams] = useSearchParams()
-  const [buckets, setBuckets] = useState<SelectOptionProps[]>([])
+  const [buckets, setBuckets] = useState<TileOption[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
 
   const isEdit = searchParams.has("yaml")
@@ -110,7 +106,11 @@ export default function NewDataSetWizard() {
         .listBuckets(profile.endpoint, profile.accessKey, profile.secretKey)
         .then((buckets) =>
           setBuckets(
-            buckets.map((_) => ({ value: _.name, description: "Created on " + _.creationDate.toLocaleString() })),
+            buckets.map((_) => ({
+              title: _.name,
+              value: _.name,
+              description: "Created on " + _.creationDate.toLocaleString(),
+            })),
           ),
         )
         .catch((err) => {
@@ -127,15 +127,17 @@ export default function NewDataSetWizard() {
   }, [window.jay.s3, setProfiles])
 
   /** The Select choices for the `profile()` select UI */
-  const profileOptions = useMemo<SelectOptionProps[]>(
-    () => profiles.map((_) => ({ value: _.name, description: _.endpoint })),
+  const profileOptions = useMemo<TileOption[]>(
+    () => profiles.map((_) => ({ title: _.name, value: _.name, description: _.endpoint })),
     [profiles],
   )
 
   /** Help choose an AWS profile */
   function profile(ctrl: FormContextProps) {
-    return (
-      <Select
+    return !isNonEmptyArray(profileOptions) ? (
+      "No AWS profiles found in ~/.credentials"
+    ) : (
+      <Tiles
         fieldId="profile"
         label="Profile"
         description="Choose an AWS Profile from ~/.aws/credentials"
@@ -147,21 +149,15 @@ export default function NewDataSetWizard() {
 
   /** Help choose a bucket */
   function bucket(ctrl: FormContextProps) {
-    const selected =
-      buckets.length === 0
-        ? "No buckets found"
-        : buckets.find((_) => _.value === ctrl.values.bucket)
-          ? ctrl.values.bucket
-          : undefined
-    const options = selected === "No buckets found" ? [{ value: selected, isDisabled: true }] : buckets
-    return (
-      <Select
+    return !isNonEmptyArray(buckets) ? (
+      "No buckets found"
+    ) : (
+      <Tiles
         fieldId="bucket"
         label="Bucket"
-        description="Name of S3 bucket"
         ctrl={ctrl}
-        options={options}
-        currentSelection={selected}
+        options={buckets}
+        currentSelection={buckets.find((_) => _.value === ctrl.values.bucket) ? ctrl.values.bucket : undefined}
       />
     )
   }
@@ -180,7 +176,7 @@ export default function NewDataSetWizard() {
           <NonInputElement
             fieldId="s3browser"
             label="S3 Browser"
-            labelInfo="This browser is here to help you validate the choices above"
+            labelInfo="This browser is here to help you validate your Profile and Bucket choices"
           >
             <S3BrowserWithCreds
               s3={window.jay.s3}
@@ -263,11 +259,10 @@ export default function NewDataSetWizard() {
   })
 
   const step2 = {
-    name: isEdit ? "S3 Credentials and Bucket" : "S3 Provider and Bucket",
+    name: isEdit ? "S3 Credentials and Bucket" : "S3 Profile",
     isValid: (ctrl: FormContextProps) =>
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
-    items: isEdit ? [endpoint, accessKey, secretAccessKey, bucket, browser] : [profile, bucket, browser],
-    gridSpans: isEdit ? 12 : [6, 6, 12],
+    items: isEdit ? [endpoint, accessKey, secretAccessKey] : [profile],
     alerts: isEdit
       ? undefined
       : [
@@ -285,6 +280,12 @@ export default function NewDataSetWizard() {
         ],
   }
 
+  const step3 = {
+    name: "Bucket",
+    isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
+    items: [bucket, browser],
+  }
+
   const step4 = {
     name: "Attributes",
     isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
@@ -295,7 +296,7 @@ export default function NewDataSetWizard() {
   const action = (searchParams.get("action") as "edit" | "create" | "register") ?? "register"
 
   const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular}`
-  const steps = action !== "create" ? [step1, step2, step4] : [step1, step2Create, step2, step4]
+  const steps = isEdit ? [step1, step2, step4] : [step1, step2, step3, step4]
 
   return (
     <NewResourceWizard
