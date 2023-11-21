@@ -140,7 +140,7 @@ export default function NewDataSetWizard() {
       <Tiles
         fieldId="profile"
         label="Profile"
-        description="Choose an AWS Profile from ~/.aws/credentials"
+        labelInfo="Choose an AWS Profile from ~/.aws/credentials"
         ctrl={ctrl}
         options={profileOptions}
       />
@@ -155,6 +155,7 @@ export default function NewDataSetWizard() {
       <Tiles
         fieldId="bucket"
         label="Bucket"
+        labelInfo="Choose an S3 bucket"
         ctrl={ctrl}
         options={buckets}
         currentSelection={buckets.find((_) => _.value === ctrl.values.bucket) ? ctrl.values.bucket : undefined}
