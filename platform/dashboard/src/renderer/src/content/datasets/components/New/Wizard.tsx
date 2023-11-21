@@ -194,9 +194,18 @@ export default function NewDataSetWizard() {
   }
 
   const onChange = useCallback(
-    (fieldId: string, value: string, values: FormContextProps["values"]) => {
+    (
+      fieldId: string,
+      value: string,
+      values: FormContextProps["values"],
+      setValue: FormContextProps["setValue"] | undefined,
+    ) => {
       if (!isEdit) {
         if (fieldId === "profile") {
+          if (setValue) {
+            setValue("bucket", "")
+          }
+
           const profile = profiles.find((_) => _.name === value)
           if (profile) {
             refreshBuckets(profile)

@@ -97,7 +97,7 @@ type Props<Values extends DefaultValues> = PropsWithChildren<{
   returnToNewResource?: boolean
 
   /** Callback when a form value changes */
-  onChange?(fieldId: string, value: string, values: Values["values"]): void
+  onChange?(fieldId: string, value: string, values: Values["values"], setValue: Values["setValue"] | undefined): void
 }>
 
 const nextIsDisabled = { isNextDisabled: true }
@@ -309,7 +309,9 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
     const values = props.defaults(previousValues)
     const { onChange } = props
     if (onChange) {
-      setTimeout(() => Object.entries(values).forEach(([fieldId, value]) => onChange(fieldId, value, values)))
+      setTimeout(() =>
+        Object.entries(values).forEach(([fieldId, value]) => onChange(fieldId, value, values, undefined)),
+      )
     }
     return values
   }, [props.kind, props.defaults, settings?.form[0]])
