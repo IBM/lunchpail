@@ -32,6 +32,7 @@ export default function Tiles(props: FormProps & Ctrl & { options: TileOptions; 
         <Gallery hasGutter>
           {props.options.map((tile) => (
             <Tile
+              key={tile.title}
               data-value={tile.value ?? tile.title}
               isDisplayLarge
               isSelected={selected === tile.value ?? tile.title}
