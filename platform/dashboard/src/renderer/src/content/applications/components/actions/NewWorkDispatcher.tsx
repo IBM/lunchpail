@@ -14,7 +14,7 @@ export default function NewWorkDispatcherButton(
     `taskqueue=${props.queueProps.name}`,
     `namespace=${props.application.metadata.namespace}`,
   ]
-  console.error("!!!OC", props.onClick)
+
   return (
     <LinkToNewWizard
       key="new-work-dispatcher"
