@@ -42,7 +42,7 @@ function httpsIfNeeded(url: string) {
 const noLeftPadding = { paddingLeft: 0 }
 
 function dd(description: ReactNode | Record<string, string>) {
-  if (description === true || description === false) {
+  if (description === true || description === false || description === "true" || description === "false") {
     return description ? (
       <YesIcon className="codeflare--status-online" />
     ) : (
