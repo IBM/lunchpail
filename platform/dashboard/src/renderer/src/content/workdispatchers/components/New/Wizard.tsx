@@ -2,8 +2,8 @@ import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
-import { NumberInput } from "@jay/components/Forms"
-import { Tiles, type TileOptions } from "@jay/components/Forms/Tiles"
+import NumberInput from "@jay/components/Forms/NumberInput"
+import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 import NewResourceWizard, { type DefaultValues } from "@jay/components/NewResourceWizard"
 
 import { singular } from "../../name"

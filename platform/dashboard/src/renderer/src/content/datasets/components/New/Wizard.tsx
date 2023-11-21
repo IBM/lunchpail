@@ -5,8 +5,11 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import { TextContent, type FormContextProps, type SelectOptionProps } from "@patternfly/react-core"
 
 import { S3BrowserWithCreds } from "@jay/components/S3Browser"
-import password from "@jay/components/Forms/Password"
-import { Checkbox, Input, NonInputElement, Select } from "@jay/components/Forms"
+import Password from "@jay/components/Forms/Password"
+import Input from "@jay/components/Forms/Input"
+import Select from "@jay/components/Forms/Select"
+import Checkbox from "@jay/components/Forms/Checkbox"
+import NonInputElement from "@jay/components/Forms/NonInputElement"
 
 import { singular } from "../../name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"
@@ -247,13 +250,13 @@ export default function NewDataSetWizard() {
     [searchParams],
   )
 
-  const accessKey = password({
+  const accessKey = Password({
     fieldId: "accessKey",
     label: "Access Key",
     description: "The access key id for your S3 provider",
   })
 
-  const secretAccessKey = password({
+  const secretAccessKey = Password({
     fieldId: "secretAccessKey",
     label: "Secret Access Key",
     description: "The secret access key id for your S3 provider",

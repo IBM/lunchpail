@@ -6,7 +6,12 @@ import { uniqueNamesGenerator, animals } from "unique-names-generator"
 import yaml, { type YamlProps } from "./yaml"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 import { buttonPropsForNewDataSet } from "@jay/renderer/navigate/newdataset"
-import { Checkbox, Input, Select, SelectCheckbox, TextArea } from "@jay/components/Forms"
+
+import Input from "@jay/components/Forms/Input"
+import Select from "@jay/components/Forms/Select"
+import Checkbox from "@jay/components/Forms/Checkbox"
+import TextArea from "@jay/components/Forms/TextArea"
+import SelectCheckbox from "@jay/components/Forms/SelectCheckbox"
 
 import { titleSingular as singular } from "../../title"
 import { name as datasetsName } from "../../../datasets/name"

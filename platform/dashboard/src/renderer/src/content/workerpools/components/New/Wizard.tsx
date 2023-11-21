@@ -8,7 +8,8 @@ import { type FormContextProps } from "@patternfly/react-core"
 import TaskQueueIcon from "../../../taskqueues/components/Icon"
 import ApplicationIcon from "../../../applications/components/Icon"
 
-import { NumberInput, Select } from "@jay/components/Forms"
+import Select from "@jay/components/Forms/Select"
+import NumberInput from "@jay/components/Forms/NumberInput"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 
 import { singular } from "../../name"

@@ -5,9 +5,9 @@ import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generato
 import { type FormContextProps } from "@patternfly/react-core"
 
 import type Props from "../Props"
-import { Input } from "@jay/components/Forms"
-import password from "@jay/components/Forms/Password"
 import yaml, { type YamlProps } from "./yaml"
+import Input from "@jay/components/Forms/Input"
+import password from "@jay/components/Forms/Password"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 
 import { singular } from "../../name"

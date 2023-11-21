@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Button, type FormContextProps } from "@patternfly/react-core"
 
-import { Input } from "../Forms"
+import Input from "./Input"
 
 import EyeIcon from "@patternfly/react-icons/dist/esm/icons/eye-icon"
 import EyeSlashIcon from "@patternfly/react-icons/dist/esm/icons/eye-slash-icon"

@@ -9,7 +9,7 @@ export type TileOptions = NonEmptyArray<
   Pick<TileProps, "title" | "icon" | "isDisabled"> & { description: ReactNode; value?: string }
 >
 
-export function Tiles(props: FormProps & Ctrl & { options: TileOptions }) {
+export default function Tiles(props: FormProps & Ctrl & { options: TileOptions }) {
   //const [selected, setSelected] = useState(props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title)
   const selected = props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title
 

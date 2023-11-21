@@ -29,8 +29,11 @@ import {
 
 import Yaml from "./Yaml"
 import Settings from "../Settings"
-import { Input, TextArea, remember } from "./Forms"
 import { returnHomeCallback, returnHomeCallbackWithEntity } from "../navigate/home"
+
+import Input from "./Forms/Input"
+import TextArea from "./Forms/TextArea"
+import remember from "./Forms/remember"
 
 import type { DetailableKind } from "../content"
 
