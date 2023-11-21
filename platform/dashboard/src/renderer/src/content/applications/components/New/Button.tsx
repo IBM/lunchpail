@@ -1,4 +1,4 @@
-import { titleSingular } from "../../title"
+import { groupSingular } from "../../group"
 import LinkToNewWizard, { type WizardProps } from "@jay/renderer/navigate/wizard"
 
 type Props = Pick<WizardProps, "startOrAdd"> & {
@@ -14,7 +14,7 @@ export function LinkToNewApplication(props: Props) {
     <LinkToNewWizard
       startOrAdd={props.startOrAdd ?? "create"}
       kind="applications"
-      linkText={`Register ${titleSingular}`}
+      linkText={`New ${groupSingular}`}
       qs={qs}
     />
   )

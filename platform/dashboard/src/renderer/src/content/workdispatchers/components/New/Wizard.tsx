@@ -7,7 +7,8 @@ import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 import NewResourceWizard, { type DefaultValues } from "@jay/components/NewResourceWizard"
 
 import { singular } from "../../name"
-import { titleSingular as applicationsSingular } from "../../../applications/title"
+import { groupSingular as applicationsSingular } from "../../../applications/group"
+import { titleSingular as applicationsDefinitionSingular } from "../../../applications/title"
 
 import type ManagedEvents from "../../../ManagedEvent"
 
@@ -35,7 +36,7 @@ const methods: TileOptions = [
     value: "tasksimulator",
     icon: <WandIcon />,
     title: "Task Simulator",
-    description: `Periodically inject valid auto-generated Tasks. This can help with testing. This requires that your ${applicationsSingular} has included a Task Schema.`,
+    description: `Periodically inject valid auto-generated Tasks. This can help with testing. This requires that your ${applicationsDefinitionSingular} has included a Task Schema.`,
   },
   {
     value: "bucket",
@@ -124,9 +125,9 @@ export default function NewWorkDispatcherWizard(props: Props) {
 
   if (!applicationFromSearch || !namespaceFromSearch || !props.applications) {
     console.error("Application not found (1)", applicationFromSearch, namespaceFromSearch, props.applications)
-    return `Internal Error: ${applicationsSingular} not found: ${applicationFromSearch || "<none>"} in namespace ${
-      namespaceFromSearch || "<none>"
-    }`
+    return `Internal Error: ${applicationsDefinitionSingular} not found: ${
+      applicationFromSearch || "<none>"
+    } in namespace ${namespaceFromSearch || "<none>"}`
   }
 
   const application = props.applications.find(
@@ -134,9 +135,9 @@ export default function NewWorkDispatcherWizard(props: Props) {
   )
   if (!application) {
     console.error("Application not found (2)", applicationFromSearch, namespaceFromSearch, props.applications)
-    return `Internal Error: ${applicationsSingular} not found: ${applicationFromSearch || "<none>"} in namespace ${
-      namespaceFromSearch || "<none>"
-    }`
+    return `Internal Error: ${applicationsDefinitionSingular} not found: ${
+      applicationFromSearch || "<none>"
+    } in namespace ${namespaceFromSearch || "<none>"}`
   }
 
   /** Initial value for form */
@@ -176,7 +177,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
       steps={steps}
       action={action}
     >
-      This wizard helps you to feed Tasks to an {applicationsSingular}.
+      This wizard helps you to feed Tasks to a {applicationsSingular}.
     </NewResourceWizard>
   )
 }
