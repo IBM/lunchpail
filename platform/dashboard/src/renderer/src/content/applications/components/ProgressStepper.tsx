@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
-import { useCallback, type MouseEvent, type ReactNode } from "react"
-import { Popover, ProgressStepper, ProgressStep, type ProgressStepProps, Truncate } from "@patternfly/react-core"
+import { useCallback, useState, type MouseEvent, type ReactNode } from "react"
+import { Popover, ProgressStepper, ProgressStep, type ProgressStepProps } from "@patternfly/react-core"
 
 import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
@@ -21,54 +21,50 @@ function workdispatchers(props: Props) {
   return props.workdispatchers.filter((_) => _.spec.application === props.application.metadata.name)
 }
 
-/** A Badge, but with some extra sauce for handling zero/nonzero */
-/*function ABadge(props: ({ warnIfZero?: boolean; suffix?: string; children: number })) {
-  const label = props.children + (props.suffix ? " " + (props.children === 1 ? props.suffix : props.suffix + "s") : "")
-  return props.children > 0 || !props.warnIfZero ? <Badge isRead={props.children===0}>{label}</Badge> : <Badge isRead>{label}</Badge>
-}*/
+/** An internal error has resulted in an Application with no TaskQueue */
+const oopsNoQueue = `Configuration error: no queue is associated with this ${singular}`
 
-type Item = {
+/** Configuration of one Step of the `ProgressStepper` UI */
+type Step = {
   id: string
-  badge?: (props: Props) => ReactNode
-  content: (props: Props, isCompact: boolean) => ReactNode
+  content: (props: Props, onClick: () => void) => ReactNode
   variant: (props: Props) => ProgressStepProps["variant"]
   icon?: (props: Props) => ReactNode
 }
 
-/** An internal error has resulted in an Application with no TaskQueue */
-const oopsNoQueue = `Configuration error: no queue is associated with this ${singular}`
-
-const items: Item[] = [
+/** These are the Steps we want to display in the `ProgressStepper` UI */
+const steps: Step[] = [
   {
     id: "Code",
     variant: () => "success",
-    content: (props, isCompact) => (
+    content: (props, onClick) => (
       <span>
         Code will be pulled from{" "}
-        <Link target="_blank" to={props.application.spec.repo}>
-          {isCompact ? repoPlusSource(props) : <Truncate content={repoPlusSource(props)} />}
+        <Link onClick={onClick} target="_blank" to={props.application.spec.repo}>
+          {repoPlusSource(props)}
         </Link>
       </span>
     ),
   },
   {
     id: "Data",
-    // badge: (props) => <ABadge>{datasets(props).length}</ABadge>,
     variant: (props) => (datasets(props).length > 0 ? "success" : "default"),
-    content: (props) => {
+    content: (props, onClick) => {
       const data = datasets(props)
       if (data.length === 0) {
         return (
           <span>
             If your {singular} needs access to a {datasetSingular}, link it in.{" "}
-            <LinkToNewDataSet isInline action="create" />
+            <div>
+              <LinkToNewDataSet isInline action="create" onClick={onClick} />
+            </div>
           </span>
         )
       } else {
         return (
           <span>
             Your {singular} has access to {data.length === 1 ? "this" : "these"} {datasetSingular}:
-            <div>{linkToAllDetails("datasets", data)}</div>
+            <div>{linkToAllDetails("datasets", data, undefined, onClick)}</div>
           </span>
         )
       }
@@ -76,9 +72,8 @@ const items: Item[] = [
   },
   {
     id: "Work Dispatcher",
-    // badge: (props) => <ABadge warnIfZero>{workdispatchers(props).length}</ABadge>,
     variant: (props) => (workdispatchers(props).length > 0 ? "info" : "warning"),
-    content: (props) => {
+    content: (props, onClick) => {
       const queue = taskqueueProps(props)
       const dispatchers = workdispatchers(props)
 
@@ -88,7 +83,9 @@ const items: Item[] = [
         return (
           <span>
             You will need specify how to feed the task queue.{" "}
-            <NewWorkDispatcherButton isInline {...props} queueProps={queue} />
+            <div>
+              <NewWorkDispatcherButton isInline {...props} queueProps={queue} onClick={onClick} />
+            </div>
           </span>
         )
       } else {
@@ -98,9 +95,8 @@ const items: Item[] = [
   },
   {
     id: "Compute",
-    // badge: (props) => <ABadge warnIfZero suffix="pool">{associatedWorkerPools(props).length}</ABadge>,
     variant: (props) => (associatedWorkerPools(props).length > 0 ? "info" : "warning"),
-    content: (props) => {
+    content: (props, onClick) => {
       const queue = taskqueueProps(props)
       const pools = associatedWorkerPools(props)
 
@@ -109,7 +105,10 @@ const items: Item[] = [
       } else if (pools.length === 0) {
         return (
           <span>
-            No workers assigned, yet. <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" />
+            No workers assigned, yet.
+            <div>
+              <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" onClick={onClick} />
+            </div>
           </span>
         )
       } else {
@@ -123,39 +122,52 @@ function stopPropagation(evt: MouseEvent) {
   return evt.stopPropagation()
 }
 
-export default function AplicationAccordion(props: Props & { isCompact?: boolean }) {
-  const popoverRenders = !props.isCompact
-    ? []
-    : items.map((item) =>
+export default function AplicationAccordion(props: Props) {
+  const [isVisible, setIsVisible] = useState<boolean[]>(Array(steps.length).fill(false))
+
+  const visibleSet = (isVisible: boolean) =>
+    Array(steps.length)
+      .fill(0)
+      .map((_, idx) =>
         useCallback(
-          (stepRef) => (
-            <Popover
-              position="bottom"
-              aria-label={`${item.id} help`}
-              headerContent={item.id}
-              bodyContent={item.content(props, !!props.isCompact)}
-              triggerRef={stepRef}
-            />
-          ),
-          [props],
+          () => setIsVisible((curState) => [...curState.slice(0, idx), isVisible, ...curState.slice(idx + 1)]),
+          [],
         ),
       )
+  const visibleOn = visibleSet(true)
+  const visibleOff = visibleSet(false)
+
+  const popovers = steps.map((step, idx) =>
+    useCallback(
+      (stepRef) => (
+        <Popover
+          position="bottom"
+          isVisible={isVisible[idx]}
+          shouldOpen={visibleOn[idx]}
+          shouldClose={visibleOff[idx]}
+          aria-label={`${step.id} help`}
+          headerContent={step.id}
+          bodyContent={step.content(props, visibleOff[idx])}
+          triggerRef={stepRef}
+        />
+      ),
+      [props, isVisible[idx]],
+    ),
+  )
 
   return (
-    <ProgressStepper isVertical={!props.isCompact}>
-      {items.map((item, idx) => (
+    <ProgressStepper>
+      {steps.map((step, idx) => (
         <ProgressStep
-          key={item.id}
-          isCurrent={!props.isCompact}
-          variant={item.variant(props)}
-          icon={item.icon && item.icon(props)}
-          id={item.id}
-          titleId={item.id}
-          description={!props.isCompact && item.content(props, !!props.isCompact)}
-          popoverRender={popoverRenders[idx]}
+          key={step.id}
+          variant={step.variant(props)}
+          icon={step.icon && step.icon(props)}
+          id={step.id}
+          titleId={step.id}
+          popoverRender={popovers[idx]}
           onClick={stopPropagation}
         >
-          {item.id} {item.badge && item.badge(props)}
+          {step.id}
         </ProgressStep>
       ))}
     </ProgressStepper>

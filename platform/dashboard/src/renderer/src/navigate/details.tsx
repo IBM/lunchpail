@@ -40,8 +40,10 @@ export function routerToDetails(props: {
   )
 }
 
+type OnClick = import("./wizard").WizardProps["onClick"]
+
 /** Present a link to show the Details view of the given resource */
-const linkToDetails: FunctionComponent<Entity> = ({ id, kind, linkText }) => {
+const linkToDetails: FunctionComponent<Entity & { onClick?: OnClick }> = ({ id, kind, linkText, onClick }) => {
   const location = window.location // FIXME: useLocation()
 
   return (
@@ -50,7 +52,7 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind, linkText }) => {
       ouiaId={id}
       isInline
       variant="link"
-      onClick={stopPropagation}
+      onClick={onClick ?? stopPropagation}
       data-id={id}
       data-kind={kind}
       data-hash={location.hash}
@@ -61,12 +63,17 @@ const linkToDetails: FunctionComponent<Entity> = ({ id, kind, linkText }) => {
 }
 
 /** Present a list of links to show the Details view of the given resources */
-export function linkToAllDetails(kind: Kind, resources: KubernetesResource[] | string[], linkTexts: string[] = []) {
+export function linkToAllDetails(
+  kind: Kind,
+  resources: KubernetesResource[] | string[],
+  linkTexts: string[] = [],
+  onClick?: OnClick,
+) {
   return resources.map((rsrc, idx) =>
     linkToDetails(
       typeof rsrc === "string"
-        ? { id: rsrc, kind, linkText: linkTexts[idx] }
-        : { id: rsrc.metadata.name, kind, linkText: linkTexts[idx] },
+        ? { id: rsrc, kind, linkText: linkTexts[idx], onClick }
+        : { id: rsrc.metadata.name, kind, linkText: linkTexts[idx], onClick },
     ),
   )
 }

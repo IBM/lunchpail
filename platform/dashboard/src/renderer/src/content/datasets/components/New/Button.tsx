@@ -5,6 +5,7 @@ import { singular as datasetsSingular } from "../../name"
 type Props = Pick<WizardProps, "startOrAdd" | "isInline"> & {
   action?: "create" | "register"
   namespace?: string
+  onClick?: () => void
 }
 
 export function LinkToNewDataSet(props: Props) {
@@ -17,11 +18,12 @@ export function LinkToNewDataSet(props: Props) {
   }
 
   const name = datasetsSingular
-  const linkText = props.action === "create" ? `Link ${name}` : `Register ${name}`
+  const linkText = `Register ${name}`
 
   return (
     <LinkToNewWizard
       isInline={props.isInline}
+      onClick={props.onClick}
       startOrAdd={props.startOrAdd ?? "create"}
       kind="datasets"
       linkText={linkText}

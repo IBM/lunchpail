@@ -27,7 +27,5 @@ export default function ApplicationCard(props: Props) {
     ...(!queueProps ? [] : [unassigned(queueProps)]),
   ]
 
-  return (
-    <CardInGallery kind="applications" name={name} groups={groups} footer={<ProgressStepper {...props} isCompact />} />
-  )
+  return <CardInGallery kind="applications" name={name} groups={groups} footer={<ProgressStepper {...props} />} />
 }

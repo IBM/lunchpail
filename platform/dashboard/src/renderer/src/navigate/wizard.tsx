@@ -1,5 +1,5 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom"
-import { Button, type ButtonProps, Flex, FlexItem, Tooltip } from "@patternfly/react-core"
+import { Button, Flex, FlexItem, Tooltip, type ButtonProps } from "@patternfly/react-core"
 
 import type Kind from "../content/NavigableKind"
 import type LocationProps from "./LocationProps"
@@ -107,6 +107,9 @@ export function linkerButtonProps({ location, searchParams }: Omit<LocationProps
 /** Base/public props for subclasses */
 export type WizardProps = ButtonProps & {
   startOrAdd?: StartOrAdd
+
+  /** Optional Button onClick handler, defaults to `evt.stopPropagation` */
+  onClick?: (evt: import("react").MouseEvent<HTMLButtonElement>) => void
 }
 
 /** Internal props */
@@ -141,7 +144,7 @@ export default function LinkToNewWizard(props: Props) {
                 : "primary"
       }
       size={props.size ?? "sm"}
-      onClick={stopPropagation}
+      onClick={props.onClick ?? stopPropagation}
       data-start-or-add={props.startOrAdd || "start"}
       data-link-text={props.linkText}
       data-href={theHref}
