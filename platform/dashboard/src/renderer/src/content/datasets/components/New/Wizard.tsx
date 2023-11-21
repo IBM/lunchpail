@@ -193,6 +193,10 @@ export default function NewDataSetWizard() {
     return <></>
   }
 
+  /**
+   * We need to do some custom handling when form values change, so
+   * that we can reload the set of profiles or buckets.
+   */
   const onChange = useCallback(
     (
       fieldId: string,
@@ -202,7 +206,8 @@ export default function NewDataSetWizard() {
     ) => {
       if (!isEdit) {
         if (fieldId === "profile") {
-          if (setValue) {
+          if (setValue && value !== values.profile) {
+            // profile has changed, invalidate prior choice of bucket
             setValue("bucket", "")
           }
 
@@ -210,14 +215,13 @@ export default function NewDataSetWizard() {
           if (profile) {
             refreshBuckets(profile)
           } else {
-            if (window.jay.s3)
-              window.jay.s3.listProfiles().then((profiles) => {
-                setProfiles(profiles)
-                const profile = profiles.find((_) => _.name === value)
-                if (profile) {
-                  refreshBuckets(profile)
-                }
-              })
+            window.jay.s3?.listProfiles().then((profiles) => {
+              setProfiles(profiles)
+              const profile = profiles.find((_) => _.name === value)
+              if (profile) {
+                refreshBuckets(profile)
+              }
+            })
           }
         }
       } else if (fieldId === "endpoint" || fieldId === "accessKey" || fieldId === "secretAccessKey") {

@@ -24,19 +24,31 @@ export default function remember<Values extends Pick<FormContextProps, "setValue
   const { setValue: origSetValue } = ctrl
 
   function setValue(fieldId: string, value: string) {
+    // this will update the UI model FormContextProps
     origSetValue(fieldId, value)
+
     if (formState) {
-      // remember user setting
+      // also remember user setting across sessions
       const form = tryParse(formState[0] || "{}")
       if (!form[kind]) {
         form[kind] = {}
       }
-      form[kind][fieldId] = value
-      formState[1](JSON.stringify(form))
-    }
 
-    if (onChange) {
-      onChange(fieldId, value, ctrl.values, setValue)
+      // update the model
+      form[kind][fieldId] = value
+
+      if (onChange) {
+        // then the view asked to be called back
+        onChange(fieldId, value, ctrl.values, (fieldId: string, value: string) => {
+          // then that callback also wants to update a value in the
+          // form, e.g. to invalidate some related choice
+          origSetValue(fieldId, value)
+          form[kind][fieldId] = value
+        })
+      }
+
+      // serialize and persist...
+      formState[1](JSON.stringify(form))
     }
   }
 
