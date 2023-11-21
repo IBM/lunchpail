@@ -11,7 +11,12 @@ import type Props from "./Props"
 function detailGroups(props: Props) {
   return Object.entries(props.spec.local)
     .filter(([, value]) => value)
-    .map(([term, value]) => typeof value !== "function" && typeof value !== "object" && descriptionGroup(term, value))
+    .map(
+      ([term, value]) =>
+        typeof value !== "function" &&
+        typeof value !== "object" &&
+        descriptionGroup(term, value === "COS" ? "S3" : value),
+    )
 }
 
 /** Delete this resource */
