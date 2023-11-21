@@ -14,7 +14,6 @@ import NonInputElement from "@jay/components/Forms/NonInputElement"
 import Tiles, { type TileOption } from "@jay/components/Forms/Tiles"
 
 import { singular } from "../../name"
-import { singular as taskqueuesSingular } from "../../../taskqueues/name"
 
 import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
@@ -323,17 +322,8 @@ export default function NewDataSetWizard() {
       action={action === "create" ? "register" : action}
       onChange={onChange}
     >
-      An {singular} stores information that is not specific to any one Task in a {taskqueuesSingular}, e.g. a
-      pre-trained model or a chip design that is being tested across multiple configurations.{" "}
-      {action === "register" ? (
-        <span>
-          This wizard helps you to <strong>register an existing {singular}</strong> that is already stored in the Cloud.
-        </span>
-      ) : (
-        <span>
-          This wizard helps you to create a <strong>new {singular}</strong> from data supplied here.
-        </span>
-      )}
+      A {singular} stores information such as pre-trained model or a chip design that is being tested across multiple
+      configurations.
     </NewResourceWizard>
   )
 }
