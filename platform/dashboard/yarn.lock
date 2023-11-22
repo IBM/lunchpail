@@ -592,10 +592,10 @@
   dependencies:
     playwright "1.40.0"
 
-"@remix-run/router@1.12.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.12.0.tgz#e89b64b6fa97a8a5b740a4c38c2904b80f1f229a"
-  integrity sha512-2hXv036Bux90e1GXTWSMfNzfDDK8LA8JYEWfyHxzvwdp6GyoWEovKc9cotb3KCKmkdwsIBuFGX7ScTWyiHv7Eg==
+"@remix-run/router@1.13.0":
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.13.0.tgz#7e29c4ee85176d9c08cb0f4456bff74d092c5065"
+  integrity sha512-5dMOnVnefRsl4uRnAdoWjtVTdh8e6aZqgM4puy9nmEADH72ck+uXwzpJLEKE9Q6F8ZljNewLgmTfkxUrBdv4WA==
 
 "@sindresorhus/is@^4.0.0":
   version "4.6.0"
@@ -771,10 +771,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.18.4.tgz#519fef47a13cf869be290c20fc6ae9b7fe887aa7"
   integrity sha512-t3rNFBgJRugIhackit2mVcLfF6IRc0JE4oeizPQL8Zrm8n2WY/0wOdpOPhdtG0V9Q2TlW/axbF1MJ6z+Yj/kKQ==
 
-"@types/node@^20.9.3":
-  version "20.9.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.9.3.tgz#e089e1634436f676ff299596c9531bd2b59fffc6"
-  integrity sha512-nk5wXLAXGBKfrhLB0cyHGbSqopS+nz0BUgZkUQqSHSSgdee0kssp1IAqlQOu333bW+gMNs2QREx7iynm19Abxw==
+"@types/node@^20.9.4":
+  version "20.9.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.9.4.tgz#cc8f970e869c26834bdb7ed480b30ede622d74c7"
+  integrity sha512-wmyg8HUhcn6ACjsn8oKYjkN/zUzQeNtMy44weTJSM6p4MMzEOuKbA3OjJ267uPCOW7Xex9dyrNTful8XTQYoDA==
   dependencies:
     undici-types "~5.26.4"
 
@@ -796,10 +796,10 @@
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.8.tgz#805eae6e8f41bd19e88917d2ea200dc992f405d3"
   integrity sha512-kMpQpfZKSCBqltAJwskgePRaYRFukDkm1oItcAbC3gNELR20XIBcN9VRgg4+m8DKsTfkWeA4m4Imp4DDuWy7FQ==
 
-"@types/react-dom@^18.2.16":
-  version "18.2.16"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-18.2.16.tgz#028f44b08f8cc3401c37dde4c2a5e36ddf9cb5b0"
-  integrity sha512-766c37araZ9vxtYs25gvY2wNdFWsT2ZiUvOd0zMhTaoGj6B911N8CKQWgXXJoPMLF3J82thpRqQA7Rf3rBwyJw==
+"@types/react-dom@^18.2.17":
+  version "18.2.17"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-18.2.17.tgz#375c55fab4ae671bd98448dcfa153268d01d6f64"
+  integrity sha512-rvrT/M7Df5eykWFxn6MYt5Pem/Dbyc1N8Y0S9Mrkw2WFCRiqUgw9P7ul2NpwsXCSM1DVdENzdG9J5SreqfAIWg==
   dependencies:
     "@types/react" "*"
 
@@ -1947,10 +1947,10 @@ electron-vite@^1.0.29:
     magic-string "^0.30.1"
     picocolors "^1.0.0"
 
-electron@^27.1.0:
-  version "27.1.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-27.1.0.tgz#d759885e552d7d926526cfc433ab312796f74a9a"
-  integrity sha512-XPdJiO475QJ8cx59/goWNNWnlV0vab+Ut3occymos7VDxkHV5mFrlW6tcGi+M3bW6gBfwpJocWMng8tw542vww==
+electron@^27.1.2:
+  version "27.1.2"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-27.1.2.tgz#d3074c91cce94c1e19b5904b1cdf78c830f2558d"
+  integrity sha512-Dy6BUuGLiIJv+zfsXwr78TV2TNppi24rXF4PIIS+OjDblEKdkI9r1iM8JUd3/x3sbGUy5mdLMSPhvmu//IhkgA==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^18.11.18"
@@ -3872,20 +3872,20 @@ react-is@^16.13.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-router-dom@^6.19.0:
-  version "6.19.0"
-  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-6.19.0.tgz#ee807e36ae7dd954db7a3f770e38b7cc026c66a8"
-  integrity sha512-N6dWlcgL2w0U5HZUUqU2wlmOrSb3ighJmtQ438SWbhB1yuLTXQ8yyTBMK3BSvVjp7gBtKurT554nCtMOgxCZmQ==
+react-router-dom@^6.20.0:
+  version "6.20.0"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-6.20.0.tgz#7b9527a1e29c7fb90736a5f89d54ca01f40e264b"
+  integrity sha512-CbcKjEyiSVpA6UtCHOIYLUYn/UJfwzp55va4yEfpk7JBN3GPqWfHrdLkAvNCcpXr8QoihcDMuk0dzWZxtlB/mQ==
   dependencies:
-    "@remix-run/router" "1.12.0"
-    react-router "6.19.0"
+    "@remix-run/router" "1.13.0"
+    react-router "6.20.0"
 
-react-router@6.19.0, react-router@^6.19.0:
-  version "6.19.0"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-6.19.0.tgz#6d5062fa33495859daca98d86292ab03b037a9ca"
-  integrity sha512-0W63PKCZ7+OuQd7Tm+RbkI8kCLmn4GPjDbX61tWljPxWgqTKlEpeQUwPkT1DRjYhF8KSihK0hQpmhU4uxVMcdw==
+react-router@6.20.0, react-router@^6.20.0:
+  version "6.20.0"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-6.20.0.tgz#4275a3567ecc55f7703073158048db10096bb539"
+  integrity sha512-pVvzsSsgUxxtuNfTHC4IxjATs10UaAtvLGVSA1tbUE4GDaOSU1Esu2xF5nWLz7KPiMuW8BJWuPFdlGYJ7/rW0w==
   dependencies:
-    "@remix-run/router" "1.12.0"
+    "@remix-run/router" "1.13.0"
 
 react-sparklines-typescript-v2@^1.3.6:
   version "1.3.6"
