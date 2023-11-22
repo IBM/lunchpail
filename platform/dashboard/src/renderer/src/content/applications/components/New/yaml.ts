@@ -3,12 +3,12 @@ import wordWrap from "word-wrap"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 export type YamlProps = Pick<ApplicationSpecEvent["metadata"], "name" | "namespace"> &
-  Pick<ApplicationSpecEvent["spec"], "repo" | "image" | "command" | "description" | "supportsGpu"> & {
+  Pick<ApplicationSpecEvent["spec"], "repo" | "image" | "command" | "description"> & {
     /** Serialized JSON array of datasets to mount */
     datasets: string
 
-    /** Serialized JSON of schema to use for WorkDispatcher method=tasksimulator simulated input */
-    inputSchema: string
+    /** We need a string form of this boolean property of `ApplicationSpecEvent` */
+    supportsGpu: string
 
     taskqueueName?: string
     taskqueueBucket?: string
@@ -53,10 +53,6 @@ spec:
   supportsGpu: ${values.supportsGpu}
   inputs:
     - useas: mount
-      schema:
-        format: parquet
-        json: >-
-${indent(values.inputSchema.replace(/\n/g, ""), 10)}
       sizes:
         xs: ${taskqueueName}
 ${indent(datasetsToMount, 4)}
@@ -115,5 +111,9 @@ function indent(value: string, level: number) {
 }
 
 export function yamlFromSpec({ metadata, spec }: ApplicationSpecEvent) {
-  return yaml(Object.assign({ inputSchema: "", datasets: "" }, metadata, spec))
+  const { supportsGpu, ...rest } = spec
+
+  return yaml(
+    Object.assign({ inputSchema: "", datasets: "", supportsGpu: supportsGpu ? "true" : "false" }, metadata, rest),
+  )
 }

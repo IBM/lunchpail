@@ -73,14 +73,6 @@ spec:
                       useas:
                         type: string
                         enum: [mount,configmap]
-                      schema:
-                        type: object
-                        required: [format,json]
-                        properties:
-                          format:
-                            type: string
-                          json:
-                            type: string
                       namespace:
                         type: string
                       defaultSize:

@@ -29,7 +29,7 @@ function typeOf(spec: TypeSpec) {
 }
 
 export default function taskSimulatorYaml(
-  { name, namespace, tasks, intervalSeconds }: Values["values"],
+  { name, namespace, tasks, intervalSeconds, inputFormat, inputSchema }: Values["values"],
   application: ApplicationSpecEvent,
   taskqueue: string,
 ) {
@@ -52,19 +52,15 @@ spec:
     intervalSeconds: ${intervalSeconds}
 `.trim()
 
-  const firstApp = application
-  const inputs = !firstApp ? undefined : firstApp.spec.inputs
-  const schema = !inputs || inputs.length === 0 ? undefined : inputs[0].schema
-
-  if (schema) {
+  if (inputFormat && inputSchema) {
     // TODO: finish up schema.fields, populating it from the `schema` variable
-    const json = JSON.parse(schema.json)
+    const json = JSON.parse(inputSchema)
     const columns = json.fields.map((_) => _.name)
     const columnTypes = json.fields.map((_) => _.type).map(typeOf)
 
     yaml += `
   schema:
-    format: ${schema.format}
+    format: ${inputFormat}
     columns: ${JSON.stringify(columns)}
     columnTypes: ${JSON.stringify(columnTypes)}
 `

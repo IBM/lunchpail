@@ -1,16 +1,13 @@
 import { useCallback } from "react"
-import { type FormContextProps } from "@patternfly/react-core"
 import { useLocation, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
 import yaml, { type YamlProps } from "./yaml"
-import NewResourceWizard from "@jay/components/NewResourceWizard"
 import { buttonPropsForNewDataSet } from "@jay/renderer/navigate/newdataset"
+import NewResourceWizard, { type DefaultValues } from "@jay/components/NewResourceWizard"
 
 import Input from "@jay/components/Forms/Input"
-import Select from "@jay/components/Forms/Select"
 import Checkbox from "@jay/components/Forms/Checkbox"
-import TextArea from "@jay/components/Forms/TextArea"
 import SelectCheckbox from "@jay/components/Forms/SelectCheckbox"
 
 import { titleSingular as singular } from "../../title"
@@ -23,15 +20,13 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import TaskQueueIcon from "../../../taskqueues/components/Icon"
 
+type Values = DefaultValues<YamlProps>
+
 type Props = {
   datasets: DataSetEvent[]
 }
 
-function getYaml(values: Record<string, string>) {
-  return yaml(values as unknown as YamlProps)
-}
-
-function repoInput(ctrl: FormContextProps) {
+function repoInput(ctrl: Values) {
   return (
     <Input
       fieldId="repo"
@@ -43,11 +38,11 @@ function repoInput(ctrl: FormContextProps) {
   )
 }
 
-function image(ctrl: FormContextProps) {
+function image(ctrl: Values) {
   return <Input fieldId="image" label="Image" description="The base image to run your code on" ctrl={ctrl} />
 }
 
-function command(ctrl: FormContextProps) {
+function command(ctrl: Values) {
   return (
     <Input
       fieldId="command"
@@ -58,7 +53,7 @@ function command(ctrl: FormContextProps) {
   )
 }
 
-function supportsGpu(ctrl: FormContextProps) {
+function supportsGpu(ctrl: Values) {
   return (
     <Checkbox
       fieldId="supportsGpu"
@@ -72,13 +67,13 @@ function supportsGpu(ctrl: FormContextProps) {
 
 const step1 = {
   name: "Name",
-  isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
+  isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
   items: ["name" as const, "namespace" as const, "description" as const],
 }
 
 const step2 = {
   name: "Code and Dependencies",
-  isValid: (ctrl: FormContextProps) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
+  isValid: (ctrl: Values) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
   items: [command, repoInput, image, supportsGpu],
 }
 
@@ -126,15 +121,13 @@ export default function NewApplicationWizard(props: Props) {
         supportsGpu: rsrc?.spec?.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
         useTestQueue: previousValues?.useTestQueue ?? "true",
         datasets: filterPreviousDatasetSelectionToInluceOnlyThoseCurrentlyValid(props, previousValues?.datasets),
-        inputFormat: previousValues?.inputFormat ?? "",
-        inputSchema: previousValues?.inputSchema ?? "",
       }
     },
     [searchParams],
   )
 
   const datasets = useCallback(
-    (ctrl: FormContextProps) => (
+    (ctrl: Values) => (
       <SelectCheckbox
         fieldId="datasets"
         label={datasetsName}
@@ -148,7 +141,7 @@ export default function NewApplicationWizard(props: Props) {
   )
 
   /*const useTestQueueCheckbox = useCallback(
-    (ctrl: FormContextProps) => (
+    (ctrl: Values) => (
       <Checkbox
         fieldId="useTestQueue"
         label="Use Internal Test Task Queue?"
@@ -163,7 +156,7 @@ export default function NewApplicationWizard(props: Props) {
   )*/
 
   const location = useLocation()
-  const registerDataset = (ctrl: FormContextProps) =>
+  const registerDataset = (ctrl: Values) =>
     buttonPropsForNewDataSet({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
   const step3 = {
@@ -193,37 +186,6 @@ export default function NewApplicationWizard(props: Props) {
     items: props.datasets.length === 0 ? [] : [datasets],
   }
 
-  const step4 = {
-    name: "Automated Testing",
-    items: [
-      (ctrl: FormContextProps) => (
-        <Select
-          fieldId="inputFormat"
-          label="Input Format"
-          description={`Choose the file format that your ${singular} accpets`}
-          ctrl={ctrl}
-          options={[
-            {
-              value: "Parquet",
-              description:
-                "Apache Parquet is an open source, column-oriented data file format designed for efficient data storage and retrieval. It provides efficient data compression and encoding schemes with enhanced performance to handle complex data in bulk.",
-            },
-          ]}
-        />
-      ),
-
-      (ctrl: FormContextProps) => (
-        <TextArea
-          fieldId="inputSchema"
-          label="Input Schema"
-          description={`The JSON schema of the Tasks accepted by your ${singular}`}
-          ctrl={ctrl}
-          rows={12}
-        />
-      ),
-    ],
-  }
-
   const action =
     searchParams.get("action") === "edit"
       ? ("edit" as const)
@@ -231,15 +193,15 @@ export default function NewApplicationWizard(props: Props) {
         ? ("clone" as const)
         : ("register" as const)
   const title = `${action === "edit" ? "Edit" : action === "clone" ? "Clone" : "Register"} ${singular}`
-  const steps = [step1, step2, step3, step4]
+  const steps = [step1, step2, step3]
 
   return (
-    <NewResourceWizard
+    <NewResourceWizard<Values>
       kind="applications"
       title={title}
       singular={singular}
       defaults={defaults}
-      yaml={getYaml}
+      yaml={yaml}
       steps={steps}
       action={action}
     >

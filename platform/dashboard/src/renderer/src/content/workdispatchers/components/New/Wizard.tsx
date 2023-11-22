@@ -2,8 +2,11 @@ import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
+import Select from "@jay/components/Forms/Select"
+import TextArea from "@jay/components/Forms/TextArea"
 import NumberInput from "@jay/components/Forms/NumberInput"
 import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
+
 import NewResourceWizard, { type DefaultValues } from "@jay/components/NewResourceWizard"
 
 import { singular } from "../../name"
@@ -21,10 +24,14 @@ import BucketIcon from "@patternfly/react-icons/dist/esm/icons/folder-icon" // F
 type Method = "tasksimulator" | "bucket" | "helm"
 
 export type Values = DefaultValues<
-  { method: Method; tasks: string; intervalSeconds: string } & { name: string; namespace: string; description: string }
+  { method: Method; tasks: string; intervalSeconds: string; inputFormat: string; inputSchema: string } & {
+    name: string
+    namespace: string
+    description: string
+  }
 >
 
-const step2 = {
+const step3 = {
   name: "Name",
   isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
   items: ["name" as const, "namespace" as const, "description" as const],
@@ -95,12 +102,38 @@ const injectionInterval = (ctrl: Values) => (
   />
 )
 
-const step3TaskSimulatorItems = [nTasks, injectionInterval]
+const inputFormat = (ctrl: Values) => (
+  <Select
+    fieldId="inputFormat"
+    label="Input Format"
+    description={`Choose the file format that your ${applicationsSingular} accepts`}
+    ctrl={ctrl}
+    options={[
+      {
+        value: "Parquet",
+        description:
+          "Apache Parquet is an open source, column-oriented data file format designed for efficient data storage and retrieval. It provides efficient data compression and encoding schemes with enhanced performance to handle complex data in bulk.",
+      },
+    ]}
+  />
+)
 
-const step3 = {
+const inputSchema = (ctrl: Values) => (
+  <TextArea
+    fieldId="inputSchema"
+    label="Input Schema"
+    description={`The JSON schema of the Tasks accepted by your ${singular}`}
+    ctrl={ctrl}
+    rows={12}
+  />
+)
+
+const step2TaskSimulatorItems = [nTasks, injectionInterval, inputFormat, inputSchema]
+
+const step2 = {
   name: "Configure",
-  gridSpans: 5 as const,
-  items: (values: Values["values"]) => (values.method === "tasksimulator" ? step3TaskSimulatorItems : []),
+  gridSpans: [6, 6, 12, 12] as const,
+  items: (values: Values["values"]) => (values.method === "tasksimulator" ? step2TaskSimulatorItems : []),
   alerts: [
     {
       title: "Configure this " + singular,
@@ -153,6 +186,8 @@ export default function NewWorkDispatcherWizard(props: Props) {
         method: previousValues?.method ?? "tasksimulator",
         tasks: previousValues?.tasks ?? "1",
         intervalSeconds: previousValues?.intervalSeconds ?? "5",
+        inputFormat: previousValues?.inputFormat ?? "",
+        inputSchema: previousValues?.inputSchema ?? "",
       }
     },
     [nameFromSearch],

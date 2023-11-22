@@ -70,7 +70,7 @@ type StepProps<Values extends DefaultValues> = {
    * indicates the Grid span for each item. If a number, it will be
    * used for all `items`.
    */
-  gridSpans?: GridItemProps["span"] | GridItemProps["span"][]
+  gridSpans?: GridItemProps["span"] | readonly GridItemProps["span"][]
 
   /** Validator for this step, if valid the user will be allowed to proceed to the Next step */
   isValid?: (ctrl: Values) => boolean
@@ -100,8 +100,8 @@ type Props<Values extends DefaultValues> = PropsWithChildren<{
   onChange?(fieldId: string, value: string, values: Values["values"], setValue: Values["setValue"] | undefined): void
 }>
 
-const nextIsDisabled = { isNextDisabled: true }
 const nextIsEnabled = { isNextDisabled: false }
+const nextIsDisabled = { isNextDisabled: true }
 
 export default function NewResourceWizard<Values extends DefaultValues = DefaultValues>(props: Props<Values>) {
   /** Error in the request to create a pool? */
