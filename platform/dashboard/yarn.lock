@@ -4599,6 +4599,11 @@ untildify@^4.0.0:
   resolved "https://registry.yarnpkg.com/untildify/-/untildify-4.0.0.tgz#2bc947b953652487e4600949fb091e3ae8cd919b"
   integrity sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==
 
+untruncate-json@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/untruncate-json/-/untruncate-json-0.0.1.tgz#a225e87d5d669c9ec6e04fc8de349e65b6cc2e9e"
+  integrity sha512-4W9enDK4X1y1s2S/Rz7ysw6kDuMS3VmRjMFg7GZrNO+98OSe+x5Lh7PKYoVjy3lW/1wmhs6HW0lusnQRHgMarA==
+
 unused-filename@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/unused-filename/-/unused-filename-2.1.0.tgz#33719c4e8d9644f32d2dec1bc8525c6aaeb4ba51"

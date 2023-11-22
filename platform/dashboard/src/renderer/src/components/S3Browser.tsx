@@ -1,3 +1,4 @@
+import untruncateJson from "untruncate-json"
 import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
 import { Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Text } from "@patternfly/react-core"
 
@@ -261,10 +262,24 @@ function viewContent(content: string, objectName: string) {
   } else if (/json/i.test(ext)) {
     // the Menu bits give us the padding, so we don't need extra
     // padding from the Json viewer
-    return <Json hasNoPadding>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
-  } else {
-    return <Text component="pre">{content}</Text>
+    try {
+      return <Json hasNoPadding>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
+    } catch (err) {
+      console.error("Error parsing JSON", err)
+
+      // try to rectify it, perhaps this is truncated JSON?
+      try {
+        const rectified = JSON.parse(untruncateJson(content))
+        rectified["warning"] = "This object has been truncated"
+        return <Json hasNoPadding>{JSON.stringify(rectified, undefined, 2)}</Json>
+      } catch (err) {
+        console.error("Error trying to rectify partial JSON", err)
+      }
+      // intentional fall-through
+    }
   }
+
+  return <Text component="pre">{content}</Text>
 }
 
 function ShowContent(props: S3Props & { object: string }) {

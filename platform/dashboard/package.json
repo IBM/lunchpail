@@ -45,6 +45,7 @@
     "split2": "^4.2.0",
     "tmp-promise": "^3.0.3",
     "unique-names-generator": "^4.7.1",
+    "untruncate-json": "^0.0.1",
     "word-wrap": "^1.2.5"
   },
   "devDependencies": {
