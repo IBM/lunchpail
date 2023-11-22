@@ -19,8 +19,8 @@ import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 
-import AmazonS3Icon from "../../../../../../../resources/amazon-s3.svg"
-import IBMCloudObjectStorageIcon from "../../../../../../../resources/ibm-cloud-object-storage.svg"
+//import AmazonS3Icon from "../../../../../../../resources/amazon-s3.svg"
+//import IBMCloudObjectStorageIcon from "../../../../../../../resources/ibm-cloud-object-storage.svg"
 
 function endpoint(ctrl: FormContextProps) {
   return (
@@ -96,9 +96,9 @@ data:
 
 function iconFor(endpoint: string) {
   if (/\.appdomain\.cloud/.test(endpoint)) {
-    return <img src={IBMCloudObjectStorageIcon} style={{ width: "0.75em" }} />
+    return "IBM" //<img src={IBMCloudObjectStorageIcon} style={{ width: "0.75em" }} />
   } else if (/amazonaws\.com/.test(endpoint)) {
-    return <img src={AmazonS3Icon} style={{ width: "0.75em" }} />
+    return "AWS" //<img src={AmazonS3Icon} style={{ width: "0.75em" }} />
   } else {
     return undefined
   }
@@ -140,7 +140,13 @@ export default function NewDataSetWizard() {
 
   /** The Select choices for the `profile()` select UI */
   const profileOptions = useMemo<TileOption[]>(
-    () => profiles.map((_) => ({ title: _.name, value: _.name, description: _.endpoint, icon: iconFor(_.endpoint) })),
+    () =>
+      profiles.map((_) => ({
+        title: _.name,
+        value: _.name,
+        description: _.endpoint,
+        icon: iconFor(_.endpoint),
+      })),
     [profiles],
   )
 

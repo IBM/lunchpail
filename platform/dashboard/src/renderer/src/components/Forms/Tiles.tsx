@@ -6,6 +6,8 @@ import { Gallery, Tile, type TileProps } from "@patternfly/react-core"
 import Group from "./Group"
 import type { Ctrl, FormProps } from "./Props"
 
+import "./Tiles.css"
+
 export type TileOption = Pick<TileProps, "title" | "icon" | "isDisabled"> & { description: ReactNode; value?: string }
 
 export type TileOptions = NonEmptyArray<TileOption>
@@ -28,25 +30,23 @@ export default function Tiles(props: FormProps & Ctrl & { options: TileOptions; 
 
   return (
     <Group {...props}>
-      <div role="listbox" aria-label="Form Tiles">
-        <Gallery hasGutter>
-          {props.options.map((tile) => (
-            <Tile
-              key={tile.title}
-              data-value={tile.value ?? tile.title}
-              isDisplayLarge
-              isSelected={selected === tile.value ?? tile.title}
-              onClick={onClick}
-              isStacked
-              title={tile.title}
-              icon={tile.icon}
-              isDisabled={tile.isDisabled}
-            >
-              {tile.description}
-            </Tile>
-          ))}
-        </Gallery>
-      </div>
+      <Gallery hasGutter role="listbox" aria-label="Form Tiles">
+        {props.options.map((tile) => (
+          <Tile
+            className="codeflare--tile"
+            isStacked
+            key={tile.title}
+            icon={tile.icon}
+            onClick={onClick}
+            title={tile.title}
+            isDisabled={tile.isDisabled}
+            data-value={tile.value ?? tile.title}
+            isSelected={selected === tile.value ?? tile.title}
+          >
+            {tile.description}
+          </Tile>
+        ))}
+      </Gallery>
     </Group>
   )
 }
