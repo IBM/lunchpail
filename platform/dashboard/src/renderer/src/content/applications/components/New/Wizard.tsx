@@ -2,28 +2,66 @@ import { useCallback } from "react"
 import { useLocation, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
-import yaml, { type YamlProps } from "./yaml"
+import yaml, { codeLanguageFromMaybeCommand, type Method, type YamlProps } from "./yaml"
 import { buttonPropsForNewDataSet } from "@jay/renderer/navigate/newdataset"
 import NewResourceWizard, { type DefaultValues } from "@jay/components/NewResourceWizard"
 
 import Input from "@jay/components/Forms/Input"
+import TextArea from "@jay/components/Forms/TextArea"
 import Checkbox from "@jay/components/Forms/Checkbox"
 import SelectCheckbox from "@jay/components/Forms/SelectCheckbox"
+import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 
 import { titleSingular as singular } from "../../title"
-import { name as datasetsName } from "../../../datasets/name"
 import { name as workerpoolsName } from "../../../workerpools/name"
 import { singular as taskqueuesSingular } from "../../../taskqueues/name"
+import { name as datasetsName, singular as datasetsSingular } from "../../../datasets/name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import TaskQueueIcon from "../../../taskqueues/components/Icon"
+import CodeIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
+import GitHubIcon from "@patternfly/react-icons/dist/esm/icons/github-icon"
 
 type Values = DefaultValues<YamlProps>
 
 type Props = {
   datasets: DataSetEvent[]
+}
+
+const methods: TileOptions = [
+  {
+    value: "github",
+    icon: <GitHubIcon />,
+    title: "GitHub",
+    description: "Pull your source code from a GitHub repository",
+  },
+  {
+    value: "literal",
+    icon: <CodeIcon />,
+    title: "Paste in Source",
+    description: "Provide your source code directly from this wizard",
+  },
+]
+
+/** Method of specifying code */
+function method(ctrl: Values) {
+  return (
+    <Tiles
+      fieldId="method"
+      label="Code Origin"
+      description={`How do you wish to provide the code for your ${singular}?`}
+      ctrl={ctrl}
+      options={methods}
+    />
+  )
+}
+
+const stepMethod = {
+  name: "Code Origin",
+  isValid: (ctrl: Values) => !!ctrl.values.method,
+  items: [method],
 }
 
 function repoInput(ctrl: Values) {
@@ -65,16 +103,35 @@ function supportsGpu(ctrl: Values) {
   )
 }
 
-const step1 = {
+const stepName = {
   name: "Name",
   isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
-  items: ["name" as const, "namespace" as const, "description" as const],
+  items: ["name" as const, "description" as const],
 }
 
-const step2 = {
-  name: "Code and Dependencies",
-  isValid: (ctrl: Values) => !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command,
-  items: [command, repoInput, image, supportsGpu],
+const languages: TileOptions = [
+  { value: "python", title: "Python", description: "Run the given code via Python" },
+  { value: "bash", title: "Shell Script", description: "Run the given code as a shell script" },
+]
+
+function codeLanguage(ctrl: Values) {
+  return <Tiles fieldId="codeLanguage" label="Source Language" ctrl={ctrl} options={languages} />
+}
+
+function codeLiteral(ctrl: Values) {
+  return (
+    <TextArea fieldId="code" label="Source Code" description="Paste in your source code here" ctrl={ctrl} rows={12} />
+  )
+}
+
+const stepCode = {
+  name: "Code",
+  isValid: (ctrl: Values) =>
+    ctrl.values.method === "github"
+      ? !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command
+      : !!ctrl.values.code,
+  items: (values: Values["values"]) =>
+    values.method === "github" ? [command, repoInput, image, supportsGpu] : [codeLanguage, codeLiteral],
 }
 
 function filterPreviousDatasetSelectionToInluceOnlyThoseCurrentlyValid(props: Props, previous: undefined | string) {
@@ -111,7 +168,10 @@ export default function NewApplicationWizard(props: Props) {
           previousValues?.name ??
           uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
         namespace: rsrc?.metadata?.namespace ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
+        method: (previousValues?.method as Method) ?? ("github" as const),
         repo: rsrc?.spec?.repo ?? previousValues?.repo ?? "",
+        code: rsrc?.spec?.code ?? previousValues?.code ?? "",
+        codeLanguage: codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? "", // TODO infer from rsrc.spec.command
         image:
           rsrc?.spec?.image ??
           previousValues?.image ??
@@ -140,36 +200,21 @@ export default function NewApplicationWizard(props: Props) {
     [],
   )
 
-  /*const useTestQueueCheckbox = useCallback(
-    (ctrl: Values) => (
-      <Checkbox
-        fieldId="useTestQueue"
-        label="Use Internal Test Task Queue?"
-        description="This uses a task queue that requires less configuration, but is less scalable"
-        isChecked={ctrl.values.useTestQueue === "true"}
-        ctrl={ctrl}
-        isDisabled
-        isRequired={true}
-      />
-    ),
-    [],
-  )*/
-
   const location = useLocation()
   const registerDataset = (ctrl: Values) =>
     buttonPropsForNewDataSet({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
-  const step3 = {
+  const stepData = {
     name: datasetsName,
     alerts: [
       {
         title: datasetsName,
         body: (
-          <span>
-            If your {singular} needs access to one or more {datasetsName}, i.e. global data needed across all tasks
-            (e.g. a pre-trained model or a chip design that is being tested across multiple configurations), you may
-            supply that information here.
-          </span>
+          <>
+            If your {singular} needs access to one or more <strong>{datasetsSingular}</strong> to store global data
+            needed by all <strong>Tasks</strong> (e.g. a pre-trained model or a chip design that is being tested across
+            multiple configurations), you may supply that information here.
+          </>
         ),
       },
       ...(props.datasets.length > 0
@@ -193,7 +238,7 @@ export default function NewApplicationWizard(props: Props) {
         ? ("clone" as const)
         : ("register" as const)
   const title = `${action === "edit" ? "Edit" : action === "clone" ? "Clone" : "Register"} ${singular}`
-  const steps = [step1, step2, step3]
+  const steps = [stepMethod, stepCode, stepData, stepName]
 
   return (
     <NewResourceWizard<Values>

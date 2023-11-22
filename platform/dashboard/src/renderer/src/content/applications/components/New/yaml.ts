@@ -2,13 +2,22 @@ import wordWrap from "word-wrap"
 
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
+/** How the user wants to specify the code */
+export type Method = "github" | "literal"
+
 export type YamlProps = Pick<ApplicationSpecEvent["metadata"], "name" | "namespace"> &
-  Pick<ApplicationSpecEvent["spec"], "repo" | "image" | "command" | "description"> & {
+  Pick<ApplicationSpecEvent["spec"], "repo" | "image" | "command" | "description" | "code"> & {
     /** Serialized JSON array of datasets to mount */
     datasets: string
 
     /** We need a string form of this boolean property of `ApplicationSpecEvent` */
     supportsGpu: string
+
+    /** How the user wants to specify the code */
+    method: Method
+
+    /** If code is provided via literal, the source language */
+    codeLanguage: string
 
     taskqueueName?: string
     taskqueueBucket?: string
@@ -47,9 +56,17 @@ metadata:
     app.kubernetes.io/component: ${values.name}
 spec:
   api: workqueue
-  repo: ${values.repo}
-  image: ${values.image}
-  command: /opt/codeflare/worker/bin/watcher.sh ${values.command}
+${
+  values.method === "literal" && values.code
+    ? `  code: >-
+${indent(values.code.trim(), 4)}`
+    : ""
+}
+${values.method === "github" ? `  repo: ${values.repo}` : ""}
+${values.method === "github" ? `  image: ${values.image}` : ""}
+  command: /opt/codeflare/worker/bin/watcher.sh ${
+    values.method === "literal" ? commandFromCodeLanguage(values.codeLanguage) : values.command
+  }
   supportsGpu: ${values.supportsGpu}
   inputs:
     - useas: mount
@@ -110,10 +127,35 @@ function indent(value: string, level: number) {
     .join("\n")
 }
 
+function codeLanguageFromCommand(command: string) {
+  return command.slice(0, command.indexOf(" "))
+}
+
+export function codeLanguageFromMaybeCommand(command: undefined | string) {
+  return !command ? undefined : codeLanguageFromCommand(command)
+}
+
+function commandFromCodeLanguage(codeLanguage: string) {
+  const ext = codeLanguage === "python" ? ".py" : ".sh"
+  const launcher = codeLanguage === "python" ? "python" : ""
+  return `${launcher} literal${ext}`
+}
+
 export function yamlFromSpec({ metadata, spec }: ApplicationSpecEvent) {
+  // supportsGpu boolean -> string
   const { supportsGpu, ...rest } = spec
 
   return yaml(
-    Object.assign({ inputSchema: "", datasets: "", supportsGpu: supportsGpu ? "true" : "false" }, metadata, rest),
+    Object.assign(
+      {
+        method: spec.repo ? ("github" as const) : ("literal" as const),
+        inputSchema: "",
+        datasets: "",
+        codeLanguage: codeLanguageFromCommand(spec.command),
+        supportsGpu: supportsGpu ? "true" : "false",
+      },
+      metadata,
+      rest,
+    ),
   )
 }

@@ -23,8 +23,9 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [api,image,command]
-                - required: [api,steps]
+                - required: [api,image,command] # code via github
+                - required: [api,code,command] # code via lieral
+                - required: [api,steps] # as steps in a sequence
               properties:
                 api:
                   type: string
@@ -36,6 +37,11 @@ spec:
                     - kubeflow
                     - sequence
                     - workqueue
+
+                # if code is provided via literal
+                code:
+                  type: string
+
                 image:
                   type: string
                 repo:

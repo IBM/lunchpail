@@ -16,6 +16,9 @@ type ApplicationSpecEvent = KubernetesResource<
     /** Source repo */
     repo: string
 
+    /** Source code literal */
+    code?: string
+
     /** Default command line */
     command: string
 
