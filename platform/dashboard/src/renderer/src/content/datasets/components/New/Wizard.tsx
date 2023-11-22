@@ -1,8 +1,7 @@
-import wordWrap from "word-wrap"
-import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
+import type { FormContextProps } from "@patternfly/react-core"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
-import { TextContent, type FormContextProps } from "@patternfly/react-core"
 
 import { S3BrowserWithCreds } from "@jay/components/S3Browser"
 import { isNonEmptyArray } from "@jay/common/util/NonEmptyArray"
@@ -13,14 +12,12 @@ import Password from "@jay/components/Forms/Password"
 import NonInputElement from "@jay/components/Forms/NonInputElement"
 import Tiles, { type TileOption } from "@jay/components/Forms/Tiles"
 
+import yaml from "./yaml"
 import { singular } from "../../name"
 
 import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
-
-//import AmazonS3Icon from "../../../../../../../resources/amazon-s3.svg"
-//import IBMCloudObjectStorageIcon from "../../../../../../../resources/ibm-cloud-object-storage.svg"
 
 function endpoint(ctrl: FormContextProps) {
   return (
@@ -49,59 +46,6 @@ function isReadonly(ctrl: FormContextProps) {
       ctrl={ctrl}
     />
   )
-}
-
-function yaml(values: FormContextProps["values"]) {
-  // datashim doesn't like dashes in some cases
-  const secretName = values.name.replace(/-/g, "") + "cfsecret"
-
-  return `
-apiVersion: com.ie.ibm.hpsys/v1alpha1
-kind: Dataset
-metadata:
-  name: ${values.name}
-  namespace: ${values.namespace}
-  annotations:
-    codeflare.dev/description: >-
-${wordWrap(values.description, { trim: true, indent: "      ", width: 60 })}
-  labels:
-    codeflare.dev/created-by: user
-    app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: dataset
-spec:
-  local:
-    type: "COS"
-    bucket: ${values.bucket ?? values.name}
-    endpoint: ${values.endpoint ?? "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"}
-    readonly: "${values.readonly ?? "false"}"
-    secret-name: ${secretName}
-    secret-namespace: ${values.namespace}
-    provision: "true"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ${secretName}
-  namespace: ${values.namespace}
-  labels:
-    app.kubernetes.io/component: ${values.name}
-    app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: ${values.name}
-type: Opaque
-data:
-  accessKeyID: ${btoa(values.accessKey ?? "codeflarey")}
-  secretAccessKey: ${btoa(values.secretAccessKey ?? "codeflarey")}
-`.trim()
-}
-
-function iconFor(endpoint: string) {
-  if (/\.appdomain\.cloud/.test(endpoint)) {
-    return "IBM" //<img src={IBMCloudObjectStorageIcon} style={{ width: "0.75em" }} />
-  } else if (/amazonaws\.com/.test(endpoint)) {
-    return "AWS" //<img src={AmazonS3Icon} style={{ width: "0.75em" }} />
-  } else {
-    return undefined
-  }
 }
 
 export default function NewDataSetWizard() {
@@ -145,7 +89,6 @@ export default function NewDataSetWizard() {
         title: _.name,
         value: _.name,
         description: _.endpoint,
-        icon: iconFor(_.endpoint),
       })),
     [profiles],
   )
@@ -159,6 +102,14 @@ export default function NewDataSetWizard() {
         fieldId="profile"
         label="Profile"
         labelInfo="Choose an AWS Profile from ~/.aws/credentials"
+        helpText={
+          <span>
+            {" "}
+            These profiles are enumerated from <strong>~/.aws/config</strong> and <strong>~/.aws/credentials</strong>.
+            You may add an <strong>endpoint_url=</strong> field under a config profile entry if your S3 endpoint is not
+            the standard AWS one.
+          </span>
+        }
         ctrl={ctrl}
         options={profileOptions}
       />
@@ -195,7 +146,7 @@ export default function NewDataSetWizard() {
           <NonInputElement
             fieldId="s3browser"
             label="S3 Browser"
-            labelInfo="This browser is here to help you validate your Profile and Bucket choices"
+            labelInfo="This read-only browser helps you validate your Profile and Bucket choices"
           >
             <S3BrowserWithCreds
               s3={window.jay.s3}
@@ -295,21 +246,6 @@ export default function NewDataSetWizard() {
     isValid: (ctrl: FormContextProps) =>
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
     items: isEdit ? [endpoint, accessKey, secretAccessKey] : [profile],
-    alerts: isEdit
-      ? undefined
-      : [
-          {
-            isExpandable: true,
-            title: "About AWS Profiles",
-            body: (
-              <TextContent>
-                The profiles are enumerated from <strong>~/.aws/config</strong> and <strong>~/.aws/credentials</strong>.
-                You may add an <strong>endpoint_url=</strong> field under a config profile entry if your S3 endpoint is
-                not the standard AWS one.
-              </TextContent>
-            ),
-          },
-        ],
   }
 
   const step3 = {
