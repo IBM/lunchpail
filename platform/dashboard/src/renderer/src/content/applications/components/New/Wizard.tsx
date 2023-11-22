@@ -20,6 +20,8 @@ import { name as datasetsName, singular as datasetsSingular } from "../../../dat
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
+import defaultExampleLiteralCode from "./defaultExampleLiteralCode"
+
 import TaskQueueIcon from "../../../taskqueues/components/Icon"
 import CodeIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
 import GitHubIcon from "@patternfly/react-icons/dist/esm/icons/github-icon"
@@ -111,7 +113,7 @@ const stepName = {
 
 const languages: TileOptions = [
   { value: "python", title: "Python", description: "Run the given code via Python" },
-  { value: "bash", title: "Shell Script", description: "Run the given code as a shell script" },
+  { value: "shell", title: "Shell Script", description: "Run the given code as a shell script" },
 ]
 
 function codeLanguage(ctrl: Values) {
@@ -120,7 +122,14 @@ function codeLanguage(ctrl: Values) {
 
 function codeLiteral(ctrl: Values) {
   return (
-    <TextArea fieldId="code" label="Source Code" description="Paste in your source code here" ctrl={ctrl} rows={12} />
+    <TextArea
+      fieldId="code"
+      label="Source Code"
+      description="Paste in your source code here"
+      ctrl={ctrl}
+      rows={12}
+      value={ctrl.values.code || defaultExampleLiteralCode[ctrl.values.codeLanguage]}
+    />
   )
 }
 
@@ -171,7 +180,7 @@ export default function NewApplicationWizard(props: Props) {
         method: (previousValues?.method as Method) ?? ("github" as const),
         repo: rsrc?.spec?.repo ?? previousValues?.repo ?? "",
         code: rsrc?.spec?.code ?? previousValues?.code ?? "",
-        codeLanguage: codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? "", // TODO infer from rsrc.spec.command
+        codeLanguage: codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? "python", // TODO infer from rsrc.spec.command
         image:
           rsrc?.spec?.image ??
           previousValues?.image ??
@@ -184,6 +193,21 @@ export default function NewApplicationWizard(props: Props) {
       }
     },
     [searchParams],
+  )
+
+  /**
+   * If the user changes the codeLanguage, then invalidate `code`,
+   * though only if the user hasn't changed it from the default
+   * value. This is so that when switching between `codeLanguage`, the
+   * user will see the different default code literals.
+   */
+  const onChange = useCallback(
+    (fieldId: string, value: string, values: Values["values"], setValue: Values["setValue"] | undefined) => {
+      if (fieldId === "codeLanguage" && setValue && values.code === defaultExampleLiteralCode[value]) {
+        setValue("code", "")
+      }
+    },
+    [],
   )
 
   const datasets = useCallback(
@@ -249,6 +273,7 @@ export default function NewApplicationWizard(props: Props) {
       yaml={yaml}
       steps={steps}
       action={action}
+      onChange={onChange}
     >
       This wizard helps you to register the {singular} that knows how to consume and then process <strong>Tasks</strong>
       . Once you have registered your {singular}, you can bring online <strong>{workerpoolsName}</strong> that run the{" "}

@@ -16,7 +16,7 @@ export default function TextArea(props: FormProps & TextAreaProps & Ctrl) {
       <PFTextArea
         rows={props.rows}
         aria-label={`${props.fieldId} text area`}
-        value={props.ctrl.values[props.fieldId] ?? ""}
+        value={props.ctrl.values[props.fieldId] || props.value}
         onChange={onChange}
       />
     </Group>
