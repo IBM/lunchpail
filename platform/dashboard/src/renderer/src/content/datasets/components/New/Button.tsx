@@ -18,7 +18,7 @@ export function LinkToNewDataSet(props: Props) {
   }
 
   const name = datasetsSingular
-  const linkText = `Register ${name}`
+  const linkText = `New ${name}`
 
   return (
     <LinkToNewWizard

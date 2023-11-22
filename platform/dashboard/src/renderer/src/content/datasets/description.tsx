@@ -2,15 +2,15 @@ import { Link } from "react-router-dom"
 import { hash } from "@jay/renderer/navigate/kind"
 
 import { singular } from "./name"
-import { name as applicationsName } from "../applications/name"
+import { group as applicationsName } from "../applications/group"
 
 export default (
   <span>
-    Each <strong>{singular}</strong> resource stores extra data needed by{" "}
+    Each <strong>{singular}</strong> resource stores data needed by{" "}
     <Link to={hash("applications")}>
       <strong>{applicationsName}</strong>
     </Link>
-    , beyond that which is provided by an input <strong>Task</strong>. For example: a pre-trained model or a chip design
-    that is being tested across multiple configurations.
+    , such as a pre-trained model, or a chip design that is being tested across multiple configurations, or a
+    pre-arranged "drop box" for Tasks to be processed.
   </span>
 )
