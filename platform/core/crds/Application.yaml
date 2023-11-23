@@ -23,8 +23,8 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [api,image,command] # code via github
-                - required: [api,code,command] # code via lieral
+                - required: [api,image,command,repo] # code via github
+                - required: [api,image,command,code] # code via lieral
                 - required: [api,steps] # as steps in a sequence
               properties:
                 api:

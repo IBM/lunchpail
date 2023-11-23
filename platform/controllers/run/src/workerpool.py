@@ -33,6 +33,12 @@ def run_size(customApi, spec, application):
 
     return count, cpu, memory, gpu
 
+#
+# Handler for creation of WorkerPool resource
+#
+# We use `./workerpool.sh` to invoke the `./workerpool/` helm chart
+# which in turn creates the pod/job resources for the pool.
+#
 def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, dataset_labels, patch):
     try:
         api = application['spec']['api']

@@ -65,6 +65,13 @@ ${indent(values.code.trim(), 4)}`
 }
 ${values.method === "github" ? `  repo: ${values.repo}` : ""}
 ${values.method === "github" ? `  image: ${values.image}` : ""}
+${
+  values.method === "literal"
+    ? values.codeLanguage === "python"
+      ? `  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-python-component:dev`
+      : `  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev`
+    : ""
+}
   command: /opt/codeflare/worker/bin/watcher.sh ${
     values.method === "literal" ? commandFromCodeLanguage(values.codeLanguage) : values.command
   }

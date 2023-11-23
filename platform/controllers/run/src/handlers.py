@@ -173,8 +173,9 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
         lastCondition = conditions[-1]
         component_name = labels["app.kubernetes.io/name"]
         phase = lastCondition['type'] if 'type' in lastCondition else 'Pending'
-        message = lastCondition['reason'] if 'reason' in lastCondition else ""
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": message } } }
+        message = lastCondition['message'] if 'message' in lastCondition else lastCondition['reason'] if 'reason' in lastCondition else ""
+        reason = lastCondition['reason'] if 'reason' in lastCondition else ""
+        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": message, "codeflare.dev/reason": reason } } }
         logging.info(f"Handling managed AppWrapper update component_name={component_name} phase={phase}")
 
         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
