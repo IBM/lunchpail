@@ -124,6 +124,7 @@ const inputSchema = (ctrl: Values) => (
     label="Input Schema"
     description={`The JSON schema of the Tasks accepted by your ${singular}`}
     ctrl={ctrl}
+    language="json"
     rows={12}
   />
 )

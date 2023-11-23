@@ -1,5 +1,6 @@
 import wordWrap from "word-wrap"
 
+import type { SupportedLanguage } from "@jay/components/Code"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 /** How the user wants to specify the code */
@@ -17,7 +18,7 @@ export type YamlProps = Pick<ApplicationSpecEvent["metadata"], "name" | "namespa
     method: Method
 
     /** If code is provided via literal, the source language */
-    codeLanguage: string
+    codeLanguage: Exclude<SupportedLanguage, "json" | "yaml">
 
     taskqueueName?: string
     taskqueueBucket?: string
@@ -127,15 +128,16 @@ function indent(value: string, level: number) {
     .join("\n")
 }
 
-function codeLanguageFromCommand(command: string) {
-  return command.slice(0, command.indexOf(" "))
+function codeLanguageFromCommand(command: string): YamlProps["codeLanguage"] {
+  // TODO error out if not a proper codeLanguage
+  return command.slice(0, command.indexOf(" ")) as YamlProps["codeLanguage"]
 }
 
 export function codeLanguageFromMaybeCommand(command: undefined | string) {
   return !command ? undefined : codeLanguageFromCommand(command)
 }
 
-function commandFromCodeLanguage(codeLanguage: string) {
+function commandFromCodeLanguage(codeLanguage: SupportedLanguage) {
   const ext = codeLanguage === "python" ? ".py" : ".sh"
   const launcher = codeLanguage === "python" ? "python" : ""
   return `${launcher} literal${ext}`

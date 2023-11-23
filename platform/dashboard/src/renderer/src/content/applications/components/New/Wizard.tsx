@@ -128,6 +128,8 @@ function codeLiteral(ctrl: Values) {
       description="Paste in your source code here"
       ctrl={ctrl}
       rows={12}
+      showLineNumbers
+      language={ctrl.values.codeLanguage}
       value={ctrl.values.code || defaultExampleLiteralCode[ctrl.values.codeLanguage]}
     />
   )
@@ -161,7 +163,7 @@ export default function NewApplicationWizard(props: Props) {
 
   /** Initial value for form */
   const defaults = useCallback(
-    (previousValues?: Record<string, string>) => {
+    (previousValues?: Values["values"]) => {
       // are we editing an existing resource `rsrc`? if so, populate
       // the form defaults from its values
       const yaml = searchParams.get("yaml")
@@ -180,7 +182,8 @@ export default function NewApplicationWizard(props: Props) {
         method: (previousValues?.method as Method) ?? ("github" as const),
         repo: rsrc?.spec?.repo ?? previousValues?.repo ?? "",
         code: rsrc?.spec?.code ?? previousValues?.code ?? "",
-        codeLanguage: codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? "python", // TODO infer from rsrc.spec.command
+        codeLanguage:
+          codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? ("python" as const),
         image:
           rsrc?.spec?.image ??
           previousValues?.image ??
@@ -188,7 +191,6 @@ export default function NewApplicationWizard(props: Props) {
         command: rsrc?.spec?.command ?? previousValues?.command ?? "",
         description: rsrc?.spec?.description ?? previousValues?.description ?? "",
         supportsGpu: rsrc?.spec?.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
-        useTestQueue: previousValues?.useTestQueue ?? "true",
         datasets: filterPreviousDatasetSelectionToInluceOnlyThoseCurrentlyValid(props, previousValues?.datasets),
       }
     },
@@ -196,14 +198,13 @@ export default function NewApplicationWizard(props: Props) {
   )
 
   /**
-   * If the user changes the codeLanguage, then invalidate `code`,
-   * though only if the user hasn't changed it from the default
-   * value. This is so that when switching between `codeLanguage`, the
-   * user will see the different default code literals.
+   * If the user changes the codeLanguage, then invalidate
+   * `code`. This is so that when switching between `codeLanguage`,
+   * the user will see the different default code literals.
    */
   const onChange = useCallback(
-    (fieldId: string, value: string, values: Values["values"], setValue: Values["setValue"] | undefined) => {
-      if (fieldId === "codeLanguage" && setValue && values.code === defaultExampleLiteralCode[value]) {
+    (fieldId: string, _value: string, _values: Values["values"], setValue: Values["setValue"] | undefined) => {
+      if (fieldId === "codeLanguage" && setValue) {
         setValue("code", "")
       }
     },

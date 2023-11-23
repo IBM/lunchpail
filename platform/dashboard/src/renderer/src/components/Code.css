@@ -1,0 +1,12 @@
+.codeflare--code .cm-editor {
+  background-color: transparent;
+  font-size: 0.875em;
+}
+
+.codeflare--code[data-show-line-numbers="false"] .cm-gutters {
+  display: none;
+}
+
+.codeflare--code .cm-content {
+  padding: 0;
+}

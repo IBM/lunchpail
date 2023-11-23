@@ -263,7 +263,7 @@ function viewContent(content: string, objectName: string) {
     // the Menu bits give us the padding, so we don't need extra
     // padding from the Json viewer
     try {
-      return <Json hasNoPadding>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
+      return <Json readOnly>{JSON.stringify(JSON.parse(content), undefined, 2)}</Json>
     } catch (err) {
       console.error("Error parsing JSON", err)
 
@@ -271,7 +271,7 @@ function viewContent(content: string, objectName: string) {
       try {
         const rectified = JSON.parse(untruncateJson(content))
         rectified["warning"] = "This object has been truncated"
-        return <Json hasNoPadding>{JSON.stringify(rectified, undefined, 2)}</Json>
+        return <Json readOnly>{JSON.stringify(rectified, undefined, 2)}</Json>
       } catch (err) {
         console.error("Error trying to rectify partial JSON", err)
       }

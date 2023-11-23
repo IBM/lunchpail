@@ -67,7 +67,7 @@ function TabbedContent(props: TabsProps) {
   const tabs = [
     ...(!props.summary ? [] : [DrawerTab({ title: "Summary", body: props.summary || <DetailNotFound /> })]),
     ...(props.otherTabs || []),
-    ...(!props.raw ? [] : [DrawerTab({ title: "YAML", body: <Yaml obj={props.raw} />, hasNoPadding: true })]),
+    ...(!props.raw ? [] : [DrawerTab({ title: "YAML", body: <Yaml obj={props.raw} readOnly />, hasNoPadding: true })]),
   ]
 
   return (
