@@ -10,18 +10,18 @@ queue="$WORKQUEUE/$inbox"
 handler="$@"
 
 if [[ -z "$WORKQUEUE" ]]; then
-    echo "Error: WORKQUEUE filepath not defined" 1>&2
+    echo "[workerpool worker $JOB_COMPLETION_INDEX] Error: WORKQUEUE filepath not defined" 1>&2
     exit 1
 elif [[ ! -e "$WORKQUEUE" ]]; then
-    echo "Error: WORKQUEUE filepath does not exist: $WORKQUEUE" 1>&2
+    echo "[workerpool worker $JOB_COMPLETION_INDEX] Error: WORKQUEUE filepath does not exist: $WORKQUEUE" 1>&2
     exit 1
 elif [[ ! -d "$WORKQUEUE" ]]; then
-    echo "Error: WORKQUEUE filepath is not a directory: $WORKQUEUE" 1>&2
+    echo "[workerpool worker $JOB_COMPLETION_INDEX] Error: WORKQUEUE filepath is not a directory: $WORKQUEUE" 1>&2
     exit 1
 fi
 
 if [[ -z "$handler" ]]; then
-    echo "Error: Missing task handler" 1>&2
+    echo "[workerpool worker $JOB_COMPLETION_INDEX] Error: Missing task handler" 1>&2
     exit 1
 fi
 
@@ -29,14 +29,15 @@ function start_watch {
     queue=$1
 
     if [[ ! -e "$queue" ]]; then
-        echo "Error: queue filepath does not exist: $queue" 1>&2
+        echo "[workerpool worker $JOB_COMPLETION_INDEX] Error: queue filepath does not exist: $queue" 1>&2
         exit 1
     elif [[ ! -d "$queue" ]]; then
-        echo "Error: queue filepath is not a directory: $queue" 1>&2
+        echo "[workerpool worker $JOB_COMPLETION_INDEX] Error: queue filepath is not a directory: $queue" 1>&2
         exit 1
     fi
 
-    echo "Watching $queue" 1>&2
+    echo "[workerpool worker $JOB_COMPLETION_INDEX] Watching $queue" 1>&2
+
     inotifywait -m -e create -e moved_to --exclude .partial $queue |
         while read directory action file
         do
@@ -54,7 +55,7 @@ function start_watch {
 # act in gear.
 until [[ -e "$queue" ]]
 do
-    echo "Waiting for queue directory to exist: $queue" 1>&2
+    echo "[workerpool worker $JOB_COMPLETION_INDEX] Waiting for queue directory to exist: $queue" 1>&2
     sleep 1
 done
 

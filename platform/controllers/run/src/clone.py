@@ -1,5 +1,6 @@
 import os
 import re
+import stat
 import logging
 import subprocess
 from kopf import PermanentError
@@ -63,6 +64,10 @@ def pseudo_clone_from_literal(application, workdir: str):
     
     with open(filepath, mode="wt") as f:
         f.write(code)
+
+    # chmod +x
+    st = os.stat(filepath)
+    os.chmod(filepath, st.st_mode | stat.S_IEXEC)
 
     return "."
 #

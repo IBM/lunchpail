@@ -57,7 +57,7 @@ do
         deploy $testname & D=$!
 
         if [[ -e "$path"/init.sh ]]; then
-            "$path"/init.sh
+            TEST_NAME=$testname "$path"/init.sh
         fi
         
         ${handler-waitForIt} $testname ${namespace-codeflare-test} "${expected[@]}" $api

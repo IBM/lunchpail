@@ -64,7 +64,11 @@ function waitForIt {
                 # if we can't find $done in the logs after a few
                 # iterations, start printing out raw logs to help with
                 # debugging
-                ($KUBECTL -n $ns logs $containers -l $selector --tail=10 || exit 0)
+                if (( $idx < 12 ))
+                then TAIL=1000
+                else TAIL=10
+                fi
+                ($KUBECTL -n $ns logs $containers -l $selector --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4
