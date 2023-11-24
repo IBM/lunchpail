@@ -5,6 +5,7 @@ import { api } from "./common"
 import taskqueueProps from "./taskqueueProps"
 import ProgressStepper from "./ProgressStepper"
 import unassigned from "../../taskqueues/components/unassigned"
+import { workerpools } from "../../taskqueues/components/common"
 
 import type Props from "./Props"
 
@@ -25,6 +26,7 @@ export default function ApplicationCard(props: Props) {
     ...api(props),
     props.application.spec.description && descriptionGroup("Description", description(props)),
     ...(!queueProps ? [] : [unassigned(queueProps)]),
+    ...(!queueProps ? [] : [workerpools(queueProps)]),
   ]
 
   return <CardInGallery kind="applications" name={name} groups={groups} footer={<ProgressStepper {...props} />} />

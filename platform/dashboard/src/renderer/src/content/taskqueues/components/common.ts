@@ -44,12 +44,14 @@ export function associatedApplications(props: NameAndApplications) {
 } */
 
 export function workerpools(props: Props) {
-  return descriptionGroup(
-    `Active ${workerpoolsName}`,
-    props.workerpools.length === 0 ? None() : linkToAllDetails("workerpools", props.workerpools),
-    props.workerpools.length,
-    "The Worker Pools that have been assigned to process tasks from this queue.",
-  )
+  return props.workerpools.length === 0
+    ? undefined
+    : descriptionGroup(
+        `Active ${workerpoolsName}`,
+        props.workerpools.length === 0 ? None() : linkToAllDetails("workerpools", props.workerpools),
+        props.workerpools.length,
+        "The Worker Pools that have been assigned to process tasks from this queue.",
+      )
 }
 
 export function numAssociatedWorkerPools(props: Props) {
