@@ -1,6 +1,6 @@
 .codeflare--code .cm-editor {
-  background-color: transparent;
   font-size: 0.875em;
+  background-color: var(--pf-v5-global--BackgroundColor--dark-100);
 }
 
 .codeflare--code[data-show-line-numbers="false"] .cm-gutters {

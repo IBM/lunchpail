@@ -1,8 +1,6 @@
+import { useEffect } from "react"
 import CodeMirror from "@uiw/react-codemirror"
-import { useContext, useEffect } from "react"
-import { githubLight, githubDark } from "@uiw/codemirror-theme-github"
-
-import Settings from "@jay/renderer/Settings"
+import { githubDark } from "@uiw/codemirror-theme-github"
 
 // support for languages
 import { json } from "@codemirror/lang-json"
@@ -24,9 +22,6 @@ export type Props = {
 }
 
 export default function Code(props: Props) {
-  const settings = useContext(Settings)
-  const inDarkMode = settings?.darkMode[0]
-
   // <CodeMirror/> doesn't call our `props.onChange` the first time,
   // though it will call that `onChange` on subsequent updates. Hence,
   // we need this "onMount" handler to push the initial value back
@@ -46,8 +41,6 @@ export default function Code(props: Props) {
           ? [new LanguageSupport(StreamLanguage.define(yamlMode.yaml))]
           : [json()]
 
-  const theme = inDarkMode ? githubDark : githubLight
-
   return (
     <CodeMirror
       className="codeflare--code"
@@ -56,7 +49,7 @@ export default function Code(props: Props) {
       value={props.children}
       onChange={props.onChange}
       extensions={extensions}
-      theme={theme}
+      theme={githubDark}
     />
   )
 }
