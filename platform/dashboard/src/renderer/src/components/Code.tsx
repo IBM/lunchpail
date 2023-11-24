@@ -1,6 +1,7 @@
 import { useEffect } from "react"
+import { tags as t } from "@lezer/highlight"
 import CodeMirror from "@uiw/react-codemirror"
-import { githubDark } from "@uiw/codemirror-theme-github"
+import { createTheme } from "@uiw/codemirror-themes"
 
 // support for languages
 import { json } from "@codemirror/lang-json"
@@ -49,7 +50,35 @@ export default function Code(props: Props) {
       value={props.children}
       onChange={props.onChange}
       extensions={extensions}
-      theme={githubDark}
+      theme={patternflyTheme}
     />
   )
 }
+
+const patternflyTheme = createTheme({
+  theme: "dark",
+  settings: {
+    background: "var(--pf-v5-global--BackgroundColor--dark-100)",
+    foreground: "var(--pf-v5-global--Color--light-100)",
+    caret: "#c9d1d9",
+    selection: "#003d73",
+    selectionMatch: "#003d73",
+    lineHighlight: "#36334280",
+  },
+  styles: [
+    { tag: [t.standard(t.tagName), t.tagName], color: "var(--pf-v5-global--palette--orange-100)" },
+    { tag: [t.comment, t.bracket], color: "var(--pf-v5-global--palette--purple-50)" },
+    { tag: [t.className, t.propertyName], color: "var(--pf-v5-global--palette--light-blue-100)" },
+    { tag: [t.variableName, t.attributeName, t.number, t.operator], color: "var(--pf-v5-global--palette--blue-50)" },
+    { tag: [t.keyword, t.typeName, t.typeOperator, t.typeName], color: "var(--pf-v5-global--palette--cyan-200)" },
+    { tag: [t.string, t.meta, t.regexp], color: "var(--pf-v5-global--palette--gold-200)" },
+    { tag: [t.name, t.quote], color: "#7ee787" },
+    { tag: [t.heading, t.strong], color: "#d2a8ff", fontWeight: "bold" },
+    { tag: [t.emphasis], color: "#d2a8ff", fontStyle: "italic" },
+    { tag: [t.deleted], color: "#ffdcd7", backgroundColor: "ffeef0" },
+    { tag: [t.atom, t.bool, t.special(t.variableName)], color: "var(--pf-v5-global--palette--light-blue-200)" },
+    { tag: t.link, textDecoration: "underline" },
+    { tag: t.strikethrough, textDecoration: "line-through" },
+    { tag: t.invalid, color: "#f97583" },
+  ],
+})
