@@ -13,14 +13,15 @@ const step: Step = {
   content: (props, onClick) => {
     const data = datasets(props)
     if (data.length === 0) {
-      return (
+      const body = (
         <span>
           If your {singular} needs access to a {datasetSingular}, link it in.{" "}
-          <div>
-            <LinkToNewDataSet isInline action="create" onClick={onClick} />
-          </div>
         </span>
       )
+
+      const footer = <LinkToNewDataSet isInline action="create" onClick={onClick} />
+
+      return { body, footer }
     } else {
       return (
         <span>

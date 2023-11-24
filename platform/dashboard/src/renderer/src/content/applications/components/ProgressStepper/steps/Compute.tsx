@@ -9,7 +9,7 @@ import { oopsNoQueue } from "../oops"
 
 const step: Step = {
   id: "Compute",
-  variant: (props) => (associatedWorkerPools(props).length > 0 ? "info" : "warning"),
+  variant: (props) => (associatedWorkerPools(props).length > 0 ? "success" : "warning"),
   content: (props, onClick) => {
     const queue = taskqueueProps(props)
     const pools = associatedWorkerPools(props)
@@ -17,14 +17,9 @@ const step: Step = {
     if (!queue) {
       return oopsNoQueue
     } else if (pools.length === 0) {
-      return (
-        <span>
-          No workers assigned, yet.
-          <div>
-            <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" onClick={onClick} />
-          </div>
-        </span>
-      )
+      const body = "No workers assigned, yet."
+      const footer = <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" onClick={onClick} />
+      return { body, footer }
     } else {
       return linkToAllDetails("workerpools", pools)
     }
