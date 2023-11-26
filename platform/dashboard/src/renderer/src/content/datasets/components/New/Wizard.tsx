@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom"
+import { useLocation, useSearchParams } from "react-router-dom"
 import type { FormContextProps } from "@patternfly/react-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
@@ -12,8 +12,11 @@ import Password from "@jay/components/Forms/Password"
 import NonInputElement from "@jay/components/Forms/NonInputElement"
 import Tiles, { type TileOption } from "@jay/components/Forms/Tiles"
 
-import yaml from "./yaml"
+import stepUpload from "./Upload"
 import { singular } from "../../name"
+import getYaml, { findPlatformRepoSecret, needsPlatformRepoSecret } from "./yaml"
+
+import type ManagedEvents from "../../../ManagedEvent"
 
 import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
@@ -31,29 +34,28 @@ function endpoint(ctrl: FormContextProps) {
   )
 }
 
-const step1 = {
+function isReadonly(ctrl: FormContextProps) {
+  return <Checkbox fieldId="readonly" label="Read-only?" description="Disallow changes to the data" ctrl={ctrl} />
+}
+
+const stepName = {
   name: "Name",
   isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
-  items: ["name" as const, "namespace" as const, "description" as const],
+  items: ["name" as const, /* "namespace" as const, */ "description" as const, isReadonly],
 }
 
-function isReadonly(ctrl: FormContextProps) {
-  return (
-    <Checkbox
-      fieldId="readonly"
-      label="Read-only?"
-      description="Restrict access to disallow changes to the data"
-      ctrl={ctrl}
-    />
-  )
-}
+export type Props = Pick<ManagedEvents, "platformreposecrets">
 
-export default function NewDataSetWizard() {
+export default function NewDataSetWizard(props: Props) {
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const [buckets, setBuckets] = useState<TileOption[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [missingPrs, setMissingPrs] = useState(false)
 
   const isEdit = searchParams.has("yaml")
+
+  const yaml = useCallback((values: FormContextProps["values"]) => getYaml(props, values), [props])
 
   async function refreshBuckets(profile: Omit<Profile, "name">) {
     setBuckets([])
@@ -167,7 +169,7 @@ export default function NewDataSetWizard() {
    * that we can reload the set of profiles or buckets.
    */
   const onChange = useCallback(
-    (
+    async (
       fieldId: string,
       value: string,
       values: FormContextProps["values"],
@@ -191,6 +193,15 @@ export default function NewDataSetWizard() {
                 refreshBuckets(profile)
               }
             })
+          }
+        } else if (fieldId === "uploadRepo") {
+          if (value && needsPlatformRepoSecret(value) && !findPlatformRepoSecret(props, value)) {
+            // user just specified the git repo as the origin for an
+            // upload to the bucket, but we don't have a repo secret
+            // required to pull down the data from the git repo
+            setMissingPrs(true)
+          } else if (missingPrs) {
+            setMissingPrs(false)
           }
         }
       } else if (fieldId === "endpoint" || fieldId === "accessKey" || fieldId === "secretAccessKey") {
@@ -224,6 +235,9 @@ export default function NewDataSetWizard() {
         bucket: rsrc?.spec.local.bucket ?? previousValues?.bucket ?? "",
         accessKey: previousValues?.accessKey ?? "",
         secretAccessKey: previousValues?.secretAccessKey ?? "",
+
+        uploadOrigin: previousValues?.uploadOrigin ?? "",
+        uploadRepo: previousValues?.uploadRepo ?? "",
       }
     },
     [searchParams],
@@ -241,30 +255,32 @@ export default function NewDataSetWizard() {
     description: "The secret access key id for your S3 provider",
   })
 
-  const step2 = {
+  const stepProfile = {
     name: isEdit ? "S3 Credentials and Bucket" : "S3 Profile",
     isValid: (ctrl: FormContextProps) =>
       !!ctrl.values.endpoint && !!ctrl.values.accessKey && !!ctrl.values.secretAccessKey,
     items: isEdit ? [endpoint, accessKey, secretAccessKey] : [profile],
   }
 
-  const step3 = {
+  const stepBucket = {
     name: "Bucket",
     isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
     items: [bucket, browser],
   }
 
-  const step4 = {
+  /* const stepAttributes = {
     name: "Attributes",
     isValid: (ctrl: FormContextProps) => !!ctrl.values.bucket,
     items: [isReadonly],
-  }
+  } */
 
   // are we registering an existing or creating a new one from data supplied here?
   const action = (searchParams.get("action") as "edit" | "create" | "register") ?? "register"
 
   const title = `${action === "edit" ? "Edit" : action === "register" ? "Register" : "Create"} ${singular}`
-  const steps = isEdit ? [step1, step2, step4] : [step1, step2, step3, step4]
+  const steps = isEdit
+    ? [stepProfile, stepName]
+    : [stepProfile, stepBucket, stepUpload(missingPrs, { location, searchParams }), stepName]
 
   return (
     <NewResourceWizard

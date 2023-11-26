@@ -1,4 +1,5 @@
 import wordWrap from "word-wrap"
+import indent from "@jay/common/util/indent"
 
 import type { SupportedLanguage } from "@jay/components/Code"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -125,14 +126,6 @@ data:
   accessKeyID: ${btoa(values.taskqueueAccessKeyId ?? "codeflarey")}
   secretAccessKey: ${btoa(values.taskqueueSecretAccessKey ?? "codeflarey")}
 `.trim()
-}
-
-function indent(value: string, level: number) {
-  const indentation = Array(level).fill(" ").join("")
-  return value
-    .split(/\n/)
-    .map((line) => `${indentation}${line}`)
-    .join("\n")
 }
 
 function codeLanguageFromCommand(command: string): YamlProps["codeLanguage"] {

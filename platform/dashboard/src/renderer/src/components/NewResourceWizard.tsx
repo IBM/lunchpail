@@ -54,6 +54,13 @@ type KnownFormItem = "name" | "namespace" | "description"
 /** An element of a Form, e.g. an Input or TextArea, etc. */
 type FormItem<Values extends DefaultValues> = KnownFormItem | ((ctrl: Values) => ReactNode)
 
+/** An alert to be displayed at the top of a Wizard Step */
+type StepAlertProps<Values extends DefaultValues> = Pick<AlertProps, "variant" | "isExpandable"> & {
+  title: string
+  body: AlertProps["children"]
+  actionLinks?: ((ctrl: Values) => AlertActionLinkProps & { linkText: string })[]
+}
+
 /** One step in the Wizard */
 type StepProps<Values extends DefaultValues> = {
   /** This will be displayed as the step's name in the left-hand "guide" part of the Wizard UI */
@@ -76,12 +83,7 @@ type StepProps<Values extends DefaultValues> = {
   isValid?: (ctrl: Values) => boolean
 
   /** Any Alerts to be rendered at the top of the step */
-  alerts?: (Pick<AlertProps, "variant" | "isExpandable"> & {
-    title: string
-    variant?: AlertProps["variant"]
-    body: AlertProps["children"]
-    actionLinks?: ((ctrl: Values) => AlertActionLinkProps & { linkText: string })[]
-  })[]
+  alerts?: readonly StepAlertProps<Values>[] | ((values: Values["values"]) => readonly StepAlertProps<Values>[])
 }
 
 type Props<Values extends DefaultValues> = PropsWithChildren<{
@@ -102,6 +104,36 @@ type Props<Values extends DefaultValues> = PropsWithChildren<{
 
 const nextIsEnabled = { isNextDisabled: false }
 const nextIsDisabled = { isNextDisabled: true }
+
+function stepAlerts<Values extends DefaultValues>({ alerts }: StepProps<Values>, ctrl: Values) {
+  if (alerts) {
+    const alertProps = typeof alerts === "function" ? alerts(ctrl.values) : alerts
+    return alertProps.map((alert, idx, A) => (
+      <Alert
+        isInline
+        key={alert.title}
+        title={alert.title}
+        variant={alert.variant ?? "info"}
+        isExpandable={alert.isExpandable}
+        className={idx < A.length - 1 ? "" : "codeflare--step-header"}
+        actionLinks={alert.actionLinks
+          ?.map((action) => action(ctrl))
+          .map((action) => {
+            const linkProps: Record<string, unknown> = Object.assign({}, action, { linkText: null })
+            return (
+              <AlertActionLink key={action.linkText} {...linkProps}>
+                {action.linkText}
+              </AlertActionLink>
+            )
+          })}
+      >
+        {alert.body}
+      </Alert>
+    ))
+  } else {
+    return undefined
+  }
+}
 
 export default function NewResourceWizard<Values extends DefaultValues = DefaultValues>(props: Props<Values>) {
   /** Error in the request to create a pool? */
@@ -254,29 +286,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
           name={step.name}
           footer={step.isValid && !step.isValid(ctrl) ? nextIsDisabled : nextIsEnabled}
         >
-          {step.alerts?.map((alert, idx, A) => (
-            <Alert
-              isInline
-              key={alert.title}
-              title={alert.title}
-              variant={alert.variant ?? "info"}
-              isExpandable={alert.isExpandable}
-              className={idx < A.length - 1 ? "" : "codeflare--step-header"}
-              actionLinks={alert.actionLinks
-                ?.map((action) => action(ctrl))
-                .map((action) => {
-                  const linkProps: Record<string, unknown> = Object.assign({}, action, { linkText: null })
-                  return (
-                    <AlertActionLink key={action.linkText} {...linkProps}>
-                      {action.linkText}
-                    </AlertActionLink>
-                  )
-                })}
-            >
-              {alert.body}
-            </Alert>
-          ))}
-
+          {stepAlerts(step, ctrl)}
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>
