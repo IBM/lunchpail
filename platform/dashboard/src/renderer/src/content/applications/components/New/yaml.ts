@@ -60,7 +60,7 @@ spec:
   api: workqueue
 ${
   values.method === "literal" && values.code
-    ? `  code: >-
+    ? `  code: |
 ${indent(values.code.trim(), 4)}`
     : ""
 }
@@ -128,9 +128,10 @@ data:
 `.trim()
 }
 
-function codeLanguageFromCommand(command: string): YamlProps["codeLanguage"] {
-  // TODO error out if not a proper codeLanguage
-  return command.slice(0, command.indexOf(" ")) as YamlProps["codeLanguage"]
+export function codeLanguageFromCommand(command: string): YamlProps["codeLanguage"] {
+  const A = command.split(/\s+/)
+  const file = A[A.length - 1]
+  return file.endsWith(".py") ? "python" : "shell"
 }
 
 export function codeLanguageFromMaybeCommand(command: undefined | string) {
