@@ -69,7 +69,7 @@ const patternflyTheme = createTheme({
     caret: "#c9d1d9",
     selection: "#003d73",
     selectionMatch: "#003d73",
-    lineHighlight: "#36334280",
+    lineHighlight: "var(--pf-v5-global--BackgroundColor--dark-400)",
   },
   styles: [
     { tag: [t.standard(t.tagName), t.tagName], color: "var(--pf-v5-global--palette--orange-100)" },

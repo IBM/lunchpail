@@ -10,3 +10,15 @@
 .codeflare--code .cm-content {
   padding: 0;
 }
+
+.codeflare--code .cm-gutters {
+  color: var(--pf-v5-global--disabled-color--200);
+  background-color: var(--pf-v5-global--BackgroundColor--dark-200);
+}
+
+.codeflare--code .cm-gutterElement {
+  font-size: 0.875em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
