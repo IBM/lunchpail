@@ -130,6 +130,11 @@ export function initEvents() {
     import("./s3/listObjects").then((_) => _.default(endpoint, accessKey, secretKey, bucket)),
   )
 
+  /** Make a bucket */
+  ipcMain.handle("/s3/makeBucket", (_, endpoint: string, accessKey: string, secretKey: string, bucket: string) =>
+    import("./s3/makeBucket").then((_) => _.default(endpoint, accessKey, secretKey, bucket)),
+  )
+
   ipcMain.handle(
     "/s3/getObject",
     (_, endpoint: string, accessKey: string, secretKey: string, bucket: string, object: string) =>
@@ -239,6 +244,11 @@ const apiImpl: JayApi = Object.assign(
         bucket: string,
       ): Promise<{ name: string; size: number; lastModified: Date }[]> {
         return ipcRenderer.invoke("/s3/listObjects", endpoint, accessKey, secretKey, bucket)
+      },
+
+      /** Make a bucket */
+      makeBucket(endpoint: string, accessKey: string, secretKey: string, bucket: string): Promise<void> {
+        return ipcRenderer.invoke("/s3/makeBucket", endpoint, accessKey, secretKey, bucket)
       },
 
       /** @return object content */

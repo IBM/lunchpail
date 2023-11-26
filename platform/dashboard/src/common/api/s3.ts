@@ -11,6 +11,9 @@ export default interface S3Api {
   /** @return list of objects in the given s3 bucket */
   listObjects(endpoint: string, accessKey: string, secretKey: string, bucket: string): Promise<BucketItem[]>
 
+  /** Make a bucket */
+  makeBucket(endpoint: string, accessKey: string, secretKey: string, bucket: string): Promise<void>
+
   /**
    * If `offset` is not provided or `offset<=0` then the the object
    * will be fetched from the first byte. If `limit` is not provided,
