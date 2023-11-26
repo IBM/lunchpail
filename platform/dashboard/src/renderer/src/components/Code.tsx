@@ -6,13 +6,15 @@ import { createTheme } from "@uiw/codemirror-themes"
 // support for languages
 import { json } from "@codemirror/lang-json"
 import { python } from "@codemirror/lang-python"
+import * as tclMode from "@codemirror/legacy-modes/mode/tcl"
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml"
 import * as shellMode from "@codemirror/legacy-modes/mode/shell"
+import * as verilogMode from "@codemirror/legacy-modes/mode/verilog"
 import { StreamLanguage, LanguageSupport } from "@codemirror/language"
 
 import "./Code.css"
 
-export type SupportedLanguage = "python" | "shell" | "json" | "yaml"
+export type SupportedLanguage = "python" | "shell" | "json" | "yaml" | "verilog" | "tcl" | "makefile"
 
 export type Props = {
   children: string
@@ -36,11 +38,15 @@ export default function Code(props: Props) {
   const extensions =
     props.language === "python"
       ? [python()]
-      : props.language === "shell"
+      : props.language === "shell" || props.language === "makefile"
         ? [new LanguageSupport(StreamLanguage.define(shellMode.shell))]
-        : props.language === "yaml"
-          ? [new LanguageSupport(StreamLanguage.define(yamlMode.yaml))]
-          : [json()]
+        : props.language === "tcl"
+          ? [new LanguageSupport(StreamLanguage.define(tclMode.tcl))]
+          : props.language === "yaml"
+            ? [new LanguageSupport(StreamLanguage.define(yamlMode.yaml))]
+            : props.language === "verilog"
+              ? [new LanguageSupport(StreamLanguage.define(verilogMode.verilog))]
+              : [json()]
 
   return (
     <CodeMirror

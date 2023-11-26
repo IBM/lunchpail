@@ -1,7 +1,8 @@
 import untruncateJson from "untruncate-json"
-import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
+import { useCallback, useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
 import { Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Text } from "@patternfly/react-core"
 
+import Code from "./Code"
 import Json from "./Json"
 
 import type { BucketItem } from "@jay/common/api/s3"
@@ -41,23 +42,37 @@ function NavBrowser(props: NavBrowserProps) {
   const [menuHeights, setMenuHeights] = useState<Record<string, number>>({})
   const [activeMenu, setActiveMenu] = useState(rootMenuId)
 
-  const onDrillIn = (_event: KeyboardEvent | MouseEvent, fromItemId: string, toItemId: string, itemId: string) => {
-    setMenuDrilledIn((prevMenuDrilledIn) => [...prevMenuDrilledIn, fromItemId])
-    setDrilldownPath((prevDrilldownPath) => [...prevDrilldownPath, itemId])
-    setActiveMenu(toItemId)
-  }
+  const onDrillIn = useCallback(
+    (_event: KeyboardEvent | MouseEvent, fromItemId: string, toItemId: string, itemId: string) => {
+      setMenuDrilledIn((prevMenuDrilledIn) => [...prevMenuDrilledIn, fromItemId])
+      setDrilldownPath((prevDrilldownPath) => [...prevDrilldownPath, itemId])
+      setActiveMenu(toItemId)
+    },
+    [],
+  )
 
-  const onDrillOut = (_event: KeyboardEvent | MouseEvent, toItemId: string /*, _itemId: string*/) => {
+  const onDrillOut = useCallback((_event: KeyboardEvent | MouseEvent, toItemId: string /*, _itemId: string*/) => {
     setMenuDrilledIn((prevMenuDrilledIn) => prevMenuDrilledIn.slice(0, prevMenuDrilledIn.length - 1))
     setDrilldownPath((prevDrilldownPath) => prevDrilldownPath.slice(0, prevDrilldownPath.length - 1))
     setActiveMenu(toItemId)
-  }
+  }, [])
 
-  const onGetMenuHeight = (menuId: string, height: number) => {
-    if ((menuHeights[menuId] !== height && menuId !== rootMenuId) || (!menuHeights[menuId] && menuId === rootMenuId)) {
-      setMenuHeights((prevMenuHeights) => ({ ...prevMenuHeights, [menuId]: height }))
-    }
-  }
+  const onGetMenuHeight = useCallback((menuId: string, height: number) => {
+    //if ((menuHeights[menuId] !== height && menuId !== rootMenuId) || (!menuHeights[menuId] && menuId === rootMenuId)) {
+    setMenuHeights((prevMenuHeights) => {
+      if (
+        (prevMenuHeights[menuId] !== height && menuId !== rootMenuId) ||
+        (!prevMenuHeights[menuId] && menuId === rootMenuId)
+      ) {
+        if (height !== 1) {
+          // without this check, the patternfly component enters an infinite loop of e.g. 145->1, 1->145, ...
+          return { ...prevMenuHeights, [menuId]: height }
+        }
+      }
+
+      return prevMenuHeights
+    })
+  }, [])
 
   function toMenuItems(roots: Tree[], depth: number, parent?: Tree, parentMenuId?: string) {
     const baseId = `s3nav-drilldown-${depth}-`
@@ -71,7 +86,7 @@ function NavBrowser(props: NavBrowserProps) {
             </MenuItem>,
           ]),
       ...(roots.length === 0 && parent && parentMenuId && hasViewableContent(parent.name) && activeMenu === parentMenuId
-        ? [<ShowContent object={parent.name} {...props} />]
+        ? [<ShowContent key={parent.name} object={parent.name} {...props} />]
         : []),
       ...roots.map((item, idx) => {
         const drilldownMenuId = baseId + `drilldown-${idx}`
@@ -227,9 +242,17 @@ function isError(response: null | unknown | { error: unknown }): response is { e
 }
 
 const filetypeLookup = {
+  py: "Python",
   md: "Markdown",
   json: "JSON",
   txt: "Text",
+  mk: "Makefile",
+  Makefile: "Makefile",
+  sdc: "Synopsys Design Constraint",
+  v: "Verilog",
+  gitignore: "Text",
+  tcl: "TCL",
+  cfg: "Text",
 }
 
 function filetypeFromName(name: string) {
@@ -238,7 +261,8 @@ function filetypeFromName(name: string) {
     const ext = name.slice(extIdx + 1)
     return filetypeLookup[ext] || undefined
   } else {
-    return undefined
+    // maybe we have an entry for the whole name?
+    return filetypeLookup[name.slice(name.lastIndexOf("/") + 1)]
   }
 }
 
@@ -257,8 +281,8 @@ function hasViewableContent(name: string) {
  */
 function viewContent(content: string, objectName: string) {
   const ext = filetypeFromName(objectName)
-  if (/text/i.test(ext)) {
-    return <Text component="pre">{content}</Text>
+  if (/^(makefile|tcl|markdown|verilog|synopsys|py)/i.test(ext)) {
+    return <Code language={ext.toLowerCase()}>{content}</Code>
   } else if (/json/i.test(ext)) {
     // the Menu bits give us the padding, so we don't need extra
     // padding from the Json viewer
