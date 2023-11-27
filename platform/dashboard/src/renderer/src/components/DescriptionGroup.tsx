@@ -10,6 +10,7 @@ import {
   DescriptionListDescription,
   List,
   ListItem,
+  Switch,
   Truncate,
 } from "@patternfly/react-core"
 
@@ -21,8 +22,6 @@ import type { DescriptionListProps } from "@patternfly/react-core"
 import SmallLabel from "./SmallLabel"
 import { stopPropagation } from "../navigate"
 
-import YesIcon from "@patternfly/react-icons/dist/esm/icons/check-icon"
-import NoIcon from "@patternfly/react-icons/dist/esm/icons/minus-icon"
 import LinkIcon from "@patternfly/react-icons/dist/esm/icons/external-link-square-alt-icon"
 
 const imageRepoUrlPattern = /^ghcr\.io/
@@ -43,11 +42,7 @@ const noLeftPadding = { paddingLeft: 0 }
 
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false || description === "true" || description === "false") {
-    return description ? (
-      <YesIcon className="codeflare--status-online" />
-    ) : (
-      <NoIcon className="codeflare--status-offline" />
-    )
+    return <Switch isChecked={description === true || description === "true"} />
   } else if (typeof description === "string" && (isUrl(description) || isImageRepoUrl(description))) {
     return (
       <Button
