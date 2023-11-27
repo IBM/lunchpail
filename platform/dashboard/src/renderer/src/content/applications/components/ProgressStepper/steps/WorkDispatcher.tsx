@@ -8,6 +8,7 @@ import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
 
 import { name as workerpools } from "../../../../workerpools/name"
+import { singular as taskqueueSingular } from "../../../../taskqueues/name"
 import { singular as workdispatcherSingular } from "../../../../workdispatchers/name"
 
 /** @return the WorkDispatchers associated with `props.application` */
@@ -27,9 +28,9 @@ const step: Step = {
     } else if (dispatchers.length === 0) {
       const body = (
         <span>
-          You will need specify how to feed the task queue. Once created, a <strong>{workdispatcherSingular}</strong>{" "}
-          will populate the queue, and any assigned <strong>{workerpools}</strong> will then consume work from the
-          queue.{" "}
+          You will need specify how to feed the {taskqueueSingular}. Once created, a{" "}
+          <strong>{workdispatcherSingular}</strong> will populate the queue, and any assigned{" "}
+          <strong>{workerpools}</strong> will then consume work from the queue.{" "}
         </span>
       )
 

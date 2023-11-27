@@ -4,6 +4,9 @@ import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import taskqueueProps from "../../taskqueueProps"
 import { associatedWorkerPools } from "../../common"
 
+import { groupSingular as application } from "../../../group"
+import { singular as workerpool } from "../../../../workerpools/name"
+
 import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
 
@@ -17,7 +20,12 @@ const step: Step = {
     if (!queue) {
       return oopsNoQueue
     } else if (pools.length === 0) {
-      const body = "No workers assigned, yet."
+      const body = (
+        <span>
+          No workers have been assigned to this <strong>{application}</strong>. Once you configure a{" "}
+          <strong>Compute {workerpool}</strong>, the workers will begin to process any queued-up Tasks.
+        </span>
+      )
       const footer = <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" onClick={onClick} />
       return { body, footer }
     } else {
