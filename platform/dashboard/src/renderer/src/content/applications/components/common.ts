@@ -1,10 +1,10 @@
 import type Props from "./Props"
-import prettyPrintWorkerPoolName from "../../workerpools/components/pretty-print"
 
-import { singular } from "../name"
 import { datasets } from "./taskqueueProps"
-import { name as workerpoolsName } from "../../workerpools/name"
-import { name as datasetsName } from "../../datasets/name"
+import { singular } from "@jay/resources/applications/name"
+import { name as datasetsName } from "@jay/resources/datasets/name"
+import { name as workerpoolsName } from "@jay/resources/workerpools/name"
+import prettyPrintWorkerPoolName from "@jay/resources/workerpools/components/pretty-print"
 
 import None from "@jay/components/None"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"

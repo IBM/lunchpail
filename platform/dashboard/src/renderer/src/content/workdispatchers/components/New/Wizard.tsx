@@ -9,12 +9,12 @@ import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 
 import NewResourceWizard, { type DefaultValues } from "@jay/components/NewResourceWizard"
 
-import { singular } from "../../name"
-import { groupSingular as applicationsSingular } from "../../../applications/group"
-import { titleSingular as applicationsDefinitionSingular } from "../../../applications/title"
+import { singular } from "@jay/resources/workdispatchers/name"
+import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
+import { titleSingular as applicationsDefinitionSingular } from "@jay/resources/applications/title"
 
 import type Method from "./Method"
-import type ManagedEvents from "../../../ManagedEvent"
+import type ManagedEvents from "@jay/resources/ManagedEvent"
 
 import yaml from "./yaml"
 

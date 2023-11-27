@@ -13,10 +13,10 @@ import NonInputElement from "@jay/components/Forms/NonInputElement"
 import Tiles, { type TileOption } from "@jay/components/Forms/Tiles"
 
 import stepUpload from "./Upload"
-import { singular } from "../../name"
+import { singular } from "@jay/resources/datasets/name"
 import getYaml, { findPlatformRepoSecret, needsPlatformRepoSecret } from "./yaml"
 
-import type ManagedEvents from "../../../ManagedEvent"
+import type ManagedEvents from "@jay/resources/ManagedEvent"
 
 import type { Profile } from "@jay/common/api/s3"
 import type DataSetEvent from "@jay/common/events/DataSetEvent"

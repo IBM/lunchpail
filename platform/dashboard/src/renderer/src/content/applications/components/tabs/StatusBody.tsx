@@ -13,23 +13,21 @@ import {
 
 import { workdispatchersGroup } from "../workdispatchers"
 import { datasetsGroup, workerpoolsGroup } from "../common"
-import WorkerPoolIcon from "../../../workerpools/components/Icon"
-import queueTabContent from "../../../taskqueues/components/tabs/Summary"
 
-import { singular as workerpoolSingular } from "../../../workerpools/name"
-
-import computeTabContent from "../../../workerpools/components/tabs/Summary"
-import correctiveLinks from "../../../workerpools/components/corrective-links"
-import prettyPrintWorkerPoolName from "../../../workerpools/components/pretty-print"
-
-import type { WorkerPoolModelWithHistory } from "../../../workerpools/WorkerPoolModel"
+import WorkerPoolIcon from "@jay/resources/workerpools/components/Icon"
+import queueTabContent from "@jay/resources/taskqueues/components/tabs/Summary"
+import correctiveLinks from "@jay/resources/workerpools/components/corrective-links"
+import computeTabContent from "@jay/resources/workerpools/components/tabs/Summary"
+import prettyPrintWorkerPoolName from "@jay/resources/workerpools/components/pretty-print"
+import { singular as workerpoolSingular } from "@jay/resources/workerpools/name"
+import type { WorkerPoolModelWithHistory } from "@jay/resources/workerpools/WorkerPoolModel"
 
 import type Props from "../Props"
 
 function toWorkerPoolProps(
   model: WorkerPoolModelWithHistory,
   props: Props,
-): import("../../../workerpools/components/Props").default {
+): import("@jay/resources/workerpools/components/Props").default {
   return {
     model,
     taskqueueIndex: props.taskqueueIndex,
@@ -40,7 +38,7 @@ function toWorkerPoolProps(
 type SBProps = {
   props: Props
   models: Props["latestWorkerPoolModels"]
-  queueProps: import("../../../taskqueues/components/Props").default
+  queueProps: import("@jay/resources/taskqueues/components/Props").default
 }
 
 /** Body of the Status tab of an Application detail view */

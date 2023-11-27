@@ -1,12 +1,10 @@
 import None from "@jay/components/None"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
-
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
-
-import { name as workerpoolsName } from "../../workerpools/name"
-// import { name as applicationsName } from "../../applications/name"
-
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+
+import { name as workerpoolsName } from "@jay/resources/workerpools/name"
+// import { name as applicationsName } from "@jay/resources/applications/name"
 
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">

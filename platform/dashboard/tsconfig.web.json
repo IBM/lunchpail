@@ -10,6 +10,7 @@
       "@jay/util/*": ["src/common/util/*"],
       "@jay/images/*": ["src/renderer/images/*"],
       "@jay/renderer/*": ["src/renderer/src/*"],
+      "@jay/resources/*": ["src/renderer/src/content/*"],
       "@jay/components/*": ["src/renderer/src/components/*"],
       "@jay/common/*": ["src/common/*"]
     }

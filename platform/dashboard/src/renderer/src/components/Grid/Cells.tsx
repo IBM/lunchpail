@@ -2,7 +2,7 @@ import changeMaker from "change-maker"
 import { Flex } from "@patternfly/react-core"
 
 import Cell from "./Cell"
-import { TaskQueueTask } from "../../content/workerpools/WorkerPoolModel"
+import { TaskQueueTask } from "@jay/resources/workerpools/WorkerPoolModel"
 
 import "./Cells.scss"
 

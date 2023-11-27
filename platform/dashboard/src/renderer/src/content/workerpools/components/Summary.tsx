@@ -7,7 +7,7 @@ import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
-import { name as applicationsName } from "../../applications/name"
+import { name as applicationsName } from "@jay/resources/applications/name"
 
 import type Props from "./Props"
 

@@ -3,7 +3,7 @@ import None from "@jay/components/None"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import { name as workdispatchersName } from "../../workdispatchers/name"
+import { name as workdispatchersName } from "@jay/resources/workdispatchers/name"
 
 /** @return the WorkDispatchers associated with `props.application` */
 export default function workdispatchers(props: Props) {

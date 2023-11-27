@@ -1,6 +1,6 @@
 import type Props from "../Props"
 import taskqueueProps from "../taskqueueProps"
-import unassignedChart from "../../../taskqueues/components/unassigned-chart"
+import unassignedChart from "@jay/resources/taskqueues/components/unassigned-chart"
 
 import DrawerTab from "@jay/components/Drawer/Tab"
 import { dl as DescriptionList } from "@jay/renderer/components/DescriptionGroup"

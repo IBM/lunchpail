@@ -12,17 +12,17 @@ import Checkbox from "@jay/components/Forms/Checkbox"
 import SelectCheckbox from "@jay/components/Forms/SelectCheckbox"
 import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 
-import { titleSingular as singular } from "../../title"
-import { name as workerpoolsName } from "../../../workerpools/name"
-import { singular as taskqueuesSingular } from "../../../taskqueues/name"
-import { name as datasetsName, singular as datasetsSingular } from "../../../datasets/name"
+import { name as workerpoolsName } from "@jay/resources/workerpools/name"
+import { titleSingular as singular } from "@jay/resources/applications/title"
+import { singular as taskqueuesSingular } from "@jay/resources/taskqueues/name"
+import { name as datasetsName, singular as datasetsSingular } from "@jay/resources/datasets/name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import defaultExampleLiteralCode from "./defaultExampleLiteralCode"
 
-import TaskQueueIcon from "../../../taskqueues/components/Icon"
+import TaskQueueIcon from "@jay/resources/taskqueues/components/Icon"
 import CodeIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
 import GitHubIcon from "@patternfly/react-icons/dist/esm/icons/github-icon"
 

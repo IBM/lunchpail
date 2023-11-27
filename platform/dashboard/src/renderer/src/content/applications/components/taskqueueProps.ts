@@ -19,7 +19,9 @@ export function datasets(props: Props) {
 }
 
 /** This helps to use some of the TaskQueue views, given an Application Props */
-export default function taskqueueProps(props: Props): undefined | import("../../taskqueues/components/Props").default {
+export default function taskqueueProps(
+  props: Props,
+): undefined | import("@jay/resources/taskqueues/components/Props").default {
   const queues = taskqueues(props)
 
   return queues.length === 0

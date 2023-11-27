@@ -1,11 +1,11 @@
 import CardInGallery from "@jay/components/CardInGallery"
 import { statusActions, summaryGroups } from "./Summary"
 
+import prettyPrintWorkerPoolName from "@jay/resources/workerpools/components/pretty-print"
+
 import type Props from "./Props"
 
 import WorkerPoolIcon from "./Icon"
-
-import prettyPrintWorkerPoolName from "../../workerpools/components/pretty-print"
 
 export default function WorkerPoolCard(props: Props) {
   const name = props.model.label

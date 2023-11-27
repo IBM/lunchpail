@@ -1,11 +1,11 @@
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
-import { LinkToNewDataSet } from "../../../../datasets/components/New/Button"
+
+import { LinkToNewDataSet } from "@jay/resources/datasets/components/New/Button"
+import { groupSingular as singular } from "@jay/resources/applications/group"
+import { singular as datasetSingular } from "@jay/resources/datasets/name"
 
 import type Step from "../Step"
-import { datasets } from "../../taskqueueProps"
-
-import { groupSingular as singular } from "../../../group"
-import { singular as datasetSingular } from "../../../../datasets/name"
+import { datasets } from "@jay/resources/applications/components/taskqueueProps"
 
 const step: Step = {
   id: "Data",

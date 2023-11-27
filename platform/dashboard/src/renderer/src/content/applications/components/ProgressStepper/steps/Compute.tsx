@@ -4,8 +4,8 @@ import { linkToAllDetails } from "@jay/renderer/navigate/details"
 import taskqueueProps from "../../taskqueueProps"
 import { associatedWorkerPools } from "../../common"
 
-import { groupSingular as application } from "../../../group"
-import { singular as workerpool } from "../../../../workerpools/name"
+import { singular as workerpool } from "@jay/resources/workerpools/name"
+import { groupSingular as application } from "@jay/resources/applications/group"
 
 import type Step from "../Step"
 import { oopsNoQueue } from "../oops"

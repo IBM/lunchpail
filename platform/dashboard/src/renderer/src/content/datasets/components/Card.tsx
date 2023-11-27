@@ -1,7 +1,7 @@
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import { singular as datasetsSingular } from "../name"
+import { singular as datasetsSingular } from "@jay/resources/datasets/name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 

@@ -4,8 +4,8 @@ import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import { api } from "./common"
 import taskqueueProps from "./taskqueueProps"
 import ProgressStepper from "./ProgressStepper"
-import unassigned from "../../taskqueues/components/unassigned"
-import { workerpools } from "../../taskqueues/components/common"
+import unassigned from "@jay/resources/taskqueues/components/unassigned"
+import { workerpools } from "@jay/resources/taskqueues/components/common"
 
 import type Props from "./Props"
 

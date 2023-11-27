@@ -2,8 +2,8 @@ import { Link } from "react-router-dom"
 import { hash } from "@jay/renderer/navigate/kind"
 
 import { titleSingular } from "./title"
-import { name as datasetsName } from "../datasets/name"
-import { singular as workdispatchersName } from "../workdispatchers/name"
+import { name as datasetsName } from "@jay/resources/datasets/name"
+import { singular as workdispatchersName } from "@jay/resources/workdispatchers/name"
 
 export default (
   <span>

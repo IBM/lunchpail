@@ -5,17 +5,16 @@ import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
 import { type FormContextProps } from "@patternfly/react-core"
 
-import TaskQueueIcon from "../../../taskqueues/components/Icon"
-import ApplicationIcon from "../../../applications/components/Icon"
+import TaskQueueIcon from "@jay/resources/taskqueues/components/Icon"
+import ApplicationIcon from "@jay/resources/applications/components/Icon"
 
 import Select from "@jay/components/Forms/Select"
 import NumberInput from "@jay/components/Forms/NumberInput"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 
-import { singular } from "../../name"
-import { singular as taskqueuesSingular } from "../../../taskqueues/name"
-import { singular as workerpoolsSingular } from "../../../workerpools/name"
-import { singular as applicationsSingular } from "../../../applications/name"
+import { singular as taskqueuesSingular } from "@jay/resources/taskqueues/name"
+import { singular as workerpoolsSingular } from "@jay/resources/workerpools/name"
+import { singular as applicationsSingular } from "@jay/resources/applications/name"
 
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -135,7 +134,7 @@ spec:
     <NewResourceWizard
       kind="workerpools"
       title={title}
-      singular={singular}
+      singular={workerpoolsSingular}
       defaults={defaults}
       yaml={yaml}
       steps={steps}

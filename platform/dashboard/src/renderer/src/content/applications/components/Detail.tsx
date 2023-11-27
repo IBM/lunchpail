@@ -12,7 +12,7 @@ import editAction from "./actions/edit"
 // import cloneAction from "./actions/clone"
 import deleteAction from "./actions/delete"
 
-import NewPoolButton from "../../taskqueues/components/NewPoolButton"
+import NewPoolButton from "@jay/resources/taskqueues/components/NewPoolButton"
 import NewWorkDispatcherButton from "./actions/NewWorkDispatcher"
 
 import type Props from "./Props"

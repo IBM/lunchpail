@@ -3,7 +3,7 @@ import { hash } from "@jay/renderer/navigate/kind"
 
 import { group } from "./group"
 import { name, singular } from "./name"
-import { titleSingular as applicationsTitleSingular } from "../applications/title"
+import { titleSingular as applicationsTitleSingular } from "@jay/resources/applications/title"
 
 export default (
   <span>

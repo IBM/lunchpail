@@ -7,9 +7,9 @@ import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
 import workdispatchers from "../../workdispatchers"
 
-import { name as workerpools } from "../../../../workerpools/name"
-import { singular as taskqueueSingular } from "../../../../taskqueues/name"
-import { singular as workdispatcherSingular } from "../../../../workdispatchers/name"
+import { name as workerpools } from "@jay/resources/workerpools/name"
+import { singular as taskqueueSingular } from "@jay/resources/taskqueues/name"
+import { singular as workdispatcherSingular } from "@jay/resources/workdispatchers/name"
 
 const step: Step = {
   id: workdispatcherSingular,
