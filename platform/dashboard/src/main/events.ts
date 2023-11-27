@@ -22,7 +22,7 @@ function streamForKind(kind: WatchedKind): import("stream").Transform {
     case "platformreposecrets":
       return startStreamForKind("platformreposecrets.codeflare.dev")
     case "applications":
-      return startStreamForKind("applications.codeflare.dev", { selectors: ["app.kubernetes.io/role!=workdispatcher"] })
+      return startStreamForKind("applications.codeflare.dev")
     case "workdispatchers":
       return startStreamForKind("workdispatchers.codeflare.dev")
   }

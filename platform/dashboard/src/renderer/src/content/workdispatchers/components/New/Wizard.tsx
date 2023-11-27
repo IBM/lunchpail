@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
 import Select from "@jay/components/Forms/Select"
@@ -13,18 +13,27 @@ import { singular } from "../../name"
 import { groupSingular as applicationsSingular } from "../../../applications/group"
 import { titleSingular as applicationsDefinitionSingular } from "../../../applications/title"
 
+import type Method from "./Method"
 import type ManagedEvents from "../../../ManagedEvent"
 
 import yaml from "./yaml"
 
 import HelmIcon from "@patternfly/react-icons/dist/esm/icons/hard-hat-icon" // FIXME
 import WandIcon from "@patternfly/react-icons/dist/esm/icons/magic-icon"
+import SweepIcon from "@patternfly/react-icons/dist/esm/icons/broom-icon"
 import BucketIcon from "@patternfly/react-icons/dist/esm/icons/folder-icon" // FIXME
 
-type Method = "tasksimulator" | "bucket" | "helm"
-
 export type Values = DefaultValues<
-  { method: Method; tasks: string; intervalSeconds: string; inputFormat: string; inputSchema: string } & {
+  {
+    method: Method
+    tasks: string
+    intervalSeconds: string
+    inputFormat: string
+    inputSchema: string
+    min: string
+    max: string
+    step: string
+  } & {
     name: string
     namespace: string
     description: string
@@ -44,6 +53,23 @@ const methods: TileOptions = [
     icon: <WandIcon />,
     title: "Task Simulator",
     description: `Periodically inject valid auto-generated Tasks. This can help with testing. This requires that your ${applicationsDefinitionSingular} has included a Task Schema.`,
+  },
+  {
+    value: "parametersweep",
+    icon: <SweepIcon />,
+    title: "Parameter Sweep",
+    description: (
+      <span>
+        Run a separate Task for every point in a space of configuration parameters. You can use this kind of{" "}
+        <Link
+          target="_blank"
+          to="https://www.mathworks.com/help/simulink/ug/optimize-estimate-and-sweep-block-parameter-values.html"
+        >
+          parameter sweep
+        </Link>{" "}
+        to determine which configuration settings give you the best outcome.
+      </span>
+    ),
   },
   {
     value: "bucket",
@@ -129,16 +155,55 @@ const inputSchema = (ctrl: Values) => (
   />
 )
 
+/** Configuration items for a Task Simulator */
 const step2TaskSimulatorItems = [nTasks, injectionInterval, inputFormat, inputSchema]
+
+const minValue = (ctrl: Values) => (
+  <NumberInput
+    fieldId="min"
+    label="Minimum Value"
+    description="The parameter sweep will start here"
+    defaultValue={parseInt(ctrl.values.min, 10)}
+    ctrl={ctrl}
+  />
+)
+
+const maxValue = (ctrl: Values) => (
+  <NumberInput
+    fieldId="max"
+    label="Maximum Value"
+    description="The parameter sweep will end here"
+    defaultValue={parseInt(ctrl.values.max, 10)}
+    ctrl={ctrl}
+  />
+)
+
+const step = (ctrl: Values) => (
+  <NumberInput
+    fieldId="step"
+    label="Step"
+    description="The parameter sweep step from min to max"
+    defaultValue={parseInt(ctrl.values.step, 10)}
+    ctrl={ctrl}
+  />
+)
+
+/** Configuration items for a Parameter Sweep */
+const step2ParameterSweepItems = [minValue, maxValue, step]
 
 const step2 = {
   name: "Configure",
-  gridSpans: [6, 6, 12, 12] as const,
-  items: (values: Values["values"]) => (values.method === "tasksimulator" ? step2TaskSimulatorItems : []),
+  gridSpans: (values: Values["values"]) => (values.method === "parametersweep" ? 4 : ([6, 6, 12, 12] as const)),
+  items: (values: Values["values"]) =>
+    values.method === "tasksimulator"
+      ? step2TaskSimulatorItems
+      : values.method === "parametersweep"
+        ? step2ParameterSweepItems
+        : [],
   alerts: [
     {
       title: "Configure this " + singular,
-      body: "Your choice of " + singular + " offers the following configuration parameters.",
+      body: "Your choice of " + singular + " offers the following configuration settings.",
     },
   ],
 }
@@ -189,6 +254,9 @@ export default function NewWorkDispatcherWizard(props: Props) {
         intervalSeconds: previousValues?.intervalSeconds ?? "5",
         inputFormat: previousValues?.inputFormat ?? "",
         inputSchema: previousValues?.inputSchema ?? "",
+        min: previousValues?.min ?? "1",
+        max: previousValues?.max ?? "5",
+        step: previousValues?.step ?? "1",
       }
     },
     [nameFromSearch],

@@ -13,14 +13,20 @@ metadata:
   ownerReferences:
     - apiVersion: codeflare.dev/v1alpha1
       controller: true
-      kind: TaskSimulator
+      kind: WorkDispatcher
       name: {{ .Values.name }}
       uid: {{ .Values.uid }}
 data:
   simulator.sh: |
     #!/usr/bin/env bash
 
-    echo "Started TaskSimulator injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
+    echo -n "Started TaskDispatcher method=$METHOD "
+    if [[ $METHOD = tasksimulator ]]
+    then echo "injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
+    elif [[ $METHOD = parametersweep ]]
+    then echo "min=$SWEEP_MIN max=$SWEEP_MAX step=$SWEEP_STEP"
+    fi
+
     printenv
 
     config=/tmp/rclone.conf
@@ -36,6 +42,22 @@ data:
     acl = public-read
     EOF
 
+    if [[ $METHOD = parametersweep ]]
+    then
+      for parameter_value in $(seq $SWEEP_MIN $SWEEP_STEP $SWEEP_MAX)
+      do
+        task=/tmp/task-$(cat /proc/sys/kernel/random/uuid).txt
+        echo "Injecting task=$task parameter_value=${parameter_value}"
+        echo -n ${parameter_value} > $task
+
+        rclone --config $config sync $PROGRESS $task $remote
+        rm -f "$task"
+      done
+
+      exit
+    fi
+
+    # otherwise tasksimulator
     if [[ -n "$COLUMNS" ]] && [[ -n "$COLUMN_TYPES" ]]
     then echo "Using schema columns=\"$COLUMNS\" columnTypes=\"$COLUMN_TYPES\""
     fi

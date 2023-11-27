@@ -24,15 +24,29 @@ spec:
               type: object
               oneOf:
                 - required: [application, method, dataset, rate] # tasksimulator
+                - required: [application, method, dataset, sweep] # parametersweep
               properties:
                 method:
                   type: string
-                  enum: [tasksimulator]
+                  enum: [tasksimulator,parametersweep]
 
                 application:
                   type: string
                 dataset:
                   type: string
+
+                # parameter sweep
+                sweep:
+                  type: object
+                  required: [min,max,step]
+                  properties:
+                    min:
+                      type: number
+                    max:
+                      type: number
+                    step:
+                      type: number
+
                 schema:
                   type: object
                   required: [format, columns, columnTypes]
@@ -102,4 +116,4 @@ spec:
     kind: WorkDispatcher
     # shortNames allow shorter string to match your resource on the CLI
     shortNames:
-    - ts
+    - wd

@@ -21,7 +21,6 @@ import {
   FormSection,
   Grid,
   GridItem,
-  type GridItemProps,
   Wizard,
   WizardHeader,
   WizardStep,
@@ -58,7 +57,7 @@ type FormItem<Values extends DefaultValues> = KnownFormItem | ((ctrl: Values) =>
 type StepAlertProps<Values extends DefaultValues> = Pick<AlertProps, "variant" | "isExpandable"> & {
   title: string
   body: AlertProps["children"]
-  actionLinks?: ((ctrl: Values) => AlertActionLinkProps & { linkText: string })[]
+  actionLinks?: readonly ((ctrl: Values) => AlertActionLinkProps & { linkText: string })[]
 }
 
 /** One step in the Wizard */
@@ -70,14 +69,14 @@ type StepProps<Values extends DefaultValues> = {
    * Form choices to be displayed in this step. Either an array of
    * `FormItem` or a function that returns this array.
    */
-  items: FormItem<Values>[] | ((values: Values["values"]) => FormItem<Values>[])
+  items: readonly FormItem<Values>[] | ((values: Values["values"]) => readonly FormItem<Values>[])
 
   /**
    * Optionally, you may specify a parallel array to `items` that
    * indicates the Grid span for each item. If a number, it will be
    * used for all `items`.
    */
-  gridSpans?: GridItemProps["span"] | readonly GridItemProps["span"][]
+  gridSpans?: number | readonly number[] | ((values: Values["values"]) => number | readonly number[])
 
   /** Validator for this step, if valid the user will be allowed to proceed to the Next step */
   isValid?: (ctrl: Values) => boolean
@@ -93,7 +92,7 @@ type Props<Values extends DefaultValues> = PropsWithChildren<{
   action?: "edit" | "clone" | "register" | null
   defaults: (previousValues: undefined | Values["values"]) => Values["values"]
   yaml: (values: Values["values"]) => string
-  steps: StepProps<Values>[]
+  steps: readonly StepProps<Values>[]
 
   /** On successful resource creation, return to show that new resource in the Details drawer? [default=true] */
   returnToNewResource?: boolean
@@ -290,11 +289,9 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>
-                {(Array.isArray(step.items) ? step.items : step.items(ctrl.values)).map((item, idx) => {
-                  const span =
-                    typeof step.gridSpans === "number"
-                      ? step.gridSpans
-                      : (Array.isArray(step.gridSpans) ? step.gridSpans[idx] : undefined) ?? 12
+                {(typeof step.items !== "function" ? step.items : step.items(ctrl.values)).map((item, idx) => {
+                  const spanA = typeof step.gridSpans === "function" ? step.gridSpans(ctrl.values) : step.gridSpans
+                  const span = typeof spanA === "number" ? spanA : (Array.isArray(spanA) ? spanA[idx] : undefined) ?? 12
                   return (
                     <GridItem key={idx} span={span}>
                       {itemFor(item, ctrl)}

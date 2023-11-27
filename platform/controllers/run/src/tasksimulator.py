@@ -7,9 +7,10 @@ from kopf import PermanentError, TemporaryError
 from status import set_status, add_error_condition
 
 def create_tasksimulator(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch):
+    method = spec['method']
     dataset = spec['dataset']
-    injectedTasksPerInterval = spec['rate']['tasks']
-    intervalSeconds = spec['rate']['intervalSeconds'] if "intervalSeconds" in spec['rate'] else 10
+    injectedTasksPerInterval = spec['rate']['tasks'] if "rate" in spec else 1
+    intervalSeconds = spec['rate']['intervalSeconds'] if "rate" in spec and "intervalSeconds" in spec['rate'] else 10
 
     if 'schema' in spec:
         fmt = spec['schema']['format']
@@ -20,17 +21,25 @@ def create_tasksimulator(customApi, name: str, namespace: str, uid: str, spec, d
         columns = []
         columnTypes = []
 
+    sweep_min = spec['sweep']['min'] if 'sweep' in spec else ""
+    sweep_max = spec['sweep']['max'] if 'sweep' in spec else ""
+    sweep_step = spec['sweep']['step'] if 'sweep' in spec else ""
+        
     try:
         out = subprocess.run([
             "/src/tasksimulator.sh",
             uid,
             name,
             namespace,
+            method,
             str(injectedTasksPerInterval),
             str(intervalSeconds),
             fmt,
             " ".join(map(str, columns)), # for CSV header, we want commas, but helm doesn't like commas https://github.com/helm/helm/issues/1556
             " ".join(map(str, columnTypes)), # for bash loop iteration, hence the space join
+            str(sweep_min),
+            str(sweep_max),
+            str(sweep_step),
             dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
         ], capture_output=True)

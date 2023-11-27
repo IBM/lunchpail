@@ -1,5 +1,4 @@
 import type { Values } from "../Wizard"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 type TypeSpec = string | (string | TypeSpec)[]
 
@@ -28,28 +27,11 @@ function typeOf(spec: TypeSpec) {
   }
 }
 
-export default function taskSimulatorYaml(
-  { name, namespace, tasks, intervalSeconds, inputFormat, inputSchema }: Values["values"],
-  application: ApplicationSpecEvent,
-  taskqueue: string,
-) {
+export default function taskSimulatorYaml({ tasks, intervalSeconds, inputFormat, inputSchema }: Values["values"]) {
   let yaml = `
-apiVersion: codeflare.dev/v1alpha1
-kind: WorkDispatcher
-metadata:
-  name: ${name}
-  namespace: ${namespace}
-  labels:
-    app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: tasksimulator
-    app.kubernetes.io/managed-by: jay
-spec:
-  method: tasksimulator
-  application: ${application.metadata.name}
-  dataset: ${taskqueue}
-  rate:
-    tasks: ${tasks}
-    intervalSeconds: ${intervalSeconds}
+rate:
+  tasks: ${tasks}
+  intervalSeconds: ${intervalSeconds}
 `.trim()
 
   if (inputFormat && inputSchema) {
@@ -59,10 +41,10 @@ spec:
     const columnTypes = json.fields.map((_) => _.type).map(typeOf)
 
     yaml += `
-  schema:
-    format: ${inputFormat}
-    columns: ${JSON.stringify(columns)}
-    columnTypes: ${JSON.stringify(columnTypes)}
+schema:
+  format: ${inputFormat}
+  columns: ${JSON.stringify(columns)}
+  columnTypes: ${JSON.stringify(columnTypes)}
 `
   }
 

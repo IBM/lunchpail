@@ -7,24 +7,23 @@ metadata:
   ownerReferences:
     - apiVersion: codeflare.dev/v1alpha1
       controller: true
-      kind: TaskSimulator
+      kind: WorkDispatcher
       name: {{ .Values.name }}
       uid: {{ .Values.uid }}
   labels:
-    app.kubernetes.io/component: tasksimulator
-    app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/name: {{ .Values.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: workdispatcher
+    app.kubernetes.io/part-of: {{ .Values.partOf }} # name of DataSet/TaskQueue we will be populating
+    app.kubernetes.io/name: {{ .Values.name }} # name of WorkDispatcher
+    app.kubernetes.io/instance: {{ .Release.Name }} # name of this WorkDispatcher impl, i.e. the job/pod
     app.kubernetes.io/managed-by: codeflare.dev
-    app.kubernetes.io/role: workdispatcher
     {{- if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 4 }}
     {{- end }}
 spec:
-  restartPolicy: Always
+  restartPolicy: OnFailure
   terminationGracePeriodSeconds: 5
   containers:
-    {{- include "codeflare.dev/containers/simulator" . | indent 4 }}
+    {{- include "codeflare.dev/containers/dispatcher" . | indent 4 }}
 
   # shell script from configmap
   volumes:

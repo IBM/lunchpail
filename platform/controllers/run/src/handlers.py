@@ -37,11 +37,9 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, spec, patch,
     set_status_immediately(customApi, name, namespace, 'Pending', 'workdispatchers')
     dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, [], [])
 
-    if spec['method'] == "tasksimulator":
+    if spec['method'] == "tasksimulator" or spec['method'] == "parametersweep":
         create_tasksimulator(customApi, name, namespace, uid, spec, dataset_labels, patch)
-
-    # TODO: this needs to feed off the pods
-    set_status_immediately(customApi, name, namespace, 'Running', 'workdispatchers')
+    # we will then set the status below in the pod status watcher (look for 'component(labels) == "workdispatcher"')
 
 # A WorkerPool has been deleted.
 @kopf.on.delete('workerpools.codeflare.dev')
@@ -195,6 +193,10 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
                 except Exception as e:
                     logging.error(f"Error tracking WorkStealer name={name} phase={phase}. {str(e)}")
             return
+        elif component(labels) == "workdispatcher":
+            workdispatcher_name = labels['app.kubernetes.io/name']
+            set_status_immediately(customApi, workdispatcher_name, namespace, phase, 'workdispatchers')
+            
         elif component(labels) == "workerpool":
             # this isn't quite right. we will need to incr and decr as pods come and go...
             try:

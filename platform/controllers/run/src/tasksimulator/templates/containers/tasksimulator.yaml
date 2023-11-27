@@ -1,11 +1,13 @@
-{{- define "codeflare.dev/containers/simulator" }}
-- name: simulator
+{{- define "codeflare.dev/containers/dispatcher" }}
+- name: dispatcher
   image: ghcr.io/project-codeflare/codeflare-tasksimulator-parquet-component:dev
   volumeMounts:
     - name: script
       mountPath: "/opt/tasksimulator/bin"
   command: ["/opt/tasksimulator/bin/simulator.sh"]
   env:
+    - name: METHOD
+      value: {{ quote .Values.method }}
     - name: TASKS
       value: {{ quote .Values.injectedTasksPerInterval }}
     - name: INTERVAL
@@ -16,5 +18,11 @@
       value: {{ quote .Values.columns }}
     - name: COLUMN_TYPES
       value: {{ quote .Values.columnTypes }}
+    - name: SWEEP_MIN
+      value: {{ quote .Values.sweep.min }}
+    - name: SWEEP_MAX
+      value: {{ quote .Values.sweep.max }}
+    - name: SWEEP_STEP
+      value: {{ quote .Values.sweep.step }}
     {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
 {{- end }}
