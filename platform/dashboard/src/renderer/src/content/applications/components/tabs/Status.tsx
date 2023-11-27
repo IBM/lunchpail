@@ -14,8 +14,8 @@ export default function statusTab(props: Props) {
     return
   }
 
+  // any associated workerpools?
   const models = props.latestWorkerPoolModels.filter((_) => _.application === props.application.metadata.name)
-
   const nWorkers = models.reduce((N, model) => N + model.inbox.length, 0)
 
   return DrawerTab({

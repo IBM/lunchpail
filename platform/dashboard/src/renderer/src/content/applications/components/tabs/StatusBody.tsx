@@ -11,10 +11,13 @@ import {
   TabTitleText,
 } from "@patternfly/react-core"
 
+import { workdispatchersGroup } from "../workdispatchers"
 import { datasetsGroup, workerpoolsGroup } from "../common"
 import WorkerPoolIcon from "../../../workerpools/components/Icon"
 import queueTabContent from "../../../taskqueues/components/tabs/Summary"
+
 import { singular as workerpoolSingular } from "../../../workerpools/name"
+
 import computeTabContent from "../../../workerpools/components/tabs/Summary"
 import correctiveLinks from "../../../workerpools/components/corrective-links"
 import prettyPrintWorkerPoolName from "../../../workerpools/components/pretty-print"
@@ -40,10 +43,12 @@ type SBProps = {
   queueProps: import("../../../taskqueues/components/Props").default
 }
 
+/** Body of the Status tab of an Application detail view */
 export default function StatusBody({ queueProps, props, models }: SBProps) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
 
+  // sub-tabs, one per associated workerpool
   const computeBody =
     models.length === 0 ? (
       <></>
@@ -95,7 +100,11 @@ export default function StatusBody({ queueProps, props, models }: SBProps) {
   return (
     <Stack>
       <DrawerPanelBody>
-        {queueTabContent(queueProps, true, [datasetsGroup(props), workerpoolsGroup(props, queueProps.name)])}
+        {queueTabContent(queueProps, true, [
+          datasetsGroup(props),
+          workdispatchersGroup(props),
+          workerpoolsGroup(props, queueProps.name),
+        ])}
       </DrawerPanelBody>
       {computeBody}
     </Stack>

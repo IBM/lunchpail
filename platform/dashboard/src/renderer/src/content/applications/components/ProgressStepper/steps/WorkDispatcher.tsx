@@ -1,20 +1,15 @@
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
 
-import type Props from "../../Props"
 import taskqueueProps from "../../taskqueueProps"
 import NewWorkDispatcherButton from "../../actions/NewWorkDispatcher"
 
 import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
+import workdispatchers from "../../workdispatchers"
 
 import { name as workerpools } from "../../../../workerpools/name"
 import { singular as taskqueueSingular } from "../../../../taskqueues/name"
 import { singular as workdispatcherSingular } from "../../../../workdispatchers/name"
-
-/** @return the WorkDispatchers associated with `props.application` */
-function workdispatchers(props: Props) {
-  return props.workdispatchers.filter((_) => _.spec.application === props.application.metadata.name)
-}
 
 const step: Step = {
   id: workdispatcherSingular,
