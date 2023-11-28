@@ -59,14 +59,14 @@ export default function Logs(props: { selector: string | string[]; namespace: st
 
   const FooterButton = () => {
     const handleClick = useCallback(() => setKeepBottom(true), [])
-    return <Button onClick={handleClick}>Jump to the bottom</Button>
+    return <Button onClick={handleClick}>Jump to bottom</Button>
   }
 
   const toolbar = (
     <Toolbar style={searchStyle}>
       <ToolbarContent>
         <ToolbarItem widths={searchWidth}>
-          <LogViewerSearch placeholder="Search value" minSearchChars={1} />
+          <LogViewerSearch placeholder="Find text" minSearchChars={1} />
         </ToolbarItem>
       </ToolbarContent>
     </Toolbar>
