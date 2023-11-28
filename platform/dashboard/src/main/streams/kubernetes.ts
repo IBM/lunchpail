@@ -1,6 +1,6 @@
 import split2 from "split2"
-import { spawn } from "child_process"
-import { EventEmitter } from "events"
+import { spawn } from "node:child_process"
+import { EventEmitter } from "node:events"
 
 import transformToJSON from "./json-transformer"
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
@@ -48,22 +48,6 @@ export default function startStreamForKind(kind: string, { withTimestamp = false
         lineSplitter.destroy()
         child.kill()
       })
-  } catch (err) {
-    console.error(err)
-    throw err
-  }
-}
-
-/**
- * @return a NodeJS `Readable` for the logs of the resources specified
- * by the label `selector` in the given `namespace`.
- */
-export function logs(selector: string, namespace: string, follow = false) {
-  try {
-    const child = spawn("kubectl", ["logs", "-l", selector, "--tail=-1", "-n", namespace, follow ? "-f" : ""])
-
-    child.stderr.pipe(process.stderr)
-    return child.stdout.once("close", () => child.kill())
   } catch (err) {
     console.error(err)
     throw err

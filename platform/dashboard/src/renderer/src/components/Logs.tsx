@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 import Code from "./Code"
 
-export default function Logs(props: { selector: string; namespace: string; follow?: boolean }) {
+export default function Logs(props: { selector: string | string[]; namespace: string; follow?: boolean }) {
   const [data, setData] = useState("")
 
   useEffect(() => {

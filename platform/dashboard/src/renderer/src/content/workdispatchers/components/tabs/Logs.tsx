@@ -3,7 +3,7 @@ import DrawerTab from "@jay/components/Drawer/Tab"
 
 import type Props from "../Props"
 
-export function LogsTab(props: { selector: string; namespace: string }) {
+export function LogsTab(props: { selector: string | string[]; namespace: string }) {
   return DrawerTab({
     title: "Logs",
     hasNoPadding: true,
