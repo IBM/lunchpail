@@ -11,11 +11,37 @@ import LogsTab from "./tabs/Logs"
 
 import type Props from "./Props"
 
+function configurationGroups(props: Props) {
+  const { spec } = props.workdispatcher
+
+  if (spec.method === "tasksimulator") {
+    if (typeof spec.rate === "object") {
+      return [
+        descriptionGroup("Interval between task injections", "every " + spec.rate.intervalSeconds + " seconds"),
+        descriptionGroup("injected tasks per interval", spec.rate.tasks + " simulated task injected each time"),
+      ]
+    }
+  } else if (spec.method === "parametersweep") {
+    if (typeof spec.sweep === "object") {
+      return [
+        descriptionGroup("minimum value", spec.sweep.min),
+        descriptionGroup("maximum value", spec.sweep.max),
+        descriptionGroup("step", spec.sweep.step),
+      ]
+    }
+  }
+
+  return []
+}
+
 function statusGroups(props: Props) {
   const { workdispatcher } = props
+  const msg = message(workdispatcher)
+
   return [
     descriptionGroup("status", status(workdispatcher)),
-    ...(!message ? [] : [descriptionGroup("message", message(workdispatcher))]),
+    ...(!msg ? [] : [descriptionGroup("message", msg)]),
+    ...configurationGroups(props),
   ]
 }
 
