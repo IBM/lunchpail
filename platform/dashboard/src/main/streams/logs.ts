@@ -5,18 +5,25 @@ import { Transform } from "node:stream"
 /**
  * Strip down the kubectl logs prefix to show just the container name
  */
-function reformatPrefixToShowJustContainer() {
+function reformatPrefixToShowJustContainer(chalk: import("chalk").ChalkInstance) {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
       callback(
         null,
-        chunk.toString().replace(/^\[pod\/[^/]+\/([^\]]+)\] (.+)$/g, (_, prefix, rest) => {
-          if (rest[0] === "[") {
-            return rest + "\n"
-          } else {
-            return `[${prefix}] ${rest}\n`
-          }
-        }),
+        // e.g. [pod/podName/containerName] [maybeAltPrefix] rest
+        chunk
+          .toString()
+          .replace(/^\[pod\/[^/]+\/([^\]]+)\] (\[[^\]]+\] )?(.+)$/g, (_, containerName, maybeAltPrefix, rest) => {
+            if (maybeAltPrefix) {
+              // then the log line has its own [...] prefix
+              return chalk.yellow(`${maybeAltPrefix}`) + `${rest}\n`
+            } else {
+              // otherwise, use the [...] prefix that kbuectl --prefix
+              // gives us, except we want to strip off the length prefix
+              // and use only the trailing container name
+              return chalk.yellow(`[${containerName}]`) + ` ${rest}\n`
+            }
+          }),
       )
     },
   })
@@ -27,7 +34,10 @@ function reformatPrefixToShowJustContainer() {
  * by the label `selector` in the given `namespace`.
  */
 export default async function logs(selector: string | string[], namespace: string, follow = false) {
-  const mergeStreams = await import("@sindresorhus/merge-streams").then((_) => _.default)
+  const [chalk, mergeStreams] = await Promise.all([
+    import("chalk").then((_) => _.default),
+    import("@sindresorhus/merge-streams").then((_) => _.default),
+  ])
 
   try {
     const selectors = typeof selector === "string" ? [selector] : selector
@@ -48,7 +58,7 @@ export default async function logs(selector: string | string[], namespace: strin
       child.stderr.pipe(process.stderr)
       return child.stdout
         .pipe(split2())
-        .pipe(reformatPrefixToShowJustContainer())
+        .pipe(reformatPrefixToShowJustContainer(chalk))
         .once("close", () => child.kill())
     })
 
