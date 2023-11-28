@@ -40,7 +40,14 @@ function fromLiteralGroups(props: Props) {
 
   return !spec.code
     ? []
-    : [descriptionGroup("source", <Code language={codeLanguageFromCommand(spec.command)}>{spec.code}</Code>)]
+    : [
+        descriptionGroup(
+          "source",
+          <Code readOnly language={codeLanguageFromCommand(spec.command)}>
+            {spec.code}
+          </Code>,
+        ),
+      ]
 }
 
 /** The DescriptionList groups to show in this Tab */
