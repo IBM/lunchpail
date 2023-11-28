@@ -33,8 +33,8 @@ function variant(props: import("../../Props").default) {
       : pending > 0
         ? ("pending" as const)
         : running > 0
-          ? ("success" as const)
-          : ("default" as const)
+          ? ("info" as const)
+          : ("success" as const)
 }
 
 const step: Step = {
