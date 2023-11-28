@@ -5,6 +5,8 @@ import { singular } from "../name"
 import summaryTabContent from "./tabs/Summary"
 import correctiveActions from "./corrective-actions"
 
+import LogsTab from "./tabs/Logs"
+
 import type Props from "./Props"
 
 /** Delete this resource */
@@ -35,6 +37,7 @@ export default function WorkerPoolDetail(props: Props) {
     <DrawerContent
       summary={summaryTabContent(props)}
       raw={props?.status}
+      otherTabs={[LogsTab(props)]}
       actions={leftActions(props)}
       rightActions={rightActions(props)}
     />

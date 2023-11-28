@@ -19,6 +19,7 @@ metadata:
     app.kubernetes.io/part-of: codeflare.dev
     app.kubernetes.io/component: workdispatcher
     app.kubernetes.io/managed-by: jay
+    app.kubernetes.io/name: ${application.metadata.name}
 spec:
   method: ${method}
   application: ${application.metadata.name}

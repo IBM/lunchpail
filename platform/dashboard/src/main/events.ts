@@ -112,10 +112,21 @@ const kinds: WatchedKind[] = [
   "workdispatchers",
 ]
 
+const logsDataChannel = (selector: string, namespace: string) => `/logs/${namespace}/${selector}/data`
+const logsInitChannel = "/logs/init"
+const logsCloseChannel = (selector: string, namespace: string) => `/logs/${namespace}/${selector}/close`
+
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
   // resource
   kinds.forEach(initStreamForResourceKind)
+
+  // logs
+  ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, follow: boolean) => {
+    const stream = await import("./streams/kubernetes").then((_) => _.logs(selector, namespace, follow))
+    stream.on("data", (data) => evt.sender.send(logsDataChannel(selector, namespace), data.toString()))
+    ipcMain.once(logsCloseChannel(selector, namespace), () => stream.destroy())
+  })
 
   // resource get request
   ipcMain.handle("/get", (_, props: string) => import("./get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)))
@@ -288,6 +299,18 @@ const apiImpl: JayApi = Object.assign(
     /** Delete a resource by name */
     deleteByName: (props: DeleteProps): Promise<ExecResponse> => {
       return ipcRenderer.invoke("/delete/name", JSON.stringify(props))
+    },
+
+    /** Tail on logs for a given resource */
+    logs(selector: string, namespace: string, follow: boolean, cb: (chunk: string) => void) {
+      const mycb = (_, chunk: string) => cb(chunk)
+      ipcRenderer.on(logsDataChannel(selector, namespace), mycb)
+      ipcRenderer.send(logsInitChannel, selector, namespace, follow)
+
+      return () => {
+        ipcRenderer.removeListener(logsDataChannel(selector, namespace), mycb)
+        ipcRenderer.send(logsCloseChannel(selector, namespace))
+      }
     },
   },
   kinds.reduce(

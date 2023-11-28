@@ -33,6 +33,9 @@ export default interface JayApi extends Record<Kind, JayResourceApi> {
   /** Delete a resource by name */
   deleteByName(props: DeleteProps): ExecResponse | Promise<ExecResponse>
 
+  /** Tail on logs for a given resource */
+  logs?(selector: string, namespace: string, follow: boolean, cb: (chunk: string) => void): CleanupFn
+
   /** Jobs as a Service API to server-side control plane functionality */
   controlplane: ControlPlaneApi
 

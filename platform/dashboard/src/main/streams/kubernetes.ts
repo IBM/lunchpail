@@ -17,7 +17,7 @@ type Props = {
 }
 
 /**
- * @return a NodeJS `Stream` that emits a stream of serialized JSON
+ * @return a NodeJS `Readable` that emits a stream of serialized JSON
  * Kubernetes resource models (each one marking some change in the
  * model), e.g. a stream of serialized `ApplicationSpecEvent`
  */
@@ -48,6 +48,22 @@ export default function startStreamForKind(kind: string, { withTimestamp = false
         lineSplitter.destroy()
         child.kill()
       })
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
+}
+
+/**
+ * @return a NodeJS `Readable` for the logs of the resources specified
+ * by the label `selector` in the given `namespace`.
+ */
+export function logs(selector: string, namespace: string, follow = false) {
+  try {
+    const child = spawn("kubectl", ["logs", "-l", selector, "--tail=-1", "-n", namespace, follow ? "-f" : ""])
+
+    child.stderr.pipe(process.stderr)
+    return child.stdout.once("close", () => child.kill())
   } catch (err) {
     console.error(err)
     throw err

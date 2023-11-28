@@ -7,6 +7,8 @@ import { status, message } from "@jay/resources/workdispatchers/status"
 //import editAction from "./actions/edit"
 import deleteAction from "./actions/delete"
 
+import LogsTab from "./tabs/Logs"
+
 import type Props from "./Props"
 
 function statusGroups(props: Props) {
@@ -22,6 +24,7 @@ export default function WorkDispatcherDetail(props: Props) {
     <DrawerContent
       summary={dl({ groups: [...statusGroups(props), ...summaryGroups(props)] })}
       raw={props.workdispatcher}
+      otherTabs={[LogsTab(props)]}
       rightActions={[deleteAction(props)]}
     />
   )
