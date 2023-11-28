@@ -59,7 +59,8 @@ export default function JobManagerDetail() {
             variant="danger"
             onClick={destroy}
             isLoading={destroyButtonIsLoading}
-            icon={destroyButtonIsLoading ? <></> : <TrashIcon />}
+            icon={destroyButtonIsLoading ? <></> : <TrashIcon data-ouia-component-id="trashIcon" />}
+            data-ouia-component-id="deleteJobButton"
           >
             {status.refreshing === "destroying" ? "Deprovisioning" : "Deprovision"}
           </Button>

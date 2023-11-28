@@ -26,7 +26,7 @@ export default function DeleteResourceButton(props: Props) {
   return (
     <>
       <Tooltip content="Delete this resource">
-        <Button size="lg" variant="plain" onClick={handleModalToggle}>
+        <Button ouiaId="trashButton" size="lg" variant="plain" onClick={handleModalToggle}>
           <TrashIcon />
         </Button>
       </Tooltip>
