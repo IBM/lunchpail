@@ -7,13 +7,39 @@ import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
 import workdispatchers from "../../workdispatchers"
 
+import { status } from "@jay/resources/workdispatchers/status"
 import { name as workerpools } from "@jay/resources/workerpools/name"
 import { singular as taskqueueSingular } from "@jay/resources/taskqueues/name"
 import { singular as workdispatcherSingular } from "@jay/resources/workdispatchers/name"
 
+function statusOfDispatchers(props: import("../../Props").default) {
+  const all = workdispatchers(props)
+
+  const pending = all.filter((_) => /Pend/i.test(status(_))).length
+  const running = all.filter((_) => /Run/i.test(status(_))).length
+  const finished = all.filter((_) => /Succe/i.test(status(_))).length
+  const failed = all.filter((_) => /Fail/i.test(status(_))).length
+
+  return { pending, running, finished, failed }
+}
+
+function variant(props: import("../../Props").default) {
+  const { pending, running, finished, failed } = statusOfDispatchers(props)
+
+  return pending + running + finished + failed === 0
+    ? ("warning" as const)
+    : failed > 0
+      ? ("danger" as const)
+      : pending > 0
+        ? ("pending" as const)
+        : running > 0
+          ? ("success" as const)
+          : ("default" as const)
+}
+
 const step: Step = {
   id: workdispatcherSingular,
-  variant: (props) => (workdispatchers(props).length > 0 ? "info" : "warning"),
+  variant,
   content: (props, onClick) => {
     const queue = taskqueueProps(props)
     const dispatchers = workdispatchers(props)
