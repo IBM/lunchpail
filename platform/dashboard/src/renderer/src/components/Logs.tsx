@@ -8,29 +8,57 @@ const searchStyle = { marginBlockStart: "var(--pf-v5-c-log-viewer__header--Margi
 
 export default function Logs(props: { selector: string | string[]; namespace: string; follow?: boolean }) {
   const [data, setData] = useState("")
-
-  // on mount, set up the log streamer
-  useEffect(() => {
-    // reset data, in case ths props have changed
-    setData("")
-
-    if (window.jay.logs) {
-      return window.jay.logs(props.selector, props.namespace, props.follow ?? false, (chunk) => {
-        setData((data) => data + chunk)
-      })
-    } else {
-      return
-    }
-  }, [props.selector, props.namespace, props.follow])
+  const [keepBottom, setKeepBottom] = useState(false)
 
   const logViewerRef = useRef<{ scrollToBottom: () => void }>()
 
-  const FooterButton = () => {
-    const handleClick = useCallback(() => {
-      if (logViewerRef.current) {
-        logViewerRef.current.scrollToBottom()
+  // callback for new data from the log follower
+  const onData = useCallback(
+    (chunk: string) => {
+      setData((data) => data + chunk)
+    },
+    [setData, logViewerRef],
+  )
+
+  // keep-scrolled-to-bottom effect
+  useEffect(() => {
+    if (keepBottom && logViewerRef.current) {
+      logViewerRef.current.scrollToBottom()
+    }
+  }, [data, keepBottom, logViewerRef])
+
+  // on mount, set up the log streamer
+  useEffect(() => {
+    // reset some state, as the props may have changed
+    setData("")
+    setKeepBottom(false)
+
+    if (window.jay.logs) {
+      // this starts the log streamer, and returns the cleanup function
+      return window.jay.logs(props.selector, props.namespace, props.follow ?? false, onData)
+    } else {
+      return
+    }
+  }, [props.selector, props.namespace, props.follow, window.jay.logs, onData])
+
+  // when a scroll happens, keep track of whether we want to keep-scrolled-to-bottom
+  const onScroll = useCallback(
+    (props: { scrollOffsetToBottom: number; scrollUpdateWasRequested: boolean }) => {
+      if (props.scrollOffsetToBottom === 0) {
+        // this means somehow, either via user interaction or by virtue
+        // of the component, we are now scrolled to the bottom; stay
+        // there
+        setKeepBottom(true)
+      } else if (!props.scrollUpdateWasRequested) {
+        // then the user asked to scroll, so keep it where they want
+        setKeepBottom(false)
       }
-    }, [logViewerRef])
+    },
+    [setKeepBottom, logViewerRef],
+  )
+
+  const FooterButton = () => {
+    const handleClick = useCallback(() => setKeepBottom(true), [])
     return <Button onClick={handleClick}>Jump to the bottom</Button>
   }
 
@@ -48,11 +76,12 @@ export default function Logs(props: { selector: string | string[]; namespace: st
     <LogViewer
       data={data}
       theme="dark"
-      height="480px"
+      height={keepBottom ? "510px" : "470px"}
       hasLineNumbers={false}
       toolbar={toolbar}
       ref={logViewerRef}
-      footer={<FooterButton />}
+      onScroll={onScroll}
+      footer={!keepBottom && <FooterButton />}
     />
   )
 }
