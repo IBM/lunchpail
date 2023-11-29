@@ -11,48 +11,58 @@ import "./Logs.css"
 
 const style = { flex: 1, display: "flex" as const, fontFamily: "RedHatMono" }
 
+/** @return a Patternfly-ish `Terminal.ITheme` */
+function theme(): ITheme {
+  const body = document.querySelector("body")
+  if (body) {
+    const style = getComputedStyle(body)
+    const val = (s: string) => style.getPropertyValue(`--pf-v5-global--${s}`)
+
+    const theme: ITheme = {
+      background: val("BackgroundColor--dark-100"),
+      black: val("palette--black-1000"),
+      blue: val("palette--blue-200"),
+      brightBlack: val("palette--black-800"),
+      brightBlue: val("palette--blue-100"),
+      brightCyan: val("palette--cyan-100"),
+      brightGreen: val("palette--light-green-200"),
+      brightMagenta: val("palette--purple-100"),
+      brightRed: val("palette--red-100"),
+      brightWhite: val("palette--white"),
+      brightYellow: val("palette--gold-100"),
+      cursor: val("palette--blue-100"),
+      cursorAccent: val("palette--blue-200"),
+      cyan: val("palette--cyan-200"),
+      foreground: val("ForegroundColor--dark-100"),
+      green: val("palette--green-200"),
+      magenta: val("palette--purple-200"),
+      red: val("palette--red-200"),
+      selectionBackground: val("palette--black-700"),
+      selectionForeground: val("palette--white"),
+      selectionInactiveBackground: "var(--pf-v5-global--BackgroundColor--dark-100)",
+      white: val("palette--white"),
+      yellow: val("palette--gold-200"),
+    }
+    return theme
+  } else {
+    return {}
+  }
+}
+
+/**
+ * A React Component that displays the logs for the given resources in
+ * the given namespace
+ */
 export default function Logs(props: { selector: string; namespace: string; follow?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const isMaximized = useContext(DrawerMaximizedContext)
 
-  const theme = useMemo(() => {
-    const body = document.querySelector("body")
-    if (body) {
-      const style = getComputedStyle(body)
-      const val = (s: string) => style.getPropertyValue(`--pf-v5-global--${s}`)
-
-      const theme: ITheme = {
-        background: val("BackgroundColor--dark-100"),
-        black: val("palette--black-1000"),
-        blue: val("palette--blue-200"),
-        brightBlack: val("palette--black-800"),
-        brightBlue: val("palette--blue-100"),
-        brightCyan: val("palette--cyan-100"),
-        brightGreen: val("palette--light-green-200"),
-        brightMagenta: val("palette--purple-100"),
-        brightRed: val("palette--red-100"),
-        brightWhite: val("palette--white"),
-        brightYellow: val("palette--gold-100"),
-        cursor: val("palette--blue-100"),
-        cursorAccent: val("palette--blue-200"),
-        cyan: val("palette--cyan-200"),
-        foreground: val("ForegroundColor--dark-100"),
-        green: val("palette--green-200"),
-        magenta: val("palette--purple-200"),
-        red: val("palette--red-200"),
-        selectionBackground: val("palette--black-700"),
-        selectionForeground: val("palette--white"),
-        selectionInactiveBackground: "var(--pf-v5-global--BackgroundColor--dark-100)",
-        white: val("palette--white"),
-        yellow: val("palette--gold-200"),
-      }
-      return theme
-    } else {
-      return {}
-    }
-  }, [])
-
+  // memoize this, so we aren't creating a new instance on every
+  // render; we will need this to help with resizing on
+  // maximize/restore of the Drawer
   const fitAddon = useMemo(() => new FitAddon(), [])
+
+  // when the Drawer maximization state changes, re-fit the Terminal
   useEffect(() => {
     setTimeout(() => fitAddon.fit(), 200)
   }, [isMaximized])
@@ -60,8 +70,8 @@ export default function Logs(props: { selector: string; namespace: string; follo
   useEffect(() => {
     if (window.jay.logs) {
       const terminal = new Terminal({
+        theme: theme(),
         fontSize: 14,
-        theme,
       })
       const webgl = new WebglAddon()
       terminal.loadAddon(fitAddon)
@@ -80,7 +90,17 @@ export default function Logs(props: { selector: string; namespace: string; follo
       // callback for new data from the log follower
       const onData = (chunk: string) => {
         terminal.write(chunk + "\r")
-        terminal.scrollToBottom()
+
+        // auto-scroll to bottom if the current viewport is the "last page"
+        const currentScrollBottom = terminal.buffer.active.viewportY + terminal.rows
+        const isScrolledToEnd = currentScrollBottom === terminal.buffer.active.length
+        if (isScrolledToEnd) {
+          // seems a bit strange to do this if we are already
+          // `isScrolledToEnd`, but the `isScrolledToEnd` reflects the
+          // situation *before* the `terminal.write()` has taken
+          // effect
+          terminal.scrollToBottom()
+        }
       }
 
       const cleanups = [
@@ -94,7 +114,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
     } else {
       return
     }
-  }, [props.selector, props.namespace, props.follow, window.jay.logs])
+  }, [props.selector, props.namespace, props.follow, window.jay.logs, ref.current])
 
   return <div ref={ref} style={style} />
 }
