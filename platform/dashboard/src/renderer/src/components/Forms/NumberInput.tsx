@@ -10,7 +10,9 @@ export default function NumberInput(props: FormProps & Ctrl & { defaultValue?: n
 
   const onChange = useCallback(
     (evt: React.FormEvent<HTMLInputElement>) => {
-      props.ctrl.setValue(props.fieldId, evt.currentTarget.value)
+      const value = evt.currentTarget.value || "0"
+      setValue(parseInt(value, 10))
+      props.ctrl.setValue(props.fieldId, value)
     },
     [props.ctrl.setValue, props.fieldId],
   )
