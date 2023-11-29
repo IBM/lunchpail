@@ -9,8 +9,7 @@ export default function baseYaml(
   taskqueue: string,
   method: Method,
 ) {
-  return `
-apiVersion: codeflare.dev/v1alpha1
+  return `apiVersion: codeflare.dev/v1alpha1
 kind: WorkDispatcher
 metadata:
   name: ${name}
