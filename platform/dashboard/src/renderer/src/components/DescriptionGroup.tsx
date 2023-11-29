@@ -42,7 +42,12 @@ const noLeftPadding = { paddingLeft: 0 }
 
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false || description === "true" || description === "false") {
-    return <Switch isChecked={description === true || description === "true"} />
+    return (
+      <Switch
+        aria-label={`switch checkbox set to ${description}`}
+        isChecked={description === true || description === "true"}
+      />
+    )
   } else if (typeof description === "string" && (isUrl(description) || isImageRepoUrl(description))) {
     return (
       <Button
