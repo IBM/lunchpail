@@ -112,11 +112,9 @@ const kinds: WatchedKind[] = [
   "workdispatchers",
 ]
 
-const logsDataChannel = (selector: string | string[], namespace: string) =>
-  `/logs/${namespace}/${String(selector)}/data`
+const logsDataChannel = (selector: string, namespace: string) => `/logs/${namespace}/${String(selector)}/data`
 const logsInitChannel = "/logs/init"
-const logsCloseChannel = (selector: string | string[], namespace: string) =>
-  `/logs/${namespace}/${String(selector)}/close`
+const logsCloseChannel = (selector: string, namespace: string) => `/logs/${namespace}/${String(selector)}/close`
 
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
@@ -124,7 +122,7 @@ export function initEvents() {
   kinds.forEach(initStreamForResourceKind)
 
   // logs
-  ipcMain.on(logsInitChannel, async (evt, selector: string | string[], namespace: string, follow: boolean) => {
+  ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, follow: boolean) => {
     const { stream, close } = await import("./streams/logs").then((_) => _.default(selector, namespace, follow))
     stream.on("data", (data) => evt.sender.send(logsDataChannel(selector, namespace), data.toString()))
     ipcMain.once(logsCloseChannel(selector, namespace), close)
@@ -304,7 +302,7 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Tail on logs for a given resource */
-    logs(selector: string | string[], namespace: string, follow: boolean, cb: (chunk: string) => void) {
+    logs(selector: string, namespace: string, follow: boolean, cb: (chunk: string) => void) {
       const mycb = (_, chunk: string) => cb(chunk)
       ipcRenderer.on(logsDataChannel(selector, namespace), mycb)
       ipcRenderer.send(logsInitChannel, selector, namespace, follow)

@@ -20,10 +20,16 @@
     display: flex;
     flex-direction: column;
 
-    section {
+    section:not([hidden]) {
       /* we want inner scrolling here */
-      flex: 1;
       overflow: auto;
+
+      &,
+      .pf-v5-c-drawer__body.pf-m-no-padding {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
     }
 
     pre {
