@@ -1,40 +1,36 @@
 // @ts-check
-import { ElectronApplication, Page, expect, test } from "@playwright/test"
+import { Page, expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
-import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
+import navigateToQueueTab from "./navigate-to-queue-tab"
 
 import { name } from "../src/renderer/src/content/applications/name"
 
 test.describe.serial("workers tests running sequentially", () => {
-  let electronApp: ElectronApplication
   let page: Page
-  let demoModeStatus: boolean
-  let workerName: string
+  let computePoolName: string
   const { application: expectedApp, taskqueue: expectedTaskQueue } = expectedApplications[0]
 
   test("Navigate to Queue tab for application", async () => {
     // Launch Electron app.
-    electronApp = await launchElectron()
+    const electronApp = await launchElectron()
 
     // Get the first page that the app opens, wait if necessary.
     page = await electronApp.firstWindow()
 
     // Check if we are in demo mode (should be true by default)
-    demoModeStatus = await page.getByLabel("Demo").isChecked()
+    const demoModeStatus = await page.getByLabel("Demo").isChecked()
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
-    // get Applications tab element from the sidebar and click to activate Application gallery
+    // get 'Job Defintions' tab element from the sidebar and click to activate Job Definition gallery
     await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
 
     await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
   })
 
   test("'Add Compute' button opens 'Create Compute Pool' modal", async () => {
-    const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
-    await expect(drawer).toBeVisible()
-
     // click on the button to bring up the new worker pool wizard
+    const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
     await drawer.getByRole("link", { name: "Add Compute" }).click()
 
     // check that modal opened
@@ -43,7 +39,7 @@ test.describe.serial("workers tests running sequentially", () => {
   })
 
   test("'Create Compute Pool' modal is autopopulated", async () => {
-    // check that 'Application Code' drop down matches expectedApp
+    // check that 'Definition' drop down matches expectedApp
     await expect(page.getByRole("button", { name: expectedApp })).toBeVisible()
 
     // check that 'Task Queue' drop down matches expectedTaskQueue
@@ -56,42 +52,67 @@ test.describe.serial("workers tests running sequentially", () => {
     const modalPage = await page.locator(`.pf-v5-c-wizard__toggle`)
     await expect(modalPage).toContainText("Review")
 
-    // click 'Register Compute Pool'
+    // click 'Create Pool'
     await page.getByRole("button", { name: "Create Pool" }).click()
 
     // Check that there is a Drawer on the screen, and extract it's name
     const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
     await expect(drawer).toBeVisible()
-    workerName = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`).innerText()
+    computePoolName = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`).innerText()
 
     // Check that the Drawer updated with new worker information
-    const workerDrawer = await page.locator(`[data-ouia-component-id="workerpools.${workerName}"]`)
-    await expect(workerDrawer).toBeVisible()
+    const computePoolDrawer = await page.locator(`[data-ouia-component-id="workerpools.${computePoolName}"]`)
+    await expect(computePoolDrawer).toBeVisible()
   })
 
-  test("Check the Compute tab for the new worker we created", async () => {
-    // click back to Compute tab element from the sidebar
-    console.error("A")
+  test("Check the Compute Pools tab for the new worker we created", async () => {
+    // click back to Compute Pools tab element from the sidebar
     const advanced = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Advanced" })
-    console.error("B")
     await advanced.click()
-    console.error("C")
     await advanced.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute" }).click()
-    console.error("D")
 
     // check that the drawer with the worker information is still open
-    const workerDrawer = await page.locator(`[data-ouia-component-id="workerpools.${workerName}"]`)
-    await expect(workerDrawer).toBeVisible()
+    const computePoolDrawer = await page.locator(`[data-ouia-component-id="workerpools.${computePoolName}"]`)
+    await expect(computePoolDrawer).toBeVisible()
 
-    // check that there is a card that matches the newly created workerName, expectedApp and expectedTaskQueue
-    const card = await page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${workerName}]`)
+    // check that there is a card that matches the newly created computePoolName
+    const card = await page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${computePoolName}]`)
     await expect(card).toBeVisible()
 
+    // check that the new card contains the expectedApp
     const code = await card.locator(`[data-ouia-component-id="${name}"]`)
     await expect(code).toContainText(expectedApp, { timeout: 60000 })
 
     // we have removed taskqueues from the Card
     // const taskqueue = await card.locator(`[data-ouia-component-id="Task Queues"]`)
     // await expect(taskqueue).toContainText(expectedTaskQueue, { timeout: 60000 })
+  })
+
+  test("Trash button opens 'Confirm Delete' modal", async () => {
+    // navigate to a given compute pool's drawer
+    const computePoolDrawer = await page.locator(`[data-ouia-component-id="workerpools.${computePoolName}"]`)
+
+    // click on trash button
+    await computePoolDrawer.locator(`[data-ouia-component-id="trashButton"]`).click()
+
+    // check that deletion modal opened
+    const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
+    await expect(modal).toBeVisible()
+  })
+
+  test("Confirm compute pool's deletion", async () => {
+    // click on Confirm button
+    await page.getByRole("button", { name: "Confirm" }).click()
+
+    // verify that intended compute pool's was deleted. First, navigate back to 'Compute Pools' tab
+    const advanced = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Advanced" })
+    await advanced.click()
+    await advanced.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute" }).click()
+
+    // Now verify that there is no card that matches the previously created compute pool
+    const appCard = await page.locator(
+      `[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${computePoolName}]`,
+    )
+    await expect(appCard).toHaveCount(0)
   })
 })
