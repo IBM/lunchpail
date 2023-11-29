@@ -67,8 +67,8 @@ const patternflyTheme = createTheme({
     background: "var(--pf-v5-global--BackgroundColor--dark-100)",
     foreground: "var(--pf-v5-global--Color--light-100)",
     caret: "#c9d1d9",
-    selection: "#003d73",
-    selectionMatch: "#003d73",
+    selection: "var(--pf-v5-global--palette--black-800)",
+    selectionMatch: "var(--pf-v5-global--palette--light-blue-300)",
     lineHighlight: "var(--pf-v5-global--BackgroundColor--dark-400)",
   },
   styles: [
