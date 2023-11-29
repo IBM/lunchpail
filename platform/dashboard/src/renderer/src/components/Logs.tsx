@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useContext, useEffect, useMemo, useRef } from "react"
+
+import { DrawerMaximizedContext } from "@jay/renderer/pages/PageWithDrawer"
 
 import { Terminal, type ITheme } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
 import { WebglAddon } from "xterm-addon-webgl"
 
 import "xterm/css/xterm.css"
+import "./Logs.css"
 
 const style = { flex: 1, display: "flex" as const, fontFamily: "RedHatMono" }
 
 export default function Logs(props: { selector: string; namespace: string; follow?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
+  const isMaximized = useContext(DrawerMaximizedContext)
 
   const theme = useMemo(() => {
     const body = document.querySelector("body")
@@ -48,13 +52,17 @@ export default function Logs(props: { selector: string; namespace: string; follo
     }
   }, [])
 
+  const fitAddon = useMemo(() => new FitAddon(), [])
+  useEffect(() => {
+    setTimeout(() => fitAddon.fit(), 200)
+  }, [isMaximized])
+
   useEffect(() => {
     if (window.jay.logs) {
       const terminal = new Terminal({
         fontSize: 14,
         theme,
       })
-      const fitAddon = new FitAddon()
       const webgl = new WebglAddon()
       terminal.loadAddon(fitAddon)
 

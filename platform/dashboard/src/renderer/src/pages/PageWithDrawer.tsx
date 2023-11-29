@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type PropsWithChildren, type ReactNode } from "react"
+import { createContext, useCallback, useMemo, useState, type PropsWithChildren, type ReactNode } from "react"
 
 import {
   Button,
@@ -31,6 +31,8 @@ import RestoreIcon from "@patternfly/react-icons/dist/esm/icons/window-restore-i
 import MaximizeIcon from "@patternfly/react-icons/dist/esm/icons/window-maximize-icon"
 
 import "./Detail.scss"
+
+export const DrawerMaximizedContext = createContext(false)
 
 /**
  * `props.children` is the content to be displayed in the "main",
@@ -96,7 +98,9 @@ export default function PageWithDrawer(props: Props) {
         </DrawerActions>
       </DrawerHead>
 
-      {props.currentDetail || <DetailNotFound />}
+      <DrawerMaximizedContext.Provider value={isMaximized}>
+        {props.currentDetail || <DetailNotFound />}
+      </DrawerMaximizedContext.Provider>
     </DrawerPanelContent>
   )
 
