@@ -73,7 +73,8 @@ const patternflyTheme = createTheme({
   },
   styles: [
     { tag: [t.standard(t.tagName), t.tagName], color: "var(--pf-v5-global--palette--orange-100)" },
-    { tag: [t.comment, t.bracket], color: "var(--pf-v5-global--palette--purple-50)" },
+    { tag: [t.comment], color: "var(--pf-v5-global--palette--orange-300)" },
+    { tag: [t.bracket], color: "var(--pf-v5-global--palette--black-300)" },
     { tag: [t.className, t.propertyName], color: "var(--pf-v5-global--palette--light-blue-100)" },
     { tag: [t.variableName, t.attributeName, t.number, t.operator], color: "var(--pf-v5-global--palette--blue-50)" },
     { tag: [t.keyword, t.typeName, t.typeOperator, t.typeName], color: "var(--pf-v5-global--palette--cyan-200)" },
