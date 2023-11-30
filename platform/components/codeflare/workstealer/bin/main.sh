@@ -36,12 +36,35 @@ do
                 else
                     queue=$worker/inbox
 
-                    if [[ -e "$file.$RUN_ID" ]]
+                    if [[ ! -e "$queue/.alive" ]]
+                    then
+                        # TODO: maybe we need to loop more tightly
+                        # here over possibly available workers?
+                        # otherwise, we may delay 5 seconds in
+                        # assigning a task, even when there are other
+                        # workers that *are* active?
+                        echo "[workstealer] skipping inactive queue=$queue"
+
+                        # unlock any files owned by that worker
+                        ls *.lock 2> /tmp/workstealer.err |
+                            while read file
+                            do
+                                if grep $worker $file
+                                then
+                                    echo "Unlocking task owned by dead worker=$worker filelock=$file"
+                                    rm $file
+                                fi
+                            done
+
+                        continue
+                    fi
+
+                    if [[ -e "$file.lock" ]]
                     then nUnassigned=$((nUnassigned-1))
                     elif [[ -d "$queue" ]] && [[ -n "$file" ]] && [[ -f "$inbox/$file" ]]
                     then
                         echo "[workstealer] Moving task=$file to queue=$queue"
-                        touch "$file.$RUN_ID"
+                        echo $worker > "$file.lock"
                         nUnassigned=$((nUnassigned-1))
                         cp "$inbox/$file" "$queue"
 
@@ -50,7 +73,7 @@ do
                         if [[ ! -d "$queue" ]]; then echo "[workstealer] Warning: Not a directory=$queue"; fi
                         if [[ ! -n "$file" ]]; then echo "[workstealer] Warning: Empty"; fi
                         if [[ ! -f "$inbox/$file" ]]; then echo "[workstealer] Warning: Not a file task=$inbox/$file"; fi
-                        if [[ -e "$file.$RUN_ID" ]]; then echo "[workstealer] Warning: Already owned $file.$RUN_ID"; fi
+                        if [[ -e "$file.lock" ]]; then echo "[workstealer] Warning: Already owned $(cat file)"; fi
                     fi
                 fi
             done

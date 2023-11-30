@@ -44,7 +44,17 @@ secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
 acl = public-read
 EOF
 
-"$SCRIPTDIR"/get.sh $config $remote $local &
+# signify that we are alive and well, and clean up on exit
+inbox=inbox
+alive=$remote/$inbox/.alive
+function cleanup {
+    echo "[workerpool s3-syncer-main $(basename $local)] Terminating..."
+    rclone --config $config delete $alive
+}
+trap cleanup INT TERM EXIT
+rclone --config $config touch $alive
+
+"$SCRIPTDIR"/get.sh $config $remote $local $inbox &
 "$SCRIPTDIR"/put.sh $config $remote $local outbox &
 "$SCRIPTDIR"/put.sh $config $remote $local processing &
 

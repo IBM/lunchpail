@@ -20,7 +20,7 @@ if [[ -n "$DEBUG" ]]; then
     PROGRESS="--progress"
 fi
 
-echo "Starting rclone put remote=$remote local=$local/$outbox"
+echo "[workerpool s3-syncer-put $(basename $local)] Starting rclone put remote=$remote local=$local/$outbox"
 while true; do
     if [[ -d $local/$outbox ]]; then
         rclone --config $config sync $PROGRESS $local/$outbox $remote/$outbox

@@ -3,13 +3,9 @@
 config=$1
 remote=$2
 local=$3
-inbox=inbox
+inbox=$4
 
 mkdir -p $local/$inbox
-
-# signify that we are alive and well
-# TODO clean this up upon exit/failure
-rclone --config $config touch $remote/$inbox/.active
 
 # current number of entries in inbox
 size=0
@@ -29,7 +25,7 @@ fi
 # then, we will do the atomic local move from staging to $local/$inbox
 local_staging=$(mktemp -d)
 
-echo "[workerpool s3-syncer $(basename $local)] Starting rclone get remote=$remote local=$local/$inbox"
+echo "[workerpool s3-syncer-get $(basename $local)] Starting rclone get remote=$remote local=$local/$inbox"
 while true; do
     # Intentionally sleeping at the beginning to give some time for
     # the worker's inotify to set itself up.
@@ -40,11 +36,11 @@ while true; do
     # 2) move from remote to local staging
     # 3) atomic move from local staging to local inbox
     rm -f $local_staging/*
-    rclone --config $config --exclude '.active' move $PROGRESS --create-empty-src-dirs $remote/$inbox $local_staging
+    rclone --quiet --config $config --exclude '.alive' move $PROGRESS --create-empty-src-dirs $remote/$inbox $local_staging
     count=$(ls -1 $local_staging | wc -l)
     if [[ $count != 0 ]]
     then
-        echo "[workerpool s3-syncer $(basename $local)] Moving cloned files from staging count=$count"
+        echo "[workerpool s3-syncer-get $(basename $local)] Moving cloned files from staging count=$count"
         mv $local_staging/* $local/$inbox
     fi
 

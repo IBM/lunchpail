@@ -14,7 +14,7 @@ spec:
   parallelism: {{ .Values.workers.count }}
   completions: {{ .Values.workers.count }}
   completionMode: Indexed
-  ttlSecondsAfterFinished: 10
+  ttlSecondsAfterFinished: 60
   template:
     metadata:
       labels:
@@ -28,7 +28,7 @@ spec:
         {{ end }}
     spec:
       restartPolicy: OnFailure
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 30
       volumes:
         {{- include "codeflare.dev/queue.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
