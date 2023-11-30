@@ -8,4 +8,6 @@ def alloc_run_id(api, name: str):
     run_id =  f"{api}-{name}-{rando}"
     workdir = os.path.join(os.environ.get("WORKDIR"), run_id)
 
-    return run_id, workdir
+    # we trim to 53 chars, to make a kubernetes (especially helm
+    # install) friendly name
+    return run_id[:53], workdir
