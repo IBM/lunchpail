@@ -142,7 +142,7 @@ function commandFromCodeLanguage(codeLanguage: SupportedLanguage) {
   // dot-slash the shell script to help with bash finding it on PATH
   const prefix = codeLanguage === "python" ? "" : "./"
   const ext = codeLanguage === "python" ? ".py" : ".sh"
-  const launcher = codeLanguage === "python" ? "python" : ""
+  const launcher = codeLanguage === "python" ? "python -u" : ""
   return `${launcher} ${prefix}literal${ext}`
 }
 
