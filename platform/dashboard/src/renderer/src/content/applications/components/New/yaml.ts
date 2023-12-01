@@ -65,14 +65,7 @@ ${indent(values.code.trim(), 4)}`
     : ""
 }
 ${values.method === "github" ? `  repo: ${values.repo}` : ""}
-${values.method === "github" ? `  image: ${values.image}` : ""}
-${
-  values.method === "literal"
-    ? values.codeLanguage === "python"
-      ? `  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-python-component:dev`
-      : `  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev`
-    : ""
-}
+  image: ${values.image}
   command: /opt/codeflare/worker/bin/watcher.sh ${
     values.method === "literal" ? commandFromCodeLanguage(values.codeLanguage) : values.command
   }
@@ -142,7 +135,7 @@ function commandFromCodeLanguage(codeLanguage: SupportedLanguage) {
   // dot-slash the shell script to help with bash finding it on PATH
   const prefix = codeLanguage === "python" ? "" : "./"
   const ext = codeLanguage === "python" ? ".py" : ".sh"
-  const launcher = codeLanguage === "python" ? "python -u" : ""
+  const launcher = codeLanguage === "python" ? "python3 -u" : ""
   return `${launcher} ${prefix}literal${ext}`
 }
 

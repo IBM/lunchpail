@@ -142,7 +142,7 @@ const stepCode = {
       ? !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command
       : !!ctrl.values.code,
   items: (values: Values["values"]) =>
-    values.method === "github" ? [command, repoInput, image, supportsGpu] : [codeLanguage, codeLiteral],
+    values.method === "github" ? [command, repoInput, image, supportsGpu] : [codeLanguage, image, codeLiteral],
 }
 
 function filterPreviousDatasetSelectionToInluceOnlyThoseCurrentlyValid(props: Props, previous: undefined | string) {
@@ -172,6 +172,12 @@ export default function NewApplicationWizard(props: Props) {
       // have we been asked to suggest a particular name?
       const suggestedName = searchParams.get("name")
 
+      // source via github or code literal?
+      const method = (previousValues?.method as Method) ?? ("github" as const)
+
+      const codeLanguage =
+        codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? ("python" as const)
+
       return {
         name:
           suggestedName ??
@@ -179,15 +185,16 @@ export default function NewApplicationWizard(props: Props) {
           previousValues?.name ??
           uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + Date.now() }),
         namespace: rsrc?.metadata?.namespace ?? searchParams.get("namespace") ?? previousValues?.namespace ?? "default",
-        method: (previousValues?.method as Method) ?? ("github" as const),
+        method,
         repo: rsrc?.spec?.repo ?? previousValues?.repo ?? "",
         code: rsrc?.spec?.code ?? previousValues?.code ?? "",
-        codeLanguage:
-          codeLanguageFromMaybeCommand(rsrc?.spec?.command) ?? previousValues?.codeLanguage ?? ("python" as const),
+        codeLanguage,
         image:
-          rsrc?.spec?.image ??
-          previousValues?.image ??
-          "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev",
+          rsrc?.spec?.image ||
+          previousValues?.image ||
+          (method === "literal"
+            ? defaultImageForCodeLiteralLanguage(codeLanguage)
+            : "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev"),
         command: rsrc?.spec?.command ?? previousValues?.command ?? "",
         description: rsrc?.spec?.description ?? previousValues?.description ?? "",
         supportsGpu: rsrc?.spec?.supportsGpu.toString() ?? previousValues?.supportsGpu ?? "false",
@@ -197,15 +204,27 @@ export default function NewApplicationWizard(props: Props) {
     [searchParams],
   )
 
+  const defaultImageForCodeLiteralLanguage = (language: string) =>
+    language === "python"
+      ? "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-python-component:dev"
+      : "ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev"
+
   /**
    * If the user changes the codeLanguage, then invalidate
    * `code`. This is so that when switching between `codeLanguage`,
    * the user will see the different default code literals.
    */
   const onChange = useCallback(
-    (fieldId: string, _value: string, _values: Values["values"], setValue: Values["setValue"] | undefined) => {
+    (fieldId: string, newValue: string, values: Values["values"], setValue: Values["setValue"] | undefined) => {
       if (fieldId === "codeLanguage" && setValue) {
         setValue("code", "")
+
+        const selectedImageForPreviousLanguage = values.image
+        const defaultImageForPreviousLanguage = defaultImageForCodeLiteralLanguage(values.codeLanguage)
+        if (selectedImageForPreviousLanguage === defaultImageForPreviousLanguage) {
+          const defaultImageForNewLanguage = defaultImageForCodeLiteralLanguage(newValue)
+          setValue("image", defaultImageForNewLanguage)
+        }
       }
     },
     [],
