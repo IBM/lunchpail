@@ -282,7 +282,11 @@ function hasViewableContent(name: string) {
 function viewContent(content: string, objectName: string) {
   const ext = filetypeFromName(objectName)
   if (/^(makefile|tcl|markdown|verilog|synopsys|py)/i.test(ext)) {
-    return <Code language={ext.toLowerCase()}>{content}</Code>
+    return (
+      <Code readOnly language={ext.toLowerCase()}>
+        {content}
+      </Code>
+    )
   } else if (/json/i.test(ext)) {
     // the Menu bits give us the padding, so we don't need extra
     // padding from the Json viewer
