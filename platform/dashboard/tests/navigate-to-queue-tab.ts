@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test"
+import { expect, Locator, type Page } from "@playwright/test"
 
 export async function verifyDrawerVisible(page: Page, application: string) {
   const drawerId = "applications." + application
@@ -36,4 +36,10 @@ export default async function navigateToQueues(page: Page, application: string, 
     `[data-ouia-component-type="PF5/DescriptionList"][data-ouia-component-id="${taskqueue}"]`,
   )
   await expect(tasks).toBeVisible({ timeout: 60000 })
+}
+
+export async function navigateToTab(tabLocator: Locator, tabName: string) {
+  const tab = await tabLocator.locator(`[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id=${tabName}]`)
+  await expect(tab).toBeVisible({ timeout: 60000 })
+  await tab.click()
 }
