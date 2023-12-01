@@ -29,9 +29,14 @@ watch
 # test app not found
 for path in "$SCRIPTDIR"/../tests/*
 do
+    # skip over non-tests, and any tests not $1 (i.e. if the user asked to run a specific test)
     if [[ $(basename $path) =~ "README.md" ]] || [[ -n "$1" ]] && [[ $1 != $(basename $path) ]]
-    then
-       continue
+    then continue
+    fi
+
+    # skip over disabled tests
+    if [[ -e $path/.disabled ]]
+    then continue
     fi
 
     unset api
