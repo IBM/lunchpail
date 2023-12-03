@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: openroad-max-util-templates-git-copyin
+  namespace: {{ .Values.namespace }}
+spec:
+  ttlSecondsAfterFinished: 200
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: copyin
+        image: ghcr.io/project-codeflare/codeflare-s3-copy-in-component:dev
+        envFrom:
+        - secretRef:
+            name: openroadmaxutilcfsecret
+        
+        env:
+        - name: S3_ENDPOINT
+          value: http://codeflare-s3.codeflare-system.svc.cluster.local:9000
+        - name: COPYIN_BUCKET
+          value: openroad-max-util-templates
+        - name: COPYIN_ORIGIN
+          value: git
+        - name: COPYIN_REPO
+          value: https://github.com/ieee-ceda-datc/aspdac-2022-tutorial/tree/main/part4-k8s-single-node-ray-demo/workspace

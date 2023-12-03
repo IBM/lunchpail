@@ -1,0 +1,20 @@
+apiVersion: com.ie.ibm.hpsys/v1alpha1
+kind: Dataset
+metadata:
+  annotations:
+    codeflare.dev/description: OpenROAD templates for max utilization demo
+  labels:
+    app.kubernetes.io/component: dataset
+    app.kubernetes.io/part-of: codeflare.dev
+    codeflare.dev/created-by: user
+  name: openroad-max-util-templates
+  namespace: {{ .Values.namespace }}
+spec:
+  local:
+    bucket: openroad-max-util-templates
+    endpoint: http://codeflare-s3.codeflare-system.svc.cluster.local:9000
+    provision: 'true'
+    readonly: 'false'
+    secret-name: openroadmaxutilcfsecret
+    secret-namespace: {{ .Values.namespace }}
+    type: COS
