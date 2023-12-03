@@ -42,7 +42,7 @@ rate:
 
     yaml += `
 schema:
-  format: ${inputFormat}
+  format: ${inputFormat.toLowerCase()}
   columns: ${JSON.stringify(columns)}
   columnTypes: ${JSON.stringify(columnTypes)}
 `
