@@ -46,7 +46,7 @@ export default async function logs(selector: string, namespace: string, follow =
     const streams = selectors.map((selector) => {
       const child = spawn("kubectl", [
         "logs",
-        "--all-containers",
+        // "--all-containers",
         "--prefix",
         "-l",
         selector,
