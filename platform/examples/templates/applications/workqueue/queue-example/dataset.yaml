@@ -1,3 +1,4 @@
+{{ if .never }}
 apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
@@ -15,3 +16,4 @@ spec:
     secret-namespace: {{ .Values.namespace }}
     #readonly: "true" # default is false
     provision: "true"
+{{ end }}

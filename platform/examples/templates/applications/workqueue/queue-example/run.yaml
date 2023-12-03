@@ -1,3 +1,4 @@
+{{ if .never }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
@@ -9,3 +10,4 @@ metadata:
 spec:
   application:
     name: queue-example
+{{ end }}
