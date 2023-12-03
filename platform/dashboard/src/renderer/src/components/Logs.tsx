@@ -72,6 +72,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
       const terminal = new Terminal({
         theme: theme(),
         fontSize: 14,
+        disableStdin: true,
       })
       const webgl = new WebglAddon()
       terminal.loadAddon(fitAddon)
@@ -88,8 +89,12 @@ export default function Logs(props: { selector: string; namespace: string; follo
       }
 
       // callback for new data from the log follower
-      const onData = (chunk: string) => {
-        terminal.write(chunk + "\r")
+      let to: null | ReturnType<typeof setTimeout> = null
+      let lastFlush = Date.now()
+      let pending = ""
+      const flush = () => {
+        lastFlush = Date.now()
+        terminal.write(pending)
 
         // auto-scroll to bottom if the current viewport is the "last page"
         const currentScrollBottom = terminal.buffer.active.viewportY + terminal.rows
@@ -100,6 +105,16 @@ export default function Logs(props: { selector: string; namespace: string; follo
           // situation *before* the `terminal.write()` has taken
           // effect
           terminal.scrollToBottom()
+        }
+      }
+      const onData = (chunk: string) => {
+        pending += chunk + "\r"
+        if (Date.now() - lastFlush > 200) {
+          if (to) clearTimeout(to)
+          flush()
+        } else {
+          if (to) clearTimeout(to)
+          to = setTimeout(flush, 10)
         }
       }
 
