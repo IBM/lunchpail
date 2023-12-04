@@ -38,6 +38,12 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(modal).toBeVisible()
   })
 
+  test("Click Next to get to the Configure wizard step", async () => {
+    const nextButton = await page.getByRole("button", { name: "Next" })
+    await expect(nextButton).toBeVisible()
+    await nextButton.click()
+  })
+
   test("'Create Compute Pool' modal is autopopulated", async () => {
     // check that 'Definition' drop down matches expectedApp
     await expect(page.getByRole("button", { name: expectedApp })).toBeVisible()
