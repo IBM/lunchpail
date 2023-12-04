@@ -25,7 +25,7 @@ datasets="${14}"
 DRY=$(mktemp)
 echo "Dry running to $DRY" 1>&2
 
-helm install --dry-run --debug ${name}-${method} "$SCRIPTDIR"/tasksimulator/ -n ${namespace} \
+helm install --dry-run --debug ${name}-${method} "$SCRIPTDIR"/workdispatcher/ -n ${namespace} \
      --set uid=$uid \
      --set name=$name \
      --set image=$image \

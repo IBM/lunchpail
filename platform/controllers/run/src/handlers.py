@@ -18,7 +18,7 @@ from sequence import create_run_sequence
 from workqueue import create_run_workqueue
 
 from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
-from tasksimulator import create_tasksimulator
+from workdispatcher import create_workdispatcher_ts_ps
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
@@ -38,7 +38,7 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, spec, patch,
     dataset_labels = prepare_dataset_labels_for_workerpool(customApi, spec['dataset'], namespace, [], [])
 
     if spec['method'] == "tasksimulator" or spec['method'] == "parametersweep":
-        create_tasksimulator(customApi, name, namespace, uid, spec, dataset_labels, patch)
+        create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, dataset_labels, patch)
     # we will then set the status below in the pod status watcher (look for 'component(labels) == "workdispatcher"')
 
 # A WorkerPool has been deleted.
