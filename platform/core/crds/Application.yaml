@@ -48,6 +48,10 @@ spec:
                   type: string
                 description:
                   type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
                 steps:
                   type: array
                   items:

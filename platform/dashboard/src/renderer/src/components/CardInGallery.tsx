@@ -32,9 +32,10 @@ export default function CardInGallery(props: Props) {
     [props.name, props.kind, showDetails],
   )
 
-  const header = props.icon && (
+  const header = (
     <CardHeader actions={props.actions} className="codeflare--card-header-no-wrap">
-      <span className="codeflare--card-icon">{props.icon}</span>
+      {props.icon && <span className="codeflare--card-icon">{props.icon}</span>}
+      <CardTitle>{props.title ?? props.name}</CardTitle>
     </CardHeader>
   )
 
@@ -53,7 +54,6 @@ export default function CardInGallery(props: Props) {
       onClick={onClick}
     >
       {header}
-      <CardTitle>{props.title ?? props.name}</CardTitle>
       <CardBody>{body}</CardBody>
       {props.footer && <CardFooter>{props.footer}</CardFooter>}
     </Card>

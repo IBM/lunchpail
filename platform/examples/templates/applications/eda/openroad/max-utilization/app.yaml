@@ -12,6 +12,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   api: workqueue
+  tags: [EDA]
   code: |
     import sys
     import subprocess

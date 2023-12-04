@@ -1,3 +1,6 @@
+import { useMemo } from "react"
+import { Label, LabelGroup } from "@patternfly/react-core"
+
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
@@ -20,14 +23,44 @@ function description(props: Props) {
 
 export default function ApplicationCard(props: Props) {
   const name = props.application.metadata.name
-  const queueProps = taskqueueProps(props)
+  const queueProps = useMemo(() => taskqueueProps(props), [props])
 
-  const groups = [
-    ...api(props),
-    props.application.spec.description && descriptionGroup("Description", description(props)),
-    ...(!queueProps ? [] : [unassigned(queueProps)]),
-    ...(!queueProps ? [] : [workerpools(queueProps)]),
-  ]
+  const groups = useMemo(
+    () => [
+      ...api(props),
+      props.application.spec.description && descriptionGroup("Description", description(props)),
+      ...(!queueProps ? [] : [unassigned(queueProps)]),
+      ...(!queueProps ? [] : [workerpools(queueProps)]),
+    ],
+    [props, queueProps],
+  )
 
-  return <CardInGallery kind="applications" name={name} groups={groups} footer={<ProgressStepper {...props} />} />
+  const { tags } = props.application.spec
+  const actions =
+    !tags || tags.length === 0
+      ? undefined
+      : useMemo(
+          () => ({
+            hasNoOffset: true,
+            actions: (
+              <LabelGroup isCompact numLabels={2}>
+                {tags.map((tag) => (
+                  <Label isCompact color="cyan" key={tag}>
+                    {tag}
+                  </Label>
+                ))}
+              </LabelGroup>
+            ),
+          }),
+          [tags.join(";")],
+        )
+  return (
+    <CardInGallery
+      kind="applications"
+      name={name}
+      groups={groups}
+      actions={actions}
+      footer={<ProgressStepper {...props} />}
+    />
+  )
 }

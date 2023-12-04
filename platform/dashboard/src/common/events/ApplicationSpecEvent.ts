@@ -7,6 +7,9 @@ type ApplicationSpecEvent = KubernetesResource<
     /** Brief description of this Application */
     description: string
 
+    /** Optional tags to help categorize this Application */
+    tags?: string[]
+
     /** API this Application uses */
     api: string
 
