@@ -14,4 +14,11 @@ $font-size: 0.875rem;
       background: unset;
     }
   }
+
+  .codeflare--menu-item-as-content {
+    padding: 0;
+    .pf-v5-c-menu__item-description {
+      width: 100%;
+    }
+  }
 }

@@ -310,12 +310,16 @@ function viewContent(content: string, objectName: string) {
   return <Text component="pre">{content}</Text>
 }
 
+/**
+ * Hijack a MenuItem to display content
+ */
 function ShowContent(props: S3Props & { object: string }) {
   const { s3, endpoint, accessKey, secretKey, bucket } = props
 
   const [loading, setLoading] = useState(true)
   const [content, setContent] = useState<string | { error: unknown } | null>(null)
 
+  // on mount, we fetch the content
   useEffect(() => {
     async function fetch() {
       try {
@@ -334,6 +338,7 @@ function ShowContent(props: S3Props & { object: string }) {
     fetch()
   }, [props.object, endpoint, bucket, accessKey, secretKey])
 
+  // we use the MenuItem `description` to house the view of the content
   const description =
     loading || !content ? (
       <Spinner />
@@ -342,12 +347,13 @@ function ShowContent(props: S3Props & { object: string }) {
     ) : (
       viewContent(content, props.object)
     )
+
   return (
     <MenuItem
       key={props.object}
       itemId={`s3nav-content-${props.object}`}
       description={description}
-      className="codeflare--no-hover"
+      className="codeflare--no-hover codeflare--menu-item-as-content"
     ></MenuItem>
   )
 }
