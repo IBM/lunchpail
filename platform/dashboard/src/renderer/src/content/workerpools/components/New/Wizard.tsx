@@ -11,6 +11,7 @@ import ApplicationIcon from "@jay/resources/applications/components/Icon"
 import Select from "@jay/components/Forms/Select"
 import NumberInput from "@jay/components/Forms/NumberInput"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
+import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 
 import { singular as taskqueuesSingular } from "@jay/resources/taskqueues/name"
 import { singular as workerpoolsSingular } from "@jay/resources/workerpools/name"
@@ -23,6 +24,22 @@ type Props = {
   taskqueues: TaskQueueEvent[]
   applications: ApplicationSpecEvent[]
 }
+
+const targetOptions: TileOptions = [
+  { title: "Locally", value: "local", description: "Run the workers on your laptop" },
+  {
+    title: "Kubernetes",
+    value: "kubernetes",
+    description: "Run the workers as Pods in an existing Kubernetes cluster",
+    isDisabled: true,
+  },
+  {
+    title: "IBM Cloud VSIs",
+    value: "ibmcloudvsi",
+    description: "Run the workers on IBM Cloud Virtual Storage Instances",
+    isDisabled: true,
+  },
+]
 
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()
@@ -95,7 +112,24 @@ export default function NewWorkerPoolWizard(props: Props) {
     )
   }
 
-  const step1 = {
+  function targets(ctrl: FormContextProps) {
+    return (
+      <Tiles
+        ctrl={ctrl}
+        fieldId="target"
+        label="Compute Target"
+        description="Where should the workers run?"
+        options={targetOptions}
+      />
+    )
+  }
+
+  const stepTarget = {
+    name: "Target",
+    items: [targets],
+  }
+
+  const stepConfigure = {
     name: "Configure",
     isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
     items: ["name" as const, application, taskqueue, numWorkers],
@@ -129,7 +163,7 @@ spec:
   }
 
   const title = `Create ${workerpoolsSingular}`
-  const steps = [step1]
+  const steps = [stepTarget, stepConfigure]
   return (
     <NewResourceWizard
       kind="workerpools"
