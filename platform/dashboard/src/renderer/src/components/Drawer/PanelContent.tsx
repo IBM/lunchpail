@@ -91,7 +91,7 @@ export default function SlideOutDrawerPanelContent(props: DrawerPanelProps) {
       data-ouia-component-id={kind + "." + currentlySelectedId(searchParams)}
     >
       <DrawerHead
-        hasNoPadding
+        hasNoPadding={!!props.panelSubtitle}
         className="codeflare--detail-view-header"
         data-has-subtitle={props.panelSubtitle || undefined}
       >

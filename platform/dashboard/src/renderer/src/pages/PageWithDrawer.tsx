@@ -3,8 +3,6 @@ import { type PropsWithChildren } from "react"
 import Drawer, { type DrawerProps } from "../components/Drawer"
 import PageWithMastheadAndModal, { type PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
 
-import "./Detail.scss"
-
 /**
  * `props.children` is the content to be displayed in the "main",
  * i.e. not in the slide-out Drawer
