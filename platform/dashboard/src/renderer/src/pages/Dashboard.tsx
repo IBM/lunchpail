@@ -53,8 +53,8 @@ export function Dashboard(props: Props) {
     detailContentProvider && detailContentProvider.detail
       ? detailContentProvider.detail(id, events, memos, settings)
       : undefined
-  const currentDetailSubtitle = currentDetail ? currentDetail.subtitle : undefined
-  const currentDetailBody = currentDetail ? currentDetail.body : undefined
+  const panelSubtitle = currentDetail ? currentDetail.subtitle : undefined
+  const panelBody = currentDetail ? currentDetail.body : undefined
 
   /** Content to display in the main gallery */
   const bodyContentProvider = content[currentKind()]
@@ -91,8 +91,8 @@ export function Dashboard(props: Props) {
   )
 
   const pwdProps = {
-    currentDetailSubtitle,
-    currentDetailBody,
+    panelSubtitle,
+    panelBody,
     modal,
     title: bodyContentProvider.title ?? bodyContentProvider.name,
     subtitle: bodyContentProvider.description,

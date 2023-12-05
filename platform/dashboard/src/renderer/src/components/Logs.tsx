@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useRef } from "react"
 
-import { DrawerMaximizedContext } from "@jay/renderer/pages/PageWithDrawer"
+import { DrawerMaximizedContext } from "@jay/components/Drawer/PanelContent"
 
 import { Terminal, type ITheme } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
