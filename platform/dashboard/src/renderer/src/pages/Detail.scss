@@ -8,6 +8,29 @@
   }
 }
 
+/**
+ * re: the codeflare--detail-view-header
+ * hasNoPadding/data-has/is-subtitle mess: this is because we want the
+ * subtitle to occupy the full width of the drawer, but normal
+ * DrawerHeads with DrawerActions only occupy the fraction of width
+ * remaining after DrawerActions are placed; on top of this,
+ * PatternFly's CSS places DrawerHead.className not on the "top level"
+ * element, but on one nested inside, so we don't have direct control
+ * over what happens, via classNames, without the data-... tricks
+ */
+.codeflare--detail-view-header[data-has-subtitle] {
+  padding-block-start: var(--pf-v5-c-drawer--child--PaddingTop);
+  padding-block-end: 0;
+  padding-inline-start: var(--pf-v5-c-drawer--child--PaddingLeft);
+  padding-inline-end: var(--pf-v5-c-drawer--child--PaddingRight);
+}
+.codeflare--detail-view-header[data-is-subtitle] {
+  padding-block-start: 0;
+  padding-block-end: var(--pf-v5-c-drawer--child--PaddingBottom);
+  padding-inline-start: var(--pf-v5-c-drawer--child--PaddingLeft);
+  padding-inline-end: var(--pf-v5-c-drawer--child--PaddingRight);
+}
+
 /** To get inner scrolling on panel body */
 .codeflare--detail-view {
   overflow: hidden;

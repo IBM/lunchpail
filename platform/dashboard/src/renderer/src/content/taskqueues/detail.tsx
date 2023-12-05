@@ -27,6 +27,6 @@ export default function Detail(
       settings,
     }
 
-    return TaskQueueDetail(props)
+    return { body: TaskQueueDetail(props) }
   }
 }

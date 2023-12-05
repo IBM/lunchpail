@@ -4,7 +4,6 @@ import {
   Button,
   Breadcrumb,
   BreadcrumbItem,
-  Title,
   Drawer,
   DrawerContent,
   DrawerContentBody,
@@ -12,6 +11,8 @@ import {
   DrawerCloseButton,
   DrawerHead,
   DrawerPanelContent,
+  Text,
+  Title,
 } from "@patternfly/react-core"
 
 import PageWithMastheadAndModal, { type PageWithMastheadAndModalProps } from "./PageWithMastheadAndModal"
@@ -40,8 +41,11 @@ export const DrawerMaximizedContext = createContext(false)
  */
 type Props = PropsWithChildren<
   PageWithMastheadAndModalProps & {
+    /** The current subtitle of the slide-out Drawer panel */
+    currentDetailSubtitle?: string
+
     /** The current content of the slide-out Drawer panel */
-    currentDetail?: ReactNode
+    currentDetailBody?: ReactNode
   }
 >
 
@@ -72,6 +76,16 @@ export default function PageWithDrawer(props: Props) {
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   // manually adding custom ouia labels because the Drawer component is not a ouia compatible component
   // resource: https://www.patternfly.org/developer-resources/open-ui-automation#usage
+  //
+  // re: the codeflare--detail-view-header
+  // hasNoPadding/data-has/is-subtitle mess: this is because we want
+  // the subtitle to occupy the full width of the drawer, but normal
+  // DrawerHeads with DrawerActions only occupy the fraction of width
+  // remaining after DrawerActions are placed; on top of this,
+  // PatternFly's CSS places DrawerHead.className not on the "top
+  // level" element, but on one nested inside, so we don't have direct
+  // control over what happens, via classNames, without the
+  // data-... tricksx
   const panelContent = (
     <DrawerPanelContent
       className="codeflare--detail-view"
@@ -79,7 +93,11 @@ export default function PageWithDrawer(props: Props) {
       data-ouia-component-type="PF5/DrawerPanelContent"
       data-ouia-component-id={kind + "." + currentlySelectedId(searchParams)}
     >
-      <DrawerHead>
+      <DrawerHead
+        className="codeflare--detail-view-header"
+        hasNoPadding
+        data-has-subtitle={props.currentDetailSubtitle || undefined}
+      >
         <Breadcrumb>
           {provider?.isInSidebar && (
             <BreadcrumbItem>{provider.isInSidebar === true ? "Resources" : provider.isInSidebar}</BreadcrumbItem>
@@ -98,8 +116,14 @@ export default function PageWithDrawer(props: Props) {
         </DrawerActions>
       </DrawerHead>
 
+      {props.currentDetailSubtitle && (
+        <DrawerHead hasNoPadding data-is-subtitle className="codeflare--detail-view-header">
+          <Text component="small">{props.currentDetailSubtitle}</Text>
+        </DrawerHead>
+      )}
+
       <DrawerMaximizedContext.Provider value={isMaximized}>
-        {props.currentDetail || <DetailNotFound />}
+        {props.currentDetailBody || <DetailNotFound />}
       </DrawerMaximizedContext.Provider>
     </DrawerPanelContent>
   )

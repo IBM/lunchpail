@@ -33,7 +33,7 @@ const controlplane: ContentProvider<"controlplane"> = {
 
   gallery: () => <JobManagerCard />,
 
-  detail: () => <JobManagerDetail />,
+  detail: () => ({ body: <JobManagerDetail /> }),
 }
 
 export default controlplane

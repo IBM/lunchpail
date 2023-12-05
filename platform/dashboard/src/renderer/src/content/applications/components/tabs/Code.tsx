@@ -9,7 +9,19 @@ import type Props from "../Props"
 import { codeLanguageFromCommand } from "../New/yaml"
 
 export default function codeTab(props: Props) {
-  return DrawerTab({ title: "Code", body: <DescriptionList groups={groups(props)} /> })
+  // here, we show a no-padding <Code/> body for Applications that
+  // have code-by-literal (i.e. inlined into the Application yaml);
+  // otherwise, we have to use a DescriptionList to spell out the
+  // repo, detaeils etc.
+  return DrawerTab({
+    title: "Code",
+    hasNoPadding: !!props.application.spec.code,
+    body: props.application.spec.code ? (
+      code(props.application.spec.command, props.application.spec.code)
+    ) : (
+      <DescriptionList groups={groups(props)} />
+    ),
+  })
 }
 
 /**
@@ -34,20 +46,23 @@ function fromRepoGroups(props: Props) {
       ]
 }
 
+/** If the Application has code inlined into the yaml spec */
+function code(
+  command: Props["application"]["spec"]["command"],
+  code: NonNullable<Props["application"]["spec"]["code"]>,
+) {
+  return (
+    <Code readOnly language={codeLanguageFromCommand(command)}>
+      {code}
+    </Code>
+  )
+}
+
 /** Code form literal directly in yaml */
 function fromLiteralGroups(props: Props) {
   const { spec } = props.application
 
-  return !spec.code
-    ? []
-    : [
-        descriptionGroup(
-          "source",
-          <Code readOnly language={codeLanguageFromCommand(spec.command)}>
-            {spec.code}
-          </Code>,
-        ),
-      ]
+  return !spec.code ? [] : [descriptionGroup("source", code(spec.command, spec.code))]
 }
 
 /** The DescriptionList groups to show in this Tab */
@@ -56,7 +71,6 @@ function groups(props: Props) {
 
   return [
     ...api(props),
-    descriptionGroup("description", spec.description),
     ...fromRepoGroups(props),
     ...fromLiteralGroups(props),
     descriptionGroup("Supports Gpu?", spec.supportsGpu),

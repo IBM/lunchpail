@@ -12,6 +12,6 @@ export default function Detail(id: string, events: ManagedEvents, { taskqueueInd
       status: events.workerpools.find((_) => _.metadata.name === id),
       taskqueueIndex: taskqueueIndex,
     }
-    return <WorkerPoolDetail {...props} />
+    return { body: <WorkerPoolDetail {...props} /> }
   }
 }

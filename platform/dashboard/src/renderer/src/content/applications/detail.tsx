@@ -17,7 +17,7 @@ export default function Detail(id: string, events: ManagedEvents, memos: Memos, 
       taskqueueIndex: memos.taskqueueIndex,
       latestWorkerPoolModels: memos.latestWorkerPoolModels,
     }
-    return <ApplicationDetail {...props} />
+    return { body: <ApplicationDetail {...props} />, subtitle: props.application.spec.description }
   } else {
     return undefined
   }
