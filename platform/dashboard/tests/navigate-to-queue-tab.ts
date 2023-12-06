@@ -26,7 +26,7 @@ export async function navigateToCard(page: Page, application: string) {
 export default async function navigateToQueues(page: Page, application: string, taskqueue: string) {
   const drawer = await navigateToCard(page, application)
   const queueManagerTab = await drawer.locator(
-    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Status"]`,
+    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Tasks"]`,
   )
   await expect(queueManagerTab).toBeVisible({ timeout: 60000 })
 

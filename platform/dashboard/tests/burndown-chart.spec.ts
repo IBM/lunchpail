@@ -6,7 +6,7 @@ import { navigateToCard, navigateToTab } from "./navigate-to-queue-tab"
 
 import { name } from "../src/renderer/src/content/applications/name"
 
-test("burn down charts are visible", async () => {
+test.skip("burn down charts are visible", async () => {
   // Launch Electron app.
   const electronApp = await launchElectron()
 

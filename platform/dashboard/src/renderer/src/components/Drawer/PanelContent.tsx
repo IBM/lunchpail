@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo, useState, type ReactNode } from "react"
+import { createContext, useCallback, useState, type ReactNode } from "react"
 
 import {
   Button,
@@ -12,7 +12,7 @@ import {
   Title,
 } from "@patternfly/react-core"
 
-import DetailNotFound from "./DetailNotFound"
+import DetailNotFound from "../DetailNotFound"
 
 import navigateToHome from "../../navigate/home"
 import { hashIfNeeded } from "../../navigate/kind"
@@ -27,6 +27,9 @@ import RestoreIcon from "@patternfly/react-icons/dist/esm/icons/window-restore-i
 import MaximizeIcon from "@patternfly/react-icons/dist/esm/icons/window-maximize-icon"
 
 export const DrawerMaximizedContext = createContext(false)
+
+const normalWidth = { default: "width_50" as const }
+const maximizedWidth = { default: "width_100" as const }
 
 export type DrawerPanelProps = {
   /** The current subtitle of the slide-out Drawer panel */
@@ -68,7 +71,7 @@ export default function SlideOutDrawerPanelContent(props: DrawerPanelProps) {
   const toggleIsMaximized = useCallback(() => setIsMaximized((curState) => !curState), [setIsMaximized])
 
   /** Width of the drawer: 100% if `isMaximized`, default behavior otherwise */
-  const widths = useMemo(() => (isMaximized ? { default: "width_100" as const } : undefined), [isMaximized])
+  const widths = isMaximized ? maximizedWidth : normalWidth
 
   /** @return the content to be shown in the drawer (*not* in the main body section) */
   // manually adding custom ouia labels because the Drawer component is not a ouia compatible component

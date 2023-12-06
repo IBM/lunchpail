@@ -3,7 +3,7 @@ import { Divider, DrawerPanelBody, Tabs, type Tab } from "@patternfly/react-core
 
 import Yaml from "../YamlFromObject"
 import DrawerToolbar from "./Toolbar"
-import DetailNotFound from "./DetailNotFound"
+import DetailNotFound from "../DetailNotFound"
 
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 

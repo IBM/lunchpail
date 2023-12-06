@@ -1,12 +1,12 @@
 import { type ReactNode } from "react"
-import { DrawerPanelBody, Tab, TabTitleIcon, TabTitleText } from "@patternfly/react-core"
+import { Badge, DrawerPanelBody, Tab, TabAction, TabTitleIcon, TabTitleText } from "@patternfly/react-core"
 
 export type DrawerTabProps = {
   title: string
   icon?: ReactNode
   body: ReactNode
   hasNoPadding?: boolean
-  actions?: ReactNode
+  count?: number
 }
 
 export default function DrawerTab(tab: DrawerTabProps) {
@@ -22,7 +22,13 @@ export default function DrawerTab(tab: DrawerTabProps) {
         </>
       }
       eventKey={tab.title}
-      actions={tab.actions}
+      actions={
+        typeof tab.count === "number" && (
+          <TabAction>
+            <Badge isRead={tab.count === 0}>{tab.count}</Badge>
+          </TabAction>
+        )
+      }
     >
       <DrawerPanelBody hasNoPadding={tab.hasNoPadding}>{tab.body}</DrawerPanelBody>
     </Tab>

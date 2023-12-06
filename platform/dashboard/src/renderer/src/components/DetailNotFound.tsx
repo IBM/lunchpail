@@ -5,6 +5,7 @@ const EmptyStateHeader = lazy(() => import("@patternfly/react-core").then((_) =>
 const EmptyStateBody = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateBody })))
 const EmptyStateIcon = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateIcon })))
 const EmptyStateActions = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateActions })))
+const EmptyStateFooter = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.EmptyStateFooter })))
 
 import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
 
@@ -28,7 +29,11 @@ export default function DetailNotFound(props: Props) {
           icon={<EmptyStateIcon icon={SearchIcon} />}
         />
         <EmptyStateBody>{props.children ?? "It may still be loading. Hang tight."}</EmptyStateBody>
-        {props.action && <EmptyStateActions>{props.action}</EmptyStateActions>}
+        {props.action && (
+          <EmptyStateFooter>
+            <EmptyStateActions>{props.action}</EmptyStateActions>
+          </EmptyStateFooter>
+        )}
       </EmptyState>
     </Suspense>
   )

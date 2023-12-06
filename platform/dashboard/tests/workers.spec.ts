@@ -2,7 +2,7 @@
 import { Page, expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
 import expectedApplications from "./applications"
-import navigateToQueueTab from "./navigate-to-queue-tab"
+import { navigateToCard, navigateToTab } from "./navigate-to-queue-tab"
 
 import { name } from "../src/renderer/src/content/applications/name"
 
@@ -11,7 +11,7 @@ test.describe.serial("workers tests running sequentially", () => {
   let computePoolName: string
   const { application: expectedApp, taskqueue: expectedTaskQueue } = expectedApplications[0]
 
-  test("Navigate to Queue tab for application", async () => {
+  test("Navigate to Compute tab for application", async () => {
     // Launch Electron app.
     const electronApp = await launchElectron()
 
@@ -25,7 +25,8 @@ test.describe.serial("workers tests running sequentially", () => {
     // get 'Job Defintions' tab element from the sidebar and click to activate Job Definition gallery
     await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
 
-    await navigateToQueueTab(page, expectedApp, expectedTaskQueue)
+    const drawer = await navigateToCard(page, expectedApp)
+    await navigateToTab(drawer, "Compute")
   })
 
   test("'Add Compute' button opens 'Create Compute Pool' modal", async () => {

@@ -11,11 +11,7 @@ import {
   TabTitleText,
 } from "@patternfly/react-core"
 
-import { workdispatchersGroup } from "../workdispatchers"
-import { datasetsGroup, workerpoolsGroup } from "../common"
-
 import WorkerPoolIcon from "@jay/resources/workerpools/components/Icon"
-import queueTabContent from "@jay/resources/taskqueues/components/tabs/Summary"
 import correctiveLinks from "@jay/resources/workerpools/components/corrective-links"
 import computeTabContent from "@jay/resources/workerpools/components/tabs/Summary"
 import prettyPrintWorkerPoolName from "@jay/resources/workerpools/components/pretty-print"
@@ -49,7 +45,7 @@ export default function StatusBody({ queueProps, props, models }: SBProps) {
   // sub-tabs, one per associated workerpool
   const computeBody =
     models.length === 0 ? (
-      <></>
+      <DrawerPanelBody>No Workers Assigned</DrawerPanelBody>
     ) : (
       <Tabs isSecondary mountOnEnter defaultActiveKey={models[0].label}>
         {models.map((model) => {
@@ -95,16 +91,5 @@ export default function StatusBody({ queueProps, props, models }: SBProps) {
       </Tabs>
     )
 
-  return (
-    <Stack>
-      <DrawerPanelBody>
-        {queueTabContent(queueProps, true, [
-          datasetsGroup(props),
-          workdispatchersGroup(props),
-          workerpoolsGroup(props, queueProps.name),
-        ])}
-      </DrawerPanelBody>
-      {computeBody}
-    </Stack>
-  )
+  return computeBody
 }

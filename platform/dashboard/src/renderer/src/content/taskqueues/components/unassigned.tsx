@@ -5,7 +5,7 @@ import None from "@jay/components/None"
 import Cells from "@jay/components/Grid/Cells"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
-function inboxCount(props: Props) {
+export function nUnassigned(props: Props) {
   const last = lastEvent(props)
   return last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
 }
@@ -15,7 +15,7 @@ function cells(count: number, props: Props) {
   if (!count) {
     return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={taskqueueIndex} />
   }
-  return <Cells inbox={{ [props.name]: inboxCount(props) }} taskqueueIndex={taskqueueIndex} />
+  return <Cells inbox={{ [props.name]: nUnassigned(props) }} taskqueueIndex={taskqueueIndex} />
 }
 
 function storageType(props: Props) {
@@ -29,7 +29,7 @@ function storageType(props: Props) {
 }
 
 export default function unassigned(props: Props) {
-  const count = inboxCount(props)
+  const count = nUnassigned(props)
   return descriptionGroup(
     "Unassigned Tasks",
     count === 0 ? None() : cells(count, props),

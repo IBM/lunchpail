@@ -1,7 +1,7 @@
 import type Props from "../Props"
 import LinkToNewWizard from "@jay/renderer/navigate/wizard"
 
-import { singular as workdispatcherSingular } from "@jay/resources/workdispatchers/name"
+import { singular as workdispatcher } from "@jay/resources/workdispatchers/name"
 
 /** Button/Action: Allocate WorkDispatcher */
 export default function NewWorkDispatcherButton(
@@ -24,7 +24,7 @@ export default function NewWorkDispatcherButton(
       onClick={props.onClick}
       startOrAdd={props.isInline ? "create" : "start"}
       kind="workdispatchers"
-      linkText={props.isInline ? `Configure ${workdispatcherSingular}` : "Dispatch Tasks"}
+      linkText={props.isInline ? `Configure ${workdispatcher}` : `Create ${workdispatcher}`}
       qs={qs}
     />
   )
