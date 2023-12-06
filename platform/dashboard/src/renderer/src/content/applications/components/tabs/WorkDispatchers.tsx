@@ -2,14 +2,15 @@ import DrawerTab from "@jay/components/Drawer/Tab"
 import { dl } from "@jay/components/DescriptionGroup"
 
 import DetailNotFound from "@jay/components/DetailNotFound"
-
-import { singular as workdispatcher } from "@jay/resources/workdispatchers/name"
 import unassigned, { nUnassigned } from "@jay/resources/taskqueues/components/unassigned"
+
+import { groupSingular as application } from "@jay/resources/applications/group"
+import { name as workdispatchers, singular as workdispatcher } from "@jay/resources/workdispatchers/name"
 
 import type Props from "../Props"
 import taskqueueProps from "../taskqueueProps"
 import NewWorkDispatcherButton from "../actions/NewWorkDispatcher"
-import workdispatchers, { workdispatchersGroup } from "../workdispatchers"
+import assignedWorkDispatchers, { workdispatchersGroup } from "../workdispatchers"
 
 function NoWorkDispatchers(props: Props) {
   const queueProps = taskqueueProps(props)
@@ -25,7 +26,7 @@ function NoWorkDispatchers(props: Props) {
 
 export default function DataTab(props: Props) {
   const queueProps = taskqueueProps(props)
-  const nDispatchers = workdispatchers(props).length
+  const nDispatchers = assignedWorkDispatchers(props).length
   const unassignedGroup = !queueProps || nUnassigned(queueProps) === 0 ? [] : [unassigned(queueProps)]
   const activeDispatchersGroup = nDispatchers === 0 ? [] : [workdispatchersGroup(props)]
 
@@ -40,5 +41,8 @@ export default function DataTab(props: Props) {
     title: "Tasks",
     body,
     count: nDispatchers,
+    tooltip: `This ${application} has ${nDispatchers} assigned ${
+      nDispatchers === 1 ? workdispatcher : workdispatchers
+    }`,
   })
 }

@@ -2,16 +2,26 @@ import { type ReactNode, type ReactElement } from "react"
 import { Divider, DrawerPanelBody, Tabs, type Tab } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
+import DrawerTab from "./Tab"
 import DrawerToolbar from "./Toolbar"
 import DetailNotFound from "../DetailNotFound"
 
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-import DrawerTab from "./Tab"
+/**
+ * Properties for a set of Tabs shown in the slide-out Drawer
+ */
 type TabsProps = {
+  /** Content to show in the Summary Tab */
   summary?: ReactNode
+
+  /** Content to show in the YAML Tab */
   raw?: KubernetesResource | null
+
+  /** Id of the default active Tab */
   defaultActiveKey?: string
+
+  /** Other Tab elements that will be shown between Summary and YAML tabs */
   otherTabs?: ReactElement<typeof Tab>[]
 }
 

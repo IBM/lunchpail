@@ -7,7 +7,9 @@ import type Props from "../Props"
 import ComputeBody from "./ComputeBody"
 import taskqueueProps from "../taskqueueProps"
 
-import { singular as workerpool } from "@jay/resources/workerpools/name"
+import { groupSingular as application } from "@jay/resources/applications/group"
+import { name as workerpools, singular as workerpool } from "@jay/resources/workerpools/name"
+
 import NewPoolButton from "@jay/resources/taskqueues/components/NewPoolButton"
 
 function NoWorkerPools(props: Props) {
@@ -49,7 +51,8 @@ export default function computeTab(props: Props) {
   return DrawerTab({
     title: "Compute",
     hasNoPadding: true,
-    count: models.length, // nWorkerPools
+    count: nWorkerPools,
     body,
+    tooltip: `This ${application} has ${nWorkerPools} assigned ${nWorkerPools === 1 ? workerpool : workerpools}`,
   })
 }

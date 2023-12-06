@@ -1,14 +1,27 @@
 import { type ReactNode } from "react"
-import { Badge, DrawerPanelBody, Tab, TabAction, TabTitleIcon, TabTitleText } from "@patternfly/react-core"
+import { Badge, DrawerPanelBody, Tab, TabAction, TabTitleIcon, TabTitleText, Tooltip } from "@patternfly/react-core"
 
 export type DrawerTabProps = {
+  /** Tab title  */
   title: string
+
+  /** Tab icon */
   icon?: ReactNode
+
+  /** Tab body content */
   body: ReactNode
+
+  /** Display `body` flush to container */
   hasNoPadding?: boolean
+
+  /** A count to be displayed alongside in the Tab `title` */
   count?: number
+
+  /** Tooltip to show on hover over the `title` */
+  tooltip?: string
 }
 
+/** A single Tab to be shown in the slide-out Drawer */
 export default function DrawerTab(tab: DrawerTabProps) {
   return (
     <Tab
@@ -22,6 +35,7 @@ export default function DrawerTab(tab: DrawerTabProps) {
         </>
       }
       eventKey={tab.title}
+      tooltip={tab.tooltip ? <Tooltip content={tab.tooltip} /> : undefined}
       actions={
         typeof tab.count === "number" && (
           <TabAction>
