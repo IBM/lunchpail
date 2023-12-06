@@ -23,6 +23,7 @@ function detailGroups(props: Props) {
 function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
+      key="delete"
       kind="dataset"
       singular={singular}
       name={props.metadata.name}

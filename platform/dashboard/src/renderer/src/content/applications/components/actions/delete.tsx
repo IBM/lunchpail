@@ -8,6 +8,7 @@ import DeleteResourceButton from "@jay/components/DeleteResourceButton"
 export default function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
+      key="delete"
       singular={singular}
       kind="applications.codeflare.dev"
       yaml={yamlFromSpec(props.application)}

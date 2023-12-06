@@ -16,30 +16,6 @@ const errorElement = (
 )
 
 /**
- * Register keyboard shortcuts for browser-back and browser-forward
- *
- * @return a cleanup function that will deregister event handlers
- */
-function registerKeyboardEvents(navigate: ReturnType<typeof useNavigate>) {
-  const handler = (evt) => {
-    if (evt.metaKey || evt.altKey) {
-      switch (evt.key) {
-        case "ArrowLeft":
-          navigate(-1)
-          break
-        case "ArrowRight":
-          navigate(+1)
-          break
-      }
-    }
-  }
-  window.addEventListener("keydown", handler)
-
-  // return a cleanup function
-  return () => window.removeEventListener("keydown", handler)
-}
-
-/**
  * This is a thin wrapper over the Dashboard impls to allow the user
  * to choose between Live or Demo mode.
  */
@@ -55,7 +31,7 @@ function UserChoosesLiveOrDemoDashboard() {
   const searchParams = useSearchParams()[0]
   const previousDemoMode = useRef(settings?.demoMode[0])
   useEffect(() => {
-    const cleanup = registerKeyboardEvents(navigate)
+    //const cleanup = registerKeyboardEvents(navigate)
 
     const currentDemoMode = settings?.demoMode[0]
     if (previousDemoMode.current !== currentDemoMode) {
@@ -63,7 +39,7 @@ function UserChoosesLiveOrDemoDashboard() {
       previousDemoMode.current = settings?.demoMode[0]
     }
 
-    return cleanup
+    //return cleanup
   }, [settings?.demoMode[0]])
 
   return (
