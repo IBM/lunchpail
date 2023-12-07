@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha1
+      controller: true
+      kind: WorkDispatcher
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
+  labels:
+    app.kubernetes.io/component: workdispatcher
+    app.kubernetes.io/part-of: {{ .Values.partOf }} # name of DataSet/TaskQueue we will be populating
+    app.kubernetes.io/name: {{ .Values.name }} # name of WorkDispatcher
+    app.kubernetes.io/instance: {{ .Release.Name }} # name of this WorkDispatcher impl, i.e. the job/pod
+    app.kubernetes.io/managed-by: codeflare.dev
+    {{- if .Values.datasets }}
+{{ .Values.datasets | b64dec | indent 4 }}
+    {{- end }}
+spec:
+  restartPolicy: OnFailure
+  terminationGracePeriodSeconds: 5
+  containers:
+    - name: dispatcher
+      command: ["/opt/workdispatcher/bin/simulator.sh"]
+      image: ghcr.io/project-codeflare/codeflare-tasksimulator-parquet-component:dev
+      volumeMounts:
+        - name: script
+          mountPath: "/opt/workdispatcher/bin"
+      env:
+        - name: METHOD
+          value: parametersweep
+        - name: SWEEP_MIN
+          value: '1'
+        - name: SWEEP_MAX
+          value: '10'
+        - name: SWEEP_STEP
+          value: '1'
+        {{- include "codeflare.dev/queue.env.dataset" . | indent 8 }}
+
+  # shell script from configmap
+  volumes:
+  - name: script
+    configMap:
+      name: {{ print .Release.Name "-script" }}
+      defaultMode: 0500

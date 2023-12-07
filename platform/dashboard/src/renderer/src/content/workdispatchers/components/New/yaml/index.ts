@@ -1,11 +1,12 @@
 import { dump } from "js-yaml"
 import indent from "@jay/common/util/indent"
 
-import type { Values } from "../Wizard"
+import type Values from "../Values"
 import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import baseYaml from "./base"
+import helmYaml from "./helm"
 import tasksimulatorYaml from "./tasksimulator"
 import parametersweepYaml from "./parametersweep"
 
@@ -18,7 +19,7 @@ function specForMethod(values: Values["values"]) {
     case "bucket":
       return ""
     case "helm":
-      return ""
+      return helmYaml(values)
   }
 }
 

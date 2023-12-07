@@ -1,4 +1,4 @@
-import type { Values } from "../Wizard"
+import type Values from "../Values"
 
 type TypeSpec = string | (string | TypeSpec)[]
 

@@ -28,7 +28,7 @@ function rightActions(props: Props) {
 
 /** Common actions */
 function leftActions(props: Props) {
-  return [...correctiveActions(props)]
+  return [...(props.status ? correctiveActions(props.status) : [])]
 }
 
 /** The body and actions to show in the WorkerPool Details view */

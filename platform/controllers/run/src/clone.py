@@ -17,8 +17,7 @@ def fetch_secret(v1Api, name: str, namespace: str):
 # prefix plus the subpath inside the repo as specified by that `repo`
 # spec.
 #
-def clone_from_git(v1Api, customApi, application, name: str, workdir: str):
-    repo = application['spec']['repo']
+def clone_from_git(v1Api, customApi, name: str, workdir: str, repo: str):
     user_b64 = ""
     pat_b64 = ""
 
@@ -83,7 +82,7 @@ def clone(v1Api, customApi, application, name: str, workdir: str):
     else:
         # otherwise the Application specifies code via a reference to
         # a github `spec.repo`
-        cloned_subPath = clone_from_git(v1Api, customApi, application, name, workdir)
+        cloned_subPath = clone_from_git(v1Api, customApi, name, workdir, application['spec']['repo'])
 
     logging.info(f"cloned_subPath={cloned_subPath}")
     return cloned_subPath

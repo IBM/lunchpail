@@ -4,12 +4,15 @@ import logging
 import subprocess
 from kopf import PermanentError, TemporaryError
 
-from status import set_status, add_error_condition
+from clone import clone_from_git
+from run_id import alloc_run_id
+
+from status import set_status, add_error_condition, set_status_after_clone_failure
 
 #
-# Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep
+# Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep or method=helm
 #
-def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch):
+def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch, path_to_chart = ""):
     method = spec['method']
     dataset = spec['dataset']
     injectedTasksPerInterval = spec['rate']['tasks'] if "rate" in spec else 1
@@ -45,6 +48,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
             str(sweep_step),
             dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
+            path_to_chart,
         ], capture_output=True)
         logging.info(f"WorkDispatcher callout done for name={name} with returncode={out.returncode}")
     except Exception as e:
@@ -62,3 +66,20 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
         #logging.info(f"Ray run head_pod_name={head_pod_name}")
         #return head_pod_name
         return ""
+
+#
+# Handle WorkDispatcher creation for method=helm
+#
+def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch):
+    logging.info(f"Creating WorkDispatcher from helm name={name} namespace={namespace}")
+    run_id, workdir = alloc_run_id("helm", name)
+
+    try:
+        cloned_subPath = clone_from_git(v1Api, customApi, name, workdir, spec['repo'])
+    except Exception as e:
+        set_status_after_clone_failure(customApi, name, namespace, e, patch)
+    
+    path_to_chart = os.path.join(workdir, cloned_subPath)
+    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, dataset_labels, patch, path_to_chart)
+
+    

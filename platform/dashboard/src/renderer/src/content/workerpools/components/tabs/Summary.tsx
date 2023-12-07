@@ -13,31 +13,31 @@ function statusGroup(props: Props) {
   ])
 }
 
-function reasonGroups(props: Props) {
-  const latestStatus = props.status
-  const status = latestStatus?.metadata.annotations["codeflare.dev/status"]
-  const reason = latestStatus?.metadata.annotations["codeflare.dev/reason"]
-  if (status !== "Running" && reason) {
-    return [descriptionGroup("Reason", titleCaseSplit(reason))]
-  } else {
-    return []
-  }
-}
+export function reasonAndMessageGroups({ metadata }: import("@jay/common/events/KubernetesResource").default) {
+  const status = metadata.annotations["codeflare.dev/status"]
+  const reason = metadata.annotations["codeflare.dev/reason"]
+  const message = metadata.annotations["codeflare.dev/message"]
 
-function messageGroups(props: Props) {
-  const latestStatus = props.status
-  const status = latestStatus?.metadata.annotations["codeflare.dev/status"]
-  const message = latestStatus?.metadata.annotations["codeflare.dev/message"]
-  if (status !== "Running" && message) {
-    return [descriptionGroup("Message", titleCaseSplit(message))]
-  } else {
-    return []
+  const groups: import("react").ReactNode[] = []
+  if (status !== "Running") {
+    if (reason) {
+      groups.push(descriptionGroup("Reason", titleCaseSplit(reason)))
+    }
+    if (message) {
+      groups.push(descriptionGroup("Message", titleCaseSplit(message)))
+    }
   }
+
+  return groups
 }
 
 /** Description list groups to show in the Details view for WorkerPools */
 function detailGroups(props: Props, statusOnly = false) {
-  return [statusGroup(props), ...reasonGroups(props), ...messageGroups(props), ...summaryGroups(props, statusOnly)]
+  return [
+    statusGroup(props),
+    ...(!props.status ? [] : reasonAndMessageGroups(props.status)),
+    ...summaryGroups(props, statusOnly),
+  ]
 }
 
 /** Content to display in the Summary tab */

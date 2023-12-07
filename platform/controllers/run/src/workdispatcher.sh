@@ -20,12 +20,13 @@ sweepMax="${11}"
 sweepStep="${12}"
 dataset_name="${13}"
 datasets="${14}"
+path_to_chart="${15-$SCRIPTDIR/workdispatcher}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
 echo "Dry running to $DRY" 1>&2
 
-helm install --dry-run --debug ${name}-${method} "$SCRIPTDIR"/workdispatcher/ -n ${namespace} \
+helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace} \
      --set uid=$uid \
      --set name=$name \
      --set image=$image \

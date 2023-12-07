@@ -2,7 +2,9 @@ import DrawerContent from "@jay/components/Drawer/Content"
 import { dl, descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { summaryGroups } from "./Card"
-import { status, message } from "@jay/resources/workdispatchers/status"
+import { status } from "@jay/resources/workdispatchers/status"
+import correctiveActions from "@jay/resources/workerpools/components/corrective-actions"
+import { reasonAndMessageGroups } from "@jay/resources/workerpools/components/tabs/Summary"
 
 //import editAction from "./actions/edit"
 import deleteAction from "./actions/delete"
@@ -36,11 +38,10 @@ function configurationGroups(props: Props) {
 
 function statusGroups(props: Props) {
   const { workdispatcher } = props
-  const msg = message(workdispatcher)
 
   return [
     descriptionGroup("status", status(workdispatcher)),
-    ...(!msg ? [] : [descriptionGroup("message", msg)]),
+    ...reasonAndMessageGroups(props.workdispatcher),
     ...configurationGroups(props),
   ]
 }
@@ -51,6 +52,7 @@ export default function WorkDispatcherDetail(props: Props) {
       summary={dl({ groups: [...statusGroups(props), ...summaryGroups(props)] })}
       raw={props.workdispatcher}
       otherTabs={[LogsTab(props)]}
+      actions={[...correctiveActions(props.workdispatcher)]}
       rightActions={[deleteAction(props)]}
     />
   )

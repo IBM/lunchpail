@@ -23,19 +23,28 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [application, method, dataset, rate] # tasksimulator
-                - required: [application, method, dataset, sweep] # parametersweep
+                - required: [application,method,dataset,schema,rate] # tasksimulator
+                - required: [application,method,dataset,sweep] # parametersweep
+                - required: [application,method,dataset,repo] # helm
               properties:
+                # common fields: [method,application,dataset]
                 method:
                   type: string
-                  enum: [tasksimulator,parametersweep]
-
+                  enum: [tasksimulator,parametersweep,helm]
                 application:
                   type: string
                 dataset:
                   type: string
 
-                # parameter sweep
+                # helm fields: [repo]
+                repo:
+                  type: string
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
+
+                # parameter sweep fields: [sweep]
                 sweep:
                   type: object
                   required: [min,max,step]
@@ -47,6 +56,7 @@ spec:
                     step:
                       type: number
 
+                # tasksimulator fields: [schema,rate]
                 schema:
                   type: object
                   required: [format, columns, columnTypes]

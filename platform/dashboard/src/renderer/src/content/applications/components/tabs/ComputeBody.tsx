@@ -31,14 +31,14 @@ function toWorkerPoolProps(
   }
 }
 
-type SBProps = {
+type ComputeBodyProps = {
   props: Props
   models: Props["latestWorkerPoolModels"]
   queueProps: import("@jay/resources/taskqueues/components/Props").default
 }
 
 /** Body of the Status tab of an Application detail view */
-export default function StatusBody({ queueProps, props, models }: SBProps) {
+export default function ComputeBody({ queueProps, props, models }: ComputeBodyProps) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
 
