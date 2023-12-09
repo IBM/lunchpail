@@ -13,5 +13,5 @@ spec:
   dataset: test7cdata
   method: helm
   repo: >-
-    https://github.ibm.com/nickm/codeflare-platform/tree/helm-workdispatcher/platform/dashboard/tests/workdispatcher1
+    https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/dashboard/tests/workdispatcher1
 {{- end }}
