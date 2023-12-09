@@ -6,7 +6,9 @@ def sizeof(inp):
         return inp['defaultSize']
     else:
         sizes = inp['sizes']
-        if 'xs' in sizes:
+        if 'xxs' in sizes:
+            return 'xxs'
+        elif 'xs' in sizes:
             return 'xs'
         elif 'sm' in sizes:
             return 'sm'

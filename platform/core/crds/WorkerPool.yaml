@@ -41,7 +41,7 @@ spec:
                       default: false
                     size:
                       type: string
-                      enum: [xs,sm,md,lg,xl,xxl]
+                      enum: [xxs,xs,sm,md,lg,xl,xxl]
                 
       # subresources for the custom resource
       subresources:

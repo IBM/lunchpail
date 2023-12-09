@@ -8,6 +8,11 @@ metadata:
 spec:
   priority: 100
   config:
+    xxs:
+      workers: 1
+      cpu: 500m
+      memory: 1.5Gi
+      gpu: 0
     xs:
       workers: 1
       cpu: 1

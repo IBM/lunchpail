@@ -10,5 +10,5 @@ spec:
     name: test7c
   workers:
     count: 1
-    size: xs
+    size: xxs
 {{- end }}

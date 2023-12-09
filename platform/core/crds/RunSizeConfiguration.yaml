@@ -37,8 +37,22 @@ spec:
                   type: number
                 config:
                   type: object
-                  required: ["xs", "sm", "md", "lg", "xl", "xxl"]
+                  required: [xxs,xs,sm,md,lg,xl,xxl]
                   properties:
+                    xxs:
+                      type: object
+                      required: ["workers", "cpu", "memory", "gpu"]
+                      properties:
+                        workers:
+                          type: number
+                        cpu:
+                          x-kubernetes-int-or-string: true
+                          pattern: '^\d+m?$'
+                        memory:
+                           type: string
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                        gpu:
+                          type: number
                     xs:
                       type: object
                       required: ["workers", "cpu", "memory", "gpu"]
@@ -50,7 +64,7 @@ spec:
                           pattern: '^\d+m?$'
                         memory:
                            type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                         gpu:
                           type: number
                     sm:
@@ -64,7 +78,7 @@ spec:
                           pattern: '^\d+m?$'
                         memory:
                            type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                         gpu:
                           type: number
                     md:
@@ -78,7 +92,7 @@ spec:
                           pattern: '^\d+m?$'
                         memory:
                            type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                         gpu:
                           type: number
                     lg:
@@ -92,7 +106,7 @@ spec:
                           pattern: '^\d+m?$'
                         memory:
                            type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                         gpu:
                           type: number
                     xl:
@@ -106,7 +120,7 @@ spec:
                           pattern: '^\d+m?$'
                         memory:
                            type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                         gpu:
                           type: number
                     xxl:
@@ -120,6 +134,6 @@ spec:
                           pattern: '^\d+m?$'
                         memory:
                            type: string
-                           pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                           pattern: '^\d+(\.\d+)?(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
                         gpu:
                           type: number
