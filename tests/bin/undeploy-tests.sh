@@ -9,6 +9,16 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
 $HELM delete codeflare-tests --wait
 
+# in travis this can help us see whether there are straggler
+# namespaces, etc.
+echo "Checking for stragglers"
+$KUBECTL get ns
+$KUBECTL get application -A
+$KUBECTL get workerpools -A
+$KUBECTL get workdispatchers -A
+$KUBECTL get datasets -A
+echo "Done checking for stragglers"
+
 if [[ -n "$RUNNING_CODEFLARE_TESTS" ]]
 then
     while true
