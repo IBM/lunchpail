@@ -7,7 +7,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/../../hack/settings.sh
 
 echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
-$HELM delete codeflare-tests --wait
+$HELM delete --ignore-not-found codeflare-tests --wait
 
 # in travis this can help us see whether there are straggler
 # namespaces, etc.
