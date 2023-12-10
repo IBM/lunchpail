@@ -8,8 +8,4 @@
       value: {{ .Values.inbox | default "inbox" }}
     - name: QUEUE
       value: {{ print "/mnt/datasets/" .Values.dataset }}
-  resources:
-    limits:
-      cpu: 1
-      memory: 4Gi
 {{- end }}
