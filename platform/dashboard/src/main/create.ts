@@ -60,7 +60,7 @@ export async function onDeleteByName({
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
-      const child = spawn("kubectl", ["delete", kind, name, "-n", namespace])
+      const child = spawn("kubectl", ["delete", kind, name, "-n", namespace], { stdio: ["inherit", "inherit", "pipe"] })
 
       let err = ""
       child.stderr.on("data", (data) => (err += data.toString()))
