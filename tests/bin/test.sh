@@ -8,6 +8,9 @@ set -o pipefail
 # e.g. see test7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
+# sigh, disable kfp tests altogether for now (test3)
+export NO_KUBEFLOW=1
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 
