@@ -1,3 +1,6 @@
+import { load } from "js-yaml"
+import { Text } from "@patternfly/react-core"
+
 import Input from "@jay/components/Forms/Input"
 import TextArea from "@jay/components/Forms/TextArea"
 
@@ -22,3 +25,25 @@ const values = (ctrl: Values) => (
 
 /** Configuration items for a Helm-based WorkDispatcher */
 export default [repo, values]
+
+export function helmIsValid({ values }: Values["values"]) {
+  try {
+    load(values)
+    return true
+  } catch (err) {
+    console.error("Invalid yaml", values, err)
+    return [
+      {
+        title: "Invalid YAML",
+        body: (
+          <Text component="pre" style={prewrap}>
+            {String(err)}
+          </Text>
+        ),
+        variant: "danger" as const,
+      },
+    ]
+  }
+}
+
+const prewrap = { whiteSpace: "pre-wrap" as const }

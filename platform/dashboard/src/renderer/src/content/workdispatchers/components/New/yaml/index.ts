@@ -10,7 +10,7 @@ import helmYaml from "./helm"
 import tasksimulatorYaml from "./tasksimulator"
 import parametersweepYaml from "./parametersweep"
 
-function specForMethod(values: Values["values"]) {
+function specForMethod(values: Values["values"], application: ApplicationSpecEvent) {
   switch (values.method) {
     case "tasksimulator":
       return tasksimulatorYaml(values)
@@ -19,12 +19,12 @@ function specForMethod(values: Values["values"]) {
     case "bucket":
       return ""
     case "helm":
-      return helmYaml(values)
+      return helmYaml(values, application)
   }
 }
 
 export default function yaml(values: Values["values"], application: ApplicationSpecEvent, taskqueue: string) {
-  const spec = specForMethod(values)
+  const spec = specForMethod(values, application)
   return baseYaml(values.name, values.namespace, application, taskqueue, values.method) + (spec ? indent(spec, 2) : "")
 }
 

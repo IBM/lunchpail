@@ -1,8 +1,9 @@
 import Values from "../Values"
 
 import { singular } from "@jay/resources/workdispatchers/name"
+import { StepAlertProps } from "@jay/components/NewResourceWizard"
 
-import step2Helm from "./Helm"
+import step2Helm, { helmIsValid } from "./Helm"
 import step2TaskSimulatorItems from "./TaskSimulator"
 import step2ParameterSweepItems from "./ParameterSweep"
 
@@ -18,12 +19,29 @@ const items = (values: Values["values"]) =>
         ? step2Helm
         : []
 
-const alerts = [
-  {
+function checkIsValid(ctrl: Pick<Values, "values">): true | StepAlertProps<Values>[] {
+  if (ctrl.values.method === "helm") {
+    return helmIsValid(ctrl.values)
+  } else {
+    return true
+  }
+}
+
+function isValid(ctrl: Pick<Values, "values">) {
+  return !!checkIsValid(ctrl)
+}
+
+function alerts(values: Values["values"]): StepAlertProps<Values>[] {
+  const info = {
     title: "Configure this " + singular,
     body: "Your choice of " + singular + " offers the following configuration settings.",
-  },
-]
+  }
+
+  const valid = checkIsValid({ values })
+  const errors = valid === true ? [] : valid
+
+  return [info, ...errors]
+}
 
 /** This is the Configure step of the Wizard */
 export default {
@@ -31,4 +49,5 @@ export default {
   gridSpans,
   items,
   alerts,
+  isValid,
 }

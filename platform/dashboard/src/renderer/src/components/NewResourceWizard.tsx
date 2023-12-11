@@ -10,6 +10,7 @@ import {
 
 import {
   Alert,
+  AlertGroup,
   type AlertProps,
   type AlertActionLinkProps,
   AlertActionLink,
@@ -54,7 +55,7 @@ type KnownFormItem = "name" | "namespace" | "description"
 type FormItem<Values extends DefaultValues> = KnownFormItem | ((ctrl: Values) => ReactNode)
 
 /** An alert to be displayed at the top of a Wizard Step */
-type StepAlertProps<Values extends DefaultValues> = Pick<AlertProps, "variant" | "isExpandable"> & {
+export type StepAlertProps<Values extends DefaultValues> = Pick<AlertProps, "variant" | "isExpandable"> & {
   title: string
   body: AlertProps["children"]
   actionLinks?: readonly ((ctrl: Values) => AlertActionLinkProps & { linkText: string })[]
@@ -107,28 +108,32 @@ const nextIsDisabled = { isNextDisabled: true }
 function stepAlerts<Values extends DefaultValues>({ alerts }: StepProps<Values>, ctrl: Values) {
   if (alerts) {
     const alertProps = typeof alerts === "function" ? alerts(ctrl.values) : alerts
-    return alertProps.map((alert, idx, A) => (
-      <Alert
-        isInline
-        key={alert.title}
-        title={alert.title}
-        variant={alert.variant ?? "info"}
-        isExpandable={alert.isExpandable}
-        className={idx < A.length - 1 ? "" : "codeflare--step-header"}
-        actionLinks={alert.actionLinks
-          ?.map((action) => action(ctrl))
-          .map((action) => {
-            const linkProps: Record<string, unknown> = Object.assign({}, action, { linkText: null })
-            return (
-              <AlertActionLink key={action.linkText} {...linkProps}>
-                {action.linkText}
-              </AlertActionLink>
-            )
-          })}
-      >
-        {alert.body}
-      </Alert>
-    ))
+    return (
+      <AlertGroup>
+        {alertProps.map((alert, idx, A) => (
+          <Alert
+            isInline
+            key={alert.title}
+            title={alert.title}
+            variant={alert.variant ?? "info"}
+            isExpandable={alert.isExpandable}
+            className={idx < A.length - 1 ? "" : "codeflare--step-header"}
+            actionLinks={alert.actionLinks
+              ?.map((action) => action(ctrl))
+              .map((action) => {
+                const linkProps: Record<string, unknown> = Object.assign({}, action, { linkText: null })
+                return (
+                  <AlertActionLink key={action.linkText} {...linkProps}>
+                    {action.linkText}
+                  </AlertActionLink>
+                )
+              })}
+          >
+            {alert.body}
+          </Alert>
+        ))}
+      </AlertGroup>
+    )
   } else {
     return undefined
   }
