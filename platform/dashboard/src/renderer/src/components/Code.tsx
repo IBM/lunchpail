@@ -68,9 +68,9 @@ const patternflyTheme = createTheme({
     background: "var(--pf-v5-global--BackgroundColor--dark-100)",
     foreground: "var(--pf-v5-global--Color--light-100)",
     caret: "#c9d1d9",
-    selection: "var(--pf-v5-global--palette--black-800)",
+    selection: "#2b9af366", // --pf-v5-global--palette--blue-50 with 66% opacity
     selectionMatch: "var(--pf-v5-global--palette--light-blue-300)",
-    lineHighlight: "var(--pf-v5-global--BackgroundColor--dark-400)",
+    lineHighlight: "#F0F0F033", // var(--pf-v5-global--BackgroundColor--dark-400) with 33% opacity
   },
   styles: [
     { tag: [t.standard(t.tagName), t.tagName], color: "var(--pf-v5-global--palette--orange-200)" },
