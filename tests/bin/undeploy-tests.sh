@@ -9,20 +9,38 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 # in travis this can help us see whether there are straggler
 # namespaces, etc.
 function report_stragglers {
-    echo "Checking for stragglers"
+    echo "Checking for straggler NAMESPACES"
     $KUBECTL get ns
-    $KUBECTL get application -A
-    $KUBECTL get workerpools -A
-    $KUBECTL get workdispatchers -A
-    $KUBECTL get datasets -A
-    echo "Done checking for stragglers"
+
+    echo "Checking for straggler PODS"
+    $KUBECTL get pod -n codeflare-test
+
+    echo "Checking for straggler APPLICATIONS"
+    $KUBECTL get application -n codeflare-test
+    
+    echo "Checking for straggler WORKERPOOLS"
+    $KUBECTL get workerpools -n codeflare-test
+
+    echo "Checking for straggler WORKDISPATCHERS"
+    $KUBECTL get workdispatchers -n codeflare-test
+
+    echo "Checking for straggler DATASETS"
+    $KUBECTL get datasets -n codeflare-test
+
+    echo "Run controller logs"
+    TAIL=1000 "$SCRIPTDIR"/../../hack/logs/run.sh
 
     # since we are only here if there was a failure
-    exit 1
+    return 1
 }
 
+# retry once after failure; this may help to cope with `etcdserver:
+# request timed out` errors
 echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
-$HELM delete --ignore-not-found codeflare-tests --wait || report_stragglers
+$HELM delete --ignore-not-found codeflare-tests --wait || \
+    report_stragglers || \
+    $HELM delete --ignore-not-found codeflare-tests --wait || \
+    report_stragglers
 
 if [[ -n "$RUNNING_CODEFLARE_TESTS" ]]
 then
