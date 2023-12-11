@@ -39,6 +39,8 @@ spec:
                 # helm fields: [repo]
                 repo:
                   type: string
+                values:
+                  type: string
                 env:
                   type: object
                   additionalProperties:

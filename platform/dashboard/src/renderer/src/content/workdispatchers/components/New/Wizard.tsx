@@ -78,6 +78,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
         max: previousValues?.max ?? "5",
         step: previousValues?.step ?? "1",
         repo: previousValues?.repo ?? "",
+        values: previousValues?.values ?? "",
       }
     },
     [nameFromSearch],

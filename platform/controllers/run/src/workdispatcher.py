@@ -12,7 +12,7 @@ from status import set_status, add_error_condition, set_status_after_clone_failu
 #
 # Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep or method=helm
 #
-def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch, path_to_chart = ""):
+def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch, path_to_chart = "", values = ""):
     method = spec['method']
     dataset = spec['dataset']
     injectedTasksPerInterval = spec['rate']['tasks'] if "rate" in spec else 1
@@ -49,6 +49,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
             dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
             path_to_chart,
+            values,
         ], capture_output=True)
         logging.info(f"WorkDispatcher callout done for name={name} with returncode={out.returncode}")
     except Exception as e:
@@ -80,6 +81,7 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
         set_status_after_clone_failure(customApi, name, namespace, e, patch)
     
     path_to_chart = os.path.join(workdir, cloned_subPath)
-    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, dataset_labels, patch, path_to_chart)
+    values = spec['values'] if 'values' in spec else ""
+    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, dataset_labels, patch, path_to_chart, values)
 
     

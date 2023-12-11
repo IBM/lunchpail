@@ -57,6 +57,7 @@ export default function Code(props: Props) {
       onChange={props.onChange}
       extensions={extensions}
       theme={patternflyTheme}
+      minHeight="250px"
     />
   )
 }

@@ -21,12 +21,20 @@ sweepStep="${12}"
 dataset_name="${13}"
 datasets="${14}"
 path_to_chart="${15-$SCRIPTDIR/workdispatcher}"
+values="${16}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
 echo "Dry running to $DRY" 1>&2
 
-helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace} \
+if [[ -n "$values" ]]
+then
+    VALUES="$(mktemp).json"
+    echo "$values" > $VALUES
+    VALUES_ARG="-f $VALUES"
+fi
+
+helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace} ${VALUES_ARG} \
      --set uid=$uid \
      --set name=$name \
      --set image=$image \
@@ -47,4 +55,5 @@ helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace
           > $DRY
 
 kubectl apply -f $DRY 1>&2
-# rm $DRY
+rm -f $DRY
+# if [[ -f $VALUES ]]; then rm -f $VALUES; fi

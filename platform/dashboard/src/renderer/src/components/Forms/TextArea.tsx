@@ -27,7 +27,7 @@ export default function TextArea(
     <Group {...props}>
       {props.language ? (
         <Code language={props.language} showLineNumbers={props.showLineNumbers ?? false} onChange={onChangeForCode}>
-          {String(value)}
+          {value === undefined ? "" : String(value)}
         </Code>
       ) : (
         <PFTextArea rows={props.rows} aria-label={`${props.fieldId} text area`} value={value} onChange={onChange} />

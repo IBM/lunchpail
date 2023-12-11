@@ -31,6 +31,14 @@ data:
     then echo "min=$SWEEP_MIN max=$SWEEP_MAX step=$SWEEP_STEP"
     fi
 
+    # test injected values from -f values.yaml
+    # taskprefix2 can be used to test that e.g. numerical values are processed correctly
+    if [[ -n "$taskprefix" ]]
+    then taskprefix=${taskprefix}${taskprefix2}
+    else taskprefix=task
+    fi
+    echo "got value taskprefix=$taskprefix"
+
     printenv
 
     config=/tmp/rclone.conf
@@ -55,7 +63,7 @@ data:
     then
       for parameter_value in $(seq $SWEEP_MIN $SWEEP_STEP $SWEEP_MAX)
       do
-        task=/tmp/task.${idx}.txt
+        task=/tmp/${taskprefix}.${idx}.txt
         idx=$((idx + 1))
 
         echo "Injecting task=$task parameter_value=${parameter_value}"
@@ -77,7 +85,7 @@ data:
     do
       for i in $(seq 1 $TASKS)
       do
-        task=/tmp/task-$(cat /proc/sys/kernel/random/uuid).txt
+        task=/tmp/${taskprefix}-$(cat /proc/sys/kernel/random/uuid).txt
         echo "Injecting task=$task format=${FORMAT-generic}"
 
         if [[ $FORMAT = parquet ]] && [[ -n "$COLUMNS" ]] && [[ -n "$COLUMN_TYPES" ]]

@@ -12,6 +12,7 @@ type Values = DefaultValues<
     max: string
     step: string
     repo: string
+    values: string
   } & {
     name: string
     namespace: string

@@ -37,6 +37,21 @@ spec:
           value: '10'
         - name: SWEEP_STEP
           value: '1'
+
+        - name: taskprefix
+          {{- if .Values.taskprefix }}
+          value: {{ .Values.taskprefix.a | default "nope" | quote }}
+          {{- else }}
+          value: nope
+          {{- end }}
+
+        - name: taskprefix2
+          {{- if .Values.taskprefix }}
+          value: {{ .Values.taskprefix.b | default "" | quote }}
+          {{- else }}
+          value: nope
+          {{- end }}
+
         {{- include "codeflare.dev/queue.env.dataset" . | indent 8 }}
 
   # shell script from configmap
