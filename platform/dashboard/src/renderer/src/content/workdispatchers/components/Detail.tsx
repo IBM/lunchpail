@@ -1,5 +1,7 @@
+import { useMemo } from "react"
+
 import DrawerContent from "@jay/components/Drawer/Content"
-import { dl, descriptionGroup } from "@jay/components/DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import { summaryGroups } from "./Card"
 import { status } from "@jay/resources/workdispatchers/status"
@@ -47,11 +49,17 @@ function statusGroups(props: Props) {
 }
 
 export default function WorkDispatcherDetail(props: Props) {
+  const {
+    metadata: { name, namespace },
+  } = props.workdispatcher
+  const isOk = !/Fail/.test(status(props.workdispatcher))
+  const otherTabs = useMemo(() => (!isOk ? [] : [LogsTab(name, namespace)]), [isOk, name, namespace])
+
   return (
     <DrawerContent
-      summary={dl({ groups: [...statusGroups(props), ...summaryGroups(props)] })}
+      summary={<DescriptionList groups={[...statusGroups(props), ...summaryGroups(props)]} />}
       raw={props.workdispatcher}
-      otherTabs={[LogsTab(props)]}
+      otherTabs={otherTabs}
       actions={[...correctiveActions(props.workdispatcher)]}
       rightActions={[deleteAction(props)]}
     />
