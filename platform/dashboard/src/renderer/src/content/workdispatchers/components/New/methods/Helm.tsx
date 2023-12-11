@@ -16,6 +16,7 @@ const values = (ctrl: Values) => (
     label="Values"
     labelInfo="Provide this in YAML format"
     rows={10}
+    showLineNumbers
     language="yaml"
     isRequired={false}
     description="Optional override values to apply to the installation"
@@ -26,6 +27,11 @@ const values = (ctrl: Values) => (
 /** Configuration items for a Helm-based WorkDispatcher */
 export default [repo, values]
 
+/**
+ * Here we validate the values as yaml. If the text cannot be parsed
+ * as such, we will report the parse errors to the user via an Alert
+ * spec.
+ */
 export function helmIsValid({ values }: Values["values"]) {
   try {
     load(values)
