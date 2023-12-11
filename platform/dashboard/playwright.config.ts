@@ -27,6 +27,12 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
+  /* Setting a test timeout in miliseconds for all tests. See https://playwright.dev/docs/test-timeouts#set-test-timeout-in-the-config*/
+  timeout: 120000,
+  /* Setting a timeout in miliseconds for 'expects' assertions. See https://playwright.dev/docs/test-timeouts#expect-timeout*/
+  expect: {
+    timeout: 120000,
+  },
   /* Run your local dev server before starting the tests */
   // webServer: {
   //   command: 'npm run start',

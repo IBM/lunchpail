@@ -89,11 +89,11 @@ test.describe.serial("workers tests running sequentially", () => {
 
     // check that the new card contains the expectedApp
     const code = await card.locator(`[data-ouia-component-id="${name}"]`)
-    await expect(code).toContainText(expectedApp, { timeout: 60000 })
+    await expect(code).toContainText(expectedApp)
 
     // we have removed taskqueues from the Card
     // const taskqueue = await card.locator(`[data-ouia-component-id="Task Queues"]`)
-    // await expect(taskqueue).toContainText(expectedTaskQueue, { timeout: 60000 })
+    // await expect(taskqueue).toContainText(expectedTaskQueue)
   })
 
   test("Trash button opens 'Confirm Delete' modal", async () => {

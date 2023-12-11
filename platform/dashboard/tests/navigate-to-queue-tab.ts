@@ -24,18 +24,18 @@ export default async function navigateToQueues(page: Page, application: string, 
   const queueManagerTab = await drawer.locator(
     `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Tasks"]`,
   )
-  await expect(queueManagerTab).toBeVisible({ timeout: 60000 })
+  await expect(queueManagerTab).toBeVisible()
 
   await queueManagerTab.click()
 
   const tasks = await drawer.locator(
     `[data-ouia-component-type="PF5/DescriptionList"][data-ouia-component-id="${taskqueue}"]`,
   )
-  await expect(tasks).toBeVisible({ timeout: 120000 })
+  await expect(tasks).toBeVisible()
 }
 
 export async function navigateToTab(tabLocator: Locator, tabName: string) {
   const tab = await tabLocator.locator(`[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id=${tabName}]`)
-  await expect(tab).toBeVisible({ timeout: 60000 })
+  await expect(tab).toBeVisible()
   await tab.click()
 }

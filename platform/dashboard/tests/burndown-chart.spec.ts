@@ -58,7 +58,7 @@ test.skip("burn down charts are visible", async () => {
         const tasksOverTime = await drawer.locator(
           `[data-ouia-component-type="PF5/DescriptionListGroup"][data-ouia-component-id="Unassigned Tasks over Time"]`,
         )
-        await expect(tasksOverTime).toBeVisible({ timeout: 60000 })
+        await expect(tasksOverTime).toBeVisible()
       }
     }
   }

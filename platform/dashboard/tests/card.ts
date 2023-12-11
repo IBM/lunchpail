@@ -10,7 +10,7 @@ export async function missingCard(page: Page, id: string) {
 
 export async function visibleCard(page: Page, id: string) {
   const c = await card(page, id)
-  await expect(c).toBeVisible({ timeout: 120000 })
+  await expect(c).toBeVisible()
   return c
 }
 
