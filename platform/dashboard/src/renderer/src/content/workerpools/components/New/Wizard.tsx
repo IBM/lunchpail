@@ -26,9 +26,13 @@ type Props = {
 }
 
 const targetOptions: TileOptions = [
-  { title: "Locally", value: "local", description: "Run the workers on your laptop" },
   {
-    title: "Kubernetes",
+    title: "Local",
+    value: "local",
+    description: "Run the workers on your laptop, as Pods in a local Kubernetes cluster that will be managed for you",
+  },
+  {
+    title: "Existing Kubernetes Cluster",
     value: "kubernetes",
     description: "Run the workers as Pods in an existing Kubernetes cluster",
     isDisabled: true,
@@ -118,7 +122,7 @@ export default function NewWorkerPoolWizard(props: Props) {
         ctrl={ctrl}
         fieldId="target"
         label="Compute Target"
-        description="Where should the workers run?"
+        description="Choose a target method for running the workers"
         options={targetOptions}
       />
     )
