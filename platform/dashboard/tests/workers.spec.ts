@@ -1,7 +1,9 @@
 // @ts-check
 import { Page, expect, test } from "@playwright/test"
+
 import launchElectron from "./launch-electron"
 import expectedApplications from "./applications"
+import { visibleCard, missingCard } from "./card"
 import { navigateToCard, navigateToTab } from "./navigate-to-queue-tab"
 
 import { name } from "../src/renderer/src/content/applications/name"
@@ -83,8 +85,7 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(computePoolDrawer).toBeVisible()
 
     // check that there is a card that matches the newly created computePoolName
-    const card = await page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${computePoolName}]`)
-    await expect(card).toBeVisible()
+    const card = await visibleCard(page, computePoolName)
 
     // check that the new card contains the expectedApp
     const code = await card.locator(`[data-ouia-component-id="${name}"]`)
@@ -117,9 +118,6 @@ test.describe.serial("workers tests running sequentially", () => {
     await advanced.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute" }).click()
 
     // Now verify that there is no card that matches the previously created compute pool
-    const appCard = await page.locator(
-      `[data-ouia-component-type="PF5/Card"][data-ouia-component-id=${computePoolName}]`,
-    )
-    await expect(appCard).toHaveCount(0)
+    await missingCard(page, computePoolName)
   })
 })

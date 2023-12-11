@@ -1,5 +1,7 @@
 import { expect, Locator, type Page } from "@playwright/test"
 
+import { visibleCard } from "./card"
+
 export async function verifyDrawerVisible(page: Page, application: string) {
   const drawerId = "applications." + application
   const drawer = await page.locator(
@@ -10,14 +12,8 @@ export async function verifyDrawerVisible(page: Page, application: string) {
 }
 
 export async function navigateToCard(page: Page, application: string) {
-  const appCardSelector = [`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${application}"]`].join(" ")
-  const appCard = page.locator(appCardSelector)
-
-  await expect(appCard)
-    .toBeVisible({
-      timeout: 60000,
-    })
-    .then(() => console.log("got application for taskqueue", application))
+  const appCard = await visibleCard(page, application)
+  console.log("got application for taskqueue", application)
 
   await appCard.click()
   return await verifyDrawerVisible(page, application)

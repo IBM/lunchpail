@@ -1,5 +1,8 @@
 // @ts-check
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
+
+import applications from "./applications"
+import { visibleCard } from "./card"
 import launchElectron from "./launch-electron"
 
 import { name } from "../src/renderer/src/content/applications/name"
@@ -21,15 +24,9 @@ test("4 applications visible when in demo mode", async () => {
     await page.getByRole("link", { name }).click()
 
     // Verify that the four showing are the salamander, pig, grasshopper, and worm cards
-    const expectedCards = ["salamander", "pig", "grasshopper", "worm"]
-
     await Promise.all(
-      expectedCards.map((id) =>
-        expect(page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${id}"]`))
-          .toBeVisible({
-            timeout: 60000,
-          })
-          .then(() => console.log("got application", id)),
+      applications.map(({ application }) =>
+        visibleCard(page, application).then(() => console.log("got application", application)),
       ),
     )
   }

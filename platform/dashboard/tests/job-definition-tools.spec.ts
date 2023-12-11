@@ -1,6 +1,8 @@
 // @ts-check
 import { Page, expect, test } from "@playwright/test"
+
 import launchElectron from "./launch-electron"
+import { missingCard } from "./card"
 import expectedApplications from "./applications"
 import { navigateToCard } from "./navigate-to-queue-tab"
 import { name } from "../src/renderer/src/content/applications/name"
@@ -42,7 +44,6 @@ test.describe.serial("job definition tools running sequentially", () => {
     await page.getByRole("button", { name: "Confirm" }).click()
 
     // verify that intended job definition was deleted
-    const appCard = page.locator(`[data-ouia-component-type="PF5/Card"][data-ouia-component-id="${expectedApp}"]`)
-    await expect(appCard).toHaveCount(0)
+    await missingCard(page, expectedApp)
   })
 })

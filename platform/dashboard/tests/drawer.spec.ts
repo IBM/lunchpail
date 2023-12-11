@@ -1,6 +1,8 @@
 // @ts-check
-import { ElectronApplication, Page, expect, test } from "@playwright/test"
+import { ElectronApplication, type Page, expect, test } from "@playwright/test"
+import applications from "./applications"
 import launchElectron from "./launch-electron"
+import { clickOnCard } from "./card"
 
 import { name } from "../src/renderer/src/content/applications/name"
 
@@ -8,7 +10,9 @@ test.describe.serial("Drawer tests running sequentially", () => {
   let electronApp: ElectronApplication
   let page: Page
   let demoModeStatus: boolean
-  let expectedCard = "worm"
+
+  const expectedCard1 = applications[3].application
+  const expectedCard2 = applications[2].application
 
   test("drawer opens", async () => {
     // Launch Electron app.
@@ -27,10 +31,10 @@ test.describe.serial("Drawer tests running sequentially", () => {
       await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
 
       // click on one of the cards
-      await page.locator(`[data-ouia-component-id="${expectedCard}"]`).click()
+      await clickOnCard(page, expectedCard1)
 
       // check that the drawer for that card opened
-      const id = "applications." + expectedCard
+      const id = "applications." + expectedCard1
       const drawer = await page.locator(
         `[data-ouia-component-type="PF5/DrawerPanelContent"][data-ouia-component-id="${id}"]`,
       )
@@ -38,7 +42,7 @@ test.describe.serial("Drawer tests running sequentially", () => {
 
       // verify that the drawer that opened matched the card that was clicked
       const drawerTitle = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`)
-      await expect(drawerTitle).toContainText(expectedCard)
+      await expect(drawerTitle).toContainText(expectedCard1)
     }
   })
 
@@ -46,11 +50,10 @@ test.describe.serial("Drawer tests running sequentially", () => {
     // If in demo mode, then continue with test to check that drawer content changed
     if (demoModeStatus) {
       // click a different card than the one that was used to open the drawer
-      expectedCard = "pig"
-      await page.locator(`[data-ouia-component-id="${expectedCard}"]`).click()
+      await clickOnCard(page, expectedCard2)
 
       // verify that the drawer is still open and visible
-      const id = "applications." + expectedCard
+      const id = "applications." + expectedCard2
       const drawer = await page.locator(
         `[data-ouia-component-type="PF5/DrawerPanelContent"][data-ouia-component-id="${id}"]`,
       )
@@ -58,7 +61,7 @@ test.describe.serial("Drawer tests running sequentially", () => {
 
       // verify that the drawer content changed
       const drawerTitle = await drawer.locator(`[data-ouia-component-type="PF5/Title"]`)
-      await expect(drawerTitle).toContainText(expectedCard)
+      await expect(drawerTitle).toContainText(expectedCard2)
     }
   })
 
@@ -66,10 +69,10 @@ test.describe.serial("Drawer tests running sequentially", () => {
     // If in demo mode, then continue with test to close drawer
     if (demoModeStatus) {
       // click the card that was used to open the drawer
-      await page.locator(`[data-ouia-component-id="${expectedCard}"]`).click()
+      await clickOnCard(page, expectedCard2)
 
       // verify that the drawer is closed
-      const id = "applications." + expectedCard
+      const id = "applications." + expectedCard2
       const drawer = await page.locator(
         `[data-ouia-component-type="PF5/DrawerPanelContent"][data-ouia-component-id="${id}"]`,
       )
