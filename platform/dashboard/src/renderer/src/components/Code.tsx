@@ -70,7 +70,7 @@ const patternflyTheme = createTheme({
     caret: "#c9d1d9",
     selection: "#2b9af350", // --pf-v5-global--palette--blue-50 with 50% opacity
     selectionMatch: "var(--pf-v5-global--palette--light-blue-300)",
-    lineHighlight: "#F0F0F020", // var(--pf-v5-global--BackgroundColor--dark-400) with 20% opacity
+    lineHighlight: "#F0F0F018", // var(--pf-v5-global--BackgroundColor--dark-400) with 18% opacity
   },
   styles: [
     { tag: [t.standard(t.tagName), t.tagName], color: "var(--pf-v5-global--palette--orange-200)" },
