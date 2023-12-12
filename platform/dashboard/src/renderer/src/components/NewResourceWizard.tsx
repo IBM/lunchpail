@@ -34,19 +34,13 @@ import { returnHomeCallback, returnHomeCallbackWithEntity } from "../navigate/ho
 import Input from "./Forms/Input"
 import TextArea from "./Forms/TextArea"
 import remember from "./Forms/remember"
+import DefaultValues from "./Forms/Values"
 
 import type { DetailableKind } from "../content"
 
 import "./Wizard.scss"
 
-/**
- * This is a generic version of FormContextProps that allows the
- * concrete impls to have type safety over their form values.
- */
-export type DefaultValues<Values extends FormContextProps["values"] = FormContextProps["values"]> = {
-  setValue: FormContextProps["setValue"]
-  values: Values
-}
+export { type DefaultValues }
 
 /** We have some built-in support for these common Form elements ("FormItem") */
 type KnownFormItem = "name" | "namespace" | "description"

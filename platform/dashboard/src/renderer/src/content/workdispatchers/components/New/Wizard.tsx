@@ -90,7 +90,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
   )
 
   const action = "register"
-  const title = `Start ${singular}`
+  const title = `Start a ${singular}`
   const steps = [step1, step2, step3]
 
   return (

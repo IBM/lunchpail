@@ -1,16 +1,19 @@
 import removeAccents from "remove-accents"
+import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
-
-import { type FormContextProps } from "@patternfly/react-core"
 
 import Input from "@jay/components/Forms/Input"
 import NumberInput from "@jay/components/Forms/NumberInput"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
+import KubernetesContexts from "@jay/components/Forms/KubernetesContexts"
 
 import { singular as workerpoolsSingular } from "@jay/resources/workerpools/name"
 import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
+
+import type Target from "./Target"
+import type Values from "./Values"
 
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -20,7 +23,7 @@ type Props = {
   applications: ApplicationSpecEvent[]
 }
 
-const targetOptions: TileOptions = [
+const targetOptions: TileOptions<Target> = [
   {
     title: "Local",
     value: "local",
@@ -30,7 +33,6 @@ const targetOptions: TileOptions = [
     title: "Existing Kubernetes Cluster",
     value: "kubernetes",
     description: "Run the workers as Pods in an existing Kubernetes cluster",
-    isDisabled: true,
   },
   {
     title: "IBM Cloud VSIs",
@@ -52,8 +54,10 @@ export default function NewWorkerPoolWizard(props: Props) {
     : props.applications
 
   /** Initial value for form */
-  function defaults() {
+  const defaults = useCallback((previousValues?: Values["values"]) => {
     return {
+      target: previousValues?.target ?? "local",
+      kubecontext: previousValues?.kubecontext ?? "",
       name:
         (searchedTaskQueue ? searchedTaskQueue + "-pool-" : "") +
         removeAccents(
@@ -68,9 +72,9 @@ export default function NewWorkerPoolWizard(props: Props) {
           ? props.taskqueues[0].metadata.name
           : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue),
     }
-  }
+  }, [])
 
-  function application(ctrl: FormContextProps) {
+  function application(ctrl: Values) {
     return (
       <Input
         readOnlyVariant="default"
@@ -82,7 +86,7 @@ export default function NewWorkerPoolWizard(props: Props) {
     )
   }
 
-  function targets(ctrl: FormContextProps) {
+  function targets(ctrl: Values) {
     return (
       <Tiles
         ctrl={ctrl}
@@ -96,16 +100,16 @@ export default function NewWorkerPoolWizard(props: Props) {
 
   const stepTarget = {
     name: "Target",
-    items: [targets],
+    items: (values) => [targets, ...(values.target === "kubernetes" ? [KubernetesContexts<Values>] : [])],
   }
 
   const stepConfigure = {
     name: "Configure",
-    isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
+    isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
     items: ["name" as const, application, /* taskqueue, */ numWorkers],
   }
 
-  function yaml(values: FormContextProps["values"]) {
+  function yaml(values: Values["values"]) {
     const applicationSpec = props.applications.find((_) => _.metadata.name === values.application)
     if (!applicationSpec) {
       console.error("Internal error: Application spec not found", values.application)
@@ -135,7 +139,7 @@ spec:
   const title = `Create ${workerpoolsSingular}`
   const steps = [stepTarget, stepConfigure]
   return (
-    <NewResourceWizard
+    <NewResourceWizard<Values>
       kind="workerpools"
       title={title}
       singular={workerpoolsSingular}
@@ -176,7 +180,7 @@ function supportsTaskQueue(app: ApplicationSpecEvent, taskqueue: string) {
 }
 
 /** Form element to choose number of workers in this new Worker Pool */
-function numWorkers(ctrl: FormContextProps) {
+function numWorkers(ctrl: Values) {
   return (
     <NumberInput
       min={1}

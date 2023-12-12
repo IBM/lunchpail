@@ -128,8 +128,13 @@ export function initEvents() {
     ipcMain.once(logsCloseChannel(selector, namespace), close)
   })
 
+  // list available Kubernetes contexts
+  ipcMain.handle("/kubernetes/contexts", () => import("./kubernetes/contexts").then((_) => _.get()))
+
   // resource get request
-  ipcMain.handle("/get", (_, props: string) => import("./get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)))
+  ipcMain.handle("/get", (_, props: string) =>
+    import("./kubernetes/get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)),
+  )
 
   ipcMain.handle("/s3/listProfiles", () => import("./s3/listProfiles").then((_) => _.default()))
 
@@ -154,15 +159,15 @@ export function initEvents() {
 
   // resource create request
   ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
-    import("./create").then((_) => _.onCreate(yaml, "apply", dryRun)),
+    import("./kubernetes/create").then((_) => _.onCreate(yaml, "apply", dryRun)),
   )
 
   // resource delete request given the yaml spec
-  ipcMain.handle("/delete/yaml", (_, yaml: string) => import("./create").then((_) => _.onDelete(yaml)))
+  ipcMain.handle("/delete/yaml", (_, yaml: string) => import("./kubernetes/create").then((_) => _.onDelete(yaml)))
 
   // resource delete request by name
   ipcMain.handle("/delete/name", (_, props: string) =>
-    import("./create").then((_) => _.onDeleteByName(JSON.parse(props) as DeleteProps)),
+    import("./kubernetes/create").then((_) => _.onDeleteByName(JSON.parse(props) as DeleteProps)),
   )
 
   // control plane status request
@@ -272,6 +277,18 @@ const apiImpl: JayApi = Object.assign(
       ): Promise<string> {
         return ipcRenderer.invoke("/s3/getObject", endpoint, accessKey, secretKey, bucket, object)
       },
+    },
+
+    /** Available Kubernetes contexts */
+    async contexts(): Promise<{ contexts: string[]; current: string }> {
+      const response = await ipcRenderer.invoke("/kubernetes/contexts")
+      if (response === true) {
+        throw new Error("Internal error")
+      } else if (response.code === 0) {
+        return JSON.parse(response.message)
+      } else {
+        throw new Error(response.message)
+      }
     },
 
     /** Fetch a resource */

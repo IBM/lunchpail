@@ -38,7 +38,8 @@ function httpsIfNeeded(url: string) {
   }
 }
 
-const noLeftPadding = { paddingLeft: 0 }
+const leftJustify = { justifyContent: "flex-start" as const }
+const noLeftPadding = { paddingLeft: 0, fontSize: "inherit" as const }
 
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false || description === "true" || description === "false") {
@@ -61,7 +62,7 @@ function dd(description: ReactNode | Record<string, string>) {
           noLeftPadding /* isInline is the nominal way to do this, but it is not compatible with our use of Truncate */
         }
       >
-        <Truncate content={description} />
+        <Truncate content={description} style={leftJustify} />
       </Button>
     )
   } else if (description && typeof description === "object" && !isValidElement(description)) {

@@ -8,14 +8,17 @@ import type { Ctrl, FormProps } from "./Props"
 
 import "./Tiles.css"
 
-export type TileOption = Pick<TileProps, "title" | "icon" | "isDisabled"> & { description: ReactNode; value?: string }
+export type TileOption<T extends string = string> = Pick<TileProps, "title" | "icon" | "isDisabled"> & {
+  description: ReactNode
+  value?: T
+}
 
-export type TileOptions = NonEmptyArray<TileOption>
+export type TileOptions<T extends string = string> = NonEmptyArray<TileOption<T>>
 
 export default function Tiles(props: FormProps & Ctrl & { options: TileOptions; currentSelection?: string }) {
   //const [selected, setSelected] = useState(props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title)
   const selected =
-    props.selected ?? props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title
+    props.currentSelection ?? props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title
 
   const onClick = useCallback(
     (evt: MouseEvent) => {
@@ -35,7 +38,7 @@ export default function Tiles(props: FormProps & Ctrl & { options: TileOptions; 
           <Tile
             className="codeflare--tile"
             isStacked
-            key={tile.title}
+            key={tile.value ?? tile.title}
             icon={tile.icon}
             onClick={onClick}
             title={tile.title}
