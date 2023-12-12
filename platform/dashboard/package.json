@@ -31,7 +31,6 @@
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.1",
     "@patternfly/react-core": "^5.1.2",
-    "@patternfly/react-log-viewer": "^5.0.0",
     "@sindresorhus/merge-streams": "^1.0.0",
     "@uiw/codemirror-themes": "^4.21.21",
     "@uiw/react-codemirror": "^4.21.21",
