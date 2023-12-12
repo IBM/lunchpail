@@ -16,15 +16,40 @@ import {
   PageToggleButton,
   Toolbar,
   ToolbarContent,
+  ToolbarGroup,
 } from "@patternfly/react-core"
 
 import { description } from "../../../../package.json"
 
 import { inline, noPadding } from "./constants"
 
+import DarkModeToggle from "../components/DarkModeToggle"
+
 import BarsIcon from "@patternfly/react-icons/dist/esm/icons/bars-icon"
 
 import "./PageWithMastheadAndModal.scss"
+
+export type PageWithMastheadAndModalProps = {
+  /** Title to be rendered in the header */
+  title: ReactNode
+
+  /** Subtitle to be rendered in the header */
+  subtitle: ReactNode
+
+  /** Actions to be rendered in the header */
+  actions?: ReactNode
+
+  /** Content to be rendered in a popup modal dialog */
+  modal?: ReactNode
+
+  /** Content to be rendered in the hamburger sidebar */
+  sidebar: ReactNode
+}
+
+/**
+ * `props.children` will be rendered as the main body of the page
+ */
+type Props = PropsWithChildren<PageWithMastheadAndModalProps>
 
 function HeaderToggle() {
   return (
@@ -50,12 +75,18 @@ function Header() {
   )
 }
 
+const alignRight = { default: "alignRight" as const }
+
 function HeaderToolbar() {
   return (
     <Toolbar>
       <ToolbarContent>
-        <HeaderToolbarLeftGroup />
-        <HeaderToolbarRightGroup />
+        <ToolbarGroup>
+          <HeaderToolbarLeftGroup />
+        </ToolbarGroup>
+        <ToolbarGroup align={alignRight}>
+          <HeaderToolbarRightGroup />
+        </ToolbarGroup>
       </ToolbarContent>
     </Toolbar>
   )
@@ -66,30 +97,8 @@ function HeaderToolbarLeftGroup() {
 }
 
 function HeaderToolbarRightGroup() {
-  return <></>
+  return <DarkModeToggle />
 }
-
-export type PageWithMastheadAndModalProps = {
-  /** Title to be rendered in the header */
-  title: ReactNode
-
-  /** Subtitle to be rendered in the header */
-  subtitle: ReactNode
-
-  /** Actions to be rendered in the header */
-  actions?: ReactNode
-
-  /** Content to be rendered in a popup modal dialog */
-  modal?: ReactNode
-
-  /** Content to be rendered in the hamburger sidebar */
-  sidebar: ReactNode
-}
-
-/**
- * `props.children` will be rendered as the main body of the page
- */
-type Props = PropsWithChildren<PageWithMastheadAndModalProps>
 
 export default function PageWithMastheadAndModal(props: Props) {
   const actions = useMemo(() => (!props.actions ? undefined : { actions: props.actions }), [props.actions])

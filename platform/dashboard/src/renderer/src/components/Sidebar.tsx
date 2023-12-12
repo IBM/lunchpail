@@ -6,7 +6,7 @@ import type ContentProvider from "../content/ContentProvider"
 import type NavigableKind from "../content/NavigableKind"
 import ControlPlaneHealthBadge from "../content/controlplane/components/HealthBadge"
 
-import Configuration from "../components/Configuration"
+import Configuration from "./Configuration"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
 
 import "./Sidebar.scss"
