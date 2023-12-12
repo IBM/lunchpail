@@ -220,6 +220,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
                         pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
                     except ApiException as e:
                         logging.error(f"Error patching WorkerPool on pod event name={name} phase={phase}. {str(e)}")
+                        return
 
                     ready = int(pool['metadata']['annotations']["codeflare.dev/ready"]) if "codeflare.dev/ready" in pool['metadata']['annotations'] else 0
                     patch_body = { "metadata": { "annotations": { "codeflare.dev/ready": str(ready + 1) } } }
@@ -229,8 +230,10 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
                         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace, body=patch_body)
                     except ApiException as e:
                         logging.error(f"Error patching WorkerPool (1) on pod status update pool_name={pool_name} phase={phase}. {str(e)}")
+                        return
             except Exception as e:
                 logging.error(f"Error patching WorkerPool (2) on pod status update name={name} phase={phase}. {str(e)}")
+                return
 
         run_name = labels["app.kubernetes.io/part-of"]
         logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")

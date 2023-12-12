@@ -30,6 +30,12 @@ function report_stragglers {
     echo "Run controller logs"
     TAIL=1000 "$SCRIPTDIR"/../../hack/logs/run.sh
 
+    echo "codeflare-test pod logs"
+    $KUBECTL logs -n codeflare-test -l app.kubernetes.io/managed-by=codeflare.dev
+
+    echo "codeflare-test events"
+    $KUBECTL get events -n codeflare-test
+    
     # since we are only here if there was a failure
     return 1
 }
