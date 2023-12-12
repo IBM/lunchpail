@@ -1,21 +1,16 @@
-import { useMemo } from "react"
 import removeAccents from "remove-accents"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
 import { type FormContextProps } from "@patternfly/react-core"
 
-import TaskQueueIcon from "@jay/resources/taskqueues/components/Icon"
-import ApplicationIcon from "@jay/resources/applications/components/Icon"
-
-import Select from "@jay/components/Forms/Select"
+import Input from "@jay/components/Forms/Input"
 import NumberInput from "@jay/components/Forms/NumberInput"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 
-import { singular as taskqueuesSingular } from "@jay/resources/taskqueues/name"
 import { singular as workerpoolsSingular } from "@jay/resources/workerpools/name"
-import { singular as applicationsSingular } from "@jay/resources/applications/name"
+import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
 
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -56,19 +51,6 @@ export default function NewWorkerPoolWizard(props: Props) {
     ? props.applications.filter((app) => supportsTaskQueue(app, searchedTaskQueue))
     : props.applications
 
-  /** Presented Select options of Applications */
-  const applicationOptions = useMemo(
-    () =>
-      compatibleApplications.map((_) => ({
-        value: _.metadata.name,
-        description: <div className="codeflare--max-width-30em">{_.spec.description}</div>,
-      })),
-    [searchedTaskQueue, props.applications],
-  )
-
-  /** Presented Select options of TaskQueues */
-  const taskqueueOptions = useMemo(() => props.taskqueues.map((_) => _.metadata.name), [props.taskqueues])
-
   /** Initial value for form */
   function defaults() {
     return {
@@ -90,28 +72,12 @@ export default function NewWorkerPoolWizard(props: Props) {
 
   function application(ctrl: FormContextProps) {
     return (
-      <Select
+      <Input
+        readOnlyVariant="default"
         fieldId="application"
         label={applicationsSingular}
-        description={`Choose the ${applicationsSingular} code this pool should run`}
+        description={`The workers in this ${workerpoolsSingular} will run the code specified by this ${applicationsSingular}`}
         ctrl={ctrl}
-        options={applicationOptions}
-        icons={compatibleApplications.map((application) => (
-          <ApplicationIcon application={application} />
-        ))}
-      />
-    )
-  }
-
-  function taskqueue(ctrl: FormContextProps) {
-    return (
-      <Select
-        ctrl={ctrl}
-        fieldId="taskqueue"
-        icons={<TaskQueueIcon />}
-        options={taskqueueOptions}
-        label={taskqueuesSingular}
-        description={`Choose the ${taskqueuesSingular} this pool should process`}
       />
     )
   }
@@ -122,7 +88,7 @@ export default function NewWorkerPoolWizard(props: Props) {
         ctrl={ctrl}
         fieldId="target"
         label="Compute Target"
-        description="Choose a target method for running the workers"
+        description="Where do you want the workers to run?"
         options={targetOptions}
       />
     )
@@ -136,7 +102,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   const stepConfigure = {
     name: "Configure",
     isValid: (ctrl: FormContextProps) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
-    items: ["name" as const, application, taskqueue, numWorkers],
+    items: ["name" as const, application, /* taskqueue, */ numWorkers],
   }
 
   function yaml(values: FormContextProps["values"]) {

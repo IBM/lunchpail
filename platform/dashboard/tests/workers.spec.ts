@@ -11,7 +11,7 @@ import { name } from "../src/renderer/src/content/applications/name"
 test.describe.serial("workers tests running sequentially", () => {
   let page: Page
   let computePoolName: string
-  const { application: expectedApp, taskqueue: expectedTaskQueue } = expectedApplications[0]
+  const { application: expectedApp } = expectedApplications[0]
 
   test("Navigate to Compute tab for application", async () => {
     // Launch Electron app.
@@ -42,17 +42,24 @@ test.describe.serial("workers tests running sequentially", () => {
   })
 
   test("Click Next to get to the Configure wizard step", async () => {
-    const nextButton = await page.getByRole("button", { name: "Next" })
+    const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
+    const nextButton = await modal.getByRole("button", { name: "Next" })
     await expect(nextButton).toBeVisible()
     await nextButton.click()
   })
 
   test("'Create Compute Pool' modal is autopopulated", async () => {
+    const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
+
     // check that 'Definition' drop down matches expectedApp
-    await expect(page.getByRole("button", { name: expectedApp })).toBeVisible()
+    const input = await modal.locator('input[name="application"]') // getByRole("input", { name: "application" }))
+    await expect(input).toBeVisible()
+    await expect(input).toHaveCount(1)
+    await expect(input).toHaveValue(expectedApp)
 
     // check that 'Task Queue' drop down matches expectedTaskQueue
-    await expect(page.getByRole("button", { name: expectedTaskQueue })).toBeVisible()
+    // no longer shown in the UI
+    // await expect(modal.getByRole("button", { name: expectedTaskQueue })).toBeVisible()
   })
 
   test("Clicking 'Next' and 'Register Compute Pool' in modal", async () => {
