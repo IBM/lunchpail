@@ -27,6 +27,11 @@ const values = (ctrl: Values) => (
 /** Configuration items for a Helm-based WorkDispatcher */
 export default [repo, values]
 
+/** This helps with pretty-printing Errors */
+function hasMessage(err: unknown): err is Error {
+  return typeof (err as { message: string }).message === "string"
+}
+
 /**
  * Here we validate the values as yaml. If the text cannot be parsed
  * as such, we will report the parse errors to the user via an Alert
@@ -43,7 +48,7 @@ export function helmIsValid({ values }: Values["values"]) {
         title: "Invalid YAML",
         body: (
           <Text component="pre" style={prewrap}>
-            {String(err)}
+            {hasMessage(err) ? err.message : String(err)}
           </Text>
         ),
         variant: "danger" as const,
