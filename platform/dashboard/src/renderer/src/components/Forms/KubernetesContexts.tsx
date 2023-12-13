@@ -9,7 +9,7 @@ import NamespaceIcon from "@patternfly/react-icons/dist/esm/icons/at-icon"
 
 type KubeValues = Values<{ kubecontext: string }>
 
-function KubernetesContexts<Ctrl extends KubeValues>(props: { ctrl: Ctrl }) {
+export default function KubernetesContexts<Ctrl extends KubeValues>(props: { ctrl: Ctrl; description?: string }) {
   const [contexts, setContexts] = useState<null | string | SelectOptionProps[]>(null)
   const [current, setCurrent] = useState<string>(props.ctrl.values.kubecontext)
 
@@ -93,13 +93,10 @@ function KubernetesContexts<Ctrl extends KubeValues>(props: { ctrl: Ctrl }) {
         ctrl={props.ctrl}
         fieldId="kubecontext"
         label="Kubernetes Context"
+        description={props.description ?? "Choose a Kubernetes context"}
         options={contexts}
         currentSelection={current ?? ""}
       />
     )
   }
-}
-
-export default function contexts<Ctrl extends KubeValues>(ctrl: Ctrl) {
-  return <KubernetesContexts<Ctrl> ctrl={ctrl} />
 }

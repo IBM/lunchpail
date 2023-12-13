@@ -100,7 +100,12 @@ export default function NewWorkerPoolWizard(props: Props) {
 
   const stepTarget = {
     name: "Target",
-    items: (values) => [targets, ...(values.target === "kubernetes" ? [KubernetesContexts<Values>] : [])],
+    items: (ctrl: Values) => [
+      targets(ctrl),
+      ...(ctrl.values.target === "kubernetes"
+        ? [<KubernetesContexts<Values> ctrl={ctrl} description="Choose a target Kubernetes cluster for the workers" />]
+        : []),
+    ],
   }
 
   const stepConfigure = {

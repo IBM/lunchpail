@@ -59,7 +59,7 @@ function repo(ctrl: FormContextProps) {
 }
 
 /** The FormItems to present */
-function items(values: FormContextProps["values"]) {
+function items({ values }: FormContextProps) {
   return [origin, ...(values.uploadOrigin === "git" ? [repo] : [])]
 }
 

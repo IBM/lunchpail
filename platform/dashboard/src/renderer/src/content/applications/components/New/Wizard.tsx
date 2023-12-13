@@ -141,7 +141,7 @@ const stepCode = {
     ctrl.values.method === "github"
       ? !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command
       : !!ctrl.values.code,
-  items: (values: Values["values"]) =>
+  items: ({ values }: Values) =>
     values.method === "github" ? [command, repoInput, image, supportsGpu] : [codeLanguage, image, codeLiteral],
 }
 

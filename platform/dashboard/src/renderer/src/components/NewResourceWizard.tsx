@@ -64,7 +64,7 @@ type StepProps<Values extends DefaultValues> = {
    * Form choices to be displayed in this step. Either an array of
    * `FormItem` or a function that returns this array.
    */
-  items: readonly FormItem<Values>[] | ((values: Values["values"]) => readonly FormItem<Values>[])
+  items: readonly FormItem<Values>[] | ((values: Values) => readonly FormItem<Values>[] | ReactNode[])
 
   /**
    * Optionally, you may specify a parallel array to `items` that
@@ -263,15 +263,17 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
     )
   }
 
-  const itemFor = useCallback((item: FormItem<Values>, ctrl: Values) => {
+  const itemFor = useCallback((item: ReactNode | FormItem<Values>, ctrl: Values) => {
     if (item === "name") {
       return name(ctrl)
     } else if (item === "namespace") {
       return namespace(ctrl)
     } else if (item === "description") {
       return description(ctrl)
-    } else {
+    } else if (typeof item === "function") {
       return item(ctrl)
+    } else {
+      return item
     }
   }, [])
 
@@ -288,7 +290,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>
-                {(typeof step.items !== "function" ? step.items : step.items(ctrl.values)).map((item, idx) => {
+                {(typeof step.items !== "function" ? step.items : step.items(ctrl)).map((item, idx) => {
                   const spanA = typeof step.gridSpans === "function" ? step.gridSpans(ctrl.values) : step.gridSpans
                   const span = typeof spanA === "number" ? spanA : (Array.isArray(spanA) ? spanA[idx] : undefined) ?? 12
                   return (

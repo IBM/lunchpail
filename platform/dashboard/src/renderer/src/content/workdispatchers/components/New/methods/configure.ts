@@ -10,7 +10,7 @@ import step2ParameterSweepItems from "./ParameterSweep"
 const gridSpans = (values: Values["values"]) =>
   values.method === "tasksimulator" ? ([6, 6, 12, 12] as const) : values.method === "parametersweep" ? 4 : 12
 
-const items = (values: Values["values"]) =>
+const items = ({ values }: Values) =>
   values.method === "tasksimulator"
     ? step2TaskSimulatorItems
     : values.method === "parametersweep"
