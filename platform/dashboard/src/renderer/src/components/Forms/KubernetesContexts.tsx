@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react"
-import { Spinner } from "@patternfly/react-core"
+import { Stack, StackItem, Spinner } from "@patternfly/react-core"
 
-import Values from "@jay/components/Forms/Values"
-import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
+import Values from "./Values"
+import Select, { type SelectOptionProps } from "./Select"
+
+import UserIcon from "@patternfly/react-icons/dist/esm/icons/user-icon"
+import NamespaceIcon from "@patternfly/react-icons/dist/esm/icons/at-icon"
 
 type KubeValues = Values<{ kubecontext: string }>
 
 function KubernetesContexts<Ctrl extends KubeValues>(props: { ctrl: Ctrl }) {
-  const [contexts, setContexts] = useState<null | string | TileOptions>(null)
+  const [contexts, setContexts] = useState<null | string | SelectOptionProps[]>(null)
   const [current, setCurrent] = useState<string>(props.ctrl.values.kubecontext)
 
   useEffect(() => setCurrent(props.ctrl.values.kubecontext), [props.ctrl.values.kubecontext])
@@ -26,38 +28,40 @@ function KubernetesContexts<Ctrl extends KubeValues>(props: { ctrl: Ctrl }) {
                 if (contexts.length === 0 || !current) {
                   setContexts("No contexts found")
                 } else {
-                  const tiles = contexts.map((context) => {
+                  const options = contexts.map((context) => {
+                    const isKind = /^kind-/.test(context)
                     const openshiftMatch = context.match(/^(.+)\/(.+)\/([^/]+)$/)
 
                     const cluster = openshiftMatch ? openshiftMatch[2] : context.replace(/^kind-/, "")
-                    const namespace = openshiftMatch ? openshiftMatch[1] : ""
-                    const user = openshiftMatch ? openshiftMatch[3] : ""
 
-                    const groups = [
-                      descriptionGroup("cluster", cluster),
-                      ...(!namespace ? [] : [descriptionGroup("namespace", namespace)]),
-                      ...(!user ? [] : [descriptionGroup("user", user)]),
-                      ...(!/^kind-/.test(context) ? [] : [descriptionGroup("info", "Local Kind cluster")]),
-                      ...(!openshiftMatch ? [] : [descriptionGroup("info", "OpenShift cluster")]),
-                    ]
+                    const description = isKind ? (
+                      "Local Kind cluster"
+                    ) : openshiftMatch ? (
+                      <Stack>
+                        <StackItem>OpenShift cluster</StackItem>
+                        <StackItem>
+                          <NamespaceIcon /> {openshiftMatch[1]}
+                        </StackItem>
+                        <StackItem>
+                          <UserIcon /> {openshiftMatch[3].replace(/^IAM#/, "")}
+                        </StackItem>
+                      </Stack>
+                    ) : undefined
 
-                    const description = (
-                      <DescriptionList props={{ isCompact: true, isFluid: true, isHorizontal: true }} groups={groups} />
-                    )
                     return {
-                      title: "",
+                      children: cluster,
                       description,
                       value: context,
                     }
-                  }) as TileOptions // we know we have at least 1
+                  })
 
                   setCurrent((prevCurrent) => prevCurrent ?? current) // don't override user choice
-                  setContexts((prevTiles) =>
-                    Array.isArray(prevTiles) &&
-                    prevTiles.length === tiles.length &&
-                    prevTiles.every((_, idx) => _.value === tiles[idx].value)
-                      ? prevTiles
-                      : tiles,
+                  setContexts((prevOptions) =>
+                    Array.isArray(prevOptions) &&
+                    prevOptions.length === options.length &&
+                    prevOptions.every((_, idx) => _.value === options[idx].value)
+                      ? prevOptions
+                      : options,
                   )
                   // ^^^ take some care to avoid re-rendering if nothing has changed
                 }
@@ -84,7 +88,8 @@ function KubernetesContexts<Ctrl extends KubeValues>(props: { ctrl: Ctrl }) {
     return "Error fetching Kubernetes contexts: " + contexts
   } else {
     return (
-      <Tiles
+      <Select
+        borders
         ctrl={props.ctrl}
         fieldId="kubecontext"
         label="Kubernetes Context"

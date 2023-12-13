@@ -39,7 +39,7 @@ function httpsIfNeeded(url: string) {
 }
 
 const leftJustify = { justifyContent: "flex-start" as const }
-const noLeftPadding = { paddingLeft: 0, fontSize: "inherit" as const }
+const noLeftPadding = { padding: 0, fontSize: "inherit" as const }
 
 function dd(description: ReactNode | Record<string, string>) {
   if (description === true || description === false || description === "true" || description === "false") {

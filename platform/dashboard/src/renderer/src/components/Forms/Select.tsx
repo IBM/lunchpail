@@ -1,5 +1,6 @@
 import { useCallback, useState, type Ref, type ReactNode } from "react"
 import {
+  Divider,
   MenuToggle,
   MenuToggleElement,
   Select as PFSelect,
@@ -11,18 +12,17 @@ import {
 import Group from "./Group"
 import type { Ctrl, FormProps } from "./Props"
 
-const width200 = {
-  width: "200px",
-}
-
 const selectPopperProps = {
   width: "400px",
 }
 
+export type { SelectOptionProps }
+export type SelectOption = string | SelectOptionProps
+
 /** A select form element */
 export default function Select(
   props: FormProps &
-    Ctrl & { options: (string | SelectOptionProps)[]; icons?: ReactNode | ReactNode[]; currentSelection?: string },
+    Ctrl & { options: SelectOption[]; icons?: ReactNode | ReactNode[]; currentSelection?: string; borders?: boolean },
 ) {
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState<string>(
@@ -44,7 +44,7 @@ export default function Select(
 
   const toggle = useCallback(
     (ref: Ref<MenuToggleElement>) => (
-      <MenuToggle ref={ref} onClick={onToggleClick} isExpanded={isOpen} style={width200}>
+      <MenuToggle ref={ref} onClick={onToggleClick} isExpanded={isOpen}>
         {selected}
       </MenuToggle>
     ),
@@ -65,20 +65,23 @@ export default function Select(
         selected={selected}
         onSelect={onSelect}
         toggle={toggle}
+        isScrollable
         popperProps={selectPopperProps}
       >
         <SelectList>
-          {props.options.map((option, idx) => {
+          {props.options.flatMap((option, idx, A) => {
             const sprops = typeof option === "string" ? { value: option } : option
-            return (
+            return [
               <SelectOption
                 key={sprops.value}
                 {...sprops}
                 icon={Array.isArray(props.icons) ? props.icons[idx] : props.icons}
               >
-                {sprops.value}
-              </SelectOption>
-            )
+                {sprops.children ?? sprops.value}
+              </SelectOption>,
+
+              ...(!props.borders || idx === A.length - 1 ? [] : [<Divider key={idx} />]),
+            ]
           })}
         </SelectList>
       </PFSelect>
