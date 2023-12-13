@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Stack, StackItem, Spinner } from "@patternfly/react-core"
+import { Flex, FlexItem, Spinner } from "@patternfly/react-core"
 
 import Values from "./Values"
 import Select, { type SelectOptionProps } from "./Select"
@@ -31,27 +31,29 @@ export default function KubernetesContexts<Ctrl extends KubeValues>(props: { ctr
                   const options = contexts.map((context) => {
                     const isKind = /^kind-/.test(context)
                     const openshiftMatch = context.match(/^(.+)\/(.+)\/([^/]+)$/)
+                    const clusterType = isKind ? "Kind cluster" : openshiftMatch ? "Openshift cluster" : ""
 
                     const cluster = openshiftMatch ? openshiftMatch[2] : context.replace(/^kind-/, "")
 
                     const description = isKind ? (
-                      "Local Kind cluster"
+                      clusterType
                     ) : openshiftMatch ? (
-                      <Stack>
-                        <StackItem>OpenShift cluster</StackItem>
-                        <StackItem>
+                      <Flex>
+                        <FlexItem>{clusterType}</FlexItem>
+                        <FlexItem>
                           <NamespaceIcon /> {openshiftMatch[1]}
-                        </StackItem>
-                        <StackItem>
+                        </FlexItem>
+                        <FlexItem>
                           <UserIcon /> {openshiftMatch[3].replace(/^IAM#/, "")}
-                        </StackItem>
-                      </Stack>
+                        </FlexItem>
+                      </Flex>
                     ) : undefined
 
                     return {
                       children: cluster,
                       description,
                       value: context,
+                      search: [clusterType, context].join(" "),
                     }
                   })
 
