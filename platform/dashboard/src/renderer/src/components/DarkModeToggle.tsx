@@ -13,7 +13,7 @@ export default function DarkModeToggle() {
   const toggleOff = useCallback(() => settings?.darkMode[1](false), [settings?.darkMode[1]])
 
   return (
-    <ToggleGroup>
+    <ToggleGroup isCompact>
       <ToggleGroupItem
         icon={<DarkModeOffIcon />}
         aria-label="toggle dark mode off"
