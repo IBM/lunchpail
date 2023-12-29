@@ -4,7 +4,7 @@ import Code from "@jay/components/Code"
 import DrawerTab from "@jay/components/Drawer/Tab"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import { api } from "../common"
+import api from "../api"
 import type Props from "../Props"
 import { codeLanguageFromCommand } from "../New/yaml"
 

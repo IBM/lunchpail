@@ -4,7 +4,7 @@ import { Label, LabelGroup } from "@patternfly/react-core"
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import { api } from "./common"
+import api from "./api"
 import taskqueueProps from "./taskqueueProps"
 import ProgressStepper from "./ProgressStepper"
 import unassigned from "@jay/resources/taskqueues/components/unassigned"

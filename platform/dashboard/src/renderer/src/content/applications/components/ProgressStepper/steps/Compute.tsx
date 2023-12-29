@@ -2,13 +2,17 @@ import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
 import { linkToAllDetails } from "@jay/renderer/navigate/details"
 
 import taskqueueProps from "../../taskqueueProps"
-import { associatedWorkerPools } from "../../common"
 
 import { singular as workerpool } from "@jay/resources/workerpools/name"
 import { groupSingular as application } from "@jay/resources/applications/group"
 
 import type Step from "../Step"
+import type Props from "../../Props"
 import { oopsNoQueue } from "../oops"
+
+function associatedWorkerPools(props: Props) {
+  return props.workerpools.filter((_) => _.spec.application.name === props.application.metadata.name)
+}
 
 const step: Step = {
   id: "Compute",
