@@ -7,7 +7,8 @@ import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 export function nUnassigned(props: Props) {
   const last = lastEvent(props)
-  return last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
+  const count = last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
+  return isNaN(count) ? 0 : count
 }
 
 function cells(count: number, props: Props) {
@@ -33,7 +34,7 @@ export default function unassigned(props: Props) {
   return descriptionGroup(
     "Unassigned Tasks",
     count === 0 ? None() : cells(count, props),
-    isNaN(count) ? 0 : count,
+    count,
     storageType(props),
     "Queue Provider",
   )
