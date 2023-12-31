@@ -156,6 +156,7 @@ export default function Select(
         newSelectOptions = [
           { isDisabled: false, children: `No results found for "${filterValue}"`, value: "no results" },
         ]
+        props.ctrl.setValue(props.fieldId, "")
       }
 
       // Open the menu when the input value changes and the new value is not empty

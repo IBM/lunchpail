@@ -100,6 +100,13 @@ export default function NewWorkerPoolWizard(props: Props) {
 
   const stepTarget = {
     name: "Target",
+    isValid: (ctrl: Values) => {
+      if (ctrl.values.target === "kubernetes") {
+        return !!ctrl.values.kubecontext
+      } else {
+        return true
+      }
+    },
     items: (ctrl: Values) => [
       targets(ctrl),
       ...(ctrl.values.target === "kubernetes"
