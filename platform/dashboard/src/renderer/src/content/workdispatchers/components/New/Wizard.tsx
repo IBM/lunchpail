@@ -4,7 +4,7 @@ import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
 import NewResourceWizard from "@jay/components/NewResourceWizard"
 
-import { singular } from "@jay/resources/workdispatchers/name"
+import { singular as workdispatcher } from "@jay/resources/workdispatchers/name"
 import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
 import { titleSingular as applicationsDefinitionSingular } from "@jay/resources/applications/title"
 
@@ -17,13 +17,13 @@ import method from "./methods"
 import step2 from "./methods/configure"
 
 const step1 = {
-  name: "Dispatch Method",
+  name: "Select a dispatch method",
   isValid: (ctrl: Values) => !!ctrl.values.method,
   items: [method],
 }
 
 const step3 = {
-  name: "Name",
+  name: "Name your " + workdispatcher,
   isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
   items: ["name" as const, "namespace" as const, "description" as const],
 }
@@ -90,14 +90,14 @@ export default function NewWorkDispatcherWizard(props: Props) {
   )
 
   const action = "register"
-  const title = `Start a ${singular}`
+  const title = `Start a ${workdispatcher}`
   const steps = [step1, step2, step3]
 
   return (
     <NewResourceWizard<Values>
       kind="workdispatchers"
       title={title}
-      singular={singular}
+      singular={workdispatcher}
       defaults={defaults}
       yaml={getYaml}
       steps={steps}

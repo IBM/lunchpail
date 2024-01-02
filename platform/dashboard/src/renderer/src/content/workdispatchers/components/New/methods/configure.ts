@@ -45,7 +45,7 @@ function alerts(values: Values["values"]): StepAlertProps<Values>[] {
 
 /** This is the Configure step of the Wizard */
 export default {
-  name: "Configure",
+  name: "Configure your " + singular,
   gridSpans,
   items,
   alerts,

@@ -12,10 +12,11 @@ import Checkbox from "@jay/components/Forms/Checkbox"
 import SelectCheckbox from "@jay/components/Forms/SelectCheckbox"
 import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 
+import { groupSingular as job } from "@jay/resources/applications/group"
 import { name as workerpoolsName } from "@jay/resources/workerpools/name"
-import { titleSingular as singular } from "@jay/resources/applications/title"
 import { singular as taskqueuesSingular } from "@jay/resources/taskqueues/name"
-import { name as datasetsName, singular as datasetsSingular } from "@jay/resources/datasets/name"
+import { titleSingular as application } from "@jay/resources/applications/title"
+import { name as datasetsName, singular as dataset } from "@jay/resources/datasets/name"
 
 import type DataSetEvent from "@jay/common/events/DataSetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
@@ -43,7 +44,7 @@ const methods: TileOptions = [
     value: "literal",
     icon: <CodeIcon />,
     title: "Paste in Source",
-    description: "Provide your source code directly from this wizard",
+    description: "Copy-paste your source code into this wizard",
   },
 ]
 
@@ -53,7 +54,7 @@ function method(ctrl: Values) {
     <Tiles
       fieldId="method"
       label="Code Origin"
-      description={`How do you wish to provide the code for your ${singular}?`}
+      description={`How do you wish to provide the code for your ${application}?`}
       ctrl={ctrl}
       options={methods}
     />
@@ -61,7 +62,7 @@ function method(ctrl: Values) {
 }
 
 const stepMethod = {
-  name: "Code Origin",
+  name: "Choose how to inject your code",
   isValid: (ctrl: Values) => !!ctrl.values.method,
   items: [method],
 }
@@ -87,7 +88,7 @@ function command(ctrl: Values) {
     <Input
       fieldId="command"
       label="Command line"
-      description={`The command line used to launch your ${singular}`}
+      description={`The command line used to launch your ${application}`}
       ctrl={ctrl}
     />
   )
@@ -98,7 +99,7 @@ function supportsGpu(ctrl: Values) {
     <Checkbox
       fieldId="supportsGpu"
       label="Supports GPU?"
-      description={`Does your ${singular} support execution on GPUs?`}
+      description={`Does your ${application} support execution on GPUs?`}
       ctrl={ctrl}
       isRequired={false}
     />
@@ -106,7 +107,7 @@ function supportsGpu(ctrl: Values) {
 }
 
 const stepName = {
-  name: "Name",
+  name: "Name your " + application,
   isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.namespace && !!ctrl.values.description,
   items: ["name" as const, "description" as const],
 }
@@ -136,7 +137,7 @@ function codeLiteral(ctrl: Values) {
 }
 
 const stepCode = {
-  name: "Code",
+  name: "Provide your code",
   isValid: (ctrl: Values) =>
     ctrl.values.method === "github"
       ? !!ctrl.values.repo && !!ctrl.values.image && !!ctrl.values.command
@@ -235,7 +236,7 @@ export default function NewApplicationWizard(props: Props) {
       <SelectCheckbox
         fieldId="datasets"
         label={datasetsName}
-        description={`Select the "fixed" ${datasetsName} this ${singular} needs access to`}
+        description={`Select the "fixed" ${datasetsName} this ${application} needs access to`}
         ctrl={ctrl}
         options={props.datasets.map((_) => _.metadata.name).sort()}
         icons={<TaskQueueIcon />}
@@ -249,15 +250,15 @@ export default function NewApplicationWizard(props: Props) {
     buttonPropsForNewDataSet({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
   const stepData = {
-    name: datasetsName,
+    name: "Optionally bind a " + dataset + " to your " + job,
     alerts: [
       {
         title: datasetsName,
         body: (
           <>
-            If your {singular} needs access to one or more <strong>{datasetsSingular}</strong> to store global data
-            needed by all <strong>Tasks</strong> (e.g. a pre-trained model or a chip design that is being tested across
-            multiple configurations), you may supply that information here.
+            If your {application} needs access to one or more <strong>{dataset}</strong> to store global data needed by
+            all <strong>Tasks</strong> (e.g. a pre-trained model or a chip design that is being tested across multiple
+            configurations), you may supply that information here.
           </>
         ),
       },
@@ -281,23 +282,24 @@ export default function NewApplicationWizard(props: Props) {
       : searchParams.get("action") === "clone"
         ? ("clone" as const)
         : ("register" as const)
-  const title = `${action === "edit" ? "Edit" : action === "clone" ? "Clone" : "Register"} ${singular}`
+  const title = `${action === "edit" ? "Edit" : action === "clone" ? "Clone" : "Register"} ${application}`
   const steps = [stepMethod, stepCode, stepData, stepName]
 
   return (
     <NewResourceWizard<Values>
       kind="applications"
       title={title}
-      singular={singular}
+      singular={application}
       defaults={defaults}
       yaml={yaml}
       steps={steps}
       action={action}
       onChange={onChange}
     >
-      This wizard helps you to register the {singular} that knows how to consume and then process <strong>Tasks</strong>
-      . Once you have registered your {singular}, you can bring online <strong>{workerpoolsName}</strong> that run the{" "}
-      {singular} against the tasks in a <strong>{taskqueuesSingular}</strong>.
+      This wizard helps you to register the {application} that knows how to consume and then process{" "}
+      <strong>Tasks</strong>. Once you have registered your {application}, you can bring online{" "}
+      <strong>{workerpoolsName}</strong> that run the {application} against the tasks in a{" "}
+      <strong>{taskqueuesSingular}</strong>.
     </NewResourceWizard>
   )
 }

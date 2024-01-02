@@ -9,8 +9,8 @@ import NewResourceWizard from "@jay/components/NewResourceWizard"
 import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
 import KubernetesContexts from "@jay/components/Forms/KubernetesContexts"
 
-import { singular as workerpoolsSingular } from "@jay/resources/workerpools/name"
-import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
+import { singular as workerpool } from "@jay/resources/workerpools/name"
+import { groupSingular as application } from "@jay/resources/applications/group"
 
 import type Target from "./Target"
 import type Values from "./Values"
@@ -74,13 +74,13 @@ export default function NewWorkerPoolWizard(props: Props) {
     }
   }, [])
 
-  function application(ctrl: Values) {
+  function applicationChoice(ctrl: Values) {
     return (
       <Input
         readOnlyVariant="default"
         fieldId="application"
-        label={applicationsSingular}
-        description={`The workers in this ${workerpoolsSingular} will run the code specified by this ${applicationsSingular}`}
+        label={application}
+        description={`The workers in this ${workerpool} will run the code specified by this ${application}`}
         ctrl={ctrl}
       />
     )
@@ -99,7 +99,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   }
 
   const stepTarget = {
-    name: "Target",
+    name: "Choose where to run the workers",
     isValid: (ctrl: Values) => {
       if (ctrl.values.target === "kubernetes") {
         return !!ctrl.values.kubecontext
@@ -116,9 +116,9 @@ export default function NewWorkerPoolWizard(props: Props) {
   }
 
   const stepConfigure = {
-    name: "Configure",
+    name: "Configure your " + workerpool,
     isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
-    items: ["name" as const, application, /* taskqueue, */ numWorkers],
+    items: ["name" as const, applicationChoice, /* taskqueue, */ numWorkers],
   }
 
   function yaml(values: Values["values"]) {
@@ -148,18 +148,18 @@ spec:
 `.trim()
   }
 
-  const title = `Create ${workerpoolsSingular}`
+  const title = `Create ${workerpool}`
   const steps = [stepTarget, stepConfigure]
   return (
     <NewResourceWizard<Values>
       kind="workerpools"
       title={title}
-      singular={workerpoolsSingular}
+      singular={workerpool}
       defaults={defaults}
       yaml={yaml}
       steps={steps}
     >
-      Configure a pool of compute resources to process Tasks in a Queue.
+      Configure a pool of workers to process Tasks, using the Code and Data bindings of a given {application}.
     </NewResourceWizard>
   )
 }
