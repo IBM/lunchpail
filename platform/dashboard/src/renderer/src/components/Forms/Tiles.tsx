@@ -44,7 +44,7 @@ export default function Tiles(props: FormProps & Ctrl & { options: TileOptions; 
             title={tile.title}
             isDisabled={tile.isDisabled}
             data-value={tile.value ?? tile.title}
-            isSelected={selected === tile.value ?? tile.title}
+            isSelected={selected === (tile.value ?? tile.title)}
           >
             {tile.description}
           </Tile>
