@@ -1,7 +1,14 @@
 For example:
 
 ```shell
-KUBECONFIG=~/.kube/config docker buildx build --push \
+podman build \
     --platform=linux/arm64/v8,linux/amd64 \
-        --tag ghcr.io/project-codeflare/ray22:0.0.2 .
+        --manifest ghcr.io/project-codeflare/ray22:0.1.1 .
 ```
+
+Then, to push:
+
+```shell
+podman manifest push ghcr.io/project-codeflare/ray22:0.1.1
+```
+
