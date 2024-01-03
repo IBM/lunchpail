@@ -15,7 +15,7 @@ export KFP_VERSION=2.0.0
 IMAGE_REPO=ghcr.io/project-codeflare/
 
 # for local testing
-CLUSTER_NAME=${CLUSTER_NAME-codeflare-platform}
+CLUSTER_NAME=${CLUSTER_NAME-jaas}
 
 if lspci 2> /dev/null | grep -iq nvidia; then
     HAS_NVIDIA=true
