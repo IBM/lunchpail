@@ -62,6 +62,13 @@ test.describe.serial("workers tests running sequentially", () => {
     // await expect(modal.getByRole("button", { name: expectedTaskQueue })).toBeVisible()
   })
 
+  test("Click Next to get to the Register wizard step", async () => {
+    const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
+    const nextButton = await modal.getByRole("button", { name: "Next" })
+    await expect(nextButton).toBeVisible()
+    await nextButton.click()
+  })
+
   test("Clicking 'Next' and 'Register Compute Pool' in modal", async () => {
     // click 'Next' and verify that we moved on to 'Review' window
     await page.getByRole("button", { name: "Next" }).click()

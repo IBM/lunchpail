@@ -117,8 +117,14 @@ export default function NewWorkerPoolWizard(props: Props) {
 
   const stepConfigure = {
     name: "Configure your " + workerpool,
-    isValid: (ctrl: Values) => !!ctrl.values.name && !!ctrl.values.application && !!ctrl.values.taskqueue,
-    items: ["name" as const, applicationChoice, /* taskqueue, */ numWorkers],
+    isValid: (ctrl: Values) => !!ctrl.values.application && !!ctrl.values.taskqueue,
+    items: [applicationChoice, /* taskqueue, */ numWorkers],
+  }
+
+  const stepName = {
+    name: "Name your " + workerpool,
+    isValid: (ctrl: Values) => !!ctrl.values.name,
+    items: ["name" as const],
   }
 
   function yaml(values: Values["values"]) {
@@ -149,7 +155,7 @@ spec:
   }
 
   const title = `Create ${workerpool}`
-  const steps = [stepTarget, stepConfigure]
+  const steps = [stepTarget, stepConfigure, stepName]
   return (
     <NewResourceWizard<Values>
       kind="workerpools"
