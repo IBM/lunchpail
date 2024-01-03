@@ -21,11 +21,17 @@ type Props = {
  * Kubernetes resource models (each one marking some change in the
  * model), e.g. a stream of serialized `ApplicationSpecEvent`
  */
-export default function startStreamForKind(kind: string, { withTimestamp = false, selectors }: Partial<Props> = {}) {
+export default async function startStreamForKind(
+  kind: string,
+  kubeconfig: Promise<string>,
+  { withTimestamp = false, selectors }: Partial<Props> = {},
+) {
   try {
     const child = spawn("kubectl", [
       "get",
       kind,
+      "--kubeconfig",
+      await kubeconfig,
       "-A",
       "--watch",
       "-o=json",

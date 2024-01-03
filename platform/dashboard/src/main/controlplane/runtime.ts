@@ -5,7 +5,8 @@ import { clusterName as kindClusterName, getKubeconfig } from "./kind"
 
 export async function isRuntimeProvisioned(clusterName?: string) {
   try {
-    const kubeconfigOpt = clusterName === kindClusterName ? `--kubeconfig ${(await getKubeconfig()).path}` : ""
+    const kubeconfigOpt =
+      !clusterName || clusterName === kindClusterName ? `--kubeconfig ${(await getKubeconfig()).path}` : ""
     const clusterOpt = clusterName ? `--cluster ${clusterName}` : ""
 
     const command = promisify(exec)

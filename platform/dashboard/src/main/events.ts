@@ -1,5 +1,6 @@
 import { ipcMain, ipcRenderer } from "electron"
 
+import { getKubeconfig } from "./controlplane/kind"
 import startStreamForKind from "./streams/kubernetes"
 import { Status, getStatusFromMain } from "./controlplane/status"
 
@@ -9,22 +10,22 @@ import type ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-function streamForKind(kind: WatchedKind): import("stream").Transform {
+function streamForKind(kind: WatchedKind, kubeconfig: Promise<string>): Promise<import("stream").Transform> {
   switch (kind) {
     case "taskqueues":
-      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component=taskqueue"] })
+      return startStreamForKind("datasets", kubeconfig, { selectors: ["app.kubernetes.io/component=taskqueue"] })
     case "datasets":
-      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component!=taskqueue"] })
+      return startStreamForKind("datasets", kubeconfig, { selectors: ["app.kubernetes.io/component!=taskqueue"] })
     case "queues":
-      return startStreamForKind("queues.codeflare.dev", { withTimestamp: true })
+      return startStreamForKind("queues.codeflare.dev", kubeconfig, { withTimestamp: true })
     case "workerpools":
-      return startStreamForKind("workerpools.codeflare.dev")
+      return startStreamForKind("workerpools.codeflare.dev", kubeconfig)
     case "platformreposecrets":
-      return startStreamForKind("platformreposecrets.codeflare.dev")
+      return startStreamForKind("platformreposecrets.codeflare.dev", kubeconfig)
     case "applications":
-      return startStreamForKind("applications.codeflare.dev")
+      return startStreamForKind("applications.codeflare.dev", kubeconfig)
     case "workdispatchers":
-      return startStreamForKind("workdispatchers.codeflare.dev")
+      return startStreamForKind("workdispatchers.codeflare.dev", kubeconfig)
   }
 }
 
@@ -34,7 +35,7 @@ function streamForKind(kind: WatchedKind): import("stream").Transform {
  * a watcher against the given `kind` of resource. It will pass back
  * any messages to the sender of that message.
  */
-function initStreamForResourceKind(kind: WatchedKind) {
+function initStreamForResourceKind(kind: WatchedKind, kubeconfig: Promise<string>) {
   const openEvent = `/${kind}/open`
   const dataEvent = `/${kind}/event`
   const closeEvent = `/${kind}/close`
@@ -52,8 +53,8 @@ function initStreamForResourceKind(kind: WatchedKind) {
     // stream close due to premature exit of kubectl
     let closedOnPurpose = false
 
-    const init = () => {
-      const myStream = streamForKind(kind)
+    const init = async () => {
+      const myStream = await streamForKind(kind, kubeconfig)
 
       // callback to renderer
       const cb = (model) => {
@@ -119,7 +120,8 @@ const logsCloseChannel = (selector: string, namespace: string) => `/logs/${names
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
   // resource
-  kinds.forEach(initStreamForResourceKind)
+  const kubeconfigPromise = getKubeconfig().then((_) => _.path)
+  kinds.forEach((kind) => initStreamForResourceKind(kind, kubeconfigPromise))
 
   // logs
   ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, follow: boolean) => {
