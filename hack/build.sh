@@ -101,5 +101,6 @@ function build_test_images {
 check_podman
 build_test_images
 build_components
+wait # ugh, too much concurrency which overloads the podman machine on macOS
 build_controllers
 wait
