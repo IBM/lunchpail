@@ -75,8 +75,8 @@ export default function DemoDashboard() {
             location: "demo",
             podmanCli: true,
             podmanMachine: true,
-            cluster: true,
-            runtime: true,
+            kubernetesCluster: true,
+            jaasRuntime: true,
             examples: false,
             defaults: false,
           }

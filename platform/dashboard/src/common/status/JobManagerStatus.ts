@@ -9,10 +9,10 @@ type JobManagerStatus = {
   podmanMachine: boolean
 
   /** Does the Kubernetes cluster to house the control plane exist? */
-  cluster: boolean
+  kubernetesCluster: boolean
 
   /** Are the core runtime resources provisioned in the management cluster? */
-  runtime: boolean
+  jaasRuntime: boolean
 
   /** Are the JaaS examples provisioned in the management cluster? */
   // examples: boolean
@@ -25,8 +25,8 @@ export const descriptions: Record<keyof JobManagerStatus, string> = {
   location: "Where is the control plane running?",
   podmanCli: "Is the podman CLI installed?",
   podmanMachine: "Is the podman VM ready to go?",
-  cluster: "Does the Kubernetes cluster to house the control plane exist?",
-  runtime: "Are the core runtime resources provisioned in the management cluster?",
+  kubernetesCluster: "Does the Kubernetes cluster to house the control plane exist?",
+  jaasRuntime: "Are the core runtime resources provisioned in the management cluster?",
   // examples: "Are the JaaS examples provisioned in the management cluster?",
   // defaults: "Are the JaaS default settings provisioned in the management cluster?",
 }

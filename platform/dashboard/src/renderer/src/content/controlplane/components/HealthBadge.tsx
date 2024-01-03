@@ -9,23 +9,23 @@ function demoModeStatus() {
 }
 
 export function isHealthy(status: null | JobManagerStatus) {
-  return status?.cluster && status?.runtime
+  return status?.kubernetesCluster && status?.jaasRuntime
 }
 
 export function isNeedingInit(status: null | JobManagerStatus) {
   // for now this is the opposite of isHealthy()... we need some
   // refinments to be able to distinguish healthy from not even there
-  return !status?.cluster || !status?.runtime
+  return !status?.kubernetesCluster || !status?.jaasRuntime
 }
 
 function jobManagerHealth(status: null | JobManagerStatus) {
   return status === null
     ? "Not Provisioned"
     : isHealthy(status)
-    ? "Healthy"
-    : isNeedingInit(status)
-    ? "Not ready"
-    : "Unhealthy"
+      ? "Healthy"
+      : isNeedingInit(status)
+        ? "Not ready"
+        : "Unhealthy"
 }
 
 export default function ControlPlaneHealthBadge() {
