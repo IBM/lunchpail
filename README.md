@@ -1,20 +1,19 @@
-# CodeFlare Platform
+# JAAS: Jobs as a Service Platform
 
-[![Build Status](https://v3.travis.ibm.com/cloud-computer/codeflare-platform.svg?token=Xarp6oK5BSTVsrSknEPZ&branch=main)](https://v3.travis.ibm.com/cloud-computer/codeflare-platform)
+[![Build Status](https://v3.travis.ibm.com/cloud-computer/jaas.svg?token=Xarp6oK5BSTVsrSknEPZ&branch=main)](https://v3.travis.ibm.com/cloud-computer/jaas)
 
-The [CodeFlare](https://codeflare.dev) Platform helps users and
-operators with running large-scale jobs on a multi-tenant Kubernetes
-cluster. It consists of a set of high-level [**resource
-types**](#resource-types) managed by a collection of Kubernetes
-**controllers** that operate under a defined set of high-level
-[**policies**](#policy-types).
+The JAAS Platform helps users and operators with running large-scale
+jobs on a multi-tenant Kubernetes cluster. It consists of a set of
+high-level [**resource types**](#resource-types) managed by a
+collection of Kubernetes **controllers** that operate under a defined
+set of high-level [**policies**](#policy-types).
 
-The CodeFlare Run Controller acts as a compiler, lowering the
-high-level user-facing APIs to a set of lower level constructs which
-are in turn [managed by a suite of open source
+The JAAS Run Controller acts as a compiler, lowering the high-level
+user-facing APIs to a set of lower level constructs which are in turn
+[managed by a suite of open source
 technologies](#technologies-employed).
 
-<img src="docs/codeflare-platform-architecture.png" alt="CodeFlare Architecture" align="right" width="450">
+<img src="docs/jaas-platform-architecture.png" alt="JAAS Architecture" align="right" width="450">
 
 <a name="resource-types">
 
@@ -53,10 +52,10 @@ technologies](#technologies-employed).
   
 ## Technologies Employed
 
-The CodeFlare Platform brings together a number of popular
-technologies, and links them together with some new data types and
-controller logic. The existing technologies employed include (in
-alphabetical order):
+The JAAS Platform brings together a number of popular technologies,
+and links them together with some new data types and controller
+logic. The existing technologies employed include (in alphabetical
+order):
 
 - [Datashim](https://github.com/datashim-io/datashim)
 - [Fluentbit](https://fluentbit.io/)
@@ -68,10 +67,9 @@ alphabetical order):
 
 ## Getting Started
 
-Architecturally, the CodeFlare Platform is a [Helm
-chart](https://helm.sh). Via [Helm
-dependencies](https://helm.sh/docs/helm/helm_dependency/), you can
-incorporate a custom platform. You may include your own set of
+The JAAS Platform is deployed as a [Helm chart](https://helm.sh). Via
+[Helm dependencies](https://helm.sh/docs/helm/helm_dependency/), you
+can incorporate a custom platform. You may include your own set of
 applications, datasets, images, and policies to shape an experience
 for your users. It is relatively lightweight, and runs fine in
 [Kind](#local-development-using-kind) on most laptops.
