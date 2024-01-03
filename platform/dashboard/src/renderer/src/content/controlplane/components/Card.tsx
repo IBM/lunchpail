@@ -1,5 +1,5 @@
-import { useContext, type MouseEvent } from "react"
-import { Button, Text } from "@patternfly/react-core"
+import { useContext } from "react"
+import { Button } from "@patternfly/react-core"
 
 import { isHealthy } from "./HealthBadge"
 import CardInGallery from "@jay/components/CardInGallery"
@@ -10,9 +10,9 @@ import Status, { JobManagerStatus } from "@jay/renderer/Status"
 
 type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
 
-function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
+/* function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
   return <Text component="small"> &mdash; {refreshing[0].toUpperCase() + refreshing.slice(1)}</Text>
-}
+} */
 
 export function summaryGroups(demoMode: boolean, status: null | JobManagerStatus) {
   const statusMessage = demoMode ? "Demo mode" : !status ? "Checking..." : isHealthy(status) ? "Healthy" : "Not ready"
@@ -25,7 +25,7 @@ export default function JobManagerCard() {
   const settings = useContext(Settings)
   const demoMode = settings?.demoMode[0] ?? false
 
-  const mouseSetTo = (msg: Refreshing) => (evt: MouseEvent<unknown>) => {
+  const mouseSetTo = (msg: Refreshing) => (evt: import("react").MouseEvent<unknown>) => {
     evt.stopPropagation()
     setTo(msg)
   }
@@ -34,7 +34,7 @@ export default function JobManagerCard() {
 
   const kind = "controlplane"
   const name = "Job Manager"
-  const title = `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
+  const title = name // `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
 
   const descriptionListProps = { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true }
 
