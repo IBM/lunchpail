@@ -1,3 +1,4 @@
+import { getKubeconfig } from "../controlplane/kind"
 import ExecResponse from "@jay/common/events/ExecResponse"
 
 /**
@@ -8,13 +9,18 @@ export async function onCreate(
   action: "apply" | "delete" = "apply",
   dryRun = false,
 ): Promise<ExecResponse> {
-  const { spawn } = await import("node:child_process")
+  const [kubeconfig, { spawn }] = await Promise.all([getKubeconfig(), import("node:child_process")])
+
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
-      const child = spawn("kubectl", [action, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])], {
-        stdio: ["pipe", "inherit", "pipe"],
-      })
+      const child = spawn(
+        "kubectl",
+        [action, "--kubeconfig", kubeconfig.path, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])],
+        {
+          stdio: ["pipe", "inherit", "pipe"],
+        },
+      )
 
       // send the yaml to the kubectl apply across stdin
       child.stdin.write(yaml)

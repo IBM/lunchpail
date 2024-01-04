@@ -1,4 +1,5 @@
 import { hasMessage } from "./create"
+import { getKubeconfig } from "../controlplane/kind"
 import ExecResponse from "@jay/common/events/ExecResponse"
 
 /**
@@ -9,10 +10,11 @@ export async function onGet({
   name,
   namespace,
 }: import("@jay/common/api/jay").DeleteProps): Promise<ExecResponse> {
-  const { spawn } = await import("node:child_process")
+  const [kubeconfig, { spawn }] = await Promise.all([getKubeconfig(), import("node:child_process")])
+
   return new Promise((resolve) => {
     try {
-      const child = spawn("kubectl", ["get", kind, name, "-n", namespace, "-o=json"])
+      const child = spawn("kubectl", ["get", "--kubeconfig", kubeconfig.path, kind, name, "-n", namespace, "-o=json"])
 
       let err = ""
       child.stderr.on("data", (data) => (err += data.toString()))
