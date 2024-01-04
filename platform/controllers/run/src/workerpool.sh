@@ -20,12 +20,17 @@ cpu="${11}"
 memory="${12}"
 gpu="${13}"
 datasets="${14}"
+kubecontext="${15}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
 echo "Dry running to $DRY" 1>&2
 
-helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} \
+if [[ -n "$kubecontext" ]]
+then kubecontext_option="--kube-context $kubecontext"
+fi
+
+helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} ${kubecontext_option} \
      --set uid=$uid \
      --set name=$name \
      --set image=$image \

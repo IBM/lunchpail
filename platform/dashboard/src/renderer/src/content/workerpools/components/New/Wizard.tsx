@@ -1,5 +1,6 @@
-import removeAccents from "remove-accents"
 import { useCallback } from "react"
+import removeAccents from "remove-accents"
+import indent from "@jay/common/util/indent"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
@@ -137,6 +138,15 @@ export default function NewWorkerPoolWizard(props: Props) {
     // TODO re: internal-error
     const namespace = applicationSpec ? applicationSpec.metadata.namespace : "internal-error"
 
+    // details for the target
+    const target =
+      values.target === "kubernetes"
+        ? `
+target:
+  kubecontext: ${values.kubecontext}
+`.trim()
+        : ""
+
     return `
 apiVersion: codeflare.dev/v1alpha1
 kind: WorkerPool
@@ -151,6 +161,7 @@ spec:
     count: ${values.count}
     size: ${values.size}
     supportsGpu: ${values.supportsGpu}
+${indent(target, 2)}
 `.trim()
   }
 

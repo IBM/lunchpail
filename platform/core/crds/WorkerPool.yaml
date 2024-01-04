@@ -42,6 +42,13 @@ spec:
                     size:
                       type: string
                       enum: [xxs,xs,sm,md,lg,xl,xxl]
+
+                # where to run the workers
+                target:
+                  type: object
+                  properties:
+                    kubecontext:
+                      type: string
                 
       # subresources for the custom resource
       subresources:
