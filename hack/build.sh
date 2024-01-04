@@ -42,8 +42,8 @@ function push {
             if [[ -n "$USING_PODMAN" ]]
             then
                 local image2=${image%%:dev}
-                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep $image2 | awk '{print $3}' | head -c 12)
-                newhash=$(podman image ls | grep $image2 | awk '{print $3}' | head -c 12)
+                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep $image2 | awk '{print $3}' | head -c 12 || echo "nope")
+                newhash=$(podman image ls | grep $image2 | awk '{print $3}' | head -c 12 || echo "nope2")
                 if [[ "$curhash" != "$newhash" ]]
                 then
                     echo "pushing $image"
