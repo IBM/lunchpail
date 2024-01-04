@@ -45,7 +45,7 @@ until mc alias set s3 $S3_ENDPOINT $accessKeyID $secretAccessKey
 do sleep 2
 done
 
-mc mb --ignore-existing $COPYIN_BUCKET
+mc mb --ignore-existing s3/$COPYIN_BUCKET
 
 if [[ "${COPYIN_ORIGIN}" = git ]]
 then
