@@ -6,7 +6,7 @@ function capitalize(word: string) {
 }
 
 export default async function launchElectron() {
-  const linux = `dist/linux-unpacked/${name.toLowerCase()}`
+  const linux = `dist/linux${process.arch === "arm64" ? "-arm64" : ""}-unpacked/${name.toLowerCase()}`
   const mac = `dist/mac-${process.arch}/${capitalize(name)}.app/Contents/MacOS/${capitalize(name)}`
 
   // Launch Electron app.
