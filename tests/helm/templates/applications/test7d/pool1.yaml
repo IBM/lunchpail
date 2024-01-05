@@ -1,0 +1,21 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7d") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkerPool
+metadata:
+  name: test7d-pool1
+  namespace: {{ .Values.namespace }}
+spec:
+  # here, we ask that this pool run in a particular kubernetes cluster
+  target:
+    kubernetes:
+      context: {{ .Values.kubernetes.context }}
+      config:
+        value: {{ .Values.kubernetes.config }}
+
+  dataset: test7ddata
+  application:
+    name: test7d
+  workers:
+    count: 1
+    size: xxs
+{{- end }}

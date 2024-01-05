@@ -1,0 +1,19 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7d") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkDispatcher
+metadata:
+  labels:
+    app.kubernetes.io/component: workdispatcher
+    app.kubernetes.io/name: test7d
+    app.kubernetes.io/part-of: codeflare.dev
+  name: test7d
+  namespace: {{ .Values.namespace }}
+spec:
+  application: test7d
+  dataset: test7ddata
+  method: helm
+  repo: >-
+    https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/dashboard/tests/workdispatcher1
+  values: >-
+    {"taskprefix":{"a":"tasky","b":3333}}
+{{- end }}
