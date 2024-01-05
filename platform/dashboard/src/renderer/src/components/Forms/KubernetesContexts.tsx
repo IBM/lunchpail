@@ -24,11 +24,11 @@ export default function KubernetesContexts<Ctrl extends KubeValues>(props: { ctr
           if (window.jay.contexts) {
             window.jay
               .contexts()
-              .then(({ contexts, current }) => {
-                if (contexts.length === 0 || !current) {
+              .then(({ config, current }) => {
+                if (config.contexts.length === 0 || !current) {
                   setContexts("No contexts found")
                 } else {
-                  const options = contexts.map((context) => {
+                  const options = config.contexts.map(({ name: context }) => {
                     const isKind = /^kind-/.test(context)
                     const openshiftMatch = context.match(/^(.+)\/(.+)\/([^/]+)$/)
                     const clusterType = isKind ? "Kind cluster" : openshiftMatch ? "Openshift cluster" : ""

@@ -1,28 +1,30 @@
 import { hasMessage } from "./create"
-import ExecResponse from "@jay/common/events/ExecResponse"
+import type { KubeConfig } from "@jay/common/api/kubernetes"
+import type ExecResponse from "@jay/common/events/ExecResponse"
 
 /**
- * @return list of current available Kubernetes contexts and current
- * context, encoded into a stringified `{ contexts: string[]; current:
- * string }`
+ * @return `ExecResponse`-stringified form of `KubeConfig`
  */
 export async function get(): Promise<ExecResponse> {
   try {
-    const [contexts, current] = await Promise.all([getContexts(), getCurrentContext()])
+    const config = await getConfig()
 
-    return { code: 0, message: JSON.stringify({ contexts, current }) }
+    return { code: 0, message: JSON.stringify({ config, current: config["current-context"] }) }
   } catch (err) {
     console.error(err)
     return { code: 1, message: hasMessage(err) ? err.message : "" }
   }
 }
 
-async function getContexts() {
+/**
+ * @return the current `KubeConfig` model
+ */
+async function getConfig(): Promise<KubeConfig> {
   const { spawn } = await import("node:child_process")
 
   return new Promise((resolve, reject) => {
     try {
-      const child = spawn("kubectl", ["config", "get-contexts", "-o=name"])
+      const child = spawn("kubectl", ["config", "view", "-o=json", "--flatten"])
 
       let err = ""
       child.stderr.on("data", (data) => (err += data.toString()))
@@ -34,28 +36,9 @@ async function getContexts() {
         if (code === 0) {
           // it is important to trim before the split, to avoid a
           // trailing empty string inthe returned array
-          resolve(out.trim().split("\n"))
+          resolve(JSON.parse(out))
         } else {
           reject(new Error(err))
-        }
-      })
-    } catch (err) {
-      reject(err)
-    }
-  })
-}
-
-async function getCurrentContext() {
-  const { execFile } = await import("node:child_process")
-
-  return new Promise((resolve, reject) => {
-    try {
-      execFile("kubectl", ["config", "current-context"], (err, stdout, stderr) => {
-        if (err) {
-          console.error(stderr)
-          reject(err) // TODO include stderr?
-        } else {
-          resolve(stdout.trim())
         }
       })
     } catch (err) {

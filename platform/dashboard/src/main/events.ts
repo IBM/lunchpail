@@ -282,7 +282,7 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Available Kubernetes contexts */
-    async contexts(): Promise<{ contexts: string[]; current: string }> {
+    async contexts(): Promise<{ config: import("@jay/common/api/kubernetes").KubeConfig; current: string }> {
       const response = await ipcRenderer.invoke("/kubernetes/contexts")
       if (response === true) {
         throw new Error("Internal error")
