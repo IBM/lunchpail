@@ -15,7 +15,7 @@ then
     done
 fi
 
-echo "$(tput setaf 2)Shutting down CodeFlare$(tput sgr0)"
+echo "$(tput setaf 2)Shutting down JaaS$(tput sgr0)"
 ($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM
 ($HELM ls | grep -q $PLA) && $HELM delete --wait $PLA
 

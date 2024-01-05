@@ -8,7 +8,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 trap "pkill -P $$" SIGINT
 
-echo "$(tput setaf 2)Building CodeFlare$(tput sgr0)"
+echo "$(tput setaf 2)Building JaaS$(tput sgr0)"
 
 if [[ -n "$CI" ]] && [[ -z "$DEBUG" ]]
 then

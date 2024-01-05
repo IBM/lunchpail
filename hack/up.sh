@@ -24,7 +24,7 @@ wait
 # examples in selectively.
 HAS_EXAMPLES=false
 
-echo "$(tput setaf 2)Booting CodeFlare for arch=$ARCH$(tput sgr0)"
+echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
 $HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA
 
