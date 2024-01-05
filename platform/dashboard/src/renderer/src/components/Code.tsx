@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { tags as t } from "@lezer/highlight"
 import CodeMirror from "@uiw/react-codemirror"
 import { createTheme } from "@uiw/codemirror-themes"
@@ -17,7 +17,7 @@ import "./Code.css"
 export type SupportedLanguage = "python" | "shell" | "json" | "yaml" | "verilog" | "tcl" | "makefile"
 
 export type Props = {
-  children: string
+  children: string | Promise<string>
   language: SupportedLanguage
   onChange?: (val: string) => void
   readOnly?: boolean
@@ -25,14 +25,22 @@ export type Props = {
 }
 
 export default function Code(props: Props) {
+  const [data, setData] = useState(typeof props.children === "string" ? props.children : "")
+
+  useEffect(() => {
+    if (typeof props.children !== "string") {
+      props.children.then(setData)
+    }
+  }, [props.children, setData])
+
   // <CodeMirror/> doesn't call our `props.onChange` the first time,
   // though it will call that `onChange` on subsequent updates. Hence,
   // we need this "onMount" handler to push the initial value back
   useEffect(() => {
     if (props.onChange) {
-      props.onChange(props.children)
+      props.onChange(data)
     }
-  }, [props.children])
+  }, [data])
 
   // which language extension do we want to use?
   const extensions =
@@ -53,7 +61,7 @@ export default function Code(props: Props) {
       className="codeflare--code"
       data-show-line-numbers={String(props.showLineNumbers ?? true)}
       readOnly={props.readOnly ?? false}
-      value={props.children}
+      value={data}
       onChange={props.onChange}
       extensions={extensions}
       theme={patternflyTheme}

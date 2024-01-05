@@ -86,7 +86,7 @@ type Props<Values extends DefaultValues> = PropsWithChildren<{
   singular: string
   action?: "edit" | "clone" | "register" | null
   defaults: (previousValues: undefined | Values["values"]) => Values["values"]
-  yaml: (values: Values["values"]) => string
+  yaml: (values: Values["values"]) => string | Promise<string>
   steps: readonly StepProps<Values>[]
 
   /** On successful resource creation, return to show that new resource in the Details drawer? [default=true] */
@@ -149,7 +149,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
 
   const doCreate = useCallback(async (values: Values["values"], dryRun = false) => {
     try {
-      const response = await window.jay.create(values, props.yaml(values), dryRun)
+      const response = await window.jay.create(values, await props.yaml(values), dryRun)
       if (response !== true) {
         console.error(response)
         setDryRunSuccess(false)
@@ -174,6 +174,37 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
     (ctrl: Values) => {
       const doDryRun = () => doCreate(ctrl.values, true)
 
+      const alerts = [
+        <FormAlert className="codeflare--step-header" key="info">
+          <Alert
+            variant="info"
+            title="Review"
+            isInline
+            actionLinks={<AlertActionLink onClick={doDryRun}>Dry run</AlertActionLink>}
+          >
+            Confirm the settings for your new {props.singular}.
+          </Alert>
+        </FormAlert>,
+      ]
+      if (errorInCreateRequest || dryRunSuccess !== null) {
+        alerts.unshift(
+          <FormAlert key="error">
+            <Alert
+              isInline
+              actionClose={<AlertActionCloseButton onClose={clearError} />}
+              variant={!errorInCreateRequest && dryRunSuccess ? "success" : "danger"}
+              title={
+                !errorInCreateRequest && dryRunSuccess
+                  ? "Dry run successful"
+                  : hasMessage(errorInCreateRequest)
+                    ? errorInCreateRequest.message
+                    : "Internal error"
+              }
+            />
+          </FormAlert>,
+        )
+      }
+
       return (
         <WizardStep
           key="wizard-step-review"
@@ -192,35 +223,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
             onNext: () => doCreate(ctrl.values),
           }}
         >
-          {errorInCreateRequest || dryRunSuccess !== null ? (
-            <FormAlert>
-              <Alert
-                isInline
-                actionClose={<AlertActionCloseButton onClose={clearError} />}
-                variant={!errorInCreateRequest && dryRunSuccess ? "success" : "danger"}
-                title={
-                  !errorInCreateRequest && dryRunSuccess
-                    ? "Dry run successful"
-                    : hasMessage(errorInCreateRequest)
-                      ? errorInCreateRequest.message
-                      : "Internal error"
-                }
-              />
-            </FormAlert>
-          ) : (
-            <></>
-          )}
-
-          <FormAlert className="codeflare--step-header">
-            <Alert
-              variant="info"
-              title="Review"
-              isInline
-              actionLinks={<AlertActionLink onClick={doDryRun}>Dry run</AlertActionLink>}
-            >
-              Confirm the settings for your new {props.singular}.
-            </Alert>
-          </FormAlert>
+          <AlertGroup>{alerts}</AlertGroup>
 
           <Yaml>{props.yaml(ctrl.values)}</Yaml>
         </WizardStep>

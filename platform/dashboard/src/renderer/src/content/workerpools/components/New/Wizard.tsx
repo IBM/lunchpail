@@ -16,6 +16,7 @@ import { groupSingular as application } from "@jay/resources/applications/group"
 import type Target from "./Target"
 import type Values from "./Values"
 
+import { type KubeConfig } from "@jay/common/api/kubernetes"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
@@ -42,6 +43,24 @@ const targetOptions: TileOptions<Target> = [
     isDisabled: true,
   },
 ]
+
+/**
+ * Strip `config` to allow access only to the given `context`.
+ */
+function stripKubeconfig(config: KubeConfig, context: string): KubeConfig {
+  const configObj = config.contexts.find((_) => _.name === context)
+  if (!configObj) {
+    // TODO report to user
+    console.error("Cannot find given context in given config", context, config)
+    return config
+  }
+
+  return Object.assign({}, config, {
+    contexts: config.contexts.filter((_) => _.name === context),
+    users: config.users.filter((_) => _.name === configObj.context.user),
+    clusters: config.clusters.filter((_) => _.name === configObj.context.cluster),
+  })
+}
 
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()
@@ -128,26 +147,45 @@ export default function NewWorkerPoolWizard(props: Props) {
     items: ["name" as const],
   }
 
-  function yaml(values: Values["values"]) {
-    const applicationSpec = props.applications.find((_) => _.metadata.name === values.application)
-    if (!applicationSpec) {
-      console.error("Internal error: Application spec not found", values.application)
-      // TODO how do we report this to the UI?
-    }
+  const yaml = useCallback(
+    async (values: Values["values"]) => {
+      const applicationSpec = props.applications.find((_) => _.metadata.name === values.application)
+      if (!applicationSpec) {
+        console.error("Internal error: Application spec not found", values.application)
+        // TODO how do we report this to the UI?
+      }
 
-    // TODO re: internal-error
-    const namespace = applicationSpec ? applicationSpec.metadata.namespace : "internal-error"
+      // TODO re: internal-error
+      const namespace = applicationSpec ? applicationSpec.metadata.namespace : "internal-error"
 
-    // details for the target
-    const target =
-      values.target === "kubernetes"
-        ? `
+      // fetch kubeconfig
+      const kubeconfig =
+        values.target !== "kubernetes" || !window.jay.contexts
+          ? undefined
+          : await window.jay
+              .contexts()
+              .then(({ config }) =>
+                btoa(
+                  JSON.stringify(stripKubeconfig(config, values.kubecontext)).replace(
+                    /127\.0\.0\.1/g,
+                    "host.docker.internal",
+                  ),
+                ),
+              )
+
+      // details for the target
+      const target =
+        values.target === "kubernetes"
+          ? `
 target:
-  kubecontext: ${values.kubecontext}
+  kubernetes:
+    context: ${values.kubecontext}
+    config:
+      value: ${kubeconfig}
 `.trim()
-        : ""
+          : ""
 
-    return `
+      return `
 apiVersion: codeflare.dev/v1alpha1
 kind: WorkerPool
 metadata:
@@ -163,7 +201,9 @@ spec:
     supportsGpu: ${values.supportsGpu}
 ${indent(target, 2)}
 `.trim()
-  }
+    },
+    [props.applications, window.jay.contexts],
+  )
 
   const title = `Create ${workerpool}`
   const steps = [stepTarget, stepConfigure, stepName]

@@ -46,10 +46,37 @@ spec:
                 # where to run the workers
                 target:
                   type: object
+                  oneOf:
+                    - required: [kubernetes]
                   properties:
-                    kubecontext:
-                      type: string
-                
+                    kubernetes:
+                      type: object
+                      required: [context,config]
+                      properties:
+                        context:
+                          type: string
+                        config:
+                          type: object
+                          oneOf:
+                            - required: [value]
+                            # - required: [valueFrom]
+                          properties:
+                            value:
+                              type: string
+                            # valueFrom:
+                            #   type: object
+                            #   oneOf:
+                            #     - required: [secretKeyRef]
+                            #   properties:
+                            #     secretKeyRef:
+                            #       type: object
+                            #       required: [key,name]
+                            #       properties:
+                            #         key:
+                            #           type: string
+                            #         name:
+                            #           type: string
+
       # subresources for the custom resource
       subresources:
         # enables the status subresource

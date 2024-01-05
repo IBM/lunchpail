@@ -1,8 +1,6 @@
-import Code, { type Props as CodeProps, type SupportedLanguage } from "./Code"
+import Code, { type Props as CodeProps } from "./Code"
 
-export type Props = Omit<CodeProps, "language"> & {
-  language?: SupportedLanguage
-}
+export type Props = Omit<CodeProps, "language"> & Partial<Pick<CodeProps, "language">>
 
 export default function Yaml(props: Props) {
   return (

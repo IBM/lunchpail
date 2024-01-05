@@ -54,7 +54,12 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
 
         # where should we run the workers?
         # target = 'local' if 'local' in spec['target'] else 'kubernetes'
-        kubecontext = spec['target']['kubecontext'] if 'target' in spec and 'kubecontext' in spec['target'] else ""
+        kubecontext = ""
+        kubeconfig = ""
+        if 'target' in spec and 'kubernetes' in spec['target']:
+            kubernetes = spec['target']['kubernetes']
+            kubecontext = kubernetes['context']
+            kubeconfig = kubernetes['config']['value'] if 'value' in kubernetes['config'] else ""
         
         run_id, workdir = alloc_run_id("workerpool", name)
 
@@ -86,7 +91,8 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 str(memory),
                 str(gpu),
                 base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
-                kubecontext
+                kubecontext,
+                kubeconfig
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:

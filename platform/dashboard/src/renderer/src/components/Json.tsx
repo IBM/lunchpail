@@ -1,6 +1,6 @@
 import Yaml, { type Props } from "./Yaml"
 
-export default function Json(props: Props) {
+export default function Json(props: Props & { children: string }) {
   if (props.children.length >= 12 * 1024) {
     // don't attempt to display giant JSON; intentionally just
     // slightly larger than the default fetch limit of
