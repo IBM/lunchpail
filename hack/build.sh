@@ -48,7 +48,9 @@ function push {
                 then
                     echo "pushing $image"
                     T=$(mktemp)
-                    (podman save $image -o $T && kind -n $CLUSTER_NAME load image-archive $T && rm -f $T) &
+                    podman save $image -o $T
+                    kind -n $CLUSTER_NAME load image-archive $T
+                    rm -f $T
                 else
                     echo "already pushed $image"
                 fi
