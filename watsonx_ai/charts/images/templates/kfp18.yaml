@@ -1,7 +1,0 @@
-apiVersion: codeflare.dev/v1alpha1
-kind: Image
-metadata:
-  name: kfp18
-  namespace: {{ .Values.namespace }}
-spec:
-  image: {{ print "ghcr.io/project-codeflare/kfp18:" .Values.versions.kfp18 }}

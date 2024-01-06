@@ -1,7 +1,0 @@
-apiVersion: codeflare.dev/v1alpha1
-kind: Image
-metadata:
-  name: lightning
-  namespace: {{ .Values.namespace }}
-spec:
-  image: {{ print "ghcr.io/project-codeflare/lightning:" .Values.versions.lightning }}
