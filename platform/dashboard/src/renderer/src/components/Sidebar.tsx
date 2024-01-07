@@ -74,7 +74,7 @@ function SidebarNav(props: Props) {
   const groups = useMemo(
     () =>
       Object.values(providers)
-        .sort((a, b) => prio(b) - prio(a))
+        .sort((a, b) => prio(b) - prio(a) || a.name.localeCompare(b.name))
         .reduce(
           (G, provider) => {
             const group = provider.isInSidebar === true ? "root" : provider.isInSidebar
