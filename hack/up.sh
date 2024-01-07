@@ -24,6 +24,9 @@ wait
 # examples in selectively.
 HAS_EXAMPLES=false
 
+# prepare the helm charts
+"$SCRIPTDIR"/../platform/prerender.sh
+
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
 $HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA

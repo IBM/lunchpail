@@ -21,8 +21,8 @@ dependencies:
   repository: file://./s3
   version: 0.0.1
 - name: scheduler-plugins
-  repository: file://./co-scheduler
-  version: 0.25.7
+  repository: file://./scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
+  version: 0.26.7
 - name: dlf-chart
   repository: file://./datashim
   version: 0.1.0
@@ -32,5 +32,5 @@ dependencies:
 - name: codeflare-examples
   repository: file://./examples
   version: 0.0.1
-digest: sha256:1d0b9611d78af5054a9fe9d4c8c2740cdc19258ba5479f5cb2b14fd7f2f7e8c1
-generated: "2024-01-07T14:35:31.583603-05:00"
+digest: sha256:eea28991a4a71816b5ed19488e7cbccae90dd555dd9d22446d0523b913f78c20
+generated: "2024-01-07T18:02:21.01438-05:00"

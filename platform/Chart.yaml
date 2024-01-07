@@ -60,8 +60,8 @@ dependencies:
     - core
 
 - name: scheduler-plugins
-  version: 0.25.7
-  repository: file://./co-scheduler
+  version: 0.26.7 # sigh, want 0.27.8, but the v0.27.8 branch still points to the prior version in its Chart.yaml
+  repository: file://./scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
   condition: core.enabled
   tags:
     - core
