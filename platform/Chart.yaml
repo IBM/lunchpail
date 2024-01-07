@@ -11,7 +11,7 @@ appVersion: "latest"
 
 dependencies:
 - name: kuberay-operator
-  version: 0.5.0
+  version: 1.0.0
   repository: https://ray-project.github.io/kuberay-helm/
   condition: ray.enabled
   tags:

@@ -1,7 +1,7 @@
 dependencies:
 - name: kuberay-operator
   repository: https://ray-project.github.io/kuberay-helm/
-  version: 0.5.0
+  version: 1.0.0
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
   version: 0.30.4
@@ -32,5 +32,5 @@ dependencies:
 - name: codeflare-examples
   repository: file://./examples
   version: 0.0.1
-digest: sha256:57a1559495a3a43f906b0547799904ed4fd557de25ed800ae567322160883155
-generated: "2024-01-07T12:27:38.619389-05:00"
+digest: sha256:1d0b9611d78af5054a9fe9d4c8c2740cdc19258ba5479f5cb2b14fd7f2f7e8c1
+generated: "2024-01-07T14:35:31.583603-05:00"
