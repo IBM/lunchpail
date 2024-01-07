@@ -5,9 +5,6 @@ dependencies:
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
   version: 0.30.4
-- name: kube-fledged
-  repository: https://senthilrch.github.io/kubefledged-charts
-  version: v0.10.0
 - name: gpu-operator
   repository: https://nvidia.github.io/gpu-operator
   version: v23.3.2
@@ -35,5 +32,5 @@ dependencies:
 - name: codeflare-examples
   repository: file://./examples
   version: 0.0.1
-digest: sha256:d739c4d20d711bbd082f91d20dd253d9d48ffb44e7f9e871e16dd2298602e45f
-generated: "2023-10-17T13:18:39.058564-04:00"
+digest: sha256:57a1559495a3a43f906b0547799904ed4fd557de25ed800ae567322160883155
+generated: "2024-01-07T12:27:38.619389-05:00"
