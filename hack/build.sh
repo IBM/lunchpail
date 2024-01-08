@@ -80,13 +80,23 @@ function build_controllers {
 }
 
 function build_components {
-    for providerDir in "$SCRIPTDIR"/../platform/components/*; do
-        if [[ -d "$providerDir" ]]; then
+    for providerDir in "$SCRIPTDIR"/../platform/components/*
+    do
+        if [[ -d "$providerDir" ]]
+        then
             local provider=$(basename "$providerDir")
-            for componentDir in "$providerDir"/*; do
-                local component=$(basename "$componentDir")
-                local image=${IMAGE_REPO}${provider}-${component}-component:$VERSION
-                (build "$componentDir" $image && push $image || build "$componentDir" $image && push $image || build "$componentDir" $image && push $image || build "$componentDir" $image && push $image) &
+            for i in $(seq 1 5)
+            do
+                for componentDir in "$providerDir"/*
+                do
+                    local component=$(basename "$componentDir")
+                    local image=${IMAGE_REPO}${provider}-${component}-component:$VERSION
+                    (build "$componentDir" $image && push $image && echo "Successfully built component $image") &
+                done
+
+                wait && break
+
+                echo "Retrying build_components"
             done
         fi
     done
