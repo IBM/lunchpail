@@ -4,9 +4,11 @@ import type KubernetesResource from "../events/KubernetesResource"
 
 export type DeleteProps = { kind: string; name: string; namespace: string }
 
+export type KubeUser = { name: string; user: unknown }
+
 export type KubeConfig = KubernetesResource<"v1", "Config"> & {
   "current-context": string
-  users: { name: string; user: unknown }[]
+  users: KubeUser[]
   clusters: { name: string; cluster: unknown }[]
   contexts: { name: string; context: { cluster: string; user: string; namespace: string } }[]
 }

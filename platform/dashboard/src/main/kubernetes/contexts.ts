@@ -19,7 +19,7 @@ export async function get(): Promise<ExecResponse> {
 /**
  * @return the current `KubeConfig` model
  */
-async function getConfig(): Promise<KubeConfig> {
+export async function getConfig(): Promise<KubeConfig> {
   const { spawn } = await import("node:child_process")
 
   return new Promise((resolve, reject) => {
@@ -31,6 +31,9 @@ async function getConfig(): Promise<KubeConfig> {
 
       let out = ""
       child.stdout.on("data", (data) => (out += data.toString()))
+
+      // important, to avoid uncaught exceptions
+      child.once("error", (err) => console.error(err))
 
       child.once("close", (code) => {
         if (code === 0) {

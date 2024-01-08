@@ -3,6 +3,7 @@ import { ipcMain, ipcRenderer } from "electron"
 import { getKubeconfig } from "./controlplane/kind"
 import startStreamForKind from "./streams/kubernetes"
 import { Status, getStatusFromMain } from "./controlplane/status"
+import { startStreamForKubernetesComputeTargets } from "./streams/computetargets"
 
 import type WatchedKind from "@jay/common/Kind"
 import type JayApi from "@jay/common/api/jay"
@@ -10,8 +11,10 @@ import type ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-function streamForKind(kind: WatchedKind, kubeconfig: Promise<string>): Promise<import("stream").Transform> {
+function streamForKind(kind: WatchedKind, kubeconfig: Promise<string>): Promise<import("stream").Readable> {
   switch (kind) {
+    case "computetargets":
+      return Promise.resolve(startStreamForKubernetesComputeTargets())
     case "taskqueues":
       return startStreamForKind("datasets", kubeconfig, { selectors: ["app.kubernetes.io/component=taskqueue"] })
     case "datasets":
@@ -104,6 +107,7 @@ function initStreamForResourceKind(kind: WatchedKind, kubeconfig: Promise<string
 
 /** TODO this is cloned from @jay/common/Kind.watchedKinds. Vite currently isn't happy with importing non-type bits from common */
 const kinds: WatchedKind[] = [
+  "computetargets",
   "taskqueues",
   "datasets",
   "queues",

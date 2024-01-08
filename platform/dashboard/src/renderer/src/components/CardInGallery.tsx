@@ -10,10 +10,12 @@ import type { CardHeaderActionsObject } from "@patternfly/react-core"
 
 import "./CardInGallery.scss"
 
-type Props = {
+/** <CardInGallery/> React Component properties */
+export type Props = {
   kind: Kind
   name: string
   title?: string
+  size?: "sm" | "lg"
   icon?: ReactNode
   groups: ReactNode[]
   footer?: ReactNode
@@ -45,7 +47,7 @@ export default function CardInGallery(props: Props) {
 
   return (
     <Card
-      isLarge
+      isLarge={!props.size || props.size === "lg"}
       isClickable
       isSelectable
       isSelectableRaised

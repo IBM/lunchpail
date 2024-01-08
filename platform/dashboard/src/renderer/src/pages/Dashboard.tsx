@@ -10,7 +10,6 @@ import drilldownProps from "./DrilldownProps"
 import PageWithDrawer from "./PageWithDrawer"
 
 import Settings from "../Settings"
-import Gallery from "../components/Gallery"
 import Sidebar from "../components/Sidebar"
 
 import content from "../content/providers"
@@ -87,6 +86,7 @@ export function Dashboard(props: Props) {
       applications={events.applications.length}
       workdispatchers={events.workdispatchers.length}
       platformreposecrets={events.platformreposecrets.length}
+      computetargets={events.computetargets.filter((_) => _.spec.isJaaSWorkerHost).length}
     />
   )
 
@@ -102,7 +102,7 @@ export function Dashboard(props: Props) {
 
   return (
     <PageWithDrawer {...pwdProps}>
-      <Gallery>{bodyContentProvider.gallery && bodyContentProvider.gallery(events, memos, settings)}</Gallery>
+      {bodyContentProvider.gallery && bodyContentProvider.gallery(events, memos, settings)}
     </PageWithDrawer>
   )
 }

@@ -12,10 +12,12 @@ import camelCaseSplit from "@jay/renderer/util/camel-split"
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 import { descriptions } from "@jay/common/status/JobManagerStatus"
 
+import type Props from "./Props"
+
 import SyncIcon from "@patternfly/react-icons/dist/esm/icons/sync-icon"
 import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
-export default function JobManagerDetail() {
+export default function JobManagerDetail(props: Props) {
   const status = useContext(Status)
   const settings = useContext(Settings)
 
@@ -68,7 +70,7 @@ export default function JobManagerDetail() {
       ]
     : undefined
 
-  const summary = <DescriptionList groups={[...summaryGroups(demoMode, status.status), ...rest]} />
+  const summary = <DescriptionList groups={[...summaryGroups(demoMode, status.status, props), ...rest]} />
 
-  return <DrawerContent summary={summary} actions={actions} rightActions={rightActions} />
+  return <DrawerContent summary={summary} raw={props} actions={actions} rightActions={rightActions} />
 }

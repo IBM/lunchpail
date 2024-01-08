@@ -99,8 +99,10 @@ export default function SlideOutDrawerPanelContent(props: DrawerPanelProps) {
         data-has-subtitle={props.panelSubtitle || undefined}
       >
         <Breadcrumb>
-          {provider?.isInSidebar && (
-            <BreadcrumbItem>{provider.isInSidebar === true ? "Resources" : provider.isInSidebar}</BreadcrumbItem>
+          {provider?.sidebar && (
+            <BreadcrumbItem>
+              {provider.sidebar === true || !provider.sidebar.group ? "Resources" : provider.sidebar.group}
+            </BreadcrumbItem>
           )}
           <BreadcrumbItem to={isNavigableKind(kind) ? hashIfNeeded(kind) : undefined}>
             {provider?.name ?? kind}

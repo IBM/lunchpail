@@ -20,6 +20,7 @@ function init() {
     const applications = new DemoApplicationSpecEventSource()
 
     props = {
+      computetargets: new NothingEventSource(),
       taskqueues,
       datasets: new NothingEventSource(),
       workerpools,

@@ -7,10 +7,12 @@ import type Action from "./action"
 import checkPodman from "./podman"
 
 export const clusterName = "jaas"
+export const clusterNameForKubeconfig = "kind-jaas"
 
-export const execOpts = {
+const execOpts = {
   env: Object.assign({}, process.env, {
-    KIND_EXPERIMENTAL_PROVIDER: "podman",
+    // i think kind is smart enough to set this on its own
+    // KIND_EXPERIMENTAL_PROVIDER: "podman",
   }),
 }
 
@@ -48,9 +50,37 @@ export async function getKubeconfig() {
   const execPromise = promisify(exec)
   const kubeconfig = await file()
 
-  await execPromise(`kind export kubeconfig -n ${clusterName} --kubeconfig ${kubeconfig.path}`, execOpts)
+  // eslint-disable-next-line no-async-promise-executor
+  return new Promise<Awaited<ReturnType<typeof file>>>(async (resolve) => {
+    let done = false
+    let alreadyToldUserKindNotInstalled = false
 
-  return kubeconfig
+    while (!done) {
+      try {
+        const output = await execPromise(
+          `kind export kubeconfig -n ${clusterName} --kubeconfig ${kubeconfig.path}`,
+          execOpts,
+        )
+        if (process.env.DEBUG) {
+          console.log(output.stdout)
+          console.error(output.stderr)
+        }
+        resolve(kubeconfig)
+        done = true
+      } catch (err) {
+        if (/not found/.test(String(err))) {
+          if (!alreadyToldUserKindNotInstalled) {
+            alreadyToldUserKindNotInstalled = true
+            console.error("kind not installed")
+          }
+        } else {
+          console.error(err)
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      }
+    }
+  })
 }
 
 /**

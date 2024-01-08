@@ -1,5 +1,6 @@
 /** Resource types that we watch */
 export const watchedKinds = [
+  "computetargets",
   "taskqueues",
   "datasets",
   "queues",

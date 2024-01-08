@@ -13,5 +13,7 @@ export default {
   gallery,
   detail,
   wizard,
-  isInSidebar: "Advanced",
+  sidebar: {
+    group: "Advanced",
+  },
 }

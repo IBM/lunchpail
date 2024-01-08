@@ -14,5 +14,5 @@ export default {
   detail,
   actions,
   wizard,
-  isInSidebar: true as const,
+  sidebar: true as const,
 }

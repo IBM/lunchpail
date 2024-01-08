@@ -1,6 +1,5 @@
-import JobManagerCard from "./components/Card"
-import JobManagerDetail from "./components/Detail"
-
+import detail from "./detail"
+import gallery from "./gallery"
 import description from "./description"
 import { name, singular } from "./name"
 
@@ -11,11 +10,13 @@ const computetargets: ContentProvider<"computetargets"> = {
   kind: "computetargets",
   name,
   singular,
-  isInSidebar: true as const,
-  sidebarPriority: -10,
+  sidebar: {
+    priority: -10,
+    badgeSuffix: "enabled",
+  },
   description,
-  gallery: () => <JobManagerCard />,
-  detail: () => ({ body: <JobManagerDetail /> }),
+  gallery,
+  detail,
 }
 
 export default computetargets

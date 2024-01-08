@@ -14,5 +14,7 @@ export default {
   detail,
   wizard,
   actions: undefined,
-  isInSidebar: "Advanced",
+  sidebar: {
+    group: "Advanced",
+  },
 }

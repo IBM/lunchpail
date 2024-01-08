@@ -17,6 +17,7 @@ export default {
   detail,
   actions,
   wizard,
-  isInSidebar: true as const,
-  sidebarPriority: 100,
+  sidebar: {
+    priority: 100,
+  },
 }

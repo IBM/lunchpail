@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ReactElement, ReactNode } from "react"
 
 import type Memos from "./memos"
 import type { Kind } from "./providers"
@@ -24,14 +24,26 @@ export default interface ContentProvider<K extends Kind = Kind> {
   /** Subtitle when showing a gallery of this kind of resource */
   description: ReactNode
 
-  /** Show this kind of resource in the Sidebar? If `true`, show at the top level; otherwise, show in the given group */
-  isInSidebar?: true | string
+  /** if `true`, then show at the root of the Sidebar tree, using the default sorting priority (lexicographic) */
+  sidebar?:
+    | true
+    | {
+        /** Show this kind of resource in the Sidebar? If `true`, show at the top level; otherwise, show in the given group */
+        group?: string
 
-  /** If we are showing in the Sidebar, what is our sort priority? (higher will float upwards in the sidebar) */
-  sidebarPriority?: number
+        /** If we are showing in the Sidebar, what is our sort priority? (higher will float upwards in the sidebar) */
+        priority?: number
+
+        /** Suffix for badge */
+        badgeSuffix?: string
+      }
 
   /** Content to display in the gallery view -- usually a CardInGallery[] */
-  gallery?(events: ManagedEvents, memos: Memos, settings: CurrentSettings): ReactNode
+  gallery?(
+    events: ManagedEvents,
+    memos: Memos,
+    settings: CurrentSettings,
+  ): ReactElement<import("../components/Gallery").GalleryProps>
 
   /** Content to display in the detail view */
   detail(

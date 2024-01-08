@@ -8,19 +8,24 @@ import { descriptionGroup } from "@jay/components/DescriptionGroup"
 import Settings from "@jay/renderer/Settings"
 import Status, { JobManagerStatus } from "@jay/renderer/Status"
 
+import type Props from "./Props"
+
+import HomeIcon from "@patternfly/react-icons/dist/esm/icons/laptop-house-icon"
+import ServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon"
+
 type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
 
 /* function refreshingMessage({ refreshing }: { refreshing: NonNullable<Refreshing> }) {
   return <Text component="small"> &mdash; {refreshing[0].toUpperCase() + refreshing.slice(1)}</Text>
 } */
 
-export function summaryGroups(demoMode: boolean, status: null | JobManagerStatus) {
+export function summaryGroups(demoMode: boolean, status: null | JobManagerStatus, props: Props) {
   const statusMessage = demoMode ? "Demo mode" : !status ? "Checking..." : isHealthy(status) ? "Healthy" : "Not ready"
 
-  return [descriptionGroup("Status", statusMessage)]
+  return [...(props.spec.isJaaSManager ? [descriptionGroup("Manager Status", statusMessage)] : [])]
 }
 
-export default function JobManagerCard() {
+export default function ComputeTargetCard(props: Props) {
   const { status, refreshing, setTo } = useContext(Status)
   const settings = useContext(Settings)
   const demoMode = settings?.demoMode[0] ?? false
@@ -32,27 +37,30 @@ export default function JobManagerCard() {
 
   const initialize = mouseSetTo("initializing")
 
-  const kind = "computetargets"
-  const name = "Job Manager"
-  const title = name // `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
+  const name = props.metadata.name.replace(/^kind-/, "")
+  // const title = name // `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
 
   const descriptionListProps = { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true }
 
-  const groups = summaryGroups(demoMode, status)
+  const groups = summaryGroups(demoMode, status, props)
 
-  const footer = !demoMode && status && (!isHealthy(status) || refreshing === "initializing") && (
-    <Button isBlock size="lg" onClick={initialize} isLoading={refreshing === "initializing"}>
-      {!refreshing ? "Initialize" : "Initializing"}
-    </Button>
-  )
+  const footer = !demoMode &&
+    props.spec.isJaaSManager &&
+    status &&
+    (!isHealthy(status) || refreshing === "initializing") && (
+      <Button isBlock onClick={initialize} isLoading={refreshing === "initializing"}>
+        {!refreshing ? "Initialize" : "Initializing"}
+      </Button>
+    )
 
   return (
     <CardInGallery
-      kind={kind}
+      size="sm"
+      kind="computetargets"
       name={name}
-      title={title}
       groups={groups}
       footer={footer}
+      icon={props.spec.isJaaSManager ? <HomeIcon /> : <ServerIcon />}
       descriptionListProps={descriptionListProps}
     />
   )

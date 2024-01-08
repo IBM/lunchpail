@@ -34,7 +34,7 @@ type KubernetesResource<
   }
 
   /** Resource spec */
-  spec: Spec
+  spec: Readonly<Spec>
 }
 
 export type KubernetesSecret<Data> = KubernetesResource<"v1", "Secret", unknown, unknown, unknown, { data: Data }>
