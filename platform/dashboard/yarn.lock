@@ -2186,10 +2186,10 @@ electron-updater@^6.1.7:
     semver "^7.3.8"
     tiny-typed-emitter "^2.1.0"
 
-electron-vite@^2.0.0-beta.4:
-  version "2.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/electron-vite/-/electron-vite-2.0.0-beta.4.tgz#4b8f24ba600498074dbe2eb6f42cb1da52981e26"
-  integrity sha512-oixt/w9pmwm6y1Np563D1Pe1MMFp6j1l6GqpwZo5Q3NV86wzkg+o0ZlTeRWqZiU98y7DVR8IoLps7xe/kyfn8Q==
+electron-vite@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/electron-vite/-/electron-vite-2.0.0.tgz#707424b0040602f0e48eca3712794d9762fa1a74"
+  integrity sha512-EQiuPVSwJQRPGbZiVrCsCFMDVfNyNtSpDiyUV4fNwPKNadTjBfYMOudnLUpSeBTocKUZYf58SXSzSCAkNg0GTQ==
   dependencies:
     "@babel/core" "^7.23.5"
     "@babel/plugin-transform-arrow-functions" "^7.23.3"
