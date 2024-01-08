@@ -1,4 +1,4 @@
-FROM rclone/rclone
+FROM rclone/rclone:1.64
 
 RUN apk update && apk add --no-cache bash
 COPY bin /opt/codeflare/syncer/bin
