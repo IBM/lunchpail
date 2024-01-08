@@ -4,7 +4,7 @@ import { Badge, PageSidebar, PageSidebarBody, Nav, NavExpandable, NavItem, NavLi
 import providers from "../content/providers"
 import type ContentProvider from "../content/ContentProvider"
 import type NavigableKind from "../content/NavigableKind"
-import ControlPlaneHealthBadge from "../content/controlplane/components/HealthBadge"
+import ControlPlaneHealthBadge from "../content/computetargets/components/HealthBadge"
 
 import Configuration from "./Configuration"
 import isShowingKind, { hashIfNeeded } from "../navigate/kind"
@@ -13,7 +13,7 @@ import "./Sidebar.scss"
 
 type NavigableContentProvider = ContentProvider<NavigableKind>
 
-type Props = Record<Exclude<NavigableKind, "controlplane">, number>
+type Props = Record<Exclude<NavigableKind, "computetargets">, number>
 const marginLeft = { marginLeft: "0.5em" as const }
 
 function SidebarNavItems(props: Props & { providers: NavigableContentProvider[] }) {

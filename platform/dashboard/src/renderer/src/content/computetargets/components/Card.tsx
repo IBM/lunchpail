@@ -32,7 +32,7 @@ export default function JobManagerCard() {
 
   const initialize = mouseSetTo("initializing")
 
-  const kind = "controlplane"
+  const kind = "computetargets"
   const name = "Job Manager"
   const title = name // `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
 

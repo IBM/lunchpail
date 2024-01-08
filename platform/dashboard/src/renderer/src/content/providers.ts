@@ -1,8 +1,8 @@
 import datasets from "./datasets"
 import taskqueues from "./taskqueues"
 import workerpools from "./workerpools"
-import controlplane from "./controlplane"
 import applications from "./applications"
+import computetargets from "./computetargets"
 import workdispatchers from "./workdispatchers"
 import platformreposecrets from "./platformreposecrets"
 
@@ -12,7 +12,7 @@ import type ContentProvider from "./ContentProvider"
  * These are the resource Kinds for which we have UI componetry.
  */
 const providers = {
-  controlplane,
+  computetargets,
   platformreposecrets,
   applications,
   taskqueues,

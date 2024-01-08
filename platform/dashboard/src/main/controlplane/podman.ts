@@ -2,6 +2,7 @@ import which from "which"
 import { promisify } from "node:util"
 import { exec, spawn } from "node:child_process"
 
+/** Resource requests for the podman virtual machine */
 const resources = {
   memory: 8192,
 }

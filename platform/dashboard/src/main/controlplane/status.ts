@@ -1,4 +1,4 @@
-import { doesClusterExist } from "./management"
+import { doesKindClusterExist } from "./kind"
 import { isRuntimeProvisioned } from "./runtime"
 import { isPodmanCliReady, isPodmanMachineReady } from "./podman"
 
@@ -10,7 +10,7 @@ export async function getStatusFromMain(): Promise<import("@jay/common/status/Jo
     "local",
     isPodmanCliReady(),
     isPodmanMachineReady(),
-    doesClusterExist(),
+    doesKindClusterExist(),
     isRuntimeProvisioned(),
   ])
 

@@ -8,7 +8,7 @@ import type { CurrentSettings } from "../Settings"
 /**
  * Governs how to render a certain `Kind` of resource, e.g. Applications
  */
-export default interface ContentProvider<K extends Kind | "controlplane" = Kind | "controlplane"> {
+export default interface ContentProvider<K extends Kind = Kind> {
   /** Kind of this resource */
   kind: K
 
