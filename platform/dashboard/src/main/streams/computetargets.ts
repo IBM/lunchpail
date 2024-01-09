@@ -1,20 +1,22 @@
 import { Readable } from "node:stream"
 
 import { getConfig } from "../kubernetes/contexts"
+import { isRuntimeProvisioned } from "../controlplane/runtime"
 import { clusterNameForKubeconfig as controlPlaneClusterName } from "../controlplane/kind"
 
 /**
  * @return generator of 'ComputeTargetEvent' models
  */
-async function* computeTargetsGenerator(): AsyncGenerator<
-  import("@jay/common/events/ComputeTargetEvent").default[],
-  void,
-  undefined
-> {
+async function* computeTargetsGenerator(
+  kubeconfig: Promise<string>,
+): AsyncGenerator<import("@jay/common/events/ComputeTargetEvent").default[], void, undefined> {
+  const kubeconfigPath = { path: await kubeconfig }
+
   while (true) {
     try {
-      const events = await getConfig().then((config) =>
-        (config.contexts || []).map(({ context }) => ({
+      const config = await getConfig()
+      const events = await Promise.all(
+        (config.contexts || []).map(async ({ context }) => ({
           apiVersion: "codeflare.dev/v1alpha1" as const,
           kind: "ComputeTarget" as const,
           metadata: {
@@ -27,7 +29,7 @@ async function* computeTargetsGenerator(): AsyncGenerator<
           },
           spec: {
             isJaaSManager: context.cluster === controlPlaneClusterName,
-            isJaaSWorkerHost: context.cluster === controlPlaneClusterName, // TODO
+            isJaaSWorkerHost: await isRuntimeProvisioned(context.cluster, true, kubeconfigPath).catch(() => false),
             user: config.users.find((_) => _.name === context.user) || { name: "user not found", user: false },
             defaultNamespace: context.namespace,
           },
@@ -46,8 +48,8 @@ async function* computeTargetsGenerator(): AsyncGenerator<
 /**
  * @return generator of stringified 'ComputeTargetEvent` models
  */
-async function* computeTargetsStringGenerator(): AsyncGenerator<string> {
-  for await (const events of computeTargetsGenerator()) {
+async function* computeTargetsStringGenerator(kubeconfig: Promise<string>): AsyncGenerator<string> {
+  for await (const events of computeTargetsGenerator(kubeconfig)) {
     yield JSON.stringify(events)
   }
 }
@@ -55,6 +57,6 @@ async function* computeTargetsStringGenerator(): AsyncGenerator<string> {
 /**
  * @return stream of stringified 'ComputeTargetEvent` models
  */
-export function startStreamForKubernetesComputeTargets() {
-  return Readable.from(computeTargetsStringGenerator())
+export function startStreamForKubernetesComputeTargets(kubeconfig: Promise<string>) {
+  return Readable.from(computeTargetsStringGenerator(kubeconfig))
 }

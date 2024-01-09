@@ -1,11 +1,10 @@
-import { useContext } from "react"
-import { Button, Tooltip } from "@patternfly/react-core"
+import { useContext, useCallback } from "react"
+import { Switch } from "@patternfly/react-core"
 
 import Status from "@jay/renderer/Status"
 import Settings from "@jay/renderer/Settings"
 
 import { summaryGroups } from "./Card"
-import { isHealthy } from "./HealthBadge"
 import DrawerContent from "@jay/components/Drawer/Content"
 
 import camelCaseSplit from "@jay/renderer/util/camel-split"
@@ -13,9 +12,6 @@ import { dl as DescriptionList, descriptionGroup } from "@jay/components/Descrip
 import { descriptions } from "@jay/common/status/JobManagerStatus"
 
 import type Props from "./Props"
-
-import SyncIcon from "@patternfly/react-icons/dist/esm/icons/sync-icon"
-import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
 export default function JobManagerDetail(props: Props) {
   const status = useContext(Status)
@@ -30,47 +26,31 @@ export default function JobManagerDetail(props: Props) {
           descriptionGroup(camelCaseSplit(key), value, undefined, descriptions[key]),
         )
 
-  const init = () => status.setTo("updating")
-  const destroy = () => status.setTo("destroying")
+  const toggle = useCallback(
+    () => status.setTo((current) => (current === null ? "destroying" : "initializing")),
+    [status],
+  )
+  // const destroyButtonIsLoading = status.refreshing === "destroying"
 
-  const initButtonIsLoading = status.refreshing === "initializing" || status.refreshing === "updating"
-  const destroyButtonIsLoading = status.refreshing === "destroying"
-
-  const actions =
-    status.status && isHealthy(status.status)
-      ? [
-          <Tooltip key="refresh" content="Reload the Job Manager with the latest configuration">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={init}
-              isLoading={initButtonIsLoading}
-              icon={initButtonIsLoading ? <></> : <SyncIcon />}
-            >
-              {status.refreshing === "updating" ? "Refreshing" : "Refresh"}
-            </Button>
-          </Tooltip>,
-        ]
-      : undefined
-
-  const rightActions = actions
-    ? [
-        <Tooltip key="delete" content="Deprovision the Job Manager">
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={destroy}
-            isLoading={destroyButtonIsLoading}
-            icon={destroyButtonIsLoading ? <></> : <TrashIcon data-ouia-component-id="trashIcon" />}
-            data-ouia-component-id="deleteJobButton"
-          >
-            {status.refreshing === "destroying" ? "Deprovisioning" : "Deprovision"}
-          </Button>
-        </Tooltip>,
-      ]
-    : undefined
+  const rightActions = [
+    <Switch
+      key="jaas-toggler"
+      hasCheckIcon
+      onClick={toggle}
+      isDisabled={status.refreshing !== null}
+      data-ouia-component-id="comptueTargetEnableSwitch"
+      isChecked={props.spec.isJaaSWorkerHost}
+      label={
+        status.refreshing === "destroying"
+          ? "Deprovisioning"
+          : status.refreshing === "initializing"
+            ? "Initializing"
+            : "JaaS Enabled"
+      }
+    />,
+  ]
 
   const summary = <DescriptionList groups={[...summaryGroups(demoMode, status.status, props), ...rest]} />
 
-  return <DrawerContent summary={summary} raw={props} actions={actions} rightActions={rightActions} />
+  return <DrawerContent summary={summary} raw={props} rightActions={rightActions} />
 }

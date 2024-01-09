@@ -57,7 +57,8 @@ a {
   color: var(--pf-v5-global--disabled-color--300);
 }
 
-.codeflare--danger-icon {
+.codeflare--danger-icon,
+.codeflare--status-offline {
   color: var(--pf-v5-global--danger-color--200);
   &:hover {
     color: var(--pf-v5-global--danger-color--100);

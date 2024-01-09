@@ -60,7 +60,13 @@ export default function ComputeTargetCard(props: Props) {
       name={name}
       groups={groups}
       footer={footer}
-      icon={props.spec.isJaaSManager ? <HomeIcon /> : <ServerIcon />}
+      icon={
+        props.spec.isJaaSManager ? (
+          <HomeIcon className={isHealthy(status) ? "codeflare--status-active" : "codeflare--status-offline"} />
+        ) : (
+          <ServerIcon />
+        )
+      }
       descriptionListProps={descriptionListProps}
     />
   )

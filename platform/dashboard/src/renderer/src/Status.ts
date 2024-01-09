@@ -7,10 +7,16 @@ export { JobManagerStatus }
 
 type Refreshing = null | "refreshing" | "updating" | "initializing" | "destroying"
 
+/**
+ * Either pass the updated value, or a function that takes the current
+ * value and returns the new value.
+ */
+type StatusSetter = Refreshing | ((curRefreshing: Refreshing) => Refreshing)
+
 export type StatusCtxType = {
   status: null | JobManagerStatus
   refreshing: Refreshing
-  setTo(refreshing: Refreshing): void
+  setTo(status: StatusSetter): void
 }
 const StatusCtx = createContext<StatusCtxType>({ status: null, refreshing: null, setTo: () => {} })
 export default StatusCtx
@@ -57,6 +63,6 @@ export function statusState(demoMode: State<boolean>) {
   return {
     status: status[0],
     refreshing: refreshing,
-    setTo: (refreshing: Refreshing) => setRefreshing(refreshing),
+    setTo: (status: StatusSetter) => setRefreshing(status),
   }
 }

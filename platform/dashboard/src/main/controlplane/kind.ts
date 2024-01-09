@@ -46,12 +46,12 @@ async function createKindCluster(clusterName: string) {
 /**
  * @return the `kubeconfig` for the given `clusterName`
  */
-export async function getKubeconfig() {
+export async function getKubeconfig(): ReturnType<typeof file> {
   const execPromise = promisify(exec)
   const kubeconfig = await file()
 
   // eslint-disable-next-line no-async-promise-executor
-  return new Promise<Awaited<ReturnType<typeof file>>>(async (resolve) => {
+  return new Promise(async (resolve) => {
     let done = false
     let alreadyToldUserKindNotInstalled = false
 

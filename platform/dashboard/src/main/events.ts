@@ -14,7 +14,7 @@ import type KubernetesResource from "@jay/common/events/KubernetesResource"
 function streamForKind(kind: WatchedKind, kubeconfig: Promise<string>): Promise<import("stream").Readable> {
   switch (kind) {
     case "computetargets":
-      return Promise.resolve(startStreamForKubernetesComputeTargets())
+      return Promise.resolve(startStreamForKubernetesComputeTargets(kubeconfig))
     case "taskqueues":
       return startStreamForKind("datasets", kubeconfig, { selectors: ["app.kubernetes.io/component=taskqueue"] })
     case "datasets":
