@@ -9,7 +9,7 @@ import ForwardIcon from "@patternfly/react-icons/dist/esm/icons/arrow-right-icon
 
 function go(ouiaId: string, icon: ReactElement, onClick: () => void, isDisabled = false) {
   return (
-    <Button key={ouiaId} ouiaId={ouiaId} size="lg" variant="plain" onClick={onClick} isDisabled={isDisabled}>
+    <Button key={ouiaId} ouiaId={ouiaId} size="sm" variant="plain" onClick={onClick} isDisabled={isDisabled}>
       {icon}
     </Button>
   )
