@@ -6,8 +6,11 @@ import { exec } from "node:child_process"
 import type Action from "./action"
 import checkPodman from "./podman"
 
-export const clusterName = "jaas"
-export const clusterNameForKubeconfig = "kind-jaas"
+/** The cluster name we pass internally to `kind` CLI operations */
+const clusterName = "jaas" // don't export this
+
+/** The cluster name that shows up in Kubernetes context models */
+export const clusterNameForKubeconfig = "kind-" + clusterName
 
 const execOpts = {
   env: Object.assign({}, process.env, {

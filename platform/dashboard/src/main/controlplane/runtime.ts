@@ -1,7 +1,7 @@
 import { promisify } from "node:util"
 import { exec } from "node:child_process"
 
-import { clusterName as kindClusterName, type KubeconfigFile } from "./kind"
+import { clusterNameForKubeconfig as kindClusterName, type KubeconfigFile } from "./kind"
 
 export async function isRuntimeProvisioned(kubeconfig: KubeconfigFile, clusterName?: string, quiet = false) {
   try {
