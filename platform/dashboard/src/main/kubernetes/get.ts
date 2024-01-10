@@ -1,20 +1,18 @@
 import { hasMessage } from "./create"
-import { getKubeconfig } from "../controlplane/kind"
-import ExecResponse from "@jay/common/events/ExecResponse"
+import { type KubeconfigFile } from "../controlplane/kind"
+
+import type { DeleteProps } from "@jay/common/api/jay"
+import type ExecResponse from "@jay/common/events/ExecResponse"
 
 /**
  * Get a resource by name
  */
-export async function onGet({
-  kind,
-  name,
-  namespace,
-}: import("@jay/common/api/jay").DeleteProps): Promise<ExecResponse> {
-  const [kubeconfig, { spawn }] = await Promise.all([getKubeconfig(), import("node:child_process")])
+export async function onGet({ kind, name, namespace }: DeleteProps, kubeconfig: KubeconfigFile): Promise<ExecResponse> {
+  const [kubeconfigPath, { spawn }] = await Promise.all([kubeconfig.path, import("node:child_process")])
 
   return new Promise((resolve) => {
     try {
-      const child = spawn("kubectl", ["get", "--kubeconfig", kubeconfig.path, kind, name, "-n", namespace, "-o=json"])
+      const child = spawn("kubectl", ["get", "--kubeconfig", kubeconfigPath, kind, name, "-n", namespace, "-o=json"])
 
       let err = ""
       child.stderr.on("data", (data) => (err += data.toString()))

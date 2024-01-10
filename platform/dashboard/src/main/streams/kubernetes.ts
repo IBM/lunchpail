@@ -5,6 +5,8 @@ import { EventEmitter } from "node:events"
 import transformToJSON from "./json-transformer"
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
+import { type KubeconfigFile } from "../controlplane/kind"
+
 // This will need to be adjusted as we add more resources Kinds to track */
 EventEmitter.defaultMaxListeners = 30
 
@@ -23,7 +25,7 @@ type Props = {
  */
 export default async function startStreamForKind(
   kind: string,
-  kubeconfig: Promise<string>,
+  kubeconfig: Promise<KubeconfigFile>,
   { withTimestamp = false, selectors }: Partial<Props> = {},
 ) {
   try {
@@ -31,7 +33,7 @@ export default async function startStreamForKind(
       "get",
       kind,
       "--kubeconfig",
-      await kubeconfig,
+      await (await kubeconfig).path,
       "-A",
       "--watch",
       "-o=json",

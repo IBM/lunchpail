@@ -1,8 +1,8 @@
 import { ipcMain, ipcRenderer } from "electron"
 
-import { getKubeconfig } from "./controlplane/kind"
 import startStreamForKind from "./streams/kubernetes"
 import { Status, getStatusFromMain } from "./controlplane/status"
+import { getKubeconfig, type KubeconfigFile } from "./controlplane/kind"
 import { startStreamForKubernetesComputeTargets } from "./streams/computetargets"
 
 import type WatchedKind from "@jay/common/Kind"
@@ -11,7 +11,7 @@ import type ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-function streamForKind(kind: WatchedKind, kubeconfig: Promise<string>): Promise<import("stream").Readable> {
+function streamForKind(kind: WatchedKind, kubeconfig: Promise<KubeconfigFile>): Promise<import("stream").Readable> {
   switch (kind) {
     case "computetargets":
       return Promise.resolve(startStreamForKubernetesComputeTargets(kubeconfig))
@@ -38,7 +38,7 @@ function streamForKind(kind: WatchedKind, kubeconfig: Promise<string>): Promise<
  * a watcher against the given `kind` of resource. It will pass back
  * any messages to the sender of that message.
  */
-function initStreamForResourceKind(kind: WatchedKind, kubeconfig: Promise<string>) {
+function initStreamForResourceKind(kind: WatchedKind, kubeconfig: Promise<KubeconfigFile>) {
   const openEvent = `/${kind}/open`
   const dataEvent = `/${kind}/event`
   const closeEvent = `/${kind}/close`
@@ -124,8 +124,8 @@ const logsCloseChannel = (selector: string, namespace: string) => `/logs/${names
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
   // resource
-  const kubeconfigPromise = getKubeconfig().then((_) => _.path)
-  kinds.forEach((kind) => initStreamForResourceKind(kind, kubeconfigPromise))
+  const kubeconfigFile = getKubeconfig()
+  kinds.forEach((kind) => initStreamForResourceKind(kind, kubeconfigFile))
 
   // logs
   ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, follow: boolean) => {
@@ -139,7 +139,7 @@ export function initEvents() {
 
   // resource get request
   ipcMain.handle("/get", (_, props: string) =>
-    import("./kubernetes/get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)),
+    import("./kubernetes/get").then(async (_) => _.onGet(JSON.parse(props) as DeleteProps, await kubeconfigFile)),
   )
 
   ipcMain.handle("/s3/listProfiles", () => import("./s3/listProfiles").then((_) => _.default()))
@@ -165,11 +165,13 @@ export function initEvents() {
 
   // resource create request
   ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
-    import("./kubernetes/create").then((_) => _.onCreate(yaml, "apply", dryRun)),
+    import("./kubernetes/create").then(async (_) => _.onCreate(yaml, "apply", await kubeconfigFile, dryRun)),
   )
 
   // resource delete request given the yaml spec
-  ipcMain.handle("/delete/yaml", (_, yaml: string) => import("./kubernetes/create").then((_) => _.onDelete(yaml)))
+  ipcMain.handle("/delete/yaml", (_, yaml: string) =>
+    import("./kubernetes/create").then(async (_) => _.onDelete(yaml, await kubeconfigFile)),
+  )
 
   // resource delete request by name
   ipcMain.handle("/delete/name", (_, props: string) =>
@@ -177,23 +179,23 @@ export function initEvents() {
   )
 
   // control plane status request
-  ipcMain.handle("/controlplane/status", getStatusFromMain)
+  ipcMain.handle("/controlplane/status", async () => getStatusFromMain(await kubeconfigFile))
 
   // control plane setup request
   ipcMain.handle("/controlplane/init", async () => {
-    await import("./controlplane/install").then((_) => _.default("lite", "apply"))
+    await import("./controlplane/install").then(async (_) => _.default("lite", "apply", await kubeconfigFile))
     return true
   })
 
   // control plane update (to latest version) request
   ipcMain.handle("/controlplane/update", async () => {
-    await import("./controlplane/install").then((_) => _.default("lite", "update"))
+    await import("./controlplane/install").then(async (_) => _.default("lite", "update", await kubeconfigFile))
     return true
   })
 
   // control plane teardown request
   ipcMain.handle("/controlplane/destroy", async () => {
-    await import("./controlplane/install").then((_) => _.default("lite", "delete"))
+    await import("./controlplane/install").then(async (_) => _.default("lite", "delete", await kubeconfigFile))
     return true
   })
 }

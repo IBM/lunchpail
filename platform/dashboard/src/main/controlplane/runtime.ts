@@ -1,18 +1,11 @@
 import { promisify } from "node:util"
 import { exec } from "node:child_process"
 
-import { clusterName as kindClusterName, getKubeconfig } from "./kind"
+import { clusterName as kindClusterName, type KubeconfigFile } from "./kind"
 
-export async function isRuntimeProvisioned(
-  clusterName?: string,
-  quiet = false,
-  kubeconfig?: Pick<Awaited<ReturnType<typeof getKubeconfig>>, "path">,
-) {
+export async function isRuntimeProvisioned(kubeconfig: KubeconfigFile, clusterName?: string, quiet = false) {
   try {
-    const kubeconfigOpt =
-      !clusterName || clusterName === kindClusterName
-        ? `--kubeconfig ${(kubeconfig || (await getKubeconfig())).path}`
-        : ""
+    const kubeconfigOpt = !clusterName || clusterName === kindClusterName ? `--kubeconfig ${await kubeconfig.path}` : ""
     const clusterOpt = clusterName ? `--cluster ${clusterName}` : ""
 
     const command = promisify(exec)

@@ -43,44 +43,79 @@ async function createKindCluster(clusterName: string) {
   }
 }
 
+export type KubeconfigFile = {
+  path: Promise<string>
+  rescan: () => Promise<unknown>
+  needsInitialization(): boolean
+  state: () => "Fetching" | "Valid" | "NoKindCli" | "NoKindCluster" | "Error"
+}
+
 /**
  * @return the `kubeconfig` for the given `clusterName`
  */
-export async function getKubeconfig(): ReturnType<typeof file> {
+export async function getKubeconfig(): Promise<KubeconfigFile> {
   const execPromise = promisify(exec)
   const kubeconfig = await file()
 
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve) => {
-    let done = false
-    let alreadyToldUserKindNotInstalled = false
+  let state: ReturnType<KubeconfigFile["state"]> = "Fetching"
 
-    while (!done) {
-      try {
-        const output = await execPromise(
-          `kind export kubeconfig -n ${clusterName} --kubeconfig ${kubeconfig.path}`,
-          execOpts,
-        )
-        if (process.env.DEBUG) {
-          console.log(output.stdout)
-          console.error(output.stderr)
-        }
-        resolve(kubeconfig)
-        done = true
-      } catch (err) {
-        if (/not found/.test(String(err))) {
-          if (!alreadyToldUserKindNotInstalled) {
-            alreadyToldUserKindNotInstalled = true
-            console.error("kind not installed")
+  function rescan() {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise<string>(async (resolve) => {
+      let done = false
+      let alreadyToldUserKindNotInstalled = false
+      let alreadyToldUserNoKindCluster = false
+
+      while (!done) {
+        try {
+          // invoke kind export kubeconfig
+          const output = await execPromise(
+            `kind export kubeconfig -n ${clusterName} --kubeconfig ${kubeconfig.path}`,
+            execOpts,
+          )
+
+          // log output if in DEBUG mode
+          if (process.env.DEBUG) {
+            console.log(output.stdout)
+            console.error(output.stderr)
           }
-        } else {
-          console.error(err)
-        }
 
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+          // success!
+          state = "Valid"
+          resolve(kubeconfig.path)
+          done = true // break out of the while loop
+        } catch (err) {
+          if (/not found/.test(String(err))) {
+            // kind not installed
+            state = "NoKindCli"
+            if (!alreadyToldUserKindNotInstalled) {
+              alreadyToldUserKindNotInstalled = true
+              console.error("kind not installed")
+            }
+          } else if (/could not locate any control plane nodes for cluster named/.test(String(err))) {
+            // kind cluster for JaaS Manager does not exist
+            state = "NoKindCluster"
+            if (!alreadyToldUserNoKindCluster) {
+              alreadyToldUserNoKindCluster = true
+              console.error("Management cluster not found")
+            }
+          } else {
+            state = "Error"
+            console.error(err)
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+        }
       }
-    }
-  })
+    })
+  }
+
+  return {
+    path: rescan(),
+    rescan,
+    state: () => state,
+    needsInitialization: () => state === "NoKindCli" || state === "NoKindCluster",
+  }
 }
 
 /**
@@ -89,18 +124,12 @@ export async function getKubeconfig(): ReturnType<typeof file> {
  * @return the name of the cluster and the kubeconfig to use against
  * the cluster
  */
-export default async function createKindClusterIfNeeded(action: Action) {
+export default async function createKindClusterIfNeeded(action: Action, kubeconfig: KubeconfigFile) {
   if (action !== "delete") {
     await checkPodman()
     await installKindCliIfNeeded()
     await createKindCluster(clusterName)
-  }
-
-  const kubeconfig = await getKubeconfig()
-
-  return {
-    clusterName,
-    kubeconfig,
+    await kubeconfig.rescan()
   }
 }
 

@@ -5,7 +5,7 @@ import { exec } from "node:child_process"
 import type Action from "./action"
 import type { FileResult } from "tmp-promise"
 
-export type ApplyProps = { action: Action; kubeconfig: FileResult }
+export type ApplyProps = { action: Action; kubeconfig: Pick<FileResult, "path"> }
 
 /**
  * Perform a Kubernetes apply of the given yaml against the given
