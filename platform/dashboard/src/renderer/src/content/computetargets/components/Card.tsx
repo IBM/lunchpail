@@ -37,8 +37,8 @@ export default function ComputeTargetCard(props: Props) {
 
   const initialize = mouseSetTo("initializing")
 
-  const name = props.metadata.name.replace(/^kind-/, "")
-  // const title = name // `${name}${refreshing ? " " + refreshingMessage({ refreshing: refreshing }) : ""}`
+  const { name } = props.metadata
+  const title = name.replace(/^kind-/, "")
 
   const descriptionListProps = { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true }
 
@@ -58,6 +58,7 @@ export default function ComputeTargetCard(props: Props) {
       size="sm"
       kind="computetargets"
       name={name}
+      title={title}
       groups={groups}
       footer={footer}
       icon={
