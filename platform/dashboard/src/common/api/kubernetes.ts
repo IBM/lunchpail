@@ -1,5 +1,6 @@
 import type Kind from "../Kind"
 import type ExecResponse from "../events/ExecResponse"
+import type ComputeTargetEvent from "../events/ComputeTargetEvent"
 import type KubernetesResource from "../events/KubernetesResource"
 
 export type DeleteProps = { kind: string; name: string; namespace: string }
@@ -28,6 +29,9 @@ export interface JayResourceApi {
 export default interface KubernetesApi extends Record<Kind, JayResourceApi> {
   /** Available Kubernetes contexts */
   contexts?(): Promise<{ config: KubeConfig; current: string }>
+
+  /** Delete the given named `ComputeTarget` */
+  deleteComputeTarget(target: ComputeTargetEvent)
 
   /** Fetch a resource */
   get?: <R extends KubernetesResource>(props: DeleteProps) => R | Promise<R>

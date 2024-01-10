@@ -4,9 +4,11 @@ import { ToolbarGroup, ToolbarItem, type ToolbarGroupProps } from "@patternfly/r
 /** Action buttons to be rendered in the Drawer footer */
 export default function Actions(props: Pick<ToolbarGroupProps, "variant"> & { children: ReactElement[] }) {
   return (
-    <ToolbarGroup variant={props.variant}>
+    <ToolbarGroup variant={props.variant} alignItems="center">
       {props.children.map((action) => (
-        <ToolbarItem key={action.key}>{action}</ToolbarItem>
+        <ToolbarItem key={action.key} alignSelf="center">
+          {action}
+        </ToolbarItem>
       ))}
     </ToolbarGroup>
   )

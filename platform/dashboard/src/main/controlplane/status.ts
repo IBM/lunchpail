@@ -5,7 +5,7 @@ import { doesKindClusterExist, type KubeconfigFile } from "./kind"
 /**
  * Check to see if we have a control plane cluster and facilities running
  */
-export async function getStatusFromMain(
+export default async function getControlPlaneStatus(
   kubeconfig: KubeconfigFile,
 ): Promise<import("@jay/common/status/JobManagerStatus").default> {
   const [location, podmanCli, podmanMachine, kubernetesCluster, jaasRuntime] = await Promise.all([
@@ -19,4 +19,4 @@ export async function getStatusFromMain(
   return { location, podmanCli, podmanMachine, kubernetesCluster, jaasRuntime }
 }
 
-export type Status = ReturnType<typeof getStatusFromMain>
+export type Status = ReturnType<typeof getControlPlaneStatus>

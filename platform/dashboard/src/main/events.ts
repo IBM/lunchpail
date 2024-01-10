@@ -1,7 +1,7 @@
 import { ipcMain, ipcRenderer } from "electron"
 
 import startStreamForKind from "./streams/kubernetes"
-import { Status, getStatusFromMain } from "./controlplane/status"
+import { type Status } from "./controlplane/status"
 import { getKubeconfig, type KubeconfigFile } from "./controlplane/kind"
 import { startStreamForKubernetesComputeTargets } from "./streams/computetargets"
 
@@ -163,6 +163,11 @@ export function initEvents() {
       import("./s3/getObject").then((_) => _.default(endpoint, accessKey, secretKey, bucket, object)),
   )
 
+  /** Delete the given named `ComputeTarget` */
+  ipcMain.handle("/computetargets/delete", (_, target: import("@jay/common/events/ComputeTargetEvent").default) =>
+    import("./streams/computetargets").then((_) => _.deleteComputeTarget(target)),
+  )
+
   // resource create request
   ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
     import("./kubernetes/create").then(async (_) => _.onCreate(yaml, "apply", await kubeconfigFile, dryRun)),
@@ -179,7 +184,9 @@ export function initEvents() {
   )
 
   // control plane status request
-  ipcMain.handle("/controlplane/status", async () => getStatusFromMain(await kubeconfigFile))
+  ipcMain.handle("/controlplane/status", () =>
+    import("./controlplane/status").then(async (_) => _.default(await kubeconfigFile)),
+  )
 
   // control plane setup request
   ipcMain.handle("/controlplane/init", async () => {
@@ -297,6 +304,11 @@ const apiImpl: JayApi = Object.assign(
       } else {
         throw new Error(response.message)
       }
+    },
+
+    /** Delete the given named `ComputeTarget` */
+    deleteComputeTarget(target: import("@jay/common/events/ComputeTargetEvent").default) {
+      return ipcRenderer.invoke("/computetargets/delete", target)
     },
 
     /** Fetch a resource */

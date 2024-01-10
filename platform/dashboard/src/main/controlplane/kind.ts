@@ -46,6 +46,12 @@ async function createKindCluster(clusterName: string) {
   }
 }
 
+/** Delete the given Kind cluster */
+export function deleteKindCluster(clusterName: string) {
+  const execPromise = promisify(exec)
+  return execPromise("kind delete cluster -n " + clusterName.replace(/^kind-/, ""), execOpts)
+}
+
 export type KubeconfigFile = {
   path: Promise<string>
   rescan: () => Promise<unknown>
@@ -145,4 +151,9 @@ export async function doesKindClusterExist() {
     console.error(e)
     return false
   }
+}
+
+/** Is the given Kubernetes context a kind cluster? */
+export function isKindCluster(context: import("@jay/common/api/kubernetes").KubeConfig["contexts"][number]["context"]) {
+  return /^kind-/.test(context.cluster)
 }

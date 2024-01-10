@@ -10,6 +10,9 @@ type ComputeTargetEvent = KubernetesResource<
     /** Is this cluster enabled to run workers? */
     isJaaSWorkerHost?: boolean
 
+    /** Does JaaS support deleting this ComputeTarget? */
+    isDeletable?: boolean
+
     /** If not specified, resources will be assumed to be in this namespace */
     defaultNamespace: string
 

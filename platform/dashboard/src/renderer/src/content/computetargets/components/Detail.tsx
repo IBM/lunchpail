@@ -14,6 +14,8 @@ import { descriptions } from "@jay/common/status/JobManagerStatus"
 import { singular as computetarget } from "@jay/renderer/content/computetargets/name"
 import { name as computepools, singular as computepool } from "@jay/renderer/content/workerpools/name"
 
+import DeleteAction from "./actions/delete"
+
 import type Props from "./Props"
 
 export default function JobManagerDetail(props: Props) {
@@ -71,6 +73,8 @@ export default function JobManagerDetail(props: Props) {
         labelOff="Not enabled for JaaS Workers"
       />
     </Tooltip>,
+
+    <DeleteAction key="delete" {...props} />,
   ]
 
   const summary = <DescriptionList groups={[...summaryGroups(demoMode, status.status, props), ...rest]} />

@@ -56,6 +56,11 @@ export default function DemoDashboard() {
         return true as const
       },
 
+      /** Delete the given named `ComputeTarget` */
+      deleteComputeTarget() {
+        throw new Error("Unsupported operation")
+      },
+
       deleteByName(dprops: import("@jay/common/api/jay").DeleteProps) {
         if (/workerpool/.test(dprops.kind)) {
           return props.workerpools.delete(dprops)
