@@ -14,7 +14,7 @@ function Filler() {
 export default function DrawerToolbar(props: { actions?: ReactElement[]; rightActions?: ReactElement[] }) {
   return (
     <Toolbar>
-      <ToolbarContent>
+      <ToolbarContent alignItems="center">
         <HistoryActions />
         <Filler />
 
