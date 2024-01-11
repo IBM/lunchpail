@@ -77,7 +77,10 @@ export default function JobManagerDetail(props: Props) {
     <DeleteAction key="delete" {...props} />,
   ]
 
-  const summary = <DescriptionList groups={[...summaryGroups(demoMode, status.status, props), ...rest]} />
+  const summary =
+    props.spec.isJaaSManager || props.spec.isJaaSWorkerHost ? (
+      <DescriptionList groups={[...summaryGroups(demoMode, status.status, props), ...rest]} />
+    ) : undefined
 
   return <DrawerContent summary={summary} raw={props} rightActions={rightActions} />
 }
