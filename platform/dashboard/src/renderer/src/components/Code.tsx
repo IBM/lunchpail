@@ -30,6 +30,8 @@ export default function Code(props: Props) {
   useEffect(() => {
     if (typeof props.children !== "string") {
       props.children.then(setData)
+    } else {
+      setData(props.children)
     }
   }, [props.children, setData])
 
