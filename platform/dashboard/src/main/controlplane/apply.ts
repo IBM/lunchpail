@@ -5,7 +5,12 @@ import { exec } from "node:child_process"
 import type Action from "./action"
 import type { FileResult } from "tmp-promise"
 
-export type ApplyProps = { action: Action; kubeconfig: Pick<FileResult, "path"> }
+export type ApplyProps = { action: Action; kubeconfig: Pick<FileResult, "path">; cluster?: string }
+
+/** Context and cluster options for kubectl command line */
+function clusterOpts(props: ApplyProps) {
+  return ["--kubeconfig", props.kubeconfig.path, ...(props.cluster ? ["--cluster", props.cluster] : [])]
+}
 
 /**
  * Perform a Kubernetes apply of the given yaml against the given
@@ -19,9 +24,7 @@ export default async function apply(yaml: string, props: ApplyProps) {
   await writeFile(yamlFile.path, yaml)
 
   const ok = await execPromise(
-    `kubectl ${props.action === "update" ? "apply" : props.action} --kubeconfig ${props.kubeconfig.path} -f ${
-      yamlFile.path
-    }`,
+    `kubectl ${props.action === "update" ? "apply" : props.action} ${clusterOpts(props).join(" ")} -f ${yamlFile.path}`,
   )
     .then((resp) => {
       console.log(resp)
@@ -47,7 +50,9 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
   await Promise.all(
     ["workdispatchers", "platformreposecrets", "secrets"].flatMap(async (kind) => {
       const resources = await execPromise(
-        `kubectl get --kubeconfig ${props.kubeconfig.path} ${kind} -A --ignore-not-found -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace --no-headers`,
+        `kubectl get ${clusterOpts(props).join(
+          " ",
+        )} ${kind} -A --ignore-not-found -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace --no-headers`,
       )
         .then((resp) => {
           const resources: [string, string][] = resp.stdout
@@ -67,7 +72,7 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
       return Promise.all(
         resources.map(([name, ns]) =>
           execPromise(
-            `kubectl delete --kubeconfig ${props.kubeconfig.path} ${kind} ${name} ${ns === "<none>" ? "" : "-n " + ns}`,
+            `kubectl delete ${clusterOpts(props).join(" ")} ${kind} ${name} ${ns === "<none>" ? "" : "-n " + ns}`,
           )
             .then((resp) => {
               console.log(resp)
@@ -87,13 +92,17 @@ export async function deleteJaaSManagedResources(props: ApplyProps) {
 export async function waitForNamespaceTermination(props: ApplyProps, component: "core" | "noncore") {
   const execPromise = promisify(exec)
   await execPromise(
-    `kubectl wait ns --kubeconfig ${props.kubeconfig.path} -l app.kubernetes.io/managed-by=codeflare.dev,app.kubernetes.io/component=${component} --for=delete --timeout=240s`,
+    `kubectl wait ns ${clusterOpts(props).join(
+      " ",
+    )} -l app.kubernetes.io/managed-by=codeflare.dev,app.kubernetes.io/component=${component} --for=delete --timeout=240s`,
   )
 }
 
 export async function restartControllers(props: ApplyProps) {
   const execPromise = promisify(exec)
   await execPromise(
-    `kubectl rollout restart deployment -n codeflare-system --kubeconfig ${props.kubeconfig.path} -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/component=controller`,
+    `kubectl rollout restart deployment -n codeflare-system ${clusterOpts(props).join(
+      " ",
+    )} -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/component=controller`,
   )
 }

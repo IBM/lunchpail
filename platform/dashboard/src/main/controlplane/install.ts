@@ -66,7 +66,12 @@ async function applyAll(_config: Config, props: ApplyProps) {
  * Initialize or destroy (based on the given `action`) the control
  * plane with the given `config`.
  */
-export default async function manageControlPlane(config: Config, action: Action, kubeconfig: KubeconfigFile) {
+export default async function manageControlPlane(
+  config: Config,
+  action: Action,
+  kubeconfig: KubeconfigFile,
+  cluster: string,
+) {
   await createKindClusterIfNeeded(action, kubeconfig)
-  await applyAll(config, { kubeconfig: { path: await kubeconfig.path }, action })
+  await applyAll(config, { kubeconfig: { path: await kubeconfig.path }, action, cluster })
 }

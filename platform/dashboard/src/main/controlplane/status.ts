@@ -1,4 +1,3 @@
-import { isRuntimeProvisioned } from "./runtime"
 import { isPodmanCliReady, isPodmanMachineReady } from "./podman"
 import { doesKindClusterExist, type KubeconfigFile } from "./kind"
 
@@ -7,16 +6,16 @@ import { doesKindClusterExist, type KubeconfigFile } from "./kind"
  */
 export default async function getControlPlaneStatus(
   kubeconfig: KubeconfigFile,
+  cluster: string,
 ): Promise<import("@jay/common/status/JobManagerStatus").default> {
-  const [location, podmanCli, podmanMachine, kubernetesCluster, jaasRuntime] = await Promise.all([
+  const [location, podmanCli, podmanMachine, kubernetesCluster] = await Promise.all([
     "local",
     isPodmanCliReady(),
     isPodmanMachineReady(),
-    kubeconfig.needsInitialization() ? false : doesKindClusterExist(),
-    kubeconfig.needsInitialization() ? false : isRuntimeProvisioned(kubeconfig),
+    kubeconfig.needsInitialization() ? false : doesKindClusterExist(cluster),
   ])
 
-  return { location, podmanCli, podmanMachine, kubernetesCluster, jaasRuntime }
+  return { location, podmanCli, podmanMachine, kubernetesCluster }
 }
 
 export type Status = ReturnType<typeof getControlPlaneStatus>

@@ -184,25 +184,25 @@ export function initEvents() {
   )
 
   // control plane status request
-  ipcMain.handle("/controlplane/status", () =>
-    import("./controlplane/status").then(async (_) => _.default(await kubeconfigFile)),
+  ipcMain.handle("/controlplane/status", (_, cluster: string) =>
+    import("./controlplane/status").then(async (_) => _.default(await kubeconfigFile, cluster)),
   )
 
   // control plane setup request
-  ipcMain.handle("/controlplane/init", async () => {
-    await import("./controlplane/install").then(async (_) => _.default("lite", "apply", await kubeconfigFile))
+  ipcMain.handle("/controlplane/init", async (_, cluster: string) => {
+    await import("./controlplane/install").then(async (_) => _.default("lite", "apply", await kubeconfigFile, cluster))
     return true
   })
 
   // control plane update (to latest version) request
-  ipcMain.handle("/controlplane/update", async () => {
-    await import("./controlplane/install").then(async (_) => _.default("lite", "update", await kubeconfigFile))
+  ipcMain.handle("/controlplane/update", async (_, cluster: string) => {
+    await import("./controlplane/install").then(async (_) => _.default("lite", "update", await kubeconfigFile, cluster))
     return true
   })
 
   // control plane teardown request
-  ipcMain.handle("/controlplane/destroy", async () => {
-    await import("./controlplane/install").then(async (_) => _.default("lite", "delete", await kubeconfigFile))
+  ipcMain.handle("/controlplane/destroy", async (_, cluster: string) => {
+    await import("./controlplane/install").then(async (_) => _.default("lite", "delete", await kubeconfigFile, cluster))
     return true
   })
 }
@@ -234,18 +234,18 @@ const apiImpl: JayApi = Object.assign(
   {
     /** Jobs as a Service API to server-side control plane functionality */
     controlplane: {
-      async status() {
-        const status = (await ipcRenderer.invoke("/controlplane/status")) as Status
+      async status(cluster: string) {
+        const status = (await ipcRenderer.invoke("/controlplane/status", cluster)) as Status
         return status
       },
-      init() {
-        return ipcRenderer.invoke("/controlplane/init")
+      init(cluster: string) {
+        return ipcRenderer.invoke("/controlplane/init", cluster)
       },
-      update() {
-        return ipcRenderer.invoke("/controlplane/update")
+      update(cluster: string) {
+        return ipcRenderer.invoke("/controlplane/update", cluster)
       },
-      destroy() {
-        return ipcRenderer.invoke("/controlplane/destroy")
+      destroy(cluster: string) {
+        return ipcRenderer.invoke("/controlplane/destroy", cluster)
       },
     },
 

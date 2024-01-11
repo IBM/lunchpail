@@ -3,6 +3,7 @@ import { Readable } from "node:stream"
 import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
 
 import { getConfig } from "../kubernetes/contexts"
+import getControlPlaneStatus from "../controlplane/status"
 import { isRuntimeProvisioned } from "../controlplane/runtime"
 import {
   isKindCluster,
@@ -16,7 +17,7 @@ function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
     apiVersion: "codeflare.dev/v1alpha1" as const,
     kind: "ComputeTarget" as const,
     metadata: {
-      name: cluster === controlPlaneClusterName ? "JaaS Manager" : cluster,
+      name: cluster,
       namespace: "",
       creationTimestamp: new Date().toUTCString(),
       annotations: {
@@ -25,6 +26,20 @@ function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
     },
     spec,
   }
+}
+
+/**
+ * Construct a new `ComputeTargetEvent` for the main/managent cluster
+ * when we are starting from a blank slate, e.g., a laptop that needs
+ * initialization.
+ */
+async function Placeholder(kubeconfig: KubeconfigFile) {
+  return ComputeTargetEvent(controlPlaneClusterName, {
+    jaasManager: await getControlPlaneStatus(await kubeconfig, controlPlaneClusterName),
+    isJaaSWorkerHost: false, // not yet initialized as such
+    user: { name: "unknown", user: undefined },
+    defaultNamespace: "",
+  })
 }
 
 /** Morph `event` to be in a Terminating state */
@@ -46,30 +61,36 @@ async function* computeTargetsGenerator(
       if ((await kubeconfig).needsInitialization()) {
         // then return a placeholder `ComputeTargetEvent`, so that the
         // UI can show this fact to the user
-        yield [
-          ComputeTargetEvent(controlPlaneClusterName, {
-            isJaaSManager: true,
-            isJaaSWorkerHost: false, // not yet initialized as such
-            user: { name: "unknown", user: undefined },
-            defaultNamespace: "",
-          }),
-        ]
+        yield [await Placeholder(await kubeconfig)]
       } else {
         // Otherwise, we have a JaaS control plane. Query it for the
         // list of Kubernetes contexts, and transform these into
         // `ComputeTargetEvents`.
         const config = await getConfig()
         const events = await Promise.all(
-          (config.contexts || []).map(async ({ context }) =>
-            ComputeTargetEvent(context.cluster, {
+          (config.contexts || []).map(async ({ context }) => {
+            const [jaasManager, isJaaSWorkerHost] = await Promise.all([
+              context.cluster !== controlPlaneClusterName
+                ? (false as const)
+                : getControlPlaneStatus(await kubeconfig, context.cluster),
+              isRuntimeProvisioned(await kubeconfig, context.cluster, true).catch(() => false),
+            ])
+
+            return ComputeTargetEvent(context.cluster, {
+              jaasManager,
+              isJaaSWorkerHost,
               isDeletable: isKindCluster(context),
-              isJaaSManager: context.cluster === controlPlaneClusterName,
-              isJaaSWorkerHost: await isRuntimeProvisioned(await kubeconfig, context.cluster, true).catch(() => false),
-              user: config.users.find((_) => _.name === context.user) || { name: "user not found", user: false },
               defaultNamespace: context.namespace,
-            }),
-          ),
+              user: config.users.find((_) => _.name === context.user) || { name: "user not found", user: false },
+            })
+          }),
         )
+
+        if (!events.find((_) => _.metadata.name === controlPlaneClusterName)) {
+          // then the controlplane cluster went away, perhaps the user
+          // deleted it outside of our purview
+          events.push(await Placeholder(await kubeconfig))
+        }
 
         yield events
       }

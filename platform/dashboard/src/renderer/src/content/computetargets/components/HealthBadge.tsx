@@ -1,5 +1,9 @@
-import { JobManagerStatus } from "@jay/renderer/Status"
+import type Props from "./Props"
 
-export function isHealthy(status: null | JobManagerStatus) {
-  return status?.kubernetesCluster && status?.jaasRuntime
+export function isHealthy(props: Props) {
+  return props.spec.isJaaSWorkerHost
+}
+
+export function status(props: Props) {
+  return props.metadata.annotations["codeflare.dev/status"]
 }

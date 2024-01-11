@@ -1,12 +1,12 @@
 import { useContext, useCallback } from "react"
+import camelCaseSplit from "@jay/renderer/util/camel-split"
 import { Spinner, Switch, Tooltip } from "@patternfly/react-core"
 
-import Status from "@jay/renderer/Status"
 import Settings from "@jay/renderer/Settings"
-import camelCaseSplit from "@jay/renderer/util/camel-split"
 import DrawerContent from "@jay/components/Drawer/Content"
 
 import { summaryGroups } from "./Card"
+import { status } from "./HealthBadge"
 
 import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
 import { descriptions } from "@jay/common/status/JobManagerStatus"
@@ -19,28 +19,30 @@ import DeleteAction from "./actions/delete"
 import type Props from "./Props"
 
 export default function JobManagerDetail(props: Props) {
-  const status = useContext(Status)
   const settings = useContext(Settings)
-
   const demoMode = settings?.demoMode[0] ?? false
 
   const rest =
-    demoMode || !status.status
+    demoMode || !props.spec.jaasManager
       ? []
-      : Object.entries(status.status).map(([key, value]) =>
+      : Object.entries(props.spec.jaasManager).map(([key, value]) =>
           descriptionGroup(camelCaseSplit(key), value, undefined, descriptions[key]),
         )
 
   const toggle = useCallback(
-    () => status.setTo((current) => (current === null ? "destroying" : "initializing")),
-    [status],
+    () =>
+      props.spec.isJaaSWorkerHost
+        ? window.jay.controlplane.destroy(props.metadata.name)
+        : window.jay.controlplane.init(props.metadata.name),
+    [props.spec.isJaaSWorkerHost, window.jay.controlplane.destroy, window.jay.controlplane.init],
   )
-  // const destroyButtonIsLoading = status.refreshing === "destroying"
+
+  const currentStatus = status(props)
 
   const tooltip =
-    status.refreshing === "destroying"
+    currentStatus === "destroying"
       ? `Removing JaaS support from this ${computetarget}`
-      : status.refreshing === "initializing"
+      : currentStatus === "initializing"
         ? `Installing JaaS support on this ${computetarget}`
         : props.spec.isJaaSWorkerHost
           ? `This ${computetarget} is enabled to run ${computepools} Workers. Click to remove.`
@@ -52,16 +54,16 @@ export default function JobManagerDetail(props: Props) {
         hasCheckIcon
         isReversed
         onClick={toggle}
-        isDisabled={status.refreshing !== null}
+        isDisabled={currentStatus === "initializing" || currentStatus === "destroying"}
         data-ouia-component-id="comptueTargetEnableSwitch"
         isChecked={props.spec.isJaaSWorkerHost}
         label={
-          status.refreshing === "destroying" ? (
+          currentStatus === "destroying" ? (
             <>
               <Spinner size="sm" />
               Deprovisioning
             </>
-          ) : status.refreshing === "initializing" ? (
+          ) : currentStatus === "initializing" ? (
             <>
               <Spinner size="sm" />
               Initializing
@@ -78,8 +80,8 @@ export default function JobManagerDetail(props: Props) {
   ]
 
   const summary =
-    props.spec.isJaaSManager || props.spec.isJaaSWorkerHost ? (
-      <DescriptionList groups={[...summaryGroups(demoMode, status.status, props), ...rest]} />
+    !!props.spec.jaasManager || props.spec.isJaaSWorkerHost ? (
+      <DescriptionList groups={[...summaryGroups(demoMode, props), ...rest]} />
     ) : undefined
 
   return <DrawerContent summary={summary} raw={props} rightActions={rightActions} />

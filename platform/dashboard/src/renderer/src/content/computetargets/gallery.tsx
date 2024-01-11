@@ -10,8 +10,8 @@ type GalleryEvent = ManagedEvents["computetargets"][number]
 
 /** Sort ComputeTargets to place those with `isControlPlane` towards the front */
 function sorter(a: GalleryEvent, b: GalleryEvent) {
-  const aIsManager = a.spec.isJaaSManager
-  const bIsManager = b.spec.isJaaSManager
+  const aIsManager = !!a.spec.jaasManager
+  const bIsManager = !!b.spec.jaasManager
   if ((aIsManager && bIsManager) || (!aIsManager && !bIsManager)) {
     return a.metadata.name.localeCompare(b.metadata.name)
   } else if (aIsManager) {

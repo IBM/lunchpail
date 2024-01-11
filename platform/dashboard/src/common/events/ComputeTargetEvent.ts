@@ -1,11 +1,12 @@
 import type KubernetesResource from "./KubernetesResource"
+import type ControlPlaneStatus from "../status/JobManagerStatus"
 
 type ComputeTargetEvent = KubernetesResource<
   "codeflare.dev/v1alpha1",
   "ComputeTarget",
   {
     /** Is this cluster the head manager of resources? */
-    isJaaSManager?: boolean
+    jaasManager: false | ControlPlaneStatus
 
     /** Is this cluster enabled to run workers? */
     isJaaSWorkerHost?: boolean

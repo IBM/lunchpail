@@ -142,11 +142,11 @@ export default async function createKindClusterIfNeeded(action: Action, kubeconf
   }
 }
 
-export async function doesKindClusterExist() {
+export async function doesKindClusterExist(clusterName: string) {
   try {
     const command = promisify(exec)
     const result = await command("kind get clusters", execOpts)
-    return result.stdout.includes(clusterName)
+    return result.stdout.includes(clusterName.replace(/^kind-/, ""))
   } catch (e) {
     console.error(e)
     return false
