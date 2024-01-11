@@ -1,5 +1,5 @@
 import { type ReactNode, type ReactElement } from "react"
-import { Divider, DrawerPanelBody, Tabs, type Tab } from "@patternfly/react-core"
+import { Divider, DrawerPanelBody, Tabs, type TabProps } from "@patternfly/react-core"
 
 import Yaml from "../YamlFromObject"
 import DrawerTab from "./Tab"
@@ -22,7 +22,7 @@ type TabsProps = {
   defaultActiveKey?: string
 
   /** Other Tab elements that will be shown between Summary and YAML tabs */
-  otherTabs?: ReactElement<typeof Tab>[]
+  otherTabs?: ReactElement<TabProps>[]
 }
 
 type Props = TabsProps & {
@@ -106,7 +106,7 @@ function TabbedContent(props: TabsProps) {
   ]
 
   return (
-    <Tabs defaultActiveKey={props.defaultActiveKey ?? "Summary"} mountOnEnter isFilled>
+    <Tabs defaultActiveKey={props.defaultActiveKey ?? tabs[0].props.eventKey} mountOnEnter isFilled>
       {tabs}
     </Tabs>
   )
