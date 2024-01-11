@@ -10,6 +10,7 @@ import {
   type KubeconfigFile,
 } from "../controlplane/kind"
 
+/** Construct a new `ComputeTargetEvent` */
 function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
   return {
     apiVersion: "codeflare.dev/v1alpha1" as const,
@@ -24,6 +25,12 @@ function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
     },
     spec,
   }
+}
+
+/** Morph `event` to be in a Terminating state */
+function terminating(event: ComputeTargetEvent) {
+  event.metadata.annotations["codeflare.dev/status"] = "Terminating"
+  return event
 }
 
 /**
@@ -75,10 +82,44 @@ async function* computeTargetsGenerator(
 }
 
 /**
- * @return generator of stringified 'ComputeTargetEvent` models
+ * Add any events in `previous` that aren't in `current`, but
+ * transformed to be in a Terminating state.
+ */
+function addDeletions(previous: ComputeTargetEvent[], current: ComputeTargetEvent[]) {
+  const A = previous.reduce(
+    (M, e) => {
+      M[e.metadata.name] = e
+      return M
+    },
+    {} as Record<string, ComputeTargetEvent>,
+  )
+  const B = current.reduce(
+    (M, e) => {
+      M[e.metadata.name] = e
+      return M
+    },
+    {} as Record<string, ComputeTargetEvent>,
+  )
+
+  for (const [key, value] of Object.entries(A)) {
+    if (!(key in B)) {
+      current.push(terminating(value))
+    }
+  }
+
+  return current
+}
+
+/**
+ * @return generator of stringified 'ComputeTargetEvent` models, also including notification of deletions
  */
 async function* computeTargetsStringGenerator(kubeconfig: Promise<KubeconfigFile>): AsyncGenerator<string> {
+  let previousModel: ComputeTargetEvent[] | null = null
   for await (const events of computeTargetsGenerator(kubeconfig)) {
+    if (previousModel !== null) {
+      addDeletions(previousModel, events)
+    }
+    previousModel = events
     yield JSON.stringify(events)
   }
 }
