@@ -3,18 +3,16 @@ import { promisify } from "node:util"
 import { exec } from "node:child_process"
 
 import type Action from "./action"
-import type { FileResult } from "tmp-promise"
 
-export type ApplyProps = { action: Action; kubeconfig: Pick<FileResult, "path">; cluster?: string }
+export type ApplyProps = { action: Action; cluster: string }
 
 /** Context and cluster options for kubectl command line */
 function clusterOpts(props: ApplyProps) {
-  return ["--kubeconfig", props.kubeconfig.path, ...(props.cluster ? ["--cluster", props.cluster] : [])]
+  return ["--context", props.cluster]
 }
 
 /**
- * Perform a Kubernetes apply of the given yaml against the given
- * props.kubeconfig
+ * Perform a Kubernetes apply of the given yaml
  */
 export default async function apply(yaml: string, props: ApplyProps) {
   const execPromise = promisify(exec)

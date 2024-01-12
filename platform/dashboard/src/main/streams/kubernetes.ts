@@ -5,7 +5,7 @@ import { EventEmitter } from "node:events"
 import transformToJSON from "./json-transformer"
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-import { type KubeconfigFile } from "../controlplane/kind"
+import { clusterNameForKubeconfig } from "../controlplane/kind"
 
 // This will need to be adjusted as we add more resources Kinds to track */
 EventEmitter.defaultMaxListeners = 30
@@ -25,15 +25,14 @@ type Props = {
  */
 export default async function startStreamForKind(
   kind: string,
-  kubeconfig: Promise<KubeconfigFile>,
   { withTimestamp = false, selectors }: Partial<Props> = {},
 ) {
   try {
     const child = spawn("kubectl", [
       "get",
       kind,
-      "--kubeconfig",
-      await (await kubeconfig).path,
+      "--context",
+      clusterNameForKubeconfig,
       "-A",
       "--watch",
       "-o=json",

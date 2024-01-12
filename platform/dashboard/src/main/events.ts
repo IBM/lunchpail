@@ -2,7 +2,6 @@ import { ipcMain, ipcRenderer } from "electron"
 
 import startStreamForKind from "./streams/kubernetes"
 import { type Status } from "./controlplane/status"
-import { getKubeconfig, type KubeconfigFile } from "./controlplane/kind"
 import { startStreamForKubernetesComputeTargets } from "./streams/computetargets"
 
 import type WatchedKind from "@jay/common/Kind"
@@ -11,24 +10,24 @@ import type ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-function streamForKind(kind: WatchedKind, kubeconfig: Promise<KubeconfigFile>): Promise<import("stream").Readable> {
+function streamForKind(kind: WatchedKind): Promise<import("stream").Readable> {
   switch (kind) {
     case "computetargets":
-      return Promise.resolve(startStreamForKubernetesComputeTargets(kubeconfig))
+      return Promise.resolve(startStreamForKubernetesComputeTargets())
     case "taskqueues":
-      return startStreamForKind("datasets", kubeconfig, { selectors: ["app.kubernetes.io/component=taskqueue"] })
+      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component=taskqueue"] })
     case "datasets":
-      return startStreamForKind("datasets", kubeconfig, { selectors: ["app.kubernetes.io/component!=taskqueue"] })
+      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component!=taskqueue"] })
     case "queues":
-      return startStreamForKind("queues.codeflare.dev", kubeconfig, { withTimestamp: true })
+      return startStreamForKind("queues.codeflare.dev", { withTimestamp: true })
     case "workerpools":
-      return startStreamForKind("workerpools.codeflare.dev", kubeconfig)
+      return startStreamForKind("workerpools.codeflare.dev")
     case "platformreposecrets":
-      return startStreamForKind("platformreposecrets.codeflare.dev", kubeconfig)
+      return startStreamForKind("platformreposecrets.codeflare.dev")
     case "applications":
-      return startStreamForKind("applications.codeflare.dev", kubeconfig)
+      return startStreamForKind("applications.codeflare.dev")
     case "workdispatchers":
-      return startStreamForKind("workdispatchers.codeflare.dev", kubeconfig)
+      return startStreamForKind("workdispatchers.codeflare.dev")
   }
 }
 
@@ -38,7 +37,7 @@ function streamForKind(kind: WatchedKind, kubeconfig: Promise<KubeconfigFile>): 
  * a watcher against the given `kind` of resource. It will pass back
  * any messages to the sender of that message.
  */
-function initStreamForResourceKind(kind: WatchedKind, kubeconfig: Promise<KubeconfigFile>) {
+function initStreamForResourceKind(kind: WatchedKind) {
   const openEvent = `/${kind}/open`
   const dataEvent = `/${kind}/event`
   const closeEvent = `/${kind}/close`
@@ -57,7 +56,7 @@ function initStreamForResourceKind(kind: WatchedKind, kubeconfig: Promise<Kubeco
     let closedOnPurpose = false
 
     const init = async () => {
-      const myStream = await streamForKind(kind, kubeconfig)
+      const myStream = await streamForKind(kind)
 
       // callback to renderer
       const cb = (model) => {
@@ -124,8 +123,7 @@ const logsCloseChannel = (selector: string, namespace: string) => `/logs/${names
 export function initEvents() {
   // listen for /open events from the renderer, one per `Kind` of
   // resource
-  const kubeconfigFile = getKubeconfig()
-  kinds.forEach((kind) => initStreamForResourceKind(kind, kubeconfigFile))
+  kinds.forEach((kind) => initStreamForResourceKind(kind))
 
   // logs
   ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, follow: boolean) => {
@@ -139,7 +137,7 @@ export function initEvents() {
 
   // resource get request
   ipcMain.handle("/get", (_, props: string) =>
-    import("./kubernetes/get").then(async (_) => _.onGet(JSON.parse(props) as DeleteProps, await kubeconfigFile)),
+    import("./kubernetes/get").then((_) => _.onGet(JSON.parse(props) as DeleteProps)),
   )
 
   ipcMain.handle("/s3/listProfiles", () => import("./s3/listProfiles").then((_) => _.default()))
@@ -170,13 +168,11 @@ export function initEvents() {
 
   // resource create request
   ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
-    import("./kubernetes/create").then(async (_) => _.onCreate(yaml, "apply", await kubeconfigFile, dryRun)),
+    import("./kubernetes/create").then((_) => _.onCreate(yaml, "apply", dryRun)),
   )
 
   // resource delete request given the yaml spec
-  ipcMain.handle("/delete/yaml", (_, yaml: string) =>
-    import("./kubernetes/create").then(async (_) => _.onDelete(yaml, await kubeconfigFile)),
-  )
+  ipcMain.handle("/delete/yaml", (_, yaml: string) => import("./kubernetes/create").then((_) => _.onDelete(yaml)))
 
   // resource delete request by name
   ipcMain.handle("/delete/name", (_, props: string) =>
@@ -185,24 +181,24 @@ export function initEvents() {
 
   // control plane status request
   ipcMain.handle("/controlplane/status", (_, cluster: string) =>
-    import("./controlplane/status").then(async (_) => _.default(await kubeconfigFile, cluster)),
+    import("./controlplane/status").then((_) => _.default(cluster)),
   )
 
   // control plane setup request
   ipcMain.handle("/controlplane/init", async (_, cluster: string) => {
-    await import("./controlplane/install").then(async (_) => _.default("lite", "apply", await kubeconfigFile, cluster))
+    await import("./controlplane/install").then((_) => _.default("lite", "apply", cluster))
     return true
   })
 
   // control plane update (to latest version) request
   ipcMain.handle("/controlplane/update", async (_, cluster: string) => {
-    await import("./controlplane/install").then(async (_) => _.default("lite", "update", await kubeconfigFile, cluster))
+    await import("./controlplane/install").then((_) => _.default("lite", "update", cluster))
     return true
   })
 
   // control plane teardown request
   ipcMain.handle("/controlplane/destroy", async (_, cluster: string) => {
-    await import("./controlplane/install").then(async (_) => _.default("lite", "delete", await kubeconfigFile, cluster))
+    await import("./controlplane/install").then((_) => _.default("lite", "delete", cluster))
     return true
   })
 }

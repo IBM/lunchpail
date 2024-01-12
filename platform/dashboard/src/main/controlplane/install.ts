@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import createKindClusterIfNeeded, { type KubeconfigFile } from "./kind"
+import createKindClusterIfNeeded from "./kind"
 import apply, { deleteJaaSManagedResources, restartControllers, waitForNamespaceTermination } from "./apply"
 
 import type Action from "./action"
@@ -66,12 +66,7 @@ async function applyAll(_config: Config, props: ApplyProps) {
  * Initialize or destroy (based on the given `action`) the control
  * plane with the given `config`.
  */
-export default async function manageControlPlane(
-  config: Config,
-  action: Action,
-  kubeconfig: KubeconfigFile,
-  cluster: string,
-) {
-  await createKindClusterIfNeeded(action, kubeconfig)
-  await applyAll(config, { kubeconfig: { path: await kubeconfig.path }, action, cluster })
+export default async function manageControlPlane(config: Config, action: Action, cluster: string) {
+  await createKindClusterIfNeeded(action)
+  await applyAll(config, { action, cluster })
 }

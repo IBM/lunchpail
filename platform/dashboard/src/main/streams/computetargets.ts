@@ -5,11 +5,7 @@ import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
 import { getConfig } from "../kubernetes/contexts"
 import getControlPlaneStatus from "../controlplane/status"
 import { isRuntimeProvisioned } from "../controlplane/runtime"
-import {
-  isKindCluster,
-  clusterNameForKubeconfig as controlPlaneClusterName,
-  type KubeconfigFile,
-} from "../controlplane/kind"
+import { isKindCluster, clusterNameForKubeconfig as controlPlaneClusterName } from "../controlplane/kind"
 
 /** Construct a new `ComputeTargetEvent` */
 function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
@@ -33,9 +29,9 @@ function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
  * when we are starting from a blank slate, e.g., a laptop that needs
  * initialization.
  */
-async function Placeholder(kubeconfig: KubeconfigFile) {
+async function Placeholder() {
   return ComputeTargetEvent(controlPlaneClusterName, {
-    jaasManager: await getControlPlaneStatus(await kubeconfig, controlPlaneClusterName),
+    jaasManager: await getControlPlaneStatus(controlPlaneClusterName),
     isJaaSWorkerHost: false, // not yet initialized as such
     user: { name: "unknown", user: undefined },
     defaultNamespace: "",
@@ -51,18 +47,16 @@ function terminating(event: ComputeTargetEvent) {
 /**
  * @return generator of 'ComputeTargetEvent' models
  */
-async function* computeTargetsGenerator(
-  kubeconfig: Promise<KubeconfigFile>,
-): AsyncGenerator<ComputeTargetEvent[], void, undefined> {
+async function* computeTargetsGenerator(): AsyncGenerator<ComputeTargetEvent[], void, undefined> {
   // TODO: instead of this polling loop, use a filewatch-based trigger
   // on ~/.kube/config or $KUBECONFIG?
   while (true) {
     try {
-      if ((await kubeconfig).needsInitialization()) {
+      /*if ((await kubeconfig).needsInitialization()) {
         // then return a placeholder `ComputeTargetEvent`, so that the
         // UI can show this fact to the user
         yield [await Placeholder(await kubeconfig)]
-      } else {
+      } else*/ {
         // Otherwise, we have a JaaS control plane. Query it for the
         // list of Kubernetes contexts, and transform these into
         // `ComputeTargetEvents`.
@@ -70,10 +64,8 @@ async function* computeTargetsGenerator(
         const events = await Promise.all(
           (config.contexts || []).map(async ({ context }) => {
             const [jaasManager, isJaaSWorkerHost] = await Promise.all([
-              context.cluster !== controlPlaneClusterName
-                ? (false as const)
-                : getControlPlaneStatus(await kubeconfig, context.cluster),
-              isRuntimeProvisioned(await kubeconfig, context.cluster, true).catch(() => false),
+              context.cluster !== controlPlaneClusterName ? (false as const) : getControlPlaneStatus(context.cluster),
+              isRuntimeProvisioned(context.cluster, true).catch(() => false),
             ])
 
             return ComputeTargetEvent(context.cluster, {
@@ -89,7 +81,7 @@ async function* computeTargetsGenerator(
         if (!events.find((_) => _.metadata.name === controlPlaneClusterName)) {
           // then the controlplane cluster went away, perhaps the user
           // deleted it outside of our purview
-          events.push(await Placeholder(await kubeconfig))
+          events.push(await Placeholder())
         }
 
         yield events
@@ -134,9 +126,9 @@ function addDeletions(previous: ComputeTargetEvent[], current: ComputeTargetEven
 /**
  * @return generator of stringified 'ComputeTargetEvent` models, also including notification of deletions
  */
-async function* computeTargetsStringGenerator(kubeconfig: Promise<KubeconfigFile>): AsyncGenerator<string> {
+async function* computeTargetsStringGenerator(): AsyncGenerator<string> {
   let previousModel: ComputeTargetEvent[] | null = null
-  for await (const events of computeTargetsGenerator(kubeconfig)) {
+  for await (const events of computeTargetsGenerator()) {
     if (previousModel !== null) {
       addDeletions(previousModel, events)
     }
@@ -148,8 +140,8 @@ async function* computeTargetsStringGenerator(kubeconfig: Promise<KubeconfigFile
 /**
  * @return stream of stringified 'ComputeTargetEvent` models
  */
-export function startStreamForKubernetesComputeTargets(kubeconfig: Promise<KubeconfigFile>) {
-  return Readable.from(computeTargetsStringGenerator(kubeconfig))
+export function startStreamForKubernetesComputeTargets() {
+  return Readable.from(computeTargetsStringGenerator())
 }
 
 import { hasMessage } from "../kubernetes/create"

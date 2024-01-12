@@ -1,23 +1,18 @@
-import { type KubeconfigFile } from "../controlplane/kind"
 import ExecResponse from "@jay/common/events/ExecResponse"
+import { clusterNameForKubeconfig } from "../controlplane/kind"
 
 /**
  * Create a resource using the given `yaml` spec.
  */
-export async function onCreate(
-  yaml: string,
-  action: "apply" | "delete",
-  kubeconfig: KubeconfigFile,
-  dryRun = false,
-): Promise<ExecResponse> {
-  const [kubeconfigPath, { spawn }] = await Promise.all([kubeconfig.path, import("node:child_process")])
+export async function onCreate(yaml: string, action: "apply" | "delete", dryRun = false): Promise<ExecResponse> {
+  const [{ spawn }] = await Promise.all([import("node:child_process")])
 
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
       const child = spawn(
         "kubectl",
-        [action, "--kubeconfig", kubeconfigPath, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])],
+        [action, "--context", clusterNameForKubeconfig, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])],
         {
           stdio: ["pipe", "inherit", "pipe"],
         },
@@ -51,8 +46,8 @@ export function hasMessage(obj: unknown): obj is { message: string } {
 /**
  * Delete a resource by name
  */
-export async function onDelete(yaml: string, kubeconfig: KubeconfigFile): Promise<ExecResponse> {
-  return onCreate(yaml, "delete", kubeconfig)
+export async function onDelete(yaml: string): Promise<ExecResponse> {
+  return onCreate(yaml, "delete")
 }
 
 /**
