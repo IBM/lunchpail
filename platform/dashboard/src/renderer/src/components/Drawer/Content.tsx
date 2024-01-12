@@ -1,31 +1,10 @@
-import { type ReactNode, type ReactElement } from "react"
-import { Divider, DrawerPanelBody, Tabs, type TabProps } from "@patternfly/react-core"
+import { type ReactElement } from "react"
+import { Divider, DrawerPanelBody } from "@patternfly/react-core"
 
-import Yaml from "../YamlFromObject"
-import DrawerTab from "./Tab"
 import DrawerToolbar from "./Toolbar"
-import DetailNotFound from "../DetailNotFound"
+import TabbedContent from "./TabbedContent"
 
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
-
-/**
- * Properties for a set of Tabs shown in the slide-out Drawer
- */
-type TabsProps = {
-  /** Content to show in the Summary Tab */
-  summary?: ReactNode
-
-  /** Content to show in the YAML Tab */
-  raw?: KubernetesResource | null
-
-  /** Id of the default active Tab */
-  defaultActiveKey?: string
-
-  /** Other Tab elements that will be shown between Summary and YAML tabs */
-  otherTabs?: ReactElement<TabProps>[]
-}
-
-type Props = TabsProps & {
+type Props = import("./TabbedContent").Props & {
   /** Actions to be displayed left-justified */
   actions?: ReactElement[]
 
@@ -92,22 +71,5 @@ function footerPart(props: Props) {
         </DrawerPanelBody>
       </>
     )
-  )
-}
-
-/**
- * The Tabs and Body parts of `DrawerContent`
- */
-function TabbedContent(props: TabsProps) {
-  const tabs = [
-    ...(!props.summary ? [] : [DrawerTab({ title: "Summary", body: props.summary || <DetailNotFound /> })]),
-    ...(props.otherTabs || []),
-    ...(!props.raw ? [] : [DrawerTab({ title: "YAML", body: <Yaml obj={props.raw} readOnly />, hasNoPadding: true })]),
-  ]
-
-  return (
-    <Tabs defaultActiveKey={props.defaultActiveKey ?? tabs[0].props.eventKey} mountOnEnter isFilled>
-      {tabs}
-    </Tabs>
   )
 }
