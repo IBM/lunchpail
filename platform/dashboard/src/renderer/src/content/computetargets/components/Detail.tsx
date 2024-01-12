@@ -1,8 +1,7 @@
-import { useContext, useCallback } from "react"
+import { useCallback } from "react"
 import camelCaseSplit from "@jay/renderer/util/camel-split"
 import { Spinner, Switch, Tooltip } from "@patternfly/react-core"
 
-import Settings from "@jay/renderer/Settings"
 import DrawerContent from "@jay/components/Drawer/Content"
 
 import { summaryGroups } from "./Card"
@@ -19,15 +18,11 @@ import DeleteAction from "./actions/delete"
 import type Props from "./Props"
 
 export default function JobManagerDetail(props: Props) {
-  const settings = useContext(Settings)
-  const demoMode = settings?.demoMode[0] ?? false
-
-  const rest =
-    demoMode || !props.spec.jaasManager
-      ? []
-      : Object.entries(props.spec.jaasManager).map(([key, value]) =>
-          descriptionGroup(camelCaseSplit(key), value, undefined, descriptions[key]),
-        )
+  const rest = !props.spec.jaasManager
+    ? []
+    : Object.entries(props.spec.jaasManager).map(([key, value]) =>
+        descriptionGroup(camelCaseSplit(key), value, undefined, descriptions[key]),
+      )
 
   const toggle = useCallback(
     () =>
@@ -81,7 +76,7 @@ export default function JobManagerDetail(props: Props) {
 
   const summary =
     !!props.spec.jaasManager || props.spec.isJaaSWorkerHost ? (
-      <DescriptionList groups={[...summaryGroups(demoMode, props), ...rest]} />
+      <DescriptionList groups={[...summaryGroups(props), ...rest]} />
     ) : undefined
 
   return <DrawerContent summary={summary} raw={props} rightActions={rightActions} />

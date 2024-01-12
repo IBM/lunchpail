@@ -1,4 +1,4 @@
-import { useCallback, useContext } from "react"
+import { useCallback } from "react"
 import { Button } from "@patternfly/react-core"
 
 import Icon from "./Icon"
@@ -8,20 +8,22 @@ import { isHealthy, status } from "./HealthBadge"
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
-import Settings from "@jay/renderer/Settings"
+export function summaryGroups(props: Props) {
+  const statusMessage = status(props)
 
-export function summaryGroups(demoMode: boolean, props: Props) {
-  const statusMessage = demoMode ? "Demo mode" : !status ? "Checking..." : isHealthy(props) ? "Healthy" : "Not ready"
-
-  return [...(props.spec.jaasManager ? [descriptionGroup("Manager Status", statusMessage)] : [])]
+  return [
+    descriptionGroup(
+      "Role",
+      props.spec.jaasManager ? "JaaS Manager" : props.spec.isJaaSWorkerHost ? "Worker Host" : "Not JaaS-enabled",
+    ),
+    descriptionGroup("Status", statusMessage),
+    descriptionGroup("Type", props.spec.type),
+  ]
 }
 
 const descriptionListProps = { isCompact: true, isHorizontal: true, isAutoFit: true, isAutoColumnWidths: true }
 
 export default function ComputeTargetCard(props: Props) {
-  const settings = useContext(Settings)
-  const demoMode = settings?.demoMode[0] ?? false
-
   const initialize = useCallback(
     () => window.jay.controlplane.init(props.metadata.name),
     [window.jay.controlplane.init],
@@ -32,9 +34,9 @@ export default function ComputeTargetCard(props: Props) {
 
   const currentStatus = status(props)
 
-  const groups = summaryGroups(demoMode, props)
+  const groups = summaryGroups(props)
 
-  const footer = !demoMode && !!props.spec.jaasManager && (!isHealthy(props) || currentStatus === "initializing") && (
+  const footer = !!props.spec.jaasManager && (!isHealthy(props) || currentStatus === "initializing") && (
     <Button isBlock onClick={initialize} isLoading={currentStatus === "initializing"}>
       {!isHealthy(props) ? "Initialize" : "Initializing"}
     </Button>

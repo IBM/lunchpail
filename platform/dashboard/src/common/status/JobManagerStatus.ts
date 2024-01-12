@@ -1,7 +1,4 @@
 export default interface ControlPlaneStatus {
-  /** Where is the control plane running */
-  location: string
-
   /** Is the podman CLI installed? */
   podmanCli: boolean
 
@@ -19,7 +16,6 @@ export default interface ControlPlaneStatus {
 }
 
 export const descriptions: Record<keyof ControlPlaneStatus, string> = {
-  location: "Where is the control plane running?",
   podmanCli: "Is the podman CLI installed?",
   podmanMachine: "Is the podman VM ready to go?",
   kubernetesCluster: "Does the Kubernetes cluster to house the control plane exist?",

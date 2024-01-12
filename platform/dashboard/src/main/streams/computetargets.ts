@@ -3,12 +3,13 @@ import { Readable } from "node:stream"
 import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
 
 import { getConfig } from "../kubernetes/contexts"
+import getComputeTargetType from "../controlplane/type"
 import getControlPlaneStatus from "../controlplane/status"
 import { isRuntimeProvisioned } from "../controlplane/runtime"
 import { isKindCluster, clusterNameForKubeconfig as controlPlaneClusterName } from "../controlplane/kind"
 
 /** Construct a new `ComputeTargetEvent` */
-function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
+function ComputeTargetEvent(cluster: string, spec: Omit<ComputeTargetEvent["spec"], "type">) {
   return {
     apiVersion: "codeflare.dev/v1alpha1" as const,
     kind: "ComputeTarget" as const,
@@ -17,10 +18,10 @@ function ComputeTargetEvent(cluster: string, spec: ComputeTargetEvent["spec"]) {
       namespace: "",
       creationTimestamp: new Date().toUTCString(),
       annotations: {
-        "codeflare.dev/status": "Running", // TODO?
+        "codeflare.dev/status": spec.jaasManager ? (spec.isJaaSWorkerHost ? "Online" : "HostConfigured") : "Offline",
       },
     },
-    spec,
+    spec: Object.assign({ type: getComputeTargetType(cluster) }, spec),
   }
 }
 

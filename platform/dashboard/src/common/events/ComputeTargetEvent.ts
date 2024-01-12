@@ -5,6 +5,9 @@ type ComputeTargetEvent = KubernetesResource<
   "codeflare.dev/v1alpha1",
   "ComputeTarget",
   {
+    /** What kind of cluster is this? */
+    type: "Kind" | "Kubernetes" | "OpenShift"
+
     /** Is this cluster the head manager of resources? */
     jaasManager: false | ControlPlaneStatus
 
