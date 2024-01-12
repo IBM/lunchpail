@@ -1,16 +1,14 @@
 import { useCallback, useContext } from "react"
 import { Button } from "@patternfly/react-core"
 
+import Icon from "./Icon"
+import type Props from "./Props"
 import { isHealthy, status } from "./HealthBadge"
+
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
 
 import Settings from "@jay/renderer/Settings"
-
-import type Props from "./Props"
-
-import HomeIcon from "@patternfly/react-icons/dist/esm/icons/laptop-house-icon"
-import ServerIcon from "@patternfly/react-icons/dist/esm/icons/server-icon"
 
 export function summaryGroups(demoMode: boolean, props: Props) {
   const statusMessage = demoMode ? "Demo mode" : !status ? "Checking..." : isHealthy(props) ? "Healthy" : "Not ready"
@@ -50,13 +48,7 @@ export default function ComputeTargetCard(props: Props) {
       title={title}
       groups={groups}
       footer={footer}
-      icon={
-        props.spec.jaasManager ? (
-          <HomeIcon className={isHealthy(props) ? "codeflare--status-active" : "codeflare--status-offline"} />
-        ) : (
-          <ServerIcon />
-        )
-      }
+      icon={<Icon {...props} />}
       descriptionListProps={descriptionListProps}
     />
   )
