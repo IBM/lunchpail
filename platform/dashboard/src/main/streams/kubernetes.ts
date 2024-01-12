@@ -47,15 +47,15 @@ export default async function startStreamForKind(
     child.stderr.pipe(errorFilter).pipe(process.stderr)
     child.once("error", (err) => console.error(err))
 
-    return child.stdout
-      .pipe(lineSplitter)
-      .pipe(toJson)
-      .once("close", () => {
-        toJson.destroy()
-        errorFilter.destroy()
-        lineSplitter.destroy()
-        child.kill()
-      })
+    const cleanup = () => {
+      toJson.destroy()
+      errorFilter.destroy()
+      lineSplitter.destroy()
+      child.kill()
+    }
+    process.on("exit", cleanup)
+
+    return child.stdout.pipe(lineSplitter).pipe(toJson).once("close", cleanup)
   } catch (err) {
     console.error(err)
     throw err
