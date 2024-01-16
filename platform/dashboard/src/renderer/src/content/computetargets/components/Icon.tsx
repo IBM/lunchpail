@@ -1,24 +1,59 @@
-import { isHealthy } from "./HealthBadge"
+import { Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, Tooltip } from "@patternfly/react-core"
 
 import type Props from "./Props"
+import { singular as computetarget } from "../name"
+import { controlplaneHealth, workerhostHealth } from "./HealthBadge"
+import { singular as workerpool } from "@jay/resources/workerpools/name"
 
 import HomeIcon from "@patternfly/react-icons/dist/esm/icons/laptop-house-icon"
 import WorkersIcon from "@patternfly/react-icons/dist/esm/icons/robot-icon"
-import UnknownIcon from "@patternfly/react-icons/dist/esm/icons/square-icon"
+
+const tooltips = {
+  healthy: "It is healthy.",
+  unhealthy: "Warning: it is not healthy.",
+  controlplane: `This ${computetarget} houses the main JaaS control plane.`,
+  workerhost: `This ${computetarget} is enabled to host ${workerpool} Workers.`,
+}
+
+function controlPlaneIcons(props: Props) {
+  if (props.spec.jaasManager) {
+    const healthy = controlplaneHealth(props)
+    const className = healthy ? "codeflare--status-active" : "codeflare--status-offline"
+    return [
+      <ToolbarItem key="controlplane">
+        <Tooltip content={[tooltips.controlplane, healthy ? tooltips.healthy : tooltips.unhealthy].join(" ")}>
+          <HomeIcon className={className} />
+        </Tooltip>
+      </ToolbarItem>,
+    ]
+  } else {
+    return []
+  }
+}
+
+function workerHostIcons(props: Props) {
+  const healthy = workerhostHealth(props) === "online"
+  const className = healthy ? "codeflare--status-active" : "codeflare--status-unknown"
+  return [
+    <ToolbarItem key="workers">
+      <Tooltip content={tooltips.workerhost}>
+        <WorkersIcon className={className} />
+      </Tooltip>
+    </ToolbarItem>,
+  ]
+}
+
+const noPadding = { padding: 0 }
 
 export default function Icon(props: Props) {
-  const isManager = !!props.spec.jaasManager
-  const className = isHealthy(props)
-    ? "codeflare--status-active"
-    : isManager
-      ? "codeflare--status-offline"
-      : "codeflare--status-unknown"
-
-  if (isManager) {
-    return <HomeIcon className={className} />
-  } else if (props.spec.isJaaSWorkerHost) {
-    return <WorkersIcon className={className} />
-  } else {
-    return <UnknownIcon className={className} />
-  }
+  return (
+    <Toolbar>
+      <ToolbarContent alignItems="center" style={noPadding}>
+        <ToolbarGroup>
+          {controlPlaneIcons(props)}
+          {workerHostIcons(props)}
+        </ToolbarGroup>
+      </ToolbarContent>
+    </Toolbar>
+  )
 }

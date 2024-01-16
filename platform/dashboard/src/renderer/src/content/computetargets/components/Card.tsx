@@ -3,7 +3,7 @@ import { Button } from "@patternfly/react-core"
 
 import Icon from "./Icon"
 import type Props from "./Props"
-import { isHealthy, status } from "./HealthBadge"
+import { isHealthyControlPlane as isHealthy, status } from "./HealthBadge"
 
 import CardInGallery from "@jay/components/CardInGallery"
 import { descriptionGroup } from "@jay/components/DescriptionGroup"
