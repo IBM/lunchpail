@@ -1,4 +1,6 @@
 import detail from "./detail"
+import wizard from "./wizard"
+import actions from "./actions"
 import gallery from "./gallery"
 import description from "./description"
 import { name, singular } from "./name"
@@ -10,13 +12,15 @@ const computetargets: ContentProvider<"computetargets"> = {
   kind: "computetargets",
   name,
   singular,
+  description,
+  detail,
+  wizard,
+  actions,
+  gallery,
   sidebar: {
     priority: -10,
     badgeSuffix: "enabled",
   },
-  description,
-  gallery,
-  detail,
 }
 
 export default computetargets

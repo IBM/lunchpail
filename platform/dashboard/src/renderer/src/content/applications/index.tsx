@@ -13,10 +13,10 @@ export default {
   singular,
   title,
   description,
-  gallery,
   detail,
-  actions,
   wizard,
+  actions,
+  gallery,
   sidebar: {
     priority: 100,
   },

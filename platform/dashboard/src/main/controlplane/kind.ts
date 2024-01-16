@@ -35,13 +35,17 @@ async function installKindCliIfNeeded() {
 /**
  * Create kind cluster with the given `clusterName`
  */
-async function createKindCluster(clusterName: string) {
-  if (clusterName) {
-    const execPromise = promisify(exec)
-    const response = await execPromise("kind get clusters", execOpts)
-    if (/No kind/.test(response.stdout) || !response.stdout.includes(clusterName)) {
-      await execPromise(`kind create cluster -n ${clusterName}`, execOpts)
+export async function createKindCluster(clusterName: string, dryRun = false) {
+  const execPromise = promisify(exec)
+  const response = await execPromise("kind get clusters", execOpts)
+  if (/No kind/.test(response.stdout) || !response.stdout.includes(clusterName)) {
+    if (dryRun) {
+      return true
+    } else {
+      return execPromise(`kind create cluster -n ${clusterName}`, execOpts)
     }
+  } else {
+    throw new Error("Cluster already exists: " + clusterName)
   }
 }
 
@@ -54,11 +58,13 @@ export function deleteKindCluster(clusterName: string) {
 /**
  * Create a Kind cluster to host the control plane (if necessary).
  */
-export default async function createKindClusterIfNeeded(action: Action) {
+export default async function createKindClusterIfNeeded(clusterName: string, action: Action, dryRun = false) {
   if (action !== "delete") {
-    await checkPodman()
-    await installKindCliIfNeeded()
-    await createKindCluster(clusterName)
+    if (!dryRun) {
+      await checkPodman()
+      await installKindCliIfNeeded()
+    }
+    await createKindCluster(clusterName, dryRun)
   }
 }
 

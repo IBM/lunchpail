@@ -66,7 +66,16 @@ async function applyAll(_config: Config, props: ApplyProps) {
  * Initialize or destroy (based on the given `action`) the control
  * plane with the given `config`.
  */
-export default async function manageControlPlane(config: Config, action: Action, cluster: string) {
-  await createKindClusterIfNeeded(action)
-  await applyAll(config, { action, cluster })
+export default async function manageControlPlane(
+  config: Config,
+  action: Action,
+  cluster: string,
+  dryRun = false,
+  provisionRuntime = true,
+) {
+  await createKindClusterIfNeeded(cluster.replace(/^kind-/, ""), action, dryRun)
+
+  if (!dryRun && provisionRuntime) {
+    await applyAll(config, { action, cluster })
+  }
 }

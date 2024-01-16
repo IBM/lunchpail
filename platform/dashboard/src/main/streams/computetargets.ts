@@ -160,3 +160,35 @@ export async function deleteComputeTarget(
     return { code: 1, message: "Deletion of given ComputeTarget not supported" }
   }
 }
+
+import { type ComputeTarget } from "@jay/common/events/ComputeTargetEvent"
+export async function createComputeTarget(
+  target: ComputeTarget,
+  dryRun = false,
+  provisionRuntime = true,
+): Promise<import("@jay/common/events/ExecResponse").default> {
+  if (target.spec.type === "Kind") {
+    try {
+      await import("../controlplane/install").then((_) =>
+        _.default("lite", "apply", "kind-" + target.metadata.name, dryRun, provisionRuntime),
+      )
+      return true
+    } catch (err) {
+      return { code: 1, message: hasMessage(err) ? err.message : "Internal Error creating ComputeTarget" }
+    }
+  } else {
+    return { code: 1, message: "Creattion of given ComputeTarget not supported" }
+  }
+}
+
+export const kind = "ComputeTarget"
+export const apiVersion = "codeflare.dev/v1alpha1"
+
+export function isComputeTarget(json: unknown): json is ComputeTarget {
+  return (
+    typeof json === "object" &&
+    json !== null &&
+    (json as ComputeTarget).apiVersion === apiVersion &&
+    (json as ComputeTarget).kind === kind
+  )
+}

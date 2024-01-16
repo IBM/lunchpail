@@ -1,11 +1,18 @@
 import ExecResponse from "@jay/common/events/ExecResponse"
 import { clusterNameForKubeconfig } from "../controlplane/kind"
 
+import { isComputeTarget } from "../streams/computetargets"
+
 /**
  * Create a resource using the given `yaml` spec.
  */
 export async function onCreate(yaml: string, action: "apply" | "delete", dryRun = false): Promise<ExecResponse> {
-  const [{ spawn }] = await Promise.all([import("node:child_process")])
+  const [{ spawn }, { load }] = await Promise.all([import("node:child_process"), import("js-yaml")])
+
+  const json = load(yaml)
+  if (isComputeTarget(json)) {
+    return import("../streams/computetargets").then(({ createComputeTarget }) => createComputeTarget(json, dryRun))
+  }
 
   return new Promise((resolve) => {
     try {

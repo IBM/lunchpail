@@ -320,7 +320,7 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Create a resource */
-    create: (_, yaml: string, dryRun = false): Promise<ExecResponse> => {
+    create: async (_, yaml: string, dryRun = false): Promise<ExecResponse> => {
       return ipcRenderer.invoke("/create", yaml, dryRun)
     },
 

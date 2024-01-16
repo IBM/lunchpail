@@ -25,4 +25,9 @@ type ComputeTargetEvent = KubernetesResource<
   }
 >
 
+export type ComputeTarget = Omit<ComputeTargetEvent, "metadata" | "spec"> & {
+  metadata: Pick<ComputeTargetEvent["metadata"], "name" | "namespace">
+  spec: Pick<ComputeTargetEvent["spec"], "type">
+}
+
 export default ComputeTargetEvent
