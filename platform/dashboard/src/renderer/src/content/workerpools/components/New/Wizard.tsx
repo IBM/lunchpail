@@ -4,17 +4,16 @@ import indent from "@jay/common/util/indent"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
-import Input from "@jay/components/Forms/Input"
-import NumberInput from "@jay/components/Forms/NumberInput"
 import NewResourceWizard from "@jay/components/NewResourceWizard"
-import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
-import KubernetesContexts from "@jay/components/Forms/KubernetesContexts"
 
 import { singular as workerpool } from "@jay/resources/workerpools/name"
 import { groupSingular as application } from "@jay/resources/applications/group"
 
-import type Target from "./Target"
 import type Values from "./Values"
+
+import stepName from "./steps/name"
+import stepTarget from "./steps/target"
+import stepConfigure from "./steps/configure"
 
 import { type KubeConfig } from "@jay/common/api/kubernetes"
 import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
@@ -24,25 +23,6 @@ type Props = {
   taskqueues: TaskQueueEvent[]
   applications: ApplicationSpecEvent[]
 }
-
-const targetOptions: TileOptions<Target> = [
-  {
-    title: "Local",
-    value: "local",
-    description: "Run the workers on your laptop, as Pods in a local Kubernetes cluster that will be managed for you",
-  },
-  {
-    title: "Existing Kubernetes Cluster",
-    value: "kubernetes",
-    description: "Run the workers as Pods in an existing Kubernetes cluster",
-  },
-  {
-    title: "IBM Cloud VSIs",
-    value: "ibmcloudvsi",
-    description: "Run the workers on IBM Cloud Virtual Storage Instances",
-    isDisabled: true,
-  },
-]
 
 /**
  * Strip `config` to allow access only to the given `context`.
@@ -93,59 +73,6 @@ export default function NewWorkerPoolWizard(props: Props) {
           : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue),
     }
   }, [])
-
-  function applicationChoice(ctrl: Values) {
-    return (
-      <Input
-        readOnlyVariant="default"
-        fieldId="application"
-        label={application}
-        description={`The workers in this ${workerpool} will run the code specified by this ${application}`}
-        ctrl={ctrl}
-      />
-    )
-  }
-
-  function targets(ctrl: Values) {
-    return (
-      <Tiles
-        ctrl={ctrl}
-        fieldId="target"
-        label="Compute Target"
-        description="Where do you want the workers to run?"
-        options={targetOptions}
-      />
-    )
-  }
-
-  const stepTarget = {
-    name: "Choose where to run the workers",
-    isValid: (ctrl: Values) => {
-      if (ctrl.values.target === "kubernetes") {
-        return !!ctrl.values.kubecontext
-      } else {
-        return true
-      }
-    },
-    items: (ctrl: Values) => [
-      targets(ctrl),
-      ...(ctrl.values.target === "kubernetes"
-        ? [<KubernetesContexts<Values> ctrl={ctrl} description="Choose a target Kubernetes cluster for the workers" />]
-        : []),
-    ],
-  }
-
-  const stepConfigure = {
-    name: "Configure your " + workerpool,
-    isValid: (ctrl: Values) => !!ctrl.values.application && !!ctrl.values.taskqueue,
-    items: [applicationChoice, /* taskqueue, */ numWorkers],
-  }
-
-  const stepName = {
-    name: "Name your " + workerpool,
-    isValid: (ctrl: Values) => !!ctrl.values.name,
-    items: ["name" as const],
-  }
 
   const yaml = useCallback(
     async (values: Values["values"]) => {
@@ -245,19 +172,5 @@ function supportsTaskQueue(app: ApplicationSpecEvent, taskqueue: string) {
       taskqueues.md === taskqueue ||
       taskqueues.lg === taskqueue ||
       taskqueues.xl === taskqueue)
-  )
-}
-
-/** Form element to choose number of workers in this new Worker Pool */
-function numWorkers(ctrl: Values) {
-  return (
-    <NumberInput
-      min={1}
-      ctrl={ctrl}
-      fieldId="count"
-      label="Worker count"
-      description="Number of Workers in this pool"
-      defaultValue={ctrl.values.count ? parseInt(ctrl.values.count, 10) : 1}
-    />
   )
 }

@@ -1,12 +1,14 @@
 import type KubernetesResource from "./KubernetesResource"
 import type ControlPlaneStatus from "../status/JobManagerStatus"
 
+export type ComputeTargetType = "Kind" | "Kubernetes" | "OpenShift"
+
 type ComputeTargetEvent = KubernetesResource<
   "codeflare.dev/v1alpha1",
   "ComputeTarget",
   {
     /** What kind of cluster is this? */
-    type: "Kind" | "Kubernetes" | "OpenShift"
+    type: ComputeTargetType
 
     /** Is this cluster the head manager of resources? */
     jaasManager: false | ControlPlaneStatus
