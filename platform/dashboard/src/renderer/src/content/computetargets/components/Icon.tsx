@@ -32,7 +32,7 @@ function controlPlaneIcons(props: Props) {
 }
 
 function workerHostIcons(props: Props) {
-  const healthy = workerhostHealth(props) === "online"
+  const healthy = workerhostHealth(props) === "Online"
   const className = healthy ? "codeflare--status-active" : "codeflare--status-unknown"
   return [
     <ToolbarItem key="workers">

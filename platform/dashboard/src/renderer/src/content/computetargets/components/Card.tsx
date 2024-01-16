@@ -11,11 +11,19 @@ import { descriptionGroup } from "@jay/components/DescriptionGroup"
 export function summaryGroups(props: Props) {
   const statusMessage = status(props)
 
+  const roles: string[] = []
+  if (props.spec.jaasManager) {
+    roles.push("JaaS Manager")
+  }
+  if (props.spec.isJaaSWorkerHost) {
+    roles.push("Worker Host")
+  }
+  if (roles.length === 0) {
+    roles.push("Not JaaS-enabled")
+  }
+
   return [
-    descriptionGroup(
-      "Role",
-      props.spec.jaasManager ? "JaaS Manager" : props.spec.isJaaSWorkerHost ? "Worker Host" : "Not JaaS-enabled",
-    ),
+    descriptionGroup("Roles", roles.join(", ")),
     descriptionGroup("Status", statusMessage),
     descriptionGroup("Type", props.spec.type),
   ]

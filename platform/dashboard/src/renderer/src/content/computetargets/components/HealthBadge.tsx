@@ -1,31 +1,31 @@
 import type Props from "./Props"
 
-type Health = "online" | "partial" | "offline"
+type Health = "Online" | "Partial" | "Offline"
 
 export function controlplaneHealth(props: Props): Health {
   if (props.spec.jaasManager) {
     if (Object.values(props.spec.jaasManager).every(Boolean)) {
-      return "online"
+      return "Online"
     } else if (Object.values(props.spec.jaasManager).some(Boolean)) {
-      return "partial"
+      return "Partial"
     }
   }
 
-  return "offline"
+  return "Offline"
 }
 
 export function isHealthyControlPlane(props: Props): boolean {
-  return controlplaneHealth(props) === "online"
+  return controlplaneHealth(props) === "Online"
 }
 
 export function workerhostHealth(props: Props): Health {
   if (props.spec.isJaaSWorkerHost) {
-    return "online"
+    return "Online"
   }
 
-  return "offline"
+  return "Offline"
 }
 
 export function status(props: Props) {
-  return props.metadata.annotations["codeflare.dev/status"]
+  return props.spec.jaasManager ? props.metadata.annotations["codeflare.dev/status"] : workerhostHealth(props)
 }
