@@ -8,16 +8,19 @@ import type ManagedEvents from "../ManagedEvent"
 
 type GalleryEvent = ManagedEvents["computetargets"][number]
 
+function rank(a: GalleryEvent) {
+  return a.spec.jaasManager ? 0 : a.spec.isJaaSWorkerHost ? 1 : 2
+}
+
 /** Sort ComputeTargets to place those with `isControlPlane` towards the front */
 function sorter(a: GalleryEvent, b: GalleryEvent) {
-  const aIsManager = !!a.spec.jaasManager
-  const bIsManager = !!b.spec.jaasManager
-  if ((aIsManager && bIsManager) || (!aIsManager && !bIsManager)) {
+  const aRank = rank(a)
+  const bRank = rank(b)
+
+  if (aRank === bRank) {
     return a.metadata.name.localeCompare(b.metadata.name)
-  } else if (aIsManager) {
-    return -1
   } else {
-    return 1
+    return aRank - bRank
   }
 }
 
