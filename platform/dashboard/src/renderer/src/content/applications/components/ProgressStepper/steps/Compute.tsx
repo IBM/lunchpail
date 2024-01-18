@@ -33,7 +33,7 @@ const step: Step = {
       const footer = <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" onClick={onClick} />
       return { body, footer }
     } else {
-      return linkToAllDetails("workerpools", pools)
+      return linkToAllDetails("workerpools", pools, undefined, onClick)
     }
   },
 }
