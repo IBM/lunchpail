@@ -2,7 +2,7 @@ import type { DefaultValues } from "@jay/components/NewResourceWizard"
 
 type Values = DefaultValues<{
   /** Name of ComputeTarget */
-  target: string
+  context: string
 
   name: string
   application: string

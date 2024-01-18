@@ -160,6 +160,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
       const response = await window.jay.create(
         values,
         await props.yaml(values, props.context || (undefined as Context)),
+        values.context,
         dryRun,
       )
       if (response !== true) {
@@ -171,7 +172,11 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
         if (dryRun) {
           setDryRunSuccess(true)
         } else {
-          onSuccess({ kind: props.kind, id: props.resourceName ? props.resourceName(values) : values.name })
+          onSuccess({
+            kind: props.kind,
+            context: values.context,
+            id: props.resourceName ? props.resourceName(values) : values.name,
+          })
         }
       }
     } catch (errorInCreateRequest) {

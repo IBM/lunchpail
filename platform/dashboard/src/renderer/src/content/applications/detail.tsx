@@ -4,10 +4,17 @@ import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import type { CurrentSettings } from "@jay/renderer/Settings"
 
-export default function Detail(id: string, events: ManagedEvents, memos: Memos, settings: CurrentSettings) {
-  const application = events.applications.find((_) => _.metadata.name === id)
+export default function Detail(
+  id: string,
+  context: string,
+  events: ManagedEvents,
+  memos: Memos,
+  settings: CurrentSettings,
+) {
+  const application = events.applications.find((_) => _.metadata.name === id && _.metadata.context === context)
   if (application) {
     const props = {
+      context,
       settings,
       application,
       datasets: events.datasets,

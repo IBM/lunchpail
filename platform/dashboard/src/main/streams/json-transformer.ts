@@ -16,11 +16,12 @@
 
 import { Transform } from "stream"
 import type WithTimestamp from "@jay/common/events/WithTimestamp"
+import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
 /**
  * A simple streaming JSON parser, yielding one callback per JSON struct.
  */
-export default function transformToJSON(withTimestamp = false) {
+export default function transformToJSON(context: string, withTimestamp = false) {
   let escaping = false
   let inQuotes = false
   let depth = 0
@@ -30,7 +31,7 @@ export default function transformToJSON(withTimestamp = false) {
     transform(chunk: Buffer, _: string, callback) {
       const data = chunk.toString()
 
-      const structs: string[] = []
+      const structs: unknown[] = []
       for (const ch of data) {
         const escaped = escaping
         escaping = false
@@ -47,7 +48,9 @@ export default function transformToJSON(withTimestamp = false) {
         }
         if (!inQuotes && ch === "}") {
           if (--depth === 0) {
-            const event = JSON.parse(bundle)
+            const event = JSON.parse(bundle) as KubernetesResource
+            event.metadata.context = context
+
             structs.push(
               withTimestamp
                 ? ({ timestamp: Date.now(), event, metadata: event.metadata } as WithTimestamp<unknown>)

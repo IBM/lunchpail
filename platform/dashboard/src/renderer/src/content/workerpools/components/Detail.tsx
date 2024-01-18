@@ -18,6 +18,7 @@ function deleteAction(props: Props) {
       kind="workerpool.codeflare.dev"
       name={props.model.label}
       namespace={props.model.namespace}
+      context={props.model.context}
     />
   )
 }

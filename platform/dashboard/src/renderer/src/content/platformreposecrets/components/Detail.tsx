@@ -22,6 +22,7 @@ function deleteAction(props: Props) {
       yaml={yamlFromSpec(props)}
       name={props.metadata.name}
       namespace={props.metadata.namespace}
+      context={props.metadata.context}
     />
   )
 }

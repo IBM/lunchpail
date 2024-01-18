@@ -48,6 +48,7 @@ export default interface ContentProvider<K extends Kind = Kind> {
   /** Content to display in the detail view */
   detail(
     id: string,
+    context: string,
     events: ManagedEvents,
     memos: Memos,
     settings: CurrentSettings,

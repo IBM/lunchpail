@@ -7,15 +7,17 @@ import TaskQueueDetail from "./components/Detail"
 
 export default function Detail(
   id: string,
+  context: string,
   events: ManagedEvents,
   { taskqueueIndex, taskqueueToPool, taskqueueToWorkDispatchers }: Memos,
   settings: CurrentSettings,
 ) {
-  const thisTaskqueueEvents = events.taskqueues.filter((_) => _.metadata.name === id)
+  const thisTaskqueueEvents = events.taskqueues.filter((_) => _.metadata.name === id && _.metadata.context === context)
   if (thisTaskqueueEvents.length === 0) {
     return undefined
   } else {
     const props = {
+      context,
       idx: either(thisTaskqueueEvents[thisTaskqueueEvents.length - 1].spec.idx, taskqueueIndex[id]),
       workerpools: taskqueueToPool[id] || [],
       workdispatchers: taskqueueToWorkDispatchers[id] || [],

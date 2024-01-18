@@ -13,7 +13,7 @@ export default function DeleteResourceButton(props: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const handleModalToggle = useCallback(() => setIsModalOpen((curState) => !curState), [setIsModalOpen])
 
-  const { kind, name, namespace } = props
+  const { kind, name, namespace, context } = props
   const onDelete = useCallback(() => {
     handleModalToggle()
     if (props.deleteFn) {
@@ -21,7 +21,7 @@ export default function DeleteResourceButton(props: Props) {
     } else if (props.yaml) {
       window.jay.delete(props.yaml)
     } else if (kind && name && namespace) {
-      window.jay.deleteByName({ kind, name, namespace })
+      window.jay.deleteByName({ kind, name, namespace, context })
     }
   }, [handleModalToggle, kind, name, namespace, window.jay.delete, window.jay.deleteByName, props.deleteFn])
 

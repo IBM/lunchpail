@@ -4,7 +4,7 @@ import LocationProps from "./LocationProps"
 import navigateToHome from "../navigate/home"
 import { navigateToDetails } from "../navigate/details"
 import type { DrilldownProps, DrawerState } from "./DrawerContext"
-import { currentlySelectedId, currentlySelectedKind } from "./current-detail"
+import { currentlySelectedId, currentlySelectedKind, currentlySelectedContext } from "./current-detail"
 
 /**
  * User has clicked on a UI element that should result in the drawer
@@ -43,5 +43,6 @@ export default function drilldownProps(): DrilldownProps {
     showDetails,
     currentlySelectedId: currentlySelectedId(searchParams),
     currentlySelectedKind: currentlySelectedKind(searchParams),
+    currentlySelectedContext: currentlySelectedContext(searchParams),
   }
 }

@@ -2,6 +2,7 @@ import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
+import context from "../context"
 import { apiVersionDatashim, ns } from "./misc"
 
 export const colors = ["pink", "green", "purple", "orange"]
@@ -27,6 +28,7 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
       metadata: {
         name: colors[idx],
         namespace: ns,
+        context,
         creationTimestamp: new Date().toUTCString(),
         annotations: {
           "codeflare.dev/status": "Ready",

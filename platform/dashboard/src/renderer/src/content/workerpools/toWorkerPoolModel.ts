@@ -62,6 +62,7 @@ export default function toWorkerPoolModel(
 
   return {
     label: pool.metadata.name,
+    context: pool.metadata.context,
     namespace: pool.metadata.namespace,
     application: pool.spec.application.name,
     inbox: backfill(model.inbox),

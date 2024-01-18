@@ -6,8 +6,8 @@ import type Props from "./Props"
 import Icon from "./Icon"
 
 export default function PlatformRepoSecretCard(props: Props) {
-  const name = props.metadata.name
+  const { name, context } = props.metadata
   const groups = [descriptionGroup("Repo", props.spec.repo)]
 
-  return <CardInGallery kind="platformreposecrets" name={name} icon={<Icon />} groups={groups} />
+  return <CardInGallery kind="platformreposecrets" name={name} context={context} icon={<Icon />} groups={groups} />
 }

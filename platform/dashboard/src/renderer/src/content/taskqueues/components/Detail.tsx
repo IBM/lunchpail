@@ -20,6 +20,7 @@ function deleteAction(last: null | TaskQueueEvent) {
           singular={singular}
           name={last.metadata.name}
           namespace={last.metadata.namespace}
+          context={last.metadata.context}
         />,
       ]
 }

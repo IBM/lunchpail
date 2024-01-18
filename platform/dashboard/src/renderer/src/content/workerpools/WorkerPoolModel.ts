@@ -15,6 +15,9 @@ export interface WorkerPoolModel {
 
   /** Application to which this pool is assigned */
   application: string
+
+  /** The cluster in which this resources resides */
+  context: string
 }
 
 export type WorkerPoolModelWithHistory = WorkerPoolModel & {

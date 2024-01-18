@@ -7,21 +7,17 @@ import type ExecResponse from "@jay/common/events/ExecResponse"
 /**
  * Get a resource by name
  */
-export async function onGet({ kind, name, namespace }: DeleteProps): Promise<ExecResponse> {
+export async function onGet({
+  kind,
+  name,
+  namespace,
+  context = clusterNameForKubeconfig,
+}: DeleteProps): Promise<ExecResponse> {
   const [{ spawn }] = await Promise.all([import("node:child_process")])
 
   return new Promise((resolve) => {
     try {
-      const child = spawn("kubectl", [
-        "get",
-        "--context",
-        clusterNameForKubeconfig,
-        kind,
-        name,
-        "-n",
-        namespace,
-        "-o=json",
-      ])
+      const child = spawn("kubectl", ["get", "--context", context, kind, name, "-n", namespace, "-o=json"])
 
       let err = ""
       child.stderr.on("data", (data) => (err += data.toString()))

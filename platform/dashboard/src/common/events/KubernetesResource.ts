@@ -17,6 +17,9 @@ type KubernetesResource<
     /** Resource namespace */
     namespace: string
 
+    /** The cluster in which this resources resides */
+    context: string
+
     /** Age of resource */
     creationTimestamp: string
 

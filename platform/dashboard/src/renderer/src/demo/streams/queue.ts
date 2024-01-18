@@ -3,6 +3,7 @@ import type QueueEvent from "@jay/common/events/QueueEvent.js"
 import type EventSourceLike from "@jay/common/events/EventSourceLike"
 
 import Base from "./base"
+import context from "../context"
 import { apiVersion, runs } from "./misc"
 
 export default class DemoQueueEventSource extends Base implements EventSourceLike {
@@ -29,6 +30,7 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
         metadata: {
           name,
           namespace,
+          context,
           creationTimestamp: new Date().toUTCString(),
           labels: {
             "app.kubernetes.io/part-of": runs[0], // TODO multiple demo runs?

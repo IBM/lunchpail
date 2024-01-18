@@ -5,10 +5,8 @@ import { EventEmitter } from "node:events"
 import transformToJSON from "./json-transformer"
 import filterOutMissingCRDs from "./filter-missing-crd-errors"
 
-import { clusterNameForKubeconfig } from "../controlplane/kind"
-
 // This will need to be adjusted as we add more resources Kinds to track */
-EventEmitter.defaultMaxListeners = 30
+EventEmitter.defaultMaxListeners = 90
 
 type Props = {
   /** At to the event stream the timestamp each event was received */
@@ -25,39 +23,41 @@ type Props = {
  */
 export default async function startStreamForKind(
   kind: string,
+  context: string,
   { withTimestamp = false, selectors }: Partial<Props> = {},
 ) {
-  try {
-    const child = spawn("kubectl", [
-      "get",
-      kind,
-      "--context",
-      clusterNameForKubeconfig,
-      "-A",
-      "--watch",
-      "-o=json",
-      ...(selectors ? ["-l", selectors.join(",")] : []),
-    ])
+  const child = spawn("kubectl", [
+    "get",
+    kind,
+    "--context",
+    context,
+    "-A",
+    "--watch",
+    "-o=json",
+    ...(selectors ? ["-l", selectors.join(",")] : []),
+  ])
 
-    // pipe transformers
-    const errorFilter = filterOutMissingCRDs()
-    const toJson = transformToJSON(withTimestamp)
-    const lineSplitter = split2()
+  // pipe transformers
+  const errorFilter = filterOutMissingCRDs()
+  const toJson = transformToJSON(context, withTimestamp)
+  const lineSplitter = split2()
 
-    child.stderr.pipe(errorFilter).pipe(process.stderr)
-    child.once("error", (err) => console.error(err))
-
-    const cleanup = () => {
-      toJson.destroy()
-      errorFilter.destroy()
-      lineSplitter.destroy()
-      child.kill()
+  child.stderr.pipe(errorFilter).pipe(process.stderr)
+  child.once("error", (err) => {
+    if (/ENOENT/.test(String(err))) {
+      console.error("kubectl not found")
+    } else {
+      console.error(err)
     }
-    process.on("exit", cleanup)
+  })
 
-    return child.stdout.pipe(lineSplitter).pipe(toJson).once("close", cleanup)
-  } catch (err) {
-    console.error(err)
-    throw err
+  const cleanup = () => {
+    toJson.destroy()
+    errorFilter.destroy()
+    lineSplitter.destroy()
+    child.kill()
   }
+  process.on("exit", cleanup)
+
+  return child.stdout.pipe(lineSplitter).pipe(toJson).once("close", cleanup)
 }

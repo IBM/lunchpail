@@ -14,6 +14,7 @@ import "./CardInGallery.scss"
 export type Props = {
   kind: Kind
   name: string
+  context: string
   title?: string
   size?: "sm" | "lg"
   icon?: ReactNode
@@ -28,9 +29,9 @@ const defaultDescriptionListProps: DescriptionListProps = {
 }
 
 export default function CardInGallery(props: Props) {
-  const { showDetails, currentlySelectedId, currentlySelectedKind } = drilldownProps()
+  const { showDetails, currentlySelectedId, currentlySelectedKind, currentlySelectedContext } = drilldownProps()
   const onClick = useCallback(
-    () => showDetails({ id: props.name, kind: props.kind }),
+    () => showDetails({ id: props.name, kind: props.kind, context: props.context }),
     [props.name, props.kind, showDetails],
   )
 
@@ -52,7 +53,11 @@ export default function CardInGallery(props: Props) {
       isSelectable
       isSelectableRaised
       ouiaId={props.name}
-      isSelected={currentlySelectedId === props.name && currentlySelectedKind === props.kind}
+      isSelected={
+        currentlySelectedId === props.name &&
+        currentlySelectedKind === props.kind &&
+        currentlySelectedContext === props.context
+      }
       onClick={onClick}
     >
       {header}

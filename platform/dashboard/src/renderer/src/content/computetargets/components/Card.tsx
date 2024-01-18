@@ -37,7 +37,7 @@ export default function ComputeTargetCard(props: Props) {
     [window.jay.controlplane.init],
   )
 
-  const { name } = props.metadata
+  const { name, context } = props.metadata
   const title = name.replace(/^kind-/, "")
 
   const currentStatus = status(props)
@@ -58,6 +58,7 @@ export default function ComputeTargetCard(props: Props) {
       title={title}
       groups={groups}
       footer={footer}
+      context={context}
       icon={<Icon {...props} />}
       descriptionListProps={descriptionListProps}
     />

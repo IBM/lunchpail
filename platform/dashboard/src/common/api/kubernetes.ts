@@ -3,7 +3,7 @@ import type ExecResponse from "../events/ExecResponse"
 import type ComputeTargetEvent from "../events/ComputeTargetEvent"
 import type KubernetesResource from "../events/KubernetesResource"
 
-export type DeleteProps = { kind: string; name: string; namespace: string }
+export type DeleteProps = { kind: string; name: string; namespace: string; context?: string }
 
 export type KubeUser = { name: string; user: unknown }
 
@@ -37,10 +37,15 @@ export default interface KubernetesApi extends Record<Kind, JayResourceApi> {
   get?: <R extends KubernetesResource>(props: DeleteProps) => R | Promise<R>
 
   /** Create a resource */
-  create(values: Record<string, string>, yaml: string, dryRun?: boolean): ExecResponse | Promise<ExecResponse>
+  create(
+    values: Record<string, string>,
+    yaml: string,
+    context?: string,
+    dryRun?: boolean,
+  ): ExecResponse | Promise<ExecResponse>
 
   /** Delete a resource */
-  delete(yaml: string): ExecResponse | Promise<ExecResponse>
+  delete(yaml: string, context?: string): ExecResponse | Promise<ExecResponse>
 
   /** Delete a resource by name */
   deleteByName(props: DeleteProps): ExecResponse | Promise<ExecResponse>

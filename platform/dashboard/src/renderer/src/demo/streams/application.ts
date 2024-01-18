@@ -5,6 +5,7 @@ import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
 
 import Base from "./base"
 import lorem from "../util/lorem"
+import context from "../context"
 import { colors } from "./taskqueue"
 import { apiVersion, ns } from "./misc"
 
@@ -53,6 +54,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       metadata: {
         name,
         namespace,
+        context,
         creationTimestamp: new Date().toLocaleString(),
         annotations: {
           "codeflare.dev/status": status,

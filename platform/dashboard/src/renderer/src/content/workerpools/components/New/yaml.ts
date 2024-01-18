@@ -1,7 +1,7 @@
 import indent from "@jay/common/util/indent"
 
 import type Values from "./Values"
-import type { Context } from "./Wizard"
+import type Context from "./Context"
 import type { KubeConfig } from "@jay/common/api/kubernetes"
 
 /**
@@ -37,22 +37,22 @@ export default async function yaml(values: Values["values"], context: Context) {
 
   // fetch kubeconfig
   const kubeconfig =
-    !values.target || !window.jay.contexts
+    !values.context || !window.jay.contexts
       ? undefined
       : await window.jay
           .contexts()
           .then(({ config }) =>
             btoa(
-              JSON.stringify(stripKubeconfig(config, values.target)).replace(/127\.0\.0\.1/g, "host.docker.internal"),
+              JSON.stringify(stripKubeconfig(config, values.context)).replace(/127\.0\.0\.1/g, "host.docker.internal"),
             ),
           )
 
   // details for the target
-  const target = values.target
+  const target = values.context
     ? `
 target:
   kubernetes:
-    context: ${values.target}
+    context: ${values.context}
     config:
       value: ${kubeconfig}
 `.trim()

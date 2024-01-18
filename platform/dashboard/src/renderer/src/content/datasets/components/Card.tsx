@@ -24,5 +24,6 @@ export default function DataSetCard(props: DataSetEvent) {
     ),
   ]
 
-  return <CardInGallery kind="datasets" name={props.metadata.name} icon={<DataSetIcon />} groups={groups} />
+  const { name, context } = props.metadata
+  return <CardInGallery kind="datasets" name={name} context={context} icon={<DataSetIcon />} groups={groups} />
 }

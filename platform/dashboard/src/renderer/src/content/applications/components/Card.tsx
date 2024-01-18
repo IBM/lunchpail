@@ -22,7 +22,7 @@ function description(props: Props) {
 }
 
 export default function ApplicationCard(props: Props) {
-  const name = props.application.metadata.name
+  const { name, context } = props.application.metadata
   const queueProps = useMemo(() => taskqueueProps(props), [props])
 
   const groups = useMemo(
@@ -60,6 +60,7 @@ export default function ApplicationCard(props: Props) {
       name={name}
       groups={groups}
       actions={actions}
+      context={context}
       footer={<ProgressStepper {...props} />}
     />
   )

@@ -6,6 +6,8 @@ import DemoTaskQueueEventSource from "./streams/taskqueue"
 import DemoWorkerPoolStatusEventSource from "./streams/pool"
 import DemoApplicationSpecEventSource from "./streams/application"
 
+import context from "./context"
+
 import type WatchedKind from "@jay/common/Kind"
 import type DemoEventSource from "./streams/base"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
@@ -50,6 +52,7 @@ export default function DemoDashboard() {
               kind: rsrc.kind.toLowerCase() + "s",
               name: rsrc.metadata.name,
               namespace: rsrc.metadata.namespace,
+              context,
             }),
           ),
         )

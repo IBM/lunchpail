@@ -9,8 +9,8 @@ import { isComputeTarget } from "../streams/computetargets"
 export async function onCreate(
   yaml: string,
   action: "apply" | "delete",
-  dryRun = false,
   context = clusterNameForKubeconfig,
+  dryRun = false,
 ): Promise<ExecResponse> {
   const [{ spawn }, { load }] = await Promise.all([import("node:child_process"), import("js-yaml")])
 
@@ -19,6 +19,7 @@ export async function onCreate(
     return import("../streams/computetargets").then(({ createComputeTarget }) => createComputeTarget(json, dryRun))
   }
 
+  console.error("!!!!!!!!!", context)
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
@@ -59,7 +60,7 @@ export function hasMessage(obj: unknown): obj is { message: string } {
  * Delete a resource by name
  */
 export async function onDelete(yaml: string, context?: string): Promise<ExecResponse> {
-  return onCreate(yaml, "delete", false, context)
+  return onCreate(yaml, "delete", context, false)
 }
 
 /**

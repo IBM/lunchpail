@@ -2,8 +2,13 @@ import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import WorkerPoolDetail from "./components/Detail"
 
-export default function Detail(id: string, events: ManagedEvents, { taskqueueIndex, latestWorkerPoolModels }: Memos) {
-  const model = latestWorkerPoolModels.find((_) => _.label === id)
+export default function Detail(
+  id: string,
+  context: string,
+  events: ManagedEvents,
+  { taskqueueIndex, latestWorkerPoolModels }: Memos,
+) {
+  const model = latestWorkerPoolModels.find((_) => _.label === id && (!context || _.context === context))
   if (!model) {
     return undefined
   } else {

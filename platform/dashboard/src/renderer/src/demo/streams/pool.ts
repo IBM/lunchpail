@@ -6,6 +6,7 @@ import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
 import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
 
 import Base from "./base"
+import context from "../context"
 import { apiVersion, ns } from "./misc"
 import { inbox, inboxIncr } from "./taskqueue"
 import getNormallyDistributedRandomNumber from "../util/rand"
@@ -43,6 +44,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       apiVersion,
       kind: "WorkerPool",
       metadata: {
+        context,
         name: workerpool.name,
         namespace: ns,
         creationTimestamp: new Date().toUTCString(),

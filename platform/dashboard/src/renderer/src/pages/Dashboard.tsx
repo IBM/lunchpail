@@ -46,11 +46,11 @@ export function Dashboard(props: Props) {
   }, [])
 
   /** Content to display in the slide-out Drawer panel */
-  const { currentlySelectedId: id, currentlySelectedKind: kind } = drilldownProps()
+  const { currentlySelectedId: id, currentlySelectedKind: kind, currentlySelectedContext: context } = drilldownProps()
   const detailContentProvider = id && kind && content[kind]
   const currentDetail =
     detailContentProvider && detailContentProvider.detail
-      ? detailContentProvider.detail(id, events, memos, settings)
+      ? detailContentProvider.detail(id, context || "", events, memos, settings)
       : undefined
   const panelSubtitle = currentDetail ? currentDetail.subtitle : undefined
   const panelBody = currentDetail ? currentDetail.body : undefined

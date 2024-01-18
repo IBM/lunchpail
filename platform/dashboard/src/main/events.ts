@@ -2,7 +2,12 @@ import { ipcMain, ipcRenderer } from "electron"
 
 import startStreamForKind from "./streams/kubernetes"
 import { type Status } from "./controlplane/status"
-import { startStreamForKubernetesComputeTargets } from "./streams/computetargets"
+import { clusterNameForKubeconfig } from "./controlplane/kind"
+import {
+  onDiscoveredComputeTarget,
+  onDeletedComputeTarget,
+  startStreamForKubernetesComputeTargets,
+} from "./streams/computetargets"
 
 import type WatchedKind from "@jay/common/Kind"
 import type JayApi from "@jay/common/api/jay"
@@ -10,24 +15,24 @@ import type ExecResponse from "@jay/common/events/ExecResponse"
 import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-function streamForKind(kind: WatchedKind): Promise<import("stream").Readable> {
+function streamForKind(kind: WatchedKind, context: string): Promise<import("stream").Readable> {
   switch (kind) {
     case "computetargets":
       return Promise.resolve(startStreamForKubernetesComputeTargets())
     case "taskqueues":
-      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component=taskqueue"] })
+      return startStreamForKind("datasets", context, { selectors: ["app.kubernetes.io/component=taskqueue"] })
     case "datasets":
-      return startStreamForKind("datasets", { selectors: ["app.kubernetes.io/component!=taskqueue"] })
+      return startStreamForKind("datasets", context, { selectors: ["app.kubernetes.io/component!=taskqueue"] })
     case "queues":
-      return startStreamForKind("queues.codeflare.dev", { withTimestamp: true })
+      return startStreamForKind("queues.codeflare.dev", context, { withTimestamp: true })
     case "workerpools":
-      return startStreamForKind("workerpools.codeflare.dev")
+      return startStreamForKind("workerpools.codeflare.dev", context)
     case "platformreposecrets":
-      return startStreamForKind("platformreposecrets.codeflare.dev")
+      return startStreamForKind("platformreposecrets.codeflare.dev", context)
     case "applications":
-      return startStreamForKind("applications.codeflare.dev")
+      return startStreamForKind("applications.codeflare.dev", context)
     case "workdispatchers":
-      return startStreamForKind("workdispatchers.codeflare.dev")
+      return startStreamForKind("workdispatchers.codeflare.dev", context)
   }
 }
 
@@ -55,8 +60,8 @@ function initStreamForResourceKind(kind: WatchedKind) {
     // stream close due to premature exit of kubectl
     let closedOnPurpose = false
 
-    const init = async () => {
-      const myStream = await streamForKind(kind)
+    const init = async (context: string) => {
+      const myStream = await streamForKind(kind, context)
 
       // callback to renderer
       const cb = (model) => {
@@ -81,6 +86,11 @@ function initStreamForResourceKind(kind: WatchedKind) {
       }
 
       ipcMain.once(closeEvent, myCleanup)
+      onDeletedComputeTarget((deletedContext: string) => {
+        if (deletedContext === context) {
+          myCleanup()
+        }
+      })
 
       // when we get a serialized model, send an event back to the sender
       myStream.on("data", cb)
@@ -94,13 +104,16 @@ function initStreamForResourceKind(kind: WatchedKind) {
           if (!closedOnPurpose) {
             // ^^^ double-check that a purposeful close hasn't been
             // requested in the interim (this function is async...)
-            init()
+            init(context)
           }
         }
       })
     }
 
-    init()
+    // listen for /open events from the renderer, one per `Kind` of
+    // resource
+    init(clusterNameForKubeconfig)
+    onDiscoveredComputeTarget(init)
   })
 }
 
@@ -121,8 +134,6 @@ const logsInitChannel = "/logs/init"
 const logsCloseChannel = (selector: string, namespace: string) => `/logs/${namespace}/${String(selector)}/close`
 
 export function initEvents() {
-  // listen for /open events from the renderer, one per `Kind` of
-  // resource
   kinds.forEach((kind) => initStreamForResourceKind(kind))
 
   // logs
@@ -167,12 +178,14 @@ export function initEvents() {
   )
 
   // resource create request
-  ipcMain.handle("/create", (_, yaml: string, dryRun = false) =>
-    import("./kubernetes/create").then((_) => _.onCreate(yaml, "apply", dryRun)),
+  ipcMain.handle("/create", (_, yaml: string, context?: string, dryRun = false) =>
+    import("./kubernetes/create").then((_) => _.onCreate(yaml, "apply", context, dryRun)),
   )
 
   // resource delete request given the yaml spec
-  ipcMain.handle("/delete/yaml", (_, yaml: string) => import("./kubernetes/create").then((_) => _.onDelete(yaml)))
+  ipcMain.handle("/delete/yaml", (_, yaml: string, context?: string) =>
+    import("./kubernetes/create").then((_) => _.onDelete(yaml, context)),
+  )
 
   // resource delete request by name
   ipcMain.handle("/delete/name", (_, props: string) =>
@@ -320,13 +333,13 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Create a resource */
-    create: async (_, yaml: string, dryRun = false): Promise<ExecResponse> => {
-      return ipcRenderer.invoke("/create", yaml, dryRun)
+    create: async (_, yaml: string, context?: string, dryRun = false): Promise<ExecResponse> => {
+      return ipcRenderer.invoke("/create", yaml, context, dryRun)
     },
 
     /** Delete a resource */
-    delete: (yaml: string): Promise<ExecResponse> => {
-      return ipcRenderer.invoke("/delete/yaml", yaml)
+    delete: (yaml: string, context?: string): Promise<ExecResponse> => {
+      return ipcRenderer.invoke("/delete/yaml", yaml, context)
     },
 
     /** Delete a resource by name */

@@ -1,13 +1,13 @@
 import Tiles from "@jay/components/Forms/Tiles"
 
 import type Values from "../Values"
-import type { Context } from "../Wizard"
+import type Context from "../Context"
 
 function targets(ctrl: Values, context: Context) {
   return (
     <Tiles
       ctrl={ctrl}
-      fieldId="target"
+      fieldId="context"
       label="Compute Target"
       description="Where do you want the workers to run?"
       options={context.targetOptions}

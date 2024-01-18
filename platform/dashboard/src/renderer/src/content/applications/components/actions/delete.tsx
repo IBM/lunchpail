@@ -14,6 +14,7 @@ export default function deleteAction(props: Props) {
       yaml={yamlFromSpec(props.application)}
       name={props.application.metadata.name}
       namespace={props.application.metadata.namespace}
+      context={props.application.metadata.context}
     />
   )
 }

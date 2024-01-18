@@ -7,3 +7,7 @@ export function currentlySelectedId(searchParams: URLSearchParams) {
 export function currentlySelectedKind(searchParams: URLSearchParams) {
   return searchParams.get("kind") as DetailableKind
 }
+
+export function currentlySelectedContext(searchParams: URLSearchParams) {
+  return searchParams.get("context")
+}

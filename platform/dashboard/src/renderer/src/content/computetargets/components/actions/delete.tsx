@@ -16,6 +16,7 @@ export default function DeleteAction(props: Props) {
       deleteFn={deleteFn}
       name={props.metadata.name}
       namespace={props.metadata.namespace}
+      context={props.metadata.context}
     />
   )
 }

@@ -11,7 +11,11 @@ export async function get(): Promise<ExecResponse> {
 
     return { code: 0, message: JSON.stringify({ config, current: config["current-context"] }) }
   } catch (err) {
-    console.error(err)
+    if (/ENOENT/.test(String(err))) {
+      console.error("kubectl not found")
+    } else {
+      console.error(err)
+    }
     return { code: 1, message: hasMessage(err) ? err.message : "" }
   }
 }
@@ -33,7 +37,13 @@ export async function getConfig(): Promise<KubeConfig> {
       child.stdout.on("data", (data) => (out += data.toString()))
 
       // important, to avoid uncaught exceptions
-      child.once("error", (err) => console.error(err))
+      child.once("error", (error) => {
+        if (/ENOENT/.test(String(error))) {
+          err += "kubectl not found"
+        } else {
+          err += String(error)
+        }
+      })
 
       child.once("close", (code) => {
         if (code === 0) {

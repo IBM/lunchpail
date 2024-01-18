@@ -8,6 +8,9 @@ type Props = {
   /** Name of TaskQueue */
   name: TaskQueueEvent["metadata"]["name"]
 
+  /** The cluster in which this resources resides */
+  context: TaskQueueEvent["metadata"]["context"]
+
   /** To keep a consistent color across views, we assign each taskqueue an index */
   idx: number
 

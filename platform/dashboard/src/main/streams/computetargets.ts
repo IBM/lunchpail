@@ -1,4 +1,5 @@
 import { Readable } from "node:stream"
+import { EventEmitter } from "node:events"
 
 import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
 
@@ -8,6 +9,36 @@ import getControlPlaneStatus from "../controlplane/status"
 import { isRuntimeProvisioned } from "../controlplane/runtime"
 import { isKindCluster, clusterNameForKubeconfig as controlPlaneClusterName } from "../controlplane/kind"
 
+const computetargetEvents = new EventEmitter()
+
+export function onDiscoveredComputeTarget(handler: (context: string) => void) {
+  computetargetEvents.on("/discovered", handler)
+}
+
+export function onDeletedComputeTarget(handler: (context: string) => void) {
+  computetargetEvents.on("/deleted", handler)
+}
+
+const knownComputeTargets: Record<string, true> = {}
+
+function emitDiscoveredComputeTargetFromName(context: string) {
+  if (!(context in knownComputeTargets)) {
+    knownComputeTargets[context] = true
+    computetargetEvents.emit("/discovered", context)
+  }
+}
+
+function emitDiscoveredComputeTarget(event: ComputeTargetEvent) {
+  if (event.spec.isJaaSWorkerHost) {
+    emitDiscoveredComputeTargetFromName(event.metadata.name)
+  }
+}
+
+function emitDeletedComputeTarget(context: string) {
+  delete knownComputeTargets[context]
+  computetargetEvents.emit("/deleted", context)
+}
+
 /** Construct a new `ComputeTargetEvent` */
 function ComputeTargetEvent(cluster: string, spec: Omit<ComputeTargetEvent["spec"], "type">) {
   return {
@@ -16,6 +47,7 @@ function ComputeTargetEvent(cluster: string, spec: Omit<ComputeTargetEvent["spec
     metadata: {
       name: cluster,
       namespace: "",
+      context: cluster,
       creationTimestamp: new Date().toUTCString(),
       annotations: {
         "codeflare.dev/status": spec.jaasManager ? (spec.isJaaSWorkerHost ? "Online" : "HostConfigured") : "Offline",
@@ -88,7 +120,11 @@ async function* computeTargetsGenerator(): AsyncGenerator<ComputeTargetEvent[], 
         yield events
       }
     } catch (err) {
-      console.error(err)
+      if (/ENOENT/.test(String(err))) {
+        console.error("kubectl not found")
+      } else {
+        console.error(err)
+      }
     }
 
     await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -115,9 +151,16 @@ function addDeletions(previous: ComputeTargetEvent[], current: ComputeTargetEven
     {} as Record<string, ComputeTargetEvent>,
   )
 
+  for (const [key, value] of Object.entries(B)) {
+    if (!(key in A)) {
+      emitDiscoveredComputeTarget(value)
+    }
+  }
+
   for (const [key, value] of Object.entries(A)) {
     if (!(key in B)) {
       current.push(terminating(value))
+      emitDeletedComputeTarget(value.metadata.name)
     }
   }
 
@@ -132,6 +175,8 @@ async function* computeTargetsStringGenerator(): AsyncGenerator<string> {
   for await (const events of computeTargetsGenerator()) {
     if (previousModel !== null) {
       addDeletions(previousModel, events)
+    } else {
+      events.forEach(emitDiscoveredComputeTarget)
     }
     previousModel = events
     yield JSON.stringify(events)

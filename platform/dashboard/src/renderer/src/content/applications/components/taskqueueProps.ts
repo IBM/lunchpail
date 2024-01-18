@@ -28,6 +28,7 @@ export default function taskqueueProps(
     ? undefined
     : {
         name: queues[0],
+        context: props.application.metadata.context,
         idx: props.taskqueueIndex[queues[0]],
         events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
         applications: [props.application],

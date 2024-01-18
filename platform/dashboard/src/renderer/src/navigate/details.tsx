@@ -8,10 +8,10 @@ import type LocationProps from "./LocationProps"
 import { type DetailableKind as Kind } from "../content"
 import type KubernetesResource from "@jay/common/events/KubernetesResource"
 
-export type Entity = { id: string; kind: Kind; linkText?: string }
+export type Entity = { id: string; kind: Kind; context?: string; linkText?: string }
 
-export function href({ id, kind }: Entity, props: string | Pick<LocationProps, "location">) {
-  return `?id=${id}&kind=${kind}&view=detail${typeof props === "string" ? props : props.location.hash}`
+export function href({ id, kind, context }: Entity, props: string | Pick<LocationProps, "location">) {
+  return `?id=${id}&kind=${kind}&context=${context || ""}&view=detail${typeof props === "string" ? props : props.location.hash}`
 }
 
 export function isShowingDetails(searchParams: URLSearchParams) {
@@ -31,10 +31,11 @@ export function routerToDetails(props: {
   const id = props["data-id"]
   const kind = props["data-kind"] as Kind
   const hash = props["data-hash"]
+  const context = props["data-context"]
   const linkText = props["data-link-text"] ?? id
 
   return (
-    <Link {...props} to={href({ id, kind }, hash)}>
+    <Link {...props} to={href({ id, kind, context }, hash)}>
       {linkText}
     </Link>
   )
@@ -43,7 +44,7 @@ export function routerToDetails(props: {
 type OnClick = import("./wizard").WizardProps["onClick"]
 
 /** Present a link to show the Details view of the given resource */
-const linkToDetails: FunctionComponent<Entity & { onClick?: OnClick }> = ({ id, kind, linkText, onClick }) => {
+const linkToDetails: FunctionComponent<Entity & { onClick?: OnClick }> = ({ id, kind, context, linkText, onClick }) => {
   const location = window.location // FIXME: useLocation()
 
   return (
@@ -55,6 +56,7 @@ const linkToDetails: FunctionComponent<Entity & { onClick?: OnClick }> = ({ id, 
       onClick={onClick ?? stopPropagation}
       data-id={id}
       data-kind={kind}
+      data-context={context}
       data-hash={location.hash}
       data-link-text={linkText}
       component={routerToDetails}
@@ -72,8 +74,8 @@ export function linkToAllDetails(
   return resources.map((rsrc, idx) =>
     linkToDetails(
       typeof rsrc === "string"
-        ? { id: rsrc, kind, linkText: linkTexts[idx], onClick }
-        : { id: rsrc.metadata.name, kind, linkText: linkTexts[idx], onClick },
+        ? { id: rsrc, kind, context: "", linkText: linkTexts[idx], onClick } // FIXME
+        : { id: rsrc.metadata.name, kind, context: rsrc.metadata.context, linkText: linkTexts[idx], onClick },
     ),
   )
 }

@@ -17,12 +17,9 @@ export function summaryGroups(props: Props) {
 }
 
 export default function WorkDispatcherCard(props: Props) {
+  const { name, context } = props.workdispatcher.metadata
+
   return (
-    <CardInGallery
-      kind="workdispatchers"
-      name={props.workdispatcher.metadata.name}
-      icon={<Icon />}
-      groups={summaryGroups(props)}
-    />
+    <CardInGallery kind="workdispatchers" name={name} context={context} icon={<Icon />} groups={summaryGroups(props)} />
   )
 }

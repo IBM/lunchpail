@@ -10,7 +10,9 @@ import { groupSingular as application } from "@jay/resources/applications/group"
 
 import type { TileOptions } from "@jay/components/Forms/Tiles"
 
+import type Props from "./Props"
 import type Values from "./Values"
+import type Context from "./Context"
 
 import yaml from "./yaml"
 
@@ -18,19 +20,7 @@ import stepName from "./steps/name"
 import stepTarget from "./steps/target"
 import stepConfigure from "./steps/configure"
 
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
 import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
-
-type Props = {
-  taskqueues: TaskQueueEvent[]
-  applications: ApplicationSpecEvent[]
-  computetargets: ComputeTargetEvent[]
-}
-
-export type Context = Pick<Props, "applications"> & {
-  targetOptions: TileOptions
-}
 
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()
@@ -51,13 +41,13 @@ export default function NewWorkerPoolWizard(props: Props) {
   const defaults = useCallback(
     (previousValues?: Values["values"]) => {
       // make sure the previous selection is still a valid one
-      const target =
-        previousValues?.target && props.computetargets.find((_) => _.metadata.name === previousValues.target)
-          ? previousValues.target
+      const context =
+        previousValues?.context && props.computetargets.find((_) => _.metadata.name === previousValues.context)
+          ? previousValues.context
           : ""
 
       return {
-        target,
+        context,
         name:
           (searchedTaskQueue ? searchedTaskQueue + "-pool-" : "") +
           removeAccents(
@@ -79,6 +69,7 @@ export default function NewWorkerPoolWizard(props: Props) {
   const context = useMemo(
     (): Context => ({
       applications: props.applications,
+      computetargets: props.computetargets,
       targetOptions:
         props.computetargets.length === 0
           ? [{ title: "", description: "No compute targets" }]

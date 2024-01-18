@@ -28,6 +28,7 @@ function deleteAction(props: Props) {
       singular={singular}
       name={props.metadata.name}
       namespace={props.metadata.namespace}
+      context={props.metadata.context}
     />
   )
 }
