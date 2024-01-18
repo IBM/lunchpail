@@ -28,17 +28,20 @@ DRY=$(mktemp)
 echo "Dry running to $DRY" 1>&2
 
 if [[ -n "$kubecontext" ]]
-then kubecontext_option="--kube-context $kubecontext"
+then
+    kubecontext_option="--context $kubecontext"
+    helm_kubecontext_option="--kube-context $kubecontext"
 fi
 
 if [[ -n "$kubeconfig" ]]
 then
     kubeconfig_path=$(mktemp)
     echo -n "$kubeconfig" | base64 -d > ${kubeconfig_path}
-    kubeconfig_option="--kubeconfig ${kubeconfig_path} --kube-insecure-skip-tls-verify"
+    kubeconfig_option="--kubeconfig ${kubeconfig_path} --insecure-skip-tls-verify"
+    helm_kubeconfig_option="--kubeconfig ${kubeconfig_path} --kube-insecure-skip-tls-verify"
 fi
 
-helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} ${kubecontext_option} ${kubeconfig_option} \
+helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} ${helm_kubecontext_option} ${helm_kubeconfig_option} \
      --set uid=$uid \
      --set name=$name \
      --set image=$image \
@@ -58,7 +61,8 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
 
 # we could pipe the helm install to kubectl apply; leaving them
 # separate now to aid with debugging
-kubectl apply -f $DRY 1>&2
+kubectl apply -f $DRY ${kubecontext_option} ${kubeconfig_option} 1>&2
+echo "kubectl apply -f $DRY ${kubecontext_option} ${kubeconfig_option}" >> /tmp/zzz
 rm -f $DRY
 
 if [[ -f "$kubeconfig_path" ]]

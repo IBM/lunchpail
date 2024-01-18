@@ -9,6 +9,5 @@ export default function ComputeTargetDetail(
   events: ManagedEvents /* , memos: Memos, settings: CurrentSettings */,
 ) {
   const event = events.computetargets.find((_) => _.metadata.name === id)
-
   return !event ? undefined : { body: <Detail {...event} /> }
 }

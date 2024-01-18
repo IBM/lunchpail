@@ -11,6 +11,10 @@ import type Values from "./Values"
 
 import stepType from "./steps/type"
 
+function resourceName(values: Values["values"]) {
+  return values.type === "Kind" ? "kind-" + values.name : values.name
+}
+
 export default function NewRepoSecretWizard() {
   /** Initial value for form */
   const defaults = useCallback((previousValues?: Values["values"]) => {
@@ -31,6 +35,7 @@ export default function NewRepoSecretWizard() {
       defaults={defaults}
       yaml={yaml}
       steps={steps}
+      resourceName={resourceName}
     >
       {description}
     </NewResourceWizard>

@@ -17,8 +17,19 @@ export type TileOptions<T extends string = string> = NonEmptyArray<TileOption<T>
 
 export default function Tiles(props: FormProps & Ctrl & { options: TileOptions; currentSelection?: string }) {
   //const [selected, setSelected] = useState(props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title)
+
+  const firstNotDisabledIdx = props.options.findIndex((_) => !_.isDisabled)
   const selected =
-    props.currentSelection ?? props.ctrl.values[props.fieldId] ?? props.options[0].value ?? props.options[0].title
+    props.currentSelection ||
+    props.ctrl.values[props.fieldId] ||
+    props.options[firstNotDisabledIdx].value ||
+    props.options[firstNotDisabledIdx].title
+
+  // In case we reverted based on now-disabled or non-existence of
+  // prior selection, update the Form values model (via `ctrl.setValue`)
+  if (selected && selected !== props.ctrl.values[props.fieldId]) {
+    setTimeout(() => props.ctrl.setValue(props.fieldId, selected))
+  }
 
   const onClick = useCallback(
     (evt: MouseEvent) => {

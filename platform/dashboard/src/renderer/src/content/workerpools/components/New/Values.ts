@@ -1,10 +1,9 @@
 import type { DefaultValues } from "@jay/components/NewResourceWizard"
 
-import type Target from "./Target"
-
 type Values = DefaultValues<{
-  target: Target
-  kubecontext: string
+  /** Name of ComputeTarget */
+  target: string
+
   name: string
   application: string
   taskqueue: string

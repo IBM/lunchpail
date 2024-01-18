@@ -6,7 +6,12 @@ import { isComputeTarget } from "../streams/computetargets"
 /**
  * Create a resource using the given `yaml` spec.
  */
-export async function onCreate(yaml: string, action: "apply" | "delete", dryRun = false): Promise<ExecResponse> {
+export async function onCreate(
+  yaml: string,
+  action: "apply" | "delete",
+  dryRun = false,
+  context = clusterNameForKubeconfig,
+): Promise<ExecResponse> {
   const [{ spawn }, { load }] = await Promise.all([import("node:child_process"), import("js-yaml")])
 
   const json = load(yaml)
@@ -19,7 +24,7 @@ export async function onCreate(yaml: string, action: "apply" | "delete", dryRun 
       // the `-f -` means accept the yaml on stdin
       const child = spawn(
         "kubectl",
-        [action, "--context", clusterNameForKubeconfig, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])],
+        [action, "--context", context, "-f", "-", ...(dryRun === false ? [] : ["--dry-run=server"])],
         {
           stdio: ["pipe", "inherit", "pipe"],
         },
@@ -53,8 +58,8 @@ export function hasMessage(obj: unknown): obj is { message: string } {
 /**
  * Delete a resource by name
  */
-export async function onDelete(yaml: string): Promise<ExecResponse> {
-  return onCreate(yaml, "delete")
+export async function onDelete(yaml: string, context?: string): Promise<ExecResponse> {
+  return onCreate(yaml, "delete", false, context)
 }
 
 /**
@@ -69,7 +74,9 @@ export async function onDeleteByName({
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
-      const child = spawn("kubectl", ["delete", kind, name, "-n", namespace], { stdio: ["inherit", "inherit", "pipe"] })
+      const child = spawn("kubectl", ["delete", kind, "--context", clusterNameForKubeconfig, name, "-n", namespace], {
+        stdio: ["inherit", "inherit", "pipe"],
+      })
 
       let err = ""
       child.stderr.on("data", (data) => (err += data.toString()))

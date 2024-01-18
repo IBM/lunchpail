@@ -56,7 +56,7 @@ export type StepAlertProps<Values extends DefaultValues> = Pick<AlertProps, "var
 }
 
 /** One step in the Wizard */
-type StepProps<Values extends DefaultValues> = {
+type StepProps<Values extends DefaultValues, Context = undefined> = {
   /** This will be displayed as the step's name in the left-hand "guide" part of the Wizard UI */
   name: string
 
@@ -64,7 +64,7 @@ type StepProps<Values extends DefaultValues> = {
    * Form choices to be displayed in this step. Either an array of
    * `FormItem` or a function that returns this array.
    */
-  items: readonly FormItem<Values>[] | ((values: Values) => readonly FormItem<Values>[] | ReactNode[])
+  items: readonly FormItem<Values>[] | ((values: Values, context: Context) => readonly FormItem<Values>[] | ReactNode[])
 
   /**
    * Optionally, you may specify a parallel array to `items` that
@@ -80,26 +80,32 @@ type StepProps<Values extends DefaultValues> = {
   alerts?: readonly StepAlertProps<Values>[] | ((values: Values["values"]) => readonly StepAlertProps<Values>[])
 }
 
-type Props<Values extends DefaultValues> = PropsWithChildren<{
+type Props<Values extends DefaultValues, Context = undefined> = PropsWithChildren<{
   kind: DetailableKind
   title: string
   singular: string
   action?: "edit" | "clone" | "register" | null
   defaults: (previousValues: undefined | Values["values"]) => Values["values"]
-  yaml: (values: Values["values"]) => string | Promise<string>
-  steps: readonly StepProps<Values>[]
+  yaml: (values: Values["values"], context: Context) => string | Promise<string>
+  steps: readonly StepProps<Values, Context>[]
 
   /** On successful resource creation, return to show that new resource in the Details drawer? [default=true] */
   returnToNewResource?: boolean
 
   /** Callback when a form value changes */
   onChange?(fieldId: string, value: string, values: Values["values"], setValue: Values["setValue"] | undefined): void
+
+  /** Any contextual values that should be passed through to `props.steps()` */
+  context?: Context
+
+  /** Optionally, provide the name of the resource that will be created; the default will be to use Values.name */
+  resourceName?: (values: Values["values"]) => string
 }>
 
 const nextIsEnabled = { isNextDisabled: false }
 const nextIsDisabled = { isNextDisabled: true }
 
-function stepAlerts<Values extends DefaultValues>({ alerts }: StepProps<Values>, ctrl: Values) {
+function stepAlerts<Values extends DefaultValues>({ alerts }: Pick<StepProps<Values>, "alerts">, ctrl: Values) {
   if (alerts) {
     const alertProps = typeof alerts === "function" ? alerts(ctrl.values) : alerts
     return (
@@ -133,7 +139,9 @@ function stepAlerts<Values extends DefaultValues>({ alerts }: StepProps<Values>,
   }
 }
 
-export default function NewResourceWizard<Values extends DefaultValues = DefaultValues>(props: Props<Values>) {
+export default function NewResourceWizard<Values extends DefaultValues = DefaultValues, Context = undefined>(
+  props: Props<Values, Context>,
+) {
   /** Error in the request to create a pool? */
   const [errorInCreateRequest, setErrorInCreateRequest] = useState<null | unknown>(null)
 
@@ -149,7 +157,11 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
 
   const doCreate = useCallback(async (values: Values["values"], dryRun = false) => {
     try {
-      const response = await window.jay.create(values, await props.yaml(values), dryRun)
+      const response = await window.jay.create(
+        values,
+        await props.yaml(values, props.context || (undefined as Context)),
+        dryRun,
+      )
       if (response !== true) {
         console.error(response)
         setDryRunSuccess(false)
@@ -159,7 +171,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
         if (dryRun) {
           setDryRunSuccess(true)
         } else {
-          onSuccess({ kind: props.kind, id: values.name })
+          onSuccess({ kind: props.kind, id: props.resourceName ? props.resourceName(values) : values.name })
         }
       }
     } catch (errorInCreateRequest) {
@@ -225,7 +237,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
         >
           <AlertGroup>{alerts}</AlertGroup>
 
-          <Yaml>{props.yaml(ctrl.values)}</Yaml>
+          <Yaml>{props.yaml(ctrl.values, props.context || (undefined as Context))}</Yaml>
         </WizardStep>
       )
     },
@@ -293,7 +305,10 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>
-                {(typeof step.items !== "function" ? step.items : step.items(ctrl)).map((item, idx) => {
+                {(typeof step.items !== "function"
+                  ? step.items
+                  : step.items(ctrl, props.context || (undefined as Context))
+                ).map((item, idx) => {
                   const spanA = typeof step.gridSpans === "function" ? step.gridSpans(ctrl.values) : step.gridSpans
                   const span = typeof spanA === "number" ? spanA : (Array.isArray(spanA) ? spanA[idx] : undefined) ?? 12
                   return (
@@ -325,7 +340,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
       )
     }
     return values
-  }, [props.kind, props.defaults, settings?.form[0]])
+  }, [props.kind, props.defaults, settings?.form[0], JSON.stringify(props.context)])
 
   const form = useCallback(
     (ctrlWithoutMemory: Values) => {

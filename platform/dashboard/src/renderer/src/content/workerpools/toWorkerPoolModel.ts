@@ -54,7 +54,10 @@ export default function toWorkerPoolModel(
 
       return M
     },
-    { inbox: [], outbox: [], processing: [] } as Omit<WorkerPoolModel, "label" | "namespace" | "application">,
+    { inbox: [], outbox: [], processing: [] } as Omit<
+      WorkerPoolModel,
+      "label" | "namespace" | "application" | "context"
+    >,
   )
 
   return {
