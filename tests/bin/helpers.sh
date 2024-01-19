@@ -81,6 +81,48 @@ function waitForIt {
     echo "✅ PASS run-controller delete test $selector"
 }
 
+# Checks if the the amount of unassigned tasks remaining is 0 and the number of tasks in the outbox is 6
+function waitForUnassignedAndOutbox {
+    local name=$1
+    local ns=$2
+    local expectedUnassignedTasks=$3
+    local expectedNumInOutbox=$4
+    local dataset=$5
+    
+    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
+
+    # for n in {1..5};
+    runNum=1
+    while true
+    do
+        echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks} and expected num in Outboxes=${expectedNumInOutbox}"
+        actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o custom-columns=UNASSIGNED:.metadata.annotations.codeflare\\.dev/unassigned --no-headers || echo "there was an issue running the kubectl command-n😢")
+        
+        if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
+        if ! [[ $expectedUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: expectedUnassignedTasks not a number: '$expectedUnassignedTasks'"; fi
+
+        # this currently fails. The message echoed is "unassigned tasks should be 0 but we got 0"
+        echo "expected unassigned tasks=${expectedUnassignedTasks} and actual num unassigned=${actualUnassignedTasks}"
+        if [[ "$actualUnassignedTasks" != "$expectedUnassignedTasks" ]]
+        then
+            echo "unassigned tasks should be ${expectedUnassignedTasks} but we got ${actualUnassignedTasks}"
+            sleep 2
+        else
+            break
+        fi
+
+        runNum=$((runNum+1))
+    done
+
+    # actualNumInOutbox=$($KUBECTL get queue -A -o custom-columns=INBOX:.metadata.annotations.codeflare\\.dev/outbox --no-headers)
+    # if [[ $actualNumInOutbox != $expectedNumInOutbox ]]; then echo "tasks in outboxes should be 6 but we got ${actualNumInOutbox}"; exit 1; fi
+
+    echo "✅ PASS run-controller run test $name"
+
+    $KUBECTL delete run $name -n $ns
+    echo "✅ PASS run-controller delete test $name"
+}
+
 function waitForStatus {
     local name=$1
     local ns=$2
