@@ -91,17 +91,16 @@ function waitForUnassignedAndOutbox {
     
     echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
 
-    # for n in {1..5};
     runNum=1
     while true
     do
-        echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks} and expected num in Outboxes=${expectedNumInOutbox}"
-        actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o custom-columns=UNASSIGNED:.metadata.annotations.codeflare\\.dev/unassigned --no-headers || echo "there was an issue running the kubectl command-n😢")
-        
+        echo
+        echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
+        actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o custom-columns=UNASSIGNED:.metadata.annotations.codeflare\\.dev/unassigned --no-headers || echo "there was an issue running the kubectl command😢")
+
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
         if ! [[ $expectedUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: expectedUnassignedTasks not a number: '$expectedUnassignedTasks'"; fi
 
-        # this currently fails. The message echoed is "unassigned tasks should be 0 but we got 0"
         echo "expected unassigned tasks=${expectedUnassignedTasks} and actual num unassigned=${actualUnassignedTasks}"
         if [[ "$actualUnassignedTasks" != "$expectedUnassignedTasks" ]]
         then
@@ -114,8 +113,19 @@ function waitForUnassignedAndOutbox {
         runNum=$((runNum+1))
     done
 
-    # actualNumInOutbox=$($KUBECTL get queue -A -o custom-columns=INBOX:.metadata.annotations.codeflare\\.dev/outbox --no-headers)
-    # if [[ $actualNumInOutbox != $expectedNumInOutbox ]]; then echo "tasks in outboxes should be 6 but we got ${actualNumInOutbox}"; exit 1; fi
+    runIter=1
+    while true
+    do
+        echo
+        echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
+        actualNumInOutbox=$($KUBECTL get queue -A -o custom-columns=INBOX:.metadata.annotations.codeflare\\.dev/outbox --no-headers)
+        
+        if ! [[ $actualNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: actualNumInOutbox not a number: '$actualNumInOutbox'"; fi
+        if ! [[ $expectedNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: expectedNumInOutbox not a number: '$expectedNumInOutbox'"; fi
+
+        if [[ "$actualNumInOutbox" != "$expectedNumInOutbox" ]]; then echo "tasks in outboxes should be ${expectedNumInOutbox} but we got ${actualNumInOutbox}"; sleep 2; else break; fi
+        runIter=$((runIter+1))
+    done
 
     echo "✅ PASS run-controller run test $name"
 
