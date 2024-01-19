@@ -10,7 +10,13 @@ import { Transform } from "stream"
 export default function filterOutMissingCRDs() {
   return new Transform({
     transform(chunk: Buffer, _: string, callback) {
-      if (chunk.indexOf("error: the server doesn't have a resource type") < 0 && chunk.indexOf("refused") < 0) {
+      // Notes:
+      // - context not found means that the kind cluster doesn't exist, yet
+      if (
+        chunk.indexOf("context was not found") < 0 &&
+        chunk.indexOf("error: the server doesn't have a resource type") < 0 &&
+        chunk.indexOf("refused") < 0
+      ) {
         callback(null, chunk)
       } else {
         callback(null, "")

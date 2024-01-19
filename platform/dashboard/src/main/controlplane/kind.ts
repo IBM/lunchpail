@@ -78,7 +78,11 @@ export async function doesKindClusterExist(clusterName: string) {
     const result = await command("kind get clusters", execOpts)
     return result.stdout.includes(clusterName.replace(/^kind-/, ""))
   } catch (e) {
-    console.error(e)
+    // the podman (or whatever) machine might not be up. we'll report
+    // this to the user directly, no need to pollute the console
+    if (!/Cannot connect to the Docker daemon/.test(String(e))) {
+      console.error(e)
+    }
     return false
   }
 }
