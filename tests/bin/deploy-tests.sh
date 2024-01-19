@@ -19,6 +19,6 @@ fi
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0)"
 $HELM install codeflare-tests "$SCRIPTDIR"/../helm $HELM_SECRETS --wait --set global.arch=$ARCH $APP $GPU \
       --set kubernetes.context=kind-jaas \
-      --set kubernetes.config=$($KUBECTL config view  -o json --flatten | sed 's/127\.0\.0\.1/host.docker.internal/g' | base64 | tr -d "\n")
+      --set kubernetes.config=$($KUBECTL config view  -o json --flatten | base64 | tr -d "\n")
 
 $KUBECTL get run --all-namespaces --watch

@@ -43,6 +43,8 @@ spec:
             value: workdir
           - name: WORKDIR_SERVER
             value: {{ .Values.workdir.clusterIP }}
+          - name: DOCKER_HOST
+            value: {{ .Values.global.dockerHost | default "host.docker.internal" }}
         volumeMounts:
         - name: workdir
           mountPath: /workdir

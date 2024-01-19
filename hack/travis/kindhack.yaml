@@ -1,0 +1,19 @@
+#
+# !!!!!!!!!DANGER DANGER DANGER DANGER!!!!!!!!!  This is only used for
+# tests, to help test7d and the like, where we want to test connecting
+# from a pod to another kind cluster. On Mac, we can use
+# `host.docker.internal`, but this does not work on
+# Linux. Furthermore, if we try to use the 172.17.0.1 (e.g.) docker
+# network bridge for kind, we get a connection refused. This is
+# because the default listen address for kind is 127.0.0.1. With this
+# Kind cluster config, we set the listen address to 0.0.0.0, which
+# allows connections from inside of the container (which is on a
+# different network, hence the connection refused when listening on
+# 127.0.0.1)
+#
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  # WARNING: It is _strongly_ recommended that you keep this the default
+  # (127.0.0.1) for security reasons. However it is possible to change this.
+  apiServerAddress: "0.0.0.0"

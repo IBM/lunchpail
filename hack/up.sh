@@ -27,8 +27,15 @@ HAS_EXAMPLES=false
 # prepare the helm charts
 "$SCRIPTDIR"/../platform/prerender.sh
 
+if [[ -f /tmp/kindhack.yaml ]]
+then
+    docker_host_ip=$(docker network inspect kind | grep Gateway | awk 'FNR==1{gsub("\"", "",$2); print $2}')
+    echo "Hacking docker_host_ip=${docker_host_ip}"
+    SET_DOCKER_HOST="--set global.dockerHost=${docker_host_ip}"
+fi
+
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
-$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES
+$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES $SET_DOCKER_HOST
 $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA
 
 # sigh, some components may use kustomize, not helm

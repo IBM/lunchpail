@@ -36,7 +36,7 @@ fi
 if [[ -n "$kubeconfig" ]]
 then
     kubeconfig_path=$(mktemp)
-    echo -n "$kubeconfig" | base64 -d > ${kubeconfig_path}
+    echo -n "$kubeconfig" | base64 -d | sed "s/127\.0\.0\.1/${DOCKER_HOST-host.docker.internal}/g" | sed "s/0\.0\.0\.0/${DOCKER_HOST-host.docker.internal}/g" > ${kubeconfig_path}
     kubeconfig_option="--kubeconfig ${kubeconfig_path} --insecure-skip-tls-verify"
     helm_kubeconfig_option="--kubeconfig ${kubeconfig_path} --kube-insecure-skip-tls-verify"
 fi

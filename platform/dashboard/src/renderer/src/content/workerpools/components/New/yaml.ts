@@ -39,13 +39,7 @@ export default async function yaml(values: Values["values"], context: Context) {
   const kubeconfig =
     !values.context || !window.jay.contexts
       ? undefined
-      : await window.jay
-          .contexts()
-          .then(({ config }) =>
-            btoa(
-              JSON.stringify(stripKubeconfig(config, values.context)).replace(/127\.0\.0\.1/g, "host.docker.internal"),
-            ),
-          )
+      : await window.jay.contexts().then(({ config }) => btoa(JSON.stringify(stripKubeconfig(config, values.context))))
 
   // details for the target
   const target = values.context
