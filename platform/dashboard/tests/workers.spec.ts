@@ -90,9 +90,9 @@ test.describe.serial("workers tests running sequentially", () => {
 
   test("Check the Compute Pools tab for the new worker we created", async () => {
     // click back to Compute Pools tab element from the sidebar
-    const advanced = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Advanced" })
-    await advanced.click()
-    await advanced.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute" }).click()
+    const compute = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Compute" })
+    await compute.click()
+    await compute.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute Pools" }).click()
 
     // check that the drawer with the worker information is still open
     const computePoolDrawer = await page.locator(`[data-ouia-component-id="workerpools.${computePoolName}"]`)
@@ -127,9 +127,9 @@ test.describe.serial("workers tests running sequentially", () => {
     await page.getByRole("button", { name: "Confirm" }).click()
 
     // verify that intended compute pool's was deleted. First, navigate back to 'Compute Pools' tab
-    const advanced = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Advanced" })
-    await advanced.click()
-    await advanced.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute" }).click()
+    const compute = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Compute" })
+    await compute.click()
+    await compute.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: "Compute Pools" }).click()
 
     // Now verify that there is no card that matches the previously created compute pool
     await missingCard(page, computePoolName)

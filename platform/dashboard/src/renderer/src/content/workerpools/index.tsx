@@ -15,6 +15,6 @@ export default {
   wizard,
   actions: undefined,
   sidebar: {
-    group: "Advanced",
+    group: "Compute",
   },
 }

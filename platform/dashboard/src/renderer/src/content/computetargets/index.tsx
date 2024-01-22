@@ -18,7 +18,7 @@ const computetargets: ContentProvider<"computetargets"> = {
   actions,
   gallery,
   sidebar: {
-    priority: -10,
+    group: "Compute",
     badgeSuffix: "enabled",
   },
 }

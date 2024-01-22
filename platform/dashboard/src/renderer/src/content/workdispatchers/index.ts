@@ -14,6 +14,6 @@ export default {
   detail,
   wizard,
   sidebar: {
-    group: "Advanced",
+    group: "Compute",
   },
 }
