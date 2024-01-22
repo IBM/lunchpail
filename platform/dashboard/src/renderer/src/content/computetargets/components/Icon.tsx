@@ -12,7 +12,14 @@ const tooltips = {
   healthy: "It is healthy.",
   unhealthy: "Warning: it is not healthy.",
   controlplane: `This ${computetarget} houses the main JaaS control plane.`,
-  workerhost: `This ${computetarget} is enabled to host ${workerpool} Workers.`,
+  workerhost: {
+    enabled: `This ${computetarget} is enabled to host ${workerpool} Workers.`,
+    disabled: (
+      <>
+        This {computetarget} <strong>does not</strong> have support to host {workerpool} Workers.
+      </>
+    ),
+  },
 }
 
 function controlPlaneIcons(props: Props) {
@@ -36,7 +43,7 @@ function workerHostIcons(props: Props) {
   const className = healthy ? "codeflare--status-active" : "codeflare--status-unknown"
   return [
     <ToolbarItem key="workers">
-      <Tooltip content={tooltips.workerhost}>
+      <Tooltip content={tooltips.workerhost[healthy ? "enabled" : "disabled"]}>
         <WorkersIcon className={className} />
       </Tooltip>
     </ToolbarItem>,
