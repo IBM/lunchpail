@@ -16,6 +16,9 @@ type Props = {
   selectors: string[]
 }
 
+/** Any subprocesses that we want to kill on process exit? */
+let cleanupsOnProcessExit: null | (() => void)[] = null
+
 /**
  * @return a NodeJS `Readable` that emits a stream of serialized JSON
  * Kubernetes resource models (each one marking some change in the
@@ -43,21 +46,41 @@ export default async function startStreamForKind(
   const lineSplitter = split2()
 
   child.stderr.pipe(errorFilter).pipe(process.stderr)
-  child.once("error", (err) => {
+
+  const onError = (err) => {
     if (/ENOENT/.test(String(err))) {
       console.error("kubectl not found")
     } else {
       console.error(err)
     }
-  })
+  }
+  child.once("error", onError)
 
   const cleanup = () => {
     toJson.destroy()
     errorFilter.destroy()
     lineSplitter.destroy()
+    child.off("error", onError)
     child.kill()
+
+    // remove our cleanup from the process.exit list
+    if (cleanupsOnProcessExit) {
+      const idx = cleanupsOnProcessExit.findIndex((_) => _ === cleanup)
+      if (idx >= 0) {
+        cleanupsOnProcessExit.splice(idx, 1)
+      }
+    }
   }
-  process.on("exit", cleanup)
+
+  if (!cleanupsOnProcessExit) {
+    cleanupsOnProcessExit = []
+    process.once("exit", () => {
+      if (cleanupsOnProcessExit) {
+        cleanupsOnProcessExit.forEach((cleanup) => cleanup())
+      }
+    })
+  }
+  cleanupsOnProcessExit.push(cleanup)
 
   return child.stdout.pipe(lineSplitter).pipe(toJson).once("close", cleanup)
 }

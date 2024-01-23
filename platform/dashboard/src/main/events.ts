@@ -6,6 +6,7 @@ import { clusterNameForKubeconfig } from "./controlplane/kind"
 import {
   onDiscoveredComputeTarget,
   onDeletedComputeTarget,
+  offDeletedComputeTarget,
   startStreamForKubernetesComputeTargets,
 } from "./streams/computetargets"
 
@@ -83,14 +84,11 @@ function initStreamForResourceKind(kind: WatchedKind) {
         ipcMain.removeListener(closeEvent, myCleanup)
         myStream.off("data", cb)
         myStream.destroy()
+        offDeletedComputeTarget(context, myCleanup)
       }
 
       ipcMain.once(closeEvent, myCleanup)
-      onDeletedComputeTarget((deletedContext: string) => {
-        if (deletedContext === context) {
-          myCleanup()
-        }
-      })
+      onDeletedComputeTarget(context, myCleanup)
 
       // when we get a serialized model, send an event back to the sender
       myStream.on("data", cb)

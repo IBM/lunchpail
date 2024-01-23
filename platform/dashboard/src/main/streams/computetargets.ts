@@ -15,8 +15,16 @@ export function onDiscoveredComputeTarget(handler: (context: string) => void) {
   computetargetEvents.on("/discovered", handler)
 }
 
-export function onDeletedComputeTarget(handler: (context: string) => void) {
-  computetargetEvents.on("/deleted", handler)
+export function offDiscoveredComputeTarget(handler: (context: string) => void) {
+  computetargetEvents.off("/discovered", handler)
+}
+
+export function onDeletedComputeTarget(context: string, handler: () => void) {
+  computetargetEvents.on(`/deleted/${context}`, handler)
+}
+
+export function offDeletedComputeTarget(context: string, handler: () => void) {
+  computetargetEvents.off(`/deleted/${context}`, handler)
 }
 
 const knownComputeTargets: Record<string, true> = {}
@@ -36,7 +44,7 @@ function emitDiscoveredComputeTarget(event: ComputeTargetEvent) {
 
 function emitDeletedComputeTarget(context: string) {
   delete knownComputeTargets[context]
-  computetargetEvents.emit("/deleted", context)
+  computetargetEvents.emit(`/deleted/${context}`)
 }
 
 /** Construct a new `ComputeTargetEvent` */
