@@ -9,12 +9,17 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 # in travis this can help us see whether there are straggler
 # namespaces, etc.
 function report_stragglers {
+    set +e
+
     echo "Checking for straggler NAMESPACES"
     $KUBECTL get ns
 
     echo "Checking for straggler PODS"
     $KUBECTL get pod -n codeflare-test
 
+    echo "Checking for straggler PODS details"
+    $KUBECTL get pod -n codeflare-test -o yaml
+    
     echo "Checking for straggler APPLICATIONS"
     $KUBECTL get application -n codeflare-test
     
@@ -27,15 +32,15 @@ function report_stragglers {
     echo "Checking for straggler DATASETS"
     $KUBECTL get datasets -n codeflare-test
 
-    echo "Run controller logs"
-    TAIL=1000 "$SCRIPTDIR"/../../hack/logs/run.sh
-
     echo "codeflare-test pod logs"
     $KUBECTL logs -n codeflare-test -l app.kubernetes.io/managed-by=codeflare.dev
 
     echo "codeflare-test events"
     $KUBECTL get events -n codeflare-test
     
+    echo "Run controller logs"
+    TAIL=1000 "$SCRIPTDIR"/../../hack/logs/run.sh
+
     # since we are only here if there was a failure
     return 1
 }

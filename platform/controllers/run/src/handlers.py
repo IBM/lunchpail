@@ -162,6 +162,10 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         if head_pod_name is not None and len(head_pod_name) > 0:
             track_job_logs(name, head_pod_name, namespace, api)
 
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for Run creation name={name} namespace={namespace}")
+        raise e
     except Exception as e:
         set_status(name, namespace, 'Failed', patch)
         add_error_condition(customApi, name, namespace, str(e).strip(), patch)
@@ -190,6 +194,11 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
         logging.info(f"Handling managed AppWrapper update component_name={component_name} phase={phase}")
 
         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
+
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for AppWrapper status update name={name} namespace={namespace}")
+        raise e
     except Exception as e:
         logging.error(f"Error patching Run on AppWrapper update name={name} namespace={namespace}. {str(e)}")
 
@@ -239,6 +248,11 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
         logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "", "codeflare.dev/reason": "" } } }
         customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for Pod status update name={name} namespace={namespace}")
+        raise e
     except Exception as e:
         logging.error(f"Error patching Run on Pod status update name={name} namespace={namespace}. {str(e)}")
 
@@ -247,6 +261,10 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
 def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, uid, patch, **kwargs):
     try:
         on_worker_pod_create(v1Api, customApi, name, namespace, uid, annotations, labels, spec, patch)
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for Pod creation name={name} namespace={namespace}")
+        raise e
     except Exception as e:
         logging.error(f"Error with WorkerPool Pod creation name={name} namespace={namespace}. {str(e)}")
 
@@ -265,6 +283,10 @@ def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
     except ApiException as e:
         if e.status != 404:
             logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for Pod deletion name={name} namespace={namespace}")
+        raise e
     except Exception as e:
         logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
 
@@ -299,5 +321,9 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
         else:
             logging.info(f"Dropping event {body}")
 
+    except kopf.TemporaryError as e:
+        # pass through any TemporaryErrors
+        logging.info(f"Passing through TemporaryError for Pod event name={name} namespace={namespace}")
+        raise e
     except Exception as e:
         logging.error(f"Error handling Pod event name={name} namespace={namespace}. {str(e)}")

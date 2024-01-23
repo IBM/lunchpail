@@ -30,7 +30,7 @@ rules:
 
   - apiGroups: [""]
     resources: [pods/status]
-    verbs: [patch]
+    verbs: [get,patch]
 
   - apiGroups: [""]
     resources: [pods/log]

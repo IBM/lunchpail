@@ -9,5 +9,5 @@ RUN apk update && apk add --no-cache bc ca-certificates curl git bash && \
         chmod 700 get_helm.sh && \
         VERIFY_CHECKSUM=false ./get_helm.sh && \
         rm ./get_helm.sh && \
-        pip install --no-cache-dir kopf kubernetes>=21 && \
+        pip install --no-cache-dir kopf>=1.37 kubernetes>=21 && \
         pip uninstall -y pip

@@ -185,17 +185,17 @@ def track_queue_logs(pod_name: str, namespace: str, labels):
     try:
         if 'codeflare.dev/queue' in labels:
             queue_name = labels['codeflare.dev/queue']
-            logging.info(f"Setting up queue tracking queue_name={queue_name} pod_name={pod_name} namespace={namespace}")
+            logging.info(f"Setting up queue log watcher queue_name={queue_name} pod_name={pod_name} namespace={namespace}")
 
             try:
                 # intentionally fire and forget (how bad is this?)
                 track_logs(queue_name, pod_name, namespace, "queues", look_for_queue_updates, "syncer")
             except Exception as e:
-                logging.error(f"Error setting up log tracking queue_name={queue_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
+                logging.error(f"Error setting up log watcher queue_name={queue_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
         else:
-            logging.info(f"Skipping queue tracking due to missing queue_name pod_name={pod_name} namespace={namespace}")
+            logging.info(f"Skipping queue log watcher due to missing queue_name pod_name={pod_name} namespace={namespace}")
     except Exception as e:
-        logging.error(f"Error tracking WorkerPool pod for queue stats pod_name={pod_name} namespace={namespace}. {str(e)}")
+        logging.error(f"Error log watcher WorkerPool pod for queue stats pod_name={pod_name} namespace={namespace}. {str(e)}")
             
 # e.g. codeflare.dev queue 0 inbox 30
 def look_for_workstealer_updates(line: str):
@@ -222,11 +222,11 @@ def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
                 customApi.patch_namespaced_custom_object(group=dgroup, version=version, plural=plural, name=dataset_name, namespace=namespace, body=patch_body)
 
                 # intentionally fire and forget (how bad is this?)
-                logging.info(f"Setting up workstealer tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
+                logging.info(f"Setting up workstealer log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
                 track_logs(dataset_name, pod_name, namespace, plural, look_for_workstealer_updates, None, dgroup, version)
             except Exception as e:
-                logging.error(f"Error setting up log tracking dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
+                logging.error(f"Error setting up log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
         else:
-            logging.info(f"Skipping workstealer tracking due to missing dataset_name pod_name={pod_name} namespace={namespace}")
+            logging.info(f"Skipping workstealer log watcher due to missing dataset_name pod_name={pod_name} namespace={namespace}")
     except Exception as e:
-        logging.error(f"Error tracking WorkerPool pod for workstealer stats pod_name={pod_name} namespace={namespace}. {str(e)}")
+        logging.error(f"Error log watcher WorkerPool pod for workstealer stats pod_name={pod_name} namespace={namespace}. {str(e)}")
