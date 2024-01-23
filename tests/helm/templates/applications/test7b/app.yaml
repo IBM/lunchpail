@@ -16,7 +16,8 @@ spec:
     processing="$2"
     out="$3"
 
-    echo "Processing $in"
+    # $xxx and $yyy should come over from the env: specs in app.yaml and pool1.yaml
+    echo "Processing $xxx $yyy $in"
     mv $in $processing
 
     sleep 5
@@ -29,4 +30,7 @@ spec:
   inputs:
     - sizes:
         lg: test7bdata
+  env:
+    xxx: "1111111111"
+    yyy: "2222222222"
 {{- end }}

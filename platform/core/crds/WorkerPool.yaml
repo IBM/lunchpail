@@ -29,6 +29,10 @@ spec:
                       type: string
                 dataset:
                   type: string
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
                 workers:
                   type: object
                   required: [count,size]

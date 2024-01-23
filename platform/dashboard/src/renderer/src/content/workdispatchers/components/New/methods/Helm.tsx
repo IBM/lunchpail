@@ -10,6 +10,7 @@ const repo = (ctrl: Values) => (
   <Input fieldId="repo" label="Git Repo" description="The repo link that houses your Helm chart" ctrl={ctrl} />
 )
 
+/** A values.yaml to use with the Helm install */
 const values = (ctrl: Values) => (
   <TextArea
     fieldId="values"

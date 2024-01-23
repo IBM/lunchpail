@@ -11,4 +11,6 @@ spec:
   workers:
     count: 2
     size: xxs
+  env:
+    xxx: "3333333333" # only override the xxx key from 111... to 333...
 {{- end }}

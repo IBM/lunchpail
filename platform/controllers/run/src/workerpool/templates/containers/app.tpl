@@ -4,6 +4,13 @@
   command: ["/bin/bash", "-c", {{ .Values.command | quote }}]
   env:
     {{- include "codeflare.dev/queue.env" . | indent 4 }}
+
+  {{- if .Values.env }}
+  envFrom:
+  - configMapRef:
+      name: {{ print .Release.Name | trunc 53 }}
+  {{- end }}
+
   {{- include "codeflare.dev/workdir.path" . | indent 2 }}
   volumeMounts:
     {{- include "codeflare.dev/queue.volumeMount" . | indent 4 }}

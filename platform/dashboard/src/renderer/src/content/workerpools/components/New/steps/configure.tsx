@@ -1,4 +1,6 @@
+import { load } from "js-yaml"
 import Input from "@jay/components/Forms/Input"
+import TextArea from "@jay/components/Forms/TextArea"
 import NumberInput from "@jay/components/Forms/NumberInput"
 
 import { singular as workerpool } from "@jay/resources/workerpools/name"
@@ -32,8 +34,82 @@ function numWorkers(ctrl: Values) {
   )
 }
 
+/** Environment variables to associate with the running workers */
+function envvars(ctrl: Values) {
+  return (
+    <TextArea
+      fieldId="env"
+      label="Environment Variables"
+      labelInfo="Provide this in YAML format, as key: value"
+      rows={10}
+      showLineNumbers
+      language="yaml"
+      isRequired={false}
+      ctrl={ctrl}
+    />
+  )
+}
+
+function isValidAsEnvVars(env: string, rethrow = false) {
+  try {
+    const obj = load(env)
+    if (!obj) {
+      return true
+    } else if (typeof obj !== "object") {
+      const message = "Provided YAML is not an object"
+      if (rethrow) {
+        throw new Error(message)
+      } else {
+        console.error(message)
+        return false
+      }
+    } else {
+      const invalidKeys = Object.entries(obj).filter(([, value]) => typeof value !== "string")
+      if (invalidKeys.length === 0) {
+        return true
+      } else {
+        const message = `The following keys do not have string values: ${invalidKeys.map((_) => _[0]).join(",")}`
+        if (rethrow) {
+          throw new Error(message)
+        } else {
+          console.error(message)
+          return false
+        }
+      }
+    }
+  } catch (err) {
+    if (rethrow) {
+      throw err
+    } else {
+      console.error(err)
+      return false
+    }
+  }
+}
+
+function alerts(values: Values["values"]) {
+  if (!values.env) {
+    return []
+  } else {
+    try {
+      !isValidAsEnvVars(values.env, true)
+      return []
+    } catch (err) {
+      return [
+        {
+          title: "Invalid YAML provided for environment variables",
+          body: String(err),
+          variant: "danger" as const,
+        },
+      ]
+    }
+  }
+}
+
 export default {
   name: "Configure your " + workerpool,
-  isValid: (ctrl: Values) => !!ctrl.values.application && !!ctrl.values.taskqueue,
-  items: [applicationChoice, /* taskqueue, */ numWorkers],
+  isValid: (ctrl: Values) =>
+    !!ctrl.values.application && !!ctrl.values.taskqueue && (!ctrl.values.env || isValidAsEnvVars(ctrl.values.env)),
+  items: [applicationChoice, /* taskqueue, */ numWorkers, envvars],
+  alerts,
 }

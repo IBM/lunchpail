@@ -1,4 +1,5 @@
 import os
+import json
 import base64
 import logging
 import subprocess
@@ -52,6 +53,11 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
         logging.info(f"Creating WorkerPool name={name} namespace={namespace} for application={application_name} uid={uid}")
 
+        # environment variables; merge application spec with workerpool spec
+        env = application['spec']['env'] if 'env' in application['spec'] else {}
+        if 'env' in spec:
+            env.update(spec['env'])
+        
         # where should we run the workers?
         # target = 'local' if 'local' in spec['target'] else 'kubernetes'
         kubecontext = ""
@@ -92,7 +98,8 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 str(gpu),
                 base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
                 kubecontext,
-                kubeconfig
+                kubeconfig,
+                base64.b64encode(json.dumps(env).encode('ascii')),
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:

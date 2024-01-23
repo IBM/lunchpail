@@ -4,6 +4,9 @@ type Values = DefaultValues<{
   /** Name of ComputeTarget */
   context: string
 
+  /** Optional environment variables to associate with the workers */
+  env?: string
+
   name: string
   application: string
   taskqueue: string
