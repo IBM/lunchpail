@@ -1,3 +1,4 @@
+from time import sleep
 from kubernetes.client.rest import ApiException
 from typing import Any, Dict, Iterable, Callable, Optional
 
@@ -8,6 +9,8 @@ def track_logs_async(resource_name: str, pod_name: str, namespace: str, plural: 
             if resp != 0:
                 logging.info(f"Giving up on log watcher pod_name={pod_name}")
                 break
+            else:
+                sleep(2)
 
         except ApiException as e:
             if e.status == 404:
