@@ -18,7 +18,7 @@ const computetargets: ContentProvider<"computetargets"> = {
   actions,
   gallery,
   sidebar: {
-    group: "Compute",
+    group: "Definitions",
     badgeSuffix: "enabled",
   },
 }

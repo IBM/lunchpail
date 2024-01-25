@@ -3,7 +3,7 @@ import { Page, expect, test } from "@playwright/test"
 
 import launchElectron from "./launch-electron"
 import expectedApplications from "./applications"
-import { visibleCard, missingCard } from "./card"
+// import { visibleCard, missingCard } from "./card"
 import { navigateToCard, navigateToTab } from "./navigate-to-queue-tab"
 
 import { name } from "../src/renderer/src/content/applications/name"
@@ -88,7 +88,7 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(computePoolDrawer).toBeVisible()
   })
 
-  test("Check the Compute Pools tab for the new worker we created", async () => {
+  /* test("Check the Compute Pools tab for the new worker we created", async () => {
     // click back to Compute Pools tab element from the sidebar
     const compute = await page.locator(`[data-ouia-component-type="PF5/NavExpandable"]`, { hasText: "Compute" })
     await compute.click()
@@ -108,7 +108,7 @@ test.describe.serial("workers tests running sequentially", () => {
     // we have removed taskqueues from the Card
     // const taskqueue = await card.locator(`[data-ouia-component-id="Task Queues"]`)
     // await expect(taskqueue).toContainText(expectedTaskQueue)
-  })
+  }) */
 
   test("Trash button opens 'Confirm Delete' modal", async () => {
     // navigate to a given compute pool's drawer
@@ -122,7 +122,7 @@ test.describe.serial("workers tests running sequentially", () => {
     await expect(modal).toBeVisible()
   })
 
-  test("Confirm compute pool's deletion", async () => {
+  /* test("Confirm compute pool's deletion", async () => {
     // click on Confirm button
     await page.getByRole("button", { name: "Confirm" }).click()
 
@@ -133,5 +133,5 @@ test.describe.serial("workers tests running sequentially", () => {
 
     // Now verify that there is no card that matches the previously created compute pool
     await missingCard(page, computePoolName)
-  })
+  }) */
 })

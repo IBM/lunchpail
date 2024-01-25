@@ -43,15 +43,19 @@ function SidebarHelloNavGroup() {
   return <></>
 }
 
+function isRoot(provider: ContentProvider) {
+  return provider.sidebar === true || !provider.sidebar?.group
+}
+
 function SidebarNavGroup(props: Props & { group: string; providers: NavigableContentProvider[] }) {
-  if (props.group === "root") {
+  if (props.providers.every(isRoot)) {
     // render these at the top-level, without a surrounding NavGroup/NavExpandable
     return <SidebarNavItems key={props.group} {...props} providers={props.providers} />
   } else {
     // otherwise, wrap the nav items inside a NavExpandable (which is
     // a NavGroup that can be expanded)
     return (
-      <NavExpandable title={props.group} key={props.group} isExpanded={props.group !== "Advanced"}>
+      <NavExpandable title={props.group} key={props.group} isExpanded>
         <SidebarNavItems {...props} providers={props.providers} />
       </NavExpandable>
     )
@@ -59,33 +63,53 @@ function SidebarNavGroup(props: Props & { group: string; providers: NavigableCon
 }
 
 function prio(provider: ContentProvider) {
-  return provider.sidebar === true ? 10 : provider.sidebar?.priority ?? 0
+  return provider.sidebar === true ? 0 : provider.sidebar?.priority ?? 0
+}
+
+function sortName({ title, name, sidebar }: ContentProvider) {
+  return !sidebar ? "" : sidebar === true ? title ?? name : sidebar.group ?? title ?? name
+}
+
+/** Sort children within a node in the tree (lexicographically on `sortName`) */
+function sorter2(a: ContentProvider, b: ContentProvider) {
+  return (a.title ?? a.name).localeCompare(b.title ?? b.name)
+}
+
+/** Sort into the tree order */
+function sorter(a: ContentProvider, b: ContentProvider) {
+  // priority within tree, with a tiebreaker of lexicographic sort order
+  return prio(b) - prio(a) || sorter2(a, b)
 }
 
 function SidebarNav(props: Props) {
-  const groups = useMemo(
-    () =>
-      Object.values(providers)
-        .sort((a, b) => prio(b) - prio(a) || a.name.localeCompare(b.name))
-        .reduce(
-          (G, provider) => {
-            // if provider.sidebar is `true`, then place at the root of the tree
-            // if provider.sidebar is defined, then use provider.sidebar.group or "root"
-            // otherwise, do not place this ContentProvider in the Sidebar
-            const group =
-              provider.sidebar === true ? "root" : provider.sidebar ? provider.sidebar?.group ?? "root" : undefined
-            if (group) {
-              if (!(group in G)) {
-                G[group] = []
-              }
-              G[group].push(provider as NavigableContentProvider)
+  const groups = useMemo(() => {
+    // first, group the providers
+    const groups = Object.values(providers)
+      .sort(sorter)
+      .reduce(
+        (G, provider) => {
+          // group the providers
+          const group = sortName(provider)
+          if (group) {
+            if (!(group in G)) {
+              G[group] = []
             }
-            return G
-          },
-          {} as Record<string, NavigableContentProvider[]>,
-        ),
-    [providers],
-  )
+            G[group].push(provider as NavigableContentProvider)
+          }
+          return G
+        },
+        {} as Record<string, NavigableContentProvider[]>,
+      )
+
+    // then, sort the providers within each group
+    return Object.entries(groups).reduce(
+      (G, [groupName, providers]) => {
+        G[groupName] = providers.sort(sorter2)
+        return G
+      },
+      {} as Record<string, NavigableContentProvider[]>,
+    )
+  }, [providers])
 
   return (
     <Nav>

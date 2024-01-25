@@ -14,5 +14,7 @@ export default {
   detail,
   actions,
   wizard,
-  sidebar: true as const,
+  sidebar: {
+    group: "Definitions",
+  },
 }

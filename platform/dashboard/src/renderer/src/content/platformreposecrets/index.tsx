@@ -12,8 +12,7 @@ export default {
   gallery,
   detail,
   wizard,
-  actions: undefined,
   sidebar: {
-    group: "Advanced",
+    group: "Definitions",
   },
 }

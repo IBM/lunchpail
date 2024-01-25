@@ -1,2 +1,2 @@
-export const name = "Compute Targets"
-export const singular = "Compute Target"
+export const name = "Places"
+export const singular = "Place"

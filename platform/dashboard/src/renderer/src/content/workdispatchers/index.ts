@@ -13,7 +13,7 @@ export default {
   gallery,
   detail,
   wizard,
-  sidebar: {
-    group: "Compute",
-  },
+  /* sidebar: {
+    group: "Dispatch",
+  }, */
 }

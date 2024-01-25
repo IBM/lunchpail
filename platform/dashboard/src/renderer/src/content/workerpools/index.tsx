@@ -14,7 +14,7 @@ export default {
   detail,
   wizard,
   actions: undefined,
-  sidebar: {
+  /* sidebar: {
     group: "Compute",
-  },
+  }, */
 }
