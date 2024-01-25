@@ -1,10 +1,10 @@
-import Gallery from "@jay/renderer/components/Gallery"
+import Gallery from "@jaas/renderer/components/Gallery"
 
 import ApplicationCard from "./components/Card"
 
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
-import type { CurrentSettings } from "@jay/renderer/Settings"
+import type { CurrentSettings } from "@jaas/renderer/Settings"
 
 export default function ApplicationsGallery(events: ManagedEvents, memos: Memos, settings: CurrentSettings) {
   return (

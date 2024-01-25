@@ -1,5 +1,5 @@
 import { dump } from "js-yaml"
-import { type ComputeTarget } from "@jay/common/events/ComputeTargetEvent"
+import { type ComputeTarget } from "@jaas/common/events/ComputeTargetEvent"
 
 export type YamlProps = Pick<ComputeTarget["metadata"], "name" | "namespace"> & {
   type: "Kind"

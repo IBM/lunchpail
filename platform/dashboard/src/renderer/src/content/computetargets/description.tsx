@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { hash } from "@jay/renderer/navigate/kind"
+import { hash } from "@jaas/renderer/navigate/kind"
 
 import { name as productName } from "../../../../../package.json"
 

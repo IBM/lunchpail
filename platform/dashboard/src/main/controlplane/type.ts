@@ -1,4 +1,4 @@
-import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
+import type ComputeTargetEvent from "@jaas/common/events/ComputeTargetEvent"
 
 /** What kind of cluster is this? */
 export default function getComputeTargetType(clusterName: string): ComputeTargetEvent["spec"]["type"] {

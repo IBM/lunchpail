@@ -1,4 +1,4 @@
-import { singular as workerpool } from "@jay/resources/workerpools/name"
+import { singular as workerpool } from "@jaas/resources/workerpools/name"
 
 import type Values from "../Values"
 

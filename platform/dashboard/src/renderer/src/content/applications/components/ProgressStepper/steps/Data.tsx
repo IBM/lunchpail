@@ -1,11 +1,11 @@
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
-import { LinkToNewDataSet } from "@jay/resources/datasets/components/New/Button"
-import { groupSingular as singular } from "@jay/resources/applications/group"
-import { singular as datasetSingular } from "@jay/resources/datasets/name"
+import { LinkToNewDataSet } from "@jaas/resources/datasets/components/New/Button"
+import { groupSingular as singular } from "@jaas/resources/applications/group"
+import { singular as datasetSingular } from "@jaas/resources/datasets/name"
 
 import type Step from "../Step"
-import { datasets } from "@jay/resources/applications/components/taskqueueProps"
+import { datasets } from "@jaas/resources/applications/components/taskqueueProps"
 
 const step: Step = {
   id: "Data",

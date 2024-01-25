@@ -1,4 +1,4 @@
-import NumberInput from "@jay/components/Forms/NumberInput"
+import NumberInput from "@jaas/components/Forms/NumberInput"
 
 import Values from "../Values"
 

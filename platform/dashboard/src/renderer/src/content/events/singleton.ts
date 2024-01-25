@@ -3,10 +3,10 @@ import { useCallback } from "react"
 import { isDetailableKind } from "../DetailableKind"
 import closeDetailViewIfShowing from "../../pages/close-detail"
 
-import type WatchedKind from "@jay/common/Kind"
+import type WatchedKind from "@jaas/common/Kind"
 import type { ManagedEvent } from "../ManagedEvent"
 import type { Dispatch, SetStateAction } from "react"
-import type { EventLike } from "@jay/common/events/EventSourceLike"
+import type { EventLike } from "@jaas/common/events/EventSourceLike"
 
 /** Remember just the last event for each resource instance in state */
 export default function singletonJsonEventHandler<Kind extends WatchedKind, Event extends ManagedEvent<Kind>>(

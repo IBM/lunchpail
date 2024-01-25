@@ -1,9 +1,9 @@
-import Select from "@jay/components/Forms/Select"
-import TextArea from "@jay/components/Forms/TextArea"
-import NumberInput from "@jay/components/Forms/NumberInput"
+import Select from "@jaas/components/Forms/Select"
+import TextArea from "@jaas/components/Forms/TextArea"
+import NumberInput from "@jaas/components/Forms/NumberInput"
 
-import { singular } from "@jay/resources/workdispatchers/name"
-import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
+import { singular } from "@jaas/resources/workdispatchers/name"
+import { groupSingular as applicationsSingular } from "@jaas/resources/applications/group"
 
 import Values from "../Values"
 

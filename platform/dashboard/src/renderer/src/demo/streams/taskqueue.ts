@@ -1,5 +1,5 @@
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type EventSourceLike from "@jay/common/events/EventSourceLike"
+import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import Base from "./base"
 import context from "../context"

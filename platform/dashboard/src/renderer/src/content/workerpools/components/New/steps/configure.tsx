@@ -1,10 +1,10 @@
 import { load } from "js-yaml"
-import Input from "@jay/components/Forms/Input"
-import TextArea from "@jay/components/Forms/TextArea"
-import NumberInput from "@jay/components/Forms/NumberInput"
+import Input from "@jaas/components/Forms/Input"
+import TextArea from "@jaas/components/Forms/TextArea"
+import NumberInput from "@jaas/components/Forms/NumberInput"
 
-import { singular as workerpool } from "@jay/resources/workerpools/name"
-import { groupSingular as application } from "@jay/resources/applications/group"
+import { singular as workerpool } from "@jaas/resources/workerpools/name"
+import { groupSingular as application } from "@jaas/resources/applications/group"
 
 import type Values from "../Values"
 

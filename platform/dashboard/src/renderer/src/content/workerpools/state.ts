@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 import singletonEventHandler from "../events/singleton"
 

@@ -1,14 +1,14 @@
 import { useMemo } from "react"
 import { Label, LabelGroup } from "@patternfly/react-core"
 
-import CardInGallery from "@jay/components/CardInGallery"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import CardInGallery from "@jaas/components/CardInGallery"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import api from "./api"
 import taskqueueProps from "./taskqueueProps"
 import ProgressStepper from "./ProgressStepper"
-import unassigned from "@jay/resources/taskqueues/components/unassigned"
-import { workerpools } from "@jay/resources/taskqueues/components/common"
+import unassigned from "@jaas/resources/taskqueues/components/unassigned"
+import { workerpools } from "@jaas/resources/taskqueues/components/common"
 
 import type Props from "./Props"
 

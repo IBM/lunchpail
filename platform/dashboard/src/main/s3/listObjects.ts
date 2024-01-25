@@ -1,5 +1,5 @@
 import Client from "./client"
-import type { BucketItem } from "@jay/common/api/s3"
+import type { BucketItem } from "@jaas/common/api/s3"
 
 export default async function listObjects(
   endpoint: string,

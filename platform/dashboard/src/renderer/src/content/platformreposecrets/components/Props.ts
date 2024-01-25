@@ -1,3 +1,3 @@
-import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
+import type PlatformRepoSecretEvent from "@jaas/common/events/PlatformRepoSecretEvent"
 
 export default PlatformRepoSecretEvent

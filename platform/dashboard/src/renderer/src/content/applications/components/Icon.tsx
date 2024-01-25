@@ -1,11 +1,11 @@
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 import WorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
 import ApplicationIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
 
-import rayImageUrl from "@jay/images/ray.png"
-import sparkImageUrl from "@jay/images/spark.svg"
-import pytorchImageUrl from "@jay/images/pytorch.svg"
+import rayImageUrl from "@jaas/images/ray.png"
+import sparkImageUrl from "@jaas/images/spark.svg"
+import pytorchImageUrl from "@jaas/images/pytorch.svg"
 
 export default function applicationIcon(props: { application: ApplicationSpecEvent; hasWorkerPool?: boolean }) {
   const baseClasses = props.hasWorkerPool ? ["codeflare--active"] : []

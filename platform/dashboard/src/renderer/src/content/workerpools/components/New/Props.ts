@@ -1,6 +1,6 @@
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
+import type ComputeTargetEvent from "@jaas/common/events/ComputeTargetEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 /** <Wizard/> Props */
 type Props = {

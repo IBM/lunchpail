@@ -1,5 +1,5 @@
 import type Props from "../Props"
-import LinkToNewWizard from "@jay/renderer/navigate/wizard"
+import LinkToNewWizard from "@jaas/renderer/navigate/wizard"
 
 /** Button/Action: Clone this resource */
 export default function cloneAction(props: Props) {

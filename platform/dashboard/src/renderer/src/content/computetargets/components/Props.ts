@@ -1,3 +1,3 @@
-type Props = import("@jay/common/events/ComputeTargetEvent").default
+type Props = import("@jaas/common/events/ComputeTargetEvent").default
 
 export default Props

@@ -1,16 +1,16 @@
 import { DrawerPanelBody } from "@patternfly/react-core"
 
-import DrawerTab from "@jay/components/Drawer/Tab"
-import DetailNotFound from "@jay/components/DetailNotFound"
+import DrawerTab from "@jaas/components/Drawer/Tab"
+import DetailNotFound from "@jaas/components/DetailNotFound"
 
 import type Props from "../Props"
 import ComputeBody from "./ComputeBody"
 import taskqueueProps from "../taskqueueProps"
 
-import { groupSingular as application } from "@jay/resources/applications/group"
-import { name as workerpools, singular as workerpool } from "@jay/resources/workerpools/name"
+import { groupSingular as application } from "@jaas/resources/applications/group"
+import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"
 
-import NewPoolButton from "@jay/resources/taskqueues/components/NewPoolButton"
+import NewPoolButton from "@jaas/resources/taskqueues/components/NewPoolButton"
 
 function NoWorkerPools(props: Props) {
   const queueProps = taskqueueProps(props)

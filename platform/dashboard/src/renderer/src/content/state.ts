@@ -7,9 +7,9 @@ import computetargetsState from "./computetargets/state"
 import workdispatcherState from "./workdispatchers/state"
 import platformreposecretState from "./platformreposecrets/state"
 
-import type WatchedKind from "@jay/common/Kind"
+import type WatchedKind from "@jaas/common/Kind"
 import type { ManagedEvent } from "./ManagedEvent"
-import type { EventLike } from "@jay/common/events/EventSourceLike"
+import type { EventLike } from "@jaas/common/events/EventSourceLike"
 
 import { returnHomeCallback } from "../navigate/home"
 

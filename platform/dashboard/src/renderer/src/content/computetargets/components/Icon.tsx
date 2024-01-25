@@ -3,7 +3,7 @@ import { Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, Tooltip } from "@pa
 import type Props from "./Props"
 import { singular as computetarget } from "../name"
 import { controlplaneHealth, workerhostHealth } from "./HealthBadge"
-import { singular as workerpool } from "@jay/resources/workerpools/name"
+import { singular as workerpool } from "@jaas/resources/workerpools/name"
 
 import HomeIcon from "@patternfly/react-icons/dist/esm/icons/laptop-house-icon"
 import WorkersIcon from "@patternfly/react-icons/dist/esm/icons/robot-icon"

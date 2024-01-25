@@ -1,8 +1,8 @@
-import indent from "@jay/common/util/indent"
+import indent from "@jaas/common/util/indent"
 
 import type Values from "./Values"
 import type Context from "./Context"
-import type { KubeConfig } from "@jay/common/api/kubernetes"
+import type { KubeConfig } from "@jaas/common/api/kubernetes"
 
 /**
  * Strip `config` to allow access only to the given `context`.
@@ -37,9 +37,9 @@ export default async function yaml(values: Values["values"], context: Context) {
 
   // fetch kubeconfig
   const kubeconfig =
-    !values.context || !window.jay.contexts
+    !values.context || !window.jaas.contexts
       ? undefined
-      : await window.jay.contexts().then(({ config }) => btoa(JSON.stringify(stripKubeconfig(config, values.context))))
+      : await window.jaas.contexts().then(({ config }) => btoa(JSON.stringify(stripKubeconfig(config, values.context))))
 
   // details for the target
   const target = values.context

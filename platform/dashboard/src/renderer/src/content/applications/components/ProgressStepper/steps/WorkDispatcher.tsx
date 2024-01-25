@@ -1,4 +1,4 @@
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
 import taskqueueProps from "../../taskqueueProps"
 import NewWorkDispatcherButton from "../../actions/NewWorkDispatcher"
@@ -7,10 +7,10 @@ import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
 import workdispatchers from "../../workdispatchers"
 
-import { status } from "@jay/resources/workdispatchers/status"
-import { name as workerpools } from "@jay/resources/workerpools/name"
-import { singular as taskqueueSingular } from "@jay/resources/taskqueues/name"
-import { singular as workdispatcherSingular } from "@jay/resources/workdispatchers/name"
+import { status } from "@jaas/resources/workdispatchers/status"
+import { name as workerpools } from "@jaas/resources/workerpools/name"
+import { singular as taskqueueSingular } from "@jaas/resources/taskqueues/name"
+import { singular as workdispatcherSingular } from "@jaas/resources/workdispatchers/name"
 
 function statusOfDispatchers(props: import("../../Props").default) {
   const all = workdispatchers(props)

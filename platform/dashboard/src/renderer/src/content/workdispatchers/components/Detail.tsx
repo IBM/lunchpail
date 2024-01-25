@@ -1,12 +1,12 @@
 import { useMemo } from "react"
 
-import DrawerContent from "@jay/components/Drawer/Content"
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
+import DrawerContent from "@jaas/components/Drawer/Content"
+import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import { summaryGroups } from "./Card"
-import { status } from "@jay/resources/workdispatchers/status"
-import correctiveActions from "@jay/resources/workerpools/components/corrective-actions"
-import { reasonAndMessageGroups } from "@jay/resources/workerpools/components/tabs/Summary"
+import { status } from "@jaas/resources/workdispatchers/status"
+import correctiveActions from "@jaas/resources/workerpools/components/corrective-actions"
+import { reasonAndMessageGroups } from "@jaas/resources/workerpools/components/tabs/Summary"
 
 //import editAction from "./actions/edit"
 import deleteAction from "./actions/delete"

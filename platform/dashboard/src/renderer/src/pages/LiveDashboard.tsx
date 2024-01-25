@@ -1,10 +1,10 @@
 import { Dashboard } from "./Dashboard"
-import { watchedKinds } from "@jay/common/Kind"
+import { watchedKinds } from "@jaas/common/Kind"
 
-import type Kind from "@jay/common/Kind"
+import type Kind from "@jaas/common/Kind"
 import type { Props } from "./Dashboard"
-import type { Handler } from "@jay/common/events/EventSourceLike"
-import type EventSourceLike from "@jay/common/events/EventSourceLike"
+import type { Handler } from "@jaas/common/events/EventSourceLike"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 let props: null | Props<EventSourceLike> = null
 
@@ -20,7 +20,7 @@ class ElectronEventSource implements EventSourceLike {
 
   public addEventListener(evt: "message" | "error", handler: Handler) {
     if (evt === "message") {
-      this.off = window.jay[this.kind].on(evt, (_, model) => {
+      this.off = window.jaas[this.kind].on(evt, (_, model) => {
         // ugh, this is highly imperfect. currently the UI code
         // expects to be given something that looks like a
         // MessageEvent

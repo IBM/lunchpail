@@ -1,7 +1,7 @@
 import { load } from "js-yaml"
 
 import type Values from "../Values"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 function safeLoad(yaml: string): Record<string, unknown> {
   try {

@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom"
-import { hash } from "@jay/renderer/navigate/kind"
+import { hash } from "@jaas/renderer/navigate/kind"
 
 import { name as job } from "./name"
-import { name as datasets } from "@jay/resources/datasets/name"
-import { name as workerpools } from "@jay/resources/workerpools/name"
-import { singular as workdispatcher } from "@jay/resources/workdispatchers/name"
+import { name as datasets } from "@jaas/resources/datasets/name"
+import { name as workerpools } from "@jaas/resources/workerpools/name"
+import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
 
 export default (
   <span>

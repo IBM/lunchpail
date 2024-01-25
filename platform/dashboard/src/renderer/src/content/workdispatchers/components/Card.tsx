@@ -1,6 +1,6 @@
-import CardInGallery from "@jay/components/CardInGallery"
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import CardInGallery from "@jaas/components/CardInGallery"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import type Props from "./Props"
 

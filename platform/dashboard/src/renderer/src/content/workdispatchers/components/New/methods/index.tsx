@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom"
 
-import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
+import Tiles, { type TileOptions } from "@jaas/components/Forms/Tiles"
 
-import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
-import { titleSingular as applicationsDefinitionSingular } from "@jay/resources/applications/title"
+import { groupSingular as applicationsSingular } from "@jaas/resources/applications/group"
+import { titleSingular as applicationsDefinitionSingular } from "@jaas/resources/applications/title"
 
 import Values from "../Values"
 

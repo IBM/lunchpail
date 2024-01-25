@@ -5,8 +5,8 @@ import Icon from "./Icon"
 import type Props from "./Props"
 import { isHealthyControlPlane as isHealthy, status } from "./HealthBadge"
 
-import CardInGallery from "@jay/components/CardInGallery"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import CardInGallery from "@jaas/components/CardInGallery"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 export function summaryGroups(props: Props) {
   const statusMessage = status(props)
@@ -33,8 +33,8 @@ const descriptionListProps = { isCompact: true, isHorizontal: true, isAutoFit: t
 
 export default function ComputeTargetCard(props: Props) {
   const initialize = useCallback(
-    () => window.jay.controlplane.init(props.metadata.name),
-    [window.jay.controlplane.init],
+    () => window.jaas.controlplane.init(props.metadata.name),
+    [window.jaas.controlplane.init],
   )
 
   const { name, context } = props.metadata

@@ -1,6 +1,6 @@
-import LinkToNewWizard, { type WizardProps } from "@jay/renderer/navigate/wizard"
+import LinkToNewWizard, { type WizardProps } from "@jaas/renderer/navigate/wizard"
 
-import { singular as datasetsSingular } from "@jay/resources/datasets/name"
+import { singular as datasetsSingular } from "@jaas/resources/datasets/name"
 
 type Props = Pick<WizardProps, "startOrAdd" | "isInline"> & {
   action?: "create" | "register"

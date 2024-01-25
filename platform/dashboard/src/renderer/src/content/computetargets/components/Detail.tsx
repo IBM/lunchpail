@@ -1,17 +1,17 @@
 import { useCallback } from "react"
-import camelCaseSplit from "@jay/renderer/util/camel-split"
+import camelCaseSplit from "@jaas/renderer/util/camel-split"
 import { Spinner, Switch, Tooltip } from "@patternfly/react-core"
 
-import DrawerContent from "@jay/components/Drawer/Content"
+import DrawerContent from "@jaas/components/Drawer/Content"
 
 import { summaryGroups } from "./Card"
 import { status } from "./HealthBadge"
 
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
-import { descriptions } from "@jay/common/status/JobManagerStatus"
+import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
+import { descriptions } from "@jaas/common/status/JobManagerStatus"
 
-import { singular as computetarget } from "@jay/renderer/content/computetargets/name"
-import { name as computepools, singular as computepool } from "@jay/renderer/content/workerpools/name"
+import { singular as computetarget } from "@jaas/renderer/content/computetargets/name"
+import { name as computepools, singular as computepool } from "@jaas/renderer/content/workerpools/name"
 
 import DeleteAction from "./actions/delete"
 
@@ -27,9 +27,9 @@ export default function JobManagerDetail(props: Props) {
   const toggle = useCallback(
     () =>
       props.spec.isJaaSWorkerHost
-        ? window.jay.controlplane.destroy(props.metadata.name)
-        : window.jay.controlplane.init(props.metadata.name),
-    [props.spec.isJaaSWorkerHost, window.jay.controlplane.destroy, window.jay.controlplane.init],
+        ? window.jaas.controlplane.destroy(props.metadata.name)
+        : window.jaas.controlplane.init(props.metadata.name),
+    [props.spec.isJaaSWorkerHost, window.jaas.controlplane.destroy, window.jaas.controlplane.init],
   )
 
   const currentStatus = status(props)

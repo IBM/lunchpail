@@ -1,14 +1,14 @@
 import type Props from "../Props"
-import LinkToNewWizard from "@jay/renderer/navigate/wizard"
+import LinkToNewWizard from "@jaas/renderer/navigate/wizard"
 
-import { singular as workdispatcher } from "@jay/resources/workdispatchers/name"
+import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
 
 /** Button/Action: Allocate WorkDispatcher */
 export default function NewWorkDispatcherButton(
   props: Props & {
     onClick?: () => void
     isInline?: boolean
-    queueProps: import("@jay/resources/taskqueues/components/Props").default
+    queueProps: import("@jaas/resources/taskqueues/components/Props").default
   },
 ) {
   const qs = [

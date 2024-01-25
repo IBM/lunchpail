@@ -1,11 +1,11 @@
 import { Stack } from "@patternfly/react-core"
-import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
+import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
 import taskqueueProps from "../../taskqueueProps"
 
-import { groupSingular as application } from "@jay/resources/applications/group"
-import { name as workerpools, singular as workerpool } from "@jay/resources/workerpools/name"
+import { groupSingular as application } from "@jaas/resources/applications/group"
+import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"
 
 import type Step from "../Step"
 import type Props from "../../Props"

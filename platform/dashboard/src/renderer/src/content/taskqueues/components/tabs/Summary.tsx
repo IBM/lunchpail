@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import type Props from "../Props"
 import unassigned from "../unassigned"
 import { lastEvent, workerpools } from "../common"
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 function bucket(props: Props) {
   const last = lastEvent(props)

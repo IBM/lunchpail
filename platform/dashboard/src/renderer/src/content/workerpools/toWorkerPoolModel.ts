@@ -4,10 +4,10 @@ import {
   queueOutbox,
   queueProcessing,
   queueWorkerIndex,
-} from "@jay/renderer/content/events/QueueEvent"
+} from "@jaas/renderer/content/events/QueueEvent"
 
-import type QueueEvent from "@jay/common/events/QueueEvent"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type QueueEvent from "@jaas/common/events/QueueEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./WorkerPoolModel"
 
 /** Used by the ugly toWorkerPoolModel. hopefully this will go away at some point */

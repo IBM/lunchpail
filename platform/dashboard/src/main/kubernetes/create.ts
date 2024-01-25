@@ -1,4 +1,4 @@
-import ExecResponse from "@jay/common/events/ExecResponse"
+import ExecResponse from "@jaas/common/events/ExecResponse"
 import { clusterNameForKubeconfig } from "../controlplane/kind"
 
 import { isComputeTarget } from "../streams/computetargets"
@@ -69,7 +69,7 @@ export async function onDeleteByName({
   kind,
   name,
   namespace,
-}: import("@jay/common/api/jay").DeleteProps): Promise<ExecResponse> {
+}: import("@jaas/common/api/jaas").DeleteProps): Promise<ExecResponse> {
   const { spawn } = await import("node:child_process")
   return new Promise((resolve) => {
     try {

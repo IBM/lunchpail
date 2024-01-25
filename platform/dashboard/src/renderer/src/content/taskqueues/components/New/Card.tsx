@@ -1,5 +1,5 @@
-import NewCard from "@jay/components/NewCard"
-import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
+import NewCard from "@jaas/components/NewCard"
+import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
 
 function AddWorkerPoolButton() {
   return <LinkToNewPool startOrAdd="create" />

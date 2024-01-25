@@ -1,5 +1,5 @@
 import type { WorkerPoolModelWithHistory } from "../WorkerPoolModel"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 export default interface Props {
   model: WorkerPoolModelWithHistory

@@ -1,4 +1,4 @@
-import Yaml from "@jay/components/YamlFromObject"
+import Yaml from "@jaas/components/YamlFromObject"
 
 import type Props from "../Props"
 

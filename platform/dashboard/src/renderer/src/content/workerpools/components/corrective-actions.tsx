@@ -1,5 +1,5 @@
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
-import { LinkToNewRepoSecret } from "@jay/renderer/navigate/newreposecret"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
+import { LinkToNewRepoSecret } from "@jaas/renderer/navigate/newreposecret"
 
 /** Any suggestions/corrective action buttons */
 export default function correctiveActions(rsrc: KubernetesResource, startOrAdd: "fix" | "create" = "fix") {

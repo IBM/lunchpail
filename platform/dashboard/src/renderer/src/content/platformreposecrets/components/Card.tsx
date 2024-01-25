@@ -1,5 +1,5 @@
-import CardInGallery from "@jay/components/CardInGallery"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import CardInGallery from "@jaas/components/CardInGallery"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import type Props from "./Props"
 

@@ -3,12 +3,12 @@ import removeAccents from "remove-accents"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
-import NewResourceWizard from "@jay/components/NewResourceWizard"
+import NewResourceWizard from "@jaas/components/NewResourceWizard"
 
-import { singular as workerpool } from "@jay/resources/workerpools/name"
-import { groupSingular as application } from "@jay/resources/applications/group"
+import { singular as workerpool } from "@jaas/resources/workerpools/name"
+import { groupSingular as application } from "@jaas/resources/applications/group"
 
-import type { TileOptions } from "@jay/components/Forms/Tiles"
+import type { TileOptions } from "@jaas/components/Forms/Tiles"
 
 import type Props from "./Props"
 import type Values from "./Values"
@@ -20,7 +20,7 @@ import stepName from "./steps/name"
 import stepTarget from "./steps/target"
 import stepConfigure from "./steps/configure"
 
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()

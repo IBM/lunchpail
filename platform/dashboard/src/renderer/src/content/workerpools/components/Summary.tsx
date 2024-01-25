@@ -1,13 +1,13 @@
 import type { ReactNode } from "react"
 import { Text, type CardHeaderActionsObject } from "@patternfly/react-core"
 
-import Sparkline from "@jay/components/Sparkline"
-import GridRow from "@jay/components/Grid/Row"
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import Sparkline from "@jaas/components/Sparkline"
+import GridRow from "@jaas/components/Grid/Row"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
-import { name as applicationsName } from "@jay/resources/applications/name"
+import { name as applicationsName } from "@jaas/resources/applications/name"
 
 import type Props from "./Props"
 

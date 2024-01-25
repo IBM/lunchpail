@@ -16,8 +16,8 @@ import content from "../content/providers"
 import { initMemos } from "../content/memos"
 import initStreamingState from "../content/init"
 
-import type WatchedKind from "@jay/common/Kind"
-import type EventSourceLike from "@jay/common/events/EventSourceLike"
+import type WatchedKind from "@jaas/common/Kind"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import "./Dashboard.scss"
 

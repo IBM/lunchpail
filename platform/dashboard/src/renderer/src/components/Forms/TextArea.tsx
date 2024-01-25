@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import Code, { type SupportedLanguage } from "@jay/components/Code"
+import Code, { type SupportedLanguage } from "@jaas/components/Code"
 import { TextArea as PFTextArea, type TextAreaProps } from "@patternfly/react-core"
 
 import Group from "./Group"

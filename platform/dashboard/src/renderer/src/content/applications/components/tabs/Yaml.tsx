@@ -1,7 +1,7 @@
 import { Tabs, Tab, TabTitleText } from "@patternfly/react-core"
 
-import DrawerTab from "@jay/components/Drawer/Tab"
-import Yaml from "@jay/renderer/components/YamlFromObject"
+import DrawerTab from "@jaas/components/Drawer/Tab"
+import Yaml from "@jaas/renderer/components/YamlFromObject"
 
 import schemaTab from "./Schema"
 import type Props from "../Props"

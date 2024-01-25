@@ -3,7 +3,7 @@ import { Button, Modal, Tooltip } from "@patternfly/react-core"
 
 import TrashIcon from "@patternfly/react-icons/dist/esm/icons/trash-icon"
 
-type Props = import("@jay/common/api/jay").DeleteProps & { singular: string; yaml?: string; deleteFn?: () => void }
+type Props = import("@jaas/common/api/jaas").DeleteProps & { singular: string; yaml?: string; deleteFn?: () => void }
 
 /**
  * Button that offers to delete a resource. It wraps the interacation
@@ -19,11 +19,11 @@ export default function DeleteResourceButton(props: Props) {
     if (props.deleteFn) {
       props.deleteFn()
     } else if (props.yaml) {
-      window.jay.delete(props.yaml)
+      window.jaas.delete(props.yaml)
     } else if (kind && name && namespace) {
-      window.jay.deleteByName({ kind, name, namespace, context })
+      window.jaas.deleteByName({ kind, name, namespace, context })
     }
-  }, [handleModalToggle, kind, name, namespace, window.jay.delete, window.jay.deleteByName, props.deleteFn])
+  }, [handleModalToggle, kind, name, namespace, window.jaas.delete, window.jaas.deleteByName, props.deleteFn])
 
   return (
     <>

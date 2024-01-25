@@ -2,7 +2,7 @@ import ApplicationDetail from "./components/Detail"
 
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
-import type { CurrentSettings } from "@jay/renderer/Settings"
+import type { CurrentSettings } from "@jaas/renderer/Settings"
 
 export default function Detail(
   id: string,

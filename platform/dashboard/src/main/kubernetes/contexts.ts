@@ -1,6 +1,6 @@
 import { hasMessage } from "./create"
-import type { KubeConfig } from "@jay/common/api/kubernetes"
-import type ExecResponse from "@jay/common/events/ExecResponse"
+import type { KubeConfig } from "@jaas/common/api/kubernetes"
+import type ExecResponse from "@jaas/common/events/ExecResponse"
 
 /**
  * @return `ExecResponse`-stringified form of `KubeConfig`

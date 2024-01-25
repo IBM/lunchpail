@@ -1,5 +1,5 @@
 appId: com.ibm.research.jaas
-productName: Jay
+productName: Jaas
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: jay
+  executableName: jaas
 nsis:
   artifactName: ${name}-${version}-${arch}-setup.${ext}
   shortcutName: ${productName}

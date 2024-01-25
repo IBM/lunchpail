@@ -1,7 +1,7 @@
 import type Props from "./Props"
 
-import Sparkline from "@jay/components/Sparkline"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import Sparkline from "@jaas/components/Sparkline"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 function inboxHistory(props: Props) {
   return props.events.map((_) =>

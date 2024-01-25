@@ -1,7 +1,7 @@
 import Values from "../Values"
 
-import { singular } from "@jay/resources/workdispatchers/name"
-import { StepAlertProps } from "@jay/components/NewResourceWizard"
+import { singular } from "@jaas/resources/workdispatchers/name"
+import { StepAlertProps } from "@jaas/components/NewResourceWizard"
 
 import step2Helm, { helmIsValid } from "./Helm"
 import step2TaskSimulatorItems from "./TaskSimulator"

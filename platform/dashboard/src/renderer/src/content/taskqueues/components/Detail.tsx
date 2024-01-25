@@ -1,13 +1,13 @@
 import { singular } from "../name"
-import { BrowserTabs } from "@jay/components/S3Browser"
-import DrawerContent from "@jay/components/Drawer/Content"
-import DeleteResourceButton from "@jay/components/DeleteResourceButton"
+import { BrowserTabs } from "@jaas/components/S3Browser"
+import DrawerContent from "@jaas/components/Drawer/Content"
+import DeleteResourceButton from "@jaas/components/DeleteResourceButton"
 import { lastEvent } from "./common"
 import NewPoolButton from "./NewPoolButton"
 import summaryTabContent from "./tabs/Summary"
 
 import type Props from "./Props"
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
+import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
 
 /** Delete this taskqueue */
 function deleteAction(last: null | TaskQueueEvent) {

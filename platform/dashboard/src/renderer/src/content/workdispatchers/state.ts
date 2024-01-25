@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
+import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
 
 import singletonEventHandler from "../events/singleton"
 

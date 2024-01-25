@@ -1,13 +1,13 @@
-import None from "@jay/components/None"
-import DrawerTab from "@jay/components/Drawer/Tab"
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
-import { dl, descriptionGroup } from "@jay/components/DescriptionGroup"
+import None from "@jaas/components/None"
+import DrawerTab from "@jaas/components/Drawer/Tab"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
+import { dl, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import type Props from "../Props"
 import { datasets } from "../taskqueueProps"
 
-import { singular } from "@jay/resources/applications/name"
-import { name as datasetsName } from "@jay/resources/datasets/name"
+import { singular } from "@jaas/resources/applications/name"
+import { name as datasetsName } from "@jaas/resources/datasets/name"
 
 function datasetsGroup(data: ReturnType<typeof datasets>) {
   return (

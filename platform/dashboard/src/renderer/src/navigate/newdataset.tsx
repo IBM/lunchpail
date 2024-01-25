@@ -1,6 +1,6 @@
 import LinkToNewWizard, { type WizardProps, linkerButtonProps } from "./wizard"
 
-import { singular as datasetsSingular } from "@jay/resources/datasets/name"
+import { singular as datasetsSingular } from "@jaas/resources/datasets/name"
 
 import type LocationProps from "./LocationProps"
 

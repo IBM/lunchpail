@@ -1,4 +1,4 @@
-import Gallery from "@jay/renderer/components/Gallery"
+import Gallery from "@jaas/renderer/components/Gallery"
 
 import type Memos from "../memos"
 import WorkerPoolCard from "./components/Card"

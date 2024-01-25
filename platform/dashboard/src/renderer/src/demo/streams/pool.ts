@@ -1,9 +1,9 @@
 import type DemoQueueEventSource from "./queue"
 import type DemoTaskQueueEventSource from "./taskqueue"
-import type ExecResponse from "@jay/common/events/ExecResponse"
-import type EventSourceLike from "@jay/common/events/EventSourceLike"
-import type CreateResourceHandler from "@jay/common/events/NewPoolHandler"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type ExecResponse from "@jaas/common/events/ExecResponse"
+import type EventSourceLike from "@jaas/common/events/EventSourceLike"
+import type CreateResourceHandler from "@jaas/common/events/NewPoolHandler"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 import Base from "./base"
 import context from "../context"

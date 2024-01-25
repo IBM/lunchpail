@@ -1,5 +1,5 @@
 import wordWrap from "word-wrap"
-import indent from "@jay/common/util/indent"
+import indent from "@jaas/common/util/indent"
 import type { FormContextProps } from "@patternfly/react-core"
 
 import type { Props } from "./Wizard"

@@ -1,7 +1,7 @@
 import type Props from "./Props"
 import { numAssociatedApplications, numAssociatedWorkerPools } from "./common"
 
-import { LinkToNewPool } from "@jay/renderer/navigate/newpool"
+import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
 
 export default function NewPoolButton(props: Props) {
   return (

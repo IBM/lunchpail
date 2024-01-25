@@ -1,8 +1,8 @@
 import { load } from "js-yaml"
 import { Text } from "@patternfly/react-core"
 
-import Input from "@jay/components/Forms/Input"
-import TextArea from "@jay/components/Forms/TextArea"
+import Input from "@jaas/components/Forms/Input"
+import TextArea from "@jaas/components/Forms/TextArea"
 
 import Values from "../Values"
 

@@ -1,9 +1,9 @@
 import type Props from "./Props"
 import { lastEvent } from "./common"
 
-import None from "@jay/components/None"
-import Cells from "@jay/components/Grid/Cells"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import None from "@jaas/components/None"
+import Cells from "@jaas/components/Grid/Cells"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 export function nUnassigned(props: Props) {
   const last = lastEvent(props)

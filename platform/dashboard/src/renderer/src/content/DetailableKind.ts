@@ -1,4 +1,4 @@
-import type WatchedKind from "@jay/common/Kind"
+import type WatchedKind from "@jaas/common/Kind"
 
 import uiProviders from "./providers"
 

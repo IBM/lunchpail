@@ -1,5 +1,5 @@
 import type Props from "./Props"
-import { buttonPropsForNewRepoSecret } from "@jay/renderer/navigate/newreposecret"
+import { buttonPropsForNewRepoSecret } from "@jaas/renderer/navigate/newreposecret"
 
 /** Any suggestions/corrective action links */
 export default function correctiveLinks(

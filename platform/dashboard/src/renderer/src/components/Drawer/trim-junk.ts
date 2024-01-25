@@ -1,4 +1,4 @@
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 /**
  * Remove junk annotations from a Kubernetes yaml, for improved

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
+import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
 
 import { allEventsHandler } from "../events/all"
 

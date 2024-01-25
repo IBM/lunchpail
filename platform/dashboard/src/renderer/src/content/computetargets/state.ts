@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
+import type ComputeTargetEvent from "@jaas/common/events/ComputeTargetEvent"
 
 import singletonEventHandler from "../events/singleton"
 

@@ -66,9 +66,9 @@ function state<T extends string | boolean | number>(
 
 function onChangeDemoMode(useDemoMode: boolean) {
   if (useDemoMode) {
-    window.jay = window.demo
+    window.jaas = window.demo
   } else {
-    window.jay = window.live
+    window.jaas = window.live
   }
 }
 

@@ -5,9 +5,9 @@ import { queueWorkerPool } from "./events/QueueEvent"
 import toWorkerPoolModel from "./workerpools/toWorkerPoolModel"
 
 import type ManagedEvents from "./ManagedEvent"
-import type QueueEvent from "@jay/common/events/QueueEvent"
-import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type QueueEvent from "@jaas/common/events/QueueEvent"
+import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 import type { WorkerPoolModelWithHistory } from "./workerpools/WorkerPoolModel"
 
 type Memos = {

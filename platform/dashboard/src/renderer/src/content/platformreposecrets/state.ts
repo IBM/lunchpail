@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type PlatformRepoSecretEvent from "@jay/common/events/PlatformRepoSecretEvent"
+import type PlatformRepoSecretEvent from "@jaas/common/events/PlatformRepoSecretEvent"
 
 import singletonEventHandler from "../events/singleton"
 

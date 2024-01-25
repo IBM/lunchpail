@@ -1,4 +1,4 @@
-import QueueEvent from "@jay/common/events/QueueEvent"
+import QueueEvent from "@jaas/common/events/QueueEvent"
 
 export function queueInbox({ event }: QueueEvent) {
   return parseInt(event.metadata.annotations["codeflare.dev/inbox"], 10)

@@ -1,4 +1,4 @@
-import { stopPropagation } from "@jay/renderer/navigate"
+import { stopPropagation } from "@jaas/renderer/navigate"
 import { ProgressStepper, ProgressStep } from "@patternfly/react-core"
 
 // the Steps of this ProgressStepper

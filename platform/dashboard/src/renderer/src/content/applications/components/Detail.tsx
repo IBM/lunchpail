@@ -1,5 +1,5 @@
-import removeUndefined from "@jay/util/remove-undefined"
-import DrawerContent from "@jay/components/Drawer/Content"
+import removeUndefined from "@jaas/util/remove-undefined"
+import DrawerContent from "@jaas/components/Drawer/Content"
 
 import codeTab from "./tabs/Code"
 import dataTab from "./tabs/Data"

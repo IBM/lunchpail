@@ -157,7 +157,7 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
 
   const doCreate = useCallback(async (values: Values["values"], dryRun = false) => {
     try {
-      const response = await window.jay.create(
+      const response = await window.jaas.create(
         values,
         await props.yaml(values, props.context || (undefined as Context)),
         values.context,

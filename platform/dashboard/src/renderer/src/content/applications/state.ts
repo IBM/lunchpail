@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 import singletonEventHandler from "../events/singleton"
 

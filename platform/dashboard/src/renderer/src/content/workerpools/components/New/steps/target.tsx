@@ -1,4 +1,4 @@
-import Tiles from "@jay/components/Forms/Tiles"
+import Tiles from "@jaas/components/Forms/Tiles"
 
 import type Values from "../Values"
 import type Context from "../Context"

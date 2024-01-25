@@ -5,10 +5,10 @@ import { Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Tex
 import Code from "./Code"
 import Json from "./Json"
 
-import type { BucketItem } from "@jay/common/api/s3"
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type { KubernetesS3Secret } from "@jay/common/events/KubernetesResource"
+import type { BucketItem } from "@jaas/common/api/s3"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
+import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
+import type { KubernetesS3Secret } from "@jaas/common/events/KubernetesResource"
 
 import "./S3Browser.scss"
 
@@ -27,7 +27,7 @@ function isLeafNode(item: Tree): item is LeafNode {
 }
 
 type S3Props = { endpoint: string; bucket: string; accessKey: string; secretKey: string } & Pick<
-  Required<typeof window.jay>,
+  Required<typeof window.jaas>,
   "s3"
 >
 type NavBrowserProps = S3Props & { roots: Tree[] }
@@ -134,7 +134,7 @@ function NavBrowser(props: NavBrowserProps) {
  * `Tree` model.
  */
 export default function S3Browser(
-  props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jay>, "get" | "s3">,
+  props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jaas>, "get" | "s3">,
 ) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown | null>(null)
@@ -358,15 +358,15 @@ function ShowContent(props: S3Props & { object: string }) {
   )
 }
 
-import DrawerTab from "@jay/components/Drawer/Tab"
+import DrawerTab from "@jaas/components/Drawer/Tab"
 
 /** A Details tab that shows <S3Browser /> */
 export function BrowserTabs(props: (DataSetEvent | TaskQueueEvent)["spec"]["local"]) {
-  if (window.jay.get && window.jay.s3) {
+  if (window.jaas.get && window.jaas.s3) {
     return DrawerTab({
       hasNoPadding: true,
       title: "Browser",
-      body: <S3Browser {...props} get={window.jay.get} s3={window.jay.s3} />,
+      body: <S3Browser {...props} get={window.jaas.get} s3={window.jaas.s3} />,
     })
   } else {
     return undefined

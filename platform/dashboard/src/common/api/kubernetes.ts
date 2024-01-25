@@ -18,7 +18,7 @@ export type OnModelUpdateFn = (_: unknown, model: { data: string }) => void
 type CleanupFn = () => void
 
 /** Jobs as a Service API to server-side resource functionality */
-export interface JayResourceApi {
+export interface JaasResourceApi {
   /**
    * Handle events with the given callback `cb`.
    * @return a function that will clean up any underlying watchers.
@@ -26,7 +26,7 @@ export interface JayResourceApi {
   on(source: "message", cb: OnModelUpdateFn): CleanupFn
 }
 
-export default interface KubernetesApi extends Record<Kind, JayResourceApi> {
+export default interface KubernetesApi extends Record<Kind, JaasResourceApi> {
   /** Available Kubernetes contexts */
   contexts?(): Promise<{ config: KubeConfig; current: string }>
 

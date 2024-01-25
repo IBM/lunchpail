@@ -1,7 +1,7 @@
 import { type ReactNode, type ReactElement } from "react"
 import { Tabs, type TabProps } from "@patternfly/react-core"
 
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 import Yaml from "../YamlFromObject"
 import DrawerTab from "./Tab"

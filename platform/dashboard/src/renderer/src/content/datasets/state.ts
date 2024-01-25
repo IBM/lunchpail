@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
 
 import singletonEventHandler from "../events/singleton"
 

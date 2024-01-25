@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
-import { hash } from "@jay/renderer/navigate/kind"
+import { hash } from "@jaas/renderer/navigate/kind"
 
 import { singular } from "./name"
-import { group as applicationsName } from "@jay/resources/applications/group"
+import { group as applicationsName } from "@jaas/resources/applications/group"
 
 export default (
   <span>

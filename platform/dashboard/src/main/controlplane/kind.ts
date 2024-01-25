@@ -88,6 +88,8 @@ export async function doesKindClusterExist(clusterName: string) {
 }
 
 /** Is the given Kubernetes context a kind cluster? */
-export function isKindCluster(context: import("@jay/common/api/kubernetes").KubeConfig["contexts"][number]["context"]) {
+export function isKindCluster(
+  context: import("@jaas/common/api/kubernetes").KubeConfig["contexts"][number]["context"],
+) {
   return /^kind-/.test(context.cluster)
 }

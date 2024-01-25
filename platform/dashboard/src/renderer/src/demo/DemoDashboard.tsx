@@ -8,9 +8,9 @@ import DemoApplicationSpecEventSource from "./streams/application"
 
 import context from "./context"
 
-import type WatchedKind from "@jay/common/Kind"
+import type WatchedKind from "@jaas/common/Kind"
 import type DemoEventSource from "./streams/base"
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 let props: null | (Record<WatchedKind, DemoEventSource> & { workerpools: DemoWorkerPoolStatusEventSource }) = null
 
@@ -40,7 +40,7 @@ export default function DemoDashboard() {
   const props = init()
 
   if (!window.demo) {
-    window.jay = window.demo = Object.assign({}, props, {
+    window.jaas = window.demo = Object.assign({}, props, {
       create: props.workerpools.create.bind(props.workerpools),
 
       async delete(yaml: string) {
@@ -64,7 +64,7 @@ export default function DemoDashboard() {
         throw new Error("Unsupported operation")
       },
 
-      deleteByName(dprops: import("@jay/common/api/jay").DeleteProps) {
+      deleteByName(dprops: import("@jaas/common/api/jaas").DeleteProps) {
         if (/workerpool/.test(dprops.kind)) {
           return props.workerpools.delete(dprops)
         } else if (/application/.test(dprops.kind)) {

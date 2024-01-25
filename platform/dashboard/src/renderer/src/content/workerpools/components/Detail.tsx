@@ -1,5 +1,5 @@
-import DrawerContent from "@jay/components/Drawer/Content"
-import DeleteResourceButton from "@jay/components/DeleteResourceButton"
+import DrawerContent from "@jaas/components/Drawer/Content"
+import DeleteResourceButton from "@jaas/components/DeleteResourceButton"
 
 import { singular } from "../name"
 import summaryTabContent from "./tabs/Summary"

@@ -1,9 +1,9 @@
-import type JayApi from "@jay/common/api/jay"
+import type JaasApi from "@jaas/common/api/jaas"
 
 declare global {
   interface Window {
-    live: JayApi
-    demo: JayApi
-    jay: JayApi
+    live: JaasApi
+    demo: JaasApi
+    jaas: JaasApi
   }
 }

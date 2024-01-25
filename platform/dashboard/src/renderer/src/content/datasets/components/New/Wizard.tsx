@@ -3,24 +3,24 @@ import type { FormContextProps } from "@patternfly/react-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
-import { S3BrowserWithCreds } from "@jay/components/S3Browser"
-import { isNonEmptyArray } from "@jay/common/util/NonEmptyArray"
+import { S3BrowserWithCreds } from "@jaas/components/S3Browser"
+import { isNonEmptyArray } from "@jaas/common/util/NonEmptyArray"
 
-import Input from "@jay/components/Forms/Input"
-import Checkbox from "@jay/components/Forms/Checkbox"
-import Password from "@jay/components/Forms/Password"
-import NonInputElement from "@jay/components/Forms/NonInputElement"
-import Tiles, { type TileOption } from "@jay/components/Forms/Tiles"
+import Input from "@jaas/components/Forms/Input"
+import Checkbox from "@jaas/components/Forms/Checkbox"
+import Password from "@jaas/components/Forms/Password"
+import NonInputElement from "@jaas/components/Forms/NonInputElement"
+import Tiles, { type TileOption } from "@jaas/components/Forms/Tiles"
 
 import stepUpload from "./Upload"
-import { singular } from "@jay/resources/datasets/name"
+import { singular } from "@jaas/resources/datasets/name"
 import getYaml, { findPlatformRepoSecret, needsPlatformRepoSecret } from "./yaml"
 
-import type ManagedEvents from "@jay/resources/ManagedEvent"
+import type ManagedEvents from "@jaas/resources/ManagedEvent"
 
-import type { Profile } from "@jay/common/api/s3"
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
-import NewResourceWizard from "@jay/components/NewResourceWizard"
+import type { Profile } from "@jaas/common/api/s3"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
+import NewResourceWizard from "@jaas/components/NewResourceWizard"
 
 function endpoint(ctrl: FormContextProps) {
   return (
@@ -59,8 +59,8 @@ export default function NewDataSetWizard(props: Props) {
 
   async function refreshBuckets(profile: Omit<Profile, "name">) {
     setBuckets([])
-    if (window.jay.s3) {
-      window.jay.s3
+    if (window.jaas.s3) {
+      window.jaas.s3
         .listBuckets(profile.endpoint, profile.accessKey, profile.secretKey)
         .then((buckets) =>
           setBuckets(
@@ -79,10 +79,10 @@ export default function NewDataSetWizard(props: Props) {
   }
 
   useEffect(() => {
-    if (window.jay.s3) {
-      window.jay.s3.listProfiles().then(setProfiles)
+    if (window.jaas.s3) {
+      window.jaas.s3.listProfiles().then(setProfiles)
     }
-  }, [window.jay.s3, setProfiles])
+  }, [window.jaas.s3, setProfiles])
 
   /** The Select choices for the `profile()` select UI */
   const profileOptions = useMemo<TileOption[]>(
@@ -136,7 +136,7 @@ export default function NewDataSetWizard(props: Props) {
 
   /** An S3Browser to help the user validate choices of endpoint/profile/secrets/bucket */
   function browser(ctrl: FormContextProps) {
-    if (window.jay.s3 && window.jay.get) {
+    if (window.jaas.s3 && window.jaas.get) {
       const profile = !isEdit ? profiles.find((_) => _.name === ctrl.values.profile) : undefined
       const endpoint = isEdit ? ctrl.values.endpoint : profile?.endpoint
       const accessKey = isEdit ? ctrl.values.accessKey : profile?.accessKey
@@ -151,7 +151,7 @@ export default function NewDataSetWizard(props: Props) {
             labelInfo="This read-only browser helps you validate your Profile and Bucket choices"
           >
             <S3BrowserWithCreds
-              s3={window.jay.s3}
+              s3={window.jaas.s3}
               endpoint={endpoint}
               accessKey={accessKey}
               secretKey={secretKey}
@@ -186,7 +186,7 @@ export default function NewDataSetWizard(props: Props) {
           if (profile) {
             refreshBuckets(profile)
           } else {
-            window.jay.s3?.listProfiles().then((profiles) => {
+            window.jaas.s3?.listProfiles().then((profiles) => {
               setProfiles(profiles)
               const profile = profiles.find((_) => _.name === value)
               if (profile) {
@@ -211,7 +211,7 @@ export default function NewDataSetWizard(props: Props) {
         refreshBuckets({ endpoint, accessKey, secretKey })
       }
     },
-    [isEdit, profiles, setBuckets, window.jay.s3],
+    [isEdit, profiles, setBuckets, window.jaas.s3],
   )
 
   /** Initial value for form */

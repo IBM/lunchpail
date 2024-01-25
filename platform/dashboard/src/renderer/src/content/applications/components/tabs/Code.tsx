@@ -1,8 +1,8 @@
 import { Text } from "@patternfly/react-core"
 
-import Code from "@jay/components/Code"
-import DrawerTab from "@jay/components/Drawer/Tab"
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
+import Code from "@jaas/components/Code"
+import DrawerTab from "@jaas/components/Drawer/Tab"
+import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import api from "../api"
 import type Props from "../Props"

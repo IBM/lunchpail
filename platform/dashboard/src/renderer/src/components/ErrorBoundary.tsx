@@ -1,7 +1,7 @@
 import { useRouteError } from "react-router-dom"
 import { Bullseye, Stack, StackItem, Text, TextContent } from "@patternfly/react-core"
 
-import errorImageUrl from "@jay/images/404.png"
+import errorImageUrl from "@jaas/images/404.png"
 
 type ErrorResponse = {
   error: {

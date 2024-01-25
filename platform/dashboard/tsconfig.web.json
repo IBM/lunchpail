@@ -7,12 +7,12 @@
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
-      "@jay/util/*": ["src/common/util/*"],
-      "@jay/images/*": ["src/renderer/images/*"],
-      "@jay/renderer/*": ["src/renderer/src/*"],
-      "@jay/resources/*": ["src/renderer/src/content/*"],
-      "@jay/components/*": ["src/renderer/src/components/*"],
-      "@jay/common/*": ["src/common/*"]
+      "@jaas/util/*": ["src/common/util/*"],
+      "@jaas/images/*": ["src/renderer/images/*"],
+      "@jaas/renderer/*": ["src/renderer/src/*"],
+      "@jaas/resources/*": ["src/renderer/src/content/*"],
+      "@jaas/components/*": ["src/renderer/src/components/*"],
+      "@jaas/common/*": ["src/common/*"]
     }
   }
 }

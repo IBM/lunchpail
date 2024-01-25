@@ -13,7 +13,7 @@ kind: PlatformRepoSecret
 metadata:
   name: ${values.name}
   labels:
-    app.kubernetes.io/managed-by: jay
+    app.kubernetes.io/managed-by: jaas
 spec:
   repo: ${values.repo}
   secret:
@@ -26,7 +26,7 @@ metadata:
   name: ${values.name}
   namespace: ${values.namespace}
   labels:
-    app.kubernetes.io/managed-by: jay
+    app.kubernetes.io/managed-by: jaas
 type: Opaque
 data:
   user: ${btoa(values.user)}

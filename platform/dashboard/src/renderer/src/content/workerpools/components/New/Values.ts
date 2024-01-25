@@ -1,4 +1,4 @@
-import type { DefaultValues } from "@jay/components/NewResourceWizard"
+import type { DefaultValues } from "@jaas/components/NewResourceWizard"
 
 type Values = DefaultValues<{
   /** Name of ComputeTarget */

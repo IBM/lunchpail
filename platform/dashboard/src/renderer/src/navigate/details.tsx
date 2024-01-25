@@ -6,7 +6,7 @@ import { stopPropagation } from "."
 import type { FunctionComponent } from "react"
 import type LocationProps from "./LocationProps"
 import { type DetailableKind as Kind } from "../content"
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 export type Entity = { id: string; kind: Kind; context?: string; linkText?: string }
 

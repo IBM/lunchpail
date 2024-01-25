@@ -1,9 +1,9 @@
-import CardInGallery from "@jay/components/CardInGallery"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import CardInGallery from "@jaas/components/CardInGallery"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
-import { singular as datasetsSingular } from "@jay/resources/datasets/name"
+import { singular as datasetsSingular } from "@jaas/resources/datasets/name"
 
-import type DataSetEvent from "@jay/common/events/DataSetEvent"
+import type DataSetEvent from "@jaas/common/events/DataSetEvent"
 
 import DataSetIcon from "./Icon"
 

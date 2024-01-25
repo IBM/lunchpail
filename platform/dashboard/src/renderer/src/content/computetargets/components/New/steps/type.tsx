@@ -1,7 +1,7 @@
-import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
+import Tiles, { type TileOptions } from "@jaas/components/Forms/Tiles"
 
 import type Values from "../Values"
-import { type ComputeTargetType } from "@jay/common/events/ComputeTargetEvent"
+import { type ComputeTargetType } from "@jaas/common/events/ComputeTargetEvent"
 
 const typeOptions: TileOptions<ComputeTargetType> = [
   {

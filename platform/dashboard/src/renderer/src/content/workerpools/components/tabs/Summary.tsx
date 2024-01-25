@@ -1,6 +1,6 @@
 import type Props from "../Props"
 import { statusActions, summaryGroups, titleCaseSplit } from "../Summary"
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
+import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 function count(props: Props) {
   return !props.status ? 0 : props.status.spec.workers.count
@@ -13,7 +13,7 @@ function statusGroup(props: Props) {
   ])
 }
 
-export function reasonAndMessageGroups({ metadata }: import("@jay/common/events/KubernetesResource").default) {
+export function reasonAndMessageGroups({ metadata }: import("@jaas/common/events/KubernetesResource").default) {
   const status = metadata.annotations["codeflare.dev/status"]
   const reason = metadata.annotations["codeflare.dev/reason"]
   const message = metadata.annotations["codeflare.dev/message"]

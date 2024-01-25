@@ -1,7 +1,7 @@
-import CardInGallery from "@jay/components/CardInGallery"
+import CardInGallery from "@jaas/components/CardInGallery"
 import { statusActions, summaryGroups } from "./Summary"
 
-import prettyPrintWorkerPoolName from "@jay/resources/workerpools/components/pretty-print"
+import prettyPrintWorkerPoolName from "@jaas/resources/workerpools/components/pretty-print"
 
 import type Props from "./Props"
 

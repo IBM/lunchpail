@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useRef } from "react"
 
-import { DrawerMaximizedContext } from "@jay/components/Drawer/PanelContent"
+import { DrawerMaximizedContext } from "@jaas/components/Drawer/PanelContent"
 
 import { Terminal, type ITheme } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
@@ -68,7 +68,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
   }, [isMaximized])
 
   useEffect(() => {
-    if (window.jay.logs) {
+    if (window.jaas.logs) {
       const terminal = new Terminal({
         theme: theme(),
         fontSize: 14,
@@ -121,7 +121,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
       const cleanups = [
         () => webgl.dispose(),
         () => terminal.dispose(),
-        window.jay.logs(props.selector, props.namespace, props.follow ?? false, onData),
+        window.jaas.logs(props.selector, props.namespace, props.follow ?? false, onData),
         // ^^^ this starts the log streamer, and returns the cleanup function
       ]
 
@@ -129,7 +129,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
     } else {
       return
     }
-  }, [props.selector, props.namespace, props.follow, window.jay.logs, ref.current])
+  }, [props.selector, props.namespace, props.follow, window.jaas.logs, ref.current])
 
   return <div ref={ref} style={style} />
 }

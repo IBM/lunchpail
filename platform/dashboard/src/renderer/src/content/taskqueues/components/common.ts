@@ -1,10 +1,10 @@
-import None from "@jay/components/None"
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
-import { linkToAllDetails } from "@jay/renderer/navigate/details"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import None from "@jaas/components/None"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
+import { linkToAllDetails } from "@jaas/renderer/navigate/details"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
-import { name as workerpoolsName } from "@jay/resources/workerpools/name"
-// import { name as applicationsName } from "@jay/resources/applications/name"
+import { name as workerpoolsName } from "@jaas/resources/workerpools/name"
+// import { name as applicationsName } from "@jaas/resources/applications/name"
 
 import type Props from "./Props"
 type JustEvents = Pick<Props, "events">

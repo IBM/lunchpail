@@ -1,6 +1,6 @@
 import type Props from "../Props"
 
-import { LogsTab } from "@jay/resources/workdispatchers/components/tabs/Logs"
+import { LogsTab } from "@jaas/resources/workdispatchers/components/tabs/Logs"
 
 /** Logs tab for WorkerPool Detail */
 export default function WorkerPoolLogsTab(props: Props) {

@@ -1,5 +1,5 @@
 import type Method from "../Method"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 /** Yaml common to all work dispatch methods */
 export default function baseYaml(
@@ -17,7 +17,7 @@ metadata:
   labels:
     app.kubernetes.io/part-of: codeflare.dev
     app.kubernetes.io/component: workdispatcher
-    app.kubernetes.io/managed-by: jay
+    app.kubernetes.io/managed-by: jaas
     app.kubernetes.io/name: ${application.metadata.name}
 spec:
   method: ${method}

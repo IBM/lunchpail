@@ -1,5 +1,5 @@
-import Logs from "@jay/components/Logs"
-import DrawerTab from "@jay/components/Drawer/Tab"
+import Logs from "@jaas/components/Logs"
+import DrawerTab from "@jaas/components/Drawer/Tab"
 
 export function LogsTab(props: { selector: string; namespace: string }) {
   return DrawerTab({

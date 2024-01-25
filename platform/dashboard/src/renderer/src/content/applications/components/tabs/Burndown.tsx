@@ -1,9 +1,9 @@
 import type Props from "../Props"
 import taskqueueProps from "../taskqueueProps"
-import unassignedChart from "@jay/resources/taskqueues/components/unassigned-chart"
+import unassignedChart from "@jaas/resources/taskqueues/components/unassigned-chart"
 
-import DrawerTab from "@jay/components/Drawer/Tab"
-import { dl as DescriptionList } from "@jay/renderer/components/DescriptionGroup"
+import DrawerTab from "@jaas/components/Drawer/Tab"
+import { dl as DescriptionList } from "@jaas/renderer/components/DescriptionGroup"
 
 export default function burndownTab(props: Props) {
   const queueProps = taskqueueProps(props)

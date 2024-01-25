@@ -1,8 +1,8 @@
 import { hasMessage } from "./create"
 import { clusterNameForKubeconfig } from "../controlplane/kind"
 
-import type { DeleteProps } from "@jay/common/api/jay"
-import type ExecResponse from "@jay/common/events/ExecResponse"
+import type { DeleteProps } from "@jaas/common/api/jaas"
+import type ExecResponse from "@jaas/common/events/ExecResponse"
 
 /**
  * Get a resource by name

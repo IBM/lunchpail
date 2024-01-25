@@ -1,6 +1,6 @@
 import type Props from "./Props"
 
-import { descriptionGroup } from "@jay/components/DescriptionGroup"
+import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 export default function api(props: Props) {
   const { api } = props.application.spec

@@ -1,6 +1,6 @@
 import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
-import type { CurrentSettings } from "@jay/renderer/Settings"
+import type { CurrentSettings } from "@jaas/renderer/Settings"
 
 import either from "../../util/either"
 import TaskQueueDetail from "./components/Detail"

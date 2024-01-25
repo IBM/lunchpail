@@ -1,5 +1,5 @@
 import { singular } from "../../name"
-import LinkToNewWizard, { type WizardProps } from "@jay/renderer/navigate/wizard"
+import LinkToNewWizard, { type WizardProps } from "@jaas/renderer/navigate/wizard"
 
 type Props = Pick<WizardProps, "startOrAdd"> & {
   namespace?: string

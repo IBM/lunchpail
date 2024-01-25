@@ -1,4 +1,4 @@
-import type ExecResponse from "@jay/common/events/ExecResponse"
+import type ExecResponse from "@jaas/common/events/ExecResponse"
 
 type Handler = (evt: MessageEvent) => void
 
@@ -37,7 +37,7 @@ export default abstract class DemoEventSource {
     }
   }
 
-  public on(source: "message", cb: import("@jay/common/api/jay").OnModelUpdateFn) {
+  public on(source: "message", cb: import("@jaas/common/api/jaas").OnModelUpdateFn) {
     const mycb: Handler = (evt) => cb({}, evt)
     addEventListener(source, mycb)
     return () => removeEventListener(source, mycb)

@@ -1,10 +1,10 @@
-import { BrowserTabs } from "@jay/components/S3Browser"
-import DrawerContent from "@jay/components/Drawer/Content"
-import DeleteResourceButton from "@jay/components/DeleteResourceButton"
-import { dl as DescriptionList, descriptionGroup } from "@jay/components/DescriptionGroup"
+import { BrowserTabs } from "@jaas/components/S3Browser"
+import DrawerContent from "@jaas/components/Drawer/Content"
+import DeleteResourceButton from "@jaas/components/DeleteResourceButton"
+import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import { singular } from "../name"
-import LinkToNewWizard from "@jay/renderer/navigate/wizard"
+import LinkToNewWizard from "@jaas/renderer/navigate/wizard"
 
 import type Props from "./Props"
 

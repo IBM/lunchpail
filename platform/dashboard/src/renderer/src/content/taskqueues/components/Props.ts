@@ -1,8 +1,8 @@
-import type { CurrentSettings } from "@jay/renderer/Settings"
-import type TaskQueueEvent from "@jay/common/events/TaskQueueEvent"
-import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
-import type WorkerPoolStatusEvent from "@jay/common/events/WorkerPoolStatusEvent"
+import type { CurrentSettings } from "@jaas/renderer/Settings"
+import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
+import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 type Props = {
   /** Name of TaskQueue */

@@ -1,11 +1,11 @@
-import DrawerTab from "@jay/components/Drawer/Tab"
-import { dl } from "@jay/components/DescriptionGroup"
+import DrawerTab from "@jaas/components/Drawer/Tab"
+import { dl } from "@jaas/components/DescriptionGroup"
 
-import DetailNotFound from "@jay/components/DetailNotFound"
-import unassigned, { nUnassigned } from "@jay/resources/taskqueues/components/unassigned"
+import DetailNotFound from "@jaas/components/DetailNotFound"
+import unassigned, { nUnassigned } from "@jaas/resources/taskqueues/components/unassigned"
 
-import { groupSingular as application } from "@jay/resources/applications/group"
-import { name as workdispatchers, singular as workdispatcher } from "@jay/resources/workdispatchers/name"
+import { groupSingular as application } from "@jaas/resources/applications/group"
+import { name as workdispatchers, singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
 
 import type Props from "../Props"
 import taskqueueProps from "../taskqueueProps"

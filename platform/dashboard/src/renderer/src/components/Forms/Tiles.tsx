@@ -1,6 +1,6 @@
 import { type MouseEvent, type ReactNode, useCallback } from "react"
 
-import type NonEmptyArray from "@jay/util/NonEmptyArray"
+import type NonEmptyArray from "@jaas/util/NonEmptyArray"
 import { Gallery, Tile, type TileProps } from "@patternfly/react-core"
 
 import Group from "./Group"

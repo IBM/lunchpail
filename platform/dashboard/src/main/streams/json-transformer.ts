@@ -15,8 +15,8 @@
  */
 
 import { Transform } from "stream"
-import type WithTimestamp from "@jay/common/events/WithTimestamp"
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type WithTimestamp from "@jaas/common/events/WithTimestamp"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 /**
  * A simple streaming JSON parser, yielding one callback per JSON struct.

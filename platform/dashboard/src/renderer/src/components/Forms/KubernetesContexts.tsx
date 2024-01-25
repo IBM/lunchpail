@@ -16,13 +16,13 @@ export default function KubernetesContexts<Ctrl extends KubeValues>(props: { ctr
   useEffect(() => setCurrent(props.ctrl.values.kubecontext), [props.ctrl.values.kubecontext])
 
   useEffect(() => {
-    if (window.jay.contexts) {
+    if (window.jaas.contexts) {
       // a bit of syntactic oddness here to invoke the interval right
       // away, and then every 2s
       const interval = setInterval(
         (function interval() {
-          if (window.jay.contexts) {
-            window.jay
+          if (window.jaas.contexts) {
+            window.jaas
               .contexts()
               .then(({ config, current }) => {
                 if (config.contexts.length === 0 || !current) {
@@ -82,7 +82,7 @@ export default function KubernetesContexts<Ctrl extends KubeValues>(props: { ctr
     } else {
       return
     }
-  }, [window.jay.contexts])
+  }, [window.jaas.contexts])
 
   if (!contexts) {
     return <Spinner />

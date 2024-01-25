@@ -2,14 +2,14 @@ import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
-import NewResourceWizard from "@jay/components/NewResourceWizard"
+import NewResourceWizard from "@jaas/components/NewResourceWizard"
 
-import { singular as workdispatcher } from "@jay/resources/workdispatchers/name"
-import { groupSingular as applicationsSingular } from "@jay/resources/applications/group"
-import { titleSingular as applicationsDefinitionSingular } from "@jay/resources/applications/title"
+import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
+import { groupSingular as applicationsSingular } from "@jaas/resources/applications/group"
+import { titleSingular as applicationsDefinitionSingular } from "@jaas/resources/applications/title"
 
 import type Values from "./Values"
-import type ManagedEvents from "@jay/resources/ManagedEvent"
+import type ManagedEvents from "@jaas/resources/ManagedEvent"
 
 import yaml from "./yaml"
 

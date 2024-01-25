@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type QueueEvent from "@jay/common/events/QueueEvent"
+import type QueueEvent from "@jaas/common/events/QueueEvent"
 
 import { allTimestampedEventsHandler } from "../events/all"
 

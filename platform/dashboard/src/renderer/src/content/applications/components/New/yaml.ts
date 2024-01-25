@@ -1,8 +1,8 @@
 import wordWrap from "word-wrap"
-import indent from "@jay/common/util/indent"
+import indent from "@jaas/common/util/indent"
 
-import type { SupportedLanguage } from "@jay/components/Code"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type { SupportedLanguage } from "@jaas/components/Code"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 /** How the user wants to specify the code */
 export type Method = "github" | "literal"

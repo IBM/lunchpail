@@ -7,7 +7,7 @@
     "types": ["electron-vite/node"],
     "baseUrl": "./",
     "paths": {
-      "@jay/common/*": ["src/common/*"]
+      "@jaas/common/*": ["src/common/*"]
     }
   }
 }

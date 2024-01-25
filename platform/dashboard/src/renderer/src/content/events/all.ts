@@ -1,9 +1,9 @@
 import { useCallback } from "react"
 
 import type { Dispatch, SetStateAction } from "react"
-import type { EventLike } from "@jay/common/events/EventSourceLike"
-import type WithTimestamp from "@jay/common/events/WithTimestamp"
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type { EventLike } from "@jaas/common/events/EventSourceLike"
+import type WithTimestamp from "@jaas/common/events/WithTimestamp"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 function status({ metadata }: KubernetesResource) {
   return metadata.annotations["codeflare.dev/status"]

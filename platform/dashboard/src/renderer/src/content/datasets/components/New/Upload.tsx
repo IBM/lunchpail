@@ -1,10 +1,10 @@
 import type { FormContextProps } from "@patternfly/react-core"
 
-import Input from "@jay/components/Forms/Input"
-import Tiles, { type TileOptions } from "@jay/components/Forms/Tiles"
+import Input from "@jaas/components/Forms/Input"
+import Tiles, { type TileOptions } from "@jaas/components/Forms/Tiles"
 
-import type LocationProps from "@jay/renderer/navigate/LocationProps"
-import { buttonPropsForNewRepoSecret } from "@jay/renderer/navigate/newreposecret"
+import type LocationProps from "@jaas/renderer/navigate/LocationProps"
+import { buttonPropsForNewRepoSecret } from "@jaas/renderer/navigate/newreposecret"
 
 /** Options for the origin of uploaded data */
 const options: TileOptions = [

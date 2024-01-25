@@ -1,9 +1,9 @@
 import { dump } from "js-yaml"
-import indent from "@jay/common/util/indent"
+import indent from "@jaas/common/util/indent"
 
 import type Values from "../Values"
-import type WorkDispatcherEvent from "@jay/common/events/WorkDispatcherEvent"
-import type ApplicationSpecEvent from "@jay/common/events/ApplicationSpecEvent"
+import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
+import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 import baseYaml from "./base"
 import helmYaml from "./helm"

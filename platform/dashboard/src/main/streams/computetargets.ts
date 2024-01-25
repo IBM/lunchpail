@@ -1,7 +1,7 @@
 import { Readable } from "node:stream"
 import { EventEmitter } from "node:events"
 
-import type ComputeTargetEvent from "@jay/common/events/ComputeTargetEvent"
+import type ComputeTargetEvent from "@jaas/common/events/ComputeTargetEvent"
 
 import { getConfig } from "../kubernetes/contexts"
 import getComputeTargetType from "../controlplane/type"
@@ -201,7 +201,7 @@ export function startStreamForKubernetesComputeTargets() {
 import { hasMessage } from "../kubernetes/create"
 export async function deleteComputeTarget(
   target: ComputeTargetEvent,
-): Promise<import("@jay/common/events/ExecResponse").default> {
+): Promise<import("@jaas/common/events/ExecResponse").default> {
   if (target.spec.isDeletable) {
     try {
       const { stdout } = await import("../controlplane/kind").then((_) => _.deleteKindCluster(target.metadata.name))
@@ -214,12 +214,12 @@ export async function deleteComputeTarget(
   }
 }
 
-import { type ComputeTarget } from "@jay/common/events/ComputeTargetEvent"
+import { type ComputeTarget } from "@jaas/common/events/ComputeTargetEvent"
 export async function createComputeTarget(
   target: ComputeTarget,
   dryRun = false,
   provisionRuntime = true,
-): Promise<import("@jay/common/events/ExecResponse").default> {
+): Promise<import("@jaas/common/events/ExecResponse").default> {
   if (target.spec.type === "Kind") {
     try {
       await import("../controlplane/install").then((_) =>

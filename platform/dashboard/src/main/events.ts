@@ -10,11 +10,11 @@ import {
   startStreamForKubernetesComputeTargets,
 } from "./streams/computetargets"
 
-import type WatchedKind from "@jay/common/Kind"
-import type JayApi from "@jay/common/api/jay"
-import type ExecResponse from "@jay/common/events/ExecResponse"
-import type { DeleteProps, JayResourceApi } from "@jay/common/api/jay"
-import type KubernetesResource from "@jay/common/events/KubernetesResource"
+import type WatchedKind from "@jaas/common/Kind"
+import type JaasApi from "@jaas/common/api/jaas"
+import type ExecResponse from "@jaas/common/events/ExecResponse"
+import type { DeleteProps, JaasResourceApi } from "@jaas/common/api/jaas"
+import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 function streamForKind(kind: WatchedKind, context: string): Promise<import("stream").Readable> {
   switch (kind) {
@@ -115,7 +115,7 @@ function initStreamForResourceKind(kind: WatchedKind) {
   })
 }
 
-/** TODO this is cloned from @jay/common/Kind.watchedKinds. Vite currently isn't happy with importing non-type bits from common */
+/** TODO this is cloned from @jaas/common/Kind.watchedKinds. Vite currently isn't happy with importing non-type bits from common */
 const kinds: WatchedKind[] = [
   "computetargets",
   "taskqueues",
@@ -171,7 +171,7 @@ export function initEvents() {
   )
 
   /** Delete the given named `ComputeTarget` */
-  ipcMain.handle("/computetargets/delete", (_, target: import("@jay/common/events/ComputeTargetEvent").default) =>
+  ipcMain.handle("/computetargets/delete", (_, target: import("@jaas/common/events/ComputeTargetEvent").default) =>
     import("./streams/computetargets").then((_) => _.deleteComputeTarget(target)),
   )
 
@@ -237,7 +237,7 @@ function onFromClientSide(this: WatchedKind, _: "message", cb: (...args: unknown
   }
 }
 
-const apiImpl: JayApi = Object.assign(
+const apiImpl: JaasApi = Object.assign(
   {
     /** Jobs as a Service API to server-side control plane functionality */
     controlplane: {
@@ -261,7 +261,7 @@ const apiImpl: JayApi = Object.assign(
      */
     s3: {
       /** @return list of available AWS-style profiles */
-      listProfiles(): Promise<import("@jay/common/api/s3").Profile[]> {
+      listProfiles(): Promise<import("@jaas/common/api/s3").Profile[]> {
         return ipcRenderer.invoke("/s3/listProfiles")
       },
 
@@ -302,7 +302,7 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Available Kubernetes contexts */
-    async contexts(): Promise<{ config: import("@jay/common/api/kubernetes").KubeConfig; current: string }> {
+    async contexts(): Promise<{ config: import("@jaas/common/api/kubernetes").KubeConfig; current: string }> {
       const response = await ipcRenderer.invoke("/kubernetes/contexts")
       if (response === true) {
         throw new Error("Internal error")
@@ -314,7 +314,7 @@ const apiImpl: JayApi = Object.assign(
     },
 
     /** Delete the given named `ComputeTarget` */
-    deleteComputeTarget(target: import("@jay/common/events/ComputeTargetEvent").default) {
+    deleteComputeTarget(target: import("@jaas/common/events/ComputeTargetEvent").default) {
       return ipcRenderer.invoke("/computetargets/delete", target)
     },
 
@@ -364,12 +364,12 @@ const apiImpl: JayApi = Object.assign(
           on: onFromClientSide.bind(kind),
         },
       }),
-    {} as Record<WatchedKind, JayResourceApi>,
+    {} as Record<WatchedKind, JaasResourceApi>,
   ),
 )
 
 /**
- * This is the JaYAPI renderer-side implementation. TODO, we need to
+ * This is the JaasApi renderer-side implementation. TODO, we need to
  * find a way to share datatypes with the renderer.
  */
 export default apiImpl

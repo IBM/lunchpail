@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { homedir } from "node:os"
 import { readFile } from "node:fs/promises"
 
-import type { Profile } from "@jay/common/api/s3"
+import type { Profile } from "@jaas/common/api/s3"
 
 type Config = Record<string, { endpoint_url?: string }>
 type Credentials = Record<string, { aws_access_key_id: string; aws_secret_access_key: string }>

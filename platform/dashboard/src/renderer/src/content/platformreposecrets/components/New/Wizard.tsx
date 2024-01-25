@@ -6,9 +6,9 @@ import { type FormContextProps } from "@patternfly/react-core"
 
 import type Props from "../Props"
 import yaml, { type YamlProps } from "./yaml"
-import Input from "@jay/components/Forms/Input"
-import password from "@jay/components/Forms/Password"
-import NewResourceWizard from "@jay/components/NewResourceWizard"
+import Input from "@jaas/components/Forms/Input"
+import password from "@jaas/components/Forms/Password"
+import NewResourceWizard from "@jaas/components/NewResourceWizard"
 
 import { singular } from "../../name"
 
