@@ -67,15 +67,7 @@ def track_logs_async_once(resource_name: str, pod_name: str, namespace: str, plu
 # line_handler takes a `line: str` and returns a resource patch `Dict[str, Any]`
 from multiprocessing import Process
 def track_logs(resource_name: str, pod_name: str, namespace: str, plural: str, line_handler: Callable[[str], Dict[str, Any]], container: Optional[str]=None, group="codeflare.dev", version="v1alpha1"):
-    while True:
-        proc = Process(target=track_logs_async, args=(resource_name, pod_name, namespace, plural, line_handler, container, group, version))
-        proc.start()
-        proc.join()
-        if proc.exitcode is None or proc.exitcode < 0:
-            logging.error(f"log watcher exited abnormally exitcode={proc.exitcode} resource_name={resource_name} pod_name={pod_name}")
-        else:
-            break
-    return proc
+    Process(daemon=True, target=track_logs_async, args=(resource_name, pod_name, namespace, plural, line_handler, container, group, version)).start()
 
 # this is run-specific
 import re
