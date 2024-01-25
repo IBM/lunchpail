@@ -19,7 +19,6 @@ export async function onCreate(
     return import("../streams/computetargets").then(({ createComputeTarget }) => createComputeTarget(json, dryRun))
   }
 
-  console.error("!!!!!!!!!", context)
   return new Promise((resolve) => {
     try {
       // the `-f -` means accept the yaml on stdin
