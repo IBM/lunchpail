@@ -1,1 +1,1 @@
-export { group, groupSingular } from "../applications/group"
+export const group = "Task Dispatch"

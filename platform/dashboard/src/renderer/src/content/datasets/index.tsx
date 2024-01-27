@@ -3,17 +3,20 @@ import wizard from "./wizard"
 import actions from "./actions"
 import gallery from "./gallery"
 import description from "./description"
-import { name, singular } from "./name"
+
+import { singular } from "./name"
+import { group as title } from "./group"
 
 export default {
   kind: "datasets" as const,
-  name,
+  name: title,
   singular,
   description,
   gallery,
   detail,
   actions,
   wizard,
+  title,
   sidebar: {
     group: "Definitions",
   },
