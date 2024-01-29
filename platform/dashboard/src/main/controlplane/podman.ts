@@ -40,8 +40,14 @@ async function getPodmanMachine(): Promise<null | {
   }
 }
 
-export async function isPodmanMachineReady(): Promise<boolean> {
-  return !!(await getPodmanMachine())
+/** @return [machineExists, machineOnline] */
+export async function isPodmanMachineReady(): Promise<[boolean, boolean]> {
+  const machine = await getPodmanMachine()
+  if (!machine) {
+    return [false, false]
+  } else {
+    return [true, machine.State === "Running"]
+  }
 }
 
 function initMachine() {

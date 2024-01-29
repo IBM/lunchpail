@@ -7,13 +7,13 @@ import { isPodmanCliReady, isPodmanMachineReady } from "./podman"
 export default async function getControlPlaneStatus(
   cluster: string,
 ): Promise<import("@jaas/common/status/JobManagerStatus").default> {
-  const [podmanCli, podmanMachine, kubernetesCluster] = await Promise.all([
+  const [podmanCli, podmanMachineExists, podmanMachineOnline, kubernetesCluster] = await Promise.all([
     isPodmanCliReady(),
-    isPodmanMachineReady(),
+    ...(await isPodmanMachineReady()),
     doesKindClusterExist(cluster),
   ])
 
-  return { podmanCli, podmanMachine, kubernetesCluster }
+  return { podmanCli, podmanMachineExists, podmanMachineOnline, kubernetesCluster }
 }
 
 export type Status = ReturnType<typeof getControlPlaneStatus>

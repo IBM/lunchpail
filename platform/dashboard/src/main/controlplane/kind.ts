@@ -80,7 +80,7 @@ export async function doesKindClusterExist(clusterName: string) {
   } catch (e) {
     // the podman (or whatever) machine might not be up. we'll report
     // this to the user directly, no need to pollute the console
-    if (!/Cannot connect to the Docker daemon/.test(String(e))) {
+    if (!/Cannot connect to (Podman|the Docker daemon)/.test(String(e))) {
       console.error(e)
     }
     return false
