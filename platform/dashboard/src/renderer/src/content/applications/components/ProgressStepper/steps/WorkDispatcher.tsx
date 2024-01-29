@@ -10,7 +10,7 @@ import workdispatchers from "../../workdispatchers"
 import { status } from "@jaas/resources/workdispatchers/status"
 import { name as workerpools } from "@jaas/resources/workerpools/name"
 import { singular as taskqueueSingular } from "@jaas/resources/taskqueues/name"
-import { singular as workdispatcherSingular } from "@jaas/resources/workdispatchers/name"
+import { group as workdispatcherSingular } from "@jaas/resources/workdispatchers/group"
 
 function statusOfDispatchers(props: import("../../Props").default) {
   const all = workdispatchers(props)
