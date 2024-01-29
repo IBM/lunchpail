@@ -5,6 +5,19 @@ import type { Kind } from "./providers"
 import type ManagedEvents from "./ManagedEvent"
 import type { CurrentSettings } from "../Settings"
 
+export type ContentProviderSidebarSpec =
+  | true
+  | {
+      /** Show this kind of resource in the Sidebar? If `true`, show at the top level; otherwise, show in the given group */
+      group?: string
+
+      /** If we are showing in the Sidebar, what is our sort priority? (higher will float upwards in the sidebar) */
+      priority?: number
+
+      /** Suffix for badge */
+      badgeSuffix?: string
+    }
+
 /**
  * Governs how to render a certain `Kind` of resource, e.g. Applications
  */
@@ -25,18 +38,7 @@ export default interface ContentProvider<K extends Kind = Kind> {
   description: ReactNode
 
   /** if `true`, then show at the root of the Sidebar tree, using the default sorting priority (lexicographic) */
-  sidebar?:
-    | true
-    | {
-        /** Show this kind of resource in the Sidebar? If `true`, show at the top level; otherwise, show in the given group */
-        group?: string
-
-        /** If we are showing in the Sidebar, what is our sort priority? (higher will float upwards in the sidebar) */
-        priority?: number
-
-        /** Suffix for badge */
-        badgeSuffix?: string
-      }
+  sidebar?: ContentProviderSidebarSpec
 
   /** Content to display in the gallery view -- usually a CardInGallery[] */
   gallery?(

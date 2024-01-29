@@ -7,6 +7,8 @@ import description from "./description"
 import { singular } from "./name"
 import { group as title } from "./group"
 
+import { resourcesSidebar as sidebar } from "../sidebar-groups"
+
 export default {
   kind: "datasets" as const,
   name: title,
@@ -17,7 +19,5 @@ export default {
   actions,
   wizard,
   title,
-  sidebar: {
-    group: "Definitions",
-  },
+  sidebar,
 }

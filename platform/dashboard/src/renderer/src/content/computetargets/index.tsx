@@ -6,6 +6,7 @@ import description from "./description"
 import { name, singular } from "./name"
 
 import type ContentProvider from "../ContentProvider"
+import { resourcesGroup as group } from "../sidebar-groups"
 
 /** ComputeTarget ContentProvider */
 const computetargets: ContentProvider<"computetargets"> = {
@@ -18,7 +19,7 @@ const computetargets: ContentProvider<"computetargets"> = {
   actions,
   gallery,
   sidebar: {
-    group: "Definitions",
+    group,
     badgeSuffix: "enabled",
   },
 }
