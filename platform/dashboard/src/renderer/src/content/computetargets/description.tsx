@@ -8,8 +8,8 @@ function capitalize(str: string) {
 }
 
 export default (
-  <span>
+  <>
     <strong>{capitalize(productName)}</strong> helps you to manage your Jobs: pick Data to analyze, and then assign{" "}
     <Link to={hash("workerpools")}>Workers</Link> to process the tasks in a selected set of data.
-  </span>
+  </>
 )
