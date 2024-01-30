@@ -4,7 +4,7 @@ import { Divider, DrawerPanelBody } from "@patternfly/react-core"
 import DrawerToolbar from "./Toolbar"
 import TabbedContent from "./TabbedContent"
 
-type Props = import("./TabbedContent").Props & {
+export type Props = import("./TabbedContent").Props & {
   /** Actions to be displayed left-justified */
   actions?: ReactElement[]
 

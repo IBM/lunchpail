@@ -81,6 +81,7 @@ export function Dashboard(props: Props) {
   /** Content to display in the hamburger-menu sidebar (usually coming in on the left) */
   const sidebar = (
     <Sidebar
+      runs={events.runs.length}
       datasets={events.datasets.length}
       workerpools={events.workerpools.length}
       applications={events.applications.length}

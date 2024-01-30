@@ -1,3 +1,4 @@
+import runState from "./runs/state"
 import queueState from "./queues/state"
 import datasetsState from "./datasets/state"
 import taskqueuesState from "./taskqueues/state"
@@ -39,6 +40,7 @@ export default function initStreamingState(): ManagedState {
   return {
     // future readers: if you want to wire the UI up to backend
     // resource trackers, add your state here
+    runs: runState(returnHome),
     queues: queueState(),
     datasets: datasetsState(returnHome),
     taskqueues: taskqueuesState(),

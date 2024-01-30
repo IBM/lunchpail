@@ -54,7 +54,7 @@ export default interface ContentProvider<K extends Kind = Kind> {
     events: ManagedEvents,
     memos: Memos,
     settings: CurrentSettings,
-  ): undefined | { subtitle?: string; body: ReactNode }
+  ): undefined | { subtitle?: string; body: ReactElement<import("@jaas/components/Drawer/Content").Props> }
 
   /** Action buttons to show alongside (usually above) the gallery */
   actions?(settings: { inDemoMode: boolean }): ReactNode

@@ -25,6 +25,9 @@ type ApplicationSpecEvent = KubernetesResource<
     /** Default command line */
     command: string
 
+    /** Default environment variables to associate with any `Run` of this `Application` */
+    env?: Record<string, string>
+
     /** Does this pool support GPU tasks? */
     supportsGpu: boolean
 

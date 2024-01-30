@@ -7,12 +7,11 @@ import rayImageUrl from "@jaas/images/ray.png"
 import sparkImageUrl from "@jaas/images/spark.svg"
 import pytorchImageUrl from "@jaas/images/pytorch.svg"
 
-export default function applicationIcon(props: { application: ApplicationSpecEvent; hasWorkerPool?: boolean }) {
-  const baseClasses = props.hasWorkerPool ? ["codeflare--active"] : []
-  const className = baseClasses.join(" ")
-  const classNameForImg = ["codeflare--card-icon-image", ...baseClasses].join(" ")
+export default function applicationIcon(props: ApplicationSpecEvent) {
+  const className = ""
+  const classNameForImg = ["codeflare--card-icon-image"].join(" ")
 
-  switch (props.application.spec.api) {
+  switch (props.spec.api) {
     case "ray":
       return <img className={classNameForImg} src={rayImageUrl} />
     case "torch":

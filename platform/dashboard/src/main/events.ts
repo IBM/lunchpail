@@ -26,6 +26,8 @@ function streamForKind(kind: WatchedKind, context: string): Promise<import("stre
       return startStreamForKind("datasets", context, { selectors: ["app.kubernetes.io/component!=taskqueue"] })
     case "queues":
       return startStreamForKind("queues.codeflare.dev", context, { withTimestamp: true })
+    case "runs":
+      return startStreamForKind("runs.codeflare.dev", context)
     case "workerpools":
       return startStreamForKind("workerpools.codeflare.dev", context)
     case "platformreposecrets":
@@ -122,6 +124,7 @@ const kinds: WatchedKind[] = [
   "datasets",
   "queues",
   "workerpools",
+  "runs",
   "applications",
   "platformreposecrets",
   "workdispatchers",

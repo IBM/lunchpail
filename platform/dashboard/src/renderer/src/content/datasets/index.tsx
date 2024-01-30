@@ -7,7 +7,7 @@ import description from "./description"
 import { singular } from "./name"
 import { group as title } from "./group"
 
-import { resourcesSidebar as sidebar } from "../sidebar-groups"
+import { componentsSidebar as sidebar } from "../sidebar-groups"
 
 export default {
   kind: "datasets" as const,

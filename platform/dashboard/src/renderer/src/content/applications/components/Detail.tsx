@@ -3,10 +3,6 @@ import DrawerContent from "@jaas/components/Drawer/Content"
 
 import codeTab from "./tabs/Code"
 import dataTab from "./tabs/Data"
-import workdispatchersTab from "./tabs/WorkDispatchers"
-import yamlTab from "./tabs/Yaml"
-import computeTab from "./tabs/Compute"
-//import burndownTab from "./tabs/Burndown"
 
 import editAction from "./actions/edit"
 // import cloneAction from "./actions/clone"
@@ -16,13 +12,14 @@ import type Props from "./Props"
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: Props) {
-  return removeUndefined([codeTab(props), dataTab(props), workdispatchersTab(props), computeTab(props), yamlTab(props)])
+  return removeUndefined([codeTab(props), dataTab(props)])
 }
 
 export default function ApplicationDetail(props: Props) {
   return (
     <DrawerContent
       defaultActiveKey="Code"
+      raw={props.application}
       otherTabs={otherTabs(props)}
       rightActions={[editAction(props), /* cloneAction(props), */ deleteAction(props)]}
     />

@@ -7,6 +7,8 @@ import description from "./description"
 import { title } from "./title"
 import { name, singular } from "./name"
 
+import { componentsSidebar as sidebar } from "../sidebar-groups"
+
 export default {
   kind: "applications" as const,
   name,
@@ -17,7 +19,5 @@ export default {
   wizard,
   actions,
   gallery,
-  sidebar: {
-    priority: 100,
-  },
+  sidebar,
 }

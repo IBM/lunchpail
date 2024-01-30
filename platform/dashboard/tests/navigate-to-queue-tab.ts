@@ -1,9 +1,10 @@
 import { expect, Locator, type Page } from "@playwright/test"
+import type Kind from "@jaas/common/Kind"
 
 import { visibleCard } from "./card"
 
-export async function verifyDrawerVisible(page: Page, application: string) {
-  const drawerId = "applications." + application
+export async function verifyDrawerVisible(page: Page, resourceName: string, kind: Kind = "runs") {
+  const drawerId = `${kind}.${resourceName}`
   const drawer = await page.locator(
     `[data-ouia-component-type="PF5/DrawerPanelContent"][data-ouia-component-id="${drawerId}"]`,
   )
@@ -11,16 +12,21 @@ export async function verifyDrawerVisible(page: Page, application: string) {
   return drawer
 }
 
-export async function navigateToCard(page: Page, application: string) {
-  const appCard = await visibleCard(page, application)
-  console.log("got application for taskqueue", application)
+export async function navigateToCard(page: Page, resourceName: string, kind: Kind = "runs") {
+  const card = await visibleCard(page, resourceName)
+  console.log(`got ${kind} ${resourceName}`)
 
-  await appCard.click()
-  return await verifyDrawerVisible(page, application)
+  await card.click()
+  return await verifyDrawerVisible(page, resourceName)
 }
 
-export default async function navigateToQueues(page: Page, application: string, taskqueue: string) {
-  const drawer = await navigateToCard(page, application)
+export default async function navigateToQueues(
+  page: Page,
+  resourceName: string,
+  taskqueue: string,
+  kind: Kind = "runs",
+) {
+  const drawer = await navigateToCard(page, resourceName, kind)
   const queueManagerTab = await drawer.locator(
     `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Tasks"]`,
   )

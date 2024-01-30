@@ -6,14 +6,14 @@ import expectedApplications from "./applications"
 // import { visibleCard, missingCard } from "./card"
 import { navigateToCard, navigateToTab } from "./navigate-to-queue-tab"
 
-import { name } from "../src/renderer/src/content/applications/name"
+import { name } from "../src/renderer/src/content/runs/name"
 
 test.describe.serial("workers tests running sequentially", () => {
   let page: Page
   let computePoolName: string
   const { application: expectedApp } = expectedApplications[0]
 
-  test("Navigate to Compute tab for application", async () => {
+  test(`Navigate to Compute tab for ${name}`, async () => {
     // Launch Electron app.
     const electronApp = await launchElectron()
 
@@ -24,11 +24,11 @@ test.describe.serial("workers tests running sequentially", () => {
     const demoModeStatus = await page.getByLabel("Demo").isChecked()
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
-    // get 'Job Defintions' tab element from the sidebar and click to activate Job Definition gallery
+    // get 'Jobs' tab element from the sidebar and click to activate Job Definition gallery
     await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
 
     const drawer = await navigateToCard(page, expectedApp)
-    await navigateToTab(drawer, "Compute")
+    await navigateToTab(drawer, "Compute", name)
   })
 
   test("'Add Compute' button opens 'Create Compute Pool' modal", async () => {

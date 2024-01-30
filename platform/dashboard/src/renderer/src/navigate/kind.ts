@@ -1,8 +1,7 @@
 import { useLocation } from "react-router-dom"
 
+import { defaultKind } from "../defaults"
 import type { NavigableKind } from "../content"
-
-const defaultKind: NavigableKind = "applications"
 
 export function hash(kind: NavigableKind) {
   return "#" + kind

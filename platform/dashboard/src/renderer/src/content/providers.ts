@@ -1,3 +1,4 @@
+import runs from "./runs"
 import datasets from "./datasets"
 import taskqueues from "./taskqueues"
 import workerpools from "./workerpools"
@@ -12,6 +13,7 @@ import type ContentProvider from "./ContentProvider"
  * These are the resource Kinds for which we have UI componetry.
  */
 const providers = {
+  runs,
   computetargets,
   platformreposecrets,
   applications,

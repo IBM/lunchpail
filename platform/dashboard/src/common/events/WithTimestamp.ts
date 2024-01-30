@@ -3,6 +3,7 @@ type WithTimestamp<Event> = {
   timestamp: number
   metadata: {
     name: string
+    context: string
     namespace: string
     annotations: {
       "codeflare.dev/status": string

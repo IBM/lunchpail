@@ -1,4 +1,4 @@
-import { groupSingular } from "../../group"
+import { singular as application } from "../../name"
 import LinkToNewWizard, { type WizardProps } from "@jaas/renderer/navigate/wizard"
 
 type Props = Pick<WizardProps, "startOrAdd"> & {
@@ -14,7 +14,7 @@ export function LinkToNewApplication(props: Props) {
     <LinkToNewWizard
       startOrAdd={props.startOrAdd ?? "create"}
       kind="applications"
-      linkText={`New ${groupSingular}`}
+      linkText={`New ${application}`}
       qs={qs}
     />
   )

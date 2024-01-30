@@ -4,7 +4,7 @@ import launchElectron from "./launch-electron"
 import navigateToQueueTab from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
 
-import { name } from "../src/renderer/src/content/applications/name"
+import { name } from "../src/renderer/src/content/runs/name"
 
 test("task queues are visible", async () => {
   // Launch Electron app.

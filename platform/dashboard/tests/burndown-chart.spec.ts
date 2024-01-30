@@ -19,15 +19,15 @@ test.skip("burn down charts are visible", async () => {
 
   // If in demo mode, then continue with burn down chart test
   if (demoModeStatus) {
-    // Click Job Definitions tab from the sidebar to activate the Job Definitions gallery
+    // Click Jobs tab from the sidebar to activate the Jobs gallery
     await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
 
-    // Verify that the burn down chart for each job definition is visible
+    // Verify that the burn down chart for each job is visible
     for await (const { application } of expectedApplications) {
       const drawer = await navigateToCard(page, application)
       await navigateToTab(drawer, "Status")
 
-      // get number of uassigned tasks for a given job definition
+      // get number of uassigned tasks for a given job
       const unassignedTasksNum = await (
         await drawer
           .locator(`[data-ouia-component-type="PF5/DescriptionListGroup"][data-ouia-component-id="Unassigned Tasks"]`)

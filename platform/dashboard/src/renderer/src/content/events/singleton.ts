@@ -21,25 +21,29 @@ export default function singletonJsonEventHandler<Kind extends WatchedKind, Even
 
       for (const event of events) {
         const name = event.metadata.name
+        const context = event.metadata.context
         const namespace = event.metadata.namespace
         const status = event.metadata.annotations["codeflare.dev/status"]
 
-        if (status === "Terminating") {
-          if (isDetailableKind(kind)) {
-            closeDetailViewIfShowing(name, kind, returnHome)
-          }
+        setState((A) => {
+          const idx = A.findIndex(
+            (_) => _.metadata.name === name && _.metadata.namespace === namespace && _.metadata.context === context,
+          )
 
-          setState((A) => A.filter((_) => _.metadata.name !== name || _.metadata.namespace !== namespace))
-        } else {
-          setState((A) => {
-            const idx = A.findIndex((_) => _.metadata.name === name && _.metadata.namespace === namespace)
-            if (idx >= 0) {
-              return [...A.slice(0, idx), event, ...A.slice(idx + 1)]
-            } else {
-              return [...A, event]
+          if (status === "Terminating") {
+            if (isDetailableKind(kind)) {
+              closeDetailViewIfShowing(name, context, kind, returnHome)
             }
-          })
-        }
+            if (idx >= 0) {
+              A.splice(idx, 1)
+            }
+            return A
+          } else if (idx >= 0) {
+            return [...A.slice(0, idx), event, ...A.slice(idx + 1)]
+          } else {
+            return [...A, event]
+          }
+        })
       }
     },
     [...watchTheseValues, setState, returnHome, kind],

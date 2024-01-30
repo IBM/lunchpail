@@ -5,7 +5,7 @@ import applications from "./applications"
 import { visibleCard } from "./card"
 import launchElectron from "./launch-electron"
 
-import { name } from "../src/renderer/src/content/applications/name"
+import { name } from "../src/renderer/src/content/runs/name"
 
 test("4 applications visible when in demo mode", async () => {
   // Launch Electron app.

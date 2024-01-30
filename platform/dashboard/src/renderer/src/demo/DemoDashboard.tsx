@@ -1,5 +1,6 @@
 import { Dashboard } from "../pages/Dashboard"
 
+import DemoRunEventSource from "./streams/run"
 import NothingEventSource from "./streams/nothing"
 import DemoQueueEventSource from "./streams/queue"
 import DemoTaskQueueEventSource from "./streams/taskqueue"
@@ -16,12 +17,14 @@ let props: null | (Record<WatchedKind, DemoEventSource> & { workerpools: DemoWor
 
 function init() {
   if (props === null) {
+    const runs = new DemoRunEventSource()
     const queues = new DemoQueueEventSource()
     const taskqueues = new DemoTaskQueueEventSource()
     const workerpools = new DemoWorkerPoolStatusEventSource(taskqueues, queues)
     const applications = new DemoApplicationSpecEventSource()
 
     props = {
+      runs,
       computetargets: new NothingEventSource(),
       taskqueues,
       datasets: new NothingEventSource(),
@@ -67,6 +70,8 @@ export default function DemoDashboard() {
       deleteByName(dprops: import("@jaas/common/api/jaas").DeleteProps) {
         if (/workerpool/.test(dprops.kind)) {
           return props.workerpools.delete(dprops)
+        } else if (/run/.test(dprops.kind)) {
+          return props.runs.delete(dprops)
         } else if (/application/.test(dprops.kind)) {
           return props.applications.delete(dprops)
         } else if (/taskqueue/.test(dprops.kind)) {

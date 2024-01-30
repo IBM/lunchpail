@@ -1,2 +1,2 @@
-export const name = "Jobs"
-export const singular = "Job"
+export const name = "Code"
+export const singular = "Code"

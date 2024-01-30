@@ -1,5 +1,6 @@
 import WatchedKind from "@jaas/common/Kind"
 
+import type RunEvent from "@jaas/common/events/RunEvent"
 import type QueueEvent from "@jaas/common/events/QueueEvent"
 import type DataSetEvent from "@jaas/common/events/DataSetEvent"
 import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
@@ -17,15 +18,17 @@ export type ManagedEvent<Kind extends WatchedKind> = Kind extends "taskqueues"
       ? QueueEvent
       : Kind extends "workerpools"
         ? WorkerPoolStatusEvent
-        : Kind extends "applications"
-          ? ApplicationSpecEvent
-          : Kind extends "platformreposecrets"
-            ? PlatformRepoSecretEvent
-            : Kind extends "workdispatchers"
-              ? WorkDispatcherEvent
-              : Kind extends "computetargets"
-                ? ComputeTargetEvent
-                : never
+        : Kind extends "runs"
+          ? RunEvent
+          : Kind extends "applications"
+            ? ApplicationSpecEvent
+            : Kind extends "platformreposecrets"
+              ? PlatformRepoSecretEvent
+              : Kind extends "workdispatchers"
+                ? WorkDispatcherEvent
+                : Kind extends "computetargets"
+                  ? ComputeTargetEvent
+                  : never
 
 type ManagedEvents = {
   [Kind in WatchedKind]: ManagedEvent<Kind>[]

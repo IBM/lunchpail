@@ -20,6 +20,7 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
       metadata: {
         name,
         namespace,
+        context,
         annotations: {
           "codeflare.dev/status": "Running",
         },

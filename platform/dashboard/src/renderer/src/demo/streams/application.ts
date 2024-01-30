@@ -18,9 +18,10 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
    * seed for the unique names generator. This is to give us a
    * deterministic sequence of Application names.
    */
-  private readonly applications = this.apis.map((api, idx) => ({
+  protected readonly applications = this.apis.map((api, idx) => ({
     name: uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + idx }),
     namespace: ns,
+    context,
     description: lorem.generateSentences(2),
     api,
     inputMd: this.inputMd[idx],
@@ -33,6 +34,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       api,
       name,
       namespace,
+      context,
       image,
       repoPath,
       description,
@@ -41,6 +43,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
       api: string
       name: string
       namespace: string
+      context: string
       image: string
       repoPath: string
       description: string
@@ -92,8 +95,10 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     }
   }
 
-  public override delete(props: { name: string; namespace: string }) {
-    const idx = this.applications.findIndex((_) => _.name === props.name && _.namespace === props.namespace)
+  public override delete(props: { name: string; namespace: string; context: string }) {
+    const idx = this.applications.findIndex(
+      (_) => _.name === props.name && _.namespace === props.namespace && _.context === props.context,
+    )
     if (idx >= 0) {
       const model = this.applications[idx]
       this.applications.splice(idx, 1)

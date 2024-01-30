@@ -5,14 +5,14 @@ import launchElectron from "./launch-electron"
 import { missingCard } from "./card"
 import expectedApplications from "./applications"
 import { navigateToCard } from "./navigate-to-queue-tab"
-import { name } from "../src/renderer/src/content/applications/name"
+import { name } from "../src/renderer/src/content/runs/name"
 
-test.describe.serial("job definition tools running sequentially", () => {
+test.describe.serial("job tools running sequentially", () => {
   let page: Page
 
   const { application: expectedApp } = expectedApplications[0]
 
-  test("Activate 'Job Definitions' tab", async () => {
+  test("Activate 'Jobs' tab", async () => {
     // Launch Electron app.
     const electronApp = await launchElectron()
 
@@ -23,12 +23,12 @@ test.describe.serial("job definition tools running sequentially", () => {
     const demoModeStatus = await page.getByLabel("Demo").isChecked()
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
-    // get 'Job Definitions' tab element from the sidebar and click to activate Job Definitions gallery
+    // get 'Jobs' tab element from the sidebar and click to activate Jobs gallery
     await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
   })
 
   test("Trash button opens 'Confirm Delete' modal", async () => {
-    // navigate to a given job definition card's drawer
+    // navigate to a given job card's drawer
     const drawer = await navigateToCard(page, expectedApp)
 
     // click on trash button
@@ -39,11 +39,11 @@ test.describe.serial("job definition tools running sequentially", () => {
     await expect(modal).toBeVisible()
   })
 
-  test("Confirm job definition deletion", async () => {
+  test("Confirm job deletion", async () => {
     // click on Confirm button
     await page.getByRole("button", { name: "Confirm" }).click()
 
-    // verify that intended job definition was deleted
+    // verify that intended job was deleted
     await missingCard(page, expectedApp)
   })
 })
