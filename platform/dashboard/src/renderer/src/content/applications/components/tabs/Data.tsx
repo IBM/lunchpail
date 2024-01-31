@@ -9,7 +9,7 @@ import { datasets } from "../taskqueueProps"
 import { singular } from "@jaas/resources/applications/name"
 import { name as datasetsName } from "@jaas/resources/datasets/name"
 
-function datasetsGroup(data: ReturnType<typeof datasets>) {
+export function datasetsGroup(data: ReturnType<typeof datasets>) {
   return (
     data.length > 0 &&
     descriptionGroup(
