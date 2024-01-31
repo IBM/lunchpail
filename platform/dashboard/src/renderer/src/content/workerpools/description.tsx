@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom"
 import { hash } from "@jaas/renderer/navigate/kind"
 
-import { group } from "./group"
 import { name, singular } from "./name"
+import { groupSingular as workers } from "./group"
 import { titleSingular as applicationsTitleSingular } from "@jaas/resources/applications/title"
 
 export default (
   <span>
-    Each <strong>{singular}</strong> is a set of running <strong>{group}</strong> specialized to process Tasks using a
-    given{" "}
+    Each <strong>{singular}</strong> is a set of running <strong>{workers}</strong> specialized to process{" "}
+    <strong>Tasks</strong> using given{" "}
     <Link to={hash("applications")}>
       <strong>{applicationsTitleSingular}</strong>
     </Link>

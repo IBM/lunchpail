@@ -6,29 +6,30 @@ import { Component } from "@jaas/resources/sidebar-groups"
 
 import { singular as job } from "./name"
 
+import codeDesc from "@jaas/resources/applications/description"
+import { group as code } from "@jaas/resources/applications/group"
+import { name as applications } from "@jaas/resources/applications/name"
+
 import dataDesc from "@jaas/resources/datasets/description"
 import { name as data } from "@jaas/resources/datasets/name"
 
 import computeDesc from "@jaas/resources/workerpools/description"
 import { group as compute } from "@jaas/resources/workerpools/group"
-import { singular as workerpool } from "@jaas/resources/workerpools/name"
+import { name as workerpools } from "@jaas/resources/workerpools/name"
+import { name as workdispatchers } from "@jaas/resources/workdispatchers/name"
 
 import dispatchDesc from "@jaas/resources/workdispatchers/description"
 import { group as workdispatch } from "@jaas/resources/workdispatchers/group"
 
-/** TODO we need to separate out Applications vs Code? */
-const codeDesc = (
-  <>
-    <strong>Code</strong> is the application logic that is used by <strong>Workers</strong> in a{" "}
-    <strong>{workerpool}</strong> to process <strong>Tasks</strong>.
-  </>
-)
-
 const aspects: PopoverHelpProps[] = [
-  { title: "Code", children: codeDesc },
+  { title: code, children: codeDesc, footer: <Link to={hash("applications")}>Show all {applications}</Link> },
   { title: data, children: dataDesc, footer: <Link to={hash("datasets")}>Show all {data}</Link> },
-  { title: workdispatch, children: dispatchDesc },
-  { title: compute, children: computeDesc },
+  {
+    title: workdispatch,
+    children: dispatchDesc,
+    footer: <Link to={hash("workdispatchers")}>Show all {workdispatchers}</Link>,
+  },
+  { title: compute, children: computeDesc, footer: <Link to={hash("workerpools")}>Show all {workerpools}</Link> },
 ]
 
 export default (

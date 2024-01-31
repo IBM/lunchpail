@@ -75,8 +75,8 @@ test.describe.serial("workers tests running sequentially", () => {
     const modalPage = await page.locator(`.pf-v5-c-wizard__toggle`)
     await expect(modalPage).toContainText("Review")
 
-    // click 'Create Pool'
-    await page.getByRole("button", { name: "Create Pool" }).click()
+    // click 'Create Worker Pool'
+    await page.getByRole("button", { name: "Create Worker Pool" }).click()
 
     // Check that there is a Drawer on the screen, and extract it's name
     const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)

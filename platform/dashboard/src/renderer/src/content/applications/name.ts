@@ -1,2 +1,2 @@
-export const name = "Code"
-export const singular = "Code"
+export const name = "Application Logic"
+export const singular = "Application Logic"

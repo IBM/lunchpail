@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom"
 
+import { singular as application } from "@jaas/resources/applications/name"
+
 import type Step from "../Step"
 import { repoPlusSource } from "../../tabs/Code"
 
 const step: Step = {
-  id: "Code",
+  id: application,
   variant: () => "success",
   content: (props, onClick) => (
     <span>
