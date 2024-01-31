@@ -18,10 +18,10 @@ const marginLeft = { marginLeft: "0.5em" as const }
 function SidebarNavItems(props: Props & { providers: NavigableContentProvider[] }) {
   return (
     <>
-      {props.providers.map(({ kind, name, sidebar }) => {
+      {props.providers.map(({ kind, name, title, sidebar }) => {
         return (
           <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind)}>
-            {name}{" "}
+            {title ?? name}{" "}
             <Badge isRead style={marginLeft}>
               {props[kind]} {typeof sidebar === "object" && sidebar.badgeSuffix}
             </Badge>
@@ -104,7 +104,7 @@ function SidebarNav(props: Props) {
     // then, sort the providers within each group
     return Object.entries(groups).reduce(
       (G, [groupName, providers]) => {
-        G[groupName] = providers.sort(sorter2)
+        G[groupName] = providers.sort(sorter)
         return G
       },
       {} as Record<string, NavigableContentProvider[]>,

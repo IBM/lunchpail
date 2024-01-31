@@ -1,1 +1,1 @@
-export const group = "Task Dispatch"
+export const group = "Dispatch"

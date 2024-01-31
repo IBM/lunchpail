@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { hash } from "@jaas/renderer/navigate/kind"
 import PopoverHelp, { type PopoverHelpProps } from "@jaas/components/PopoverHelp"
 
-import { componentsSidebar } from "@jaas/resources/sidebar-groups"
+import { Component } from "@jaas/resources/sidebar-groups"
 
 import { singular as job } from "./name"
 
@@ -34,7 +34,7 @@ const aspects: PopoverHelpProps[] = [
 export default (
   <>
     A <strong>{job}</strong> is responsible for processing a set of <strong>Tasks</strong>. Each {job} consists of four{" "}
-    <strong>{componentsSidebar.group}</strong>:
+    <strong>{Component}</strong>:
     <>
       {aspects
         .map<import("react").ReactNode>((props) => <PopoverHelp key={props.title} {...props} />)

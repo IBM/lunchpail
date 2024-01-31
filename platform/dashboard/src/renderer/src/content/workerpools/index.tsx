@@ -4,17 +4,18 @@ import gallery from "./gallery"
 import description from "./description"
 
 import { name, singular } from "./name"
+import { group as title } from "./group"
+
+import { componentsSidebar as sidebar } from "../sidebar-groups"
 
 export default {
   kind: "workerpools" as const,
   name,
+  title,
   singular,
   description,
   gallery,
   detail,
   wizard,
-  actions: undefined,
-  /* sidebar: {
-    group: "Compute",
-  }, */
+  sidebar: sidebar(1),
 }

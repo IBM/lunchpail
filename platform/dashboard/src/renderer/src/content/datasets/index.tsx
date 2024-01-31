@@ -19,5 +19,5 @@ export default {
   actions,
   wizard,
   title,
-  sidebar,
+  sidebar: sidebar(3),
 }
