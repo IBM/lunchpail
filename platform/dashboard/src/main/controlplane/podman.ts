@@ -46,7 +46,7 @@ export async function isPodmanMachineReady(): Promise<[boolean, boolean]> {
   if (!machine) {
     return [false, false]
   } else {
-    return [true, machine.State === "Running"]
+    return [true, /^running$/i.test(machine.State)]
   }
 }
 
