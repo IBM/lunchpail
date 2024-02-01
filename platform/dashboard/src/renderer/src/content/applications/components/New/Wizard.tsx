@@ -71,7 +71,7 @@ function repoInput(ctrl: Values) {
   return (
     <Input
       fieldId="repo"
-      label="Source code"
+      label="GitHub repository"
       labelInfo="e.g. https://github.com/myorg/myproject/tree/main/myappsource"
       description="URI to your GitHub repo, which can include the full path to a subdirectory"
       ctrl={ctrl}
