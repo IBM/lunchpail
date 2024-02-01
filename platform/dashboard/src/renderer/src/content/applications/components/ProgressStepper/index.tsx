@@ -7,6 +7,8 @@ import steps from "./steps"
 // the Popover detail/helpers for each Step
 import Popovers from "./popovers"
 
+import "./RunProgressStepper.css"
+
 export default function AplicationProgressStepper(props: import("../Props").default) {
   const popovers = Popovers(props)
 
