@@ -167,3 +167,27 @@ export default function LinkToNewWizard(props: Props) {
     return button
   }
 }
+
+/**
+ * Convenience wrapper around LinkToNewWizard
+ */
+export function LinkToNewResource(
+  props: Pick<WizardProps, "startOrAdd"> & {
+    kind: Kind
+    singular: string
+    namespace?: string
+  },
+) {
+  const qs: string[] = []
+  if (props.namespace) {
+    qs.push(`namespace=${props.namespace}`)
+  }
+  return (
+    <LinkToNewWizard
+      startOrAdd={props.startOrAdd ?? "add"}
+      kind={props.kind}
+      linkText={`New ${props.singular}`}
+      qs={qs}
+    />
+  )
+}

@@ -1,6 +1,6 @@
 import detail from "./detail"
-/*import wizard from "./wizard"
-import actions from "./actions"*/
+/*import wizard from "./wizard"*/
+import actions from "./actions"
 import gallery from "./gallery"
 import description from "./description"
 
@@ -12,8 +12,8 @@ const provider: import("../ContentProvider").default<"runs"> = {
   singular,
   description,
   detail,
-  /*wizard,
-  actions,*/
+  /*wizard,*/
+  actions,
   gallery,
   sidebar: {
     priority: 100,
