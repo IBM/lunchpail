@@ -18,13 +18,15 @@ export default function helmYaml({ repo, values }: Values["values"], application
 
   const valuesObj = safeLoad(values)
 
-  // add the application name to the values.yaml
-  if ("application" in valuesObj) {
-    valuesObj.application = application.metadata.name
-  }
+  if (valuesObj) {
+    // add the application name to the values.yaml
+    if ("application" in valuesObj) {
+      valuesObj.application = application.metadata.name
+    }
 
-  lines.push(`values: >
+    lines.push(`values: >
   ${JSON.stringify(valuesObj)}`)
+  }
 
   return lines.join("\n")
 }
