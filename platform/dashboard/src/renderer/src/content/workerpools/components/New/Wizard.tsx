@@ -5,6 +5,7 @@ import { uniqueNamesGenerator, starWars } from "unique-names-generator"
 
 import NewResourceWizard from "@jaas/components/NewResourceWizard"
 
+import { name as computetargets } from "@jaas/resources/computetargets/name"
 import { singular as workerpool } from "@jaas/resources/workerpools/name"
 import { groupSingular as application } from "@jaas/resources/applications/group"
 
@@ -72,7 +73,7 @@ export default function NewWorkerPoolWizard(props: Props) {
       computetargets: props.computetargets,
       targetOptions:
         props.computetargets.length === 0
-          ? [{ title: "", description: "No compute targets" }]
+          ? [{ title: "", description: `No ${computetargets}` }]
           : (props.computetargets.map((target) => ({
               value: target.metadata.name,
               title: target.metadata.name.replace(/^kind-/, ""),

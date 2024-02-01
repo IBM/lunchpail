@@ -3,12 +3,14 @@ import Tiles from "@jaas/components/Forms/Tiles"
 import type Values from "../Values"
 import type Context from "../Context"
 
+import { singular as computetarget } from "@jaas/resources/computetargets/name"
+
 function targets(ctrl: Values, context: Context) {
   return (
     <Tiles
       ctrl={ctrl}
       fieldId="context"
-      label="Compute Target"
+      label={computetarget}
       description="Where do you want the workers to run?"
       options={context.targetOptions}
     />
