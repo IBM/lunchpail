@@ -1,6 +1,7 @@
 import { useContext, useEffect, lazy, Suspense } from "react"
 
 const Modal = lazy(() => import("@patternfly/react-core").then((_) => ({ default: _.Modal })))
+const MissingWizardError = lazy(() => import("../components/MissingWizardError"))
 
 import { currentKind } from "../navigate/kind"
 import { isShowingWizard } from "../navigate/wizard"
@@ -63,17 +64,23 @@ export function Dashboard(props: Props) {
   /** Content to display in the modal */
   const kindForWizard = isShowingWizard()
   const wizardContentProvider = !!kindForWizard && content[kindForWizard]
+  const missingWizard = wizardContentProvider && !wizardContentProvider.wizard
   const modal = (
     <Suspense fallback={<></>}>
       <Modal
         variant="large"
-        showClose={false}
-        hasNoBodyWrapper
+        showClose={missingWizard /* MissingWizardError needs us to provide a close button */}
+        hasNoBodyWrapper={!missingWizard}
         aria-label="wizard-modal"
         onEscapePress={returnHome}
+        onClose={returnHome}
         isOpen={!!wizardContentProvider}
       >
-        {wizardContentProvider && wizardContentProvider.wizard ? wizardContentProvider.wizard(events) : undefined}
+        {wizardContentProvider && wizardContentProvider.wizard ? (
+          wizardContentProvider.wizard(events)
+        ) : kindForWizard ? (
+          <MissingWizardError kind={kindForWizard} />
+        ) : undefined}
       </Modal>
     </Suspense>
   )
