@@ -1,5 +1,5 @@
-import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
+import { useCallback, useMemo } from "react"
 import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
 import NewResourceWizard from "@jaas/components/NewResourceWizard"
@@ -8,9 +8,11 @@ import { singular as runSingular } from "@jaas/resources/runs/name"
 import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
 
 import type Values from "./Values"
+import type Context from "./Context"
 import type ManagedEvents from "@jaas/resources/ManagedEvent"
 
 import yaml from "./yaml"
+import { contextFor } from "./Context"
 
 import method from "./methods"
 import step2 from "./methods/configure"
@@ -27,7 +29,7 @@ const step3 = {
   items: ["name" as const, "namespace" as const, "description" as const],
 }
 
-type Props = Pick<ManagedEvents, "runs">
+export type Props = Pick<ManagedEvents, "runs" | "applications">
 
 export default function NewWorkDispatcherWizard(props: Props) {
   const [searchParams] = useSearchParams()
@@ -60,7 +62,8 @@ export default function NewWorkDispatcherWizard(props: Props) {
           previousValues?.name ??
           uniqueNamesGenerator({ dictionaries: [colors], seed: 1696170097365 + Date.now() }),
         namespace: namespaceFromSearch ?? previousValues?.namespace ?? "",
-        description: previousValues?.description ?? "",
+        application: previousValues?.application ?? "",
+        description: previousValues?.description ?? `Describe your ${workdispatcher}`,
         method: previousValues?.method ?? "tasksimulator",
         tasks: previousValues?.tasks ?? "1",
         intervalSeconds: previousValues?.intervalSeconds ?? "5",
@@ -83,8 +86,10 @@ export default function NewWorkDispatcherWizard(props: Props) {
   const title = `New ${workdispatcher}${runFromSearch ? ` for ${runFromSearch}` : ""}`
   const steps = [step1, step2, step3]
 
+  const context: Context = useMemo(() => contextFor(props), [props.applications])
+
   return (
-    <NewResourceWizard<Values>
+    <NewResourceWizard<Values, Context>
       kind="workdispatchers"
       title={title}
       singular={workdispatcher}
@@ -92,6 +97,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
       yaml={getYaml}
       steps={steps}
       action={action}
+      context={context}
     >
       This wizard helps you to feed Tasks to a {runSingular}.
     </NewResourceWizard>

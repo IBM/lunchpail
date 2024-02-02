@@ -23,7 +23,14 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
 
     logging.info(f"About to call out to WorkQueue run_id={run_id}")
     try:
-        queue_dataset = re.sub("-", "", name)
+        # if spec.internal.queue is provided, use that specified
+        # queue, otherwise create a new one
+        if 'internal' in spec and 'queue' in spec['internal']:
+            queue_dataset = spec['internal']['queue']['dataset']['name']
+            create_queue = False
+        else:
+            queue_dataset = re.sub("-", "", name)
+            create_queue = True
         dataset_labels = add_dataset(queue_dataset, "mount", dataset_labels_arr)
         
         workqueue_out = subprocess.run([
@@ -35,6 +42,7 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
             run_id,
             spec["inbox"] if "inbox" in spec else "",
             queue_dataset,
+            str(create_queue).lower(), # true or false, downcasing to make compatible with helm booleans
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else ""
         ], capture_output=True)
         logging.info(f"WorkQueue callout done for name={name} with returncode={workqueue_out.returncode}")

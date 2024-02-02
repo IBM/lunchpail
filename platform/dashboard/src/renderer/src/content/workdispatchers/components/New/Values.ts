@@ -5,6 +5,7 @@ type Values = DefaultValues<
   {
     method: Method
     tasks: string
+    application: string
     intervalSeconds: string
     inputFormat: string
     inputSchema: string

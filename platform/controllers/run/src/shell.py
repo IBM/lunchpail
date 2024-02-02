@@ -7,8 +7,9 @@ from kopf import PermanentError
 
 from clone import clone
 from run_id import alloc_run_id
+from datasets import add_dataset, to_string
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, patch):
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels_arr, patch):
     logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
 
     image = application['spec']['image']
@@ -28,6 +29,17 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     if 'env' in spec:
         env.update(spec['env'])
 
+    # are we to be associated with a task queue?
+    if 'internal' in spec and 'queue' in spec['internal']:
+        queue_spec = spec['internal']['queue']['dataset']
+        queue_useas = queue_spec['useas'] if 'useas' in queue_spec else 'mount'
+        queue_dataset = queue_spec['name']
+        dataset_labels = add_dataset(queue_dataset, queue_useas, dataset_labels_arr)
+    elif dataset_labels_arr is not None and len(dataset_labels_arr) > 0:
+        dataset_labels = to_string(dataset_labels_arr)
+    else:
+        dataset_labels = None
+
     try:
         shell_out = subprocess.run([
             "/src/shell.sh",
@@ -45,6 +57,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             str(memory),
             str(gpu),
             base64.b64encode(json.dumps(env).encode('ascii')),
+            base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
         ], capture_output=True)
 
         logging.info(f"Shell callout done for name={name} with returncode={shell_out.returncode}")

@@ -1,4 +1,4 @@
-{{- define "codeflare.dev/TaskSimulatorJob" }}
+{{- define "codeflare.dev/WorkDispatcherJob" }}
 apiVersion: v1
 kind: Pod
 metadata:

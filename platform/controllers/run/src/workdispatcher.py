@@ -3,6 +3,7 @@ import base64
 import logging
 import subprocess
 from kopf import PermanentError, TemporaryError
+from kubernetes.client.rest import ApiException
 
 from clone import clone_from_git
 from run_id import alloc_run_id
@@ -83,4 +84,77 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
     values = spec['values'] if 'values' in spec else ""
     create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, queue_dataset, dataset_labels, patch, path_to_chart, values)
 
+#
+# Handle WorkDispatcher creation for method=application
+#
+def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str, workdispatcher_namespace: str, workdispatcher_uid: str, spec, run, queue_dataset: str, dataset_labels, patch):
+    logging.info(f"Creating WorkDispatcher from application name={workdispatcher_name} namespace={workdispatcher_namespace} queue_dataset={queue_dataset}")
+
+    workdispatcher_app_name = spec['application']['name']
+    workdispatcher_app_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else workdispatcher_namespace
+    workdispatcher_app_size = spec['application']['size'] if 'size' in spec['application'] else "xxs"
+
+    # confirm that the linked application exists
+    try:
+        application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=workdispatcher_app_name, namespace=workdispatcher_app_namespace)
+    except ApiException as e:
+        message = f"Application {workdispatcher_app_name} not found. {str(e)}"
+        set_status(workdispatcher_name, workdispatcher_namespace, 'Failed', patch)
+        add_error_condition(customApi, workdispatcher_name, workdispatcher_namespace, message, patch)
+        raise TemporaryError(message)
     
+    run_name = run['metadata']['name']
+
+    # environment variables; merge application spec with workdispatcher spec
+    env = application['spec']['env'] if application is not None and 'env' in application['spec'] else {}
+    if 'env' in spec:
+        env.update(spec['env'])
+    env.update({
+        "WORKQUEUE": "/queue",
+        "S3_ENDPOINT_VAR": f"{queue_dataset}_endpoint",
+        "AWS_ACCESS_KEY_ID_VAR": f"{queue_dataset}_accessKeyID",
+        "AWS_SECRET_ACCESS_KEY_VAR": f"{queue_dataset}_secretAccessKey",
+        "REMOTE_PATH_VAR": f"{queue_dataset}_bucket",
+    })
+
+    group = "codeflare.dev"
+    version = "v1alpha1"
+    plural = "runs"
+    body = {
+        "apiVersion": "codeflare.dev/v1alpha1",
+        "kind": "Run",
+        "metadata": {
+            "name": workdispatcher_name + "-workdispatcher-run",
+            "labels": {
+                "app.kubernetes.io/name": workdispatcher_name,
+                # TODO, this currently results in the pod status tracker updating run_name "app.kubernetes.io/part-of": run_name,
+                "app.kubernetes.io/managed-by": "codeflare.dev",
+                "app.kubernetes.io/component": "queue"
+            },
+            "ownerReferences": [{
+                "apiVersion": "v1",
+                "kind": "WorkDispatcher",
+                "controller": True,
+                "name": workdispatcher_name,
+                "uid": workdispatcher_uid,
+            }]
+        },
+        "spec": {
+            "size": workdispatcher_app_size,
+            "application": {
+                "name": workdispatcher_app_name,
+                "namespace": workdispatcher_app_namespace
+            },
+            "env": env,
+            "internal": {
+                "queue": {
+                    "dataset": {
+                        "name": queue_dataset,
+                        "useas": "configmap",
+                    }
+                }
+            }
+        }
+    }
+    
+    customApi.create_namespaced_custom_object(group, version, workdispatcher_namespace, plural, body)

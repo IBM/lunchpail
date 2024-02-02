@@ -1,11 +1,13 @@
 import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
-import WorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
 import ApplicationIcon from "@patternfly/react-icons/dist/esm/icons/code-icon"
+import ApplicationWorkQueueIcon from "@patternfly/react-icons/dist/esm/icons/cubes-icon"
 
 import rayImageUrl from "@jaas/images/ray.png"
 import sparkImageUrl from "@jaas/images/spark.svg"
 import pytorchImageUrl from "@jaas/images/pytorch.svg"
+
+export { ApplicationWorkQueueIcon }
 
 export default function applicationIcon(props: ApplicationSpecEvent) {
   const className = ""
@@ -19,7 +21,7 @@ export default function applicationIcon(props: ApplicationSpecEvent) {
     case "spark":
       return <img className={classNameForImg} src={sparkImageUrl} />
     case "workqueue":
-      return <WorkQueueIcon className={className} />
+      return <ApplicationWorkQueueIcon className={className} />
     default:
       return <ApplicationIcon className={className} />
   }

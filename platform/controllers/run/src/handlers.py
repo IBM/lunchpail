@@ -19,7 +19,7 @@ from sequence import create_run_sequence
 from workqueue import create_run_workqueue
 
 from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
-from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm
+from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
 
 from fetch_application import fetch_run_and_application_and_queue_dataset
 
@@ -54,6 +54,8 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
             create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, queue_dataset, dataset_labels, patch)
         elif spec['method'] == "helm":
             create_workdispatcher_helm(v1Api, customApi, name, namespace, uid, spec, queue_dataset, dataset_labels, patch)
+        elif spec['method'] == "application":
+            create_workdispatcher_application(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch)
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
         logging.info(f"Passing through TemporaryError for WorkDispatcher creation name={name} namespace={namespace}")
@@ -159,7 +161,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         elif api == "spark":
             head_pod_name = create_run_spark(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "shell":
-            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, patch)
         elif api == "kubeflow":
             head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "sequence":

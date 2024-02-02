@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 
 import Tiles, { type TileOptions } from "@jaas/components/Forms/Tiles"
 
-import { groupSingular as applicationsSingular } from "@jaas/resources/applications/group"
+import { singular as application } from "@jaas/resources/applications/name"
 import { titleSingular as applicationsDefinitionSingular } from "@jaas/resources/applications/title"
 
 import Values from "../Values"
@@ -11,6 +11,7 @@ import HelmIcon from "@patternfly/react-icons/dist/esm/icons/hard-hat-icon" // F
 import WandIcon from "@patternfly/react-icons/dist/esm/icons/magic-icon"
 import SweepIcon from "@patternfly/react-icons/dist/esm/icons/broom-icon"
 import BucketIcon from "@patternfly/react-icons/dist/esm/icons/folder-icon" // FIXME
+import { ApplicationWorkQueueIcon as ApplicationIcon } from "@jaas/resources/applications/components/Icon"
 
 /** Available methods for injecting Tasks */
 const methods: TileOptions = [
@@ -50,6 +51,12 @@ const methods: TileOptions = [
     title: "Helm Chart",
     description: "Launch a Kubernetes workload that will inject Tasks.",
   },
+  {
+    value: "application",
+    icon: <ApplicationIcon />,
+    title: "Application Logic",
+    description: `Run a workload as specified by a given ${application} to inject Tasks.`,
+  },
 ]
 
 /** Method of injecting Tasks? */
@@ -58,7 +65,7 @@ export default function method(ctrl: Values) {
     <Tiles
       fieldId="method"
       label="Method of Task Injection"
-      description={`How do you wish to provide Tasks to your ${applicationsSingular}?`}
+      description={`How do you wish to provide Tasks to your ${application}?`}
       ctrl={ctrl}
       options={methods}
     />

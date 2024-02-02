@@ -23,28 +23,44 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [run,method,schema,rate] # tasksimulator
-                - required: [run,method,sweep] # parametersweep
-                - required: [run,method,repo] # helm
+                - required: [run,method,schema,rate] # method=tasksimulator
+                - required: [run,method,sweep] # method=parametersweep
+                - required: [run,method,repo] # method=helm
+                - required: [run,method,application] # method=application
               properties:
                 # common fields: [method,run]
                 method:
                   type: string
-                  enum: [tasksimulator,parametersweep,helm]
+                  enum: [tasksimulator,parametersweep,helm,application]
                 run:
                   type: string
 
-                # helm fields: [repo]
+                # method=application fields: [application]
+                application:
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    size:
+                      type: string
+                      enum: [xxs,xs,sm,md,lg,xl,xxl]
+
+                # method=helm fields: [repo]
                 repo:
                   type: string
                 values:
                   type: string
+                  description: |
+                    Values to pass to the Helm chart (in JSON format)
                 env:
                   type: object
                   additionalProperties:
                     type: string
 
-                # parameter sweep fields: [sweep]
+                # method=parametersweep fields: [sweep]
                 sweep:
                   type: object
                   required: [min,max,step]
@@ -56,7 +72,7 @@ spec:
                     step:
                       type: number
 
-                # tasksimulator fields: [schema,rate]
+                # method=tasksimulator fields: [schema,rate]
                 schema:
                   type: object
                   required: [format, columns, columnTypes]

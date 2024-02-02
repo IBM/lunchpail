@@ -56,7 +56,7 @@ export type StepAlertProps<Values extends DefaultValues> = Pick<AlertProps, "var
 }
 
 /** One step in the Wizard */
-type StepProps<Values extends DefaultValues, Context = undefined> = {
+type StepProps<Values extends DefaultValues, Context> = {
   /** This will be displayed as the step's name in the left-hand "guide" part of the Wizard UI */
   name: string
 
@@ -74,17 +74,19 @@ type StepProps<Values extends DefaultValues, Context = undefined> = {
   gridSpans?: number | readonly number[] | ((values: Values["values"]) => number | readonly number[])
 
   /** Validator for this step, if valid the user will be allowed to proceed to the Next step */
-  isValid?: (ctrl: Values) => boolean
+  isValid?: (ctrl: Values, context: Context) => boolean
 
   /** Any Alerts to be rendered at the top of the step */
-  alerts?: readonly StepAlertProps<Values>[] | ((values: Values["values"]) => readonly StepAlertProps<Values>[])
+  alerts?:
+    | readonly StepAlertProps<Values>[]
+    | ((values: Values["values"], context: Context) => readonly StepAlertProps<Values>[])
 }
 
-type Props<Values extends DefaultValues, Context = undefined> = PropsWithChildren<{
+type Props<Values extends DefaultValues, Context> = PropsWithChildren<{
   kind: DetailableKind
   title: string
   singular: string
-  action?: "edit" | "clone" | "register" | null
+  action?: "edit" | "clone" | "register" | "start" | null
   defaults: (previousValues: undefined | Values["values"]) => Values["values"]
   yaml: (values: Values["values"], context: Context) => string | Promise<string>
   steps: readonly StepProps<Values, Context>[]
@@ -105,9 +107,13 @@ type Props<Values extends DefaultValues, Context = undefined> = PropsWithChildre
 const nextIsEnabled = { isNextDisabled: false }
 const nextIsDisabled = { isNextDisabled: true }
 
-function stepAlerts<Values extends DefaultValues>({ alerts }: Pick<StepProps<Values>, "alerts">, ctrl: Values) {
+function stepAlerts<Values extends DefaultValues, Context>(
+  { alerts }: Pick<StepProps<Values, Context>, "alerts">,
+  ctrl: Values,
+  context: Context,
+) {
   if (alerts) {
-    const alertProps = typeof alerts === "function" ? alerts(ctrl.values) : alerts
+    const alertProps = typeof alerts === "function" ? alerts(ctrl.values, context) : alerts
     return (
       <AlertGroup>
         {alertProps.map((alert, idx, A) => (
@@ -238,9 +244,11 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
                 ? "Apply Changes"
                 : props.action === "clone"
                   ? `Clone ${props.singular}`
-                  : props.action === "register"
-                    ? `Register ${props.singular}`
-                    : `Create ${props.singular}`,
+                  : props.action === "start"
+                    ? `Start ${props.singular}`
+                    : props.action === "register"
+                      ? `Register ${props.singular}`
+                      : `Create ${props.singular}`,
             onNext: () => doCreate(ctrl.values),
           }}
         >
@@ -308,9 +316,13 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
           key={step.name}
           id={`wizard-step-${step.name}`}
           name={step.name}
-          footer={step.isValid && !step.isValid(ctrl) ? nextIsDisabled : nextIsEnabled}
+          footer={
+            step.isValid && !step.isValid(ctrl, props.context || (undefined as Context))
+              ? nextIsDisabled
+              : nextIsEnabled
+          }
         >
-          {stepAlerts(step, ctrl)}
+          {stepAlerts<Values, Context>(step, ctrl, props.context || (undefined as Context))}
           <Form>
             <FormSection>
               <Grid hasGutter md={6}>

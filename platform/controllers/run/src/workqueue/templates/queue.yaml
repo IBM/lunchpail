@@ -1,0 +1,49 @@
+#
+# If we were asked to create a new task queue...
+#
+{{- if .Values.taskqueue.create }}
+apiVersion: com.ie.ibm.hpsys/v1alpha1
+kind: Dataset
+metadata:
+  name: {{ .Values.taskqueue.dataset }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    codeflare.dev/created-by: user
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: taskqueue
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha1
+      controller: true
+      kind: Run
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
+spec:
+  local:
+    type: "COS"
+    bucket: {{ .Values.taskqueue.bucket }}
+    endpoint: {{ .Values.taskqueue.endpoint | default "http://codeflare-s3.codeflare-system.svc.cluster.local:9000" }}
+    secret-name: {{ print .Values.taskqueue.dataset "jaassecret" }}
+    secret-namespace: {{ .Values.namespace }}
+    provision: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ print .Values.taskqueue.dataset "jaassecret" }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: taskqueue
+  ownerReferences:
+    - apiVersion: codeflare.dev/v1alpha1
+      controller: true
+      kind: Run
+      name: {{ .Values.name }}
+      uid: {{ .Values.uid }}
+type: Opaque
+data:
+  accessKeyID: {{ .Values.taskqueue.accessKeyId | default .Values.global.s3AccessKey | b64enc }}
+  secretAccessKey: {{ .Values.taskqueue.secretAccessKey | default .Values.global.s3SecretKey | b64enc }}
+{{- end }}

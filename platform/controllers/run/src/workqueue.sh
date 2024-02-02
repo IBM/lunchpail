@@ -12,7 +12,8 @@ part_of="$4"
 run_id="$5"
 inbox="$6"
 queue_dataset="$7"
-dataset_labels="$8"
+create_queue="$8" # true or false
+dataset_labels="$9"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -25,6 +26,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workqueue/ -n ${namespace} \
      --set namespace=$namespace \
      --set partOf=$part_of \
      --set inbox="$inbox" \
+     --set taskqueue.create=$create_queue \
      --set taskqueue.dataset=$queue_dataset \
      --set taskqueue.bucket=$name \
      --set datasets=$dataset_labels \

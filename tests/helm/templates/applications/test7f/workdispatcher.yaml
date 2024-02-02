@@ -1,0 +1,21 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7f") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkDispatcher
+metadata:
+  name: test7f
+  namespace: {{ .Values.namespace }}
+spec:
+  run: test7f
+  method: application
+  application:
+    name: test7f-workdispatcher
+  env:
+    # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2; this overrides an env var from ./workdispatcher-app.yaml
+    taskprefix: tasky
+
+    # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
+    METHOD: parametersweep
+    SWEEP_MIN: '1'
+    SWEEP_MAX: '10'
+    SWEEP_STEP: '1'
+{{- end }}

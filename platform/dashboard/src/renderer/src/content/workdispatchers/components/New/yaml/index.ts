@@ -7,6 +7,7 @@ import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
 
 import baseYaml from "./base"
 import helmYaml from "./helm"
+import applicationYaml from "./application"
 import tasksimulatorYaml from "./tasksimulator"
 import parametersweepYaml from "./parametersweep"
 
@@ -20,6 +21,8 @@ function specForMethod(values: Values["values"], run: RunEvent) {
       return ""
     case "helm":
       return helmYaml(values, run)
+    case "application":
+      return applicationYaml(values)
   }
 }
 

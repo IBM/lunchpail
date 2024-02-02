@@ -1,0 +1,13 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7f") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkerPool
+metadata:
+  name: test7f-pool1
+  namespace: {{ .Values.namespace }}
+spec:
+  run:
+    name: test7f
+  workers:
+    count: 1
+    size: xxs
+{{- end }}

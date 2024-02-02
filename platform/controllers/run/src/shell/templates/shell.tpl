@@ -14,7 +14,7 @@ metadata:
 spec:
   completions: {{ .Values.workers.count }}
   completionMode: Indexed
-  ttlSecondsAfterFinished: 10 # give some time for tests
+  ttlSecondsAfterFinished: 86400
   template:
     metadata:
       labels:
@@ -24,6 +24,9 @@ spec:
         app.kubernetes.io/name: {{ .Values.name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: codeflare.dev
+        {{ if .Values.datasets }}
+{{ .Values.datasets | b64dec | indent 8 }}
+        {{ end }}
     spec:
       restartPolicy: OnFailure
       volumes:
