@@ -9,7 +9,6 @@ metadata:
   name: test7d
   namespace: {{ .Values.namespace }}
 spec:
-  application: test7d
   dataset: test7ddata
   method: helm
   repo: >-

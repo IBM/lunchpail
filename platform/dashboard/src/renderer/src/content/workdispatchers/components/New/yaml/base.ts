@@ -21,7 +21,6 @@ metadata:
     app.kubernetes.io/name: ${application.metadata.name}
 spec:
   method: ${method}
-  application: ${application.metadata.name}
   dataset: ${taskqueue}
 `
 }
