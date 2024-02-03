@@ -3,7 +3,7 @@
  */
 export default interface ControlPlaneApi {
   /** @return status of the control plane */
-  status(cluster: string): Promise<import("../status/JobManagerStatus").default>
+  status(cluster: string): Promise<import("../status/ControlPlaneStatus").default>
 
   /** Bring up the control plane */
   init(cluster: string): void | Promise<void>

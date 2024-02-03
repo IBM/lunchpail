@@ -1,19 +1,19 @@
 import { doesKindClusterExist } from "./kind"
-import { isPodmanCliReady, isPodmanMachineReady } from "./podman"
+import { containerCliUsed, containerRuntimeUsed } from "./containers"
 
 /**
  * Check to see if we have a control plane cluster and facilities running
  */
 export default async function getControlPlaneStatus(
   cluster: string,
-): Promise<import("@jaas/common/status/JobManagerStatus").default> {
-  const [podmanCli, podmanMachineExists, podmanMachineOnline, kubernetesCluster] = await Promise.all([
-    isPodmanCliReady(),
-    ...(await isPodmanMachineReady()),
+): Promise<import("@jaas/common/status/ControlPlaneStatus").default> {
+  const [containerCLI, containerRuntime, containerRuntimeOnline, kubernetesClusterExists] = await Promise.all([
+    containerCliUsed(),
+    ...(await containerRuntimeUsed()),
     doesKindClusterExist(cluster),
   ])
 
-  return { podmanCli, podmanMachineExists, podmanMachineOnline, kubernetesCluster }
+  return { containerCLI, containerRuntime, containerRuntimeOnline, kubernetesClusterExists }
 }
 
 export type Status = ReturnType<typeof getControlPlaneStatus>

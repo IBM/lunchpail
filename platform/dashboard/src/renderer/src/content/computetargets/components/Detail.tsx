@@ -8,7 +8,7 @@ import { summaryGroups } from "./Card"
 import { status } from "./HealthBadge"
 
 import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
-import { descriptions } from "@jaas/common/status/JobManagerStatus"
+import { descriptions } from "@jaas/common/status/ControlPlaneStatus"
 
 import { singular as computetarget } from "@jaas/renderer/content/computetargets/name"
 import { name as computepools, singular as computepool } from "@jaas/renderer/content/workerpools/name"

@@ -89,9 +89,10 @@ export default function DemoDashboard() {
         async status() {
           return {
             location: "demo",
-            podmanCli: true,
-            podmanMachineExists: true,
-            podmanMachineOnline: true,
+            containerCLI: "podman" as const,
+            containerRuntime: "podman" as const,
+            containerRuntimeOnline: true,
+            kubernetesClusterExists: true,
             kubernetesCluster: true,
             jaasRuntime: true,
             examples: false,

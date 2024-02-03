@@ -7,12 +7,12 @@ const resources = {
   memory: 8192,
 }
 
-export async function isPodmanCliReady(): Promise<boolean> {
+export async function isPodmanInstalled(): Promise<boolean> {
   return !!(await which("podman", { nothrow: true }))
 }
 
 async function installPodmanCliIfNeeded() {
-  if (!(await isPodmanCliReady())) {
+  if (!(await isPodmanInstalled())) {
     if (process.platform === "darwin") {
       console.log("Installing podman cli")
       const execPromise = promisify(exec)
@@ -41,12 +41,12 @@ async function getPodmanMachine(): Promise<null | {
 }
 
 /** @return [machineExists, machineOnline] */
-export async function isPodmanMachineReady(): Promise<[boolean, boolean]> {
+export async function isPodmanMachineReady(): Promise<["docker-engine" | "podman" | null, boolean]> {
   const machine = await getPodmanMachine()
   if (!machine) {
-    return [false, false]
+    return [null, false]
   } else {
-    return [true, /^running$/i.test(machine.State)]
+    return ["podman", /^running$/i.test(machine.State)]
   }
 }
 
@@ -72,7 +72,7 @@ function initMachine() {
   })
 }
 
-export default async function checkPodman() {
+export default async function makePodmanRuntimeReady() {
   await installPodmanCliIfNeeded()
   const execPromise = promisify(exec)
 

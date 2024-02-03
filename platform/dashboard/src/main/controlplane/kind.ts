@@ -3,7 +3,7 @@ import { promisify } from "node:util"
 import { exec } from "node:child_process"
 
 import type Action from "./action"
-import checkPodman from "./podman"
+import { makeContainerRuntimeReady } from "./containers"
 
 /** The cluster name we pass internally to `kind` CLI operations */
 const clusterName = "jaas" // don't export this
@@ -65,8 +65,8 @@ export function deleteKindCluster(clusterName: string) {
 export default async function createKindClusterIfNeeded(clusterName: string, action: Action, dryRun = false) {
   if (action !== "delete") {
     if (!dryRun) {
-      await checkPodman()
-      await installKindCliIfNeeded()
+      // For now, makeContainerRuntimeReady() succeeds if either podman or docker engine is found
+      await Promise.all([makeContainerRuntimeReady(), installKindCliIfNeeded()])
     }
     await createKindCluster(clusterName, dryRun, true)
   }

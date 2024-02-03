@@ -1,5 +1,5 @@
 import type KubernetesResource from "./KubernetesResource"
-import type ControlPlaneStatus from "../status/JobManagerStatus"
+import type ControlPlaneStatus from "../status/ControlPlaneStatus"
 
 export type ComputeTargetType = "Kind" | "Kubernetes" | "OpenShift"
 
