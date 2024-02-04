@@ -157,6 +157,10 @@ export default function NewResourceWizard<Values extends DefaultValues = Default
 
   const doCreate = useCallback(async (values: Values["values"], dryRun = false) => {
     try {
+      if (!values.context) {
+        console.error("Internal error: missing context value from form", values, props)
+      }
+
       const response = await window.jaas.create(
         values,
         await props.yaml(values, props.context || (undefined as Context)),

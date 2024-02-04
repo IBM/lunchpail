@@ -17,6 +17,9 @@ type Values = DefaultValues<
     name: string
     namespace: string
     description: string
+
+    /** Name of ComputeTarget */
+    context: string
   }
 >
 

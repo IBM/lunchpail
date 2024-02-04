@@ -61,7 +61,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
 
   /** Initial value for form */
   const defaults = useCallback(
-    (previousValues?: Values["values"]) => {
+    (previousValues?: Values["values"]): Values["values"] => {
       return {
         name:
           nameFromSearch ??
@@ -79,6 +79,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
         step: previousValues?.step ?? "1",
         repo: previousValues?.repo ?? "",
         values: previousValues?.values ?? "",
+        context: application.metadata.context,
       }
     },
     [nameFromSearch],
