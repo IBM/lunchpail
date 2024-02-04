@@ -17,11 +17,26 @@ import "./Code.css"
 export type SupportedLanguage = "python" | "shell" | "json" | "yaml" | "verilog" | "tcl" | "makefile"
 
 export type Props = {
+  /** Content to display */
   children: string | Promise<string>
+
+  /** How to interpret the syntax, for e.g. coloration */
   language: SupportedLanguage
-  onChange?: (val: string) => void
-  readOnly?: boolean
+
+  /** Should a left-side gutter with line numbers by displayed? [default=true] */
   showLineNumbers?: boolean
+
+  /** Minimum height [default="250px"] */
+  minHeight?: string
+
+  /** Maximum height [default=no scroll] */
+  maxHeight?: string
+
+  /** Is the user allowed to change the content? [default=false] */
+  readOnly?: boolean
+
+  /** Callback when user changes content (ignored for `readOnly=false`) */
+  onChange?: (val: string) => void
 }
 
 export default function Code(props: Props) {
@@ -67,7 +82,8 @@ export default function Code(props: Props) {
       onChange={props.onChange}
       extensions={extensions}
       theme={patternflyTheme}
-      minHeight="250px"
+      minHeight={props.minHeight ?? "250px"}
+      maxHeight={props.maxHeight}
     />
   )
 }

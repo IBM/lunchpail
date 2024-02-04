@@ -1,3 +1,5 @@
+import Code from "@jaas/components/Code"
+
 import type Props from "../Props"
 import { statusActions, summaryGroups, titleCaseSplit } from "../Summary"
 import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
@@ -24,7 +26,18 @@ export function reasonAndMessageGroups({ metadata }: import("@jaas/common/events
       groups.push(descriptionGroup("Reason", titleCaseSplit(reason)))
     }
     if (message) {
-      groups.push(descriptionGroup("Message", titleCaseSplit(message)))
+      groups.push(
+        descriptionGroup(
+          "Message",
+          !/\n/.test(message) ? (
+            titleCaseSplit(message)
+          ) : (
+            <Code readOnly language="shell" maxHeight="400px" showLineNumbers={false}>
+              {message}
+            </Code>
+          ),
+        ),
+      )
     }
   }
 
