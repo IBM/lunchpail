@@ -20,7 +20,7 @@ sweepMax="${11}"
 sweepStep="${12}"
 dataset_name="${13}"
 datasets="${14}"
-path_to_chart="${15-$SCRIPTDIR/workdispatcher}"
+path_to_chart="${15:-$SCRIPTDIR/workdispatcher}" # :- so that we use the default if $15 is an empty string
 values="${16}"
 
 # Helm's dry-run output will go to this temporary file
