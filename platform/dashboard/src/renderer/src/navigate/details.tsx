@@ -72,10 +72,12 @@ export function linkToAllDetails(
   onClick?: OnClick,
 ) {
   return resources.map((rsrc, idx) =>
-    linkToDetails(
-      typeof rsrc === "string"
-        ? { id: rsrc, kind, context: "", linkText: linkTexts[idx], onClick } // FIXME
-        : { id: rsrc.metadata.name, kind, context: rsrc.metadata.context, linkText: linkTexts[idx], onClick },
-    ),
+    !rsrc
+      ? `Misconfiguration: linked ${kind} does not exist`
+      : linkToDetails(
+          typeof rsrc === "string"
+            ? { id: rsrc, kind, context: "", linkText: linkTexts[idx], onClick } // FIXME
+            : { id: rsrc.metadata.name, kind, context: rsrc.metadata.context, linkText: linkTexts[idx], onClick },
+        ),
   )
 }
