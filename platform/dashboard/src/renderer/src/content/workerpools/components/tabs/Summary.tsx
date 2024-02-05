@@ -32,7 +32,7 @@ export function reasonAndMessageGroups({ metadata }: import("@jaas/common/events
           !/\n/.test(message) ? (
             titleCaseSplit(message)
           ) : (
-            <Code readOnly language="shell" maxHeight="400px" showLineNumbers={false}>
+            <Code readOnly language="shell" maxHeight="400px">
               {message}
             </Code>
           ),

@@ -5,6 +5,7 @@ import DrawerContent from "@jaas/components/Drawer/Content"
 
 import { datasets } from "@jaas/resources/applications/components/taskqueueProps"
 import { datasetsGroup } from "@jaas/resources/applications/components/tabs/Data"
+import { reasonAndMessageGroups } from "@jaas/resources/workerpools/components/tabs/Summary"
 
 import workdispatchersTab from "@jaas/resources/applications/components/tabs/WorkDispatchers"
 import computeTab from "@jaas/resources/applications/components/tabs/Compute"
@@ -55,6 +56,7 @@ export default function ApplicationDetail(props: Props) {
           datasetsGroup(datasets(props)),
           dispatchGroup(props),
           computeGroup(props),
+          ...reasonAndMessageGroups(props.run),
         ],
       }),
     [props],

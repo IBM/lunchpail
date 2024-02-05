@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
-import { tags as t } from "@lezer/highlight"
 import CodeMirror from "@uiw/react-codemirror"
+import { tags as t } from "@lezer/highlight"
+import { EditorView } from "codemirror"
 import { createTheme } from "@uiw/codemirror-themes"
+import { useEffect, useMemo, useState } from "react"
 
 // support for languages
 import { json } from "@codemirror/lang-json"
@@ -39,6 +40,24 @@ export type Props = {
   onChange?: (val: string) => void
 }
 
+/** Which CodeMirror extensions should we use? */
+function determineExtensionsToUse(props: Props) {
+  const languageExtensions =
+    props.language === "python"
+      ? [python()]
+      : props.language === "shell" || props.language === "makefile"
+        ? [new LanguageSupport(StreamLanguage.define(shellMode.shell))]
+        : props.language === "tcl"
+          ? [new LanguageSupport(StreamLanguage.define(tclMode.tcl))]
+          : props.language === "yaml"
+            ? [new LanguageSupport(StreamLanguage.define(yamlMode.yaml))]
+            : props.language === "verilog"
+              ? [new LanguageSupport(StreamLanguage.define(verilogMode.verilog))]
+              : [json()]
+
+  return [...languageExtensions, ...(props.showLineNumbers !== false ? [EditorView.lineWrapping] : [])]
+}
+
 export default function Code(props: Props) {
   const [data, setData] = useState(typeof props.children === "string" ? props.children : "")
 
@@ -60,18 +79,7 @@ export default function Code(props: Props) {
   }, [data])
 
   // which language extension do we want to use?
-  const extensions =
-    props.language === "python"
-      ? [python()]
-      : props.language === "shell" || props.language === "makefile"
-        ? [new LanguageSupport(StreamLanguage.define(shellMode.shell))]
-        : props.language === "tcl"
-          ? [new LanguageSupport(StreamLanguage.define(tclMode.tcl))]
-          : props.language === "yaml"
-            ? [new LanguageSupport(StreamLanguage.define(yamlMode.yaml))]
-            : props.language === "verilog"
-              ? [new LanguageSupport(StreamLanguage.define(verilogMode.verilog))]
-              : [json()]
+  const extensions = useMemo(() => determineExtensionsToUse(props), [props.language])
 
   return (
     <CodeMirror
