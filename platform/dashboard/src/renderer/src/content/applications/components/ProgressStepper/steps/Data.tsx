@@ -1,21 +1,21 @@
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
-
 import { LinkToNewDataSet } from "@jaas/resources/datasets/components/New/Button"
-import { groupSingular as singular } from "@jaas/resources/applications/group"
-import { singular as datasetSingular } from "@jaas/resources/datasets/name"
+
+import { singular as application } from "@jaas/resources/applications/name"
+import { name as datasets, singular as dataset } from "@jaas/resources/datasets/name"
 
 import type Step from "../Step"
-import { datasets } from "@jaas/resources/applications/components/taskqueueProps"
+import { datasets as associatedDatasets } from "@jaas/resources/applications/components/taskqueueProps"
 
 const step: Step = {
   id: "Data",
-  variant: (props) => (datasets(props).length > 0 ? "success" : "default"),
+  variant: (props) => (associatedDatasets(props).length > 0 ? "success" : "default"),
   content: (props, onClick) => {
-    const data = datasets(props)
+    const data = associatedDatasets(props)
     if (data.length === 0) {
       const body = (
         <span>
-          If your {singular} needs access to a {datasetSingular}, link it in.{" "}
+          If your {application} needs access to a {dataset}, link it in.{" "}
         </span>
       )
 
@@ -25,8 +25,8 @@ const step: Step = {
     } else {
       return (
         <span>
-          Your {singular} has access to {data.length === 1 ? "this" : "these"} {datasetSingular}:
-          <div>{linkToAllDetails("datasets", data, undefined, onClick)}</div>
+          Your {application} has access to <strong>{data.length}</strong> {data.length === 1 ? dataset : datasets}:{" "}
+          {linkToAllDetails("datasets", data, undefined, onClick)}
         </span>
       )
     }
