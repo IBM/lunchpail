@@ -60,6 +60,12 @@ def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
     logging.info(f"Handling WorkerPool delete name={name} namespace={namespace}")
     set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
 
+# A Run has been deleted.
+@kopf.on.delete('runs.codeflare.dev')
+def delete_run_kopf(name: str, namespace: str, patch, **kwargs):
+    logging.info(f"Handling Run delete name={name} namespace={namespace}")
+    set_status_immediately(customApi, name, namespace, "Terminating", "runs")
+
 # A WorkerPool has been created.
 @kopf.on.create('workerpools.codeflare.dev')
 def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, labels, spec, patch, **kwargs):
