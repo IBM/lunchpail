@@ -9,26 +9,27 @@ import context from "../context"
 import { colors } from "./taskqueue"
 import { apiVersion, ns } from "./misc"
 
+const apis = ["spark", "ray", "torch", "workqueue"]
+
+const inputMd = colors
+
+/**
+ * Model of current applications. Note the use of a fixed starting
+ * seed for the unique names generator. This is to give us a
+ * deterministic sequence of Application names.
+ */
+export const applications = apis.map((api, idx) => ({
+  name: uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + idx }),
+  namespace: ns,
+  context,
+  description: lorem.generateSentences(2),
+  api,
+  inputMd: inputMd[idx],
+  repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
+  image: lorem.generateWords(2).replace(/\s/g, "-"),
+}))
+
 export default class DemoApplicationSpecEventSource extends Base implements EventSourceLike {
-  private readonly apis = ["spark", "ray", "torch", "workqueue"]
-  private readonly inputMd = colors
-
-  /**
-   * Model of current applications. Note the use of a fixed starting
-   * seed for the unique names generator. This is to give us a
-   * deterministic sequence of Application names.
-   */
-  protected readonly applications = this.apis.map((api, idx) => ({
-    name: uniqueNamesGenerator({ dictionaries: [animals], seed: 1696170097365 + idx }),
-    namespace: ns,
-    context,
-    description: lorem.generateSentences(2),
-    api,
-    inputMd: this.inputMd[idx],
-    repoPath: lorem.generateWords(2).replace(/\s/g, "/"),
-    image: lorem.generateWords(2).replace(/\s/g, "-"),
-  }))
-
   private randomApplicationSpecEvent(
     {
       api,
@@ -75,14 +76,14 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
     }
   }
 
-  private sendEventFor = (application: (typeof this.applications)[number], status?: string) => {
+  private sendEventFor = (application: (typeof applications)[number], status?: string) => {
     const model = this.randomApplicationSpecEvent(application, status)
     this.handlers.forEach((handler) => handler(new MessageEvent("application", { data: JSON.stringify([model]) })))
   }
 
   protected override initInterval(intervalMillis: number) {
     if (!this.interval) {
-      const { applications, sendEventFor } = this
+      const { sendEventFor } = this
 
       this.interval = setInterval(
         (function interval() {
@@ -96,12 +97,12 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
   }
 
   public override delete(props: { name: string; namespace: string; context: string }) {
-    const idx = this.applications.findIndex(
+    const idx = applications.findIndex(
       (_) => _.name === props.name && _.namespace === props.namespace && _.context === props.context,
     )
     if (idx >= 0) {
-      const model = this.applications[idx]
-      this.applications.splice(idx, 1)
+      const model = applications[idx]
+      applications.splice(idx, 1)
       this.sendEventFor(model, "Terminating")
       return true
     } else {

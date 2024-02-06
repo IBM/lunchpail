@@ -146,7 +146,7 @@ function waitForStatus {
         while true
         do
             $KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
-            ($KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep $name || exit 0)
+            ($KUBECTL -n $ns get run.codeflare.dev $name --show-kind --no-headers | grep $name || exit 0)
             sleep 4
         done
     done
@@ -171,7 +171,7 @@ function undeploy {
 
 function watch {
     if [[ -n "$CI" ]]; then
-        $KUBECTL get appwrapper -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
+        $KUBECTL get appwrapper --show-kind -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
         $KUBECTL get pod --show-kind -n codeflare-test --watch &
     fi
     $KUBECTL get pod --show-kind -n codeflare-system --watch &

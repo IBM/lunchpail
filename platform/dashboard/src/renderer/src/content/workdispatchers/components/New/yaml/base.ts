@@ -1,14 +1,8 @@
 import type Method from "../Method"
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type RunEvent from "@jaas/common/events/RunEvent"
 
 /** Yaml common to all work dispatch methods */
-export default function baseYaml(
-  name: string,
-  namespace: string,
-  application: ApplicationSpecEvent,
-  taskqueue: string,
-  method: Method,
-) {
+export default function baseYaml(name: string, namespace: string, run: RunEvent, method: Method) {
   return `apiVersion: codeflare.dev/v1alpha1
 kind: WorkDispatcher
 metadata:
@@ -18,10 +12,9 @@ metadata:
     app.kubernetes.io/part-of: codeflare.dev
     app.kubernetes.io/component: workdispatcher
     app.kubernetes.io/managed-by: jaas
-    app.kubernetes.io/name: ${application.metadata.name}
+    app.kubernetes.io/name: ${run.metadata.name}
 spec:
   method: ${method}
-  application: ${application.metadata.name}
-  dataset: ${taskqueue}
+  run: ${run.metadata.name}
 `
 }

@@ -3,7 +3,6 @@ import { BrowserTabs } from "@jaas/components/S3Browser"
 import DrawerContent from "@jaas/components/Drawer/Content"
 import DeleteResourceButton from "@jaas/components/DeleteResourceButton"
 import { lastEvent } from "./common"
-import NewPoolButton from "./NewPoolButton"
 import summaryTabContent from "./tabs/Summary"
 
 import type Props from "./Props"
@@ -31,11 +30,6 @@ function rightActions(props: Props) {
   return [...deleteAction(last)]
 }
 
-/** Left-aligned actions */
-function leftActions(props: Props) {
-  return [<NewPoolButton key="new-pool" {...props} />]
-}
-
 /** Tabs specific to this kind of data */
 function otherTabs(props: Props) {
   const last = lastEvent(props)
@@ -49,7 +43,6 @@ export default function TaskQueueDetail(props: Props) {
       summary={summaryTabContent(props)}
       raw={lastEvent(props)}
       otherTabs={otherTabs(props)}
-      actions={leftActions(props)}
       rightActions={rightActions(props)}
     />
   )

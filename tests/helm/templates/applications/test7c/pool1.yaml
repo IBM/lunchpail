@@ -5,8 +5,7 @@ metadata:
   name: test7c-pool1
   namespace: {{ .Values.namespace }}
 spec:
-  dataset: test7cdata
-  application:
+  run:
     name: test7c
   workers:
     count: 1

@@ -26,14 +26,14 @@ function stripKubeconfig(config: KubeConfig, context: string): KubeConfig {
  * Generate the yaml spec for the new `WorkerPool` resource.
  */
 export default async function yaml(values: Values["values"], context: Context) {
-  const applicationSpec = context.applications.find((_) => _.metadata.name === values.application)
-  if (!applicationSpec) {
-    console.error("Internal error: Application spec not found", values.application, values, context.applications)
+  const run = context.runs.find((_) => _.metadata.name === values.run)
+  if (!run) {
+    console.error(`Internal error: Run not found '${values.run}'`, values, context.runs)
     // TODO how do we report this to the UI?
   }
 
   // TODO re: internal-error
-  const namespace = applicationSpec ? applicationSpec.metadata.namespace : "internal-error"
+  const namespace = run ? run.metadata.namespace : "internal-error"
 
   // fetch kubeconfig
   const kubeconfig =
@@ -59,9 +59,8 @@ metadata:
   name: ${values.name}
   namespace: ${namespace}
 spec:
-  dataset: ${values.taskqueue}
-  application:
-    name: ${values.application}
+  run:
+    name: ${values.run}
   workers:
     count: ${values.count}
     size: ${values.size}

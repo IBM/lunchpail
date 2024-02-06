@@ -7,9 +7,11 @@ import steps from "./steps"
 // the Popover detail/helpers for each Step
 import Popovers from "./popovers"
 
+import type Props from "@jaas/resources/runs/components/Props"
+
 import "./RunProgressStepper.css"
 
-export default function AplicationProgressStepper(props: import("../Props").default) {
+export default function AplicationProgressStepper(props: Props) {
   const popovers = Popovers(props)
 
   return (

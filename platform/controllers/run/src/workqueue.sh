@@ -11,7 +11,7 @@ namespace="$3"
 part_of="$4"
 run_id="$5"
 inbox="$6"
-dataset="$7"
+queue_dataset="$7"
 dataset_labels="$8"
 
 # Helm's dry-run output will go to this temporary file
@@ -25,10 +25,12 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workqueue/ -n ${namespace} \
      --set namespace=$namespace \
      --set partOf=$part_of \
      --set inbox="$inbox" \
-     --set dataset=$dataset \
+     --set taskqueue.dataset=$queue_dataset \
+     --set taskqueue.bucket=$name \
      --set datasets=$dataset_labels \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
 kubectl apply -f $DRY 1>&2
-rm $DRY
+# cp $DRY /tmp/yoyo-workqueue-$(basename $DRY) # debugging
+rm -f $DRY

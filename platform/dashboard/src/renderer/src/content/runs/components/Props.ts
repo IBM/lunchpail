@@ -13,4 +13,6 @@ type Props = Pick<Memos, "taskqueueIndex" | "latestWorkerPoolModels"> &
     settings: CurrentSettings
   }
 
+export type PropsWithPotentiallyMissingApplication = Partial<Pick<Props, "application">> & Omit<Props, "application">
+
 export default Props

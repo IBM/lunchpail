@@ -12,7 +12,7 @@ export function summaryGroups(props: Props) {
 
   return [
     descriptionGroup("dispatch method", spec.method === "tasksimulator" ? "Task Simulator" : spec.method),
-    descriptionGroup("application", linkToAllDetails("applications", [spec.application])),
+    descriptionGroup("run", linkToAllDetails("runs", [spec.run])),
   ]
 }
 

@@ -40,7 +40,7 @@ def run_size(customApi, spec, application):
 # We use `./workerpool.sh` to invoke the `./workerpool/` helm chart
 # which in turn creates the pod/job resources for the pool.
 #
-def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, dataset_labels, patch):
+def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, queue_dataset: str, dataset_labels, patch):
     try:
         api = application['spec']['api']
         if api != "workqueue":
@@ -49,9 +49,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         image = application['spec']['image']
         command = application['spec']['command']
 
-        application_name = spec['application']['name']
-        application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
-        logging.info(f"Creating WorkerPool name={name} namespace={namespace} for application={application_name} uid={uid}")
+        run_name = spec['run']['name']
 
         # environment variables; merge application spec with workerpool spec
         env = application['spec']['env'] if 'env' in application['spec'] else {}
@@ -90,8 +88,8 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 image,
                 command,
                 subPath,
-                application_name,
-                spec['dataset'],
+                run_name,
+                queue_dataset,
                 str(count),
                 str(cpu),
                 str(memory),
@@ -129,10 +127,16 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
     pool_name = labels["app.kubernetes.io/name"]
     pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
 
-    app_name = pool["spec"]["application"]["name"]
-    dataset_name = pool["spec"]["dataset"]
+    run_name = pool["spec"]["run"]["name"]
+
+    queue_dataset = find_queue_for_run(customApi, run_name, namespace)
+    if queue_dataset is None:
+        # TODO report this somehow via some resource status
+        logging.error(f"Missing queue dataset for worker run_name={run_name} pod_name={pod_name} namespace={namespace}")
+        return
+
     worker_index = annotations["batch.kubernetes.io/job-completion-index"]
-    queue_name = f"{app_name}-{pool_name}-{worker_index}"
+    queue_name = f"{run_name}-{pool_name}-{worker_index}"
 
     body = {
         "apiVersion": "codeflare.dev/v1alpha1",
@@ -148,7 +152,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
                 "codeflare.dev/pod": pod_name,
                 "codeflare.dev/worker-index": worker_index,
                 "app.kubernetes.io/name": pool_name,
-                "app.kubernetes.io/part-of": app_name,
+                "app.kubernetes.io/part-of": run_name,
                 "app.kubernetes.io/managed-by": "codeflare.dev",
                 "app.kubernetes.io/component": "queue"
             },
@@ -161,7 +165,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
             }]
         },
         "spec": {
-            "dataset": dataset_name
+            "dataset": queue_dataset
         }
     }
     customApi.create_namespaced_custom_object("codeflare.dev", "v1alpha1", namespace, "queues", body)
@@ -207,11 +211,29 @@ def look_for_workstealer_updates(line: str):
         patch_body = { "metadata": { "annotations": { f"codeflare.dev/unassigned": num_unassigned } } }
         return patch_body
 
+# look for the Dataset instance that represents the queue for the given named Run
+def find_queue_for_run(customApi, run_name: str, run_namespace: str):
+    matching_datasets = customApi.list_namespaced_custom_object(
+        group="com.ie.ibm.hpsys",
+        version="v1alpha1",
+        plural="datasets",
+        namespace=run_namespace,
+        label_selector=f"app.kubernetes.io/part-of={run_name}"
+    )["items"]
+
+    if len(matching_datasets) == 0:
+        return None
+    else:
+        if len(matching_datasets) > 1:
+            logging.error(f"Multiple queues found for run={run_name} namespace={namespace}")
+        return matching_datasets[0]['metadata']['name']
+
 def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
     try:
-        if 'dataset.0.id' in labels:
-            dataset_name = labels['dataset.0.id']
+        run_name = labels["app.kubernetes.io/part-of"]
+        dataset_name = find_queue_for_run(customApi, run_name, namespace)
 
+        if dataset_name:
             try:
                 dgroup = "com.ie.ibm.hpsys"
                 version = "v1alpha1"
@@ -227,6 +249,6 @@ def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
             except Exception as e:
                 logging.error(f"Error setting up log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
         else:
-            logging.info(f"Skipping workstealer log watcher due to missing dataset_name pod_name={pod_name} namespace={namespace}")
+            logging.info(f"Skipping workstealer log watcher due to missing queue pod_name={pod_name} namespace={namespace}")
     except Exception as e:
         logging.error(f"Error log watcher WorkerPool pod for workstealer stats pod_name={pod_name} namespace={namespace}. {str(e)}")

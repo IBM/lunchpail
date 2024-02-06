@@ -52,7 +52,7 @@ test.describe.serial("workers tests running sequentially", () => {
     const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
 
     // check that 'Definition' drop down matches expectedApp
-    const input = await modal.locator('input[name="application"]') // getByRole("input", { name: "application" }))
+    const input = await modal.locator('input[name="run"]')
     await expect(input).toBeVisible()
     await expect(input).toHaveCount(1)
     await expect(input).toHaveValue(expectedApp)

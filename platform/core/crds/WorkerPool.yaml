@@ -19,16 +19,14 @@ spec:
           properties:
             spec:
               type: object
-              required: [application,dataset,workers]
+              required: [run,workers]
               properties:
-                application:
+                run:
                   type: object
                   required: [name]
                   properties:
                     name:
                       type: string
-                dataset:
-                  type: string
                 env:
                   type: object
                   additionalProperties:
@@ -86,9 +84,9 @@ spec:
         # enables the status subresource
         status: {}
       additionalPrinterColumns:
-        - name: Application
+        - name: Run
           type: string
-          jsonPath: .spec.application.name
+          jsonPath: .spec.run.name
         - name: DataSet
           type: string
           jsonPath: .spec.dataset

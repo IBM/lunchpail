@@ -6,10 +6,16 @@ function inputs(props: Pick<Props, "application">) {
     : []
 }
 
-function taskqueues(props: Props) {
-  return inputs(props).filter(
-    (taskqueueName) => !!props.taskqueues.find((taskqueue) => taskqueueName === taskqueue.metadata.name),
+//type RunProps = Pick<Props, 'taskqueues' | 'settings' | 'workdispatchers' | 'workerpools'> & { run : import('@jaas/common/events/RunEvent').default }
+import type RunProps from "@jaas/resources/runs/components/Props"
+
+function taskqueues(props: RunProps) {
+  const { name: runName, namespace: runNamespace } = props.run.metadata
+
+  const queueEventIdx = props.taskqueues.findLastIndex(
+    (_) => _.metadata.namespace === runNamespace && _.metadata.labels["app.kubernetes.io/part-of"] === runName,
   )
+  return queueEventIdx < 0 ? [] : [props.taskqueues[queueEventIdx].metadata.name]
 }
 
 export function datasets(props: Pick<Props, "application" | "datasets">) {
@@ -20,7 +26,7 @@ export function datasets(props: Pick<Props, "application" | "datasets">) {
 
 /** This helps to use some of the TaskQueue views, given an Application Props */
 export default function taskqueueProps(
-  props: Props,
+  props: RunProps,
 ): undefined | import("@jaas/resources/taskqueues/components/Props").default {
   const queues = taskqueues(props)
 

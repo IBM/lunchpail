@@ -11,9 +11,9 @@ import workdispatchersTab from "@jaas/resources/applications/components/tabs/Wor
 import computeTab from "@jaas/resources/applications/components/tabs/Compute"
 //import burndownTab from "@jaas/resources/applications/components/tabs/Burndown"
 
-import editAction from "@jaas/resources/applications/components/actions/edit"
+// import editAction from "@jaas/resources/applications/components/actions/edit"
 // import cloneAction from "@jaas/resources/applications/components/actions/clone"
-import deleteAction from "@jaas/resources/applications/components/actions/delete"
+import deleteAction from "./actions/delete"
 
 import { singular as Code } from "@jaas/resources/applications/name"
 import { group as Compute } from "@jaas/resources/workerpools/group"
@@ -22,38 +22,47 @@ import { dl, descriptionGroup } from "@jaas/components/DescriptionGroup"
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
 import type Props from "./Props"
+import type { PropsWithPotentiallyMissingApplication } from "./Props"
 
-/** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
-function otherTabs(props: Props) {
-  return removeUndefined([workdispatchersTab(props), computeTab(props)])
+function hasApplication(props: PropsWithPotentiallyMissingApplication): props is Props {
+  return !!props.application
 }
 
-function computeGroup(props: Props) {
+/** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
+function otherTabs(props: PropsWithPotentiallyMissingApplication) {
+  return !hasApplication(props) ? [] : removeUndefined([workdispatchersTab(props), computeTab(props)])
+}
+
+function computeGroup(props: Pick<Props, "run" | "workerpools">) {
   const workerpools = props.workerpools.filter(
     (_) =>
       _.spec.application.name ===
-      props.application.metadata.name /* && _.spec.application.namespace === props.application.metadata.namespace */,
+      props.run.spec.application.name /* && _.spec.application.namespace === props.application.metadata.namespace */,
   )
   return descriptionGroup(Compute, linkToAllDetails("workerpools", workerpools), workerpools.length)
 }
 
-function dispatchGroup(props: Props) {
+function dispatchGroup(props: Pick<Props, "run" | "workdispatchers">) {
   const dispatchers = props.workdispatchers.filter(
     (_) =>
-      _.spec.application ===
-      props.application.metadata.name /* && _.spec.application.namespace === props.application.metadata.namespace */,
+      _.spec.run ===
+      props.run.metadata.name /* && _.spec.application.namespace === props.application.metadata.namespace */,
   )
   return descriptionGroup(Dispatch, linkToAllDetails("workdispatchers", dispatchers), dispatchers.length)
 }
 
-export default function ApplicationDetail(props: Props) {
+export default function ApplicationDetail(props: PropsWithPotentiallyMissingApplication) {
   const tabs = useMemo(() => otherTabs(props), [props])
   const summary = useMemo(
     () =>
       dl({
         groups: [
-          descriptionGroup(Code, linkToAllDetails("applications", [props.application]), 1),
-          datasetsGroup(datasets(props)),
+          descriptionGroup(
+            Code,
+            !props.application ? "Missing" : linkToAllDetails("applications", [props.application]),
+            1,
+          ),
+          ...(!hasApplication(props) ? [] : [datasetsGroup(datasets(props))]),
           dispatchGroup(props),
           computeGroup(props),
           ...reasonAndMessageGroups(props.run),
@@ -62,12 +71,5 @@ export default function ApplicationDetail(props: Props) {
     [props],
   )
 
-  return (
-    <DrawerContent
-      summary={summary}
-      raw={props.run}
-      otherTabs={tabs}
-      rightActions={[editAction(props), /* cloneAction(props), */ deleteAction(props)]}
-    />
-  )
+  return <DrawerContent summary={summary} raw={props.run} otherTabs={tabs} rightActions={[deleteAction(props)]} />
 }

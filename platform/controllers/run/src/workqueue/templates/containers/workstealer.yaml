@@ -7,5 +7,5 @@
     - name: INBOX
       value: {{ .Values.inbox | default "inbox" }}
     - name: QUEUE
-      value: {{ print "/mnt/datasets/" .Values.dataset }}
+      value: {{ print "/mnt/datasets/" .Values.taskqueue.dataset }}
 {{- end }}

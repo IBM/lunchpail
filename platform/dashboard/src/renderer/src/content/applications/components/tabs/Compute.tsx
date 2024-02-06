@@ -2,19 +2,25 @@ import { DrawerPanelBody } from "@patternfly/react-core"
 
 import DrawerTab from "@jaas/components/Drawer/Tab"
 import DetailNotFound from "@jaas/components/DetailNotFound"
+import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
 
-import type Props from "../Props"
+import type Props from "@jaas/resources/runs/components/Props"
 import ComputeBody from "./ComputeBody"
 import taskqueueProps from "../taskqueueProps"
 
 import { groupSingular as application } from "@jaas/resources/applications/group"
 import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"
 
-import NewPoolButton from "@jaas/resources/taskqueues/components/NewPoolButton"
-
 function NoWorkerPools(props: Props) {
   const queueProps = taskqueueProps(props)
-  const action = !queueProps ? undefined : <NewPoolButton key="new-pool" {...queueProps} />
+  const action = !queueProps ? undefined : (
+    <LinkToNewPool
+      key="new-pool-button"
+      run={props.run.metadata.name}
+      namespace={props.run.metadata.namespace}
+      startOrAdd="add"
+    />
+  )
   return (
     <DetailNotFound title="No Workers Assigned" action={action}>
       Consider creating a {workerpool} to begin processing Tasks

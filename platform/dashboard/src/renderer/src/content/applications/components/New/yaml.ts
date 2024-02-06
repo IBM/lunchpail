@@ -77,47 +77,6 @@ ${values.method === "github" ? `  repo: ${values.repo}` : ""}
 ${indent(datasetsToMount, 4)}
   description: >-
 ${wordWrap(values.description, { trim: true, indent: "    ", width: 60 })}
----
-apiVersion: codeflare.dev/v1alpha1
-kind: Run
-metadata:
-  name: ${values.name}
-  namespace: ${values.namespace}
-spec:
-  workers: 0
-  application:
-    name: ${values.name}
----
-apiVersion: com.ie.ibm.hpsys/v1alpha1
-kind: Dataset
-metadata:
-  name: ${taskqueueName}
-  namespace: ${values.namespace}
-  labels:
-    codeflare.dev/created-by: user
-    app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: taskqueue
-spec:
-  local:
-    type: "COS"
-    bucket: ${values.taskqueueBucket ?? values.name}
-    endpoint: ${values.taskqueueEndpoint ?? "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"}
-    secret-name: ${taskqueueName + "cfsecret"}
-    secret-namespace: ${values.namespace}
-    provision: "true"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ${taskqueueName + "cfsecret"}
-  namespace: ${values.namespace}
-  labels:
-    app.kubernetes.io/part-of: codeflare.dev
-    app.kubernetes.io/component: ${values.name}
-type: Opaque
-data:
-  accessKeyID: ${btoa(values.taskqueueAccessKeyId ?? "codeflarey")}
-  secretAccessKey: ${btoa(values.taskqueueSecretAccessKey ?? "codeflarey")}
 `.trim()
 }
 

@@ -1,7 +1,7 @@
 import { load } from "js-yaml"
 
 import type Values from "../Values"
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
+import type RunEvent from "@jaas/common/events/RunEvent"
 
 function safeLoad(yaml: string): Record<string, unknown> {
   try {
@@ -13,7 +13,7 @@ function safeLoad(yaml: string): Record<string, unknown> {
   }
 }
 
-export default function helmYaml({ repo, values }: Values["values"], application: ApplicationSpecEvent) {
+export default function helmYaml({ repo, values }: Values["values"], run: RunEvent) {
   const lines = [`repo: ${repo}`]
 
   const valuesObj = safeLoad(values)
@@ -21,7 +21,7 @@ export default function helmYaml({ repo, values }: Values["values"], application
   if (valuesObj) {
     // add the application name to the values.yaml
     if ("application" in valuesObj) {
-      valuesObj.application = application.metadata.name
+      valuesObj.application = run.spec.application.name
     }
 
     lines.push(`values: >

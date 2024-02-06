@@ -9,8 +9,7 @@ metadata:
   name: test7c
   namespace: {{ .Values.namespace }}
 spec:
-  application: test7c
-  dataset: test7cdata
+  run: test7c
   method: helm
   repo: >-
     https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/dashboard/tests/workdispatcher1

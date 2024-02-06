@@ -71,9 +71,6 @@ spec:
   image: ghcr.io/project-codeflare/workerpool-worker-ubuntu-python-openroad:0.0.1
   inputs:
     - sizes:
-        xs: openroadmaxutilqueue
-      useas: mount
-    - sizes:
         xs: openroad-max-util-templates
       useas: mount
   supportsGpu: true

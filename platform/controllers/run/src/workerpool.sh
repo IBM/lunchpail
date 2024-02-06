@@ -13,7 +13,7 @@ run_id="$4"
 image="$5"
 command="$6"
 subPath="$7"
-application_name="$8"
+run_name="$8"
 queue_dataset="$9"
 count="${10}"
 cpu="${11}"
@@ -49,7 +49,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set namespace=$namespace \
      --set command="$command" \
      --set subPath=$subPath \
-     --set partOf=$application_name \
+     --set partOf=$run_name \
      --set workers.count=$count \
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \

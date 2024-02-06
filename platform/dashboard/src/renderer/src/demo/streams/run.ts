@@ -1,11 +1,11 @@
 import type RunEvent from "@jaas/common/events/RunEvent"
 import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
-import Base from "./application"
 import context from "../context"
+import Base, { applications } from "./application"
 
 export default class DemoRunSpecEventSource extends Base implements EventSourceLike {
-  private readonly runs: RunEvent[] = this.applications.map((application) => ({
+  private readonly runs: RunEvent[] = applications.map((application) => ({
     apiVersion: "codeflare.dev/v1alpha1",
     kind: "Run",
     metadata: {

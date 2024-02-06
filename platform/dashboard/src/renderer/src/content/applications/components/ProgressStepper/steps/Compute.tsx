@@ -8,7 +8,7 @@ import { groupSingular as application } from "@jaas/resources/applications/group
 import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"
 
 import type Step from "../Step"
-import type Props from "../../Props"
+import type Props from "@jaas/resources/runs/components/Props"
 import { oopsNoQueue } from "../oops"
 
 function associatedWorkerPools(props: Props) {
@@ -55,7 +55,15 @@ const step: Step = {
             {linkToAllDetails("workerpools", pools, undefined, onClick)}
           </Stack>
         )
-      const footer = <LinkToNewPool isInline taskqueue={queue.name} startOrAdd="create" onClick={onClick} />
+      const footer = (
+        <LinkToNewPool
+          isInline
+          run={props.run.metadata.name}
+          namespace={props.run.metadata.namespace}
+          startOrAdd="create"
+          onClick={onClick}
+        />
+      )
       return { body, footer }
     }
   },

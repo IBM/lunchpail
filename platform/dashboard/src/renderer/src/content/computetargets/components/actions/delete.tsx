@@ -12,7 +12,7 @@ export default function DeleteAction(props: Props) {
   return (
     <DeleteResourceButton
       singular={singular}
-      kind="computetargets.codeflare.dev"
+      kind="computetargets"
       deleteFn={deleteFn}
       name={props.metadata.name}
       namespace={props.metadata.namespace}

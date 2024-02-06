@@ -15,7 +15,7 @@ function deleteAction(props: Props) {
     <DeleteResourceButton
       key="delete"
       singular={singular}
-      kind="workerpool.codeflare.dev"
+      kind="workerpools"
       name={props.model.label}
       namespace={props.model.namespace}
       context={props.model.context}

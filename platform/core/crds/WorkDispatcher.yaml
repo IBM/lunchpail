@@ -23,17 +23,15 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [application,method,dataset,schema,rate] # tasksimulator
-                - required: [application,method,dataset,sweep] # parametersweep
-                - required: [application,method,dataset,repo] # helm
+                - required: [run,method,schema,rate] # tasksimulator
+                - required: [run,method,sweep] # parametersweep
+                - required: [run,method,repo] # helm
               properties:
-                # common fields: [method,application,dataset]
+                # common fields: [method,run]
                 method:
                   type: string
                   enum: [tasksimulator,parametersweep,helm]
-                application:
-                  type: string
-                dataset:
+                run:
                   type: string
 
                 # helm fields: [repo]

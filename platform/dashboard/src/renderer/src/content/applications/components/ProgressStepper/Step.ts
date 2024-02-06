@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import type { ProgressStepProps } from "@patternfly/react-core"
 
-import type Props from "../Props"
+import type Props from "@jaas/resources/runs/components/Props"
 
 type BodyAndFooterContent = { body: ReactNode; footer: ReactNode }
 type Content = ReactNode | BodyAndFooterContent

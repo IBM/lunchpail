@@ -12,10 +12,8 @@ export default function Detail(
   settings: CurrentSettings,
 ) {
   const run = events.runs.find((_) => _.metadata.name === id && _.metadata.context === context)
-  const application = !run
-    ? undefined
-    : events.applications.find((_) => _.metadata.name === id && _.metadata.context === context)
-  if (run && application) {
+  if (run) {
+    const application = events.applications.find((_) => _.metadata.name === id && _.metadata.context === context)
     const props = {
       run,
       context,
@@ -28,7 +26,7 @@ export default function Detail(
       taskqueueIndex: memos.taskqueueIndex,
       latestWorkerPoolModels: memos.latestWorkerPoolModels,
     }
-    return { body: <RunDetail {...props} />, subtitle: props.application.spec.description }
+    return { body: <RunDetail {...props} />, subtitle: application?.spec.description }
   } else {
     return undefined
   }

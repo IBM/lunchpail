@@ -1,3 +1,5 @@
+import type Kind from "@jaas/common/Kind"
+
 import { Dashboard } from "../pages/Dashboard"
 
 import DemoRunEventSource from "./streams/run"
@@ -52,7 +54,7 @@ export default function DemoDashboard() {
         await Promise.all(
           rsrcs.map((rsrc) =>
             window.demo.deleteByName({
-              kind: rsrc.kind.toLowerCase() + "s",
+              kind: (rsrc.kind.toLowerCase() + "s") as Kind,
               name: rsrc.metadata.name,
               namespace: rsrc.metadata.namespace,
               context,

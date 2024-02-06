@@ -5,8 +5,7 @@ metadata:
   name: hapq-pool1
   namespace: codeflare-watsonxai-preprocessing
 spec:
-  dataset: hapq
-  application:
+  run:
     name: hapq
   workers:
     count: 1

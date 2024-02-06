@@ -22,8 +22,13 @@ type TaskQueueEvent = KubernetesResource<
     }
   },
   {
-    /** Unassigned tasks */
+    /** Unassigned tasks annotation */
     "codeflare.dev/unassigned": string
+  },
+  {
+    labels: {
+      "app.kubernetes.io/part-of": string
+    }
   }
 >
 

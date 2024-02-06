@@ -1,6 +1,6 @@
-import type Props from "../Props"
 import LinkToNewWizard from "@jaas/renderer/navigate/wizard"
 
+import type Props from "@jaas/resources/runs/components/Props"
 import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
 
 /** Button/Action: Allocate WorkDispatcher */
@@ -11,11 +11,7 @@ export default function NewWorkDispatcherButton(
     queueProps: import("@jaas/resources/taskqueues/components/Props").default
   },
 ) {
-  const qs = [
-    `application=${props.application.metadata.name}`,
-    `taskqueue=${props.queueProps.name}`,
-    `namespace=${props.application.metadata.namespace}`,
-  ]
+  const qs = [`run=${props.run.metadata.name}`, `namespace=${props.run.metadata.namespace}`]
 
   return (
     <LinkToNewWizard

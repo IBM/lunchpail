@@ -4,9 +4,8 @@ import { uniqueNamesGenerator, colors } from "unique-names-generator"
 
 import NewResourceWizard from "@jaas/components/NewResourceWizard"
 
+import { singular as runSingular } from "@jaas/resources/runs/name"
 import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
-import { groupSingular as applicationsSingular } from "@jaas/resources/applications/group"
-import { titleSingular as applicationsDefinitionSingular } from "@jaas/resources/applications/title"
 
 import type Values from "./Values"
 import type ManagedEvents from "@jaas/resources/ManagedEvent"
@@ -28,34 +27,27 @@ const step3 = {
   items: ["name" as const, "namespace" as const, "description" as const],
 }
 
-type Props = Pick<ManagedEvents, "applications">
+type Props = Pick<ManagedEvents, "runs">
 
 export default function NewWorkDispatcherWizard(props: Props) {
   const [searchParams] = useSearchParams()
 
   const namespaceFromSearch = searchParams.get("namespace")
-  const taskqueueFromSearch = searchParams.get("taskqueue")
-  const applicationFromSearch = searchParams.get("application")
-  const nameFromSearch = applicationFromSearch ? applicationFromSearch + "-dispatcher" : undefined
+  const runFromSearch = searchParams.get("run")
+  const nameFromSearch = runFromSearch ? runFromSearch + "-dispatcher" : undefined
 
-  if (!taskqueueFromSearch) {
-    return "Internal Error: taskqueue not provided"
-  }
-
-  if (!applicationFromSearch || !namespaceFromSearch || !props.applications) {
-    console.error("Application not found (1)", applicationFromSearch, namespaceFromSearch, props.applications)
-    return `Internal Error: ${applicationsDefinitionSingular} not found: ${
-      applicationFromSearch || "<none>"
+  if (!runFromSearch || !namespaceFromSearch || !props.runs) {
+    console.error("Run not found (1)", runFromSearch, namespaceFromSearch, props.runs)
+    return `Internal Error: ${runSingular} not found: ${
+      runFromSearch || "<none>"
     } in namespace ${namespaceFromSearch || "<none>"}`
   }
 
-  const application = props.applications.find(
-    (_) => _.metadata.name === applicationFromSearch && _.metadata.namespace === namespaceFromSearch,
-  )
-  if (!application) {
-    console.error("Application not found (2)", applicationFromSearch, namespaceFromSearch, props.applications)
-    return `Internal Error: ${applicationsDefinitionSingular} not found: ${
-      applicationFromSearch || "<none>"
+  const run = props.runs.find((_) => _.metadata.name === runFromSearch && _.metadata.namespace === namespaceFromSearch)
+  if (!run) {
+    console.error("Run not found (2)", runFromSearch, namespaceFromSearch, props.runs)
+    return `Internal Error: ${runSingular} not found: ${
+      runFromSearch || "<none>"
     } in namespace ${namespaceFromSearch || "<none>"}`
   }
 
@@ -79,16 +71,13 @@ export default function NewWorkDispatcherWizard(props: Props) {
         step: previousValues?.step ?? "1",
         repo: previousValues?.repo ?? "",
         values: previousValues?.values ?? "",
-        context: application.metadata.context,
+        context: run.metadata.context,
       }
     },
     [nameFromSearch],
   )
 
-  const getYaml = useCallback(
-    (values) => yaml(values, application, taskqueueFromSearch),
-    [application, taskqueueFromSearch],
-  )
+  const getYaml = useCallback((values) => yaml(values, run), [run])
 
   const action = "register"
   const title = `Start a ${workdispatcher}`
@@ -104,7 +93,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
       steps={steps}
       action={action}
     >
-      This wizard helps you to feed Tasks to a {applicationsSingular}.
+      This wizard helps you to feed Tasks to a {runSingular}.
     </NewResourceWizard>
   )
 }

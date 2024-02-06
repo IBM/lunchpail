@@ -10,7 +10,7 @@ export default function deleteAction(props: Props) {
     <DeleteResourceButton
       key="delete"
       singular={singular}
-      kind="tasksimulators.codeflare.dev"
+      kind="workdispatchers"
       yaml={yamlFromSpec(props.workdispatcher)}
       name={props.workdispatcher.metadata.name}
       namespace={props.workdispatcher.metadata.namespace}

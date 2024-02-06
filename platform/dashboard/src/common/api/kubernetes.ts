@@ -3,7 +3,7 @@ import type ExecResponse from "../events/ExecResponse"
 import type ComputeTargetEvent from "../events/ComputeTargetEvent"
 import type KubernetesResource from "../events/KubernetesResource"
 
-export type DeleteProps = { kind: string; name: string; namespace: string; context?: string }
+export type DeleteProps = { kind: Kind | "dataset" | "secret"; name: string; namespace: string; context?: string }
 
 export type KubeUser = { name: string; user: unknown }
 

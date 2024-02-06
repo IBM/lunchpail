@@ -9,12 +9,20 @@ import LinkToNewWizard, { type WizardProps } from "./wizard"
  */
 export function LinkToNewPool(
   props: WizardProps & {
-    taskqueue?: string
+    run?: string
+    namespace?: string
   },
 ) {
   const verb = "Add"
   const linkText = `${verb} Compute`
-  const qs = [props.taskqueue ? `taskqueue=${props.taskqueue}` : ""]
+  const qs: string[] = []
+
+  if (props.run) {
+    qs.push(`run=${props.run}`)
+  }
+  if (props.namespace) {
+    qs.push(`namespace=${props.namespace}`)
+  }
 
   return <LinkToNewWizard {...props} kind="workerpools" linkText={linkText} qs={qs} />
 }

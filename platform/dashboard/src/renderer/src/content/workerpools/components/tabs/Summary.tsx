@@ -25,7 +25,7 @@ export function reasonAndMessageGroups({ metadata }: import("@jaas/common/events
     if (reason) {
       groups.push(descriptionGroup("Reason", titleCaseSplit(reason)))
     }
-    if (message) {
+    if (message && message !== reason) {
       groups.push(
         descriptionGroup(
           "Message",

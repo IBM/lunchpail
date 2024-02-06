@@ -12,7 +12,9 @@ import { name as workerpools } from "@jaas/resources/workerpools/name"
 import { singular as taskqueueSingular } from "@jaas/resources/taskqueues/name"
 import { group as workdispatcherSingular } from "@jaas/resources/workdispatchers/group"
 
-function statusOfDispatchers(props: import("../../Props").default) {
+import type Props from "@jaas/resources/runs/components/Props"
+
+function statusOfDispatchers(props: Props) {
   const all = workdispatchers(props)
 
   const pending = all.filter((_) => /Pend/i.test(status(_))).length
@@ -23,7 +25,7 @@ function statusOfDispatchers(props: import("../../Props").default) {
   return { pending, running, finished, failed }
 }
 
-function variant(props: import("../../Props").default) {
+function variant(props: Props) {
   const { pending, running, finished, failed } = statusOfDispatchers(props)
 
   return pending + running + finished + failed === 0

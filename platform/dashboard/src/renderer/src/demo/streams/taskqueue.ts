@@ -3,6 +3,7 @@ import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import Base from "./base"
 import context from "../context"
+import { applications } from "./application"
 import { apiVersionDatashim, ns } from "./misc"
 
 export const colors = ["pink", "green", "purple", "orange"]
@@ -20,7 +21,7 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
   private readonly buckets = ["pile1", "pile2", "pile3"]
   private readonly isReadOnly = [true, false, true]
 
-  private readonly taskqueues: TaskQueueEvent[] = Array(colors.length)
+  private readonly taskqueues: TaskQueueEvent[] = Array(applications.length)
     .fill(0)
     .map((_, idx) => ({
       apiVersion: apiVersionDatashim,
@@ -33,6 +34,9 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
         annotations: {
           "codeflare.dev/status": "Ready",
           "codeflare.dev/unassigned": "0",
+        },
+        labels: {
+          "app.kubernetes.io/part-of": applications[idx].name,
         },
       },
       spec: {

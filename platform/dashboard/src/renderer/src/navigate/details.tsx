@@ -73,7 +73,7 @@ export function linkToAllDetails(
 ) {
   return resources.map((rsrc, idx) =>
     !rsrc
-      ? `Misconfiguration: linked ${kind} does not exist`
+      ? `Misconfiguration: linked ${kind} not found`
       : linkToDetails(
           typeof rsrc === "string"
             ? { id: rsrc, kind, context: "", linkText: linkTexts[idx], onClick } // FIXME

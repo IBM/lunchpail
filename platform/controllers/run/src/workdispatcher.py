@@ -12,9 +12,8 @@ from status import set_status, add_error_condition, set_status_after_clone_failu
 #
 # Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep or method=helm
 #
-def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch, path_to_chart = "", values = ""):
+def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, queue_dataset: str, dataset_labels, patch, path_to_chart = "", values = ""):
     method = spec['method']
-    dataset = spec['dataset']
     injectedTasksPerInterval = spec['rate']['tasks'] if "rate" in spec else 1
     intervalSeconds = spec['rate']['intervalSeconds'] if "rate" in spec and "intervalSeconds" in spec['rate'] else 10
 
@@ -46,7 +45,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
             str(sweep_min),
             str(sweep_max),
             str(sweep_step),
-            dataset,
+            queue_dataset,
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
             path_to_chart,
             values,
@@ -71,7 +70,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
 #
 # Handle WorkDispatcher creation for method=helm
 #
-def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, dataset_labels, patch):
+def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, queue_dataset: str, dataset_labels, patch):
     logging.info(f"Creating WorkDispatcher from helm name={name} namespace={namespace}")
     run_id, workdir = alloc_run_id("helm", name)
 
@@ -82,6 +81,6 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
     
     path_to_chart = os.path.join(workdir, cloned_subPath)
     values = spec['values'] if 'values' in spec else ""
-    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, dataset_labels, patch, path_to_chart, values)
+    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, queue_dataset, dataset_labels, patch, path_to_chart, values)
 
     

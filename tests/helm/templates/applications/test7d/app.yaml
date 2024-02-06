@@ -26,7 +26,4 @@ spec:
 
   command: /opt/codeflare/worker/bin/watcher.sh ./literal.sh
   image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
-  inputs:
-    - sizes:
-        lg: test7ddata
 {{- end }}

@@ -4,7 +4,7 @@ type WorkDispatcherEvent = KubernetesResource<
   "v1",
   "Pod",
   {
-    application: string
+    run: string
     dataset: string
     method: string
     sweep?: { min: number; max: number; step: number }

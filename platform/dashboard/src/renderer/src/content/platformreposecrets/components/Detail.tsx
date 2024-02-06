@@ -18,7 +18,7 @@ function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
       singular={singular}
-      kind="platformreposecrets.codeflare.dev"
+      kind="platformreposecrets"
       yaml={yamlFromSpec(props)}
       name={props.metadata.name}
       namespace={props.metadata.namespace}

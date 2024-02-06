@@ -3,7 +3,7 @@ import random
 import string
 
 # TODO api should be an enum?
-def alloc_run_id(api, name: str):
+def alloc_run_id(api: str, name: str):
     # Note: we trim `run_id` to 53 chars, to make a kubernetes
     # (especially helm install) friendly name. Also, kubernetes
     # resources cannot end in a dash.

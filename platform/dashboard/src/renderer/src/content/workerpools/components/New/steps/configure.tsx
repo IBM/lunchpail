@@ -3,18 +3,19 @@ import Input from "@jaas/components/Forms/Input"
 import TextArea from "@jaas/components/Forms/TextArea"
 import NumberInput from "@jaas/components/Forms/NumberInput"
 
+import { singular as run } from "@jaas/resources/runs/name"
 import { singular as workerpool } from "@jaas/resources/workerpools/name"
-import { groupSingular as application } from "@jaas/resources/applications/group"
+import { singular as application } from "@jaas/resources/applications/name"
 
 import type Values from "../Values"
 
-function applicationChoice(ctrl: Values) {
+function runChoice(ctrl: Values) {
   return (
     <Input
       readOnlyVariant="default"
-      fieldId="application"
-      label={application}
-      description={`The workers in this ${workerpool} will run the code specified by this ${application}`}
+      fieldId="run"
+      label={run}
+      description={`The workers in this ${workerpool} will run the code specified by the ${application} associated with this ${run}`}
       ctrl={ctrl}
     />
   )
@@ -108,8 +109,7 @@ function alerts(values: Values["values"]) {
 
 export default {
   name: "Configure your " + workerpool,
-  isValid: (ctrl: Values) =>
-    !!ctrl.values.application && !!ctrl.values.taskqueue && (!ctrl.values.env || isValidAsEnvVars(ctrl.values.env)),
-  items: [applicationChoice, /* taskqueue, */ numWorkers, envvars],
+  isValid: (ctrl: Values) => !!ctrl.values.run && (!ctrl.values.env || isValidAsEnvVars(ctrl.values.env)),
+  items: [runChoice, numWorkers, envvars],
   alerts,
 }

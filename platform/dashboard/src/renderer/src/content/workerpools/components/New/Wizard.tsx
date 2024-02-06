@@ -21,22 +21,17 @@ import stepName from "./steps/name"
 import stepTarget from "./steps/target"
 import stepConfigure from "./steps/configure"
 
-import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
-
 export default function NewWorkerPoolWizard(props: Props) {
   const [searchParams] = useSearchParams()
 
   /** Try to associate with a Task Queue? */
-  const searchedTaskQueue = chooseTaskQueueIfExists(props.taskqueues, searchParams.get("taskqueue"))
+  const searchedTaskQueue = chooseIfExistsByName(props.taskqueues, searchParams.get("taskqueue"))
 
-  /** If we are trying to associate with a particular Task Queue, then filter Applications list down to those compatible with it */
-  const compatibleApplications = useMemo(
-    () =>
-      searchedTaskQueue
-        ? props.applications.filter((app) => supportsTaskQueue(app, searchedTaskQueue))
-        : props.applications,
-    [props.applications],
-  )
+  /** Try to associate with an Run? */
+  const searchedRun = chooseIfExists(props.runs, searchParams.get("run"))
+
+  /** If we are trying to associate with a particular Task Queue, then filter Runs list down to those compatible with it */
+  const compatibleRuns = useMemo(() => (searchedRun ? [searchedRun] : props.runs), [props.runs])
 
   /** Initial value for form */
   const defaults = useCallback(
@@ -50,26 +45,26 @@ export default function NewWorkerPoolWizard(props: Props) {
       return {
         context,
         name:
-          (searchedTaskQueue ? searchedTaskQueue + "-pool-" : "") +
+          (searchedRun ? searchedRun.metadata.name + "-pool-" : "") +
           removeAccents(
             uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
           ),
         count: String(1),
         size: "xs",
         supportsGpu: false.toString(),
-        application: chooseIfSingleton(compatibleApplications),
+        run: chooseIfSingleton(compatibleRuns),
         taskqueue:
           props.taskqueues.length === 1
             ? props.taskqueues[0].metadata.name
-            : chooseTaskQueueIfExists(props.taskqueues, searchedTaskQueue),
+            : chooseIfExistsByName(props.taskqueues, searchedTaskQueue),
       }
     },
-    [searchedTaskQueue, compatibleApplications, props.taskqueues, props.computetargets],
+    [searchedTaskQueue, compatibleRuns, props.taskqueues, props.computetargets],
   )
 
   const context = useMemo(
     (): Context => ({
-      applications: props.applications,
+      runs: props.runs,
       computetargets: props.computetargets,
       targetOptions:
         props.computetargets.length === 0
@@ -85,7 +80,7 @@ export default function NewWorkerPoolWizard(props: Props) {
               isDisabled: !target.spec.isJaaSWorkerHost,
             })) as TileOptions),
     }),
-    [JSON.stringify(props.applications), JSON.stringify(props.computetargets)],
+    [JSON.stringify(props.runs), JSON.stringify(props.computetargets)],
   )
 
   const title = `Create ${workerpool}`
@@ -107,28 +102,23 @@ export default function NewWorkerPoolWizard(props: Props) {
 }
 
 /** @return A[0] if A.length is 1 */
-function chooseIfSingleton(A: ApplicationSpecEvent[]): string {
+function chooseIfSingleton(A: import("@jaas/common/events/KubernetesResource").default[]): string {
   return A.length === 1 ? A[0].metadata.name : ""
 }
 
 /** If the user desires to associate this Worker Pool with a given `desired` Task Queue, make sure it exists */
-function chooseTaskQueueIfExists(available: Props["taskqueues"], desired: null | string) {
-  if (desired && available.find((_) => _.metadata.name === desired)) {
-    return desired
-  } else {
-    return ""
-  }
+function chooseIfExists<R extends import("@jaas/common/events/KubernetesResource").default>(
+  available: R[],
+  desired: null | string,
+): R | undefined {
+  return available.find((_) => _.metadata.name === desired)
 }
 
-/** @return whether the given Application supports the given Task Queue */
-function supportsTaskQueue(app: ApplicationSpecEvent, taskqueue: string) {
-  const taskqueues = app.spec.inputs ? app.spec.inputs[0].sizes : undefined
-  return (
-    taskqueues &&
-    (taskqueues.xs === taskqueue ||
-      taskqueues.sm === taskqueue ||
-      taskqueues.md === taskqueue ||
-      taskqueues.lg === taskqueue ||
-      taskqueues.xl === taskqueue)
-  )
+/** If the user desires to associate this Worker Pool with a given `desired` Task Queue, make sure it exists */
+function chooseIfExistsByName<R extends import("@jaas/common/events/KubernetesResource").default>(
+  available: R[],
+  desired: null | string,
+): string {
+  const rsrc = chooseIfExists(available, desired)
+  return !rsrc ? "" : rsrc.metadata.name
 }

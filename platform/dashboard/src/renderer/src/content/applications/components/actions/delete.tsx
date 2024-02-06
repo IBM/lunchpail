@@ -9,8 +9,8 @@ export default function deleteAction(props: Props) {
   return (
     <DeleteResourceButton
       key="delete"
+      kind="applications"
       singular={singular}
-      kind="applications.codeflare.dev"
       yaml={yamlFromSpec(props.application)}
       name={props.application.metadata.name}
       namespace={props.application.metadata.namespace}

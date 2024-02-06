@@ -15,6 +15,6 @@ spec:
     endpoint: http://codeflare-s3.codeflare-system.svc.cluster.local:9000
     provision: 'true'
     readonly: 'false'
-    secret-name: openroadmaxutilcfsecret
+    secret-name: openroadmaxutilsecret
     secret-namespace: {{ .Values.namespace }}
     type: COS

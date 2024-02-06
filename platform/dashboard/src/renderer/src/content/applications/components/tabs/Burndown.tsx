@@ -1,4 +1,4 @@
-import type Props from "../Props"
+import type Props from "@jaas/resources/runs/components/Props"
 import taskqueueProps from "../taskqueueProps"
 import unassignedChart from "@jaas/resources/taskqueues/components/unassigned-chart"
 

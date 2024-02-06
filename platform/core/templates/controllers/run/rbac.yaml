@@ -17,7 +17,7 @@ rules:
 
   - apiGroups: [""]
     resources: [secrets]
-    verbs: [get]
+    verbs: [get,create] # create needed by workqueue/ helm template
 
   - apiGroups: [""]
     resources: [configmaps]
@@ -78,7 +78,7 @@ rules:
 
   - apiGroups: [com.ie.ibm.hpsys]
     resources: [datasets]
-    verbs: [get, patch]
+    verbs: [get, patch, create, list] # create needed by workqueue/ helm template; list needed by track_workstealer_logs->find_queue_for_run
 
   - apiGroups: [codeflare.dev]
     resources: [platformreposecrets,platformimagepullsecrets,runsizeconfigurations]

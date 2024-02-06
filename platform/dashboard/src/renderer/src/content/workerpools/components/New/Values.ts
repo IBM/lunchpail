@@ -7,9 +7,12 @@ type Values = DefaultValues<{
   /** Optional environment variables to associate with the workers */
   env?: string
 
+  /** Name of WorkerPool to be created */
   name: string
-  application: string
-  taskqueue: string
+
+  /** Run to associate with */
+  run: string
+
   size: string
   count: string
   supportsGpu: string

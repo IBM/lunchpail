@@ -4,7 +4,9 @@ import { Popover } from "@patternfly/react-core"
 import steps from "./steps" // the Steps of this ProgressStepper
 import { isBodyAndFooter } from "./Step"
 
-export default function ApplicationProgressStepperPopovers(props: import("../Props").default) {
+import type Props from "@jaas/resources/runs/components/Props"
+
+export default function ApplicationProgressStepperPopovers(props: Props) {
   // sigh, patternfly has us managing popover visibility, since we
   // have clickable links inside our Popovers
   const [isVisible, setIsVisible] = useState<boolean[]>(Array(steps.length).fill(false))

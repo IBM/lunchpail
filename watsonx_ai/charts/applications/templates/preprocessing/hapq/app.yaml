@@ -17,7 +17,4 @@ spec:
   inputs:
     - useas: mount
       sizes:
-        xs: hapq
-    - useas: mount
-      sizes:
         xs: hap-models
