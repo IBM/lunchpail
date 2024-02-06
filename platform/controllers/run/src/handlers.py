@@ -331,5 +331,9 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
         # pass through any TemporaryErrors
         logging.info(f"Passing through TemporaryError for Pod event name={name} namespace={namespace}")
         raise e
+    except ApiException as e:
+        # squash 404 errors that arise from patching event info related to now-deleted resources
+        if e.status != 404:
+            raise e
     except Exception as e:
         logging.error(f"Error handling Pod event name={name} namespace={namespace}. {str(e)}")
