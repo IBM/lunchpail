@@ -18,7 +18,7 @@ columnTypes="$9" # column types of simulated input
 sweepMin="${10}"
 sweepMax="${11}"
 sweepStep="${12}"
-dataset_name="${13}"
+queue_dataset="${13}"
 datasets="${14}"
 path_to_chart="${15:-$SCRIPTDIR/workdispatcher}" # :- so that we use the default if $15 is an empty string
 values="${16}"
@@ -41,7 +41,7 @@ helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace
      --set namespace=$namespace \
      --set method=$method \
      --set partOf=$dataset_name \
-     --set queue.dataset=$dataset_name \
+     --set queue.dataset=$queue_dataset \
      --set injectedTasksPerInterval=$injectedTasksPerInterval \
      --set intervalSeconds=$intervalSeconds \
      --set datasets=$datasets \

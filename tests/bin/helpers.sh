@@ -32,9 +32,15 @@ function up {
 
 function waitForIt {
     local name=$1
-    local selector=app.kubernetes.io/part-of=$name
     local ns=$2
     local dones=("${@:3}") # an array formed from everything from the third argument on... 
+
+    # Future readers: the != part is meant to avoid any pods that are
+    # known to be short-lived without this, we may witness a
+    # combination of Ready and Complete (i.e. not-Ready) pods. This is
+    # important because pthe kubectl waits below expect the pods
+    # either to be all-Ready or all-not-Ready.
+    local selector=app.kubernetes.io/part-of=$name,app.kubernetes.io/component!=workdispatcher
 
     if [[ "$4" = ray ]]; then
         local containers="-c job-logs"
