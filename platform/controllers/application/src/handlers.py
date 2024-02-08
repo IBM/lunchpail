@@ -54,7 +54,7 @@ def delete_platformreposecret(name: str, namespace: str, spec, patch, **kwargs):
 @kopf.on.create('datasets.com.ie.ibm.hpsys')
 def create_dataset(name: str, namespace: str, spec, patch, **kwargs):
     logging.info(f"Handling Dataset create name={name}")
-    set_status(name, namespace, "Ready", "com.ie.ibm.hpsys", "v1alpha1", "datasets")
+    set_status(name, namespace, "Ready", "datasets", "com.ie.ibm.hpsys", "v1alpha1")
     set_status(name, namespace, "0", "datasets", "com.ie.ibm.hpsys", "v1alpha1", "unassigned")
 
 @kopf.on.delete('datasets.com.ie.ibm.hpsys')
