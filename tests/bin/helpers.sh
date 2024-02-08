@@ -164,7 +164,7 @@ function waitForStatus {
 }
 
 function deploy {
-    "$SCRIPTDIR"/deploy-tests.sh $1 || exit 0
+    "$SCRIPTDIR"/deploy-tests.sh $1
 }
 
 function undeploy {
@@ -181,4 +181,5 @@ function watch {
         $KUBECTL get pod --show-kind -n codeflare-test --watch &
     fi
     $KUBECTL get pod --show-kind -n codeflare-system --watch &
+    $KUBECTL get run --all-namespaces --watch &
 }

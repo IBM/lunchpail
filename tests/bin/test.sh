@@ -62,14 +62,14 @@ do
     
     if [[ ${#expected[@]} != 0 ]]
     then
-        deploy $testname & D=$!
+        deploy $testname
 
         if [[ -e "$path"/init.sh ]]; then
             TEST_NAME=$testname "$path"/init.sh
         fi
         
         ${handler-waitForIt} $testname ${namespace-codeflare-test} "${expected[@]}" $api
-        undeploy $testname $D
+        undeploy $testname
     fi
 done
 
