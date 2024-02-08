@@ -41,10 +41,10 @@ async function getPodmanMachine(): Promise<null | {
 }
 
 /** @return [machineExists, machineOnline] */
-export async function isPodmanMachineReady(): Promise<["docker-engine" | "podman" | null, boolean]> {
+export async function isPodmanMachineReady(): Promise<["docker-engine" | "podman", boolean]> {
   const machine = await getPodmanMachine()
   if (!machine) {
-    return [null, false]
+    return ["podman", false]
   } else {
     return ["podman", /^running$/i.test(machine.State)]
   }

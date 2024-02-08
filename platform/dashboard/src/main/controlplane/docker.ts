@@ -30,10 +30,10 @@ async function getDockerContainerRuntime(): Promise<null | {
   }
 }
 
-export async function isDockerContainerRuntimeReady(): Promise<["docker-engine" | "podman" | null, boolean]> {
+export async function isDockerContainerRuntimeReady(): Promise<["docker-engine" | "podman", boolean]> {
   const machine = await getDockerContainerRuntime()
   if (!machine) {
-    return [null, false]
+    return ["docker-engine", false]
   } else {
     const runningState = !/(Paused)/.test(machine.Status)
     return ["docker-engine", runningState]
