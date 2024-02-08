@@ -1,18 +1,18 @@
-import type Memos from "../memos"
+/* import type Memos from "../memos"
 import type ManagedEvents from "../ManagedEvent"
 import type { CurrentSettings } from "@jaas/renderer/Settings"
 
 import either from "../../util/either"
-import TaskQueueDetail from "./components/Detail"
+import TaskQueueDetail from "./components/Detail" */
 
-export default function Detail(
-  id: string,
+export default function Detail() {
+/* id: string,
   context: string,
   events: ManagedEvents,
   { taskqueueIndex, taskqueueToPool, taskqueueToWorkDispatchers }: Memos,
-  settings: CurrentSettings,
-) {
-  const thisTaskqueueEvents = events.taskqueues.filter((_) => _.metadata.name === id && _.metadata.context === context)
+  settings: CurrentSettings, */
+  return { body: <>'Not implemented'</> }
+  /* const thisTaskqueueEvents = events.taskqueues.filter((_) => _.metadata.name === id && _.metadata.context === context)
   if (thisTaskqueueEvents.length === 0) {
     return undefined
   } else {
@@ -30,5 +30,5 @@ export default function Detail(
     }
 
     return { body: TaskQueueDetail(props) }
-  }
+  } */
 }

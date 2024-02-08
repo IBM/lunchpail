@@ -36,7 +36,7 @@ export default function computeTab(props: Props) {
   }
 
   // any associated workerpools?
-  const models = props.latestWorkerPoolModels.filter((_) => _.application === props.application.metadata.name)
+  const models = props.latestWorkerPoolModels.filter((_) => _.run === props.run.metadata.name)
   const nWorkerPools = models.length
 
   // in case we want to show nWorkers rather than nWorkerPools as

@@ -7,12 +7,12 @@ import toWorkerPoolModel from "./workerpools/toWorkerPoolModel"
 import type ManagedEvents from "./ManagedEvent"
 import type QueueEvent from "@jaas/common/events/QueueEvent"
 import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
-import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
+// import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 import type { WorkerPoolModelWithHistory } from "./workerpools/WorkerPoolModel"
 
 type Memos = {
   taskqueueIndex: Record<string, number>
-  taskqueueToPool: Record<string, WorkerPoolStatusEvent[]>
+  // taskqueueToPool: Record<string, WorkerPoolStatusEvent[]>
   taskqueueToWorkDispatchers: Record<string, WorkDispatcherEvent[]>
   latestWorkerPoolModels: WorkerPoolModelWithHistory[]
 }
@@ -39,7 +39,7 @@ export function initMemos(events: ManagedEvents): Memos {
   )
 
   /** A memo of the mapping from TaskQueue to WorkerPools */
-  const taskqueueToPool = useMemo(
+  /* const taskqueueToPool = useMemo(
     () =>
       workerpools.reduce(
         (M, event) => {
@@ -54,7 +54,7 @@ export function initMemos(events: ManagedEvents): Memos {
         {} as Record<string, WorkerPoolStatusEvent[]>,
       ),
     [workerpools],
-  )
+  ) */
 
   /**
    * A memo of the mapping from TaskQueue to its position in the UI --
@@ -100,7 +100,7 @@ export function initMemos(events: ManagedEvents): Memos {
 
   return {
     taskqueueIndex,
-    taskqueueToPool,
+    // taskqueueToPool,
     taskqueueToWorkDispatchers,
     latestWorkerPoolModels,
   }

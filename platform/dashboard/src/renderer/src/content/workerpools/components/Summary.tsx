@@ -7,7 +7,7 @@ import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
-import { name as applicationsName } from "@jaas/resources/applications/name"
+import { name as runsName } from "@jaas/resources/runs/name"
 
 import type Props from "./Props"
 
@@ -15,9 +15,9 @@ function completionRate(props: Props) {
   return <Sparkline data={completionRateHistory(props.model.events)} />
 }
 
-function latestApplications(props: Props) {
+function latestRuns(props: Props) {
   if (props.status) {
-    return [props.status.spec.application.name]
+    return [props.status.spec.run.name]
   }
   return null
 }
@@ -69,11 +69,11 @@ export function statusActions(
 }
 
 export function summaryGroups(props: Props, statusOnly = false) {
-  const applications = latestApplications(props)
+  const runs = latestRuns(props)
 
   return [
     statusOnly && enqueuedGroup(props),
-    !statusOnly && applications && descriptionGroup(applicationsName, linkToAllDetails("applications", applications)),
+    !statusOnly && runs && descriptionGroup(runsName, linkToAllDetails("runs", runs)),
     // descriptionGroup("Number of Workers", count(props)),
     descriptionGroup("Tasks Currently Processing", numProcessing(props)),
     props.model.events.length > 1 &&

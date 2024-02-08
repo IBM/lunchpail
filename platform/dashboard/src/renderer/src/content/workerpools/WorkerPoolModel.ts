@@ -13,8 +13,8 @@ export interface WorkerPoolModel {
   /** Namespace in which this model is stored */
   namespace: string
 
-  /** Application to which this pool is assigned */
-  application: string
+  /** Run to which this pool is assigned */
+  run: string
 
   /** The cluster in which this resources resides */
   context: string

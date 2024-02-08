@@ -38,7 +38,7 @@ export default function taskqueueProps(
         idx: props.taskqueueIndex[queues[0]],
         events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
         applications: [props.application],
-        workerpools: props.workerpools.filter((_) => _.spec.application.name === props.application.metadata.name),
+        workerpools: props.workerpools.filter((_) => _.spec.run.name === props.run.metadata.name),
         workdispatchers: props.workdispatchers,
         settings: props.settings,
       }

@@ -12,7 +12,7 @@ import type Props from "@jaas/resources/runs/components/Props"
 import { oopsNoQueue } from "../oops"
 
 function associatedWorkerPools(props: Props) {
-  return props.workerpools.filter((_) => _.spec.application.name === props.application.metadata.name)
+  return props.workerpools.filter((_) => _.spec.run.name === props.run.metadata.name)
 }
 
 function noWorkers() {

@@ -14,7 +14,7 @@ import getNormallyDistributedRandomNumber from "../util/rand"
 export type DemoWorkerPool = {
   name: string
   numWorkers: number
-  application: string
+  run: string
   taskqueue: string
   inboxes: Record<string, number>[]
   outboxes: Record<string, number>[]
@@ -54,8 +54,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
         },
       },
       spec: {
-        application: { name: workerpool.application },
-        dataset: workerpool.taskqueue,
+        run: { name: workerpool.run },
         workers: {
           size: "md",
           supportsGpu: false,
@@ -196,7 +195,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
     const pool = {
       name: values.name,
       numWorkers,
-      application: values.application,
+      run: values.run,
       taskqueue: values.taskqueue,
       inboxes: Array(numWorkers)
         .fill(0)

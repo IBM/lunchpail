@@ -7,13 +7,10 @@ type WorkerPoolStatusEvent = KubernetesResource<
   "codeflare.dev/v1alpha1",
   "WorkerPool",
   {
-    /** Applications that this WorkerPool supports */
-    application: {
+    /** Run that this WorkerPool supports */
+    run: {
       name: string
     }
-
-    /** DataSets that this WorkerPool supports */
-    dataset: string
 
     /** Attributes of the workers */
     workers: {
