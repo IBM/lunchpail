@@ -80,7 +80,7 @@ export default function NewWorkDispatcherWizard(props: Props) {
   const getYaml = useCallback((values) => yaml(values, run), [run])
 
   const action = "register"
-  const title = `Start a ${workdispatcher}`
+  const title = `New ${workdispatcher}${runFromSearch ? ` for ${runFromSearch}` : ""}`
   const steps = [step1, step2, step3]
 
   return (
