@@ -112,7 +112,7 @@ export default function PageWithMastheadAndModal(props: Props) {
       className="codeflare--dashboard"
     >
       <PageSection variant="light">
-        <Card isPlain isLarge className="codeflare--dashboard-header">
+        <Card isPlain isLarge className="codeflare--dashboard-header" ouiaId={props.title?.toString()}>
           <CardHeader actions={actions} className="codeflare--dashboard-header-card-header">
             <CardTitle component="h1">{props.title}</CardTitle>
           </CardHeader>

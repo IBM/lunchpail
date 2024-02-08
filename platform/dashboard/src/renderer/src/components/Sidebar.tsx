@@ -20,7 +20,7 @@ function SidebarNavItems(props: Props & { providers: NavigableContentProvider[] 
     <>
       {props.providers.map(({ kind, name, title, sidebar }) => {
         return (
-          <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind)}>
+          <NavItem key={kind} to={hashIfNeeded(kind)} isActive={isShowingKind(kind)} ouiaId={kind + "." + name}>
             {title ?? name}{" "}
             <Badge isRead style={marginLeft}>
               {props[kind]} {typeof sidebar === "object" && sidebar.badgeSuffix}
