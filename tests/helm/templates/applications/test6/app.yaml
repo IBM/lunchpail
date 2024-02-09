@@ -10,4 +10,7 @@ spec:
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test6
   command: ./main.sh
   supportsGpu: True
+  env:
+    xxx: "3333"
+    yyy: "4444"
 {{- end }}

@@ -1,4 +1,6 @@
 import os
+import json
+import base64
 import logging
 import subprocess
 from kopf import PermanentError
@@ -21,6 +23,11 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     memory = run_size_config['memory']
     nWorkers = run_size_config['workers']
 
+    # environment variables; merge application spec with run spec
+    env = application['spec']['env'] if 'env' in application['spec'] else {}
+    if 'env' in spec:
+        env.update(spec['env'])
+
     try:
         shell_out = subprocess.run([
             "/src/shell.sh",
@@ -36,7 +43,8 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             str(nWorkers),
             str(cpu),
             str(memory),
-            str(gpu)
+            str(gpu),
+            base64.b64encode(json.dumps(env).encode('ascii')),
         ], capture_output=True)
 
         logging.info(f"Shell callout done for name={name} with returncode={shell_out.returncode}")

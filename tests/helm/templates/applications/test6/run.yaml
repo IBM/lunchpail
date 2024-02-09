@@ -8,4 +8,6 @@ spec:
   application:
     name: test6
   options: "-x xxxx yyyy zzzz"
+  env:
+    yyy: "5555" # override just yyy from the env in app.yaml
 {{ end }}

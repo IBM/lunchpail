@@ -19,6 +19,7 @@ nWorkers="${10}"
 cpu="${11}"
 memory="${12}"
 gpu="${13}"
+env="${14}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -39,6 +40,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
      --set workdir.clusterIP=$WORKDIR_SERVER \
+     --set env="$env" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
