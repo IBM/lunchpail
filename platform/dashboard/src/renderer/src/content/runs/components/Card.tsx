@@ -22,7 +22,7 @@ function description(props: Props) {
 }
 
 export default function ApplicationCard(props: Props) {
-  const { name, context } = props.application.metadata
+  const { name, context } = props.run.metadata
   const queueProps = useMemo(() => taskqueueProps(props), [props])
 
   const groups = useMemo(
