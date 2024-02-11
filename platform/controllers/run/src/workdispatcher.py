@@ -146,12 +146,10 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
                 "namespace": workdispatcher_app_namespace
             },
             "env": env,
-            "internal": {
-                "queue": {
-                    "dataset": {
-                        "name": queue_dataset,
-                        "useas": "configmap",
-                    }
+            "queue": {
+                "dataset": {
+                    "name": queue_dataset,
+                    "useas": "configmap",
                 }
             }
         }

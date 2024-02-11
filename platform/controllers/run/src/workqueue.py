@@ -23,10 +23,10 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
 
     logging.info(f"About to call out to WorkQueue run_id={run_id}")
     try:
-        # if spec.internal.queue is provided, use that specified
-        # queue, otherwise create a new one
-        if 'internal' in spec and 'queue' in spec['internal']:
-            queue_dataset = spec['internal']['queue']['dataset']['name']
+        # if spec.queue is provided, use that specified queue,
+        # otherwise create a new one
+        if 'queue' in spec:
+            queue_dataset = spec['queue']['dataset']['name']
             create_queue = False
         else:
             queue_dataset = re.sub("-", "", name)

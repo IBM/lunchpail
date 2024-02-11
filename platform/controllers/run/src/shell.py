@@ -30,8 +30,8 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
         env.update(spec['env'])
 
     # are we to be associated with a task queue?
-    if 'internal' in spec and 'queue' in spec['internal']:
-        queue_spec = spec['internal']['queue']['dataset']
+    if 'queue' in spec:
+        queue_spec = spec['queue']['dataset']
         queue_useas = queue_spec['useas'] if 'useas' in queue_spec else 'mount'
         queue_dataset = queue_spec['name']
         dataset_labels = add_dataset(queue_dataset, queue_useas, dataset_labels_arr)

@@ -24,7 +24,8 @@ spec:
                 application:
                   type: object
                   required: [name]
-                  description: The application logic that workers should execute
+                  description: |
+                    The application logic that workers should execute
                   properties:
                     name:
                       type: string
@@ -34,7 +35,10 @@ spec:
                   type: string
                 env:
                   type: object
-                  description: Environment variables to pass to workers. These will override any specified by the application definition.
+                  description: |
+                    Environment variables to pass to workers. These
+                    will override any specified by the application
+                    definition.
                   additionalProperties:
                     type: string
                 priority:
@@ -61,37 +65,32 @@ spec:
                 inbox:
                   type: string
 
-                # For internal use only
-                internal:
+                # Advanced use cases
+                queue:
                   type: object
                   description: |
-                    Values used internally to facilitate more complex scenarios.
+                    By default, Runs of api=workqueue will be
+                    allocated a new queue. If internal.queue is
+                    specified, instead this Run will be associated
+                    with an existing queue, as specified by the
+                    properties herein.
+                  required: [dataset]
                   properties:
-                    queue:
+                    dataset:
                       type: object
-                      description: |
-                        By default, Runs of api=workqueue will be
-                        allocated a new queue. If internal.queue is
-                        specified, instead this Run will be associated
-                        with an existing queue, as specified by the
-                        properties herein.
-                      required: [dataset]
+                      required: [name]
                       properties:
-                        dataset:
-                          type: object
-                          required: [name]
-                          properties:
-                            name:
-                              type: string
-                              description: |
-                                The name of the Dataset resource that defines the task queue.
-                            useas:
-                              type: string
-                              enum: [configmap, mount]
-                              description: |
-                                Whether to manifest the dataset to the
-                                workers as environment variables
-                                (configmap) or as a mounted filesystem
+                        name:
+                          type: string
+                          description: |
+                            The name of the Dataset resource that defines the task queue.
+                        useas:
+                          type: string
+                          enum: [configmap, mount]
+                          description: |
+                            Whether to manifest the dataset to the
+                            workers as environment variables
+                            (configmap) or as a mounted filesystem
                           
 
       # subresources for the custom resource
