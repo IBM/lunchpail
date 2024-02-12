@@ -26,7 +26,7 @@ def load_run_size_config(customApi, size: str):
         items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
         return sorted(items,
                       key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
-    except ApiException as e:
+    except Exception as e:
         logging.info(f"RunSizeConfiguration policy not found")
         return {"cpu": 1, "memory": "1Gi", "gpu": 1, "workers": 1}
 

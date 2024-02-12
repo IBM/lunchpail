@@ -8,14 +8,19 @@ set -o pipefail
 # e.g. see 7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
-while getopts "gu" opt
+while getopts "lgui:e:" opt
 do
     case $opt in
+        l) export HELM_INSTALL_FLAGS="--set lite=true"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
+        e) EXCLUDE=$OPTARG; continue;;
+        i) INCLUDE=$OPTARG; continue;;
         g) DEBUG=true; continue;;
         u) BRING_UP_CLUSTER=true; continue;;
     esac
 done
 shift $((OPTIND-1))
+
+export TEST_FROM_ARGV="$1"
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/../../hack/settings.sh
@@ -24,9 +29,9 @@ function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)
     if [[ -z "$NO_KUBEFLOW" ]]
     then
-        "$MAIN_SCRIPTDIR"/../../hack/up.sh -t # -t says don't watch, just return when you are done
+        "$MAIN_SCRIPTDIR"/../../hack/up.sh -t $UP_FLAGS # -t says don't watch, just return when you are done
     else
-        "$MAIN_SCRIPTDIR"/../../hack/up-no-kfp.sh -t # -t says don't watch, just return when you are done
+        "$MAIN_SCRIPTDIR"/../../hack/up-no-kfp.sh -t $UP_FLAGS # -t says don't watch, just return when you are done
     fi
 }
 

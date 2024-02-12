@@ -7,3 +7,9 @@ datasets:
   s3:
     secret:
       name: cfp-test-dataset-s3
+
+github_ibm_com:
+  secret:
+    name: github-ibm-com-jaas
+    user: xxx # replaced by HELM_SECRETS in deploy-tests.sh
+    pat: yyy # replaced by HELM_SECRETS in deploy-tests.sh

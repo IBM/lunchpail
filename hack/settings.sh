@@ -28,9 +28,10 @@ export HELM="helm --kube-context kind-${CLUSTER_NAME}"
 
 if [[ -z "$NO_GETOPTS" ]]
 then
-    while getopts "tk:" opt
+    while getopts "ltk:" opt
     do
         case $opt in
+            l) echo "Running up in lite mode"; export LITE=1; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.lite=true --set tags.examples=false --set tags.defaults=false --set tags.full=false --set tags.core=true"; continue;;
             t) RUNNING_TESTS=true; continue;;
             k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
         esac

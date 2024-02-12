@@ -1,4 +1,4 @@
-{{ if (eq .Values.app "hapq") }}
+{{ if and (not .Values.lite) (eq .Values.app "hapq") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:

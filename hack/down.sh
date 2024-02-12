@@ -16,7 +16,10 @@ then
 fi
 
 echo "$(tput setaf 2)Shutting down JaaS$(tput sgr0)"
-($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM
+if [[ -z "$LITE" ]]
+then ($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM
+fi
+
 ($HELM ls | grep -q $PLA) && $HELM delete --wait $PLA
 
 ## WARNING!!! order matters in the above; e.g. don't delete examples

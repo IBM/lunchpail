@@ -16,15 +16,6 @@ TOP="$SCRIPTDIR"/../..
 
 . "$SCRIPTDIR"/helpers.sh
 
-while getopts "gu" opt
-do
-    case $opt in
-        g) DEBUG=true; continue;;
-        u) BRING_UP_CLUSTER=true; continue;;
-    esac
-done
-shift $((OPTIND-1))
-
 undeploy
 up
 watch
@@ -32,15 +23,50 @@ watch
 # test app not found
 for path in "$SCRIPTDIR"/../tests/*
 do
-    # skip over non-tests, and any tests not $1 (i.e. if the user asked to run a specific test)
-    if [[ $(basename $path) =~ "README.md" ]] || [[ -n "$1" ]] && [[ $1 != $(basename $path) ]]
-    then continue
+    base="$(basename $path)"
+
+    # skip over non-tests, and any tests not $TEST_FROM_ARGV (i.e. if the user asked to run a specific test)
+    if [[ $base =~ "README.md" ]]
+    then
+        echo "$(tput setaf 3)🧪 Skipping non-test $base$(tput sgr0)"
+        continue
+    fi
+
+    if [[ -n "$TEST_FROM_ARGV" ]] && [[ $TEST_FROM_ARGV != $base ]]
+    then
+        echo "$(tput setaf 3)🧪 Skipping due to non-match $base$(tput sgr0)"
+        continue
+    fi
+                                                                                    
+    # skip tests without a settings.sh
+    if [[ ! -e "$path"/settings.sh ]]
+    then
+        echo "$(tput setaf 3)🧪 Skipping due to missing settings.sh $base$(tput sgr0)"
+        continue
+    fi
+
+    # skip excluded tests
+    if [[ -n "$EXCLUDE" ]] && echo "$base" | grep -Eq $EXCLUDE
+    then
+        echo "$(tput setaf 3)🧪 Skipping excluded $base$(tput sgr0)"
+        continue
+    fi
+
+    # skip not-included tests
+    if [[ -n "$INCLUDE" ]] && echo "$path" | grep -Eqv $INCLUDE
+    then
+        echo "$(tput setaf 3)🧪 Skipping not-included $base$(tput sgr0)"
+        continue
     fi
 
     # skip over disabled tests
-    if [[ -e $path/.disabled ]]
-    then continue
+    if [[ -e "$path"/.disabled ]]
+    then
+        echo "$(tput setaf 3)🧪 Skipping disabled test $base$(tput sgr0)"
+        continue
     fi
+
+    echo "$(tput setaf 2)🧪 Commencing test $base$(tput sgr0)"
 
     unset api
     unset handler
@@ -50,7 +76,7 @@ do
 
     . "$path"/settings.sh
 
-    testname=${testname-$(basename $path)}
+    testname="${testname-$(basename $path)}"
 
     if [[ -e "$path"/data.sh ]]; then
         echo "$(tput setaf 2)🧪 Copying in data for $testname$(tput sgr0)" 1>&2

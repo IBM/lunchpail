@@ -67,8 +67,12 @@ function push {
 function build_controllers {
     for controllerDir in "$SCRIPTDIR"/../platform/controllers/*; do
         local controller=$(basename "$controllerDir")
-        local image=${IMAGE_REPO}codeflare-${controller}-controller:$VERSION
-        (build "$controllerDir" $image ; push $image) &
+
+        if [[ -z "$LITE" ]]
+        then
+            local image=${IMAGE_REPO}codeflare-${controller}-controller:$VERSION
+            (build "$controllerDir" $image ; push $image) &
+        fi
 
         # built "lite" version if Dockerfile.lite exists
         if [[ -f "$controllerDir"/Dockerfile.lite ]]

@@ -5,9 +5,10 @@ services:
 
 env:
   - SCRIPT=test.sh
+  - SCRIPT=test.sh SCRIPT_ARGS="-l -i 'test7.*'" # run in "lite" mode and run only the test7* tests
 #  - SCRIPT=ibmcloud-gpu.sh <-- FIXME gpu allocations are failing
   - SCRIPT=dashboard.sh
 
 before_install: ./hack/travis/setup.sh
-script: bash -c "./tests/bin/$SCRIPT"
+script: bash -c "./tests/bin/$SCRIPT $SCRIPT_ARGS"
 after_script: if [[ -f /tmp/gpu-config.json ]]; then ./hack/ibmcloud/delete_vm.sh "$(cat /tmp/gpu-config.json)"; fi

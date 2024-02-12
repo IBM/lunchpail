@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.12-alpine
 
 RUN apk update && apk add --no-cache bc ca-certificates curl git bash && \
         if [ $(uname -m) = aarch64 ]; then ARCH=arm64; else ARCH=amd64; fi && \
