@@ -20,7 +20,11 @@ if [[ -z "$LITE" ]]
 then ($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM
 fi
 
-($HELM ls | grep -q $PLA) && $HELM delete --wait $PLA
+($HELM ls | grep -q $PLA) && $HELM delete --wait $PLA -n $NAMESPACE_SYSTEM
+
+# sigh, we can do helm install --create-namespace... but on the delete
+# side, we're on our own:
+$KUBECTL delete ns $NAMESPACE_SYSTEM
 
 ## WARNING!!! order matters in the above; e.g. don't delete examples
 ## after deleting crds, or helm gets supremely confused ANGR EMOJI

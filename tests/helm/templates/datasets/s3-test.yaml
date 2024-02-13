@@ -6,7 +6,7 @@ metadata:
 spec:
   local:
     type: "COS"
-    endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+    endpoint: {{ .Values.global.s3Endpoint }}
     secret-name: {{ .Values.datasets.s3.secret.name }}
     secret-namespace: {{ .Values.namespace }}
     provision: "true" # DLF will allocate bucket on the COS if it doesn't exist [Default: false]

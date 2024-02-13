@@ -4,8 +4,8 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/../../hack/secrets.sh
 . "$SCRIPTDIR"/../../hack/settings.sh
+. "$SCRIPTDIR"/../../hack/secrets.sh
 
 if [[ -n $1 ]]; then
     APP="--set app=$1"

@@ -3,7 +3,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: codeflare-run-controller-account
-  namespace: {{ .Values.controllers.namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -121,7 +120,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: codeflare-run-controller-role-namespaced
-  namespace: {{ .Values.controllers.namespace }}
 rules:
 
   - apiGroups: [""]
@@ -175,13 +173,12 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: codeflare-run-controller-account
-    namespace: {{ .Values.controllers.namespace }}
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: codeflare-run-controller-rolebinding-namespaced
-  namespace: {{ .Values.controllers.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

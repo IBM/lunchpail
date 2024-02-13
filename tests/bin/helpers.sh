@@ -185,6 +185,6 @@ function watch {
         $KUBECTL get appwrapper --show-kind -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
         $KUBECTL get pod --show-kind -n codeflare-test --watch &
     fi
-    $KUBECTL get pod --show-kind -n codeflare-system --watch &
+    $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
     $KUBECTL get run --all-namespaces --watch &
 }

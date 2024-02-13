@@ -45,6 +45,12 @@ spec:
             value: {{ .Values.workdir.clusterIP }}
           - name: DOCKER_HOST
             value: {{ .Values.global.dockerHost | default "host.docker.internal" }}
+          - name: INTERNAL_S3_ENDPOINT
+            value: {{ .Values.global.s3Endpoint }}
+          - name: INTERNAL_S3_ACCESSKEY
+            value: {{ .Values.global.s3AccessKey }}
+          - name: INTERNAL_S3_SECRETKEY
+            value: {{ .Values.global.s3SecretKey }}
         volumeMounts:
         - name: workdir
           mountPath: /workdir

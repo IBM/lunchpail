@@ -30,6 +30,9 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workqueue/ -n ${namespace} \
      --set taskqueue.dataset=$queue_dataset \
      --set taskqueue.bucket=$name \
      --set datasets=$dataset_labels \
+     --set global.s3Endpoint=$INTERNAL_S3_ENDPOINT \
+     --set global.s3AccessKey=$INTERNAL_S3_ACCESSKEY \
+     --set global.s3SecretKey=$INTERNAL_S3_SECRETKEY \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

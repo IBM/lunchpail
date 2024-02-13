@@ -17,6 +17,9 @@ IMAGE_REPO=ghcr.io/project-codeflare/
 # for local testing
 CLUSTER_NAME=${CLUSTER_NAME-jaas}
 
+# namespaces to use
+NAMESPACE_SYSTEM=codeflare-system
+
 if lspci 2> /dev/null | grep -iq nvidia; then
     HAS_NVIDIA=true
 else

@@ -22,7 +22,7 @@ spec:
   local:
     type: "COS"
     bucket: {{ .Values.taskqueue.bucket }}
-    endpoint: {{ .Values.taskqueue.endpoint | default "http://codeflare-s3.codeflare-system.svc.cluster.local:9000" }}
+    endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint }}
     secret-name: {{ print .Values.taskqueue.dataset "jaassecret" }}
     secret-namespace: {{ .Values.namespace }}
     provision: "true"

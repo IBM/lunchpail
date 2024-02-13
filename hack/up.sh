@@ -4,8 +4,8 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/secrets.sh
 . "$SCRIPTDIR"/settings.sh
+. "$SCRIPTDIR"/secrets.sh
 
 CODEFLARE_PREP_INIT=1 "$SCRIPTDIR"/init.sh
 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/build.sh &
@@ -35,7 +35,7 @@ then
 fi
 
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
-$HELM install $PLA platform $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES $SET_DOCKER_HOST $HELM_INSTALL_FLAGS
+$HELM install -n $NAMESPACE_SYSTEM --create-namespace $PLA platform $HELM_SECRETS --set controllers.namespace=$NAMESPACE_SYSTEM --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES $SET_DOCKER_HOST $HELM_INSTALL_FLAGS
 
 if [[ -z "$LITE" ]]
 then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS
@@ -50,21 +50,21 @@ then
     done
 fi
 
-$KUBECTL get pod --show-kind -n codeflare-system --watch &
+$KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
 watch=$!
 
 echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
-$KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev -n codeflare-system --for=condition=ready --timeout=-1s
+$KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
 
 echo "$(tput setaf 2)Waiting for datashim to be ready$(tput sgr0)"
-$KUBECTL wait pod -l app.kubernetes.io/name=dlf -n default --for=condition=ready --timeout=-1s
+$KUBECTL wait pod -l app.kubernetes.io/name=dlf -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
 
 # echo "$(tput setaf 2)Waiting for image cacher to be ready$(tput sgr0)"
 # $KUBECTL wait pod -l app.kubernetes.io/name=kube-fledged -n default --for=condition=ready --timeout=-1s
 
 if [[ "$HAS_NVIDIA" = true ]]; then
     echo "$(tput setaf 2)Waiting for gpu operator to be ready$(tput sgr0)"
-    $KUBECTL wait pod -l app.kubernetes.io/managed-by=gpu-operator --for=condition=ready --timeout=-1s
+    $KUBECTL wait pod -l app.kubernetes.io/managed-by=gpu-operator -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
 fi
 
 kill $watch 2> /dev/null
