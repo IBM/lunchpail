@@ -139,10 +139,10 @@ func main() {
 
 				if _, err := os.Stat(filepath.Join(inbox, fileName+".lock")); err == nil {
 					nAssigned++
-					fmt.Printf("[workstealer] skipping already-locked file=%s nUnassigned=%d\n", file, nAssigned)
+					fmt.Printf("[workstealer] skipping already-locked file=%s nAssigned=%d\n", fileName, nAssigned)
 				} else if fi, err := os.Stat(queue); err == nil && fi.IsDir() && fileName != "" {
 					nAssigned++
-					fmt.Printf("[workstealer] Moving task=%s to queue=%s nUnassigned=%d\n", fileName, queue, nAssigned)
+					fmt.Printf("[workstealer] Moving task=%s to queue=%s nAssigned=%d\n", fileName, queue, nAssigned)
 					os.WriteFile(filepath.Join(inbox, fileName+".lock"), []byte(workerDir), 0644)
 					data, _ := os.ReadFile(filepath.Join(inbox, fileName))
 					os.WriteFile(filepath.Join(queue, fileName), data, 0644)
