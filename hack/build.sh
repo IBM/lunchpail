@@ -108,6 +108,8 @@ function build_components {
 
 function build_test_images {
     for imageDir in "$SCRIPTDIR"/../tests/base-images/*; do
+        if [[ -e "$imageDir"/.disabled ]]; then continue; fi
+
         local imageName=$(basename "$imageDir")
         local image=${IMAGE_REPO}codeflare-${imageName}-test:$VERSION
         (build "$imageDir" $image ; push $image) &
