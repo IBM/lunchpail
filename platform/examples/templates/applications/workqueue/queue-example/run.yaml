@@ -3,7 +3,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
   name: queue-example
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: examples
     app.kubernetes.io/part-of: codeflare.dev

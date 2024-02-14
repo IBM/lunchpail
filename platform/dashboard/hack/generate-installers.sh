@@ -3,6 +3,8 @@
 set -e
 set -o pipefail
 
+NAMESPACE_USER=jaas-user
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 OUTDIR="$SCRIPTDIR"/../resources
 TOP="$SCRIPTDIR"/../../..
@@ -39,7 +41,7 @@ helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platf
      > "$OUTDIR"/jaas-defaults.yml
 
 # examples
-helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platform $HELM_DEMO_SECRETS --set tags.examples=true --set tags.defaults=false --set tags.full=false --set tags.core=false \
+helm template --include-crds $NAMESPACE_USER -n $NAMESPACE_USER "$TOP"/platform $HELM_DEMO_SECRETS --set tags.examples=true --set tags.defaults=false --set tags.full=false --set tags.core=false \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$OUTDIR"/jaas-examples.yml

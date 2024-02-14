@@ -1,15 +1,12 @@
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
-  annotations:
-    codeflare.dev/status: Ready
-  creationTimestamp: '2023-12-01T18:34:59Z'
   labels:
     app.kubernetes.io/component: openroad-max-util
     app.kubernetes.io/part-of: codeflare.dev
     codeflare.dev/created-by: user
   name: openroad-max-util
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   api: workqueue
   tags: [EDA]
