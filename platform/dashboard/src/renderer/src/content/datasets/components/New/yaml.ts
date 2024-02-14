@@ -10,7 +10,7 @@ function secretName(values: FormContextProps["values"]) {
 }
 
 function endpoint(values: FormContextProps["values"]) {
-  return values.endpoint ?? "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
+  return values.endpoint
 }
 
 function isReadOnly(values: FormContextProps["values"]): boolean {

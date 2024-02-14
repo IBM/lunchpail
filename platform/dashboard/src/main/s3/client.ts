@@ -49,9 +49,9 @@ export default async function S3Client(endpoint: string, accessKey: string, secr
     return clients[memoKey]
   }
 
+  // e.g. service_name.namespace_name.svc.cluster.local:9000
   const maybeLocalMatch = endPoint.match(/^([^.]+)\.([^.]+)\.([^.]+)\.cluster.local:(\d+)$/)
   if (maybeLocalMatch) {
-    // e.g. codeflare-s3.codeflare-system.svc.cluster.local:9000
     const [, serviceName, serviceNamespace, serviceKind, servicePort] = maybeLocalMatch
     const { child, localEndPoint, localPort } = await establishPortForward(
       serviceName,

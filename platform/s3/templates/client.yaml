@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ print .Values.name "-client" }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/part-of: codeflare.dev
     app.kubernetes.io/component: s3

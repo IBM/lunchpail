@@ -1,0 +1,8 @@
+{{- if .Values.global.jaas.namespace.create }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.global.jaas.namespace.name }}
+  labels:
+    app.kubernetes.io/name: jaas
+{{- end }}

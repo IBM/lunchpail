@@ -35,7 +35,7 @@ then
 fi
 
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
-$HELM install -n $NAMESPACE_SYSTEM --create-namespace $PLA platform $HELM_SECRETS --set controllers.namespace=$NAMESPACE_SYSTEM --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES $SET_DOCKER_HOST $HELM_INSTALL_FLAGS
+$HELM install -n $NAMESPACE_SYSTEM --create-namespace $PLA platform $HELM_SECRETS --set global.jaas.namespace.create=false --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES $SET_DOCKER_HOST $HELM_INSTALL_FLAGS
 
 if [[ -z "$LITE" ]]
 then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS

@@ -2,8 +2,9 @@ import { file } from "tmp-promise"
 import { promisify } from "node:util"
 import { exec } from "node:child_process"
 
-import type Action from "./action"
+import { getControlPlaneNamespaceForExistingInstallation } from "./namespace"
 
+import type Action from "./action"
 export type ApplyProps = { action: Action; cluster: string }
 
 /** Context and cluster options for kubectl command line */
@@ -99,8 +100,8 @@ export async function waitForNamespaceTermination(props: ApplyProps, component: 
 export async function restartControllers(props: ApplyProps) {
   const execPromise = promisify(exec)
   await execPromise(
-    `kubectl rollout restart deployment -n codeflare-system ${clusterOpts(props).join(
-      " ",
-    )} -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/component=controller`,
+    `kubectl rollout restart deployment -n ${await getControlPlaneNamespaceForExistingInstallation(props.cluster)} ${clusterOpts(
+      props,
+    ).join(" ")} -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/component=controller`,
   )
 }

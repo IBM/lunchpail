@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: codeflare-run-controller
-  namespace: {{ .Values.controllers.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: run-controller
     app.kubernetes.io/part-of: codeflare.dev
