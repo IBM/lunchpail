@@ -5,15 +5,15 @@ set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
-uid="$1"
-name="$2"
+uid="$1" # the kubernetes uid for the Run
+name="$2" # run name
 namespace="$3"
-part_of="$4"
-run_id="$5"
-inbox="$6"
-queue_dataset="$7"
-create_queue="$8" # true or false
-dataset_labels="$9"
+part_of="$4" # in case this run is part of e.g. an enclosing sequence flow
+run_id="$5" # we should probably do away with this? run name with some uuid fuzz
+inbox="$6" # in case the Run wants to use a non-standard name for the inbox
+queue_dataset="$7" # name of the queue Dataset
+create_queue="$8" # true or false; if false, we assume the queue Dataset already exists
+dataset_labels="$9" # any other datasets to mount into the workqueue pods
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
