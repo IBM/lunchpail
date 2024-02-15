@@ -181,6 +181,16 @@ function addDeletions(previous: ComputeTargetEvent[], current: ComputeTargetEven
 async function* computeTargetsStringGenerator(): AsyncGenerator<string> {
   let previousModel: ComputeTargetEvent[] | null = null
   for await (const events of computeTargetsGenerator()) {
+    if (previousModel) {
+      const pm = previousModel
+      events.forEach((event) => {
+        const previousEvent = pm.find((_) => _.metadata.name === event.metadata.name)
+        if (previousEvent) {
+          event.metadata.creationTimestamp = previousEvent.metadata.creationTimestamp
+        }
+      })
+    }
+
     if (previousModel !== null) {
       addDeletions(previousModel, events)
     } else {

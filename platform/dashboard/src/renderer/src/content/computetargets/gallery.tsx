@@ -1,3 +1,5 @@
+import { useMemo } from "react"
+
 import Gallery from "@jaas/renderer/components/Gallery"
 
 import Card from "./components/Card"
@@ -26,12 +28,19 @@ function sorter(a: GalleryEvent, b: GalleryEvent) {
 
 const widths = { default: "21em" }
 
-export default function ComputeTargetsGallery(events: ManagedEvents /*, memos: Memos, settings: CurrentSettings*/) {
+export default function gallery(events: ManagedEvents /*, memos: Memos, settings: CurrentSettings*/) {
+  return <ComputeTargetsGallery computetargets={events.computetargets} />
+}
+
+function ComputeTargetsGallery(props: Pick<ManagedEvents, "computetargets">) {
+  const cards = useMemo(
+    () => props.computetargets.sort(sorter).map((event) => <Card key={event.metadata.name} {...event} />),
+    [JSON.stringify(props.computetargets)],
+  )
+
   return (
     <Gallery minWidths={widths} maxWidths={widths}>
-      {events.computetargets.sort(sorter).map((event) => (
-        <Card key={event.metadata.name} {...event} />
-      ))}
+      {cards}
     </Gallery>
   )
 }
