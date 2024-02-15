@@ -128,7 +128,7 @@ async function* computeTargetsGenerator(): AsyncGenerator<ComputeTargetEvent[], 
         yield events
       }
     } catch (err) {
-      if (/ENOENT/.test(String(err))) {
+      if (/(not found|ENOENT)/.test(String(err))) {
         console.error("kubectl not found")
       } else {
         console.error(err)

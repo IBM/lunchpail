@@ -95,7 +95,7 @@ export async function isKindClusterOnline(context: string) {
   } catch (e) {
     // the podman (or whatever) machine might not be up. we'll report
     // this to the user directly, no need to pollute the console
-    if (!/connection refused/i.test(String(e))) {
+    if (!/(not found|was refused|connection refused)/i.test(String(e))) {
       console.error(e)
     }
     return false
