@@ -86,17 +86,13 @@ export default function DemoDashboard() {
         }
       },
       controlplane: {
-        async status() {
+        async status(): Promise<import("@jaas/common/status/ControlPlaneStatus").default> {
           return {
-            location: "demo",
             containerCLI: "podman" as const,
             containerRuntime: "podman" as const,
             containerRuntimeOnline: true,
             kubernetesClusterExists: true,
-            kubernetesCluster: true,
-            jaasRuntime: true,
-            examples: false,
-            defaults: false,
+            kubernetesClusterOnline: true,
           }
         },
         init() {},

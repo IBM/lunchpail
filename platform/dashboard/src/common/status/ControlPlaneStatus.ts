@@ -15,9 +15,8 @@ export default interface ControlPlaneStatus {
   /** Does the Kubernetes cluster to house the control plane exist? */
   kubernetesClusterExists: boolean
 
-  // TODO
-  // /** Is the Kubernetes cluster online? */
-  // kubernetesClusterOnline: boolean
+  /** Is the Kubernetes cluster online? */
+  kubernetesClusterOnline: boolean
 
   /** Are the JaaS examples provisioned in the management cluster? */
   // examples: boolean
@@ -31,7 +30,7 @@ export const descriptions: Record<keyof ControlPlaneStatus, string> = {
   containerRuntime: "Does the container runtime exist?",
   containerRuntimeOnline: "Is the container runtime online?",
   kubernetesClusterExists: "Does the Kubernetes cluster to house the control plane exist?",
-  // kubernetesClusterOnline: "Is the Kubernetes cluster online?",
+  kubernetesClusterOnline: "Is the Kubernetes cluster online?",
   // examples: "Are the JaaS examples provisioned in the management cluster?",
   // defaults: "Are the JaaS default settings provisioned in the management cluster?",
 }

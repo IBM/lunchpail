@@ -87,6 +87,21 @@ export async function doesKindClusterExist(clusterName: string) {
   }
 }
 
+export async function isKindClusterOnline(context: string) {
+  try {
+    const command = promisify(exec)
+    const result = await command(`kubectl get nodes --context ${context}`, execOpts)
+    return result.stdout.includes(clusterName.replace(/^kind-/, ""))
+  } catch (e) {
+    // the podman (or whatever) machine might not be up. we'll report
+    // this to the user directly, no need to pollute the console
+    if (!/connection refused/i.test(String(e))) {
+      console.error(e)
+    }
+    return false
+  }
+}
+
 /** Is the given Kubernetes context a kind cluster? */
 export function isKindCluster(
   context: import("@jaas/common/api/kubernetes").KubeConfig["contexts"][number]["context"],

@@ -2,6 +2,8 @@ import which from "which"
 import { promisify } from "node:util"
 import { exec, spawn } from "node:child_process"
 
+import { isKindClusterOnline } from "./kind"
+
 /** Resource requests for the podman virtual machine */
 const resources = {
   memory: 8192,
@@ -106,4 +108,22 @@ export default async function makePodmanRuntimeReady() {
   }
 
   console.log("podman machine good to go")
+}
+
+export async function maybeHackToRestoreKindAfterPodmanRestart(
+  clusterName: string,
+  podmanReady: boolean,
+  kindReady: boolean,
+) {
+  if (podmanReady && !kindReady) {
+    const command = promisify(exec)
+    await command(`kind get nodes -n ${clusterName.replace(/^kind-/, "")} | xargs -n1 podman start`)
+  }
+}
+
+export async function maybeHackToRestoreKindAfterPodmanRestart2(clusterName: string) {
+  const [podmanReady, kindReady] = await Promise.all([isPodmanMachineReady(), isKindClusterOnline(clusterName)])
+  if (podmanReady[0] === "podman") {
+    maybeHackToRestoreKindAfterPodmanRestart(clusterName, podmanReady[1], kindReady)
+  }
 }
