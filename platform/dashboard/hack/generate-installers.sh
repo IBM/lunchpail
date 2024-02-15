@@ -9,8 +9,8 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 OUTDIR="$SCRIPTDIR"/../resources
 TOP="$SCRIPTDIR"/../../..
 
-. "$TOP"/hack/secrets.sh
 . "$TOP"/hack/settings.sh
+. "$TOP"/hack/secrets.sh
 
 if [[ ! -e "$OUTDIR" ]]
 then mkdir "$OUTDIR"

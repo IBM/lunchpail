@@ -12,7 +12,7 @@ metadata:
 spec:
   local:
     bucket: openroad-max-util-templates
-    endpoint: http://codeflare-s3.codeflare-system.svc.cluster.local:9000
+    endpoint: {{ .Values.global.s3Endpoint }}
     provision: 'true'
     readonly: 'false'
     secret-name: openroadmaxutilsecret

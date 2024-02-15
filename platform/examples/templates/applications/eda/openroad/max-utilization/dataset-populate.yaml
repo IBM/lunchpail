@@ -17,7 +17,7 @@ spec:
         
         env:
         - name: S3_ENDPOINT
-          value: http://codeflare-s3.codeflare-system.svc.cluster.local:9000
+          value: {{ .Values.global.s3Endpoint }}
         - name: COPYIN_BUCKET
           value: openroad-max-util-templates
         - name: COPYIN_ORIGIN
