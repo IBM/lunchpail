@@ -12,6 +12,6 @@ export function componentsSidebar(priority: number) {
 }
 
 /** Sidebar Group model for Secrets-related resources */
-export const secretsSidebar = {
-  group: "Secrets",
+export const configurationSidebar = {
+  group: "Configuration",
 } satisfies ContentProviderSidebarSpec
