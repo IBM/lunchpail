@@ -6,7 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/component: dataset
     app.kubernetes.io/part-of: codeflare.dev
-    codeflare.dev/created-by: user
   name: openroad-max-util-templates
   namespace: {{ .Release.Namespace }}
 spec:
