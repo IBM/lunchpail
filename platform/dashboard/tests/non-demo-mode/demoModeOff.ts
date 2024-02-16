@@ -1,7 +1,5 @@
 import { Page, Locator, expect } from "@playwright/test"
 import launchElectron from "../launch-electron"
-import { exec } from "child_process"
-import { promisify } from "util"
 
 export async function demoModeOff(): Promise<{ page: Page; demoSwitch: Locator }> {
   // Launch Electron app.
@@ -24,16 +22,4 @@ export async function demoModeOff(): Promise<{ page: Page; demoSwitch: Locator }
   await expect(state2).toEqual(false)
 
   return { page, demoSwitch }
-}
-
-/** This function is temporary. Won't be necessary once we can fully initialize the cluster from within the UI */
-export async function hackInit() {
-  try {
-    const command = promisify(exec)
-    const result = await command("../../hack/init.sh")
-    return result.stdout
-  } catch (e) {
-    console.error(`hack/init.sh could not be run: `, e)
-    return e
-  }
 }

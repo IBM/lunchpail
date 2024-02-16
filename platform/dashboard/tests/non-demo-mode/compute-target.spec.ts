@@ -1,6 +1,6 @@
 // @ts-check
 import { expect, test } from "@playwright/test"
-import { demoModeOff, hackInit } from "./demoModeOff"
+import { demoModeOff } from "./demoModeOff"
 
 test("jaas compute target is visible", async () => {
   // Temporary fix for test timing out before hackInit() completes (described in issue below)
@@ -10,10 +10,6 @@ test("jaas compute target is visible", async () => {
 
   // Make sure demo mode is off
   const { page } = await demoModeOff()
-
-  // Call hack/init.sh
-  const stdout = await hackInit()
-  console.log(stdout)
 
   // Navigate to 'Places' tab
   const placesTab = await page.locator(

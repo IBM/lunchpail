@@ -133,6 +133,8 @@ async function* computeTargetsGenerator(): AsyncGenerator<ComputeTargetEvent[], 
       } else {
         console.error(err)
       }
+      // something bad happened, make sure that the user sees at least one Place
+      yield [await Placeholder()]
     }
 
     await new Promise((resolve) => setTimeout(resolve, 2000))
