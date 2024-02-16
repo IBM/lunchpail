@@ -8,7 +8,6 @@ metadata:
   name: {{ .Values.taskqueue.dataset }}
   namespace: {{ .Values.namespace }}
   labels:
-    codeflare.dev/created-by: user
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: taskqueue
