@@ -1,8 +1,8 @@
-{{- define "codeflare.dev/WorkStealer" }}
+{{- define "jaas.dev/WorkStealerJob" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ print "workstealer-" .Release.Name | trunc 53 }}
+  name: {{ print .Release.Name "-workstealer" | trunc 53 }}
   namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/component: workstealer
@@ -29,5 +29,5 @@ spec:
       restartPolicy: OnFailure
       terminationGracePeriodSeconds: 0
       containers:
-        {{- include "codeflare.dev/containers/workstealer" . | indent 8 }}
+        {{- include "jaas.dev/containers/workstealer" . | indent 8 }}
 {{- end }}

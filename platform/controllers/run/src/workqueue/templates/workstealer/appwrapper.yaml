@@ -1,7 +1,7 @@
 apiVersion: mcad.ibm.com/v1beta1
 kind: AppWrapper
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ print .Release.Name "-workstealer" | trunc 53 }}
   namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/component: workqueue
@@ -21,4 +21,4 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
-          {{ include "codeflare.dev/WorkStealer" . | indent 10 }}
+          {{ include "jaas.dev/WorkStealerJob" . | indent 10 }}

@@ -6,7 +6,6 @@ from typing import List
 from kopf import PermanentError
 from kubernetes.client.rest import ApiException
 
-from run_id import alloc_run_id
 from datasets import add_dataset
 
 #
@@ -19,9 +18,7 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
     application_name = spec['application']['name']
     logging.info(f"Handling WorkQueue Run: app={application_name} run={name}")
 
-    run_id, workdir = alloc_run_id("workqueue", name)
-
-    logging.info(f"About to call out to WorkQueue run_id={run_id}")
+    logging.info(f"About to call out to WorkQueue run={name}")
     try:
         # if spec.queue is provided, use that specified queue,
         # otherwise create a new one
@@ -39,7 +36,6 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
             name,
             namespace,
             part_of,
-            run_id,
             spec["inbox"] if "inbox" in spec else "",
             queue_dataset,
             str(create_queue).lower(), # true or false, downcasing to make compatible with helm booleans

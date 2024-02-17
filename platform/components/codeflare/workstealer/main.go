@@ -20,8 +20,8 @@ func reportSize(size string) {
 
 func main() {
 	queue := os.Getenv("QUEUE")
-	inbox := filepath.Join(queue, os.Getenv("INBOX"))
-	queues := filepath.Join(queue, "queues")
+	inbox := filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
+	queues := filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 
 	for {
 		if f, err := os.Stat(inbox); err == nil && f.IsDir() {
