@@ -117,7 +117,15 @@ export async function maybeHackToRestoreKindAfterPodmanRestart(
 ) {
   if (podmanReady && !kindReady) {
     const command = promisify(exec)
-    await command(`kind get nodes -n ${clusterName.replace(/^kind-/, "")} | xargs -n1 podman start`)
+    try {
+      await command(`kind get nodes -n ${clusterName.replace(/^kind-/, "")} | xargs -n1 podman start`)
+    } catch (err) {
+      if (!/unable to start container/.test(String(err))) {
+        // then the cluster is being deleted... it should be ok to
+        // squash those error messages for now
+        throw err
+      }
+    }
   }
 }
 
