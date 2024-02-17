@@ -10,12 +10,14 @@ M=${1-3}
 
 # name of s3 bucket in which to store the tasks
 BUCKET=${3-test7}
+RUN_NAME=$BUCKET
 
 # random sleep lower and upper bounds
 MINWAIT=${4-1}
 MAXWAIT=${5-5}
 
-D=$(mktemp -d)/$BUCKET
+B=$(mktemp -d)/$BUCKET # bucket path
+D=$B/$RUN_NAME # data folder within that bucket
 mkdir -p "$D/inbox"
 echo "Staging to $D" 1>&2
 
@@ -42,6 +44,6 @@ do
         idx=$((idx+1))
     done
 
-    "$SCRIPTDIR"/../../../hack/add-data.sh $D
+    "$SCRIPTDIR"/../../../hack/add-data.sh $B
     sleep $((MINWAIT+RANDOM % (MAXWAIT-MINWAIT)))
 done

@@ -84,7 +84,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 uid,
                 name,
                 namespace,
-                run_id,
+                f"{run_name}-workers", # name of worker pods/deployment
                 image,
                 command,
                 subPath,

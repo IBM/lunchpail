@@ -9,5 +9,5 @@
     - name: WORKER_QUEUES_SUBDIR
       value: queues
     - name: QUEUE
-      value: {{ print "/mnt/datasets/" .Values.taskqueue.dataset }}
+      value: {{ print "/mnt/datasets/" .Values.taskqueue.dataset "/" .Values.name }}
 {{- end }}

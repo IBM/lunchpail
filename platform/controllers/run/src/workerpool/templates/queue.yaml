@@ -2,7 +2,9 @@
 - name: WORKQUEUE
   value: /queue
 - name: POOL
-  value: {{ .Values.name }}
+  value: {{ .Values.name }} # workerpool name
+- name: RUN_NAME
+  value: {{ .Values.runName }} # name of run in which this pool participates
 {{- end }}
 
 {{- define "codeflare.dev/queue.env.dataset" }}

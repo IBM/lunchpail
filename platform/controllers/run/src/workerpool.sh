@@ -50,6 +50,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set command="$command" \
      --set subPath=$subPath \
      --set partOf=$run_name \
+     --set runName=$run_name \
      --set workers.count=$count \
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \

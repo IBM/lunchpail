@@ -22,6 +22,7 @@ queue_dataset="${13}"
 datasets="${14}"
 path_to_chart="${15:-$SCRIPTDIR/workdispatcher}" # :- so that we use the default if $15 is an empty string
 values="${16}"
+run_name="${17}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -37,6 +38,7 @@ fi
 helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace} ${VALUES_ARG} \
      --set uid=$uid \
      --set name=$name \
+     --set runName=$run_name \
      --set image=$image \
      --set namespace=$namespace \
      --set method=$method \

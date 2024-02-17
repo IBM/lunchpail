@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -x
+set -e
+set -o pipefail
+
 echo -n "Started TaskDispatcher method=$METHOD "
 if [[ $METHOD = tasksimulator ]]
 then echo "injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
@@ -18,7 +22,7 @@ echo "got value taskprefix=$taskprefix"
 printenv
 
 config=/tmp/rclone.conf
-remote=s3:/${!REMOTE_PATH_VAR}/inbox
+remote=s3:/${!REMOTE_PATH_VAR}/$RUN_NAME/inbox
 cat <<EOF > $config
 [s3]
 type = s3

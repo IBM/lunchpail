@@ -24,13 +24,18 @@ elif [[ -z ${!AWS_SECRET_ACCESS_KEY_VAR} ]]; then
     echo "Error: ${!AWS_SECRET_ACCESS_KEY_VAR} not defined"
 fi
 
+if [[ -z "$RUN_NAME" ]]; then
+    echo "Error: RUN_NAME not defined"
+    exit 1
+fi
+
 if [[ -z "$JOB_COMPLETION_INDEX" ]]; then
     echo "Error: JOB_COMPLETION_INDEX not defined"
     exit 1
 fi
 
 config=/tmp/rclone.conf
-remote=s3:/${!REMOTE_PATH_VAR}/queues/$POOL.$JOB_COMPLETION_INDEX
+remote=s3:/${!REMOTE_PATH_VAR}/$RUN_NAME/queues/$POOL.$JOB_COMPLETION_INDEX
 local=$WORKQUEUE/$JOB_COMPLETION_INDEX
 
 cat <<EOF > $config

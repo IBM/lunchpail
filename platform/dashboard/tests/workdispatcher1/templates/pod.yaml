@@ -29,6 +29,8 @@ spec:
         - name: script
           mountPath: "/opt/workdispatcher/bin"
       env:
+        - name: RUN_NAME
+          value: {{ .Values.runName }}
         - name: METHOD
           value: parametersweep
         - name: SWEEP_MIN

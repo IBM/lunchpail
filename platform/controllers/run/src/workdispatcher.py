@@ -13,7 +13,7 @@ from status import set_status, add_error_condition, set_status_after_clone_failu
 #
 # Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep or method=helm
 #
-def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, queue_dataset: str, dataset_labels, patch, path_to_chart = "", values = ""):
+def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, dataset_labels, patch, path_to_chart = "", values = ""):
     method = spec['method']
     injectedTasksPerInterval = spec['rate']['tasks'] if "rate" in spec else 1
     intervalSeconds = spec['rate']['intervalSeconds'] if "rate" in spec and "intervalSeconds" in spec['rate'] else 10
@@ -30,7 +30,9 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
     sweep_min = spec['sweep']['min'] if 'sweep' in spec else ""
     sweep_max = spec['sweep']['max'] if 'sweep' in spec else ""
     sweep_step = spec['sweep']['step'] if 'sweep' in spec else ""
-        
+
+    run_name = run['metadata']['name']
+    
     try:
         out = subprocess.run([
             "/src/workdispatcher.sh",
@@ -50,6 +52,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
             path_to_chart,
             values,
+            run_name,
         ], capture_output=True)
         logging.info(f"WorkDispatcher callout done for name={name} with returncode={out.returncode}")
     except Exception as e:
@@ -71,7 +74,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
 #
 # Handle WorkDispatcher creation for method=helm
 #
-def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, queue_dataset: str, dataset_labels, patch):
+def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, dataset_labels, patch):
     logging.info(f"Creating WorkDispatcher from helm name={name} namespace={namespace}")
     run_id, workdir = alloc_run_id("helm", name)
 
@@ -82,7 +85,7 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
     
     path_to_chart = os.path.join(workdir, cloned_subPath)
     values = spec['values'] if 'values' in spec else ""
-    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, queue_dataset, dataset_labels, patch, path_to_chart, values)
+    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch, path_to_chart, values)
 
 #
 # Handle WorkDispatcher creation for method=application
@@ -110,6 +113,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     if 'env' in spec:
         env.update(spec['env'])
     env.update({
+        "RUN_NAME": run_name, # the original run name that the dispatcher is associated with, not the Run we will create below for the Dispatcher Application
         "WORKQUEUE": "/queue",
         "S3_ENDPOINT_VAR": f"{queue_dataset}_endpoint",
         "AWS_ACCESS_KEY_ID_VAR": f"{queue_dataset}_accessKeyID",

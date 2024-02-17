@@ -6,6 +6,8 @@
       mountPath: "/opt/tasksimulator/bin"
   command: ["/opt/tasksimulator/bin/simulator.sh"]
   env:
+    - name: RUN_NAME
+      value: {{ .Values.runName }}
     - name: METHOD
       value: {{ quote .Values.method }}
     - name: TASKS

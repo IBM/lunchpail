@@ -8,7 +8,7 @@
   {{- if .Values.env }}
   envFrom:
   - configMapRef:
-      name: {{ print .Release.Name | trunc 53 }}
+      name: {{ print .Release.Name "-env" | trunc 53 }}
   {{- end }}
 
   {{- include "codeflare.dev/workdir.path" . | indent 2 }}
