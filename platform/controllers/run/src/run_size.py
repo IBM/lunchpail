@@ -28,7 +28,7 @@ def load_run_size_config(customApi, size: str):
                       key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
     except Exception as e:
         logging.info(f"RunSizeConfiguration policy not found")
-        return {"cpu": 1, "memory": "1Gi", "gpu": 1, "workers": 1}
+        return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
 
 def run_size(customApi, name: str, spec, application):
     size = "xs" # default
