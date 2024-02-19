@@ -90,7 +90,7 @@ func main() {
 
 				if len(workerDirs) == 0 {
 					fmt.Println("[workstealer] Warning: no queues ready")
-					break
+					continue
 				}
 
 				workerDir := workerDirs[rand.Intn(len(workerDirs))]
