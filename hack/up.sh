@@ -18,12 +18,6 @@ wait
 # specify a namespace to use as a subchart; it will thus, for now, run
 # in the default namespace
 
-# For now, don't stand up the examples as part of this hack, as they
-# will consume resources in a way that may block tests e.g. in Travis
-# with its small workers. The dashboard UI will allow bringing these
-# examples in selectively.
-HAS_EXAMPLES=false
-
 # prepare the helm charts
 "$SCRIPTDIR"/../platform/prerender.sh
 
@@ -35,7 +29,7 @@ then
 fi
 
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
-$HELM install -n $NAMESPACE_SYSTEM --create-namespace $PLA platform $HELM_SECRETS --set global.jaas.namespace.create=false --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.examples=$HAS_EXAMPLES $SET_DOCKER_HOST $HELM_INSTALL_FLAGS
+$HELM install -n $NAMESPACE_SYSTEM --create-namespace $PLA platform $HELM_SECRETS --set global.jaas.namespace.create=false --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA --set tags.default-user=${INSTALL_DEFAULT_USER:-false} $SET_DOCKER_HOST $HELM_INSTALL_FLAGS
 
 if [[ -z "$LITE" ]]
 then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS

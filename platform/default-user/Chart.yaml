@@ -1,0 +1,10 @@
+apiVersion: v1
+name: jaas-default-user
+description: Jobs as a Service (JaaS) default user content
+type: application
+
+# Chart version.
+version: 0.0.1
+
+# Chart version.
+appVersion: "latest"

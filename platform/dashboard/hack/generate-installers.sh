@@ -26,22 +26,22 @@ cd "$TOP"/platform && helm dependency update . \
      2> >(grep -v 'Contents of linked' >&2) \
 
 # lite deployment
-helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platform $HELM_DEMO_SECRETS --set global.jaas.namespace.create=true --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.lite=true --set tags.examples=false --set tags.defaults=false --set tags.full=false --set tags.core=true \
+helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platform $HELM_DEMO_SECRETS --set global.jaas.namespace.create=true --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$OUTDIR"/jaas-lite.yml
 
 # full deployment
-#helm template --include-crds codeflare-platform "$TOP"/platform $HELM_DEMO_SECRETS --set tags.examples=false --set tags.defaults=false --set tags.full=true --set tags.core=true > "$OUTDIR"/jaas-full.yml
+#helm template --include-crds codeflare-platform "$TOP"/platform $HELM_DEMO_SECRETS --set tags.default-user=false --set tags.defaults=false --set tags.full=true --set tags.core=true > "$OUTDIR"/jaas-full.yml
 
 # defaults
-helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platform --set tags.examples=false --set tags.defaults=true --set tags.full=false --set tags.core=false \
+helm template jaas-defaults -n $NAMESPACE_SYSTEM "$TOP"/platform --set tags.default-user=false --set tags.defaults=true --set tags.full=false --set tags.core=false \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$OUTDIR"/jaas-defaults.yml
 
-# examples
-helm template --include-crds $NAMESPACE_USER -n $NAMESPACE_USER "$TOP"/platform $HELM_DEMO_SECRETS --set tags.examples=true --set tags.defaults=false --set tags.full=false --set tags.core=false \
+# default-user
+helm template jaas-default-user "$TOP"/platform $HELM_DEMO_SECRETS --set tags.default-user=true --set tags.defaults=false --set tags.full=false --set tags.core=false \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
-     > "$OUTDIR"/jaas-examples.yml
+     > "$OUTDIR"/jaas-default-user.yml

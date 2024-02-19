@@ -29,8 +29,8 @@ dependencies:
 - name: codeflare-defaults
   repository: file://./defaults
   version: 0.0.1
-- name: codeflare-examples
-  repository: file://./examples
+- name: jaas-default-user
+  repository: file://./default-user
   version: 0.0.1
-digest: sha256:eea28991a4a71816b5ed19488e7cbccae90dd555dd9d22446d0523b913f78c20
-generated: "2024-01-21T18:52:34.925621-05:00"
+digest: sha256:2d00eb0d415ea4ac9eb3827ef5b1162ae96d18623fb9aadcfb4e497eb8bcbc60
+generated: "2024-02-19T10:30:25.00477-05:00"

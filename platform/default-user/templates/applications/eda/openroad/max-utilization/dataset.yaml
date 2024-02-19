@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/component: dataset
     app.kubernetes.io/part-of: codeflare.dev
   name: openroad-max-util-templates
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.namespace }}
 spec:
   local:
     bucket: openroad-max-util-templates
@@ -15,5 +15,5 @@ spec:
     provision: 'true'
     readonly: 'false'
     secret-name: openroadmaxutilsecret
-    secret-namespace: {{ .Release.Namespace }}
+    secret-namespace: {{ .Values.namespace }}
     type: COS

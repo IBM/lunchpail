@@ -9,9 +9,9 @@ TOP="$SCRIPTDIR"/../../..
 
 . "$TOP"/hack/settings.sh
 
-$KUBECTL delete -f resources/jaas-examples.yml --ignore-not-found 1>&2
-$KUBECTL delete -f resources/jaas-defaults.yml --ignore-not-found 1>&2
-$KUBECTL delete -f resources/jaas-lite.yml --ignore-not-found 1>&2
+$KUBECTL delete -f resources/jaas-examples.yml --ignore-not-found || true
+$KUBECTL delete -f resources/jaas-defaults.yml --ignore-not-found || true
+$KUBECTL delete -f resources/jaas-lite.yml --ignore-not-found || true
 
 # rebuild the controller images & the dashboard includes a precompiled version of the jaas charts
 ../../hack/build.sh & ./hack/generate-installers.sh

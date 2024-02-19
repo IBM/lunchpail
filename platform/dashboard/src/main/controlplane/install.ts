@@ -24,10 +24,10 @@ async function defaults() {
   return yaml
 }
 
-/** Install/delete the examples from the control plane */
-async function examples() {
+/** Install/delete the default-user from the control plane */
+async function defaultUser() {
   // @ts-ignore
-  const { default: yaml } = await import("../../../resources/jaas-examples.yml?raw")
+  const { default: yaml } = await import("../../../resources/jaas-default-user.yml?raw")
 
   return yaml
 }
@@ -35,7 +35,7 @@ async function examples() {
 /** Install/delete all of the requested control plane components */
 async function applyAll(_config: Config, props: ApplyProps) {
   const coreYamls = await Promise.all([core()])
-  const noncoreYamls = await Promise.all([defaults(), examples()])
+  const noncoreYamls = await Promise.all([defaults(), defaultUser()])
 
   if (props.action === "delete") {
     await deleteJaaSManagedResources(props)

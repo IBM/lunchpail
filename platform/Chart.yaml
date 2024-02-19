@@ -80,9 +80,9 @@ dependencies:
   tags:
     - defaults
 
-- name: codeflare-examples
+- name: jaas-default-user
   version: 0.0.1
-  repository: file://./examples
-  condition: examples.enabled
+  repository: file://./default-user
+  condition: default-user.enabled
   tags:
-    - examples
+    - default-user

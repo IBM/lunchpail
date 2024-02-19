@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/component: openroad-max-util
     app.kubernetes.io/part-of: codeflare.dev
   name: openroad-max-util
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.namespace }}
 spec:
   api: workqueue
   tags: [EDA]
