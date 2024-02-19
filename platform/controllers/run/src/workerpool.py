@@ -129,7 +129,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
 
     run_name = pool["spec"]["run"]["name"]
 
-    queue_dataset = find_queue_for_run(customApi, run_name, namespace)
+    queue_dataset = find_queue_for_run_by_name(customApi, run_name, namespace)
     if queue_dataset is None:
         # TODO report this somehow via some resource status
         logging.error(f"Missing queue dataset for worker run_name={run_name} pod_name={pod_name} namespace={namespace}")
@@ -212,26 +212,57 @@ def look_for_workstealer_updates(line: str):
         return patch_body
 
 # look for the Dataset instance that represents the queue for the given named Run
-def find_queue_for_run(customApi, run_name: str, run_namespace: str):
-    matching_datasets = customApi.list_namespaced_custom_object(
+def find_queue_for_run(customApi, run):
+    run_name = run['metadata']['name']
+    run_namespace = run['metadata']['namespace']
+
+    if not 'annotations' in run['metadata'] or not 'jaas.dev/taskqueue' in run['metadata']['annotations']:
+        raise TemporaryError(f"Run does not yet have an assigned task queue run={run_name} namespace={run_namespace}", delay=5)
+
+    queue_dataset = run['metadata']['annotations']['jaas.dev/taskqueue']
+
+    matching_dataset = customApi.get_namespaced_custom_object(
         group="com.ie.ibm.hpsys",
         version="v1alpha1",
         plural="datasets",
+        name=queue_dataset,
         namespace=run_namespace,
-        label_selector=f"app.kubernetes.io/part-of={run_name}"
+    )
+
+    if matching_dataset is None:
+        raise TemporaryError(f"Run does yet have an assigned task, but it does not yet exist queue_dataset={queue_dataset} run={run_name} namespace={run_namespace}", delay=5)
+    else:
+        logging.info(f"Run does have an assigned task queue_dataset={queue_dataset} run={run_name} namespace={run_namespace}")
+        return queue_dataset
+
+def find_queue_for_run_by_name(customApi, run_name: str, run_namespace: str):
+    run = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
+    return find_queue_for_run(customApi, run)
+    
+# look for a default Dataset instance in the given namespace
+def find_default_queue_for_namespace(customApi, namespace: str):
+    available_queues = customApi.list_namespaced_custom_object(
+        group="com.ie.ibm.hpsys",
+        version="v1alpha1",
+        plural="datasets",
+        namespace=namespace,
+        label_selector=f"app.kubernetes.io/component=taskqueue"
     )["items"]
 
-    if len(matching_datasets) == 0:
+    prioritized_queues = sorted(
+        available_queues,
+        key=lambda rsc: int(rsc['metadata']['annotations']['jaas.dev/priority']) if 'annotations' in rsc['metadata'] and 'jaas.dev/priority' in rsc['metadata']['annotations'] else 0
+    )
+
+    if len(prioritized_queues) == 0:
         return None
     else:
-        if len(matching_datasets) > 1:
-            logging.error(f"Multiple queues found for run={run_name} namespace={namespace}")
-        return matching_datasets[0]['metadata']['name']
+        return prioritized_queues[-1]
 
 def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
     try:
         run_name = labels["app.kubernetes.io/part-of"]
-        dataset_name = find_queue_for_run(customApi, run_name, namespace)
+        dataset_name = find_queue_for_run_by_name(customApi, run_name, namespace)
 
         if dataset_name:
             try:
@@ -250,5 +281,7 @@ def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
                 logging.error(f"Error setting up log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
         else:
             logging.info(f"Skipping workstealer log watcher due to missing queue pod_name={pod_name} namespace={namespace}")
+    except TemporaryException as e:
+        raise e
     except Exception as e:
         logging.error(f"Error log watcher WorkerPool pod for workstealer stats pod_name={pod_name} namespace={namespace}. {str(e)}")

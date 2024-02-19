@@ -7,6 +7,7 @@ from kopf import PermanentError
 from kubernetes.client.rest import ApiException
 
 from datasets import add_dataset
+from workerpool import find_default_queue_for_namespace
 
 #
 # Handler for creation of Run with Application@api=workqueue
@@ -25,9 +26,19 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
         if 'queue' in spec:
             queue_dataset = spec['queue']['dataset']['name']
             create_queue = False
+            logging.info(f"Queue for workqueue Run: using queue from Run spec queue={queue_dataset} for run={name} namespace={namespace}")
         else:
-            queue_dataset = re.sub("-", "", name)
-            create_queue = True
+            queue_dataset_resource = find_default_queue_for_namespace(customApi, namespace)
+            if queue_dataset_resource is None:
+                queue_dataset = re.sub("-", "", name)
+                create_queue = True
+                logging.info(f"Queue for workqueue Run: creating queue={queue_dataset} for run={name} namespace={namespace}")
+            else:
+                queue_dataset = queue_dataset_resource['metadata']['name']
+                create_queue = False
+                logging.info(f"Queue for workqueue Run: using discovered queue={queue_dataset} for run={name} namespace={namespace}")
+
+        patch.metadata.annotations["jaas.dev/taskqueue"] = queue_dataset
         dataset_labels = add_dataset(queue_dataset, "mount", dataset_labels_arr)
         
         workqueue_out = subprocess.run([

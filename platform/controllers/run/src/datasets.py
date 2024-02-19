@@ -20,9 +20,15 @@ def add_dataset(dataset: str, useas: str, dataset_labels_arr: List[str]):
     if dataset_labels_arr is None:
         dataset_labels_arr = []
 
-    N = int(len(dataset_labels_arr) / 2) # one label for id, one label for useas label -- per dataset
-    dataset_labels_arr.append(id_label(N, dataset))
-    dataset_labels_arr.append(useas_label(N, useas))
+    pattern = re.compile(f" {dataset}$")
+    if any(pattern.search(label) for label in dataset_labels_arr):
+        # dataset label already found. TODO: complain if the existing useas differs...
+        logging.info(f"Skipping add_dataset dataset={dataset} dataset_labels_arr={str(dataset_labels_arr)}")
+    else:
+        N = int(len(dataset_labels_arr) / 2) # one label for id, one label for useas label -- per dataset
+        dataset_labels_arr.append(id_label(N, dataset))
+        dataset_labels_arr.append(useas_label(N, useas))
+
     return to_string(dataset_labels_arr)
 
 # datashim dataset.{idx}.id label

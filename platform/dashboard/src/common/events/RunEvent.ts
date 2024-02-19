@@ -20,6 +20,10 @@ type RunEvent = KubernetesResource<
 
     /** Should this run request GPUs (overriding the Application default)? */
     supportsGpu?: boolean
+  },
+  {
+    /** Associated taskqueue annotation */
+    "jaas.dev/taskqueue": string
   }
 >
 

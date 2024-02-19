@@ -10,11 +10,12 @@ function inputs(props: Pick<Props, "application">) {
 import type RunProps from "@jaas/resources/runs/components/Props"
 
 function taskqueues(props: RunProps) {
-  const { name: runName, namespace: runNamespace } = props.run.metadata
+  const { namespace: runNamespace, annotations } = props.run.metadata
+  const queueDataset = annotations["jaas.dev/taskqueue"]
 
-  const queueEventIdx = props.taskqueues.findLastIndex(
-    (_) => _.metadata.namespace === runNamespace && _.metadata.labels["app.kubernetes.io/part-of"] === runName,
-  )
+  const queueEventIdx = !queueDataset
+    ? -1
+    : props.taskqueues.findLastIndex((_) => _.metadata.namespace === runNamespace && _.metadata.name === queueDataset)
   return queueEventIdx < 0 ? [] : [props.taskqueues[queueEventIdx].metadata.name]
 }
 

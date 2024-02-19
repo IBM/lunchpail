@@ -1,31 +1,33 @@
 import type RunEvent from "@jaas/common/events/RunEvent"
 import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
+import colors from "./colors"
 import context from "../context"
 import Base, { applications } from "./application"
 
-export default class DemoRunSpecEventSource extends Base implements EventSourceLike {
-  private readonly runs: RunEvent[] = applications.map((application) => ({
-    apiVersion: "codeflare.dev/v1alpha1",
-    kind: "Run",
-    metadata: {
+export const runs: RunEvent[] = applications.map((application, applicationIdx) => ({
+  apiVersion: "codeflare.dev/v1alpha1",
+  kind: "Run",
+  metadata: {
+    name: application.name,
+    namespace: application.namespace,
+    context,
+    creationTimestamp: new Date().toLocaleString(),
+    annotations: {
+      "jaas.dev/taskqueue": colors[applicationIdx],
+      "codeflare.dev/status": "Running",
+    },
+  },
+  spec: {
+    application: {
       name: application.name,
-      namespace: application.namespace,
-      context,
-      creationTimestamp: new Date().toLocaleString(),
-      annotations: {
-        "codeflare.dev/status": "Running",
-      },
     },
-    spec: {
-      application: {
-        name: application.name,
-      },
-    },
-  }))
+  },
+}))
 
+export default class DemoRunSpecEventSource extends Base implements EventSourceLike {
   private withStatus(status: RunEvent["metadata"]["annotations"]["codeflare.dev/status"], run: RunEvent) {
-    // ok to update in place, as `run` comes from `this.runs` which is supposed to be our current state
+    // ok to update in place, as `run` comes from `runs` which is supposed to be our current state
     if (status === run.metadata.annotations["codeflare.dev/status"]) {
       return run
     } else {
@@ -42,7 +44,7 @@ export default class DemoRunSpecEventSource extends Base implements EventSourceL
 
   protected override initInterval(intervalMillis: number) {
     if (!this.interval) {
-      const { runs, sendEventForRun } = this
+      const { sendEventForRun } = this
 
       this.interval = setInterval(
         (function interval() {
@@ -56,15 +58,15 @@ export default class DemoRunSpecEventSource extends Base implements EventSourceL
   }
 
   public override delete(props: { name: string; namespace: string; context: string }) {
-    const idx = this.runs.findIndex(
+    const idx = runs.findIndex(
       (_) =>
         _.metadata.name === props.name &&
         _.metadata.namespace === props.namespace &&
         _.metadata.context === props.context,
     )
     if (idx >= 0) {
-      const model = this.runs[idx]
-      this.runs.splice(idx, 1)
+      const model = runs[idx]
+      runs.splice(idx, 1)
       this.sendEventForRun(model, "Terminating")
       return true
     } else {

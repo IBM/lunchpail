@@ -2,11 +2,10 @@ import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
 import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import Base from "./base"
+import colors from "./colors"
 import context from "../context"
 import { applications } from "./application"
 import { apiVersionDatashim, ns } from "./misc"
-
-export const colors = ["pink", "green", "purple", "orange"]
 
 export function inbox(taskqueue: TaskQueueEvent) {
   return parseInt(taskqueue.metadata.annotations["codeflare.dev/unassigned"] || "0", 10)

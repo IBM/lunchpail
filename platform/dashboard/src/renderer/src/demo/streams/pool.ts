@@ -7,6 +7,7 @@ import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEven
 
 import Base from "./base"
 import context from "../context"
+import { runs } from "./run"
 import { apiVersion, ns } from "./misc"
 import { inbox, inboxIncr } from "./taskqueue"
 import getNormallyDistributedRandomNumber from "../util/rand"
@@ -15,7 +16,6 @@ export type DemoWorkerPool = {
   name: string
   numWorkers: number
   run: string
-  taskqueue: string
   inboxes: Record<string, number>[]
   outboxes: Record<string, number>[]
   processing: Record<string, number>[]
@@ -104,7 +104,13 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
 
           // eslint-disable-next-line no-async-promise-executor
           new Promise(async () => {
-            const taskqueueLabel = pool.taskqueue
+            const runObj = runs.find((_) => _.metadata.name === pool.run)
+            if (!runObj) {
+              console.error("Missing run resource", pool.run, runs)
+              throw new Error("Missing run resource")
+            }
+
+            const taskqueueLabel = runObj.metadata.annotations["jaas.dev/taskqueue"]
             const taskqueue = taskqueues.sets.find((_) => _.metadata.name === taskqueueLabel)
             if (taskqueue && inbox(taskqueue) > 0) {
               inboxIncr(taskqueue, -1)
@@ -135,7 +141,13 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       }
 
       // find work in an inbox and start processing it
-      const taskqueuesArr = [pool.taskqueue]
+      const runObj = runs.find((_) => _.metadata.name === pool.run)
+      if (!runObj) {
+        console.error("Missing run resource", pool.run, runs)
+        throw new Error("Missing run resource")
+      }
+
+      const taskqueuesArr = [runObj.metadata.annotations["jaas.dev/taskqueue"]]
       for (let poolTaskQueueIndex = 0; poolTaskQueueIndex < taskqueuesArr.length; poolTaskQueueIndex++) {
         const taskqueueLabel = taskqueuesArr[poolTaskQueueIndex]
         if (pool.inboxes[workerIndex][taskqueueLabel] > 0) {
@@ -196,7 +208,6 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
       name: values.name,
       numWorkers,
       run: values.run,
-      taskqueue: values.taskqueue,
       inboxes: Array(numWorkers)
         .fill(0)
         .map(() => ({})),

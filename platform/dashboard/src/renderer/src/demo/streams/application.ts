@@ -5,8 +5,8 @@ import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 
 import Base from "./base"
 import lorem from "../util/lorem"
+import colors from "./colors"
 import context from "../context"
-import { colors } from "./taskqueue"
 import { apiVersion, ns } from "./misc"
 
 const apis = ["spark", "ray", "torch", "workqueue"]

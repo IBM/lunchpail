@@ -4,7 +4,7 @@ import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
 import Base from "./base"
 import context from "../context"
-import { apiVersion, runs } from "./misc"
+import { apiVersion } from "./misc"
 
 export default class DemoQueueEventSource extends Base implements EventSourceLike {
   protected override initInterval() {
@@ -12,7 +12,8 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
   }
 
   private queueEvent(workerpool: DemoWorkerPool, taskqueue: string, workerIndex: number): QueueEvent {
-    const name = `queue-${runs[0]}-${taskqueue}`
+    const { run } = workerpool
+    const name = taskqueue
     const namespace = "none" // FIXME?
 
     return {
@@ -34,7 +35,7 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
           context,
           creationTimestamp: new Date().toUTCString(),
           labels: {
-            "app.kubernetes.io/part-of": runs[0], // TODO multiple demo runs?
+            "app.kubernetes.io/part-of": run,
             "app.kubernetes.io/name": workerpool.name,
             "codeflare.dev/worker-index": String(workerIndex),
           },
