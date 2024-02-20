@@ -1,15 +1,6 @@
-import type Props from "./Props"
+import type Props from "@jaas/resources/runs/components/Props"
 
-function inputs(props: Pick<Props, "application">) {
-  return props.application.spec.inputs
-    ? props.application.spec.inputs.flatMap((_) => Object.values(_.sizes)).filter(Boolean)
-    : []
-}
-
-//type RunProps = Pick<Props, 'taskqueues' | 'settings' | 'workdispatchers' | 'workerpools'> & { run : import('@jaas/common/events/RunEvent').default }
-import type RunProps from "@jaas/resources/runs/components/Props"
-
-function taskqueues(props: RunProps) {
+function taskqueues(props: Props) {
   const { namespace: runNamespace, annotations } = props.run.metadata
   const queueDataset = annotations["jaas.dev/taskqueue"]
 
@@ -19,15 +10,9 @@ function taskqueues(props: RunProps) {
   return queueEventIdx < 0 ? [] : [props.taskqueues[queueEventIdx].metadata.name]
 }
 
-export function datasets(props: Pick<Props, "application" | "datasets">) {
-  return inputs(props).filter(
-    (datasetName) => !!props.datasets.find((dataset) => datasetName === dataset.metadata.name),
-  )
-}
-
 /** This helps to use some of the TaskQueue views, given an Application Props */
 export default function taskqueueProps(
-  props: RunProps,
+  props: Props,
 ): undefined | import("@jaas/resources/taskqueues/components/Props").default {
   const queues = taskqueues(props)
 

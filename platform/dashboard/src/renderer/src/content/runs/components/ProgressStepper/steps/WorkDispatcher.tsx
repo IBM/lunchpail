@@ -1,11 +1,11 @@
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
-import taskqueueProps from "../../taskqueueProps"
-import NewWorkDispatcherButton from "../../actions/NewWorkDispatcher"
+import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
+import NewWorkDispatcherButton from "@jaas/resources/runs/components/actions/NewWorkDispatcher"
 
 import type Step from "../Step"
 import { oopsNoQueue } from "../oops"
-import workdispatchers from "../../workdispatchers"
+import workdispatchers from "@jaas/resources/runs/components/workdispatchers"
 
 import { status } from "@jaas/resources/workdispatchers/status"
 import { name as workerpools } from "@jaas/resources/workerpools/name"

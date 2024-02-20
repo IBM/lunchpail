@@ -3,12 +3,12 @@ import { useMemo } from "react"
 import removeUndefined from "@jaas/util/remove-undefined"
 import DrawerContent from "@jaas/components/Drawer/Content"
 
-import { datasets } from "@jaas/resources/applications/components/taskqueueProps"
+import { datasets } from "@jaas/resources/applications/components/datasets"
 import { datasetsGroup } from "@jaas/resources/applications/components/tabs/Data"
 import { reasonAndMessageGroups } from "@jaas/resources/workerpools/components/tabs/Summary"
 
-import workdispatchersTab from "@jaas/resources/applications/components/tabs/WorkDispatchers"
-import computeTab from "@jaas/resources/applications/components/tabs/Compute"
+import workdispatchersTab from "@jaas/resources/runs/components/tabs/WorkDispatchers"
+import computeTab from "@jaas/resources/runs/components/tabs/Compute"
 //import burndownTab from "@jaas/resources/applications/components/tabs/Burndown"
 
 // import editAction from "@jaas/resources/applications/components/actions/edit"

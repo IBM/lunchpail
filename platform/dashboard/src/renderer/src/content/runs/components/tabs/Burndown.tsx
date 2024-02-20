@@ -1,5 +1,5 @@
 import type Props from "@jaas/resources/runs/components/Props"
-import taskqueueProps from "../taskqueueProps"
+import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
 import unassignedChart from "@jaas/resources/taskqueues/components/unassigned-chart"
 
 import DrawerTab from "@jaas/components/Drawer/Tab"

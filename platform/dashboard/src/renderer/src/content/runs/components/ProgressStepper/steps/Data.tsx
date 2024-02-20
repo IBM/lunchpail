@@ -5,7 +5,7 @@ import { singular as application } from "@jaas/resources/applications/name"
 import { name as datasets, singular as dataset } from "@jaas/resources/datasets/name"
 
 import type Step from "../Step"
-import { datasets as associatedDatasets } from "@jaas/resources/applications/components/taskqueueProps"
+import { datasets as associatedDatasets } from "@jaas/resources/applications/components/datasets"
 
 const step: Step = {
   id: "Data",

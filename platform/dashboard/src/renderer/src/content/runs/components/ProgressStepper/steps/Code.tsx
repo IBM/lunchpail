@@ -5,7 +5,7 @@ import { singular as run } from "@jaas/resources/runs/name"
 import { singular as application } from "@jaas/resources/applications/name"
 
 import type Step from "../Step"
-import { repoPlusSource } from "../../tabs/Code"
+import { repoPlusSource } from "@jaas/resources/applications/components/tabs/Code"
 
 const step: Step = {
   id: application,

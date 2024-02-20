@@ -4,7 +4,7 @@ import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 import { dl, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import type Props from "../Props"
-import { datasets } from "../taskqueueProps"
+import { datasets } from "../datasets"
 
 import { singular } from "@jaas/resources/applications/name"
 import { name as datasetsName } from "@jaas/resources/datasets/name"

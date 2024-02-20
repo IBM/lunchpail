@@ -5,8 +5,8 @@ import CardInGallery from "@jaas/components/CardInGallery"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import api from "@jaas/resources/applications/components/api"
-import taskqueueProps from "@jaas/resources/applications/components/taskqueueProps"
-import ProgressStepper from "@jaas/resources/applications/components/ProgressStepper"
+import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
+import ProgressStepper from "@jaas/resources/runs/components/ProgressStepper"
 import unassigned from "@jaas/resources/taskqueues/components/unassigned"
 import { workerpools } from "@jaas/resources/taskqueues/components/common"
 

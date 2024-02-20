@@ -6,7 +6,7 @@ import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
 
 import type Props from "@jaas/resources/runs/components/Props"
 import ComputeBody from "./ComputeBody"
-import taskqueueProps from "../taskqueueProps"
+import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
 
 import { groupSingular as application } from "@jaas/resources/applications/group"
 import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"

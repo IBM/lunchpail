@@ -2,7 +2,7 @@ import { Stack } from "@patternfly/react-core"
 import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
-import taskqueueProps from "../../taskqueueProps"
+import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
 
 import { groupSingular as application } from "@jaas/resources/applications/group"
 import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"
