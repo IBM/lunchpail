@@ -1,25 +1,27 @@
-import type { ReactNode } from "react"
-
-import type Props from "../Props"
-import unassigned from "../unassigned"
-import { lastEvent, workerpools } from "../common"
 import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
+import unassigned from "../unassigned"
+import { associatedRunsGroup } from "../associated"
+import type { PropsSummary as Props } from "../Props"
+// import { workerpools } from "../common"
+
 function bucket(props: Props) {
-  const last = lastEvent(props)
+  const last = props.taskqueue
   return descriptionGroup("Bucket", last ? last.spec.local.bucket : "unknown")
 }
 
-function detailGroups(props: Props, tasksOnly = false) {
+export function detailGroups(props: Props) {
   return [
     unassigned(props),
+    bucket(props),
+    associatedRunsGroup(props),
     // ...unassignedChart(props),
-    ...(tasksOnly ? [] : [workerpools(props), bucket(props)]),
+    // ...(tasksOnly ? [] : [workerpools(props), bucket(props)]),
     // completionRateChart(),
   ]
 }
 
 /** Summary tab content */
-export default function summaryTabContent(props: Props, tasksOnly = false, extraGroups: ReactNode[] = []) {
-  return <DescriptionList groups={[...extraGroups, ...detailGroups(props, tasksOnly)]} ouiaId={props.name} />
+export default function summaryTabContent(props: Props) {
+  return <DescriptionList groups={[...detailGroups(props)]} ouiaId={props.taskqueue.metadata.name} />
 }

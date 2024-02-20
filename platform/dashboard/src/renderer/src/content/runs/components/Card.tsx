@@ -24,13 +24,14 @@ function description(props: Props) {
 export default function ApplicationCard(props: Props) {
   const { name, context } = props.run.metadata
   const queueProps = useMemo(() => taskqueueProps(props), [props])
+  const taskqueue = queueProps?.events[queueProps.events.length - 1]
 
   const groups = useMemo(
     () => [
       ...api(props),
       props.application.spec.description && descriptionGroup("Description", description(props)),
-      ...(!queueProps ? [] : [unassigned(queueProps)]),
-      ...(!queueProps ? [] : [workerpools(queueProps)]),
+      ...(!taskqueue ? [] : [unassigned({ taskqueue })]),
+      ...(!taskqueue ? [] : [workerpools(queueProps)]),
     ],
     [props, queueProps],
   )

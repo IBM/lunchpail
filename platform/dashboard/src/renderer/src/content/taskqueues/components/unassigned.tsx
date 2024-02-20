@@ -1,35 +1,28 @@
-import type Props from "./Props"
-import { lastEvent } from "./common"
+import type { PropsSummary as Props } from "./Props"
 
 import None from "@jaas/components/None"
 import Cells from "@jaas/components/Grid/Cells"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
-export function nUnassigned(props: Props) {
-  const last = lastEvent(props)
-  const count = last ? parseInt(last.metadata.annotations["codeflare.dev/unassigned"], 10) : 0
+export function nUnassigned(props: Pick<Props, "taskqueue">) {
+  const count = parseInt(props.taskqueue.metadata.annotations["codeflare.dev/unassigned"], 10)
   return isNaN(count) ? 0 : count
 }
 
-function cells(count: number, props: Props) {
-  const taskqueueIndex = { [props.name]: 2 }
+function cells(count: number, props: Pick<Props, "taskqueue">) {
+  const taskqueueIndex = { [props.taskqueue.metadata.name]: 2 }
   if (!count) {
-    return <Cells inbox={{ [props.name]: 0 }} taskqueueIndex={taskqueueIndex} />
+    return <Cells inbox={{ [props.taskqueue.metadata.name]: 0 }} taskqueueIndex={taskqueueIndex} />
   }
-  return <Cells inbox={{ [props.name]: nUnassigned(props) }} taskqueueIndex={taskqueueIndex} />
+  return <Cells inbox={{ [props.taskqueue.metadata.name]: nUnassigned(props) }} taskqueueIndex={taskqueueIndex} />
 }
 
-function storageType(props: Props) {
-  const last = lastEvent(props)
-  if (last) {
-    const storageType = last.spec.local.type
-    return storageType === "COS" ? "S3-based queue" : storageType
-  } else {
-    return undefined
-  }
+function storageType(props: Pick<Props, "taskqueue">) {
+  const storageType = props.taskqueue.spec.local.type
+  return storageType === "COS" ? "S3-based queue" : storageType
 }
 
-export default function unassigned(props: Props) {
+export default function unassigned(props: Pick<Props, "taskqueue">) {
   const count = nUnassigned(props)
   return descriptionGroup(
     "Unassigned Tasks",

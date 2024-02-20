@@ -1,8 +1,14 @@
+import type ManagedEvents from "../../ManagedEvent"
+
 import type { CurrentSettings } from "@jaas/renderer/Settings"
 import type TaskQueueEvent from "@jaas/common/events/TaskQueueEvent"
 import type WorkDispatcherEvent from "@jaas/common/events/WorkDispatcherEvent"
 import type ApplicationSpecEvent from "@jaas/common/events/ApplicationSpecEvent"
 import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
+
+export type PropsSummary = Pick<ManagedEvents, "runs"> & {
+  taskqueue: TaskQueueEvent
+}
 
 type Props = {
   /** Name of TaskQueue */
