@@ -1,4 +1,4 @@
-import { createContext, useCallback, useState, type ReactNode } from "react"
+import { useCallback, useState, type ReactNode } from "react"
 
 import {
   Button,
@@ -23,10 +23,10 @@ import { isNavigableKind } from "../../content/NavigableKind"
 import LocationProps from "../../pages/LocationProps"
 import { currentlySelectedId, currentlySelectedKind } from "../../pages/current-detail"
 
+import DrawerMaximizedContext from "./Maximized"
+
 import RestoreIcon from "@patternfly/react-icons/dist/esm/icons/window-restore-icon"
 import MaximizeIcon from "@patternfly/react-icons/dist/esm/icons/window-maximize-icon"
-
-export const DrawerMaximizedContext = createContext(false)
 
 const normalWidth = { default: "width_50" as const }
 const maximizedWidth = { default: "width_100" as const }

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useRef } from "react"
 
-import { DrawerMaximizedContext } from "@jaas/components/Drawer/PanelContent"
+import DrawerMaximizedContext from "@jaas/components/Drawer/Maximized"
 
 import { Terminal, type ITheme } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
