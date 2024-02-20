@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { hash } from "@jaas/renderer/navigate/kind"
 
+import { name as runs } from "@jaas/resources/runs/name"
 import { name as productName } from "../../../../../package.json"
 
 function capitalize(str: string) {
@@ -9,7 +10,7 @@ function capitalize(str: string) {
 
 export default (
   <>
-    <strong>{capitalize(productName)}</strong> helps you to manage your Jobs: pick Data to analyze, and then assign{" "}
+    <strong>{capitalize(productName)}</strong> helps you to manage your {runs}: pick Data to analyze, and then assign{" "}
     <Link to={hash("workerpools")}>Workers</Link> to process the tasks in a selected set of data.
   </>
 )

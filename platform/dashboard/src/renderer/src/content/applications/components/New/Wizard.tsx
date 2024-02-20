@@ -12,10 +12,9 @@ import Checkbox from "@jaas/components/Forms/Checkbox"
 import SelectCheckbox from "@jaas/components/Forms/SelectCheckbox"
 import Tiles, { type TileOptions } from "@jaas/components/Forms/Tiles"
 
-import { groupSingular as job } from "@jaas/resources/applications/group"
+import { singular as application } from "@jaas/resources/applications/name"
 import { name as workerpoolsName } from "@jaas/resources/workerpools/name"
 import { singular as taskqueuesSingular } from "@jaas/resources/taskqueues/name"
-import { titleSingular as application } from "@jaas/resources/applications/title"
 import { name as datasetsName, singular as dataset } from "@jaas/resources/datasets/name"
 
 import type DataSetEvent from "@jaas/common/events/DataSetEvent"
@@ -250,7 +249,7 @@ export default function NewApplicationWizard(props: Props) {
     buttonPropsForNewDataSet({ location, searchParams }, { action: "register", namespace: ctrl.values.namespace })
 
   const stepData = {
-    name: "Optionally bind a " + dataset + " to your " + job,
+    name: "Optionally bind a " + dataset + " to your " + application,
     alerts: [
       {
         title: datasetsName,

@@ -1,14 +1,18 @@
 import detail from "./detail"
+import gallery from "./gallery"
+import description from "./description"
+
 import { name, singular } from "./name"
+import { configurationSidebar as sidebar } from "../sidebar-groups"
 
-import type ContentProvider from "../ContentProvider"
-
-const taskqueues: ContentProvider<"taskqueues"> = {
+const taskqueues = {
   kind: "taskqueues" as const,
   name,
   singular,
   detail,
-  description: "not needed",
+  gallery,
+  description,
+  sidebar,
 }
 
 export default taskqueues

@@ -3,7 +3,7 @@ import type { ContentProviderSidebarSpec } from "./ContentProvider"
 export const Component = "Component"
 export const Components = "Components"
 
-/** Sidebar Group model for Job-related resources */
+/** Sidebar Group model for Run-related resources */
 export function componentsSidebar(priority: number) {
   return {
     priority,

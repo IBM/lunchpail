@@ -19,7 +19,7 @@ function noWorkers() {
   return (
     <span>
       No workers have been assigned to this <strong>{application}</strong>. Once you configure a{" "}
-      <strong>Compute {workerpool}</strong>, the workers will begin to process any queued-up Tasks.
+      <strong>{workerpool}</strong>, the workers will begin to process any queued-up Tasks.
     </span>
   )
 }

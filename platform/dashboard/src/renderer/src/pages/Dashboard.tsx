@@ -20,6 +20,8 @@ import initStreamingState from "../content/init"
 import type WatchedKind from "@jaas/common/Kind"
 import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 
+import uniqueTaskQueues from "@jaas/resources/taskqueues/unique"
+
 import "./Dashboard.scss"
 
 /** one EventSource per resource Kind */
@@ -89,6 +91,7 @@ export function Dashboard(props: Props) {
   const sidebar = (
     <Sidebar
       runs={events.runs.length}
+      taskqueues={uniqueTaskQueues(events).length}
       datasets={events.datasets.length}
       workerpools={events.workerpools.length}
       applications={events.applications.length}

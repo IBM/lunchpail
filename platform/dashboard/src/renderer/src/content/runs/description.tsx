@@ -4,7 +4,7 @@ import PopoverHelp, { type PopoverHelpProps } from "@jaas/components/PopoverHelp
 
 import { Component } from "@jaas/resources/sidebar-groups"
 
-import { singular as job } from "./name"
+import { singular as run } from "./name"
 
 import codeDesc from "@jaas/resources/applications/description"
 import { group as code } from "@jaas/resources/applications/group"
@@ -34,7 +34,7 @@ const aspects: PopoverHelpProps[] = [
 
 export default (
   <>
-    A <strong>{job}</strong> is responsible for processing a set of <strong>Tasks</strong>. Each {job} consists of four{" "}
+    A <strong>{run}</strong> is responsible for processing a set of <strong>Tasks</strong>. Each {run} consists of four{" "}
     <strong>{Component}</strong>:
     <>
       {aspects

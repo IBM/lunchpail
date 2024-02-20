@@ -8,9 +8,11 @@ import { oopsNoQueue } from "../oops"
 import workdispatchers from "@jaas/resources/runs/components/workdispatchers"
 
 import { status } from "@jaas/resources/workdispatchers/status"
+import { singular as run } from "@jaas/resources/runs/name"
 import { name as workerpools } from "@jaas/resources/workerpools/name"
-import { singular as taskqueueSingular } from "@jaas/resources/taskqueues/name"
-import { group as workdispatcherSingular } from "@jaas/resources/workdispatchers/group"
+import { singular as taskqueue } from "@jaas/resources/taskqueues/name"
+import { group as dispatch } from "@jaas/resources/workdispatchers/group"
+import { singular as workdispatcher } from "@jaas/resources/workdispatchers/name"
 
 import type Props from "@jaas/resources/runs/components/Props"
 
@@ -40,7 +42,7 @@ function variant(props: Props) {
 }
 
 const step: Step = {
-  id: workdispatcherSingular,
+  id: dispatch,
   variant,
   content: (props, onClick) => {
     const queue = taskqueueProps(props)
@@ -51,9 +53,8 @@ const step: Step = {
     } else if (dispatchers.length === 0) {
       const body = (
         <span>
-          You will need specify how to feed the {taskqueueSingular}. Once created, a{" "}
-          <strong>{workdispatcherSingular}</strong> will populate the queue, and any assigned{" "}
-          <strong>{workerpools}</strong> will then consume work from the queue.{" "}
+          A <strong>{workdispatcher}</strong> will populate the {taskqueue} for a {run}. Any assigned{" "}
+          <strong>{workerpools}</strong> will then consume these Tasks.{" "}
         </span>
       )
 
