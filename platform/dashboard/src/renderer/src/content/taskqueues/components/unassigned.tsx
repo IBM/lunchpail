@@ -10,11 +10,10 @@ export function nUnassigned(props: Pick<Props, "taskqueue">) {
 }
 
 function cells(count: number, props: Pick<Props, "taskqueue">) {
-  const taskqueueIndex = { [props.taskqueue.metadata.name]: 2 }
   if (!count) {
-    return <Cells inbox={{ [props.taskqueue.metadata.name]: 0 }} taskqueueIndex={taskqueueIndex} />
+    return <Cells inbox={{ [props.taskqueue.metadata.name]: 0 }} />
   }
-  return <Cells inbox={{ [props.taskqueue.metadata.name]: nUnassigned(props) }} taskqueueIndex={taskqueueIndex} />
+  return <Cells inbox={{ [props.taskqueue.metadata.name]: nUnassigned(props) }} />
 }
 
 function storageType(props: Pick<Props, "taskqueue">) {

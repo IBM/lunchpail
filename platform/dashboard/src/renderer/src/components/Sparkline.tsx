@@ -52,12 +52,12 @@ function windowed(data: number[], N: number) {
   }
 }
 
-export default function SparkLine(props: { taskqueueIdx?: number; data: number[]; type?: "columns" | "bars" }) {
+export default function SparkLine(props: { data: number[]; type?: "columns" | "bars" }) {
   const desiredN = 30
   const data = windowed(props.data, desiredN)
 
   return (
-    <div className="codeflare--sparkline" data-index={props.taskqueueIdx} data-type={props.type}>
+    <div className="codeflare--sparkline" data-index={0} data-type={props.type}>
       <Sparklines data={data} limit={desiredN} width={100} height={20} margin={0} preserveAspectRatio="xMinYMid meet">
         {props.type === "bars" ? <SparklinesBars height={10} barWidth={2.5} /> : <SparklinesLine />}
         {props.type === "bars" && <SparklinesReferenceLine type={SparklinesReferenceLineTypes.mean} />}

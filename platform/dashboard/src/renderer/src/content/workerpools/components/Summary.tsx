@@ -27,7 +27,7 @@ function enqueued(props: Props) {
   return (
     <div className="codeflare--workqueues">
       {props.model.inbox.map((inbox, i) => (
-        <GridRow key={i} queueNum={i + 1} inbox={inbox} taskqueueIndex={props.taskqueueIndex} />
+        <GridRow key={i} queueNum={i + 1} inbox={inbox} />
       ))}
     </div>
   )

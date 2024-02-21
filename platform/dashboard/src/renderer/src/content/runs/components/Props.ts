@@ -2,7 +2,7 @@ import type Memos from "../../memos"
 import type ManagedEvents from "../../ManagedEvent"
 import type { CurrentSettings } from "../../../Settings"
 
-type Props = Pick<Memos, "taskqueueIndex" | "latestWorkerPoolModels"> &
+type Props = Pick<Memos, "latestWorkerPoolModels"> &
   Pick<ManagedEvents, "workerpools" | "datasets" | "taskqueues" | "workdispatchers"> & {
     /** Run model */
     run: ManagedEvents["runs"][number]

@@ -8,9 +8,6 @@ export type PropsSummary = Pick<ManagedEvents, "runs"> & {
 }
 
 type Props = Pick<TaskQueueEvent["metadata"], "name" | "context"> & {
-  /** To keep a consistent color across views, we assign each taskqueue an index */
-  idx: number
-
   /** History of events associated with this TaskQueue */
   events: TaskQueueEvent[]
 

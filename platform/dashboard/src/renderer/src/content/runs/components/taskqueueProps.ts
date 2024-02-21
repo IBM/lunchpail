@@ -21,7 +21,6 @@ export default function taskqueueProps(
     : {
         name: queue.metadata.name,
         context: queue.metadata.context,
-        idx: props.taskqueueIndex[queue.metadata.name],
         events: props.taskqueues.filter(
           ({ metadata }) =>
             metadata.name === queue.metadata.name &&

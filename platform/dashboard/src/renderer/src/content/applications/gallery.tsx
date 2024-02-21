@@ -18,7 +18,6 @@ export default function ApplicationsGallery(events: ManagedEvents, memos: Memos,
           taskqueues={events.taskqueues}
           workdispatchers={events.workdispatchers}
           workerpools={events.workerpools}
-          taskqueueIndex={memos.taskqueueIndex}
           latestWorkerPoolModels={memos.latestWorkerPoolModels}
         />
       ))}

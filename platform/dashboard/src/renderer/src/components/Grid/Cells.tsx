@@ -9,12 +9,6 @@ import "./Cells.scss"
 export type Props = {
   /** Number of tasks in the inbox/unassigned */
   inbox: TaskQueueTask
-
-  /**
-   * This helps keep cell coloring consistent across views. Each
-   * taskqueue gets a dense [0,nTaskQueues) index.
-   */
-  taskqueueIndex: Record<string, number>
 }
 
 /**
@@ -26,13 +20,13 @@ export type Props = {
 const coinDenominations: number[] = [1, 10, 100, 1000].map((_) => _ * 100)
 
 /** Render one cell */
-function cell(taskqueue: string, labelNum: number, stackDepth: number, taskqueueIndex: Props["taskqueueIndex"]) {
-  const key = taskqueue + "." + labelNum + "." + taskqueueIndex[taskqueue] + "." + stackDepth
-  return <Cell key={key} taskqueue={taskqueueIndex[taskqueue]} stackDepth={stackDepth} />
+function cell(taskqueue: string, labelNum: number, stackDepth: number) {
+  const key = taskqueue + "." + labelNum + "." + stackDepth
+  return <Cell key={key} stackDepth={stackDepth} />
 }
 
 /** @return an array of Cells */
-function queue(tasks: TaskQueueTask, taskqueueIndex: Props["taskqueueIndex"]) {
+function queue(tasks: TaskQueueTask) {
   return Object.entries(tasks || {})
     .filter(([, size]) => size > 0)
     .flatMap(([taskqueue, size]) => {
@@ -49,7 +43,7 @@ function queue(tasks: TaskQueueTask, taskqueueIndex: Props["taskqueueIndex"]) {
             // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
             Array(numStacks)
               .fill(0)
-              .map((_, idx) => cell(taskqueue, idx, parseInt(stackDepth, 10) / 100, taskqueueIndex)),
+              .map((_, idx) => cell(taskqueue, idx, parseInt(stackDepth, 10) / 100)),
           )
       )
     })
@@ -58,7 +52,7 @@ function queue(tasks: TaskQueueTask, taskqueueIndex: Props["taskqueueIndex"]) {
 export default function Cells(props: Props) {
   return (
     <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-      {queue(props.inbox, props.taskqueueIndex)}
+      {queue(props.inbox)}
     </Flex>
   )
 }

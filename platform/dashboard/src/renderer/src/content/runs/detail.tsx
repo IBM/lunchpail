@@ -23,7 +23,6 @@ export default function Detail(
       taskqueues: events.taskqueues,
       workdispatchers: events.workdispatchers,
       workerpools: events.workerpools,
-      taskqueueIndex: memos.taskqueueIndex,
       latestWorkerPoolModels: memos.latestWorkerPoolModels,
     }
     return { body: <RunDetail {...props} />, subtitle: application?.spec.description }
