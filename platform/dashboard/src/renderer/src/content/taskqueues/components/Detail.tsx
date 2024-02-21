@@ -1,8 +1,15 @@
+import { useMemo } from "react"
+
 import DrawerContent from "@jaas/components/Drawer/Content"
+import { BrowserTabs } from "@jaas/components/S3Browser"
+
 import summaryTabContent from "./tabs/Summary"
 
-import type { PropsSummary as Props } from "./Props"
+export default function TaskQueueDetail(props: import("./Props").PropsSummary) {
+  const otherTabs = useMemo(() => {
+    const browserTab = BrowserTabs(props.taskqueue.spec.local)
+    return browserTab ? [browserTab] : []
+  }, [props.taskqueue.spec.local])
 
-export default function TaskQueueDetail(props: Props) {
-  return <DrawerContent summary={summaryTabContent(props)} raw={props.taskqueue} />
+  return <DrawerContent summary={summaryTabContent(props)} otherTabs={otherTabs} raw={props.taskqueue} />
 }
