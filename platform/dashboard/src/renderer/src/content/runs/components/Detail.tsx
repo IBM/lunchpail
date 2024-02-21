@@ -8,7 +8,6 @@ import { datasetsGroup } from "@jaas/resources/applications/components/tabs/Data
 import { reasonAndMessageGroups } from "@jaas/resources/workerpools/components/tabs/Summary"
 
 import workdispatchersTab from "@jaas/resources/runs/components/tabs/WorkDispatchers"
-import computeTab from "@jaas/resources/runs/components/tabs/Compute"
 //import burndownTab from "@jaas/resources/applications/components/tabs/Burndown"
 
 // import editAction from "@jaas/resources/applications/components/actions/edit"
@@ -30,7 +29,7 @@ function hasApplication(props: PropsWithPotentiallyMissingApplication): props is
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: PropsWithPotentiallyMissingApplication) {
-  return !hasApplication(props) ? [] : removeUndefined([workdispatchersTab(props), computeTab(props)])
+  return !hasApplication(props) ? [] : removeUndefined([workdispatchersTab(props)])
 }
 
 function computeGroup(props: Pick<Props, "run" | "workerpools">) {

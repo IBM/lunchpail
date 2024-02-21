@@ -12,12 +12,14 @@ export async function verifyDrawerVisible(page: Page, resourceName: string, kind
   return drawer
 }
 
-export async function navigateToCard(page: Page, resourceName: string, kind: Kind = "runs") {
+export async function navigateToCard(page: Page, resourceName: string, kind: Kind = "runs", click = true) {
   const card = await visibleCard(page, resourceName)
   console.log(`got ${kind} ${resourceName}`)
 
-  await card.click()
-  return await verifyDrawerVisible(page, resourceName)
+  if (click) {
+    await card.click()
+    return await verifyDrawerVisible(page, resourceName)
+  }
 }
 
 export default async function navigateToQueues(

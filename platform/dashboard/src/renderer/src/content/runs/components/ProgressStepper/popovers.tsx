@@ -38,6 +38,7 @@ export default function ApplicationProgressStepperPopovers(props: Props) {
             isVisible={isVisible[idx]}
             shouldOpen={visibleOn[idx]}
             shouldClose={visibleOff[idx]}
+            id={step.id}
             aria-label={`${step.id} detail popover`}
             headerContent={step.id}
             bodyContent={body}

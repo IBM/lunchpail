@@ -4,16 +4,16 @@ import { Page, expect, test } from "@playwright/test"
 import launchElectron from "./launch-electron"
 import expectedApplications from "./applications"
 // import { visibleCard, missingCard } from "./card"
-import { navigateToCard, navigateToTab } from "./navigate-to-queue-tab"
+import { navigateToCard } from "./navigate-to-queue-tab"
 
-import { name } from "../src/renderer/src/content/runs/name"
+import { name as Runs, singular as Run } from "../src/renderer/src/content/runs/name"
 
 test.describe.serial("workers tests running sequentially", () => {
   let page: Page
   let computePoolName: string
   const { application: expectedApp } = expectedApplications[0]
 
-  test(`Navigate to Compute tab for ${name}`, async () => {
+  test(`Navigate to ${Run} Card tab for ${expectedApp}`, async () => {
     // Launch Electron app.
     const electronApp = await launchElectron()
 
@@ -24,18 +24,34 @@ test.describe.serial("workers tests running sequentially", () => {
     const demoModeStatus = await page.getByLabel("Demo").isChecked()
     console.log(`Demo mode on?: ${demoModeStatus}`)
 
-    // get 'Jobs' tab element from the sidebar and click to activate Job Definition gallery
-    await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
+    // get 'Runs' tab element from the sidebar and click to activate Runs gallery
+    await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: Runs }).click()
 
-    const drawer = await navigateToCard(page, expectedApp)
-    await navigateToTab(drawer, "Compute", name)
+    await navigateToCard(page, expectedApp, undefined, false)
   })
 
-  test("'Add Compute' button opens 'Create Compute Pool' modal", async () => {
-    // click on the button to bring up the new worker pool wizard
-    const drawer = await page.locator(`[data-ouia-component-type="PF5/DrawerPanelContent"]`)
-    await drawer.getByRole("link", { name: "Add Compute" }).click()
+  test("Open Compute popover", async () => {
+    console.error("1", `${Run}-${expectedApp}.step-Compute`)
+    const computePopoverStep = await page.getByLabel(`${Run}-${expectedApp}.step-Compute`)
+    console.error("1b")
+    const computePopoverLink = computePopoverStep.locator("button")
+    console.error("2")
+    await computePopoverLink.click()
+    console.error("3")
 
+    const popover = await page.getByRole("dialog")
+    await expect(popover).toBeVisible()
+    console.error("4")
+
+    const addCompute = await popover.locator(
+      `[data-ouia-component-type="PF5/Button"][data-ouia-component-id="add-compute"]`,
+    )
+    console.error("5")
+    await addCompute.click()
+    console.error("6")
+  })
+
+  test("Open 'Create Compute Pool' modal", async () => {
     // check that modal opened
     const modal = await page.locator(`[data-ouia-component-type="PF5/ModalContent"]`)
     await expect(modal).toBeVisible()
@@ -102,7 +118,7 @@ test.describe.serial("workers tests running sequentially", () => {
     const card = await visibleCard(page, computePoolName)
 
     // check that the new card contains the expectedApp
-    const code = await card.locator(`[data-ouia-component-id="${name}"]`)
+    const code = await card.locator(`[data-ouia-component-id="${Run}"]`)
     await expect(code).toContainText(expectedApp)
 
     // we have removed taskqueues from the Card

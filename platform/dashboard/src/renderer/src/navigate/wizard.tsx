@@ -110,6 +110,9 @@ export type WizardProps = ButtonProps & {
 
   /** Optional Button onClick handler, defaults to `evt.stopPropagation` */
   onClick?: (evt: import("react").MouseEvent<HTMLButtonElement>) => void
+
+  /** Id to help with Testing */
+  ouiaId?: string
 }
 
 /** Internal props */
@@ -148,6 +151,7 @@ export default function LinkToNewWizard(props: Props) {
       data-start-or-add={props.startOrAdd || "start"}
       data-link-text={props.linkText}
       data-href={theHref}
+      ouiaId={props.ouiaId}
       component={linker}
     />
   )

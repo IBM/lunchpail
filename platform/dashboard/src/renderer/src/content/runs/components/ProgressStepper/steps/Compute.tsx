@@ -61,6 +61,7 @@ const step: Step = {
           run={props.run.metadata.name}
           namespace={props.run.metadata.namespace}
           startOrAdd="create"
+          ouiaId="add-compute"
           onClick={onClick}
         />
       )
