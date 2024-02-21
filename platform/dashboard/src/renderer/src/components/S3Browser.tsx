@@ -133,9 +133,7 @@ function NavBrowser(props: NavBrowserProps) {
  * A React component that presents a `<NavBrowser/>` after loading the
  * `Tree` model.
  */
-export default function S3Browser(
-  props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jaas>, "get" | "s3">,
-) {
+function S3Browser(props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jaas>, "get" | "s3">) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown | null>(null)
   const [secret, setSecret] = useState<null | { accessKey: string; secretKey: string }>(null)
@@ -200,7 +198,7 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
     return "Error loading secrets: " + content.error
   } else if (content.length === 0) {
     console.log("No S3 objects found", props)
-    return `No objects found for bucket ${props.bucket}`
+    return <span style={hasPadding}>No objects found for bucket {props.bucket}</span>
   } else {
     return (
       <NavBrowser
@@ -213,6 +211,14 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
       />
     )
   }
+}
+
+/** Simulate hasPadding for DrawerTab */
+const hasPadding = {
+  paddingBlockStart: "var(--pf-v5-c-drawer--child--PaddingTop)",
+  paddingBlockEnd: "var(--pf-v5-c-drawer--child--PaddingBottom)",
+  paddingInlineStart: "var(--pf-v5-c-drawer--child--PaddingLeft)",
+  paddingInlineEnd: "var(--pf-v5-c-drawer--child--PaddingRight)",
 }
 
 /**
