@@ -2,6 +2,7 @@ import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
 import { name as runs } from "@jaas/resources/runs/name"
+import { singular as taskqueue } from "@jaas/resources/taskqueues/name"
 
 import type { PropsSummary as Props } from "./Props"
 
@@ -16,5 +17,13 @@ function associatedRuns(props: Props) {
 }
 
 export function associatedRunsGroup(props: Props) {
-  return descriptionGroup(runs, linkToAllDetails("runs", associatedRuns(props)))
+  const myRuns = associatedRuns(props)
+  return descriptionGroup(
+    `Active ${runs}`,
+    linkToAllDetails("runs", myRuns),
+    myRuns.length,
+    <>
+      The active <strong>{runs}</strong> that use this <strong>{taskqueue}</strong>
+    </>,
+  )
 }

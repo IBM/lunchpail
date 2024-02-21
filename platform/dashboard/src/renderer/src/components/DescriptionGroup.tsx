@@ -86,7 +86,7 @@ function dd(description: ReactNode | Record<string, string>) {
   return null
 }
 
-function dt(term: ReactNode, count?: number | string, helperText?: string, helperTextHeader?: string) {
+function dt(term: ReactNode, count?: number | string, helperText?: ReactNode, helperTextHeader?: string) {
   const termUI = (
     <span className="codeflare--capitalize">{typeof term === "string" ? term.replace(/-/g, " ") : dd(term)}</span>
   )
@@ -111,7 +111,7 @@ export function descriptionGroup(
   term: ReactNode,
   description: ReactNode | Record<string, string>,
   count?: number | string,
-  helperText?: string,
+  helperText?: ReactNode,
   helperTextHeader?: string,
 ) {
   const desc = dd(description)
