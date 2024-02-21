@@ -1,31 +1,36 @@
 import type Props from "@jaas/resources/runs/components/Props"
 
-function taskqueues(props: Props) {
+function taskqueue(props: Pick<Props, "run" | "taskqueues">) {
   const { namespace: runNamespace, annotations } = props.run.metadata
   const queueDataset = annotations["jaas.dev/taskqueue"]
 
   const queueEventIdx = !queueDataset
     ? -1
     : props.taskqueues.findLastIndex((_) => _.metadata.namespace === runNamespace && _.metadata.name === queueDataset)
-  return queueEventIdx < 0 ? [] : [props.taskqueues[queueEventIdx].metadata.name]
+  return queueEventIdx < 0 ? undefined : props.taskqueues[queueEventIdx]
 }
 
 /** This helps to use some of the TaskQueue views, given an Application Props */
 export default function taskqueueProps(
   props: Props,
 ): undefined | import("@jaas/resources/taskqueues/components/Props").default {
-  const queues = taskqueues(props)
+  const queue = taskqueue(props)
 
-  return queues.length === 0
+  return !queue
     ? undefined
     : {
-        name: queues[0],
-        context: props.application.metadata.context,
-        idx: props.taskqueueIndex[queues[0]],
-        events: props.taskqueues.filter((_) => _.metadata.name === queues[0]),
-        applications: [props.application],
-        workerpools: props.workerpools.filter((_) => _.spec.run.name === props.run.metadata.name),
-        workdispatchers: props.workdispatchers,
-        settings: props.settings,
+        name: queue.metadata.name,
+        context: queue.metadata.context,
+        idx: props.taskqueueIndex[queue.metadata.name],
+        events: props.taskqueues.filter(
+          ({ metadata }) =>
+            metadata.name === queue.metadata.name &&
+            metadata.namespace === queue.metadata.namespace &&
+            metadata.context === queue.metadata.context,
+        ),
+        workerpools: props.workerpools.filter(
+          ({ metadata, spec }) =>
+            spec.run.name === props.run.metadata.name && metadata.context === queue.metadata.context,
+        ),
       }
 }
