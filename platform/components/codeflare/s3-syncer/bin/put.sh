@@ -23,7 +23,7 @@ fi
 echo "[workerpool s3-syncer-put $(basename $local)] Starting rclone put remote=$remote local=$local/$outbox"
 while true; do
     if [[ -d $local/$outbox ]]; then
-        rclone --config $config sync $PROGRESS $local/$outbox $remote/$outbox
+        rclone --config $config sync $PROGRESS --create-empty-src-dirs $local/$outbox $remote/$outbox
  
         new_size=$(ls $local/$outbox | wc -l)
         if [[ $size != $new_size ]]; then
