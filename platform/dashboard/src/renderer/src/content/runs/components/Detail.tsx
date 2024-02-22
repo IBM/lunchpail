@@ -1,6 +1,5 @@
 import { useMemo } from "react"
 
-import removeUndefined from "@jaas/util/remove-undefined"
 import DrawerContent from "@jaas/components/Drawer/Content"
 
 import { datasets } from "@jaas/resources/applications/components/datasets"
@@ -8,7 +7,6 @@ import { datasetsGroup } from "@jaas/resources/applications/components/tabs/Data
 import { reasonAndMessageGroups } from "@jaas/resources/workerpools/components/tabs/Summary"
 
 import workstealerLogsTab from "@jaas/resources/runs/components/tabs/Logs"
-import workdispatchersTab from "@jaas/resources/runs/components/tabs/WorkDispatchers"
 //import burndownTab from "@jaas/resources/applications/components/tabs/Burndown"
 
 // import editAction from "@jaas/resources/applications/components/actions/edit"
@@ -30,7 +28,7 @@ function hasApplication(props: PropsWithPotentiallyMissingApplication): props is
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: PropsWithPotentiallyMissingApplication) {
-  return !hasApplication(props) ? [] : removeUndefined([workdispatchersTab(props), workstealerLogsTab(props)])
+  return !hasApplication(props) ? [] : [workstealerLogsTab(props)]
 }
 
 function computeGroup(props: Pick<Props, "run" | "workerpools">) {
@@ -52,7 +50,7 @@ function dispatchGroup(props: Pick<Props, "run" | "workdispatchers">) {
 }
 
 export default function ApplicationDetail(props: PropsWithPotentiallyMissingApplication) {
-  const tabs = useMemo(() => otherTabs(props), [props])
+  const tabs = useMemo(() => otherTabs(props), [JSON.stringify(props)])
   const summary = useMemo(
     () =>
       dl({

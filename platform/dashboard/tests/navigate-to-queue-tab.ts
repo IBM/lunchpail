@@ -18,28 +18,8 @@ export async function navigateToCard(page: Page, resourceName: string, kind: Kin
 
   if (click) {
     await card.click()
-    return await verifyDrawerVisible(page, resourceName)
+    return await verifyDrawerVisible(page, resourceName, kind)
   }
-}
-
-export default async function navigateToQueues(
-  page: Page,
-  resourceName: string,
-  taskqueue: string,
-  kind: Kind = "runs",
-) {
-  const drawer = await navigateToCard(page, resourceName, kind)
-  const queueManagerTab = await drawer.locator(
-    `[data-ouia-component-type="PF5/TabButton"][data-ouia-component-id="Tasks"]`,
-  )
-  await expect(queueManagerTab).toBeVisible()
-
-  await queueManagerTab.click()
-
-  const tasks = await drawer.locator(
-    `[data-ouia-component-type="PF5/DescriptionList"][data-ouia-component-id="${taskqueue}"]`,
-  )
-  await expect(tasks).toBeVisible()
 }
 
 export async function navigateToTab(tabLocator: Locator, tabName: string) {

@@ -1,10 +1,10 @@
 // @ts-check
 import { test } from "@playwright/test"
 import launchElectron from "./launch-electron"
-import navigateToQueueTab from "./navigate-to-queue-tab"
+import { navigateToCard } from "./navigate-to-queue-tab"
 import expectedApplications from "./applications"
 
-import { name } from "../src/renderer/src/content/runs/name"
+import { name as TaskQueues } from "../src/renderer/src/content/taskqueues/name"
 
 test("task queues are visible", async () => {
   // Launch Electron app.
@@ -19,14 +19,14 @@ test("task queues are visible", async () => {
 
   // If in demo mode, then continue with Task queue card test
   if (demoModeStatus) {
-    // Get Applications tab element from the sidebar and click, to
-    // activate the Application gallery
-    await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: name }).click()
+    // Get TaskQueues tab element from the sidebar and click, to
+    // activate the TaskQueues gallery
+    await page.locator('[data-ouia-component-type="PF5/NavItem"]', { hasText: TaskQueues }).click()
 
-    for await (const { application, taskqueue } of expectedApplications) {
-      console.log(`Waiting for application=${application} taskqueue=${taskqueue}`)
-      await navigateToQueueTab(page, application, taskqueue)
-      console.log(`Got queue manager tab for application=${application} taskqueue=${taskqueue}`)
+    for await (const { taskqueue } of expectedApplications) {
+      console.log(`Waiting for taskqueue=${taskqueue}`)
+      await navigateToCard(page, taskqueue, "taskqueues")
+      console.log(`Got queue manager tab for taskqueue=${taskqueue}`)
     }
   }
 })
