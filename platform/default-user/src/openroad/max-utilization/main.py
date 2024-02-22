@@ -45,11 +45,11 @@ subprocess.call(f"make DESIGN_CONFIG=./config.mk",
                 cwd=workspace,
                 shell=True)
 
-subprocess.call(f"cp -r {workspace} {mountpath}", shell=True)
-
 # 4. mark work as done
-remove(processing_file)
+print("Marking work as done")
+move(processing_file, out_file)
 
-# 5. TODO register output in out_file
+# 5. TODO somehow send real output in out_file
+# subprocess.call(f"cp -r {workspace} {mountpath}", shell=True)
 
 print(f"FP util {util} -- Done.")
