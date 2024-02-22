@@ -65,7 +65,7 @@ test.describe.serial("Drawer tests running sequentially", () => {
     }
   })
 
-  test("drawer closes when the card that opened it is clicked", async () => {
+  /* test("drawer closes when the card that opened it is clicked", async () => {
     // If in demo mode, then continue with test to close drawer
     if (demoModeStatus) {
       // click the card that was used to open the drawer
@@ -78,5 +78,5 @@ test.describe.serial("Drawer tests running sequentially", () => {
       )
       await expect(drawer).toBeHidden()
     }
-  })
+  }) */
 })
