@@ -9,6 +9,7 @@ export default function WorkerPoolLogsTab(props: Props) {
       `app.kubernetes.io/component=workerpool,app.kubernetes.io/name=${props.model.label}`,
       // `app.kubernetes.io/component=workstealer,app.kubernetes.io/name=${props.model.application}`,
     ].join(":"),
+    context: props.model.context,
     namespace: props.model.namespace,
   })
 }

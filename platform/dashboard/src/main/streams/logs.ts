@@ -31,9 +31,10 @@ function reformatPrefixToShowJustContainer(chalk: import("chalk").ChalkInstance)
 
 /**
  * @return a NodeJS `Readable` for the logs of the resources specified
- * by the label `selector` in the given `namespace`.
+ * by the label `selector` in the given `namespace` and Kubernetes
+ * `context`.
  */
-export default async function logs(selector: string, namespace: string, follow = false) {
+export default async function logs(selector: string, namespace: string, context: string, follow = false) {
   const [chalk, mergeStreams] = await Promise.all([
     import("chalk").then((_) => _.default),
     import("@sindresorhus/merge-streams").then((_) => _.default),
@@ -53,6 +54,8 @@ export default async function logs(selector: string, namespace: string, follow =
         "--tail=-1",
         "-n",
         namespace,
+        "--context",
+        context,
         follow ? "-f" : "",
       ])
 

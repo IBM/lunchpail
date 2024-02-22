@@ -50,10 +50,10 @@ function statusGroups(props: Props) {
 
 export default function WorkDispatcherDetail(props: Props) {
   const {
-    metadata: { name, namespace },
+    metadata: { name, namespace, context },
   } = props.workdispatcher
   const isOk = !/Fail/.test(status(props.workdispatcher))
-  const otherTabs = useMemo(() => (!isOk ? [] : [LogsTab(name, namespace)]), [isOk, name, namespace])
+  const otherTabs = useMemo(() => (!isOk ? [] : [LogsTab(name, namespace, context)]), [isOk, name, namespace])
 
   return (
     <DrawerContent

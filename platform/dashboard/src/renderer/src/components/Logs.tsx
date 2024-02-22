@@ -49,11 +49,13 @@ function theme(): ITheme {
   }
 }
 
+type Props = { selector: string; namespace: string; context: string; follow?: boolean }
+
 /**
  * A React Component that displays the logs for the given resources in
  * the given namespace
  */
-export default function Logs(props: { selector: string; namespace: string; follow?: boolean }) {
+export default function Logs(props: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const isMaximized = useContext(DrawerMaximizedContext)
 
@@ -121,7 +123,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
       const cleanups = [
         () => webgl.dispose(),
         () => terminal.dispose(),
-        window.jaas.logs(props.selector, props.namespace, props.follow ?? false, onData),
+        window.jaas.logs(props.selector, props.namespace, props.context, props.follow ?? false, onData),
         // ^^^ this starts the log streamer, and returns the cleanup function
       ]
 
@@ -129,7 +131,7 @@ export default function Logs(props: { selector: string; namespace: string; follo
     } else {
       return
     }
-  }, [props.selector, props.namespace, props.follow, window.jaas.logs, ref.current])
+  }, [props.selector, props.namespace, props.context, props.follow, window.jaas.logs, ref.current])
 
   return <div ref={ref} style={style} />
 }

@@ -51,5 +51,5 @@ export default interface KubernetesApi extends Record<Kind, JaasResourceApi> {
   deleteByName(props: DeleteProps): ExecResponse | Promise<ExecResponse>
 
   /** Tail on logs for a given resource */
-  logs?(selector: string, namespace: string, follow: boolean, cb: (chunk: string) => void): CleanupFn
+  logs?(selector: string, namespace: string, context: string, follow: boolean, cb: (chunk: string) => void): CleanupFn
 }

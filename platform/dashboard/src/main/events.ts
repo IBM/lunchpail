@@ -130,18 +130,22 @@ const kinds: WatchedKind[] = [
   "workdispatchers",
 ]
 
-const logsDataChannel = (selector: string, namespace: string) => `/logs/${namespace}/${String(selector)}/data`
+const logsDataChannel = (selector: string, namespace: string, context: string) =>
+  `/logs/${namespace}/${context}/${String(selector)}/data`
 const logsInitChannel = "/logs/init"
-const logsCloseChannel = (selector: string, namespace: string) => `/logs/${namespace}/${String(selector)}/close`
+const logsCloseChannel = (selector: string, namespace: string, context: string) =>
+  `/logs/${namespace}/${context}/${String(selector)}/close`
 
 export function initEvents() {
   kinds.forEach((kind) => initStreamForResourceKind(kind))
 
   // logs
-  ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, follow: boolean) => {
-    const { stream, close } = await import("./streams/logs").then((_) => _.default(selector, namespace, follow))
-    stream.on("data", (data) => evt.sender.send(logsDataChannel(selector, namespace), data.toString()))
-    ipcMain.once(logsCloseChannel(selector, namespace), close)
+  ipcMain.on(logsInitChannel, async (evt, selector: string, namespace: string, context: string, follow: boolean) => {
+    const { stream, close } = await import("./streams/logs").then((_) =>
+      _.default(selector, namespace, context, follow),
+    )
+    stream.on("data", (data) => evt.sender.send(logsDataChannel(selector, namespace, context), data.toString()))
+    ipcMain.once(logsCloseChannel(selector, namespace, context), close)
   })
 
   // list available Kubernetes contexts
@@ -349,14 +353,14 @@ const apiImpl: JaasApi = Object.assign(
     },
 
     /** Tail on logs for a given resource */
-    logs(selector: string, namespace: string, follow: boolean, cb: (chunk: string) => void) {
+    logs(selector: string, namespace: string, context: string, follow: boolean, cb: (chunk: string) => void) {
       const mycb = (_, chunk: string) => cb(chunk)
-      ipcRenderer.on(logsDataChannel(selector, namespace), mycb)
-      ipcRenderer.send(logsInitChannel, selector, namespace, follow)
+      ipcRenderer.on(logsDataChannel(selector, namespace, context), mycb)
+      ipcRenderer.send(logsInitChannel, selector, namespace, context, follow)
 
       return () => {
-        ipcRenderer.removeListener(logsDataChannel(selector, namespace), mycb)
-        ipcRenderer.send(logsCloseChannel(selector, namespace))
+        ipcRenderer.removeListener(logsDataChannel(selector, namespace, context), mycb)
+        ipcRenderer.send(logsCloseChannel(selector, namespace, context))
       }
     },
   },
