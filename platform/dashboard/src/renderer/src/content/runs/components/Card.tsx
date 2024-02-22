@@ -30,7 +30,7 @@ export default function ApplicationCard(props: Props) {
     () => [
       ...api(props),
       props.application.spec.description && descriptionGroup("Description", description(props)),
-      ...(!taskqueue ? [] : [unassigned({ taskqueue })]),
+      ...(!taskqueue ? [] : [unassigned({ taskqueue, run: props.run })]),
       ...(!taskqueue ? [] : [workerpools(queueProps)]),
     ],
     [props, queueProps],

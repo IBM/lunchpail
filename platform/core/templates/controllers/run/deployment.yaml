@@ -37,6 +37,8 @@ spec:
         {{ end }}
 
         env:
+          - name: CONTROL_PLANE_CONTEXT
+            value: {{ .Values.global.jaas.context.name }}
           - name: WORKDIR
             value: /workdir
           - name: WORKDIR_PVC

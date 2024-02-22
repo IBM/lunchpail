@@ -107,7 +107,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
-        actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o custom-columns=UNASSIGNED:.metadata.annotations.codeflare\\.dev/unassigned --no-headers || echo "there was an issue running the kubectl command😢")
+        # here we use jq to sum up all of the unassigned annotations
+        actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o json | jq '.metadata.annotations | to_entries | map(select(.key | match("^jaas.dev/unassigned"))) | map(.value | tonumber) | reduce .[] as $num (0; .+$num)' || echo "there was an issue running the kubectl command😢")
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
         if ! [[ $expectedUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: expectedUnassignedTasks not a number: '$expectedUnassignedTasks'"; fi

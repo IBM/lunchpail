@@ -19,6 +19,7 @@ export default function taskqueueProps(
   return !queue
     ? undefined
     : {
+        run: props.run,
         name: queue.metadata.name,
         context: queue.metadata.context,
         events: props.taskqueues.filter(

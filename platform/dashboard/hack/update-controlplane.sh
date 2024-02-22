@@ -43,7 +43,7 @@ else
 fi
 
 # rebuild the controller images & the dashboard includes a precompiled version of the jaas charts
-../../hack/build.sh & ./hack/generate-installers.sh
+../../hack/build.sh -l & ./hack/generate-installers.sh
 wait
 
 $KUBECTL apply -f resources/jaas-lite.yml

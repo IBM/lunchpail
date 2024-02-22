@@ -1,6 +1,6 @@
 import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
-import unassigned from "../unassigned"
+// import unassigned from "../unassigned"
 import { associatedRunsGroup } from "../associated"
 import type { PropsSummary as Props } from "../Props"
 // import { workerpools } from "../common"
@@ -12,7 +12,7 @@ function bucket(props: Props) {
 
 export function detailGroups(props: Props) {
   return [
-    unassigned(props),
+    // unassigned(props),
     bucket(props),
     associatedRunsGroup(props),
     // ...unassignedChart(props),

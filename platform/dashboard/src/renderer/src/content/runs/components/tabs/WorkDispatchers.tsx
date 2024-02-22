@@ -27,9 +27,9 @@ function NoWorkDispatchers(props: Props) {
 export default function DataTab(props: Props) {
   const queueProps = taskqueueProps(props)
   const taskqueue = !queueProps ? undefined : queueProps.events[queueProps.events.length - 1]
-  const isEmpty = !taskqueue || nUnassigned({ taskqueue }) === 0
+  const isEmpty = !taskqueue || nUnassigned({ taskqueue, run: props.run }) === 0
   const nDispatchers = assignedWorkDispatchers(props).length
-  const unassignedGroup = !taskqueue || isEmpty ? [] : [unassigned({ taskqueue })]
+  const unassignedGroup = !taskqueue || isEmpty ? [] : [unassigned({ taskqueue, run: props.run })]
   const activeDispatchersGroup = nDispatchers === 0 ? [] : [workdispatchersGroup(props)]
 
   const body = (

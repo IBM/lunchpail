@@ -19,7 +19,7 @@ CLUSTER_NAME=${CLUSTER_NAME-jaas}
 
 # namespaces to use
 NAMESPACE_SYSTEM=codeflare-system
-HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM"
+HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=kind-$CLUSTER_NAME"
 
 if lspci 2> /dev/null | grep -iq nvidia; then
     HAS_NVIDIA=true

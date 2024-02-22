@@ -20,15 +20,6 @@ type TaskQueueEvent = KubernetesResource<
       /** Is the data to be provided without write access? */
       readonly: boolean
     }
-  },
-  {
-    /** Unassigned tasks annotation */
-    "codeflare.dev/unassigned": string
-  },
-  {
-    labels: {
-      "app.kubernetes.io/part-of": string
-    }
   }
 >
 

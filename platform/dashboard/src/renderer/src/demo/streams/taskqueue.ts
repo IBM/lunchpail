@@ -4,15 +4,20 @@ import type EventSourceLike from "@jaas/common/events/EventSourceLike"
 import Base from "./base"
 import colors from "./colors"
 import context from "../context"
+import { runs } from "./run"
 import { applications } from "./application"
 import { apiVersionDatashim, ns } from "./misc"
 
-export function inbox(taskqueue: TaskQueueEvent) {
-  return parseInt(taskqueue.metadata.annotations["codeflare.dev/unassigned"] || "0", 10)
+function unassignedKey(runName: string) {
+  return `jaas.dev/unassigned.${context}.${ns}.${runName}`
 }
 
-export function inboxIncr(taskqueue: TaskQueueEvent, incr = 1) {
-  taskqueue.metadata.annotations["codeflare.dev/unassigned"] = String(inbox(taskqueue) + incr)
+export function inbox(taskqueue: TaskQueueEvent, runName: string) {
+  return parseInt(taskqueue.metadata.annotations[unassignedKey(runName)] || "0", 10)
+}
+
+export function inboxIncr(taskqueue: TaskQueueEvent, runName: string, incr = 1) {
+  taskqueue.metadata.annotations[unassignedKey(runName)] = String(inbox(taskqueue, runName) + incr)
 }
 
 export default class DemoTaskQueueEventSource extends Base implements EventSourceLike {
@@ -32,7 +37,7 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
         creationTimestamp: new Date().toUTCString(),
         annotations: {
           "codeflare.dev/status": "Ready",
-          "codeflare.dev/unassigned": "0",
+          [unassignedKey(applications[idx].name)]: "0",
         },
         labels: {
           "app.kubernetes.io/part-of": applications[idx].name,
@@ -72,9 +77,10 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
 
       this.interval = setInterval(
         (function interval() {
-          const whichToUpdate = Math.floor(Math.random() * taskqueues.length)
-          const taskqueue = taskqueues[whichToUpdate]
-          inboxIncr(taskqueue)
+          const whichRunToUpdate = Math.floor(Math.random() * runs.length)
+          const whichTaskQueueToUpdate = Math.floor(Math.random() * taskqueues.length)
+          const taskqueue = taskqueues[whichTaskQueueToUpdate]
+          inboxIncr(taskqueue, runs[whichRunToUpdate].metadata.name)
           sendEventFor(taskqueue)
           return interval
         })(), // () means invoke the interval right away

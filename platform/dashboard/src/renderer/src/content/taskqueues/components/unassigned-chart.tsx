@@ -3,12 +3,10 @@ import type Props from "./Props"
 import Sparkline from "@jaas/components/Sparkline"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
+import { nUnassigned } from "./unassigned"
+
 function inboxHistory(props: Props) {
-  return props.events.map((_) =>
-    !_.metadata.annotations["codeflare.dev/unassigned"]
-      ? 0
-      : parseInt(_.metadata.annotations["codeflare.dev/unassigned"], 10),
-  )
+  return props.events.map((taskqueue) => nUnassigned({ taskqueue, run: props.run }))
 }
 
 export default function unassignedChart(props: Props) {

@@ -2,7 +2,10 @@ import os
 import json
 import base64
 import logging
+import traceback
 import subprocess
+
+from functools import partial
 from kopf import PermanentError, TemporaryError
 
 from clone import clone
@@ -202,13 +205,13 @@ def track_queue_logs(pod_name: str, namespace: str, labels):
         logging.error(f"Error log watcher WorkerPool pod for queue stats pod_name={pod_name} namespace={namespace}. {str(e)}")
             
 # e.g. codeflare.dev queue 0 inbox 30
-def look_for_workstealer_updates(line: str):
-    logging.info(f"Workstealer update {line}")
+def look_for_workstealer_updates(context_name: str, run_namespace: str, run_name: str, line: str):
+    # logging.info(f"Workstealer update {line}")
     m = re.search("^codeflare.dev unassigned (\d+)$", line)
     if m is not None:
         num_unassigned = m.group(1)
 
-        patch_body = { "metadata": { "annotations": { f"codeflare.dev/unassigned": num_unassigned } } }
+        patch_body = { "metadata": { "annotations": { f"jaas.dev/unassigned.{context_name}.{run_namespace}.{run_name}": num_unassigned } } }
         return patch_body
 
 # look for the Dataset instance that represents the queue for the given named Run
@@ -261,8 +264,16 @@ def find_default_queue_for_namespace(customApi, namespace: str):
 
 def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
     try:
+        logging.info(f"Considering workstealer log watcher (1) pod_name={pod_name} namespace={namespace}")
         run_name = labels["app.kubernetes.io/part-of"]
         dataset_name = find_queue_for_run_by_name(customApi, run_name, namespace)
+        logging.info(f"Considering workstealer log watcher (2) pod_name={pod_name} namespace={namespace} run_name={run_name} dataset_name={dataset_name}")
+
+        context_name = os.getenv("CONTROL_PLANE_CONTEXT")
+        if context_name is None:
+            raise PermanentError("CONTROL_PLANE_CONTEXT environment variable is not defined")
+
+        log_line_handler = partial(look_for_workstealer_updates, context_name, namespace, run_name)
 
         if dataset_name:
             try:
@@ -270,18 +281,20 @@ def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
                 version = "v1alpha1"
                 plural = "datasets"
 
-                patch_body = { "metadata": { "annotations": { f"codeflare.dev/unassigned": "0" } } }
+                patch_body = { "metadata": { "annotations": { f"jaas.dev/unassigned.{context_name}.{namespace}.{run_name}": "0" } } }
                 logging.info(f"Patching dataset for workstealer operation dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
                 customApi.patch_namespaced_custom_object(group=dgroup, version=version, plural=plural, name=dataset_name, namespace=namespace, body=patch_body)
 
                 # intentionally fire and forget (how bad is this?)
                 logging.info(f"Setting up workstealer log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
-                track_logs(dataset_name, pod_name, namespace, plural, look_for_workstealer_updates, None, dgroup, version)
+                track_logs(dataset_name, pod_name, namespace, plural, log_line_handler, None, dgroup, version)
             except Exception as e:
                 logging.error(f"Error setting up log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
+                traceback.print_exc()
         else:
-            logging.info(f"Skipping workstealer log watcher due to missing queue pod_name={pod_name} namespace={namespace}")
-    except TemporaryException as e:
+            logging.info(f"Skipping workstealer log watcher due to missing queue pod_name={pod_name} namespace={namespace} run_name={run_name} dataset_name={dataset_name}")
+    except TemporaryError as e:
         raise e
     except Exception as e:
-        logging.error(f"Error log watcher WorkerPool pod for workstealer stats pod_name={pod_name} namespace={namespace}. {str(e)}")
+        logging.error(f"Error workstealer log watcherpod_name={pod_name} namespace={namespace}. {str(e)}")
+        traceback.print_exc()

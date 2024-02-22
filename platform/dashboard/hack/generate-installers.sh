@@ -26,7 +26,7 @@ cd "$TOP"/platform && helm dependency update . \
      2> >(grep -v 'Contents of linked' >&2) \
 
 # lite deployment
-helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platform $HELM_DEMO_SECRETS --set global.jaas.namespace.create=true --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true \
+helm template --include-crds $NAMESPACE_SYSTEM -n $NAMESPACE_SYSTEM "$TOP"/platform $HELM_DEMO_SECRETS --set global.jaas.namespace.create=true --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=kind-$CLUSTER_NAME --set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$OUTDIR"/jaas-lite.yml

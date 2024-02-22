@@ -88,9 +88,6 @@ spec:
       - name: Bucket
         type: string
         jsonPath: .spec.local.bucket
-      - name: Unassigned
-        type: string
-        jsonPath: ".metadata.annotations.codeflare\\.dev/unassigned"
       - name: Status
         type: string
         jsonPath: ".metadata.annotations.codeflare\\.dev/status"

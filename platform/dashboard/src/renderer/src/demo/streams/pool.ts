@@ -112,8 +112,8 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
 
             const taskqueueLabel = runObj.metadata.annotations["jaas.dev/taskqueue"]
             const taskqueue = taskqueues.sets.find((_) => _.metadata.name === taskqueueLabel)
-            if (taskqueue && inbox(taskqueue) > 0) {
-              inboxIncr(taskqueue, -1)
+            if (taskqueue && inbox(taskqueue, runObj.metadata.name) > 0) {
+              inboxIncr(taskqueue, runObj.metadata.name, -1)
               pool.inboxes[workerIndex][taskqueue.metadata.name] =
                 (pool.inboxes[workerIndex][taskqueue.metadata.name] || 0) + 1
               queues.sendUpdate(pool, taskqueueLabel, workerIndex)
