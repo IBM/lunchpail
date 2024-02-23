@@ -63,13 +63,11 @@ function mainBodyPart(props: Props) {
  */
 function footerPart(props: Props) {
   return (
-    ((props.actions && props.actions?.length > 0) || (props.rightActions && props.rightActions?.length > 0)) && (
-      <>
-        <Divider />
-        <DrawerPanelBody hasNoPadding className="codeflare--detail-view-footer">
-          <DrawerToolbar actions={props.actions} rightActions={props.rightActions} />
-        </DrawerPanelBody>
-      </>
-    )
+    <>
+      <Divider />
+      <DrawerPanelBody hasNoPadding className="codeflare--detail-view-footer">
+        <DrawerToolbar actions={props.actions} rightActions={props.rightActions} />
+      </DrawerPanelBody>
+    </>
   )
 }
