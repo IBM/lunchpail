@@ -26,11 +26,18 @@ function isLeafNode(item: Tree): item is LeafNode {
   return typeof node.name === "string" && (!Array.isArray(node.children) || node.children.length === 0)
 }
 
+type PathPrefix = {
+  /**
+   * S3 folder prefix to browse. If not specified, the root of the bucket will be displayed.
+   */
+  prefix: string
+}
+
 type S3Props = { endpoint: string; bucket: string; accessKey: string; secretKey: string } & Pick<
   Required<typeof window.jaas>,
   "s3"
 >
-type NavBrowserProps = S3Props & { roots: Tree[] }
+type NavBrowserProps = S3Props & { roots: Tree[] } & Partial<PathPrefix>
 
 /**
  * A React component that visualizes the forest given by
@@ -66,7 +73,7 @@ function NavBrowser(props: NavBrowserProps) {
         (prevMenuHeights[menuId] !== height && menuId !== rootMenuId) ||
         (!prevMenuHeights[menuId] && menuId === rootMenuId)
       ) {
-        if (height !== 1) {
+        if (height !== 1 && prevMenuHeights[menuId] !== height) {
           // without this check, the patternfly component enters an infinite loop of e.g. 145->1, 1->145, ...
           return { ...prevMenuHeights, [menuId]: height }
         }
@@ -134,13 +141,6 @@ function NavBrowser(props: NavBrowserProps) {
       </Menu>
     </Nav>
   )
-}
-
-type PathPrefix = {
-  /**
-   * S3 folder prefix to browse. If not specified, the root of the bucket will be displayed.
-   */
-  prefix: string
 }
 
 /**
@@ -215,6 +215,7 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots"> & Parti
     }
 
     // TODO: polling... can we do better? add a refresh button somehow?
+    fetchContent()
     const interval = setInterval(fetchContent, 5000)
 
     // return the cleanup function to react; it will call this on
@@ -239,6 +240,7 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots"> & Parti
         secretKey={props.secretKey}
         bucket={props.bucket}
         s3={props.s3}
+        prefix={props.prefix}
       />
     )
   }
@@ -355,7 +357,7 @@ function viewContent(content: string, objectName: string) {
 /**
  * Hijack a MenuItem to display content
  */
-function ShowContent(props: S3Props & { object: string }) {
+function ShowContent(props: S3Props & Partial<PathPrefix> & { object: string }) {
   const { s3, endpoint, accessKey, secretKey, bucket } = props
 
   const [loading, setLoading] = useState(true)
@@ -367,7 +369,13 @@ function ShowContent(props: S3Props & { object: string }) {
       try {
         console.log("Fetching S3 content", props)
         setLoading(true)
-        const content = await s3.getObject(endpoint, accessKey, secretKey, bucket, props.object)
+        const content = await s3.getObject(
+          endpoint,
+          accessKey,
+          secretKey,
+          bucket,
+          join(props.prefix ?? "", props.object),
+        )
         console.log("Successfully fetched S3 content", props)
         setContent(content)
       } catch (error) {
@@ -416,4 +424,9 @@ export function BrowserTabs(
   } else {
     return undefined
   }
+}
+
+/** path.join */
+function join(a: string, b: string) {
+  return [a.replace(/\/$/, ""), b].join("/")
 }
