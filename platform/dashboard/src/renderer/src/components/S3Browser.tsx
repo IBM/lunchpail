@@ -183,12 +183,13 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
       } catch (error) {
         console.error("Error listing S3 objects", props, error)
         setContent({ error })
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
 
-    fetch()
+    const interval = setInterval(fetch, 5000)
+    return () => clearInterval(interval)
   }, [props.endpoint, props.accessKey, props.secretKey, props.bucket, setContent, setLoading])
 
   if (loading || content === null) {
@@ -330,15 +331,16 @@ function ShowContent(props: S3Props & { object: string }) {
     async function fetch() {
       try {
         console.log("Fetching S3 content", props)
+        setLoading(true)
         const content = await s3.getObject(endpoint, accessKey, secretKey, bucket, props.object)
         console.log("Successfully fetched S3 content", props)
         setContent(content)
       } catch (error) {
         console.error("Error fetching S3 content", props, error)
         setContent({ error })
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
 
     fetch()
