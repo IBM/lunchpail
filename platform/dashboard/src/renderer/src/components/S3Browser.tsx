@@ -1,6 +1,6 @@
 import untruncateJson from "untruncate-json"
 import { useCallback, useEffect, useState, type KeyboardEvent, type MouseEvent } from "react"
-import { Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Text } from "@patternfly/react-core"
+import { Badge, Nav, MenuContent, MenuItem, MenuList, DrilldownMenu, Menu, Spinner, Text } from "@patternfly/react-core"
 
 import Code from "./Code"
 import Json from "./Json"
@@ -90,6 +90,7 @@ function NavBrowser(props: NavBrowserProps) {
         : []),
       ...roots.map((item, idx) => {
         const drilldownMenuId = baseId + `drilldown-${idx}`
+        const childFilter = new RegExp("^" + item.name + "/$")
         return (
           <MenuItem
             key={item.name}
@@ -102,7 +103,8 @@ function NavBrowser(props: NavBrowserProps) {
               </DrilldownMenu>
             }
           >
-            {parent ? item.name.replace(parent.name + "/", "") : item.name}
+            {parent ? item.name.replace(parent.name + "/", "") : item.name}{" "}
+            {!isLeafNode(item) && <Badge>{item.children.filter((_) => !childFilter.test(_.name)).length}</Badge>}
           </MenuItem>
         )
       }),
