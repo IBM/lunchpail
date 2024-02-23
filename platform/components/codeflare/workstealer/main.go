@@ -6,13 +6,16 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
 
-func reportSize(size string) {
-	fmt.Printf("codeflare.dev unassigned %s\n", size)
+func reportUnassigned(size uint) {
+	fmt.Printf("jaas.dev unassigned %d\n", size)
+}
+
+func reportDone(size uint) {
+	fmt.Printf("jaas.dev done %d\n", size)
 }
 
 func main() {
@@ -20,6 +23,12 @@ func main() {
 	inbox := filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
 	outbox := filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
 	queues := filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
+
+	// Keep track of how many tasks we have moved to the final
+	// outbox. TODO: don't start from 0, we need to scan the
+	// outbox to look for bits from prior instances of the
+	// WorkStealer (e.g. if the pod fails)
+	var nDone uint = 0
 
 	err := os.MkdirAll(outbox, 0700)
 	if err != nil {
@@ -47,8 +56,8 @@ func main() {
 
 			// We will tally up the total number of tasks (nFiles) and the number already assigned to
 			// a worker (nAssigned)
-			nFiles := 0
-			nAssigned := 0
+			var nFiles uint = 0
+			var nAssigned uint = 0
 
 			// Here is the loop over files in the unassigned inbox directory
 			for _, file := range files {
@@ -102,6 +111,7 @@ func main() {
 						// move the output to the final/global (i.e. not per-worker) outbox
 						fullyDoneOutputFilePath := filepath.Join(outbox, fileName)
 						err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath)
+						nDone++
 						if err != nil {
 							log.Fatalf("[workstealer] Failed to copy output to final outbox: %v\n", err)
 						}
@@ -197,7 +207,8 @@ func main() {
 				}
 			}
 
-			reportSize(strconv.Itoa(nFiles - nAssigned))
+			reportUnassigned(nFiles - nAssigned)
+			reportDone(nDone)
 		}
 		time.Sleep(5 * time.Second)
 	}

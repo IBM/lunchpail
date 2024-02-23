@@ -5,36 +5,54 @@ import None from "@jaas/components/None"
 import Cells from "@jaas/components/Grid/Cells"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
+import { singular as TaskQueue } from "@jaas/resources/taskqueues/name"
+
 type Props = { taskqueue: TaskQueueEvent; run: RunEvent }
 
-export function nUnassigned(props: Props) {
+type State = "done" | "unassigned"
+
+function numInState(props: Props, state: State) {
   const { context, name, namespace } = props.run.metadata
-  const count = parseInt(
-    props.taskqueue.metadata.annotations[`jaas.dev/unassigned.${context}.${namespace}.${name}`],
-    10,
-  )
+  // e.g. jaas.dev/unassigned....
+  const count = parseInt(props.taskqueue.metadata.annotations[`jaas.dev/${state}.${context}.${namespace}.${name}`], 10)
   return isNaN(count) ? 0 : count
+}
+
+export function nUnassigned(props: Props) {
+  return numInState(props, "unassigned")
+}
+
+export function nDone(props: Props) {
+  return numInState(props, "done")
 }
 
 function cells(count: number, props: Props) {
   if (!count) {
     return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: 0 }} />
   }
-  return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: nUnassigned(props) }} />
+  return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: count }} />
 }
 
 function storageType(props: Pick<Props, "taskqueue">) {
   const storageType = props.taskqueue.spec.local.type
-  return storageType === "COS" ? "S3-based queue" : storageType
+  return storageType === "COS" ? `This ${TaskQueue} uses S3` : storageType
 }
 
-export default function unassigned(props: Props) {
-  const count = nUnassigned(props)
+function groupForState(props: Props, state: State) {
+  const count = numInState(props, state)
   return descriptionGroup(
-    "Unassigned Tasks",
+    `${state} Tasks`,
     count === 0 ? None() : cells(count, props),
     count,
     storageType(props),
-    "Queue Provider",
+    TaskQueue,
   )
+}
+
+export function unassigned(props: Props) {
+  return groupForState(props, "unassigned")
+}
+
+export function done(props: Props) {
+  return groupForState(props, "done")
 }

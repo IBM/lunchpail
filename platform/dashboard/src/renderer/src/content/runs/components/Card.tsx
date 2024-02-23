@@ -7,8 +7,8 @@ import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 import api from "@jaas/resources/applications/components/api"
 import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
 import ProgressStepper from "@jaas/resources/runs/components/ProgressStepper"
-import unassigned from "@jaas/resources/taskqueues/components/unassigned"
 import { workerpools } from "@jaas/resources/taskqueues/components/common"
+import { done, unassigned } from "@jaas/resources/taskqueues/components/unassigned"
 
 import type Props from "./Props"
 
@@ -31,6 +31,7 @@ export default function ApplicationCard(props: Props) {
       ...api(props),
       props.application.spec.description && descriptionGroup("Description", description(props)),
       ...(!taskqueue ? [] : [unassigned({ taskqueue, run: props.run })]),
+      ...(!taskqueue ? [] : [done({ taskqueue, run: props.run })]),
       ...(!taskqueue ? [] : [workerpools(queueProps)]),
     ],
     [props, queueProps],
