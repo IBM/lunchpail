@@ -90,7 +90,10 @@ function NavBrowser(props: NavBrowserProps) {
         : []),
       ...roots.map((item, idx) => {
         const drilldownMenuId = baseId + `drilldown-${idx}`
+
         const childFilter = new RegExp("^" + item.name + "/$")
+        const children = item.children.filter((_) => !childFilter.test(_.name))
+
         return (
           <MenuItem
             key={item.name}
@@ -99,12 +102,12 @@ function NavBrowser(props: NavBrowserProps) {
             description={!isLeafNode(item) ? "Folder" : filetypeFromName(item.name)}
             drilldownMenu={
               <DrilldownMenu id={drilldownMenuId}>
-                {toMenuItems(item.children, depth + 1, item, drilldownMenuId)}
+                {toMenuItems(children, depth + 1, item, drilldownMenuId)}
               </DrilldownMenu>
             }
           >
             {parent ? item.name.replace(parent.name + "/", "") : item.name}{" "}
-            {!isLeafNode(item) && <Badge>{item.children.filter((_) => !childFilter.test(_.name)).length}</Badge>}
+            {!isLeafNode(item) && <Badge>{children.length}</Badge>}
           </MenuItem>
         )
       }),
