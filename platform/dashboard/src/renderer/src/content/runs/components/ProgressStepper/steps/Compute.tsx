@@ -4,7 +4,7 @@ import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
 import taskqueueProps from "@jaas/resources/runs/components/taskqueueProps"
 
-import { groupSingular as application } from "@jaas/resources/applications/group"
+import { singular as run } from "@jaas/resources/runs/name"
 import { name as workerpools, singular as workerpool } from "@jaas/resources/workerpools/name"
 
 import type Step from "../Step"
@@ -18,8 +18,8 @@ function associatedWorkerPools(props: Props) {
 function noWorkers() {
   return (
     <span>
-      No workers have been assigned to this <strong>{application}</strong>. Once you configure a{" "}
-      <strong>{workerpool}</strong>, the workers will begin to process any queued-up Tasks.
+      No workers have been assigned to this <strong>{run}</strong>. Once you configure a <strong>{workerpool}</strong>,
+      the workers will begin to process any queued-up Tasks.
     </span>
   )
 }
@@ -28,8 +28,8 @@ function numWorkers(nPools: number, nWorkers: number) {
   return (
     <span>
       {nWorkers} <strong>{nWorkers === 1 ? "Worker" : "Workers"}</strong> spread across {nPools}{" "}
-      <strong>Compute {nPools === 1 ? workerpool : workerpools}</strong> {nWorkers === 1 ? "has" : "have"} been assigned
-      to this <strong>{application}</strong>.
+      <strong>{nPools === 1 ? workerpool : workerpools}</strong> {nWorkers === 1 ? "has" : "have"} been assigned to this{" "}
+      <strong>{run}</strong>:
     </span>
   )
 }
