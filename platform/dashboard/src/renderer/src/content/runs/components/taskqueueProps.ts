@@ -1,6 +1,6 @@
 import type Props from "@jaas/resources/runs/components/Props"
 
-function taskqueue(props: Pick<Props, "run" | "taskqueues">) {
+export function taskqueue(props: Pick<Props, "run" | "taskqueues">) {
   const { namespace: runNamespace, annotations } = props.run.metadata
   const queueDataset = annotations["jaas.dev/taskqueue"]
 

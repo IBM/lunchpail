@@ -13,9 +13,13 @@ import workstealerLogsTab from "@jaas/resources/runs/components/tabs/Logs"
 // import cloneAction from "@jaas/resources/applications/components/actions/clone"
 import deleteAction from "./actions/delete"
 
+import { taskqueue } from "./taskqueueProps"
+
 import { singular as Code } from "@jaas/resources/applications/name"
 import { group as Compute } from "@jaas/resources/workerpools/group"
 import { group as Dispatch } from "@jaas/resources/workdispatchers/group"
+import { singular as TaskQueue } from "@jaas/resources/taskqueues/name"
+
 import { dl, descriptionGroup } from "@jaas/components/DescriptionGroup"
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
@@ -49,16 +53,22 @@ function dispatchGroup(props: Pick<Props, "run" | "workdispatchers">) {
   return descriptionGroup(Dispatch, linkToAllDetails("workdispatchers", dispatchers), dispatchers.length)
 }
 
+function taskqueueGroup(props: Pick<Props, "run" | "taskqueues">) {
+  const queue = taskqueue(props)
+  return descriptionGroup(TaskQueue, queue ? linkToAllDetails("taskqueues", [queue]) : undefined)
+}
+
 export default function ApplicationDetail(props: PropsWithPotentiallyMissingApplication) {
   const tabs = useMemo(() => otherTabs(props), [JSON.stringify(props)])
+
   const summary = useMemo(
     () =>
       dl({
         groups: [
+          taskqueueGroup(props),
           descriptionGroup(
             Code,
             !props.application ? "Missing" : linkToAllDetails("applications", [props.application]),
-            1,
           ),
           ...(!hasApplication(props) ? [] : [datasetsGroup(datasets(props))]),
           dispatchGroup(props),
@@ -66,7 +76,7 @@ export default function ApplicationDetail(props: PropsWithPotentiallyMissingAppl
           ...reasonAndMessageGroups(props.run),
         ],
       }),
-    [props],
+    [JSON.stringify(props)],
   )
 
   return <DrawerContent summary={summary} raw={props.run} otherTabs={tabs} rightActions={[deleteAction(props)]} />
