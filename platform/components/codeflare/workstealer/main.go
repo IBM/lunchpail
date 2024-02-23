@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-// avoid "File not found" for the $queues/* glob below
-// shopt -s nullglob
-
 func reportSize(size string) {
 	fmt.Printf("codeflare.dev unassigned %s\n", size)
 }
@@ -21,30 +18,43 @@ func reportSize(size string) {
 func main() {
 	queue := os.Getenv("QUEUE")
 	inbox := filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
+	outbox := filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
 	queues := filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 
+	err := os.MkdirAll(outbox, 0700)
+	if err != nil {
+		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
+		return
+	}
+
 	for {
+		// Check for existence of unassigned inbox
 		if f, err := os.Stat(inbox); err == nil && f.IsDir() {
 			fmt.Printf("[workstealer] Scanning inbox: %s\n", inbox)
 
-			// current unassigned work items
+			// We will enumerate the unassigned inbox to find the current unassigned work items
 			f, err := os.Open(inbox)
 			if err != nil {
 				log.Fatalf("[workstealer] Failed to read inbox directory: %v\n", err)
 				return
 			}
 
+			// Here is the readdir/enumeration of the unassigned directory
 			files, err := f.Readdir(0)
 			if err != nil {
 				log.Fatalf("[workstealer] Failed to read contents of inbox directory: %v\n", err)
 			}
 
+			// We will tally up the total number of tasks (nFiles) and the number already assigned to
+			// a worker (nAssigned)
 			nFiles := 0
 			nAssigned := 0
 
+			// Here is the loop over files in the unassigned inbox directory
 			for _, file := range files {
 				fileName := file.Name()
 				if strings.HasSuffix(fileName, ".lock") || strings.HasSuffix(fileName, ".done") {
+					// skip over the lock files
 					continue
 				}
 
@@ -60,29 +70,49 @@ func main() {
 				}
 
 				if _, err := os.Stat(filePath + ".lock"); err == nil {
-					// the file may be done? check...
+					// Then this task is locked, i.e. already assigned to a worker.
 					lockFile, err := os.ReadFile(filePath + ".lock")
 					if err != nil {
 						log.Fatalf("[workstealer] Failed to read lock file: %v\n", err)
 					}
+
+					// The lock file contents will the id of the owning worker
 					worker := strings.TrimSpace(string(lockFile))
-					doneFile := filepath.Join(worker, "outbox", fileName+".done")
-					fmt.Printf("[workstealer] checking for donefile %s", doneFile)
-					if _, err := os.Stat(doneFile); err == nil {
-						// yes, it is done, flag it as such
+
+					// Check the worker's outbox for the task
+					fileInWorkerOutbox := filepath.Join(worker, "outbox", fileName)
+
+					fmt.Printf("[workstealer] checking worker outbox %s\n", fileInWorkerOutbox)
+					if _, err := os.Stat(fileInWorkerOutbox); err == nil {
+						// Then yes, this task is done. Flag it as such: increment nAssigned,
+						// touch the .done file and remove the .lock file
 						nAssigned++
 						fmt.Printf("[workstealer] skipping already-done (2) file=%s nAssigned=%d\n", fileName, nAssigned)
+
+						// ...touch the done file
 						if err := os.WriteFile(filePath+".done", []byte{}, 0644); err != nil {
 							log.Fatalf("[workstealer] Failed to touch done file: %v\n", err)
 						}
+
+						// ...remove the lock file
 						if err := os.Remove(filePath + ".lock"); err != nil {
 							log.Fatalf("[workstealer] Failed to remove lock file: %v\n", err)
 						}
+
+						// move the output to the final/global (i.e. not per-worker) outbox
+						fullyDoneOutputFilePath := filepath.Join(outbox, fileName)
+						err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath)
+						if err != nil {
+							log.Fatalf("[workstealer] Failed to copy output to final outbox: %v\n", err)
+						}
+
+						// Nothing more to do for this task file
 						continue
 					}
 				}
 
-				// otherwise, pick a worker randomly and send the task to that worker's queue
+				// If we get here, then we have an unassigned task. Pick a worker randomly
+				// and send the task to that worker's queue.
 				workerDirs, err := filepath.Glob(filepath.Join(queues, "*"))
 				if err != nil {
 					log.Fatalf("[workstealer] Failed to get worker directories: %v\n", err)
@@ -93,9 +123,11 @@ func main() {
 					continue
 				}
 
+				// Pick a random worker
 				workerDir := workerDirs[rand.Intn(len(workerDirs))]
 				queue := filepath.Join(workerDir, "inbox")
 
+				// Check if that worker is no longer alive
 				if _, err := os.Stat(filepath.Join(queue, ".alive")); os.IsNotExist(err) {
 					/* TODO: maybe we need to loop more tightly
 					   here over possibly available workers?
@@ -104,12 +136,13 @@ func main() {
 					   workers that *are* active? */
 					fmt.Printf("[workstealer] skipping inactive queue=%s\n", queue)
 
-					// unlock any files owned by that worker
+					// If the worker has any assigned tasks, unlock those files owned by that worker
 					lockFiles, err := filepath.Glob(filepath.Join(inbox, "*.lock"))
 					if err != nil {
 						log.Fatalf("[workstealer] Failed to get lock files: %v\n", err)
 					}
 
+					// Iterate over files locked by this worker
 					for _, lockFile := range lockFiles {
 						lockContent, err := os.ReadFile(lockFile)
 						if err != nil {

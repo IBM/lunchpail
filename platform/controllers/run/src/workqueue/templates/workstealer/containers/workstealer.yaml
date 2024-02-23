@@ -6,6 +6,8 @@
       value: {{ .Values.name }}
     - name: UNASSIGNED_INBOX
       value: {{ .Values.inbox | default "inbox" }}
+    - name: FULLY_DONE_OUTBOX
+      value: {{ .Values.outbox | default "outbox" }}
     - name: WORKER_QUEUES_SUBDIR
       value: queues
     - name: QUEUE
