@@ -1,7 +1,7 @@
 import changeMaker from "change-maker"
 import { Flex } from "@patternfly/react-core"
 
-import Cell from "./Cell"
+import Cell, { type CellKind } from "./Cell"
 import { TaskQueueTask } from "@jaas/resources/workerpools/WorkerPoolModel"
 
 import "./Cells.scss"
@@ -9,6 +9,9 @@ import "./Cells.scss"
 export type Props = {
   /** Number of tasks in the inbox/unassigned */
   inbox: TaskQueueTask
+
+  /** What kind of activity do these cells represent */
+  kind: CellKind
 }
 
 /**
@@ -19,17 +22,11 @@ export type Props = {
  */
 const coinDenominations: number[] = [1, 10, 100, 1000].map((_) => _ * 100)
 
-/** Render one cell */
-function cell(taskqueue: string, labelNum: number, stackDepth: number) {
-  const key = taskqueue + "." + labelNum + "." + stackDepth
-  return <Cell key={key} stackDepth={stackDepth} />
-}
-
 /** @return an array of Cells */
-function queue(tasks: TaskQueueTask) {
+function queue(tasks: TaskQueueTask, kind: CellKind) {
   return Object.entries(tasks || {})
     .filter(([, size]) => size > 0)
-    .flatMap(([taskqueue, size]) => {
+    .flatMap(([, size]) => {
       // changeMaker() returns a mapping from coin denomination
       // the number of such coins ('value'). Currently,
       // changeMaker() requires that the first paramter be a
@@ -43,7 +40,7 @@ function queue(tasks: TaskQueueTask) {
             // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
             Array(numStacks)
               .fill(0)
-              .map((_, idx) => cell(taskqueue, idx, parseInt(stackDepth, 10) / 100)),
+              .map((_, idx) => <Cell key={idx} kind={kind} stackDepth={parseInt(stackDepth, 10) / 100} />),
           )
       )
     })
@@ -52,7 +49,7 @@ function queue(tasks: TaskQueueTask) {
 export default function Cells(props: Props) {
   return (
     <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-      {queue(props.inbox)}
+      {queue(props.inbox, props.kind)}
     </Flex>
   )
 }

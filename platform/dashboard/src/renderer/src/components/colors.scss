@@ -1,3 +1,35 @@
+.codeflare--dashboard {
+  --pf-v5-chart-color-black-100: #f0f0f0;
+  --pf-v5-chart-color-black-200: #d2d2d2;
+  --pf-v5-chart-color-black-300: #b8bbbe;
+  --pf-v5-chart-color-black-400: #8a8d90;
+  --pf-v5-chart-color-black-500: #6a6e73;
+
+  --pf-v5-chart-color-blue-100: #8bc1f7;
+  --pf-v5-chart-color-blue-200: #519de9;
+  --pf-v5-chart-color-blue-300: #06c;
+  --pf-v5-chart-color-blue-400: #004b95;
+  --pf-v5-chart-color-blue-500: #002f5d;
+
+  --pf-v5-chart-color-green-100: #bde2b9;
+  --pf-v5-chart-color-green-200: #7cc674;
+  --pf-v5-chart-color-green-300: #4cb140;
+  --pf-v5-chart-color-green-400: #38812f;
+  --pf-v5-chart-color-green-500: #23511e;
+
+  --pf-v5-chart-color-purple-100: #b2b0ea;
+  --pf-v5-chart-color-purple-200: #8481dd;
+  --pf-v5-chart-color-purple-300: #5752d1;
+  --pf-v5-chart-color-purple-400: #3c3d99;
+  --pf-v5-chart-color-purple-500: #2a265f;
+
+  --pf-v5-chart-color-gold-100: #f9e0a2;
+  --pf-v5-chart-color-gold-200: #f6d173;
+  --pf-v5-chart-color-gold-300: #f4c145;
+  --pf-v5-chart-color-gold-400: #f0ab00;
+  --pf-v5-chart-color-gold-500: #c58c00;
+}
+
 /**
  * This is an array of maps. The outer array will be indexed by
  * `[data-index]`, and the inner map will be indexed by the `depth`
@@ -5,75 +37,33 @@
  */
 $cell-colors: (
   (
-    1000: #23511e,
-    100: #38812f,
-    10: #4cb140,
-    1: #bde2b9,
+    1000: var(--pf-v5-chart-color-black-500),
+    100: var(--pf-v5-chart-color-black-400),
+    10: var(--pf-v5-chart-color-black-300),
+    1: var(--pf-v5-chart-color-black-200),
   ),
   (
-    1000: #3c3d99,
-    100: #5752d1,
-    10: #8481dd,
-    1: #b2b0ea,
+    1000: var(--pf-v5-chart-color-green-500),
+    100: var(--pf-v5-chart-color-green-400),
+    10: var(--pf-v5-chart-color-green-300),
+    1: var(--pf-v5-chart-color-green-100),
   ),
   (
-    1000: #002f5d,
-    100: #004b95,
-    10: #06c,
-    1: #8bc1f7,
+    1000: var(--pf-v5-chart-color-purple-400),
+    100: var(--pf-v5-chart-color-purple-300),
+    10: var(--pf-v5-chart-color-purple-200),
+    1: var(--pf-v5-chart-color-purple-100),
   ),
   (
-    1000: #c58c00,
-    100: #f0ab00,
-    10: #f4c145,
-    1: #f9e0a2,
+    1000: var(--pf-v5-chart-color-blue-500),
+    100: var(--pf-v5-chart-color-blue-400),
+    10: var(--pf-v5-chart-color-blue-300),
+    1: var(--pf-v5-chart-color-blue-100),
   ),
   (
-    1000: #8f4700,
-    100: #c46100,
-    10: #ec7a08,
-    1: #f4b678,
-  ),
-  (
-    1000: #003737,
-    100: #005f60,
-    10: #009596,
-    1: #a2d9d9,
-  ),
-  (
-    1000: #7a0177,
-    100: #dd3497,
-    10: #fa9fb5,
-    1: #fcc5c0,
-  ),
-  (
-    1000: #006837,
-    100: #41ab5d,
-    10: #addd8e,
-    1: #d9f0a3,
-  ),
-  (
-    1000: #810f7c,
-    100: #8c6bb1,
-    10: #9ebcda,
-    1: #bfd3e6,
-  ),
-  (
-    1000: #a63603,
-    100: #f16913,
-    10: #fdae6b,
-    1: #fdd0a2,
-  ),
-  (
-    1000: #08519c,
-    100: #4292c6,
-    10: #9ecae1,
-    1: #c6dbef,
-  ),
-  (
-    1000: #016c59,
-    100: #3690c0,
-    10: #a6bddb,
-    1: #d0d1e6,
+    1000: var(--pf-v5-chart-color-gold-500),
+    100: var(--pf-v5-chart-color-gold-400),
+    10: var(--pf-v5-chart-color-gold-300),
+    1: var(--pf-v5-chart-color-gold-100),
   )
 );

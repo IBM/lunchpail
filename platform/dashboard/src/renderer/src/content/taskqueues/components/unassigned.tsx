@@ -18,9 +18,9 @@ export function nUnassigned(props: Props) {
 
 function cells(count: number, props: Props) {
   if (!count) {
-    return <Cells inbox={{ [props.taskqueue.metadata.name]: 0 }} />
+    return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: 0 }} />
   }
-  return <Cells inbox={{ [props.taskqueue.metadata.name]: nUnassigned(props) }} />
+  return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: nUnassigned(props) }} />
 }
 
 function storageType(props: Pick<Props, "taskqueue">) {
