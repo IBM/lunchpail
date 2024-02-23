@@ -8,8 +8,14 @@ export default interface S3Api {
   /** @return list of buckets for the given s3 accessKey */
   listBuckets(endpoint: string, accessKey: string, secretKey: string): Promise<Bucket[]>
 
-  /** @return list of objects in the given s3 bucket */
-  listObjects(endpoint: string, accessKey: string, secretKey: string, bucket: string): Promise<BucketItem[]>
+  /** @return list of objects in the given s3 bucket, with the optional prefix filter */
+  listObjects(
+    endpoint: string,
+    accessKey: string,
+    secretKey: string,
+    bucket: string,
+    prefix?: string,
+  ): Promise<BucketItem[]>
 
   /** Make a bucket */
   makeBucket(endpoint: string, accessKey: string, secretKey: string, bucket: string): Promise<void>

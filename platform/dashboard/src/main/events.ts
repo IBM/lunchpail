@@ -162,8 +162,10 @@ export function initEvents() {
     import("./s3/listBuckets").then((_) => _.default(endpoint, accessKey, secretKey)),
   )
 
-  ipcMain.handle("/s3/listObjects", (_, endpoint: string, accessKey: string, secretKey: string, bucket: string) =>
-    import("./s3/listObjects").then((_) => _.default(endpoint, accessKey, secretKey, bucket)),
+  ipcMain.handle(
+    "/s3/listObjects",
+    (_, endpoint: string, accessKey: string, secretKey: string, bucket: string, prefix?: string) =>
+      import("./s3/listObjects").then((_) => _.default(endpoint, accessKey, secretKey, bucket, prefix)),
   )
 
   /** Make a bucket */
@@ -287,8 +289,9 @@ const apiImpl: JaasApi = Object.assign(
         accessKey: string,
         secretKey: string,
         bucket: string,
+        prefix?: string,
       ): Promise<{ name: string; size: number; lastModified: Date }[]> {
-        return ipcRenderer.invoke("/s3/listObjects", endpoint, accessKey, secretKey, bucket)
+        return ipcRenderer.invoke("/s3/listObjects", endpoint, accessKey, secretKey, bucket, prefix)
       },
 
       /** Make a bucket */

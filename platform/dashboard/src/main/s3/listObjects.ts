@@ -6,9 +6,10 @@ export default async function listObjects(
   accessKey: string,
   secretKey: string,
   bucket: string,
+  prefix?: string,
 ): Promise<BucketItem[]> {
   const client = await Client(endpoint, accessKey, secretKey)
-  const stream = await client.listObjectsV2(bucket, undefined, true)
+  const stream = await client.listObjectsV2(bucket, prefix, true)
 
   return new Promise((resolve, reject) => {
     const items: BucketItem[] = []

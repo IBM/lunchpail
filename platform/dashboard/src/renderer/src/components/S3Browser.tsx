@@ -33,7 +33,9 @@ type S3Props = { endpoint: string; bucket: string; accessKey: string; secretKey:
 type NavBrowserProps = S3Props & { roots: Tree[] }
 
 /**
- * A React component that visualizes the forest given by `props.roots[]`.
+ * A React component that visualizes the forest given by
+ * `props.roots[]` by using a PatternFly `<Nav/>` with its drilldown
+ * feature.
  */
 function NavBrowser(props: NavBrowserProps) {
   const rootMenuId = "s3nav-drilldown-rootMenu"
@@ -134,17 +136,28 @@ function NavBrowser(props: NavBrowserProps) {
   )
 }
 
+type PathPrefix = {
+  /**
+   * S3 folder prefix to browse. If not specified, the root of the bucket will be displayed.
+   */
+  prefix: string
+}
+
 /**
  * A React component that presents a `<NavBrowser/>` after loading the
- * `Tree` model.
+ * `Tree` model. This component will manage fetching the S3
+ * credentials associated with the given `DataSet`, and then pass them
+ * to `<S3BrowserWithCreds/>`.
  */
-function S3Browser(props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jaas>, "get" | "s3">) {
+function S3Browser(
+  props: DataSetEvent["spec"]["local"] & Pick<Required<typeof window.jaas>, "get" | "s3"> & Partial<PathPrefix>,
+) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown | null>(null)
   const [secret, setSecret] = useState<null | { accessKey: string; secretKey: string }>(null)
 
   useEffect(() => {
-    async function fetch() {
+    async function fetchCredentials() {
       try {
         const secret = await props.get<KubernetesS3Secret>({
           kind: "secret",
@@ -163,7 +176,7 @@ function S3Browser(props: DataSetEvent["spec"]["local"] & Pick<Required<typeof w
       setLoading(false)
     }
 
-    fetch()
+    fetchCredentials()
   }, [props["secret-name"], props["secret-namespace"]])
 
   if (loading || secret === null) {
@@ -171,19 +184,27 @@ function S3Browser(props: DataSetEvent["spec"]["local"] & Pick<Required<typeof w
   } else if (error) {
     return "Error loading secrets: " + error
   } else {
-    return <S3BrowserWithCreds {...secret} endpoint={props.endpoint} bucket={props.bucket} s3={props.s3} />
+    return (
+      <S3BrowserWithCreds
+        {...secret}
+        endpoint={props.endpoint}
+        bucket={props.bucket}
+        s3={props.s3}
+        prefix={props.prefix}
+      />
+    )
   }
 }
 
-export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
+export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots"> & Partial<PathPrefix>) {
   const [loading, setLoading] = useState(true)
   const [content, setContent] = useState<BucketItem[] | { error: unknown } | null>(null)
 
   useEffect(() => {
-    async function fetch() {
+    async function fetchContent() {
       try {
-        const { accessKey, secretKey, endpoint, bucket } = props
-        const items = await props.s3.listObjects(endpoint, accessKey, secretKey, bucket)
+        const { accessKey, secretKey, endpoint, bucket, prefix } = props
+        const items = await props.s3.listObjects(endpoint, accessKey, secretKey, bucket, prefix)
         setContent(items)
       } catch (error) {
         console.error("Error listing S3 objects", props, error)
@@ -193,7 +214,11 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
       }
     }
 
-    const interval = setInterval(fetch, 5000)
+    // TODO: polling... can we do better? add a refresh button somehow?
+    const interval = setInterval(fetchContent, 5000)
+
+    // return the cleanup function to react; it will call this on
+    // component unmount
     return () => clearInterval(interval)
   }, [props.endpoint, props.accessKey, props.secretKey, props.bucket, setContent, setLoading])
 
@@ -208,7 +233,7 @@ export function S3BrowserWithCreds(props: Omit<NavBrowserProps, "roots">) {
   } else {
     return (
       <NavBrowser
-        roots={toTree(content)}
+        roots={toTree(content, props.prefix)}
         endpoint={props.endpoint}
         accessKey={props.accessKey}
         secretKey={props.secretKey}
@@ -231,22 +256,27 @@ const hasPadding = {
  * Take a list of S3 objects and fold them into a `Tree` model based
  * on the `/` path separators in the `name` field of the `items`.
  */
-function toTree(items: BucketItem[]): Tree[] {
+function toTree(items: BucketItem[], prefix?: string): Tree[] {
   const slashes = /\//
-  return items.slice(0, 100).reduce(
-    (r, s) => {
-      if (s.name) {
-        s.name.split(slashes).reduce((q, _, i, a) => {
-          const name = a.slice(0, i + 1).join("/")
-          let existingChild = (q.children = q.children || []).find((o) => o.name === name)
-          if (!existingChild) q.children.push((existingChild = { name, children: [] }))
-          return existingChild
-        }, r)
-      }
-      return r
-    },
-    { children: [] as Tree[] },
-  ).children
+  const prefixPattern = prefix ? new RegExp("^" + prefix + (prefix.endsWith("/") ? "" : "/")) : undefined
+
+  return items
+    .slice(0, 200)
+    .map((_) => (!prefixPattern || !_.name ? _.name : _.name.replace(prefixPattern, "")))
+    .reduce(
+      (r, name) => {
+        if (name) {
+          name.split(slashes).reduce((q, _, i, a) => {
+            const name = a.slice(0, i + 1).join("/")
+            let existingChild = (q.children = q.children || []).find((o) => o.name === name)
+            if (!existingChild) q.children.push((existingChild = { name, children: [] }))
+            return existingChild
+          }, r)
+        }
+        return r
+      },
+      { children: [] as Tree[] },
+    ).children
 }
 
 function isError(response: null | unknown | { error: unknown }): response is { error: unknown } {
@@ -373,12 +403,14 @@ function ShowContent(props: S3Props & { object: string }) {
 
 import DrawerTab from "@jaas/components/Drawer/Tab"
 
-/** A Details tab that shows <S3Browser /> */
-export function BrowserTabs(props: (DataSetEvent | TaskQueueEvent)["spec"]["local"]) {
+/** A Drawer tab that shows <S3Browser /> */
+export function BrowserTabs(
+  props: (DataSetEvent | TaskQueueEvent)["spec"]["local"] & Partial<PathPrefix> & { title?: string },
+) {
   if (window.jaas.get && window.jaas.s3) {
     return DrawerTab({
       hasNoPadding: true,
-      title: "Browser",
+      title: props.title ?? "Browser",
       body: <S3Browser {...props} get={window.jaas.get} s3={window.jaas.s3} />,
     })
   } else {

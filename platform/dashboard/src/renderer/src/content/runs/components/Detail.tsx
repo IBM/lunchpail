@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 
 import DrawerContent from "@jaas/components/Drawer/Content"
+import { BrowserTabs } from "@jaas/components/S3Browser"
 
 import { datasets } from "@jaas/resources/applications/components/datasets"
 import { datasetsGroup } from "@jaas/resources/applications/components/tabs/Data"
@@ -32,7 +33,12 @@ function hasApplication(props: PropsWithPotentiallyMissingApplication): props is
 
 /** Additional Tabs to show in the Detail view (beyond Summary and raw/Yaml) */
 function otherTabs(props: PropsWithPotentiallyMissingApplication) {
-  return !hasApplication(props) ? [] : [workstealerLogsTab(props)]
+  const queue = taskqueue(props)
+  const browserTab = queue
+    ? BrowserTabs({ ...queue.spec.local, title: "Task Browser", prefix: props.run.metadata.name + "/" })
+    : undefined
+
+  return [...(browserTab ? [browserTab] : []), workstealerLogsTab(props)]
 }
 
 function computeGroup(props: Pick<Props, "run" | "workerpools">) {

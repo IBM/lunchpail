@@ -4,7 +4,7 @@ import { LogsTab } from "@jaas/resources/workdispatchers/components/tabs/Logs"
 import { singular as Run } from "@jaas/resources/runs/name"
 
 /** Logs tab for WorkStealer */
-export default function WorkStealerLogsTab(props: Props) {
+export default function WorkStealerLogsTab(props: Pick<Props, "run">) {
   return LogsTab({
     selector: [
       `app.kubernetes.io/component=workstealer,app.kubernetes.io/part-of=${props.run.metadata.name}`,
