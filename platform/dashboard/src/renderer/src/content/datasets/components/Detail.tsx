@@ -1,5 +1,5 @@
-import { BrowserTabs } from "@jaas/components/S3Browser"
 import DrawerContent from "@jaas/components/Drawer/Content"
+import S3BrowserTabs from "@jaas/components/S3Browser/DrawerTab"
 import DeleteResourceButton from "@jaas/components/DeleteResourceButton"
 import { dl as DescriptionList, descriptionGroup } from "@jaas/components/DescriptionGroup"
 
@@ -40,7 +40,7 @@ function editAction(props: Props) {
 
 /** Tabs specific to this kind of data */
 function otherTabs(props: Props) {
-  const tab = BrowserTabs(props.spec.local)
+  const tab = S3BrowserTabs(props.spec.local)
   return tab ? [tab] : undefined
 }
 

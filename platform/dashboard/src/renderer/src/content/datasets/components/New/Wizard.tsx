@@ -3,7 +3,7 @@ import type { FormContextProps } from "@patternfly/react-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { uniqueNamesGenerator, animals } from "unique-names-generator"
 
-import { S3BrowserWithCreds } from "@jaas/components/S3Browser"
+import S3BrowserWithCreds from "@jaas/components/S3Browser"
 import { isNonEmptyArray } from "@jaas/common/util/NonEmptyArray"
 
 import Input from "@jaas/components/Forms/Input"

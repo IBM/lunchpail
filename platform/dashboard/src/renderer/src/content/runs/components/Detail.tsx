@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 
+import S3BrowserTab from "@jaas/components/S3Browser/DrawerTab"
 import DrawerContent from "@jaas/components/Drawer/Content"
-import { BrowserTabs } from "@jaas/components/S3Browser"
 
 import { datasets } from "@jaas/resources/applications/components/datasets"
 import { datasetsGroup } from "@jaas/resources/applications/components/tabs/Data"
@@ -35,7 +35,7 @@ function hasApplication(props: PropsWithPotentiallyMissingApplication): props is
 function otherTabs(props: PropsWithPotentiallyMissingApplication) {
   const queue = taskqueue(props)
   const browserTab = queue
-    ? BrowserTabs({ ...queue.spec.local, title: "Task Browser", prefix: props.run.metadata.name + "/" })
+    ? S3BrowserTab({ ...queue.spec.local, title: "Task Browser", prefix: props.run.metadata.name + "/" })
     : undefined
 
   return [...(browserTab ? [browserTab] : []), workstealerLogsTab(props)]
