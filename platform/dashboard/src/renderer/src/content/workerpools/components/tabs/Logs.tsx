@@ -1,15 +1,11 @@
-import type Props from "../Props"
-
+import type NameProps from "@jaas/components/NameProps"
 import { LogsTab } from "@jaas/resources/workdispatchers/components/tabs/Logs"
 
 /** Logs tab for WorkerPool Detail */
-export default function WorkerPoolLogsTab(props: Props) {
+export default function WorkerPoolLogsTab({ name, namespace, context }: NameProps) {
   return LogsTab({
-    selector: [
-      `app.kubernetes.io/component=workerpool,app.kubernetes.io/name=${props.model.label}`,
-      // `app.kubernetes.io/component=workstealer,app.kubernetes.io/name=${props.model.application}`,
-    ].join(":"),
-    context: props.model.context,
-    namespace: props.model.namespace,
+    selector: `app.kubernetes.io/component=workerpool,app.kubernetes.io/name=${name}`,
+    context,
+    namespace,
   })
 }

@@ -4,6 +4,6 @@ import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEven
 export default interface Props {
   model: WorkerPoolModelWithHistory
 
-  /** This will be ordered from least recent to most recent */
+  /** The most recent model */
   status?: WorkerPoolStatusEvent
 }

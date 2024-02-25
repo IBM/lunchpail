@@ -9,7 +9,7 @@ export default function Detail(id: string, context: string, events: ManagedEvent
   } else {
     const props = {
       model,
-      status: events.workerpools.find((_) => _.metadata.name === id),
+      status: events.workerpools.find((_) => _.metadata.name === id && (!context || _.metadata.context === context)),
     }
     return { body: <WorkerPoolDetail {...props} /> }
   }

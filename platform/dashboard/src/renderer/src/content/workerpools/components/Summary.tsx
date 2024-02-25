@@ -10,35 +10,33 @@ import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 import { name as runsName } from "@jaas/resources/runs/name"
 
 import type Props from "./Props"
+import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
-function completionRate(props: Props) {
-  return <Sparkline data={completionRateHistory(props.model.events)} />
+function completionRate(events: Props["model"]["events"]) {
+  return <Sparkline data={completionRateHistory(events)} />
 }
 
-function latestRuns(props: Props) {
-  if (props.status) {
-    return [props.status.spec.run.name]
-  }
-  return null
+function latestRuns(workerpool: WorkerPoolStatusEvent) {
+  return [workerpool.spec.run.name]
 }
 
 /** One row per worker, within row, one cell per inbox or outbox enqueued task */
-function enqueued(props: Props) {
+function enqueued(inbox: number[]) {
   return (
     <div className="codeflare--workqueues">
-      {props.model.inbox.map((inbox, i) => (
+      {inbox.map((inbox, i) => (
         <GridRow key={i} queueNum={i + 1} inbox={inbox} kind="pending" />
       ))}
     </div>
   )
 }
 
-export function enqueuedGroup(props: Props) {
-  return descriptionGroup("Tasks assigned to each worker in this pool", enqueued(props))
+export function enqueuedGroup(inbox: number[]) {
+  return descriptionGroup("Tasks assigned to each worker in this pool", enqueued(inbox))
 }
 
-function numProcessing(props: Props) {
-  return (props.model.processing || []).reduce(
+function numProcessing(processing?: number[]) {
+  return (processing || []).reduce(
     (N: number, processing) => N + Object.values(processing).reduce((M, size) => M + size, 0),
     0,
   )
@@ -50,15 +48,14 @@ export function titleCaseSplit(str: string) {
 }
 
 export function statusActions(
-  props: Props,
+  workerpool: undefined | WorkerPoolStatusEvent,
   textComponent?: import("@patternfly/react-core").TextProps["component"],
 ): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
-  const latestStatus = props.status
-  const status = latestStatus?.metadata.annotations["codeflare.dev/status"] || "Unknown"
+  const status = workerpool?.metadata.annotations["codeflare.dev/status"] || "Unknown"
 
   return {
     hasNoOffset: true,
-    actions: !latestStatus
+    actions: !workerpool
       ? []
       : [
           <Text key="status" component={textComponent}>
@@ -68,16 +65,21 @@ export function statusActions(
   }
 }
 
-export function summaryGroups(props: Props, statusOnly = false) {
-  const runs = latestRuns(props)
+export function summaryGroups(
+  workerpool: undefined | WorkerPoolStatusEvent,
+  events: Props["model"]["events"],
+  inbox: number[],
+  processing: number[],
+  statusOnly = false,
+) {
+  const runs = workerpool ? latestRuns(workerpool) : undefined
 
   return [
-    statusOnly && enqueuedGroup(props),
+    statusOnly && enqueuedGroup(inbox),
     !statusOnly && runs && descriptionGroup(runsName, linkToAllDetails("runs", runs)),
-    // descriptionGroup("Number of Workers", count(props)),
-    descriptionGroup("Tasks Currently Processing", numProcessing(props)),
-    props.model.events.length > 1 &&
-      descriptionGroup("Completion Rate", completionRate(props), meanCompletionRate(props.model.events) || "None"),
-    !statusOnly && enqueuedGroup(props),
+    descriptionGroup("Tasks Currently Processing", numProcessing(processing)),
+    events.length > 1 &&
+      descriptionGroup("Completion Rate", completionRate(events), meanCompletionRate(events) || "None"),
+    !statusOnly && enqueuedGroup(inbox),
   ]
 }
