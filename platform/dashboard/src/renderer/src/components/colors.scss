@@ -39,31 +39,36 @@ $cell-colors: (
   (
     1000: var(--pf-v5-chart-color-black-500),
     100: var(--pf-v5-chart-color-black-400),
-    10: var(--pf-v5-chart-color-black-300),
+    25: var(--pf-v5-chart-color-black-300),
     1: var(--pf-v5-chart-color-black-200),
+    0: var(--pf-v5-chart-color-black-100),
   ),
   (
     1000: var(--pf-v5-chart-color-green-500),
     100: var(--pf-v5-chart-color-green-400),
-    10: var(--pf-v5-chart-color-green-300),
+    25: var(--pf-v5-chart-color-green-300),
     1: var(--pf-v5-chart-color-green-100),
+    0: var(--pf-v5-chart-color-green-200),
   ),
   (
     1000: var(--pf-v5-chart-color-purple-400),
     100: var(--pf-v5-chart-color-purple-300),
-    10: var(--pf-v5-chart-color-purple-200),
+    25: var(--pf-v5-chart-color-purple-200),
     1: var(--pf-v5-chart-color-purple-100),
+    0: var(--pf-v5-chart-color-purple-200),
   ),
   (
     1000: var(--pf-v5-chart-color-blue-500),
     100: var(--pf-v5-chart-color-blue-400),
-    10: var(--pf-v5-chart-color-blue-300),
+    25: var(--pf-v5-chart-color-blue-300),
     1: var(--pf-v5-chart-color-blue-100),
+    0: var(--pf-v5-chart-color-blue-200),
   ),
   (
     1000: var(--pf-v5-chart-color-gold-500),
     100: var(--pf-v5-chart-color-gold-400),
-    10: var(--pf-v5-chart-color-gold-300),
+    25: var(--pf-v5-chart-color-gold-300),
     1: var(--pf-v5-chart-color-gold-100),
+    0: var(--pf-v5-chart-color-gold-400),
   )
 );

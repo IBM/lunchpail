@@ -20,7 +20,7 @@ export type Props = {
  * convert our cents to dollars here (*100), and then do a /100 at the
  * very end -- i.e. in this way we get only a single rounding error.
  */
-const coinDenominations: number[] = [1, 10, 100, 1000].map((_) => _ * 100)
+const coinDenominations: number[] = [1, 25, 100, 1000].map((_) => _ * 100)
 
 /** @return an array of Cells */
 function queue(tasks: TaskQueueTask, kind: CellKind) {
