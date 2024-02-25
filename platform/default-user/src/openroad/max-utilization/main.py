@@ -1,7 +1,7 @@
 #
 # Origin:
 # https://github.com/ieee-ceda-datc/aspdac-2022-tutorial/blob/main/part4-k8s-single-node-ray-demo/k8s-single-node-ray.ipynb
-# "In this demo, our goal is to find a maximum achivable utilization for a given design."
+# "In this demo, our goal is to find a maximum achivable [sic] utilization for a given design."
 #
 import sys
 import subprocess
