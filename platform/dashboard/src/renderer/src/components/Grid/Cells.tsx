@@ -23,26 +23,22 @@ const coinDenominations: number[] = [1, 25, 100, 1000].map((_) => _ * 100)
 
 /** @return an array of Cells */
 function queue(tasks: number, kind: CellKind) {
-  return Array(tasks)
-    .fill(0)
-    .map((size) => {
-      // changeMaker() returns a mapping from coin denomination
-      // the number of such coins ('value'). Currently,
-      // changeMaker() requires that the first paramter be a
-      // currency, so we add the '$' prefix
-      return (
-        Object.entries(changeMaker("$" + size, coinDenominations))
-          .reverse()
-          // Find the number of stacks that are being used to render 'size' <Cell/> by finding the non-zero values from changeMaker()
-          .filter(([, numStacks]) => numStacks > 0)
-          .map(([stackDepth, numStacks]) =>
-            // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
-            Array(numStacks)
-              .fill(0)
-              .map((_, idx) => <Cell key={idx} kind={kind} stackDepth={parseInt(stackDepth, 10) / 100} />),
-          )
+  return (
+    // changeMaker() returns a mapping from coin denomination
+    // the number of such coins ('value'). Currently,
+    // changeMaker() requires that the first paramter be a
+    // currency, so we add the '$' prefix
+    Object.entries(changeMaker("$" + tasks, coinDenominations))
+      .reverse()
+      // Find the number of stacks that are being used to render 'size' <Cell/> by finding the non-zero values from changeMaker()
+      .filter(([, numStacks]) => numStacks > 0)
+      .map(([stackDepth, numStacks]) =>
+        // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
+        Array(numStacks)
+          .fill(0)
+          .map((_, idx) => <Cell key={idx} kind={kind} stackDepth={parseInt(stackDepth, 10) / 100} />),
       )
-    })
+  )
 }
 
 export default function Cells(props: Props) {
