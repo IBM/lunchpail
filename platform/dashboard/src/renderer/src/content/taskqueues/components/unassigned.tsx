@@ -5,7 +5,7 @@ import None from "@jaas/components/None"
 import Cells from "@jaas/components/Grid/Cells"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
-type Props = { taskqueue: TaskQueueEvent; run: RunEvent }
+type Props = { taskqueue: Pick<TaskQueueEvent, "metadata">; run: Pick<RunEvent, "metadata"> }
 
 type State = "done" | "unassigned"
 
