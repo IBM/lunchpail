@@ -5,12 +5,11 @@ import None from "@jaas/components/None"
 import Cells from "@jaas/components/Grid/Cells"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 
-import { singular as TaskQueue } from "@jaas/resources/taskqueues/name"
-
 type Props = { taskqueue: TaskQueueEvent; run: RunEvent }
 
 type State = "done" | "unassigned"
 
+/** @return number of tasks in the given `State` */
 function numInState(props: Props, state: State) {
   const { context, name, namespace } = props.run.metadata
   // e.g. jaas.dev/unassigned....
@@ -18,14 +17,17 @@ function numInState(props: Props, state: State) {
   return isNaN(count) ? 0 : count
 }
 
+/** @return number of tasks with `State=unassigned` */
 export function nUnassigned(props: Props) {
   return numInState(props, "unassigned")
 }
 
+/** @return number of tasks with `State=done` */
 export function nDone(props: Props) {
   return numInState(props, "done")
 }
 
+/** @return React component that visualizes `count` tasks in the given `state` */
 function cells(count: number, state: State, props: Props) {
   const kind = state === "unassigned" ? "pending" : "running"
 
@@ -35,19 +37,21 @@ function cells(count: number, state: State, props: Props) {
   return <Cells kind={kind} inbox={{ [props.taskqueue.metadata.name]: count }} />
 }
 
-function storageType(props: Pick<Props, "taskqueue">) {
-  const storageType = props.taskqueue.spec.local.type
-  return storageType === "COS" ? `This ${TaskQueue} uses S3` : storageType
-}
-
 function groupForState(props: Props, state: State) {
   const count = numInState(props, state)
   return descriptionGroup(
     `${state} Tasks`,
     count === 0 ? None() : cells(count, state, props),
     count,
-    storageType(props),
-    TaskQueue,
+    state === "unassigned" ? (
+      <>
+        These <strong>Tasks</strong> have yet to be assigned to any particular <strong>Worker</strong>.
+      </>
+    ) : (
+      <>
+        These <strong>Tasks</strong> are complete, having been fully processed by a <strong>Worker</strong>.
+      </>
+    ),
   )
 }
 
