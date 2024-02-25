@@ -26,11 +26,13 @@ export function nDone(props: Props) {
   return numInState(props, "done")
 }
 
-function cells(count: number, props: Props) {
+function cells(count: number, state: State, props: Props) {
+  const kind = state === "unassigned" ? "pending" : "running"
+
   if (!count) {
-    return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: 0 }} />
+    return <Cells kind={kind} inbox={{ [props.taskqueue.metadata.name]: 0 }} />
   }
-  return <Cells kind="pending" inbox={{ [props.taskqueue.metadata.name]: count }} />
+  return <Cells kind={kind} inbox={{ [props.taskqueue.metadata.name]: count }} />
 }
 
 function storageType(props: Pick<Props, "taskqueue">) {
@@ -42,7 +44,7 @@ function groupForState(props: Props, state: State) {
   const count = numInState(props, state)
   return descriptionGroup(
     `${state} Tasks`,
-    count === 0 ? None() : cells(count, props),
+    count === 0 ? None() : cells(count, state, props),
     count,
     storageType(props),
     TaskQueue,
