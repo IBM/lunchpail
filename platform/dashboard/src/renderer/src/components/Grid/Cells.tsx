@@ -2,13 +2,12 @@ import changeMaker from "change-maker"
 import { Flex } from "@patternfly/react-core"
 
 import Cell, { type CellKind } from "./Cell"
-import { TaskQueueTask } from "@jaas/resources/workerpools/WorkerPoolModel"
 
 import "./Cells.scss"
 
 export type Props = {
   /** Number of tasks in the inbox/unassigned */
-  inbox: TaskQueueTask
+  inbox: number
 
   /** What kind of activity do these cells represent */
   kind: CellKind
@@ -23,10 +22,10 @@ export type Props = {
 const coinDenominations: number[] = [1, 25, 100, 1000].map((_) => _ * 100)
 
 /** @return an array of Cells */
-function queue(tasks: TaskQueueTask, kind: CellKind) {
-  return Object.entries(tasks || {})
-    .filter(([, size]) => size > 0)
-    .flatMap(([, size]) => {
+function queue(tasks: number, kind: CellKind) {
+  return Array(tasks)
+    .fill(0)
+    .map((size) => {
       // changeMaker() returns a mapping from coin denomination
       // the number of such coins ('value'). Currently,
       // changeMaker() requires that the first paramter be a

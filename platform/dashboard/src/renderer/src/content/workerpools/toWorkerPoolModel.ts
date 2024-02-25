@@ -1,21 +1,15 @@
-import {
-  queueTaskQueue,
-  queueInbox,
-  queueOutbox,
-  queueProcessing,
-  queueWorkerIndex,
-} from "@jaas/renderer/content/events/QueueEvent"
+import { queueInbox, queueOutbox, queueProcessing, queueWorkerIndex } from "@jaas/renderer/content/events/QueueEvent"
 
 import type QueueEvent from "@jaas/common/events/QueueEvent"
 import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 import type { WorkerPoolModel, WorkerPoolModelWithHistory } from "./WorkerPoolModel"
 
-/** Used by the ugly toWorkerPoolModel. hopefully this will go away at some point */
+/** Fill in zero for workers that haven't been observed */
 function backfill<T extends WorkerPoolModel["inbox"] | WorkerPoolModel["outbox"] | WorkerPoolModel["processing"]>(
   A: T,
 ): T {
   for (let idx = 0; idx < A.length; idx++) {
-    if (!(idx in A)) A[idx] = {}
+    if (!(idx in A)) A[idx] = 0
   }
   return A
 }
@@ -31,26 +25,14 @@ export default function toWorkerPoolModel(
 ): WorkerPoolModelWithHistory {
   const model = queueEventsForOneWorkerPool.reduce(
     (M, queueEvent) => {
-      const taskqueue = queueTaskQueue(queueEvent)
       const inbox = queueInbox(queueEvent)
       const outbox = queueOutbox(queueEvent)
       const processing = queueProcessing(queueEvent)
       const workerIndex = queueWorkerIndex(queueEvent)
 
-      if (!M.inbox[workerIndex]) {
-        M.inbox[workerIndex] = {}
-      }
-      M.inbox[workerIndex][taskqueue] = inbox
-
-      if (!M.outbox[workerIndex]) {
-        M.outbox[workerIndex] = {}
-      }
-      M.outbox[workerIndex][taskqueue] = outbox
-
-      if (!M.processing[workerIndex]) {
-        M.processing[workerIndex] = {}
-      }
-      M.processing[workerIndex][taskqueue] = processing
+      M.inbox[workerIndex] = inbox
+      M.outbox[workerIndex] = outbox
+      M.processing[workerIndex] = processing
 
       return M
     },

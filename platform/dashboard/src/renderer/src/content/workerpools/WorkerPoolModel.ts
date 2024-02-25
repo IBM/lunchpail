@@ -1,8 +1,5 @@
-/** Map from TaskQueue label to number of tasks to be done for that TaskQueue */
-export type TaskQueueTask = Record<string, number>
-
-/** One TaskQueueTask for each Worker in a WorkerPool */
-type TasksAcrossWorkers = TaskQueueTask[]
+/** For each Worker in a WorkerPool, the number of enqueued Tasks */
+type TasksAcrossWorkers = number[]
 
 export interface WorkerPoolModel {
   inbox: TasksAcrossWorkers

@@ -28,20 +28,20 @@ export function nDone(props: Props) {
 }
 
 /** @return React component that visualizes `count` tasks in the given `state` */
-function cells(count: number, state: State, props: Props) {
+function cells(count: number, state: State) {
   const kind = state === "unassigned" ? "pending" : "running"
 
   if (!count) {
-    return <Cells kind={kind} inbox={{ [props.taskqueue.metadata.name]: 0 }} />
+    return <Cells kind={kind} inbox={0} />
   }
-  return <Cells kind={kind} inbox={{ [props.taskqueue.metadata.name]: count }} />
+  return <Cells kind={kind} inbox={count} />
 }
 
 function groupForState(props: Props, state: State) {
   const count = numInState(props, state)
   return descriptionGroup(
     `${state} Tasks`,
-    count === 0 ? None() : cells(count, state, props),
+    count === 0 ? None() : cells(count, state),
     count,
     state === "unassigned" ? (
       <>
