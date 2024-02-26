@@ -71,7 +71,6 @@ export default function ApplicationDetail(props: PropsWithPotentiallyMissingAppl
     () =>
       dl({
         groups: [
-          taskqueueGroup(props),
           descriptionGroup(
             Code,
             !props.application ? "Missing" : linkToAllDetails("applications", [props.application]),
@@ -79,6 +78,7 @@ export default function ApplicationDetail(props: PropsWithPotentiallyMissingAppl
           ...(!hasApplication(props) ? [] : [datasetsGroup(datasets(props))]),
           dispatchGroup(props),
           computeGroup(props),
+          taskqueueGroup(props),
           ...reasonAndMessageGroups(props.run),
         ],
       }),
