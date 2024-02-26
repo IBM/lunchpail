@@ -38,7 +38,7 @@ function groupForState(props: Props, state: State) {
   return descriptionGroup(
     `${state === "done" ? "completed" : state} Tasks`,
     count === 0 ? None() : cells(count, state),
-    count,
+    count === 0 ? undefined : count,
     state === "unassigned" ? (
       <>
         These <strong>Tasks</strong> have yet to be assigned to any particular <strong>Worker</strong>.

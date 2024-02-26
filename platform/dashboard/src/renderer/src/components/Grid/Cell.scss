@@ -13,10 +13,6 @@ $label-size: 0.5625rem;
   }
 }
 
-.codeflare-workqueues {
-  line-height: #{$size * 1.125};
-}
-
 .codeflare--dashboard {
   --codeflare-cell-color-none: #d2d2d2;
 }
@@ -43,6 +39,10 @@ $label-size: 0.5625rem;
   align-items: center;
   justify-content: center;
   transition: background-color 70ms ease-in-out;
+
+  svg {
+    font-size: $label-size;
+  }
 
   span {
     color: white;

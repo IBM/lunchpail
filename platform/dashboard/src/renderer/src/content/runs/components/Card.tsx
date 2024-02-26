@@ -7,7 +7,8 @@ import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 import api from "@jaas/resources/applications/components/api"
 import { taskqueue as associatedTaskQueue } from "@jaas/resources/runs/components/taskqueueProps"
 import ProgressStepper from "@jaas/resources/runs/components/ProgressStepper"
-import { done, unassigned } from "@jaas/resources/taskqueues/components/unassigned"
+import { unassigned } from "@jaas/resources/taskqueues/components/unassigned"
+import assigned from "./assigned"
 
 import type Props from "./Props"
 
@@ -43,10 +44,21 @@ export default function RunCard(props: Props) {
     () => [
       ...api(props),
       props.application.spec.description && descriptionGroup("Description", props.application.spec.description),
-      ...(!taskqueue ? [] : [unassigned({ taskqueue, run: props.run })]),
-      ...(!taskqueue ? [] : [done({ taskqueue, run: props.run })]),
+      ...(!taskqueue
+        ? []
+        : [
+            unassigned({ taskqueue, run: props.run }),
+            // done({ taskqueue, run: props.run }),
+            assigned({ run: props.run, workerpools: props.workerpools, latestQueueEvents: props.latestQueueEvents }),
+          ]),
     ],
-    [props.run, props.application, JSON.stringify(taskqueue)],
+    [
+      props.run,
+      props.application,
+      JSON.stringify(taskqueue),
+      JSON.stringify(props.workerpools),
+      JSON.stringify(props.latestQueueEvents),
+    ],
   )
 
   return (

@@ -1,13 +1,14 @@
 import GridRow from "./Row"
 
-type Props = { rowLabelPrefix: string; inbox: number[]; processing: number[]; outbox: number[] }
+type Props = { rowLabelPrefix: string; inbox: number[]; processing: number[]; outbox?: number[] }
+
 /**
  * This is a special case that uses table of `<GridRow/>` with one row
  * per worker or workerpool, etc.; and, within each row, one cell per
  * inbox, processing, or outbox task.
  */
 export default function InboxOutboxTable(props: Props) {
-  const nRows = Math.max(props.inbox.length, props.processing.length, props.outbox.length)
+  const nRows = Math.max(props.inbox.length, props.processing.length, props.outbox?.length ?? 0)
 
   return (
     <div className="codeflare--workqueues">
@@ -21,7 +22,7 @@ export default function InboxOutboxTable(props: Props) {
             kind1="pending"
             count2={props.processing[idx] ?? 0}
             kind2="running"
-            count3={props.outbox[idx] ?? 0}
+            count3={!props.outbox ? undefined : props.outbox[idx] ?? 0}
             kind3="completed"
           />
         ))}

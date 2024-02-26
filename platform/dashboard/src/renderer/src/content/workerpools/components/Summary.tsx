@@ -8,6 +8,7 @@ import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
 
 import { name as runsName } from "@jaas/resources/runs/name"
+import { singular as workerpool } from "@jaas/resources/workerpools/name"
 
 import type Props from "./Props"
 import type WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
@@ -16,14 +17,22 @@ function completionRate(events: Props["model"]["events"]) {
   return <Sparkline data={completionRateHistory(events)} />
 }
 
-function latestRuns(workerpool: WorkerPoolStatusEvent) {
+function associatedRuns(workerpool: WorkerPoolStatusEvent) {
   return [workerpool.spec.run.name]
 }
 
 export function gridCellsGroup(inbox: number[], processing: number[], outbox: number[]) {
+  const nComplete = outbox.reduce((N, value) => N + value, 0)
   return descriptionGroup(
-    "Breakdown of Task Status by Worker",
+    "Assigned Tasks (by Worker)",
     <InboxOutboxTable rowLabelPrefix="W" inbox={inbox} processing={processing} outbox={outbox} />,
+    `${nComplete} completed by this ${workerpool}`,
+    <>
+      This view provides a breakdown of the state of <strong>Tasks</strong> that have been assigned to this{" "}
+      <strong>{workerpool}</strong>. Each <strong>W1</strong>, <strong>W2</strong>, &hellip; shows the{" "}
+      <strong>Tasks</strong> assigned to a particular <strong>Worker</strong>.
+    </>,
+    "Assigned Tasks",
   )
 }
 
@@ -58,7 +67,7 @@ export function summaryGroups(
   outbox: number[],
   statusOnly = false,
 ) {
-  const runs = workerpool ? latestRuns(workerpool) : undefined
+  const runs = workerpool ? associatedRuns(workerpool) : undefined
 
   return [
     statusOnly && gridCellsGroup(inbox, processing, outbox),

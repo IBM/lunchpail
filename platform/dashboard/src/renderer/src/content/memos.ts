@@ -12,6 +12,7 @@ import type { WorkerPoolModelWithHistory } from "./workerpools/WorkerPoolModel"
 type Memos = {
   taskqueueToWorkDispatchers: Record<string, WorkDispatcherEvent[]>
   latestWorkerPoolModels: WorkerPoolModelWithHistory[]
+  latestQueueEvents: QueueEvent[]
 }
 
 export default Memos
@@ -33,6 +34,24 @@ export function initMemos(events: ManagedEvents): Memos {
         {} as Record<string, WorkDispatcherEvent[]>,
       ),
     [workdispatchers],
+  )
+
+  /** A memo of the latest QueueEvents, which normally are retained over time to allow for timelines */
+  const latestQueueEvents: QueueEvent[] = useMemo(
+    () =>
+      Object.values(
+        queues.reduce(
+          (M, event) => {
+            const key = `${event.metadata.name}.${event.metadata.namespace}.${event.metadata.context}`
+            if (!(key in M) || M[key].timestamp < event.timestamp) {
+              M[key] = event
+            }
+            return M
+          },
+          {} as Record<string, QueueEvent>,
+        ),
+      ),
+    [JSON.stringify(queues)],
   )
 
   /** A memo of the latest WorkerPoolModels, one per worker pool */
@@ -60,5 +79,6 @@ export function initMemos(events: ManagedEvents): Memos {
   return {
     taskqueueToWorkDispatchers,
     latestWorkerPoolModels,
+    latestQueueEvents,
   }
 }

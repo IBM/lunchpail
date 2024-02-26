@@ -28,9 +28,5 @@ export default function taskqueueProps(
             metadata.namespace === queue.metadata.namespace &&
             metadata.context === queue.metadata.context,
         ),
-        workerpools: props.workerpools.filter(
-          ({ metadata, spec }) =>
-            spec.run.name === props.run.metadata.name && metadata.context === queue.metadata.context,
-        ),
       }
 }

@@ -1,4 +1,5 @@
 import QueueEvent from "@jaas/common/events/QueueEvent"
+import WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 export function queueInbox({ event }: QueueEvent) {
   return parseInt(event.metadata.annotations["codeflare.dev/inbox"], 10)
@@ -31,4 +32,12 @@ export function queueTaskQueue({ event }: QueueEvent) {
   //const run = queueRun(queue)
   //return queue.event.metadata.name.replace(`queue-${run}-`, "").replace(/-\d+$/, "")
   return event.spec.dataset
+}
+
+export function inWorkerPool(qe: QueueEvent, workerpool: WorkerPoolStatusEvent) {
+  return (
+    queueWorkerPool(qe) === workerpool.metadata.name &&
+    qe.event.metadata.namespace === workerpool.metadata.namespace &&
+    workerpool.metadata.context === workerpool.metadata.context
+  )
 }

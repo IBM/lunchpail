@@ -26,6 +26,7 @@ export default function RunsGallery(events: ManagedEvents, memos: Memos, setting
               workdispatchers={events.workdispatchers}
               workerpools={events.workerpools}
               latestWorkerPoolModels={memos.latestWorkerPoolModels}
+              latestQueueEvents={memos.latestQueueEvents}
             />
           )
         }

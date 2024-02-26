@@ -1,5 +1,4 @@
 import changeMaker from "change-maker"
-import { Flex } from "@patternfly/react-core"
 
 import Cell, { type CellKind } from "./Cell"
 
@@ -21,14 +20,16 @@ export type Props = {
  */
 const coinDenominations: number[] = [1, 25, 100, 1000].map((_) => _ * 100)
 
-/** @return an array of Cells */
-function queue(tasks: number, kind: CellKind) {
+/**
+ * An array of `props.count` <Cell/> components decorated to look like `props.kind`
+ */
+export default function Cells(props: Props) {
   return (
     // changeMaker() returns a mapping from coin denomination
     // the number of such coins ('value'). Currently,
     // changeMaker() requires that the first paramter be a
     // currency, so we add the '$' prefix
-    Object.entries(changeMaker("$" + tasks, coinDenominations))
+    Object.entries(changeMaker("$" + props.count, coinDenominations))
       .reverse()
       // Find the number of stacks that are being used to render 'size' <Cell/> by finding the non-zero values from changeMaker()
       .filter(([, numStacks]) => numStacks > 0)
@@ -36,15 +37,7 @@ function queue(tasks: number, kind: CellKind) {
         // Finally, render 'numStacks' stacks of <Cell/>. 'stackDepth' represents how many <Cell/> there are in that stack.
         Array(numStacks)
           .fill(0)
-          .map((_, idx) => <Cell key={idx} kind={kind} stackDepth={parseInt(stackDepth, 10) / 100} />),
+          .map((_, idx) => <Cell key={idx} kind={props.kind} stackDepth={parseInt(stackDepth, 10) / 100} />),
       )
-  )
-}
-
-export default function Cells(props: Props) {
-  return (
-    <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-      {queue(props.count, props.kind)}
-    </Flex>
   )
 }

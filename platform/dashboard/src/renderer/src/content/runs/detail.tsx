@@ -24,6 +24,7 @@ export default function Detail(
       workdispatchers: events.workdispatchers,
       workerpools: events.workerpools,
       latestWorkerPoolModels: memos.latestWorkerPoolModels,
+      latestQueueEvents: memos.latestQueueEvents,
     }
     return { body: <RunDetail {...props} />, subtitle: application?.spec.description }
   } else {
