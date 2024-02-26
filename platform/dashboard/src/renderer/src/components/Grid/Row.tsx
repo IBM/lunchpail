@@ -2,8 +2,9 @@ import { Flex, FlexItem, Tooltip } from "@patternfly/react-core"
 
 import SmallLabel from "../SmallLabel"
 
-import Cells from "./Cells"
+import { CellsInner } from "./Cells"
 import { type CellKind } from "./Cell"
+import { gapXs, alignItemsCenter } from "./styles"
 
 type Props = {
   /** Label for the row */
@@ -24,9 +25,6 @@ function Name(props: Pick<Props, "label">) {
     </SmallLabel>
   )
 }
-
-const gapXs = { default: "gapXs" as const }
-const alignItemsCenter = { default: "alignItemsCenter" as const }
 
 function None() {
   return (
@@ -52,10 +50,10 @@ export default function GridLayout(props: Props) {
       <FlexItem className="codeflare--workqueues-cell">
         <Flex className="codeflare--workqueue" gap={gapXs} alignItems={alignItemsCenter}>
           {nothing ? <None /> : undefined}
-          {props.count1 > 0 && <Cells count={props.count1} kind={props.kind1} />}
-          {props.count2 > 0 && <Cells count={props.count2} kind={props.kind2} />}
+          {props.count1 > 0 && <CellsInner count={props.count1} kind={props.kind1} />}
+          {props.count2 > 0 && <CellsInner count={props.count2} kind={props.kind2} />}
           {props.count3 && props.kind3 && props.count3 > 0 ? (
-            <Cells count={props.count3} kind={props.kind3} />
+            <CellsInner count={props.count3} kind={props.kind3} />
           ) : undefined}
         </Flex>
       </FlexItem>

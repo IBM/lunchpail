@@ -1,6 +1,8 @@
 import changeMaker from "change-maker"
+import { Flex } from "@patternfly/react-core"
 
 import Cell, { type CellKind } from "./Cell"
+import { gapXs, alignItemsCenter } from "./styles"
 
 import "./Cells.scss"
 
@@ -23,7 +25,7 @@ const coinDenominations: number[] = [1, 25, 100, 1000].map((_) => _ * 100)
 /**
  * An array of `props.count` <Cell/> components decorated to look like `props.kind`
  */
-export default function Cells(props: Props) {
+export function CellsInner(props: Props) {
   return (
     // changeMaker() returns a mapping from coin denomination
     // the number of such coins ('value'). Currently,
@@ -39,5 +41,13 @@ export default function Cells(props: Props) {
           .fill(0)
           .map((_, idx) => <Cell key={idx} kind={props.kind} stackDepth={parseInt(stackDepth, 10) / 100} />),
       )
+  )
+}
+
+export default function Cells(props: Props) {
+  return (
+    <Flex className="codeflare--workqueue" gap={gapXs} alignItems={alignItemsCenter}>
+      <CellsInner {...props} />
+    </Flex>
   )
 }
