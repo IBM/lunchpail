@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { Text, type CardHeaderActionsObject } from "@patternfly/react-core"
 
 import Sparkline from "@jaas/components/Sparkline"
-import GridRow from "@jaas/components/Grid/Row"
+import InboxOutboxTable from "@jaas/components/Grid/InboxOutboxTable"
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 import { descriptionGroup } from "@jaas/components/DescriptionGroup"
 import { meanCompletionRate, completionRateHistory } from "./CompletionRate"
@@ -20,40 +20,12 @@ function latestRuns(workerpool: WorkerPoolStatusEvent) {
   return [workerpool.spec.run.name]
 }
 
-/** One row per worker, within row, one cell per inbox, processing, or outbox task */
-function gridCells(inbox: number[], processing: number[], outbox: number[]) {
-  const nWorkers = Math.max(inbox.length, processing.length, outbox.length)
-
-  return (
-    <div className="codeflare--workqueues">
-      {Array(nWorkers)
-        .fill(0)
-        .map((_, workerIdx) => (
-          <GridRow
-            key={workerIdx}
-            idx={workerIdx + 1}
-            count1={inbox[workerIdx]}
-            kind1="pending"
-            count2={processing[workerIdx]}
-            kind2="running"
-            count3={outbox[workerIdx]}
-            kind3="completed"
-          />
-        ))}
-    </div>
-  )
-}
-
 export function gridCellsGroup(inbox: number[], processing: number[], outbox: number[]) {
-  return descriptionGroup("Breakdown of Task Status by Worker", gridCells(inbox, processing, outbox))
-}
-
-/* function numProcessing(processing?: number[]) {
-  return (processing || []).reduce(
-    (N: number, processing) => N + Object.values(processing).reduce((M, size) => M + size, 0),
-    0,
+  return descriptionGroup(
+    "Breakdown of Task Status by Worker",
+    <InboxOutboxTable rowLabelPrefix="W" inbox={inbox} processing={processing} outbox={outbox} />,
   )
-} */
+}
 
 /** "FooBar" -> "Foo Bar" */
 export function titleCaseSplit(str: string) {

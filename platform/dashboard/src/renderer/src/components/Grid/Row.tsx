@@ -6,7 +6,9 @@ import Cells from "./Cells"
 import { type CellKind } from "./Cell"
 
 type Props = {
-  idx: number
+  /** Label for the row */
+  label: number | string
+
   count1: number
   kind1: CellKind
   count2: number
@@ -15,10 +17,10 @@ type Props = {
   kind3: CellKind
 }
 
-function Name(props: Pick<Props, "idx">) {
+function Name(props: Pick<Props, "label">) {
   return (
     <SmallLabel size="xxs" align="right">
-      {props.idx}
+      <strong>{props.label}</strong>
     </SmallLabel>
   )
 }
@@ -34,7 +36,7 @@ export default function GridLayout(props: Props) {
   return (
     <Flex gap={gapXs} alignItems={alignItemsCenter} className="codeflare--workqueues-row">
       <FlexItem className="codeflare--workqueues-cell">
-        <Name idx={props.idx} />
+        <Name label={props.label} />
       </FlexItem>
 
       <FlexItem className="codeflare--workqueues-cell">
