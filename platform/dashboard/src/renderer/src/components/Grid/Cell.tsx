@@ -3,7 +3,7 @@ import { Tooltip } from "@patternfly/react-core"
 import "./Cell.scss"
 
 /** What kind of activity does this cell represent */
-export type CellKind = "running" | "pending" | "done"
+export type CellKind = "pending" | "running" | "completed"
 
 type Props = {
   /** Represents how many GridCells there are in a stack */
@@ -15,11 +15,15 @@ type Props = {
 
 export default function GridCell(props: Props) {
   const index = props.kind === "pending" ? 4 : props.kind === "running" ? 3 : 1
+  const tooltip = (
+    <>
+      This cell represents {props.stackDepth.toString()} <strong>{props.kind}</strong>{" "}
+      {props.stackDepth === 1 ? "task" : "tasks"}.
+    </>
+  )
 
   return (
-    <Tooltip
-      content={`This cell represents ${props.stackDepth.toString()} ${props.stackDepth === 1 ? "task" : "tasks"}.`}
-    >
+    <Tooltip content={tooltip}>
       <div className="codeflare--grid-cell" data-index={index} data-depth={props.stackDepth} />
     </Tooltip>
   )

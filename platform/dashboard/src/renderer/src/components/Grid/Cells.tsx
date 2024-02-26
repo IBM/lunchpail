@@ -6,8 +6,8 @@ import Cell, { type CellKind } from "./Cell"
 import "./Cells.scss"
 
 export type Props = {
-  /** Number of tasks in the inbox/unassigned */
-  inbox: number
+  /** Number of cells to display */
+  count: number
 
   /** What kind of activity do these cells represent */
   kind: CellKind
@@ -44,7 +44,7 @@ function queue(tasks: number, kind: CellKind) {
 export default function Cells(props: Props) {
   return (
     <Flex className="codeflare--workqueue" gap={{ default: "gapXs" }}>
-      {queue(props.inbox, props.kind)}
+      {queue(props.count, props.kind)}
     </Flex>
   )
 }

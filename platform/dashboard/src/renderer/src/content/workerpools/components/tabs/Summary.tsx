@@ -51,12 +51,13 @@ function detailGroups(
   events: Props["model"]["events"],
   inbox: number[],
   processing: number[],
+  outbox: number[],
   statusOnly = false,
 ) {
   return [
     statusGroup(workerpool),
     ...(!workerpool ? [] : reasonAndMessageGroups(workerpool)),
-    ...summaryGroups(workerpool, events, inbox, processing, statusOnly),
+    ...summaryGroups(workerpool, events, inbox, processing, outbox, statusOnly),
   ]
 }
 
@@ -66,7 +67,8 @@ export default function summaryTabContent(
   events: Props["model"]["events"],
   inbox: number[],
   processing: number[],
+  outbox: number[],
   statusOnly = false,
 ) {
-  return <DescriptionList groups={detailGroups(workerpool, events, inbox, processing, statusOnly)} />
+  return <DescriptionList groups={detailGroups(workerpool, events, inbox, processing, outbox, statusOnly)} />
 }

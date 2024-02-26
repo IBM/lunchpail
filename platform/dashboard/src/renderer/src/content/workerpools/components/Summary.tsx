@@ -20,27 +20,40 @@ function latestRuns(workerpool: WorkerPoolStatusEvent) {
   return [workerpool.spec.run.name]
 }
 
-/** One row per worker, within row, one cell per inbox or outbox enqueued task */
-function enqueued(inbox: number[]) {
+/** One row per worker, within row, one cell per inbox, processing, or outbox task */
+function gridCells(inbox: number[], processing: number[], outbox: number[]) {
+  const nWorkers = Math.max(inbox.length, processing.length, outbox.length)
+
   return (
     <div className="codeflare--workqueues">
-      {inbox.map((inbox, i) => (
-        <GridRow key={i} queueNum={i + 1} inbox={inbox} kind="pending" />
-      ))}
+      {Array(nWorkers)
+        .fill(0)
+        .map((_, workerIdx) => (
+          <GridRow
+            key={workerIdx}
+            idx={workerIdx + 1}
+            count1={inbox[workerIdx]}
+            kind1="pending"
+            count2={processing[workerIdx]}
+            kind2="running"
+            count3={outbox[workerIdx]}
+            kind3="completed"
+          />
+        ))}
     </div>
   )
 }
 
-export function enqueuedGroup(inbox: number[]) {
-  return descriptionGroup("Tasks assigned to each worker in this pool", enqueued(inbox))
+export function gridCellsGroup(inbox: number[], processing: number[], outbox: number[]) {
+  return descriptionGroup("Breakdown of Task Status by Worker", gridCells(inbox, processing, outbox))
 }
 
-function numProcessing(processing?: number[]) {
+/* function numProcessing(processing?: number[]) {
   return (processing || []).reduce(
     (N: number, processing) => N + Object.values(processing).reduce((M, size) => M + size, 0),
     0,
   )
-}
+} */
 
 /** "FooBar" -> "Foo Bar" */
 export function titleCaseSplit(str: string) {
@@ -70,16 +83,16 @@ export function summaryGroups(
   events: Props["model"]["events"],
   inbox: number[],
   processing: number[],
+  outbox: number[],
   statusOnly = false,
 ) {
   const runs = workerpool ? latestRuns(workerpool) : undefined
 
   return [
-    statusOnly && enqueuedGroup(inbox),
+    statusOnly && gridCellsGroup(inbox, processing, outbox),
     !statusOnly && runs && descriptionGroup(runsName, linkToAllDetails("runs", runs)),
-    descriptionGroup("Tasks Currently Processing", numProcessing(processing)),
     events.length > 1 &&
       descriptionGroup("Completion Rate", completionRate(events), meanCompletionRate(events) || "None"),
-    !statusOnly && enqueuedGroup(inbox),
+    !statusOnly && gridCellsGroup(inbox, processing, outbox),
   ]
 }

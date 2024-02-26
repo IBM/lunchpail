@@ -8,12 +8,12 @@ import WorkerPoolIcon from "./Icon"
 import { statusActions, summaryGroups } from "./Summary"
 
 export default function WorkerPoolCard(props: Props) {
-  const { label: name, context } = props.model
+  const { label: name, context, events, inbox, processing, outbox } = props.model
 
   const icon = <WorkerPoolIcon />
   const groups = useMemo(
-    () => summaryGroups(props.status, props.model.events, props.model.inbox, props.model.processing),
-    [props.status, JSON.stringify(props.model.events), props.model.inbox, props.model.processing],
+    () => summaryGroups(props.status, events, inbox, processing, outbox),
+    [props.status, JSON.stringify(events), inbox, processing, outbox],
   )
   const actions = useMemo(() => statusActions(props.status, "small"), [props.status])
 

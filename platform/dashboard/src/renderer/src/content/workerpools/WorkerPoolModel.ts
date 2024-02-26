@@ -1,10 +1,13 @@
-/** For each Worker in a WorkerPool, the number of enqueued Tasks */
-type TasksAcrossWorkers = number[]
-
 export interface WorkerPoolModel {
-  inbox: TasksAcrossWorkers
-  outbox: TasksAcrossWorkers
-  processing: TasksAcrossWorkers
+  /** For each Worker in a WorkerPool, the number of enqueued Tasks */
+  inbox: number[]
+
+  /** For each Worker in a WorkerPool, the number of completed Tasks */
+  outbox: number[]
+
+  /** For each Worker in a WorkerPool, the number of in-progress Tasks */
+  processing: number[]
+
   label: string
 
   /** Namespace in which this model is stored */

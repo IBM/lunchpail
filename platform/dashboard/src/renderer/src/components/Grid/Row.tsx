@@ -1,16 +1,24 @@
 import { Flex, FlexItem } from "@patternfly/react-core"
 
 import SmallLabel from "../SmallLabel"
-import Cells, { Props as CellsProps } from "./Cells"
 
-type Props = CellsProps & {
-  queueNum: number
+import Cells from "./Cells"
+import { type CellKind } from "./Cell"
+
+type Props = {
+  idx: number
+  count1: number
+  kind1: CellKind
+  count2: number
+  kind2: CellKind
+  count3: number
+  kind3: CellKind
 }
 
-function Name(props: Pick<Props, "queueNum">) {
+function Name(props: Pick<Props, "idx">) {
   return (
     <SmallLabel size="xxs" align="right">
-      {props.queueNum}
+      {props.idx}
     </SmallLabel>
   )
 }
@@ -26,11 +34,13 @@ export default function GridLayout(props: Props) {
   return (
     <Flex gap={gapXs} alignItems={alignItemsCenter} className="codeflare--workqueues-row">
       <FlexItem className="codeflare--workqueues-cell">
-        <Name queueNum={props.queueNum} />
+        <Name idx={props.idx} />
       </FlexItem>
 
       <FlexItem className="codeflare--workqueues-cell">
-        <Cells inbox={props.inbox} kind={props.kind} />
+        {props.count1 > 0 && <Cells count={props.count1} kind={props.kind1} />}
+        {props.count2 > 0 && <Cells count={props.count2} kind={props.kind2} />}
+        {props.count3 > 0 && <Cells count={props.count3} kind={props.kind3} />}
       </FlexItem>
     </Flex>
   )
