@@ -1,4 +1,4 @@
-import { Stack } from "@patternfly/react-core"
+import { Flex } from "@patternfly/react-core"
 import { LinkToNewPool } from "@jaas/renderer/navigate/newpool"
 import { linkToAllDetails } from "@jaas/renderer/navigate/details"
 
@@ -50,10 +50,10 @@ const step: Step = {
         pools.length === 0 ? (
           noWorkers()
         ) : (
-          <Stack hasGutter>
+          <Flex gap={{ default: "gapXs" }}>
             {numWorkers(nPools, nWorkers)}
             {linkToAllDetails("workerpools", pools, undefined, onClick)}
-          </Stack>
+          </Flex>
         )
       const footer = (
         <LinkToNewPool
