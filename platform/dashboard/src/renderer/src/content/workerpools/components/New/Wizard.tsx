@@ -45,7 +45,7 @@ export default function NewWorkerPoolWizard(props: Props) {
       return {
         context,
         name:
-          (searchedRun ? searchedRun.metadata.name + "-pool-" : "") +
+          (searchedRun ? searchedRun.metadata.name + "-" : "") +
           removeAccents(
             uniqueNamesGenerator({ dictionaries: [starWars], length: 1, style: "lowerCase" }).replace(/\s/g, "-"),
           ),
