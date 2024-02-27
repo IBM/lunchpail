@@ -27,9 +27,14 @@ $label-size: 0.5rem;
   }
 }
 
+.pf-v5-theme-dark .codeflare--grid-cell {
+  border-width: 1px;
+}
+
 .codeflare--grid-cell {
   width: $size;
   height: $size;
+  border: 2px solid var(--jaas-grid-outline-color);
   display: flex;
   align-items: center;
   justify-content: center;
