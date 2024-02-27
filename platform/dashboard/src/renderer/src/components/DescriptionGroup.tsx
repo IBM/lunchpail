@@ -136,6 +136,7 @@ export function dl(props: { groups: ReactNode[]; props?: DescriptionListProps; o
   // re: data-ouia-component-type: DescriptionList does not yet support ouia-component-type
   return (
     <DescriptionList
+      isAutoFit
       {...props.props}
       data-ouia-component-type="PF5/DescriptionList"
       data-ouia-component-id={props.ouiaId}
