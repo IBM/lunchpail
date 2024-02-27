@@ -3,16 +3,16 @@ terminationGracePeriodSeconds: 0
 controllers:
   run:
     image:
-      lite: ghcr.io/project-codeflare/codeflare-run-controller-lite:dev
-      full: ghcr.io/project-codeflare/codeflare-run-controller:dev
+      lite: ghcr.io/project-codeflare/jaas-run-controller-lite:dev
+      full: ghcr.io/project-codeflare/jaas-run-controller:dev
   application:
     image:
-      lite: ghcr.io/project-codeflare/codeflare-application-controller-lite:dev
-      full: ghcr.io/project-codeflare/codeflare-application-controller:dev
+      lite: ghcr.io/project-codeflare/jaas-application-controller-lite:dev
+      full: ghcr.io/project-codeflare/jaas-application-controller:dev
   image:
     image:
-      lite: ghcr.io/project-codeflare/codeflare-image-controller-lite:dev
-      full: ghcr.io/project-codeflare/codeflare-image-controller:dev
+      lite: ghcr.io/project-codeflare/jaas-image-controller-lite:dev
+      full: ghcr.io/project-codeflare/jaas-image-controller:dev
 
 workdir:
   fs: nfs

@@ -99,14 +99,14 @@ function build_controllers {
 
         if [[ -z "$LITE" ]]
         then
-            local image=${IMAGE_REPO}codeflare-${controller}-controller:$VERSION
+            local image=${IMAGE_REPO}jaas-${controller}-controller:$VERSION
             (build "$controllerDir" $image ; push $image) &
         fi
 
         # built "lite" version if Dockerfile.lite exists
         if [[ -f "$controllerDir"/Dockerfile.lite ]]
         then
-            local image=${IMAGE_REPO}codeflare-${controller}-controller-lite:$VERSION
+            local image=${IMAGE_REPO}jaas-${controller}-controller-lite:$VERSION
             (build "$controllerDir" $image Dockerfile.lite ; push $image) &
         fi
     done
@@ -140,7 +140,7 @@ function build_test_images {
         if [[ -e "$imageDir"/.disabled ]]; then continue; fi
 
         local imageName=$(basename "$imageDir")
-        local image=${IMAGE_REPO}codeflare-${imageName}-test:$VERSION
+        local image=${IMAGE_REPO}jaas-${imageName}-test:$VERSION
         (build "$imageDir" $image ; push $image) &
     done
 }
