@@ -35,25 +35,25 @@ function build {
 
     if [[ -n "$PROD" ]]
     then
-        if podman image exists $image && ! podman manifest exists $image
+        if ${DOCKER-docker} image exists $image && ! ${DOCKER-docker} manifest exists $image
         then
             # we have a previously built image that is not a manifest
             echo "Clearing out prior non-manifest image $image"
-            podman image rm $image
+            ${DOCKER-docker} image rm $image
         fi
     
-        if ! podman manifest exists $image
+        if ! ${DOCKER-docker} manifest exists $image
         then
             echo "Creating manifest $image"
-            podman manifest create $image
+            ${DOCKER-docker} manifest create $image
         fi
         
-        cd "$dir" && podman build $QUIET --platform=${PLATFORM-linux/arm64/v8,linux/amd64} --manifest $image -f "$dockerfile" .
+        cd "$dir" && ${DOCKER-docker} build $QUIET --platform=${PLATFORM-linux/arm64/v8,linux/amd64} --manifest $image -f "$dockerfile" .
     else
-        if podman manifest exists $image
+        if ${DOCKER-docker} manifest exists $image
         then
             echo "Removing prior manifest from prod builds $image"
-            podman manifest rm $image
+            ${DOCKER-docker} manifest rm $image
         fi
 
         cd "$dir" && ${DOCKER-docker} build $QUIET -t $image -f "$dockerfile" .
