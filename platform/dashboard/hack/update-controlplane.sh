@@ -15,12 +15,15 @@ TOP="$SCRIPTDIR"/../../..
 
 . "$TOP"/hack/settings.sh
 
+# location of pre-generated yamls
+RESOURCES=$SCRIPTDIR/../resources
+
 if [[ ! -n "$INIT" ]]; then 
     set +e
-    $KUBECTL delete -f resources/jaas-default-user.yml --ignore-not-found & \
-        $KUBECTL delete -f resources/jaas-defaults.yml --ignore-not-found
+    $KUBECTL delete -f $RESOURCES/jaas-default-user.yml --ignore-not-found & \
+        $KUBECTL delete -f $RESOURCES/jaas-defaults.yml --ignore-not-found
     wait
-    $KUBECTL delete -f resources/jaas-lite.yml --ignore-not-found --grace-period=1
+    $KUBECTL delete -f $RESOURCES/jaas-lite.yml --ignore-not-found --grace-period=1
 else
     "$TOP"/hack/init.sh;
     wait
@@ -46,7 +49,7 @@ fi
 ../../hack/build.sh -l & ./hack/generate-installers.sh
 wait
 
-$KUBECTL apply -f resources/jaas-lite.yml
-$KUBECTL apply -f resources/jaas-defaults.yml & \
-    $KUBECTL apply -f resources/jaas-default-user.yml
+$KUBECTL apply -f $RESOURCES/jaas-lite.yml
+$KUBECTL apply -f $RESOURCES/jaas-defaults.yml & \
+    $KUBECTL apply -f $RESOURCES/jaas-default-user.yml
 wait
