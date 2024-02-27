@@ -1,10 +1,10 @@
 apiVersion: v1
-name: codeflare-ray-cluster
+name: jaas-ray-cluster
 description: Deploys RayCluster or RayJob
 type: application
 
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
+# Platform version.
 appVersion: "latest"

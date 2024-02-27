@@ -1,4 +1,4 @@
-FROM ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
+FROM ghcr.io/project-codeflare/jaas-workerpool-worker-alpine-component:dev
 
 # Note: watcher.sh depends on some bash-isms at the moment
 RUN apk update && \

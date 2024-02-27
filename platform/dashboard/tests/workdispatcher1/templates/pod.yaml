@@ -24,7 +24,7 @@ spec:
   containers:
     - name: dispatcher
       command: ["/opt/workdispatcher/bin/simulator.sh"]
-      image: ghcr.io/project-codeflare/codeflare-tasksimulator-parquet-component:dev
+      image: ghcr.io/project-codeflare/jaas-tasksimulator-parquet-component:dev
       volumeMounts:
         - name: script
           mountPath: "/opt/workdispatcher/bin"

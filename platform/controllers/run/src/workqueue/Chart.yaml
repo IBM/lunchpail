@@ -1,10 +1,10 @@
 apiVersion: v1
-name: codeflare-workqueue
+name: jaas-workqueue
 description: Deploys CodeFlare WorkQueue
 type: application
 
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
+# Platform version.
 appVersion: "latest"

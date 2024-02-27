@@ -25,7 +25,7 @@ spec:
     mv $processing $out
 
   command: /opt/codeflare/worker/bin/watcher.sh ./literal.sh
-  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
+  image: ghcr.io/project-codeflare/jaas-workerpool-worker-alpine-component:dev
   inputs:
     - sizes:
         lg: test7cdata

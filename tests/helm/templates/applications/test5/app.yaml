@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   api: torch
-  image: ghcr.io/project-codeflare/codeflare-gpu1-test:dev
+  image: ghcr.io/project-codeflare/jaas-gpu1-test:dev
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test5
   command: python3 main.py
   supportsGpu: True

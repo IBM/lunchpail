@@ -1,10 +1,10 @@
 apiVersion: v1
-name: codeflare-workerpool
+name: jaas-workerpool
 description: Deploys a WorkerPool
 type: application
 
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
+# Platform version.
 appVersion: "latest"

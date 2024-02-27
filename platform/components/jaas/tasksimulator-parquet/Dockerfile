@@ -1,4 +1,4 @@
-FROM ghcr.io/project-codeflare/codeflare-s3-syncer-component:dev
+FROM ghcr.io/project-codeflare/jaas-s3-syncer-component:dev
 
 # RUN apk add --no-cache maven curl build-base openjdk11 && \
 #     cd /tmp && \

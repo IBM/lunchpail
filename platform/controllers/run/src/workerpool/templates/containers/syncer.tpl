@@ -1,6 +1,6 @@
 {{- define "codeflare.dev/containers/syncer" }}
 - name: syncer
-  image: ghcr.io/project-codeflare/codeflare-s3-syncer-component:dev
+  image: ghcr.io/project-codeflare/jaas-s3-syncer-component:dev
   env:
     {{- include "codeflare.dev/queue.env" . | indent 4 }}
     {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}

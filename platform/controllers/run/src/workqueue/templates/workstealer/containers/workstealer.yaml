@@ -1,6 +1,6 @@
 {{- define "jaas.dev/containers/workstealer" }}
 - name: workstealer
-  image: ghcr.io/project-codeflare/codeflare-workstealer-component:dev
+  image: ghcr.io/project-codeflare/jaas-workstealer-component:dev
   env:
     - name: RUN_NAME
       value: {{ .Values.name }}

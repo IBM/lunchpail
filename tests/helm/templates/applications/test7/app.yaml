@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   api: workqueue
-  image: ghcr.io/project-codeflare/codeflare-workerpool-worker-alpine-component:dev
+  image: ghcr.io/project-codeflare/jaas-workerpool-worker-alpine-component:dev
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test7
   command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
   inputs:

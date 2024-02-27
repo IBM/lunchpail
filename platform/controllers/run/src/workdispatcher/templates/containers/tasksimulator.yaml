@@ -1,6 +1,6 @@
 {{- define "codeflare.dev/containers/dispatcher" }}
 - name: dispatcher
-  image: ghcr.io/project-codeflare/codeflare-tasksimulator-parquet-component:dev
+  image: ghcr.io/project-codeflare/jaas-tasksimulator-parquet-component:dev
   volumeMounts:
     - name: script
       mountPath: "/opt/tasksimulator/bin"

@@ -1,10 +1,10 @@
 apiVersion: v1
-name: codeflare-shell
+name: jaas-shell
 description: Deploys CodeFlare shell job
 type: application
 
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
+# Platform version.
 appVersion: "latest"

@@ -1,10 +1,10 @@
 apiVersion: v1
-name: codeflare-spark-cluster
+name: jaas-spark-cluster
 description: Deploys SparkApplication
 type: application
 
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
+# Platform version.
 appVersion: "latest"
