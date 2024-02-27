@@ -32,11 +32,40 @@ function build {
     local image=$2
     local dockerfile="${3-Dockerfile}"
     echo "Building dockerfile=$dockerfile image=$image"
-    cd "$dir" && ${DOCKER-docker} build $QUIET -t $image -f "$dockerfile" .
+
+    if [[ -n "$PROD" ]]
+    then
+        if podman image exists $image && ! podman manifest exists $image
+        then
+            # we have a previously built image that is not a manifest
+            echo "Clearing out prior non-manifest image $image"
+            podman image rm $image
+        fi
+    
+        if ! podman manifest exists $image
+        then
+            echo "Creating manifest $image"
+            podman manifest create $image
+        fi
+        
+        cd "$dir" && podman build $QUIET --platform=${PLATFORM-linux/arm64/v8,linux/amd64} --manifest $image -f "$dockerfile" .
+    else
+        if podman manifest exists $image
+        then
+            echo "Removing prior manifest from prod builds $image"
+            podman manifest rm $image
+        fi
+
+        cd "$dir" && ${DOCKER-docker} build $QUIET -t $image -f "$dockerfile" .
+    fi
 }
 
 function push {
-    if [[ -z "$NO_IMAGE_PUSH" ]]; then
+    if [[ -n "$PROD" ]]
+    then
+        # for production builds, push built manifest
+        ${DOCKER-docker} manifest push $image
+    elif [[ -z "$NO_IMAGE_PUSH" ]]; then
         local image=$1
         if [[ -z "$NO_KIND" ]]; then
             if [[ -n "$USING_PODMAN" ]]
