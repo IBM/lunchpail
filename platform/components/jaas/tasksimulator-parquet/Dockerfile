@@ -1,4 +1,7 @@
-FROM ghcr.io/project-codeflare/jaas-s3-syncer-component:dev
+ARG registry=ghcr.io
+arg repo=project-codeflare
+ARG version=0.0.1
+FROM $registry/$repo/jaas-s3-syncer-component:$version
 
 # RUN apk add --no-cache maven curl build-base openjdk11 && \
 #     cd /tmp && \

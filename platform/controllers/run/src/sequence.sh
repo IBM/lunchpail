@@ -27,6 +27,9 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/sequence/ -n ${namespace} \
      --set enclosingStep=$step \
      --set nSteps=$nSteps \
      --set applicationNames="$applicationNames" \
+     --set image.registry=$IMAGE_REGISTRY \
+     --set image.repo=$IMAGE_REPO \
+     --set image.version=$IMAGE_VERSION \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

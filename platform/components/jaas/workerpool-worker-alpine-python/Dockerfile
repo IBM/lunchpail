@@ -1,4 +1,7 @@
-FROM ghcr.io/project-codeflare/jaas-workerpool-worker-alpine-component:dev
+ARG registry=ghcr.io
+arg repo=project-codeflare
+ARG version=0.0.1
+FROM $registry/$repo/jaas-workerpool-worker-alpine-component:$version
 
 # Note: watcher.sh depends on some bash-isms at the moment
 RUN apk update && \

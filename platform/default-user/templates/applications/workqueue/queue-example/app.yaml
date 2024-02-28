@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: codeflare.dev
 spec:
   api: workqueue
-  image: ghcr.io/project-codeflare/jaas-workerpool-worker-alpine-component:dev
+  image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.image.version }}
   command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
   code: |
     #!/usr/bin/env sh

@@ -9,3 +9,9 @@ spark-operator:
     enable: true
   podLabels:
     app.kubernetes.io/part-of: codeflare.dev
+
+# these values may be overriden by hack/up.sh
+image:
+  registry: ghcr.io
+  repo: project-codeflare
+  version: 0.0.1

@@ -31,6 +31,9 @@ helm install --dry-run --debug $run_name "$SCRIPTDIR"/workqueue/ -n ${namespace}
      --set global.s3Endpoint=$INTERNAL_S3_ENDPOINT \
      --set global.s3AccessKey=$INTERNAL_S3_ACCESSKEY \
      --set global.s3SecretKey=$INTERNAL_S3_SECRETKEY \
+     --set image.registry=$IMAGE_REGISTRY \
+     --set image.repo=$IMAGE_REPO \
+     --set image.version=$IMAGE_VERSION \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

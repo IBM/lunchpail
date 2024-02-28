@@ -45,7 +45,10 @@ fi
 helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} ${helm_kubecontext_option} ${helm_kubeconfig_option} \
      --set uid=$uid \
      --set name=$name \
-     --set image=$image \
+     --set image.app=$image \
+     --set image.registry=$IMAGE_REGISTRY \
+     --set image.repo=$IMAGE_REPO \
+     --set image.version=$IMAGE_VERSION \
      --set namespace=$namespace \
      --set command="$command" \
      --set subPath=$subPath \

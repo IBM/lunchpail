@@ -25,5 +25,5 @@ spec:
     mv $processing $out
 
   command: /opt/codeflare/worker/bin/watcher.sh ./literal.sh
-  image: ghcr.io/project-codeflare/jaas-workerpool-worker-alpine-component:dev
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
 {{- end }}

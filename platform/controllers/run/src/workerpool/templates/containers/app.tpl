@@ -1,6 +1,6 @@
 {{- define "codeflare.dev/containers/app" }}
 - name: app
-  image: {{ .Values.image }}
+  image: {{ .Values.image.app }}
   command: ["/bin/bash", "-c", {{ .Values.command | quote }}]
   env:
     {{- include "codeflare.dev/queue.env" . | indent 4 }}

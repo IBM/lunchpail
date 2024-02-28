@@ -6,8 +6,8 @@ type: application
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
-appVersion: "latest"
+# Platform version.
+appVersion: "0.0.1"
 
 dependencies:
 - name: kuberay-operator

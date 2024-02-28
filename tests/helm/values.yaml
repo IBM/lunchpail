@@ -13,3 +13,9 @@ github_ibm_com:
     name: github-ibm-com-jaas
     user: xxx # replaced by HELM_SECRETS in deploy-tests.sh
     pat: yyy # replaced by HELM_SECRETS in deploy-tests.sh
+
+# these values may be overriden by hack/up.sh
+image:
+  registry: ghcr.io
+  repo: project-codeflare
+  version: 0.0.1

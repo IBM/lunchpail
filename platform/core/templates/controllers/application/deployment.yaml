@@ -31,9 +31,9 @@ spec:
       - name: controller
 
         {{ if .Values.global.lite }}
-        image: {{ .Values.controllers.application.image.lite }}
+        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-application-controller-lite:" .Values.global.image.version  }}
         {{ else }}
-        image: {{ .Values.controllers.application.image.full }}
+        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-application-controller:" .Values.global.image.version }}
         {{ end }}
 
         env:

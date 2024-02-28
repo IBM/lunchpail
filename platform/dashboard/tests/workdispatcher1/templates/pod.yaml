@@ -24,7 +24,7 @@ spec:
   containers:
     - name: dispatcher
       command: ["/opt/workdispatcher/bin/simulator.sh"]
-      image: ghcr.io/project-codeflare/jaas-tasksimulator-parquet-component:dev
+      image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-tasksimulator-parquet-component:" .Values.global.image.version }}
       volumeMounts:
         - name: script
           mountPath: "/opt/workdispatcher/bin"

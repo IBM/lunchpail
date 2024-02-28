@@ -29,7 +29,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}
       containers:
         - name: main
-          image: {{ .Values.image }}
+          image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-sequence-component:" .Values.image.version }}
           env:
             - name: NAME
               value: {{ .Release.Name }}

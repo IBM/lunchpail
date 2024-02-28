@@ -31,12 +31,18 @@ spec:
       - name: controller
 
         {{ if .Values.global.lite }}
-        image: {{ .Values.controllers.run.image.lite }}
+        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller-lite:" .Values.global.image.version }}
         {{ else }}
-        image: {{ .Values.controllers.run.image.full }}
+        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Values.global.image.version }}
         {{ end }}
 
         env:
+          - name: IMAGE_REGISTRY
+            value: {{ .Values.global.image.registry }}
+          - name: IMAGE_REPO
+            value: {{ .Values.global.image.repo }}
+          - name: IMAGE_VERSION
+            value: {{ .Values.global.image.version }}
           - name: CONTROL_PLANE_CONTEXT
             value: {{ .Values.global.jaas.context.name }}
           - name: WORKDIR
