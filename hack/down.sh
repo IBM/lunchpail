@@ -17,10 +17,10 @@ fi
 
 echo "$(tput setaf 2)Shutting down JaaS$(tput sgr0)"
 if [[ -z "$LITE" ]]
-then ($HELM ls | grep -q $IBM) && $HELM delete --wait $IBM
+then ($HELM ls -A | grep -q $IBM) && $HELM delete --wait $IBM
 fi
 
-($HELM ls | grep -q $PLA) && $HELM delete --wait $PLA -n $NAMESPACE_SYSTEM
+($HELM ls -A | grep -q $PLA) && $HELM delete --wait $PLA -n $NAMESPACE_SYSTEM
 
 # sigh, we can do helm install --create-namespace... but on the delete
 # side, we're on our own:
