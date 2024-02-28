@@ -11,10 +11,6 @@ REPO="$3"
 PAT_USER_B64="$4"
 PAT_B64="$5"
 
-#CUSTOM_WORKING_DIR=$(mktemp -d $WORKDIR/$NAME-XXXXXXXXXXX)
-mkdir "$CUSTOM_WORKING_DIR"
-cd "$CUSTOM_WORKING_DIR"
-
 PAT_USER=$(echo -n $PAT_USER_B64 | base64 -d)
 PAT=$(echo -n $PAT_B64 | base64 -d)
 
@@ -29,9 +25,20 @@ _WORKDIR_SUBDIR=$(echo "$REPO" | sed -E 's#https://[^/]+/[^/]+/[^/]+/tree/[^/]+/
 _WORKDIR_FULL="${_WORKDIR_URL}/${_WORKDIR_ORG}/${_WORKDIR_REPO}.git"
 # echo "$(tput setaf 3)[Setup]$(tput sgr0) Cloning workdir $(tput setaf 6)${_WORKDIR_FULL}$(tput sgr0)" 1>&2
 
+# avoid git clone symlink issues by cloning to a temp
+T=$(mktemp -d)
+cd $T
+
 git clone --quiet --no-checkout --filter=blob:none ${_WORKDIR_FULL} -b ${_WORKDIR_BRANCH} 1>&2
 cd $_WORKDIR_REPO
 git sparse-checkout set --cone $_WORKDIR_SUBDIR 1>&2
 git checkout -q ${_WORKDIR_BRANCH} 1>&2
+
+# Copy the workdir out of temp. Important Note: busyboxy cp works with
+# goofys/minio, but the GNU coreutils cp does not
+mkdir -p "$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$_WORKDIR_SUBDIR
+cd $_WORKDIR_SUBDIR/..
+busybox cp -a $(basename $_WORKDIR_SUBDIR) "$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$(dirname $_WORKDIR_SUBDIR)
+rm -rf $T
 
 echo -n "${_WORKDIR_REPO}/${_WORKDIR_SUBDIR}"

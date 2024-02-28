@@ -10,7 +10,6 @@ workingDir: /workdir
 
 {{- define "codeflare.dev/workdir.volume" }}
 - name: workdir
-  nfs:
-    server: {{ .Values.workdir.clusterIP }}
-    path: /
+  persistentVolumeClaim:
+    claimName: {{ .Values.workdir.pvc }}
 {{- end }}

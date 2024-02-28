@@ -9,4 +9,5 @@ out
 /playwright/.cache/
 
 # we will generate these in postinstall via `npm run build:installers`
-/resources/jaas-*.yml
+/resources/*jaas*.yml
+/resources/*jaas*.namespace

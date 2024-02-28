@@ -71,8 +71,8 @@ function push {
             if [[ -n "$USING_PODMAN" ]]
             then
                 local image2=${image%%:$VERSION}
-                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep $image2 | awk '{print $3}' | head -c 12 || echo "nope")
-                newhash=$(podman image ls | grep $image2 | awk '{print $3}' | head -c 12 || echo "nope2")
+                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep "$image2 " | awk '{print $3}' | head -c 12 || echo "nope")
+                newhash=$(podman image ls | grep "$image2 " | awk '{print $3}' | head -c 12 || echo "nope2")
                 if [[ "$curhash" != "$newhash" ]]
                 then
                     echo "pushing $image $curhash $newhash"
@@ -94,17 +94,16 @@ function push {
 }
 
 function build_controllers {
-    for controllerDir in "$SCRIPTDIR"/../platform/controllers/*; do
+    for controllerDir in "$SCRIPTDIR"/../platform/controllers/*
+    do
         local controller=$(basename "$controllerDir")
 
         if [[ -z "$LITE" ]]
         then
             local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller:$VERSION
             (build "$controllerDir" $image ; push $image) &
-        fi
-
         # built "lite" version if Dockerfile.lite exists
-        if [[ -f "$controllerDir"/Dockerfile.lite ]]
+        elif [[ -f "$controllerDir"/Dockerfile.lite ]]
         then
             local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller-lite:$VERSION
             (build "$controllerDir" $image Dockerfile.lite ; push $image) &

@@ -1,0 +1,16 @@
+apiVersion: {{ .Values.global.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: workdir
+  namespace: {{ .Release.Namespace }}
+  labels:
+    jaas.dev/hidden: "true"
+spec:
+  local:
+    type: "COS"
+    bucket: workdir
+    endpoint: {{ .Values.global.s3Endpoint }}
+    secret-name: workdir-jaas-secret
+    secret-namespace: {{ .Release.Namespace }}
+    #readonly: "true" # default is false
+    provision: "true"

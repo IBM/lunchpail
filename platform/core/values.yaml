@@ -1,12 +1,1 @@
 terminationGracePeriodSeconds: 0
-
-controllers:
-  run:
-    image: ghcr.io/project-codeflare/jaas-run-controller
-  application:
-    image: ghcr.io/project-codeflare/jaas-application-controller
-
-workdir:
-  fs: nfs
-  size: 10Gi
-  clusterIP: 10.96.244.176

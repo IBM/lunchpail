@@ -104,10 +104,10 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:
-            raise PermanentError(f"Failed to launch WorkerPool. {e}")
+            raise PermanentError(f"Failed to launch WorkerPool (1). {e}")
 
         if out.returncode != 0:
-            raise PermanentError(f"Failed to launch WorkerPool. {out.stderr.decode('utf-8')}")
+            raise PermanentError(f"Failed to launch WorkerPool (2). {out.stderr.decode('utf-8')}")
         else:
             #head_pod_name = out.stdout.decode('utf-8')
             #logging.info(f"Ray run head_pod_name={head_pod_name}")

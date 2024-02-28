@@ -15,3 +15,7 @@ image:
   registry: ghcr.io
   repo: project-codeflare
   version: 0.0.1
+
+global:
+  datashim:
+    apiVersion: com.ie.ibm.hpsys/v1alpha1

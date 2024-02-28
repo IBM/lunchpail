@@ -188,4 +188,5 @@ function watch {
     fi
     $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
     $KUBECTL get run --all-namespaces --watch &
+    $KUBECTL get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.codeflare\\.dev/status,MESSAGE:.metadata.annotations.codeflare\\.dev/message &
 }

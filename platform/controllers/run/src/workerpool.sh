@@ -37,7 +37,7 @@ fi
 if [[ -n "$kubeconfig" ]]
 then
     kubeconfig_path=$(mktemp)
-    echo -n "$kubeconfig" | base64 -d | sed "s/127\.0\.0\.1/${DOCKER_HOST-host.docker.internal}/g" | sed "s/0\.0\.0\.0/${DOCKER_HOST-host.docker.internal}/g" > ${kubeconfig_path}
+    echo -n "$kubeconfig" | base64 -d | sed "s/127\.0\.0\.1/${DOCKER_HOST:-host.docker.internal}/g" | sed "s/0\.0\.0\.0/${DOCKER_HOST:-host.docker.internal}/g" > ${kubeconfig_path}
     kubeconfig_option="--kubeconfig ${kubeconfig_path} --insecure-skip-tls-verify"
     helm_kubeconfig_option="--kubeconfig ${kubeconfig_path} --kube-insecure-skip-tls-verify"
 fi
@@ -58,7 +58,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
-     --set workdir.clusterIP=$WORKDIR_SERVER \
+     --set workdir.pvc=$WORKDIR_PVC \
      --set queue.dataset=$queue_dataset \
      --set datasets=$datasets \
      --set env="$env" \

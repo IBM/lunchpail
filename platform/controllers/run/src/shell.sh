@@ -40,8 +40,8 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
-     --set workdir.clusterIP=$WORKDIR_SERVER \
      --set env="$env" \
+     --set workdir.pvc=$WORKDIR_PVC \
      --set datasets=$dataset_labels \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY

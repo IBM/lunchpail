@@ -26,7 +26,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: codeflare-run-controller-account
       volumes:
-        {{- include "volume.workdir.nfs" . | indent 8 }}
+        {{- include "jaas.dev/workdir.volume" . | indent 8 }}
       containers:
       - name: controller
 
@@ -35,6 +35,9 @@ spec:
         {{ else }}
         image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Values.global.image.version }}
         {{ end }}
+
+        volumeMounts:
+          {{- include "jaas.dev/workdir.volumeMount" . | indent 10 }}
 
         env:
           - name: IMAGE_REGISTRY
@@ -49,8 +52,6 @@ spec:
             value: /workdir
           - name: WORKDIR_PVC
             value: workdir
-          - name: WORKDIR_SERVER
-            value: {{ .Values.workdir.clusterIP }}
           - name: DOCKER_HOST
             value: {{ .Values.global.dockerHost | default "host.docker.internal" }}
           - name: INTERNAL_S3_ENDPOINT
@@ -59,6 +60,3 @@ spec:
             value: {{ .Values.global.s3AccessKey }}
           - name: INTERNAL_S3_SECRETKEY
             value: {{ .Values.global.s3SecretKey }}
-        volumeMounts:
-        - name: workdir
-          mountPath: /workdir

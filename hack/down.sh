@@ -7,7 +7,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 "$SCRIPTDIR"/../tests/bin/undeploy-tests.sh || kubectl delete ns codeflare-test --ignore-not-found || true
 
 # sigh, some components use kustomize, not helm
-if [[ -d "$SCRIPTDIR"/../platform/kustomize ]]
+if [[ -z "$LITE" ]] && [[ -d "$SCRIPTDIR"/../platform/kustomize ]]
 then
     for kusto in "$SCRIPTDIR"/../platform/kustomize/*.sh
     do
@@ -20,15 +20,10 @@ if [[ -z "$LITE" ]]
 then ($HELM ls -A | grep -q $IBM) && $HELM delete --wait $IBM
 fi
 
-($HELM ls -A | grep -q $PLA) && $HELM delete --wait $PLA -n $NAMESPACE_SYSTEM
-
-# sigh, we can do helm install --create-namespace... but on the delete
-# side, we're on our own:
-$KUBECTL delete ns $NAMESPACE_SYSTEM
-
-## WARNING!!! order matters in the above; e.g. don't delete examples
-## after deleting crds, or helm gets supremely confused ANGR EMOJI
-
-# sigh, helm delete does not delete crds
-# https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations
-$KUBECTL get crd -o name | grep codeflare.dev | xargs $KUBECTL delete
+# iterate over the shrinkwraps in reverse order, since the natural
+# order will place preqreqs up front
+for f in $(ls "$SCRIPTDIR"/shrinks/*.yml | sort -r)
+do
+    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+    $KUBECTL delete -f $f --ignore-not-found $ns
+done

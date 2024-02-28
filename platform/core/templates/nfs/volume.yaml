@@ -1,8 +1,0 @@
-{{- define "volume.workdir.nfs" }}
-{{- if eq .Values.workdir.fs "nfs" }}
-- name: workdir
-  nfs:
-    server: {{ .Values.workdir.clusterIP }}
-    path: /
-{{- end }}
-{{- end }}

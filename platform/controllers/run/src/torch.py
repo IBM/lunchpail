@@ -80,13 +80,15 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "", # $17
             base64.b64encode(command_line_options.encode('ascii')),
             base64.b64encode(env_run_arg.encode('ascii'))
-        ], capture_output=True)
+        ], capture_output=True, timeout=30)
         logging.info(f"Torchx callout done for name={name} with returncode={torchx_out.returncode}")
+    except subprocess.TimeoutExpired as e:
+        raise PermanentError(f"Failed to launch via torchx (1). {str(e)}\n----------------stdout----------------\n{e.stdout.decode('utf-8')}\n----------------stderr----------------\n{e.stderr.decode('utf-8')}")
     except Exception as e:
-        raise PermanentError(f"Failed to launch via torchx. {str(e)}")
+        raise PermanentError(f"Failed to launch via torchx (2). {str(e)}")
 
     if torchx_out.returncode != 0:
-        raise PermanentError(f"Failed to launch via torchx. {torchx_out.stderr.decode('utf-8')}")
+        raise PermanentError(f"Failed to launch via torchx (3). {torchx_out.stderr.decode('utf-8')}")
 
     head_pod_name = torchx_out.stdout.decode('utf-8')
     logging.info(f"Torchx run head_pod_name={head_pod_name}")

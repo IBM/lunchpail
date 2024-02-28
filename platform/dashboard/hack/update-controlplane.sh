@@ -20,10 +20,13 @@ RESOURCES="$SCRIPTDIR"/../resources
 
 if [[ ! -n "$INIT" ]]; then 
     set +e
-    $KUBECTL delete -f "$RESOURCES"/jaas-default-user.yml --ignore-not-found & \
-        $KUBECTL delete -f "$RESOURCES"/jaas-defaults.yml --ignore-not-found
-    wait
-    $KUBECTL delete -f "$RESOURCES"/jaas-lite.yml --ignore-not-found --grace-period=1
+    # iterate over the shrinkwraps in reverse order, since the natural
+    # order will place preqreqs up front
+    for f in $(ls "$RESOURCES"/*.yml | sort -r)
+    do
+        if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+        $KUBECTL delete -f $f --ignore-not-found $ns
+    done
 else
     "$TOP"/hack/init.sh;
     wait
@@ -46,10 +49,15 @@ else
 fi
 
 # rebuild the controller images & the dashboard includes a precompiled version of the jaas charts
-"$TOP"/hack/build.sh -l & "$TOP"/hack/shrinkwrap.sh -d "$RESOURCES"
+"$TOP"/hack/build.sh -l & "$TOP"/hack/shrinkwrap.sh -l -d "$RESOURCES"
 wait
 
-$KUBECTL apply -f "$RESOURCES"/jaas-lite.yml
-$KUBECTL apply -f "$RESOURCES"/jaas-defaults.yml & \
-    $KUBECTL apply -f "$RESOURCES"/jaas-default-user.yml
-wait
+for f in "$RESOURCES/*.yml"
+do
+    if [[ -n "$RUNNING_TESTS" ]] && [[ $(basename $f) =~ default-user ]]
+    then echo "Skipping default-user for tests"
+    fi
+
+    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+    $KUBECTL apply -f "$f" $ns --server-side --force-conflicts
+done

@@ -40,15 +40,26 @@ then HAS_NVIDIA=true
 else HAS_NVIDIA=false
 fi
 
+# Note: a trailing slash is required, if this is non-empty
+IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
+
+HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=kind-$CLUSTER_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set tags.gpu=$HAS_NVIDIA"
+
+# this will limit the platform to just api=workqueue
+HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true --set tags.gpu=false"
+
 export KUBECTL="kubectl --context kind-${CLUSTER_NAME}"
 export HELM="helm --kube-context kind-${CLUSTER_NAME}"
+
+# deploy ray, spark, etc. support?
+export JAAS_FULL=${JAAS_FULL:-true}
 
 if [[ -z "$NO_GETOPTS" ]]
 then
     while getopts "ltk:p" opt
     do
         case $opt in
-            l) echo "Running up in lite mode"; export LITE=1; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
+            l) echo "Running up in lite mode"; export NO_KUBEFLOW=1; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
             t) RUNNING_TESTS=true; continue;;
             k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
             p) PROD=true; continue;;

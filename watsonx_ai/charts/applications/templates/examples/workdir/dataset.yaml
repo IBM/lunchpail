@@ -1,0 +1,17 @@
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: workdir
+  namespace: {{ .Values.namespace.examples }}
+  labels:
+    jaas.dev/hidden: "true"
+    app.kubernetes.io/component: run-controller
+spec:
+  local:
+    type: "COS"
+    bucket: workdir
+    endpoint: {{ .Values.global.s3Endpoint }}
+    secret-name: workdir-jaas-secret
+    secret-namespace: {{ .Values.namespace.examples }}
+    #readonly: "true" # default is false
+    provision: "true"

@@ -11,7 +11,7 @@ type Config = "lite"
 /** Install/delete the core from the control plane */
 async function core(/* config: Config */) {
   // @ts-ignore
-  const { default: yaml } = await import("../../../resources/jaas-lite.yml?raw")
+  const { default: yaml } = await import("../../../resources/02-jaas.yml?raw")
 
   return yaml
 }
@@ -19,7 +19,7 @@ async function core(/* config: Config */) {
 /** Install/delete the defaults from the control plane */
 async function defaults() {
   // @ts-ignore
-  const { default: yaml } = await import("../../../resources/jaas-defaults.yml?raw")
+  const { default: yaml } = await import("../../../resources/04-jaas-defaults.yml?raw")
 
   return yaml
 }
@@ -27,7 +27,7 @@ async function defaults() {
 /** Install/delete the default-user from the control plane */
 async function defaultUser() {
   // @ts-ignore
-  const { default: yaml } = await import("../../../resources/jaas-default-user.yml?raw")
+  const { default: yaml } = await import("../../../resources/05-jaas-default-user.yml?raw")
 
   return yaml
 }

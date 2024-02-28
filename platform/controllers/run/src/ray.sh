@@ -53,7 +53,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
      --set runtimeEnv=$runtimeEnv \
-     --set workdir.clusterIP=$WORKDIR_SERVER \
+     --set workdir.pvc=$WORKDIR_PVC \
      --set fluentbit.configmap_name=$run_id \
      --set-file fluentbit.configmap=$cm_file \
      --set datasets=$datasets \

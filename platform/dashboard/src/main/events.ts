@@ -21,9 +21,13 @@ function streamForKind(kind: WatchedKind, context: string): Promise<import("stre
     case "computetargets":
       return Promise.resolve(startStreamForKubernetesComputeTargets())
     case "taskqueues":
-      return startStreamForKind("datasets", context, { selectors: ["app.kubernetes.io/component=taskqueue"] })
+      return startStreamForKind("datasets", context, {
+        selectors: ["jaas.dev/hidden!=true,app.kubernetes.io/component=taskqueue"],
+      })
     case "datasets":
-      return startStreamForKind("datasets", context, { selectors: ["app.kubernetes.io/component!=taskqueue"] })
+      return startStreamForKind("datasets", context, {
+        selectors: ["jaas.dev/hidden!=true,app.kubernetes.io/component!=taskqueue"],
+      })
     case "queues":
       return startStreamForKind("queues.codeflare.dev", context, { withTimestamp: true })
     case "runs":

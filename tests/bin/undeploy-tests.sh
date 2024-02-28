@@ -62,3 +62,5 @@ then
         sleep 2
     done
 fi
+
+echo "$(tput setaf 2)Done uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"

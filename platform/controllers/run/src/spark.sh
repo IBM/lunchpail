@@ -47,7 +47,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/spark/ -n ${namespace} \
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
-     --set workdir.clusterIP=$WORKDIR_SERVER \
+     --set workdir.pvc=$WORKDIR_PVC \
      --set datasets=$datasets \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY

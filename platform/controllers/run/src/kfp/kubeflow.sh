@@ -38,7 +38,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR" -n ${namespace} \
      --set namespace=$namespace \
      --set script="$script" \
      --set subPath=$subPath \
-     --set workdir.clusterIP=$WORKDIR_SERVER \
+     --set workdir.pvc=$WORKDIR_PVC \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
