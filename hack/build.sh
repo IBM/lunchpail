@@ -70,12 +70,12 @@ function push {
         if [[ -z "$NO_KIND" ]]; then
             if [[ -n "$USING_PODMAN" ]]
             then
-                local image2=${image%%:dev}
+                local image2=${image%%:$VERSION}
                 curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep $image2 | awk '{print $3}' | head -c 12 || echo "nope")
                 newhash=$(podman image ls | grep $image2 | awk '{print $3}' | head -c 12 || echo "nope2")
                 if [[ "$curhash" != "$newhash" ]]
                 then
-                    echo "pushing $image"
+                    echo "pushing $image $curhash $newhash"
                     T=$(mktemp)
                     podman save $image -o $T
                     kind -n $CLUSTER_NAME load image-archive $T
