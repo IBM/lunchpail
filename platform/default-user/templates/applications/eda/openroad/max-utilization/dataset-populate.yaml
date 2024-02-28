@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
       - name: copyin
-        image: ghcr.io/project-codeflare/codeflare-s3-copy-in-component:dev
+        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-s3-copy-in-component:" .Values.global.image.version }}
         envFrom:
         - secretRef:
             name: openroadmaxutilsecret
