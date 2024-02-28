@@ -16,14 +16,14 @@ TOP="$SCRIPTDIR"/../../..
 . "$TOP"/hack/settings.sh
 
 # location of pre-generated yamls
-RESOURCES=$SCRIPTDIR/../resources
+RESOURCES="$SCRIPTDIR"/../resources
 
 if [[ ! -n "$INIT" ]]; then 
     set +e
-    $KUBECTL delete -f $RESOURCES/jaas-default-user.yml --ignore-not-found & \
-        $KUBECTL delete -f $RESOURCES/jaas-defaults.yml --ignore-not-found
+    $KUBECTL delete -f "$RESOURCES"/jaas-default-user.yml --ignore-not-found & \
+        $KUBECTL delete -f "$RESOURCES"/jaas-defaults.yml --ignore-not-found
     wait
-    $KUBECTL delete -f $RESOURCES/jaas-lite.yml --ignore-not-found --grace-period=1
+    $KUBECTL delete -f "$RESOURCES"/jaas-lite.yml --ignore-not-found --grace-period=1
 else
     "$TOP"/hack/init.sh;
     wait
@@ -46,10 +46,10 @@ else
 fi
 
 # rebuild the controller images & the dashboard includes a precompiled version of the jaas charts
-../../hack/build.sh -l & ./hack/generate-installers.sh
+"$TOP"/hack/build.sh -l & "$TOP"/hack/shrinkwrap.sh -d "$RESOURCES"
 wait
 
-$KUBECTL apply -f $RESOURCES/jaas-lite.yml
-$KUBECTL apply -f $RESOURCES/jaas-defaults.yml & \
-    $KUBECTL apply -f $RESOURCES/jaas-default-user.yml
+$KUBECTL apply -f "$RESOURCES"/jaas-lite.yml
+$KUBECTL apply -f "$RESOURCES"/jaas-defaults.yml & \
+    $KUBECTL apply -f "$RESOURCES"/jaas-default-user.yml
 wait
