@@ -189,22 +189,6 @@ rules:
   - delete
 #{{ end }}
 #{{ end }}
-#{{ if .Values.spark.rbac.apiGroup }}
-#{{ if .Values.spark.rbac.resource }}
-- apiGroups:
-    - {{ .Values.spark.rbac.apiGroup }}
-  resources:
-    - {{ .Values.spark.rbac.resource }}
-  verbs:
-  - get 
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-#{{ end }}
-#{{ end }}
 ---
 #{{ if .Values.serviceAccount }}
 apiVersion: v1

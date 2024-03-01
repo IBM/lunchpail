@@ -1,8 +1,0 @@
-{{- define "codeflare.dev/ownerReferences" }}
-ownerReferences:
-  - apiVersion: codeflare.dev/v1alpha1
-    controller: true
-    kind: Run
-    name: {{ .Values.name }}
-    uid: {{ .Values.uid }}
-{{- end }}

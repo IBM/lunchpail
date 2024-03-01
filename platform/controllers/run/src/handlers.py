@@ -13,7 +13,6 @@ from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_da
 from shell import create_run_shell
 from ray import create_run_ray
 from torch import create_run_torch
-from spark import create_run_spark
 from kubeflow import create_run_kubeflow
 from sequence import create_run_sequence
 from workqueue import create_run_workqueue
@@ -158,8 +157,6 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
             head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "torch":
             head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
-        elif api == "spark":
-            head_pod_name = create_run_spark(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
         elif api == "shell":
             head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, patch)
         elif api == "kubeflow":

@@ -66,11 +66,6 @@ kuberay:
     apiGroup: ray.io
     resource: rayjobs
 
-spark:
-  rbac:
-    apiGroup: sparkoperator.k8s.io
-    resource: sparkapplications
-    
 quotaManagement:
   rbac:
     apiGroup:

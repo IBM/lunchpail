@@ -4,12 +4,6 @@ gpu-operator:
 #  toolkit:
 #    enabled: false
 
-spark-operator:
-  webhook:
-    enable: true
-  podLabels:
-    app.kubernetes.io/part-of: codeflare.dev
-
 # these values may be overriden by hack/up.sh
 image:
   registry: ghcr.io
