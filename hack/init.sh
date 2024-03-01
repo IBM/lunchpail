@@ -44,7 +44,7 @@ function check_podman {
         if test $(podman machine list --noheading | wc -l) = 0
         then
             echo "$(tput setaf 2)Creating podman machine$(tput sgr0)" 1>&2
-            podman machine init --rootful --memory 8192 --now
+            podman machine init --memory 8192 --now
         fi
     else
         echo "$(tput setaf 2)Using docker$(tput sgr0)"
@@ -53,10 +53,6 @@ function check_podman {
 
     if [[ $DOCKER = podman ]]
     then
-        if ! podman machine inspect | grep -i rootful
-        then podman machine set --rootful
-        fi
-
         if ! podman machine inspect | grep State | grep running
         then podman machine start
         fi
