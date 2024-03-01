@@ -37,9 +37,9 @@ spec:
           - -c
         args: 
           - "echo 'Cleaning /data' && find /data | wc -l && rm -rf /data/* && rm -rf /data/.minio.sys && find /data && find /data | wc -l && echo 'Starting minio' && MINIO_ROOT_USER=$AWS_ACCESS_KEY_ID MINIO_ROOT_PASSWORD=$AWS_SECRET_ACCESS_KEY minio server /data --console-address :9090"
-        securityContext:
-          runAsUser: 0
-          privileged: true
+        # securityContext:
+        #   runAsUser: 0
+        #   privileged: true
         resources:
           requests:
             memory: 1Gi
