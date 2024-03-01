@@ -42,8 +42,11 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     # TODO multinic = api_instance.get_cluster_custom_object(group="k8s.cni.cncf.io", version="v1", plural="network-attachment-definitions") # TODO
     scheduler_args = [
         f"namespace={namespace}",
-        "coscheduler_name=scheduler-plugins-scheduler" # TODO keep this in sync somehow with the helm chart, where the name is also specified
     ]
+
+    if os.getenv("JAAS_USE_GANG_SCHEDULING") is not None:
+         # TODO keep this in sync somehow with the helm chart, where the name is also specified
+        scheduler_args.append("coscheduler_name=scheduler-plugins-scheduler")
 
     if imagePullSecret is not None:
         scheduler_args.append(f"image_secret={imagePullSecret}")

@@ -52,6 +52,10 @@ spec:
             value: /workdir
           - name: WORKDIR_PVC
             value: workdir
+          {{- if .Values.global.jaas.gangScheduling }}
+          - name: JAAS_USE_GANG_SCHEDULING
+            value: 1
+          {{- end }}
           - name: DOCKER_HOST
             value: {{ .Values.global.dockerHost | default "host.docker.internal" }}
           - name: INTERNAL_S3_ENDPOINT

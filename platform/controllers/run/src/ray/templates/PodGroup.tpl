@@ -1,4 +1,5 @@
 {{- define "ray.io/PodGroup" }}
+{{- if .Values.gangScheduling }}
 apiVersion: scheduling.x-k8s.io/v1alpha1
 kind: PodGroup
 metadata:
@@ -10,4 +11,5 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   minMember: {{ add 1 .Values.workers.count }}
+{{- end }}
 {{- end }}
