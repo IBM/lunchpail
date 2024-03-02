@@ -64,9 +64,9 @@ def pseudo_clone_from_literal(application, workdir: str):
     with open(filepath, mode="wt") as f:
         f.write(code)
 
-    # chmod +x
-    st = os.stat(filepath)
-    os.chmod(filepath, st.st_mode | stat.S_IEXEC)
+    # chmod +x <-- not needed with minio-based workdir, and actively harmful when running non-root
+    # st = os.stat(filepath)
+    # os.chmod(filepath, st.st_mode | stat.S_IEXEC)
 
     return "."
 #
