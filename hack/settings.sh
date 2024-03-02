@@ -13,8 +13,8 @@ SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
 IMAGE_REGISTRY=ghcr.io                                      # image registry part of image url
 IMAGE_REPO=project-codeflare                                # image repo part of image url
 VERSION=$("$SETTINGS_SCRIPTDIR"/version.sh)                 # image tag part of image url
-CLUSTER_NAME=${CLUSTER_NAME-jaas}                           # name of kubernetes cluster
-CLUSTER_TYPE="k8s"                                          # k8s|oc -- use oc for OpenShift, which will set sccs for Datashim
+CLUSTER_NAME=${CLUSTER_NAME:-jaas}                          # name of kubernetes cluster
+CLUSTER_TYPE=${CLUSTER_TYPE:-k8s}                           # k8s|oc -- use oc for OpenShift, which will set sccs for Datashim
 NAMESPACE_SYSTEM=${NAMESPACE_SYSTEM-${CLUSTER_NAME}-system} # namespace to use for system resources
 
 NEEDS_CSI_H3=false
