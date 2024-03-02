@@ -21,6 +21,7 @@ FROM $registry/$repo/jaas-s3-syncer-component:$version
 #     apk del maven curl build-base
 #RUN cd /usr/local && tar zxf /tmp/parquet-cli.tar.gz && rm /tmp/parquet-cli.tar.bz2
 
+USER root
 RUN apk add --no-cache cargo build-base python3 py-pandas python3-dev py3-pip git && \
     pip --no-cache-dir install fastparquet && \
     apk del python3-dev build-base git cargo && \
@@ -28,3 +29,4 @@ RUN apk add --no-cache cargo build-base python3 py-pandas python3-dev py3-pip gi
     rm -rf ~/.cargo && \
     rm -rf /usr/lib/python3.11/site-packages/pandas/tests && \
     rm -rf /usr/lib/python3.11/site-packages/numpy/core/tests
+USER jaas
