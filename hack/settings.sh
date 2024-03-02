@@ -14,12 +14,14 @@ IMAGE_REGISTRY=ghcr.io                                      # image registry par
 IMAGE_REPO=project-codeflare                                # image repo part of image url
 VERSION=$("$SETTINGS_SCRIPTDIR"/version.sh)                 # image tag part of image url
 CLUSTER_NAME=${CLUSTER_NAME-jaas}                           # name of kubernetes cluster
+CLUSTER_TYPE="k8s"                                          # k8s|oc -- use oc for OpenShift, which will set sccs for Datashim
 NAMESPACE_SYSTEM=${NAMESPACE_SYSTEM-${CLUSTER_NAME}-system} # namespace to use for system resources
 
 NEEDS_CSI_H3=false
 NEEDS_CSI_NFS=false
 
 NEEDS_GANG_SCHEDULING=false
+
 ###########################################################################################
 
 
@@ -32,7 +34,7 @@ export KFP_VERSION=2.0.0
 # Note: a trailing slash is required, if this is non-empty
 IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
 
-HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=kind-$CLUSTER_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.jaas.gangScheduling=$NEEDS_GANG_SCHEDULING --set gangScheduling.enabled=$NEEDS_GANG_SCHEDULING"
+HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=kind-$CLUSTER_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.jaas.gangScheduling=$NEEDS_GANG_SCHEDULING --set gangScheduling.enabled=$NEEDS_GANG_SCHEDULING --set global.type=$CLUSTER_TYPE"
 
 # this will limit the platform to just api=workqueue
 HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true"
