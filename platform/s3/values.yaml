@@ -10,5 +10,5 @@ global:
     test: zzz
 
 images:
-  server: bitnami/minio:2023.8.29
-  client: bitnami/minio-client:2023.8.29
+  server: bitnami/minio:2024.2.26
+  client: bitnami/minio-client:2024.3.3
