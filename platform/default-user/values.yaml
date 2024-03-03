@@ -1,4 +1,5 @@
-namespace: jaas-user
+namespace:
+  user: jaas-user
 
 datashim:
   apiVersion: com.ie.ibm.hpsys/v1alpha1

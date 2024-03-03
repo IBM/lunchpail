@@ -2,7 +2,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
   name: openroad-max-util
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   workers: 0
   application:

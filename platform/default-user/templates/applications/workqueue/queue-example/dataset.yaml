@@ -3,7 +3,7 @@ apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
   name: queueexample # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: taskqueue
     app.kubernetes.io/part-of: codeflare.dev
@@ -13,7 +13,7 @@ spec:
     bucket: queue-example
     endpoint: "http://codeflare-s3.codeflare-system.svc.cluster.local:9000"
     secret-name: queue-example-cfsecret
-    secret-namespace: {{ .Values.namespace }}
+    secret-namespace: {{ .Values.namespace.user }}
     #readonly: "true" # default is false
     provision: "true"
 {{ end }}

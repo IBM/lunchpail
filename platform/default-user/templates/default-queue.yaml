@@ -2,7 +2,7 @@ apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
   name: {{ .Values.taskqueue.dataset }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
   annotations:
     jaas.dev/priority: "0"
   labels:
@@ -14,14 +14,14 @@ spec:
     bucket: {{ .Values.taskqueue.dataset }}
     endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint }}
     secret-name: {{ print .Values.taskqueue.dataset "jaassecret" }}
-    secret-namespace: {{ .Values.namespace }}
+    secret-namespace: {{ .Values.namespace.user }}
     provision: "true"
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: {{ print .Values.taskqueue.dataset "jaassecret" }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: taskqueue
     app.kubernetes.io/instance: {{ .Release.Name }}
