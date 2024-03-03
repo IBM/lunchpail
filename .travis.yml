@@ -4,7 +4,7 @@ services:
   - xvfb
 
 env:
-  - SCRIPT=test.sh SCRIKPT_ARGS="test7d"
+  - SCRIPT=test.sh
   - SCRIPT=test.sh SCRIPT_ARGS="-l -i 'test7.*'" # run in "lite" mode and run only the test7* tests
 #  - SCRIPT=ibmcloud-gpu.sh <-- FIXME gpu allocations are failing
   - SCRIPT=dashboard.sh
