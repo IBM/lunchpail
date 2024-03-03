@@ -10,9 +10,9 @@ SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
 #
 # Here are the configurable settings:
 #
-IMAGE_REGISTRY=ghcr.io                                      # image registry part of image url
-IMAGE_REPO=project-codeflare                                # image repo part of image url
-VERSION=$("$SETTINGS_SCRIPTDIR"/version.sh)                 # image tag part of image url
+IMAGE_REGISTRY=${IMAGE_REGISTRY:-ghcr.io}                   # image registry part of image url
+IMAGE_REPO=${IMAGE_REPO:-project-codeflare}                 # image repo part of image url
+VERSION=${VERSION:-$("$SETTINGS_SCRIPTDIR"/version.sh)}     # image tag part of image url
 CLUSTER_NAME=${CLUSTER_NAME:-jaas}                          # name of kubernetes cluster
 CLUSTER_TYPE=${CLUSTER_TYPE:-k8s}                           # k8s|oc -- use oc for OpenShift, which will set sccs for Datashim
 
@@ -20,10 +20,10 @@ NAMESPACE_SUFFIX=${NAMESPACE_SUFFIX:--$(whoami)}                              # 
 NAMESPACE_USER=${NAMESPACE_USER:-jaas-user$NAMESPACE_SUFFIX}                  # namespace to use for user resources
 NAMESPACE_SYSTEM=${NAMESPACE_SYSTEM:-${CLUSTER_NAME}-system$NAMESPACE_SUFFIX} # namespace to use for system resources
 
-NEEDS_CSI_H3=false
-NEEDS_CSI_NFS=false
+NEEDS_CSI_H3=${NEEDS_CSI_H3:-false}
+NEEDS_CSI_NFS=${NEEDS_CSI_NFS:-false}
 
-NEEDS_GANG_SCHEDULING=false
+NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
 
 ###########################################################################################
 
