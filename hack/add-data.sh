@@ -19,8 +19,11 @@ for bucket_path in $@; do
             if [[ -f $object_path ]] || [[ -d $object_path ]]; then
                 object=$(basename $object_path)
                 echo "$(tput setaf 2)Adding s3 object $object to bucket $(basename $bucket)$(tput sgr0)"
-                $KUBECTL cp $object_path codeflare-s3-client:/tmp/$object -n $NAMESPACE_SYSTEM
-                $KUBECTL exec codeflare-s3-client -n $NAMESPACE_SYSTEM -- sh -c "until mc ls s3 > /dev/null; do echo 'Waiting for minio to come alive'; sleep 1; done; mc mb --ignore-existing s3/$bucket; mc cp --preserve --recursive /tmp/$object s3/$bucket && rm -rf /tmp/$object"
+
+                pod=$($KUBECTL get pod -l app.kubernetes.io/component=s3 -n $NAMESPACE_SYSTEM --no-headers -o custom-columns=NAME:.metadata.name)
+
+                $KUBECTL cp $object_path $pod:/tmp/$object -n $NAMESPACE_SYSTEM
+                $KUBECTL exec $pod -n $NAMESPACE_SYSTEM -- sh -c "until mc ls s3 > /dev/null; do echo 'Waiting for minio to come alive'; sleep 1; done; mc mb --ignore-existing s3/$bucket; mc cp --preserve --recursive /tmp/$object s3/$bucket && rm -rf /tmp/$object"
             fi
         done
     fi
