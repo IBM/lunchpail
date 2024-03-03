@@ -76,7 +76,7 @@
     "@vitejs/plugin-react-swc": "^3.6.0",
     "electron": "^29.1.0",
     "electron-builder": "^24.13.3",
-    "electron-vite": "^2.0.0",
+    "electron-vite": "^2.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.33.2",
     "prettier": "^3.2.5",
