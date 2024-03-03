@@ -12,7 +12,7 @@ NO_IMAGE_PUSH=1 "$SCRIPTDIR"/build.sh &
 "$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/init.sh
 wait
 
-"$SCRIPTDIR"/build.sh
+ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/build.sh
 
 # WARNING: the silly KubeRay chart doesn't give us a good way to
 # specify a namespace to use as a subchart; it will thus, for now, run

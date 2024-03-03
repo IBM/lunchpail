@@ -33,7 +33,9 @@ function build {
     local dockerfile="${3-Dockerfile}"
     echo "Building dockerfile=$dockerfile image=$image"
 
-    if [[ -n "$PROD" ]]
+    if [[ -n "$ONLY_IMAGE_PUSH" ]]
+    then return
+    elif [[ -n "$PROD" ]]
     then
         if ${DOCKER-docker} image exists $image && ! ${DOCKER-docker} manifest exists $image
         then
@@ -56,6 +58,7 @@ function build {
             ${DOCKER-docker} manifest rm $image
         fi
 
+        set -e
         cd "$dir" && ${DOCKER-docker} build $QUIET -t $image -f "$dockerfile" .
     fi
 }
@@ -106,9 +109,21 @@ function build_controllers {
         elif [[ -f "$controllerDir"/Dockerfile.lite ]]
         then
             local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller-lite:$VERSION
-            (build "$controllerDir" $image Dockerfile.lite ; push $image) &
+            (set -e; build "$controllerDir" $image Dockerfile.lite ; push $image) &
         fi
     done
+}
+
+function buildAndPush {
+    set -e
+    local componentDir="$1"
+    local provider=$2
+
+    local component=$(basename "$componentDir")
+    local image=${IMAGE_REPO_FOR_BUILD}${provider}-${component}-component:$VERSION
+    build "$componentDir" $image
+    push $image
+    echo "Successfully built component $image"
 }
 
 function build_components {
@@ -119,16 +134,16 @@ function build_components {
             local provider=$(basename "$providerDir")
             for i in $(seq 1 5)
             do
-                for componentDir in "$providerDir"/*
-                do
-                    local component=$(basename "$componentDir")
-                    local image=${IMAGE_REPO_FOR_BUILD}${provider}-${component}-component:$VERSION
-                    (build "$componentDir" $image && push $image && echo "Successfully built component $image") &
-                done
-
-                wait && break
-
-                echo "Retrying build_components"
+                for componentDir in "$providerDir"/*; do echo $componentDir; done |
+                    (
+                        export -f buildAndPush
+                        export -f build
+                        export -f push
+                        export VERSION
+                        export CLUSTER_NAME
+                        export IMAGE_REPO_FOR_BUILD
+                        xargs -I{} --max-procs 4 bash -c "buildAndPush {} $provider"
+                    ) && break || echo "Retrying build_components"
             done
         fi
     done
