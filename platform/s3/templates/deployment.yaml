@@ -45,9 +45,9 @@ spec:
             memory: 1Gi
         ports:
         - containerPort: 9000
-          hostPort: 9000
+#          hostPort: 9000
         - containerPort: 9090
-          hostPort: 9090
+#          hostPort: 9090
         # Mount the volume into the pod
         volumeMounts:
         - name: data # must match the volume name, above
