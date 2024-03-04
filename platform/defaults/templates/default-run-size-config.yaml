@@ -2,7 +2,6 @@ apiVersion: codeflare.dev/v1alpha1
 kind: RunSizeConfiguration
 metadata:
   name: default-run-size-configuration
-  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: defaults
     app.kubernetes.io/part-of: codeflare.dev
