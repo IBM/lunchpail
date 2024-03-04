@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: codeflare-run-controller
+  name: run-controller
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: run-controller
@@ -24,7 +24,7 @@ spec:
         app.kubernetes.io/component: controller
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      serviceAccountName: codeflare-run-controller-account
+      serviceAccountName: run-controller-account
       volumes:
         {{- include "jaas.dev/workdir.volume" . | indent 8 }}
 

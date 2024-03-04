@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: codeflare-application-controller
+  name: application-controller
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: application-controller
@@ -24,7 +24,7 @@ spec:
         app.kubernetes.io/component: controller
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      serviceAccountName: codeflare-application-controller-account
+      serviceAccountName: application-controller-account
 
       {{- if .Values.global.jaas.ips }}
       imagePullSecrets:

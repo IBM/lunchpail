@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: codeflare-run-controller-account
+  name: run-controller-account
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: codeflare-run-controller-role-cluster
+  name: run-controller-role-cluster
 rules:
 
   - apiGroups: [mcad.ibm.com]
@@ -103,7 +103,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: codeflare-run-controller-role-namespaced
+  name: run-controller-role-namespaced
   namespace: {{ .Release.Namespace }}
 rules:
 
@@ -150,25 +150,25 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: codeflare-run-controller-rolebinding-cluster
+  name: run-controller-rolebinding-cluster
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: codeflare-run-controller-role-cluster
+  name: run-controller-role-cluster
 subjects:
   - kind: ServiceAccount
-    name: codeflare-run-controller-account
+    name: run-controller-account
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: codeflare-run-controller-rolebinding-namespaced
+  name: run-controller-rolebinding-namespaced
   namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: codeflare-run-controller-role-namespaced
+  name: run-controller-role-namespaced
 subjects:
   - kind: ServiceAccount
-    name: codeflare-run-controller-account
+    name: run-controller-account
