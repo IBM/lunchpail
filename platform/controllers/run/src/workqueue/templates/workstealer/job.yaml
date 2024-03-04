@@ -28,6 +28,7 @@ spec:
     spec:
       restartPolicy: OnFailure
       terminationGracePeriodSeconds: 0
+      serviceAccountName: {{ .Values.rbac.serviceaccount }}
       containers:
         {{- include "jaas.dev/containers/workstealer" . | indent 8 }}
 {{- end }}

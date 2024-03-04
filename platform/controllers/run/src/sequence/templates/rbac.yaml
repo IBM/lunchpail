@@ -9,6 +9,8 @@ metadata:
       kind: Run
       name: {{ .Values.name }}
       uid: {{ .Values.uid }}
+imagePullSecrets:
+  - name: {{ .Values.rbac.ips }}
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1

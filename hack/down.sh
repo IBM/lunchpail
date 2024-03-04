@@ -22,6 +22,7 @@ fi
 
 # iterate over the shrinkwraps in reverse order, since the natural
 # order will place preqreqs up front
+set +e # try to tunnel through errors
 for f in $(ls "$SCRIPTDIR"/shrinks/*.yml | sort -r)
 do
     if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi

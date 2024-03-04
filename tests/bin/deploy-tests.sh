@@ -16,7 +16,7 @@ if which lspci && lspci | grep -iq nvidia; then
     GPU="--set supportsGpu=true"
 fi
 
-echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0)"
+echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) $HELM_INSTALL_FLAGS |||||||| $HELM_IMAGE_PULL_SECRETS"
 $HELM install codeflare-tests "$SCRIPTDIR"/../helm $HELM_SECRETS --wait \
       $HELM_INSTALL_FLAGS \
       $HELM_IMAGE_PULL_SECRETS \

@@ -30,6 +30,8 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/sequence/ -n ${namespace} \
      --set image.registry=$IMAGE_REGISTRY \
      --set image.repo=$IMAGE_REPO \
      --set image.version=$IMAGE_VERSION \
+     --set rbac.ips="$USER_IMAGE_PULL_SECRET" \
+     --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

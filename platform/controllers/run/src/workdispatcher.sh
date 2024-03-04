@@ -56,6 +56,7 @@ helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace
      --set global.image.registry=$IMAGE_REGISTRY \
      --set global.image.repo=$IMAGE_REPO \
      --set global.image.version=$IMAGE_VERSION \
+     --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

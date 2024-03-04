@@ -22,6 +22,7 @@ metadata:
 spec:
   restartPolicy: OnFailure
   terminationGracePeriodSeconds: 5
+  serviceAccountName: {{ .Values.rbac.serviceaccount }}
   containers:
     {{- include "codeflare.dev/containers/dispatcher" . | indent 4 }}
 

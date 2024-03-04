@@ -64,3 +64,7 @@ spec:
             value: {{ .Values.global.s3AccessKey }}
           - name: INTERNAL_S3_SECRETKEY
             value: {{ .Values.global.s3SecretKey }}
+          - name: USER_SERVICE_ACCOUNT
+            value: {{ .Values.global.rbac.serviceaccount }}
+          - name: USER_IMAGE_PULL_SECRET
+            value: {{ .Values.global.jaas.ips }}

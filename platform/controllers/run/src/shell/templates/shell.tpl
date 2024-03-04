@@ -29,6 +29,7 @@ spec:
         {{ end }}
     spec:
       restartPolicy: OnFailure
+      serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
       containers:

@@ -29,6 +29,7 @@ spec:
     spec:
       restartPolicy: OnFailure
       terminationGracePeriodSeconds: 30
+      serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
         {{- include "codeflare.dev/queue.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
