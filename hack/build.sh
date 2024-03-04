@@ -139,6 +139,7 @@ function build_components {
                         export -f buildAndPush
                         export -f build
                         export -f push
+                        export PROD
                         export VERSION
                         export CLUSTER_NAME
                         export IMAGE_REPO_FOR_BUILD
