@@ -27,12 +27,6 @@ spec:
       serviceAccountName: run-controller-account
       volumes:
         {{- include "jaas.dev/workdir.volume" . | indent 8 }}
-
-      {{- if .Values.global.jaas.ips }}
-      imagePullSecrets:
-        - {{ .Values.global.jaas.ips }}
-      {{- end }}
-
       containers:
       - name: controller
 
