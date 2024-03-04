@@ -3,7 +3,7 @@
 SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
 
 # for the internal S3 (via Minio), whose helm templates are located in platform/s3
-HELM_DEMO_SECRETS="--set global.s3AccessKey=codeflarey --set global.s3SecretKey=codeflarey --set global.s3Endpoint=http://codeflare-s3.$NAMESPACE_SYSTEM.svc.cluster.local:9000 --set global.buckets.test=internal-test-bucket"
+HELM_DEMO_SECRETS="--set global.s3AccessKey=codeflarey --set global.s3SecretKey=codeflarey --set global.s3Endpoint=http://s3.$NAMESPACE_SYSTEM.svc.cluster.local:9000 --set global.buckets.test=internal-test-bucket"
 
 if [[ -f "$SETTINGS_SCRIPTDIR"/my.secrets.sh ]]
 then

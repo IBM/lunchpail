@@ -1,4 +1,5 @@
-name: codeflare-s3
+# should match hack/secrets.sh
+name: s3
 
 emptyDir:
   sizeLimit: 1Gi
