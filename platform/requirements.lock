@@ -8,13 +8,13 @@ dependencies:
 - name: gpu-operator
   repository: https://nvidia.github.io/gpu-operator
   version: v23.3.2
-- name: codeflare-core
+- name: jaas-core
   repository: file://./core
   version: 0.0.1
 - name: mcad-controller
   repository: file://./mcad-controller
   version: 0.1.0
-- name: codeflare-s3
+- name: jaas-s3
   repository: file://./s3
   version: 0.0.1
 - name: scheduler-plugins
@@ -29,11 +29,11 @@ dependencies:
 - name: dlf-chart
   repository: file://./datashim
   version: 0.1.0
-- name: codeflare-defaults
+- name: jaas-defaults
   repository: file://./defaults
   version: 0.0.1
 - name: jaas-default-user
   repository: file://./default-user
   version: 0.0.1
-digest: sha256:f372f5a95379719c10a31973c95f233890f365ed199beeb516121c3aeb3b464c
-generated: "2024-03-01T19:26:37.799671-05:00"
+digest: sha256:0b7c454e81e2627993102308b9aae9e42aeb552c863f84e39a05832fd196e0c6
+generated: "2024-03-03T19:37:21.48372-05:00"

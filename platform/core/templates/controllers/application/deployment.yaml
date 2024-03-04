@@ -25,6 +25,12 @@ spec:
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: codeflare-application-controller-account
+
+      {{- if .Values.global.jaas.ips }}
+      imagePullSecrets:
+        - {{ .Values.global.jaas.ips }}
+      {{- end }}
+
       containers:
       - name: controller
 

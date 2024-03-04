@@ -1,10 +1,10 @@
 apiVersion: v1
-name: codeflare-s3
-description: Deploys S3 Server that runs as part of CodeFlare
+name: jaas-s3
+description: Deploys internal Minio (S3 compatible) Server
 type: application
 
 # Chart version.
 version: 0.0.1
 
-# CodeFlare version.
+# Platform version.
 appVersion: "latest"

@@ -117,6 +117,7 @@ helm template \
      -n $NAMESPACE_SYSTEM \
      "$TOP"/platform \
      $HELM_DEMO_SECRETS \
+     $HELM_IMAGE_PULL_SECRETS \
      $HELM_INSTALL_FLAGS \
      --set tags.full=$JAAS_FULL \
      --set tags.core=true \
@@ -153,6 +154,7 @@ helm template \
      jaas-default-user \
      "$TOP"/platform \
      $HELM_DEMO_SECRETS $HELM_INSTALL_FLAGS \
+     $HELM_IMAGE_PULL_SECRETS \
      --set tags.full=false \
      --set tags.core=false \
      --set tags.prereqs1=false \
