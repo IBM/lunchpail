@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ .Values.global.rbac.serviceaccount }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.namespace.user }}
 
 {{- if .Values.global.jaas.ips }}
 imagePullSecrets:
