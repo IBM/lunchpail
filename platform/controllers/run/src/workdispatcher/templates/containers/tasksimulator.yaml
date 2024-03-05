@@ -27,4 +27,9 @@
     - name: SWEEP_STEP
       value: {{ quote .Values.sweep.step }}
     {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
+
+  {{- if .Values.rbac.runAsRoot }}
+  securityContext:
+    privileged: true
+  {{- end }}
 {{- end }}

@@ -49,8 +49,11 @@ fi
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/..
 
-. "$TOP"/hack/settings.sh
-. "$TOP"/hack/secrets.sh
+if [[ -z "$HELM_DEPENDENCY_DONE" ]]
+then
+   . "$TOP"/hack/settings.sh
+   . "$TOP"/hack/secrets.sh
+fi
 
 HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $EXTRA_HELM_INSTALL_FLAGS"
 

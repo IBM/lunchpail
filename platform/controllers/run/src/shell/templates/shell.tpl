@@ -68,4 +68,9 @@ spec:
               {{- if and (.Values.workers.gpu) (gt .Values.workers.gpu 0) }}
               nvidia.com/gpu: {{ .Values.workers.gpu }}
               {{- end }}
+
+          {{- if .Values.rbac.runAsRoot }}
+          securityContext:
+            privileged: true
+          {{- end }}
 {{- end }}

@@ -12,4 +12,9 @@
       value: queues
     - name: QUEUE
       value: {{ print "/mnt/datasets/" .Values.taskqueue.dataset "/" .Values.name }}
+
+  {{- if .Values.rbac.runAsRoot }}
+  securityContext:
+    privileged: true
+  {{- end }}
 {{- end }}

@@ -62,6 +62,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set queue.dataset=$queue_dataset \
      --set datasets=$datasets \
      --set env="$env" \
+     --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY

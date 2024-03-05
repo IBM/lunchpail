@@ -8,7 +8,7 @@ set -o pipefail
 # e.g. see 7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
-while getopts "c:lgui:e:op" opt
+while getopts "c:lgui:e:opr" opt
 do
     case $opt in
         l) export HELM_INSTALL_FLAGS="--set lite=true"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
@@ -18,6 +18,7 @@ do
         c) export UP_FLAGS="$UP_FLAGS -c $OPTARG"; continue;;
         o) export UP_FLAGS="$UP_FLAGS -o"; continue;;
         p) export UP_FLAGS="$UP_FLAGS -p"; continue;;
+        r) export UP_FLAGS="$UP_FLAGS -r"; continue;;
         u) BRING_UP_CLUSTER=true; continue;;
     esac
 done

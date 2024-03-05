@@ -68,3 +68,11 @@ spec:
             value: {{ .Values.global.rbac.serviceaccount }}
           - name: USER_IMAGE_PULL_SECRET
             value: {{ .Values.global.jaas.ips }}
+          - name: RUN_AS_ROOT
+            value: {{ .Values.global.rbac.runAsRoot | quote }}
+        
+        {{- if .Values.global.rbac.runAsRoot }}
+        securityContext:
+          privileged: true
+        {{- end }}
+
