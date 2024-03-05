@@ -57,7 +57,7 @@ def pseudo_clone_from_literal(application, workdir: str):
 
     code = application['spec']['code']
     command = application['spec']['command']
-    filename = command[command.rindex(' ')+1:]
+    filename = command[command.rindex(' ')+1:] if command.find(' ') > 0 else command
     filepath = os.path.join(workdir, filename)
     os.makedirs(workdir)
     

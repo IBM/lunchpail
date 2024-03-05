@@ -124,6 +124,15 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     group = "codeflare.dev"
     version = "v1alpha1"
     plural = "runs"
+    queue_useas = 'configmap'
+
+    if 'queue' in spec['application'] and 'useas' in spec['application']['queue']:
+        queue_useas = spec['application']['queue']['useas']
+        env.update({
+            "INBOX": f"/mnt/datasets/{queue_dataset}/{run_name}/inbox",
+            "OUTBOX": f"/mnt/datasets/{queue_dataset}/{run_name}/outbox",
+        })
+
     body = {
         "apiVersion": "codeflare.dev/v1alpha1",
         "kind": "Run",
@@ -153,7 +162,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
             "queue": {
                 "dataset": {
                     "name": queue_dataset,
-                    "useas": "configmap",
+                    "useas": queue_useas,
                 }
             }
         }

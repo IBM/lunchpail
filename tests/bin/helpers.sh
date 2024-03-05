@@ -21,13 +21,14 @@ do
         u) BRING_UP_CLUSTER=true; continue;;
     esac
 done
-#xOPTIND=$OPTIND
+xOPTIND=$OPTIND
 OPTIND=1
+
+TEST_FROM_ARGV_idx=$((xOPTIND+1))
+export TEST_FROM_ARGV="${!TEST_FROM_ARGV_idx}"
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/../../hack/settings.sh
-
-export TEST_FROM_ARGV="$1"
 
 function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)

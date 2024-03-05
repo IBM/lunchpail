@@ -1,0 +1,35 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7g") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test7g-workdispatcher
+  namespace: {{ .Values.namespace }}
+spec:
+  api: shell
+  code: |
+    #!/usr/bin/env sh
+
+    set -e
+    set -o pipefail
+
+    echo "INBOX=$INBOX"
+    echo "OUTBOX=$OUTBOX"
+
+    mkdir -p "$INBOX"
+    mkdir -p "$OUTBOX"
+
+    for i in $(seq 1 6)
+    do
+      taskname=${taskprefix}${taskprefix2}.$i.txt
+      echo "hi" > "$INBOX"/$taskname
+      sleep 1
+    done
+
+    sleep 10000
+
+  command: ./literal.sh
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-s3-syncer-component:" .Values.global.image.version }}
+  env:
+    taskprefix: WRONG_YOU_HAVE_A_BUG_IN_WORKDISPATCHER_PY # workdispatcher.yaml should override (via run controller workdispatcher.py)
+    taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
+{{- end }}

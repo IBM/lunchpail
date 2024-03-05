@@ -47,6 +47,12 @@ spec:
                     size:
                       type: string
                       enum: [xxs,xs,sm,md,lg,xl,xxl]
+                    queue:
+                      type: object
+                      properties:
+                        useas:
+                          type: string
+                          enum: [configmap,mount]
 
                 # method=helm fields: [repo]
                 repo:
