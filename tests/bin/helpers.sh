@@ -24,7 +24,7 @@ done
 xOPTIND=$OPTIND
 OPTIND=1
 
-TEST_FROM_ARGV_idx=$((xOPTIND+1))
+TEST_FROM_ARGV_idx=$((xOPTIND))
 export TEST_FROM_ARGV="${!TEST_FROM_ARGV_idx}"
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
