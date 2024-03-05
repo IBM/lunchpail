@@ -5,7 +5,6 @@ set -o pipefail
 
 SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
 
-
 ###########################################################################################
 #
 # Here are the configurable settings:
@@ -16,7 +15,7 @@ VERSION=${VERSION:-$("$SETTINGS_SCRIPTDIR"/version.sh)}     # image tag part of 
 CLUSTER_NAME=${CLUSTER_NAME:-jaas}                          # name of kubernetes cluster
 CLUSTER_TYPE=${CLUSTER_TYPE:-k8s}                           # k8s|oc -- use oc for OpenShift, which will set sccs for Datashim
 
-CONTEXT_NAME=${CONTEXT:-kind-${CLUSTER_NAME}}               # i.e. kubectl --context $CONTEXT_NAME, defaults to kind-$CLUSTER_NAME e.g. kind-jaas
+CONTEXT_NAME=${CONTEXT_NAME:-kind-${CLUSTER_NAME}}          # i.e. kubectl --context $CONTEXT_NAME, defaults to kind-$CLUSTER_NAME e.g. kind-jaas
 
 NAMESPACE_SUFFIX=${NAMESPACE_SUFFIX:--$(whoami)}                              # suffix to add to namespace names
 NAMESPACE_USER=${NAMESPACE_USER:-jaas-user$NAMESPACE_SUFFIX}                  # namespace to use for user resources
@@ -28,6 +27,21 @@ NEEDS_CSI_NFS=${NEEDS_CSI_NFS:-false}
 NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
 ###########################################################################################
 
+if [[ -z "$NO_GETOPTS" ]]
+then
+    while getopts "c:ltk:op" opt
+    do
+        case $opt in
+            c) export CONTEXT_NAME=$OPTARG; continue;;
+            l) echo "Running up in lite mode"; export NO_KUBEFLOW=1; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
+            t) export RUNNING_TESTS=true; continue;;
+            k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
+            o) export CLUSTER_TYPE=oc; continue;;
+            p) export PROD=true; continue;;
+        esac
+    done
+    shift $((OPTIND-1))
+fi
 
 PLA=$(grep name "$SETTINGS_SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}' | head -1)
 IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}' | head -1)
@@ -61,17 +75,3 @@ export HELM="helm --kube-context $CONTEXT_NAME"
 
 # deploy ray, spark, etc. support?
 export JAAS_FULL=${JAAS_FULL:-true}
-
-if [[ -z "$NO_GETOPTS" ]]
-then
-    while getopts "ltk:p" opt
-    do
-        case $opt in
-            l) echo "Running up in lite mode"; export NO_KUBEFLOW=1; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
-            t) RUNNING_TESTS=true; continue;;
-            k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
-            p) PROD=true; continue;;
-        esac
-    done
-    shift $((OPTIND-1))
-fi

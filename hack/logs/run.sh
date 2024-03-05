@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-NO_GETOPTS=1
+#NO_GETOPTS=1
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/../settings.sh
 

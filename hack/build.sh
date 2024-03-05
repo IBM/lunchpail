@@ -160,6 +160,12 @@ function build_test_images {
     done
 }
 
+if [[ -n "$PROD" ]]
+then
+    echo "$(tput setaf 3)Skipping build because we are running in production mode$(tput sgr0)"
+    exit
+fi
+
 check_podman
 build_test_images
 build_components
