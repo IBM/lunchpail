@@ -66,7 +66,12 @@ function build {
         fi
 
         set -e
-        cd "$dir" && ${DOCKER-docker} build $QUIET -t $image -f "$dockerfile" .
+        (cd "$dir" && ${DOCKER-docker} build $QUIET \
+                                       --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
+                                       -t $image \
+                                       -f "$dockerfile" \
+                                       .
+        )
     fi
 }
 
@@ -81,8 +86,8 @@ function push {
             if [[ -n "$USING_PODMAN" ]]
             then
                 local image2=${image%%:$VERSION}
-                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep "$image2 " | awk '{print $3}' | head -c 12 || echo "nope")
-                newhash=$(podman image ls | grep "$image2 " | awk '{print $3}' | head -c 12 || echo "nope2")
+                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep "$image2 " | grep $VERSION | awk '{print $3}' | head -c 12 || echo "nope")
+                newhash=$(podman image ls | grep "$image2 " | grep $VERSION | awk '{print $3}' | head -c 12 || echo "nope2")
                 if [[ "$curhash" != "$newhash" ]]
                 then
                     echo "pushing $image $curhash $newhash"
