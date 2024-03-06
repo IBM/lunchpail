@@ -11,13 +11,13 @@ then
 
     if [[ -n "$IMAGE_REGISTRY" ]] && [[ -n "$JAAS_IPS_USER" ]] && [[ -n "$JAAS_IPS_PASSWORD" ]]
     then
-        jaas_dockerconfigjson=$(cat <<EOF | base64
+        jaas_dockerconfigjson=$(cat <<EOF | base64 | tr -d \\n
 {       
     "auths":
     {
         "$IMAGE_REGISTRY":
             {
-                "auth":"$(echo -n "$JAAS_IPS_USER:$JAAS_IPS_PASSWORD" | base64)"
+                "auth":"$(echo -n "$JAAS_IPS_USER:$JAAS_IPS_PASSWORD" | base64 | tr -d \\n)"
             }
     }
 }
