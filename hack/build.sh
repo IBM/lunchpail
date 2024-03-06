@@ -50,7 +50,14 @@ function build {
             ${DOCKER-docker} manifest create $image
         fi
         
-        cd "$dir" && ${DOCKER-docker} build $QUIET --platform=${PLATFORM-linux/arm64/v8,linux/amd64} --manifest $image -f "$dockerfile" .
+        (cd "$dir" && \
+             ${DOCKER-docker} build $QUIET \
+                              --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
+                              --platform=${PLATFORM-linux/arm64/v8,linux/amd64} \
+                              --manifest $image \
+                              -f "$dockerfile" \
+                              .
+        )
     else
         if ${DOCKER-docker} manifest exists $image
         then

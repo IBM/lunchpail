@@ -1,5 +1,5 @@
 ARG registry=ghcr.io
-arg repo=project-codeflare
+ARG repo=lunchpail
 ARG version=0.0.1
 FROM $registry/$repo/jaas-s3-syncer-component:$version
 
