@@ -31,5 +31,5 @@ supplementalGroups:
 volumes:
 - '*'
 users:
-- '*'
+- system:serviceaccount:{{ .Values.namespace }}:{{ .Values.global.rbac.serviceaccount }}
 {{- end }}
