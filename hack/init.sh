@@ -69,34 +69,6 @@ function get_helm {
     fi
 }
 
-function get_minio_client {
-    if ! which mc >& /dev/null; then
-        echo "$(tput setaf 2)Installing minio client$(tput sgr0)"
-
-        if [[ $(uname) = "Darwin" ]]
-        then
-            brew install minio/stable/minio
-        elif [[ $(uname) = "Linux" ]]
-        then
-            if [[ $(uname -m) = "aarch64" ]]
-            then
-                local mc_arch=arm64
-            else
-                local mc_arch=amd64
-            fi
-            curl https://dl.min.io/client/mc/release/linux-${mc_arch}/mc \
-                 --create-dirs \
-                 -o mc
-
-            chmod +x mc
-            sudo mv mc /usr/local/bin
-        else
-            echo "Platform not supported for minio client: $(uname)"
-            exit 1
-        fi
-    fi
-}
-
 function get_kubectl {
     if ! which kubectl >& /dev/null; then
         echo "$(tput setaf 2)Installing kubectl$(tput sgr0)"
@@ -175,7 +147,6 @@ function update_helm_dependencies {
          2> >(grep -v 'Contents of linked' >&2)
 }
 
-get_minio_client
 get_kubectl
 get_helm
 check_podman

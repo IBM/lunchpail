@@ -11,6 +11,8 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
+"$SCRIPTDIR"/mc.sh
+
 for bucket_path in $@; do
     if [[ -d $bucket_path ]]; then
         bucket=$(basename $bucket_path)

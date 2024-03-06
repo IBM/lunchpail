@@ -14,7 +14,7 @@ spec:
   parallelism: {{ .Values.workers.count }}
   completions: {{ .Values.workers.count }}
   completionMode: Indexed
-  ttlSecondsAfterFinished: 60
+  ttlSecondsAfterFinished: 1000
   template:
     metadata:
       labels:
