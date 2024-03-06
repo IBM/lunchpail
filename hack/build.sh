@@ -172,7 +172,7 @@ function build_test_images {
     done
 }
 
-if [[ -n "$PROD" ]]
+if [[ -n "$PROD" ]] && [[ -n "$DOING_UP" ]]
 then
     echo "$(tput setaf 3)Skipping build because we are running in production mode$(tput sgr0)"
     exit
