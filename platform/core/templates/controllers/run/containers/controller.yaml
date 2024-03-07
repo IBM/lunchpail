@@ -10,9 +10,4 @@
   {{ else }}
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Values.global.image.version }}
   {{- end }}
-
-  {{- if .Values.global.rbac.runAsRoot }}
-  securityContext:
-    privileged: true
-  {{- end }}
 {{- end }}
