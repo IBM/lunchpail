@@ -11,7 +11,7 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 cd "$SCRIPTDIR"
 
-if [[ ! -e scheduler-plugins ]]
+if [[ ! -e scheduler-plugins ]] && [[ -n "$NEEDS_GANG_SCHEDULING" ]]
 then
     SCHEDULER_PLUGINS=v0.27.8
     rm -rf scheduler-plugins
