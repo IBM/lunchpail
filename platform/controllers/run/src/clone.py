@@ -63,7 +63,8 @@ def pseudo_clone_from_literal(application, workdir: str):
     clone_out = subprocess.run(["rclone", "rcat", f"s3:{filepath}"], input=code, capture_output=True, text=True)
 
     if clone_out.returncode != 0:
-        raise PermanentError(f"Failed to clone literal code. {clone_out.stderr.decode('utf-8')}")
+        msg = clone_out.stderr if isinstance(clone_out.stderr, str) else clone_out.stderr.decode('utf-8')
+        raise PermanentError(f"Failed to clone literal code. {msg}")
 
     logging.info(f"clone_out={clone_out}")
 
