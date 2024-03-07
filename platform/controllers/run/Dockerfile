@@ -5,6 +5,7 @@ RUN apt update && apt install -y rclone && apt autoremove -y && rm -rf /var/lib/
 
 RUN addgroup --gid 2000 jaas && adduser --uid 2000 jaas --ingroup jaas --disabled-password && echo "jaas:jaas" | chpasswd
 USER jaas
+ENV HOME=/home/jaas
 WORKDIR /home/jaas
 
 ADD src /src

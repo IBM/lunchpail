@@ -5,6 +5,7 @@ RUN apk update && apk add --no-cache rclone
 
 RUN addgroup -g 2000 jaas && adduser -u 2000 jaas -G jaas --disabled-password && echo "jaas:jaas" | chpasswd
 USER jaas
+ENV HOME=/home/jaas
 WORKDIR /home/jaas
 
 ADD src /src
