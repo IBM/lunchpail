@@ -78,7 +78,7 @@ dependencies:
   repository: file://./datashim
   condition: prereqs.enabled
   tags:
-    - prereqs1
+    - core
 
 - name: jaas-defaults
   version: 0.0.1

@@ -35,5 +35,5 @@ dependencies:
 - name: jaas-default-user
   repository: file://./default-user
   version: 0.0.1
-digest: sha256:0b7c454e81e2627993102308b9aae9e42aeb552c863f84e39a05832fd196e0c6
-generated: "2024-03-03T19:37:21.48372-05:00"
+digest: sha256:e3bd2de1df2fc0f6245357b61a37d46b8315e021536be1b73e3d93790f517e4c
+generated: "2024-03-07T13:10:05.835037-05:00"
