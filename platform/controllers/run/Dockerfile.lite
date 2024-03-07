@@ -1,7 +1,11 @@
 FROM ghcr.io/project-codeflare/kopf:0.0.3
 
+# install rclone
+RUN apk update && apk add --no-cache rclone
+
 RUN addgroup -g 2000 jaas && adduser -u 2000 jaas -G jaas --disabled-password && echo "jaas:jaas" | chpasswd
 USER jaas
+WORKDIR /home/jaas
 
 ADD src /src
 CMD kopf run /src/handlers.py --verbose

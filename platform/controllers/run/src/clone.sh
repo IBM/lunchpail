@@ -34,11 +34,18 @@ cd $_WORKDIR_REPO
 git sparse-checkout set --cone $_WORKDIR_SUBDIR 1>&2
 git checkout -q ${_WORKDIR_BRANCH} 1>&2
 
-# Copy the workdir out of temp. Important Note: busyboxy cp works with
-# goofys/minio, but the GNU coreutils cp does not
-mkdir -p "$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$_WORKDIR_SUBDIR
+# in some cases (e.g. see
+# workdispatcher.py/create_workdispatcher_helm) we don't want to copy
+# to s3
+if [[ "$CUSTOM_WORKING_DIR" =~ "/tmp" ]]
+then PROVIDER=""
+else PROVIDER="s3:"
+fi
+
+# Copy the workdir out of temp
+#mkdir -p "$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$_WORKDIR_SUBDIR
 cd $_WORKDIR_SUBDIR/..
-busybox cp -a $(basename $_WORKDIR_SUBDIR) "$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$(dirname $_WORKDIR_SUBDIR)
+rclone copy $(basename $_WORKDIR_SUBDIR) $PROVIDER"$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$(dirname $_WORKDIR_SUBDIR)/$(basename $_WORKDIR_SUBDIR)
 rm -rf $T
 
 echo -n "${_WORKDIR_REPO}/${_WORKDIR_SUBDIR}"

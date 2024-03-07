@@ -23,56 +23,9 @@ spec:
         app.kubernetes.io/part-of: codeflare.dev
         app.kubernetes.io/component: controller
     spec:
+      serviceAccountName: run-controller
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      serviceAccountName: run-controller-account
       volumes:
-        {{- include "jaas.dev/workdir.volume" . | indent 8 }}
+        {{- include "rclone.volume" . | indent 8 }}
       containers:
-      - name: controller
-
-        {{ if .Values.global.lite }}
-        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller-lite:" .Values.global.image.version }}
-        {{ else }}
-        image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Values.global.image.version }}
-        {{ end }}
-
-        volumeMounts:
-          {{- include "jaas.dev/workdir.volumeMount" . | indent 10 }}
-
-        env:
-          - name: IMAGE_REGISTRY
-            value: {{ .Values.global.image.registry }}
-          - name: IMAGE_REPO
-            value: {{ .Values.global.image.repo }}
-          - name: IMAGE_VERSION
-            value: {{ .Values.global.image.version }}
-          - name: CONTROL_PLANE_CONTEXT
-            value: {{ .Values.global.jaas.context.name }}
-          - name: WORKDIR
-            value: /workdir
-          - name: WORKDIR_PVC
-            value: workdir
-          {{- if .Values.global.jaas.gangScheduling }}
-          - name: JAAS_USE_GANG_SCHEDULING
-            value: 1
-          {{- end }}
-          - name: DOCKER_HOST
-            value: {{ .Values.global.dockerHost | default "host.docker.internal" }}
-          - name: INTERNAL_S3_ENDPOINT
-            value: {{ .Values.global.s3Endpoint }}
-          - name: INTERNAL_S3_ACCESSKEY
-            value: {{ .Values.global.s3AccessKey }}
-          - name: INTERNAL_S3_SECRETKEY
-            value: {{ .Values.global.s3SecretKey }}
-          - name: USER_SERVICE_ACCOUNT
-            value: {{ .Values.global.rbac.serviceaccount }}
-          - name: USER_IMAGE_PULL_SECRET
-            value: {{ .Values.global.jaas.ips }}
-          - name: RUN_AS_ROOT
-            value: {{ .Values.global.rbac.runAsRoot | quote }}
-        
-        {{- if .Values.global.rbac.runAsRoot }}
-        securityContext:
-          privileged: true
-        {{- end }}
-
+        {{- include "containers/controller" . | indent 8 }}

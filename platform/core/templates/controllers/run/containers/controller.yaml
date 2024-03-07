@@ -1,0 +1,18 @@
+{{- define "containers/controller" }}
+- name: controller
+  env:
+    {{- include "env" . | indent 4 }}
+  volumeMounts:
+    {{- include "rclone.volumeMount" . | indent 4 }}
+
+  {{- if .Values.global.lite }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller-lite:" .Values.global.image.version }}
+  {{ else }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Values.global.image.version }}
+  {{- end }}
+
+  {{- if .Values.global.rbac.runAsRoot }}
+  securityContext:
+    privileged: true
+  {{- end }}
+{{- end }}

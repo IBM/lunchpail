@@ -1,6 +1,8 @@
 import os
+import shutil
 import base64
 import logging
+import tempfile
 import subprocess
 from kopf import PermanentError, TemporaryError
 from kubernetes.client.rest import ApiException
@@ -76,16 +78,22 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
 #
 def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, dataset_labels, patch):
     logging.info(f"Creating WorkDispatcher from helm name={name} namespace={namespace}")
-    run_id, workdir = alloc_run_id("helm", name)
+    run_id = alloc_run_id("helm", name)
+    workdir = tempfile.mkdtemp()
 
     try:
         cloned_subPath = clone_from_git(v1Api, customApi, name, workdir, spec['repo'])
     except Exception as e:
+        # failed clone
         set_status_after_clone_failure(customApi, name, namespace, e, patch)
-    
-    path_to_chart = os.path.join(workdir, cloned_subPath)
-    values = spec['values'] if 'values' in spec else ""
-    create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch, path_to_chart, values)
+    else:
+        # successful clone
+        path_to_chart = os.path.join(workdir, cloned_subPath)
+        values = spec['values'] if 'values' in spec else ""
+        create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch, path_to_chart, values)
+#    finally:
+        # in either case, remove our `tempfile.mkdtemp()` temporary directory
+#        shutil.rmtree(workdir)
 
 #
 # Handle WorkDispatcher creation for method=application

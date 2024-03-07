@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: run-controller-account
+  name: run-controller
   namespace: {{ .Release.Namespace }}
 
 {{- if .Values.global.jaas.ips }}
@@ -13,7 +13,7 @@ imagePullSecrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: run-controller-role-cluster
+  name: run-controller
 rules:
 
   - apiGroups: [mcad.ibm.com]
@@ -108,7 +108,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: run-controller-role-namespaced
+  name: run-controller
   namespace: {{ .Release.Namespace }}
 rules:
 
@@ -155,25 +155,25 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: run-controller-rolebinding-cluster
+  name: run-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: run-controller-role-cluster
+  name: run-controller
 subjects:
   - kind: ServiceAccount
-    name: run-controller-account
+    name: run-controller
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: run-controller-rolebinding-namespaced
+  name: run-controller
   namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: run-controller-role-namespaced
+  name: run-controller
 subjects:
   - kind: ServiceAccount
-    name: run-controller-account
+    name: run-controller

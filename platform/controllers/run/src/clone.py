@@ -53,21 +53,22 @@ def clone_from_git(v1Api, customApi, name: str, workdir: str, repo: str):
 # place it in a file named by the last argument of
 # `application.spec.command`
 def pseudo_clone_from_literal(application, workdir: str):
-    logging.info(f"Using code from literal for application={application['metadata']['name']}")
-
     code = application['spec']['code']
     command = application['spec']['command']
     filename = command[command.rindex(' ')+1:] if command.find(' ') > 0 else command
-    filepath = os.path.join(workdir, filename)
-    os.makedirs(workdir)
-    
-    with open(filepath, mode="wt") as f:
-        f.write(code)
+    filepath = os.path.normpath(os.path.join(workdir, filename))
 
-    # chmod +x <-- not needed with minio-based workdir, and actively harmful when running non-root
-    # st = os.stat(filepath)
-    # os.chmod(filepath, st.st_mode | stat.S_IEXEC)
+    logging.info(f"Using code from literal for application={application['metadata']['name']} and storing to filepath={filepath}")
 
+    clone_out = subprocess.run(["rclone", "rcat", f"s3:{filepath}"], input=code, capture_output=True, text=True)
+
+    if clone_out.returncode != 0:
+        raise PermanentError(f"Failed to clone literal code. {clone_out.stderr.decode('utf-8')}")
+
+    logging.info(f"clone_out={clone_out}")
+
+    # this means there is no sub-directory structure for this case of
+    # using literal code provideded in the Application spec
     return "."
 #
 # If the application is specified as pulling code from a git repo,
