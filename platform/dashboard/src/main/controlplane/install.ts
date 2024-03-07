@@ -16,6 +16,22 @@ async function core(/* config: Config */) {
   return yaml
 }
 
+/** Install/delete the pre requisites from the control plane */
+async function prereq1() {
+  // @ts-ignore
+  const { default: yaml } = await import("../../../resources/01-jaas-prereqs1.yml?raw")
+
+  return yaml
+}
+
+/** Install/delete the pre requisites from the control plane */
+async function prereq2() {
+  // @ts-ignore
+  const { default: yaml } = await import("../../../resources/03-jaas-prereqs2.yml?raw")
+
+  return yaml
+}
+
 /** Install/delete the defaults from the control plane */
 async function defaults() {
   // @ts-ignore
@@ -34,19 +50,21 @@ async function defaultUser() {
 
 /** Install/delete all of the requested control plane components */
 async function applyAll(_config: Config, props: ApplyProps) {
-  const coreYamls = await Promise.all([core()])
+  const coreYamls = await Promise.all([prereq1(), core(), prereq2()])
   const noncoreYamls = await Promise.all([defaults(), defaultUser()])
+  const coreYamlsReversed = coreYamls.toReversed()
+  const noncoreYamlsReversed = noncoreYamls.toReversed()
 
   if (props.action === "delete") {
     await deleteJaaSManagedResources(props)
 
     // we need to unwind things in the reverse order we applied them
-    for await (const yaml of noncoreYamls) {
+    for await (const yaml of noncoreYamlsReversed) {
       await apply(yaml, props)
     }
     await waitForNamespaceTermination(props, "noncore")
 
-    for await (const yaml of coreYamls) {
+    for await (const yaml of coreYamlsReversed) {
       await apply(yaml, props)
     }
     await waitForNamespaceTermination(props, "core")
