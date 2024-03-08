@@ -15,6 +15,14 @@ then
     QUIET="-q"
 fi
 
+# podman sucks... if you have pushed a remote multi-arch manifest, it
+# inists on using the wrong platform when building a non-manifest
+# build
+if [[ $(uname -m) = arm64 ]]
+then PLATFORM=linux/arm64/v8
+else PLATFORM=linux/amd64
+fi
+
 function check_podman {
     export DOCKER=docker
     
@@ -66,7 +74,7 @@ function build {
         fi
 
         set -e
-        (cd "$dir" && ${DOCKER-docker} build $QUIET \
+        (cd "$dir" && ${DOCKER-docker} build $QUIET --platform=$PLATFORM \
                                        --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
                                        -t $image \
                                        -f "$dockerfile" \
