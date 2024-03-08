@@ -1,0 +1,16 @@
+{{- define "containers/workdir" }}
+- name: workdir
+  image: rclone/rclone:1.65
+  volumeMounts:
+    {{ include "rclone.volumeMount" . | indent 4 }}
+    {{ include "codeflare.dev/workdir.volumeMount" . | indent 4 }}
+  env:
+    - name: REMOTE_WORKDIR
+      value: {{ print "s3:workdir/" (.Values.subPath | replace "/." "") }}
+  command:
+    - /bin/sh
+    - -c
+    - |
+      rclone --config /tmp/rclone.conf sync $REMOTE_WORKDIR /workdir
+      find /workdir -name '*.sh' -exec chmod +x {} \;
+{{- end }}

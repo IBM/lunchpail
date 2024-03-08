@@ -1,4 +1,4 @@
-{{- define "codeflare.dev/containers/app" }}
+{{- define "containers/app" }}
 - name: app
   image: {{ .Values.image.app }}
   command: ["/bin/bash", "-c", {{ .Values.command | quote }}]

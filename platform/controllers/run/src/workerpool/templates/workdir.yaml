@@ -3,13 +3,11 @@ workingDir: /workdir
 {{- end }}
 
 {{- define "codeflare.dev/workdir.volumeMount" }}
-- mountPath: /workdir
-  subPath: {{ .Values.subPath }}
-  name: workdir
+- name: workdir
+  mountPath: /workdir
 {{- end }}
 
 {{- define "codeflare.dev/workdir.volume" }}
 - name: workdir
-  persistentVolumeClaim:
-    claimName: {{ .Values.workdir.pvc }}
+  emptyDir: {}
 {{- end }}

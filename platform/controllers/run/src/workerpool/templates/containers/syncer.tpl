@@ -1,4 +1,4 @@
-{{- define "codeflare.dev/containers/syncer" }}
+{{- define "containers/syncer" }}
 - name: syncer
   image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-s3-syncer-component:" .Values.image.version }}
   env:

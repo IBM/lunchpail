@@ -31,9 +31,12 @@ spec:
       terminationGracePeriodSeconds: 30
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
+        {{ include "rclone.volume" . | indent 8 }}
         {{- include "codeflare.dev/queue.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
+      initContainers:
+        {{- include "containers/workdir" . | indent 8 }}
       containers:
-        {{- include "codeflare.dev/containers/app" . | indent 8 }}
-        {{- include "codeflare.dev/containers/syncer" . | indent 8 }}
+        {{- include "containers/app" . | indent 8 }}
+        {{- include "containers/syncer" . | indent 8 }}
 {{- end }}
