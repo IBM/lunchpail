@@ -31,46 +31,10 @@ spec:
       restartPolicy: OnFailure
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
+        {{- include "rclone.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
+      initContainers:
+        {{- include "containers/workdir" . | indent 8 }}
       containers:
-        - name: main
-          image: {{ .Values.image }}
-          command: ["/bin/bash", "-c", {{ .Values.command | quote }}]
-          env:
-            - name: NAME
-              value: {{ .Release.Name }}
-            - name: NAMESPACE
-              value: {{ .Values.namespace }}
-            - name: ENCLOSING_UID
-              value: {{ .Values.uid }}
-            - name: ENCLOSING_RUN_NAME
-              value: {{ .Values.name }}
-
-          {{- if .Values.env }}
-          envFrom:
-          - configMapRef:
-              name: {{ print .Release.Name | trunc 53 }}
-          {{- end }}
-
-          {{- include "codeflare.dev/workdir.path" . | indent 10 }}
-          volumeMounts:
-            {{- include "codeflare.dev/workdir.volumeMount" . | indent 12 }}
-          resources:
-            limits:
-              cpu: {{ .Values.workers.cpu }}
-              memory: {{ .Values.workers.memory }}
-              {{- if and (.Values.workers.gpu) (gt .Values.workers.gpu 0) }}
-              nvidia.com/gpu: {{ .Values.workers.gpu }}
-              {{- end }}
-            requests:
-              cpu: {{ .Values.workers.cpu }}
-              memory: {{ .Values.workers.memory }}
-              {{- if and (.Values.workers.gpu) (gt .Values.workers.gpu 0) }}
-              nvidia.com/gpu: {{ .Values.workers.gpu }}
-              {{- end }}
-
-          {{- if .Values.rbac.runAsRoot }}
-          securityContext:
-            privileged: true
-          {{- end }}
+        {{- include "containers/main" . | indent 8 }}
 {{- end }}

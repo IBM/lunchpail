@@ -41,7 +41,9 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
      --set env="$env" \
-     --set workdir.pvc=$WORKDIR_PVC \
+     --set s3Endpoint=$INTERNAL_S3_ENDPOINT \
+     --set s3AccessKey=$INTERNAL_S3_ACCESSKEY \
+     --set s3SecretKey=$INTERNAL_S3_SECRETKEY \
      --set datasets=$dataset_labels \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jaas-rclone-config
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData:
+  rclone.conf: |
+    [s3]
+    type = s3
+    acl = public-read
+    provider = Other
+    env_auth = false
+    endpoint = {{ .Values.s3Endpoint }}
+    access_key_id = {{ .Values.s3AccessKey }}
+    secret_access_key = {{ .Values.s3SecretKey }}
+
+{{- define "rclone.volume" }}
+- name: rclone-config
+  secret:
+    secretName: jaas-rclone-config
+{{- end }}
+
+{{- define "rclone.volumeMount" }}
+- name: rclone-config
+  readOnly: true
+  mountPath: "/tmp"
+{{- end }}
