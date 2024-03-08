@@ -10,11 +10,12 @@
       value: {{ .Values.outbox | default "outbox" }}
     - name: WORKER_QUEUES_SUBDIR
       value: queues
-    - name: QUEUE
-      value: {{ print "/mnt/datasets/" .Values.taskqueue.dataset "/" .Values.name }}
-
-  {{- if .Values.rbac.runAsRoot }}
-  securityContext:
-    privileged: true
-  {{- end }}
+    - name: S3_ENDPOINT_VAR
+      value: {{ print .Values.taskqueue.dataset "_endpoint" }}
+    - name: AWS_ACCESS_KEY_ID_VAR
+      value: {{ print .Values.taskqueue.dataset "_accessKeyID" }}
+    - name: AWS_SECRET_ACCESS_KEY_VAR
+      value: {{ print .Values.taskqueue.dataset "_secretAccessKey" }}
+    - name: REMOTE_PATH_VAR
+      value: {{ print .Values.taskqueue.dataset "_bucket" }}
 {{- end }}

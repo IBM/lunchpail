@@ -39,7 +39,7 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
                 logging.info(f"Queue for workqueue Run: using discovered queue={queue_dataset} for run={name} namespace={namespace}")
 
         patch.metadata.annotations["jaas.dev/taskqueue"] = queue_dataset
-        dataset_labels = add_dataset(queue_dataset, "mount", dataset_labels_arr)
+        dataset_labels = add_dataset(queue_dataset, "configmap", dataset_labels_arr)
         
         workqueue_out = subprocess.run([
             "/src/workqueue.sh",

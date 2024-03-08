@@ -24,6 +24,8 @@ func main() {
 	outbox := filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
 	queues := filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 
+	fmt.Printf("[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
+
 	// Keep track of how many tasks we have moved to the final
 	// outbox. TODO: don't start from 0, we need to scan the
 	// outbox to look for bits from prior instances of the

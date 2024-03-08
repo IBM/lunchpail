@@ -27,9 +27,10 @@ spec:
 
   command: /opt/codeflare/worker/bin/watcher.sh ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
-  inputs:
-    - sizes:
-        lg: test7bdata
+# TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
+#  inputs:
+#    - sizes:
+#        lg: test7bdata
   env:
     xxx: "1111111111"
     yyy: "2222222222"
