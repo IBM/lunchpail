@@ -22,8 +22,8 @@ FROM $registry/$repo/jaas-s3-syncer-component:$version
 #RUN cd /usr/local && tar zxf /tmp/parquet-cli.tar.gz && rm /tmp/parquet-cli.tar.bz2
 
 USER root
-RUN apk add --no-cache cargo build-base python3 py-pandas python3-dev py3-pip git && \
-    pip --no-cache-dir install fastparquet && \
+RUN apk update && apk add --no-cache cargo build-base python3 py-pandas python3-dev py3-pip git && \
+    pip --no-cache-dir install fastparquet --break-system-packages && \
     apk del python3-dev build-base git cargo && \
     rm -rf ~/.cache && \
     rm -rf ~/.cargo && \
