@@ -8,7 +8,7 @@ spec:
   api: workqueue
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test7
-  command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
+  command: /opt/lunchpail/worker/bin/watcher.sh ./main.sh
 
 # TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
 #  inputs:

@@ -1,4 +1,4 @@
- FROM golang:1.22.0-alpine
+FROM golang:1.22.0-alpine
 WORKDIR /opt/lunchpail/bin
 
 COPY go.* ./
@@ -15,8 +15,9 @@ RUN apk update && apk add --no-cache rclone bash
 
 COPY workstealer.sh /opt/lunchpail/bin/workstealer.sh
 
-RUN addgroup -g 2000 jaas && adduser -u 2000 jaas -G jaas --disabled-password && echo "jaas:jaas" | chpasswd
-USER jaas
-ENV HOME=/home/jaas
+RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
+USER lunchpail
+ENV HOME=/home/lunchpail
+WORKDIR /home/lunchpail
 
 CMD ["/opt/lunchpail/bin/workstealer.sh"]

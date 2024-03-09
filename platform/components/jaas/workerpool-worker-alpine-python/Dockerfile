@@ -7,4 +7,4 @@ FROM $registry/$repo/jaas-workerpool-worker-alpine-component:$version
 USER root
 RUN apk update && \
         apk add --no-cache python3 make
-USER jaas
+USER lunchpail

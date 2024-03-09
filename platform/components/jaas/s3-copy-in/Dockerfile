@@ -4,9 +4,9 @@ USER root
 RUN apt update && \
     apt -y install git ca-certificates ncurses-bin && \
     apt clean autoclean && apt autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
-ADD bin /opt/codeflare/bin
+ADD bin /opt/lunchpail/bin
 
 USER 1001
 ENV TERM=xterm-256color
 
-ENTRYPOINT ["/opt/codeflare/bin/main.sh"]
+ENTRYPOINT ["/opt/lunchpail/bin/main.sh"]

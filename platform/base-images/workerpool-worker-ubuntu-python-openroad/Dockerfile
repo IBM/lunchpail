@@ -10,10 +10,10 @@ RUN apt update && \
     apt autoremove && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/
 
-ADD sysctl.conf /etc/sysctl.d/codeflare.conf
-COPY bin /opt/codeflare/worker/bin
+ADD sysctl.conf /etc/sysctl.d/lunchpail.conf
+COPY bin /opt/lunchpail/worker/bin
 
-CMD ["/opt/codeflare/worker/bin/watcher.sh"]
+CMD ["/opt/lunchpail/worker/bin/watcher.sh"]
 
 COPY --from=jinwookjung/rdf-openroad-ray /openroad /openroad
 #COPY --from=openroad/yosys /install ./tools/install/yosys

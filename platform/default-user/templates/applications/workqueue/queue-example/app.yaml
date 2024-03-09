@@ -10,7 +10,7 @@ metadata:
 spec:
   api: workqueue
   image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.image.version }}
-  command: /opt/codeflare/worker/bin/watcher.sh ./main.sh
+  command: /opt/lunchpail/worker/bin/watcher.sh ./main.sh
   code: |
     #!/usr/bin/env sh
 

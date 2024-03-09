@@ -3,10 +3,10 @@ FROM ghcr.io/project-codeflare/kopf:0.0.3
 # install rclone
 RUN apk update && apk add --no-cache rclone
 
-RUN addgroup -g 2000 jaas && adduser -u 2000 jaas -G jaas --disabled-password && echo "jaas:jaas" | chpasswd
-USER jaas
-ENV HOME=/home/jaas
-WORKDIR /home/jaas
+RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
+USER lunchpail
+ENV HOME=/home/lunchpail
+WORKDIR /home/lunchpail
 
 ADD src /src
 CMD kopf run /src/handlers.py --verbose

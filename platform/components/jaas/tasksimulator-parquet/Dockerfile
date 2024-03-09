@@ -29,4 +29,4 @@ RUN apk update && apk add --no-cache cargo build-base python3 py-pandas python3-
     rm -rf ~/.cargo && \
     rm -rf /usr/lib/python3.11/site-packages/pandas/tests && \
     rm -rf /usr/lib/python3.11/site-packages/numpy/core/tests
-USER jaas
+USER lunchpail

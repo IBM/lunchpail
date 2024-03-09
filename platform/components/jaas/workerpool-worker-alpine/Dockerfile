@@ -4,11 +4,13 @@ FROM alpine:3
 RUN apk update && \
         apk add --no-cache inotify-tools bash
 
-ADD sysctl.conf /etc/sysctl.d/codeflare.conf
-COPY bin /opt/codeflare/worker/bin
-RUN chmod a+rX /opt/codeflare/worker/bin/*
+ADD sysctl.conf /etc/sysctl.d/lunchpail.conf
+COPY bin /opt/lunchpail/worker/bin
+RUN chmod a+rX /opt/lunchpail/worker/bin/*
 
-RUN addgroup -g 2000 jaas && adduser -u 2000 jaas -G jaas --disabled-password && echo "jaas:jaas" | chpasswd
-USER jaas
+RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
+USER lunchpail
+ENV HOME=/home/lunchpail
+WORKDIR /home/lunchpail
 
-CMD ["/opt/codeflare/worker/bin/watcher.sh"]
+CMD ["/opt/lunchpail/worker/bin/watcher.sh"]
