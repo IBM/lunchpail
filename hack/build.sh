@@ -19,8 +19,8 @@ fi
 # inists on using the wrong platform when building a non-manifest
 # build
 if [[ $(uname -m) = arm64 ]]
-then PLATFORM=linux/arm64/v8
-else PLATFORM=linux/amd64
+then MY_PLATFORM=linux/arm64/v8
+else MY_PLATFORM=linux/amd64
 fi
 
 function check_podman {
@@ -74,7 +74,7 @@ function build {
         fi
 
         set -e
-        (cd "$dir" && ${DOCKER-docker} build $QUIET --platform=$PLATFORM \
+        (cd "$dir" && ${DOCKER-docker} build $QUIET --platform=$MY_PLATFORM \
                                        --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
                                        -t $image \
                                        -f "$dockerfile" \
