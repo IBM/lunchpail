@@ -29,12 +29,17 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
      while read directory action file
      do
          echo "Launching workstealer processor due to change directory=$directory action=$action file=$file"
-         "$SCRIPTDIR"/workstealer
+         "$SCRIPTDIR"/workstealer | while read file
+         do
+             remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
+             echo "Uploading changed file: $file -> $remotefile"
+             rclone --config /tmp/rclone.conf sync $file $remotefile
+         done
      done
 ) &
 
 while true
 do
-    rclone --config /tmp/rclone.conf bisync --resync $remote $QUEUE
+    rclone --config /tmp/rclone.conf sync $remote $QUEUE
     sleep ${QUEUE_POLL_INTERVAL_SECONDS:-3}
 done
