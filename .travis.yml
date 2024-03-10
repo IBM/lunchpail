@@ -4,12 +4,12 @@ services:
   - xvfb
 
 env:
-  - SCRIPT=test.sh NEEDS_CSI_S3=true
-  - SCRIPT=test.sh SCRIPT_ARGS="-l -i 'test7.*' -e test7g" # run in "lite" mode and run only the test7* tests, excluding test7g
-  - SCRIPT=test.sh SCRIPT_ARGS="-l test7g" NEEDS_CSI_S3=true # ibid, but test7g needs a mounted s3 (that is its purpose)
-#  - SCRIPT=ibmcloud-gpu.sh <-- FIXME gpu allocations are failing
+  - ARGS="-e 'test7.*'" NEEDS_CSI_S3=true # full mode, excluding test7*
+  - ARGS="-i 'test7.*'" NEEDS_CSI_S3=true # full mode, including only test7*
+  - ARGS="-l -i 'test7.*' -e test7g"      # lite, including only test7* tests, excluding test7g (as it NEEDS_CSI_S3)
+  - ARGS="-l test7g" NEEDS_CSI_S3=true    # lite, only test7g which needs a mounted s3 (that is its purpose)
   - SCRIPT=dashboard.sh
 
 before_install: ./hack/travis/setup.sh
-script: bash -c "./tests/bin/$SCRIPT $SCRIPT_ARGS"
+script: bash -c "./tests/bin/${SCRIPT:-test.sh} $ARGS"
 after_script: if [[ -f /tmp/gpu-config.json ]]; then ./hack/ibmcloud/delete_vm.sh "$(cat /tmp/gpu-config.json)"; fi
