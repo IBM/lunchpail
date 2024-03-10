@@ -11,8 +11,9 @@ RUN chmod a+rX workstealer
 FROM alpine:3
 COPY --from=0 /opt/lunchpail/bin/workstealer /opt/lunchpail/bin/workstealer
 
-RUN apk update && apk add --no-cache rclone bash
+RUN apk update && apk add --no-cache rclone inotify-tools bash
 
+ADD sysctl.conf /etc/sysctl.d/lunchpail.conf
 COPY workstealer.sh /opt/lunchpail/bin/workstealer.sh
 
 RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail

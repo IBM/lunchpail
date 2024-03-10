@@ -21,8 +21,17 @@ secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
 acl = public-read
 EOF
 
+# otherwise inotifywait won't have an inode to watch...
+mkdir -p $QUEUE
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-"$SCRIPTDIR"/workstealer &
+(inotifywait -r -m -e create -e moved_to $QUEUE |
+     while read directory action file
+     do
+         echo "Launching workstealer processor due to change directory=$directory action=$action file=$file"
+         "$SCRIPTDIR"/workstealer
+     done
+) &
 
 while true
 do

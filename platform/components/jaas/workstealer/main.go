@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 func reportUnassigned(size uint) {
@@ -18,6 +17,9 @@ func reportDone(size uint) {
 	fmt.Printf("jaas.dev done %d\n", size)
 }
 
+/**
+ * Assumed to be called every time something has changed in the `queue` directory.
+ */
 func main() {
 	queue := os.Getenv("QUEUE")
 	inbox := filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
@@ -38,7 +40,7 @@ func main() {
 		return
 	}
 
-	for {
+	{
 		// Check for existence of unassigned inbox
 		if f, err := os.Stat(inbox); err == nil && f.IsDir() {
 			fmt.Printf("[workstealer] Scanning inbox: %s\n", inbox)
@@ -212,6 +214,5 @@ func main() {
 			reportUnassigned(nFiles - nAssigned)
 			reportDone(nDone)
 		}
-		time.Sleep(5 * time.Second)
 	}
 }
