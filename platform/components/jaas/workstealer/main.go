@@ -25,7 +25,9 @@ func reportChangedFile(filepath string) {
 }
 
 /**
- * Assumed to be called every time something has changed in the `queue` directory.
+ * Assumed to be called every time something has changed in the
+ * `queue` directory. This will emit to stdout a newline-separated
+ * stream of filepaths, one per file that it has changed in some way.
  */
 func main() {
 	queue := os.Getenv("QUEUE")
@@ -81,17 +83,19 @@ func main() {
 				// keep track of how many we have yet to assign
 				nFiles++
 				filePath := filepath.Join(inbox, fileName)
+				doneMarker := filePath+".done"
+				lockMarker := filePath+".lock"
 
-				if _, err := os.Stat(filePath + ".done"); err == nil {
+				if _, err := os.Stat(doneMarker); err == nil {
 					// the work is already flagged as done
 					nAssigned++
 					fmt.Fprintf(os.Stderr, "[workstealer] skipping already-done file=%s nAassigned=%d\n", fileName, nAssigned)
 					continue
 				}
 
-				if _, err := os.Stat(filePath + ".lock"); err == nil {
+				if _, err := os.Stat(lockMarker); err == nil {
 					// Then this task is locked, i.e. already assigned to a worker.
-					lockFile, err := os.ReadFile(filePath + ".lock")
+					lockFile, err := os.ReadFile(lockMarker)
 					if err != nil {
 						log.Fatalf("[workstealer] Failed to read lock file: %v\n", err)
 					}
@@ -110,7 +114,6 @@ func main() {
 						fmt.Fprintf(os.Stderr, "[workstealer] skipping already-done (2) file=%s nAssigned=%d\n", fileName, nAssigned)
 
 						// ...touch the done file
-						doneMarker := filePath+".done"
 						if err := os.WriteFile(doneMarker, []byte{}, 0644); err != nil {
 							log.Fatalf("[workstealer] Failed to touch done file: %v\n", err)
 						} else {
@@ -118,8 +121,10 @@ func main() {
 						}
 
 						// ...remove the lock file
-						if err := os.Remove(filePath + ".lock"); err != nil {
+						if err := os.Remove(lockMarker); err != nil {
 							log.Fatalf("[workstealer] Failed to remove lock file: %v\n", err)
+						} else {
+							reportChangedFile(lockMarker)
 						}
 
 						// move the output to the final/global (i.e. not per-worker) outbox
@@ -181,7 +186,6 @@ func main() {
 							if err == nil {
 								fmt.Fprintf(os.Stderr, "[workstealer] Removing finished task owned by dead worker=%s filelock=%s\n", workerDir, lockFile)
 								filePath = strings.TrimSuffix(filepath.Base(lockFile), ".lock")
-								doneMarker := filePath+".done"
 								if err := os.WriteFile(doneMarker, []byte{}, 0644); err != nil {
 									log.Fatalf("[workstealer] Failed to touch done file: %v\n", err)
 								} else {
@@ -201,14 +205,13 @@ func main() {
 					continue
 				}
 
-				if _, err := os.Stat(filepath.Join(inbox, fileName+".lock")); err == nil {
+				if _, err := os.Stat(lockMarker); err == nil {
 					nAssigned++
 					fmt.Fprintf(os.Stderr, "[workstealer] skipping already-locked file=%s nAssigned=%d\n", fileName, nAssigned)
 				} else if fi, err := os.Stat(queue); err == nil && fi.IsDir() && fileName != "" {
 					// here is where we assign a task to a worker
 					nAssigned++
 					fmt.Fprintf(os.Stderr, "[workstealer] Moving task=%s to queue=%s nAssigned=%d\n", fileName, queue, nAssigned)
-					lockMarker := filepath.Join(inbox, fileName+".lock")
 					filePathToWorkerInbox := filepath.Join(queue, fileName)
 
 					os.WriteFile(lockMarker, []byte(workerDir), 0644)
@@ -228,8 +231,8 @@ func main() {
 					if _, err := os.Stat(filepath.Join(inbox, fileName)); os.IsNotExist(err) {
 						fmt.Fprintf(os.Stderr, "[workstealer] Warning: Not a file task=%s\n", filepath.Join(inbox, fileName))
 					}
-					if _, err := os.Stat(filepath.Join(inbox, fileName+".lock")); err == nil {
-						lockFile, _ := os.ReadFile(filepath.Join(inbox, fileName+".lock"))
+					if _, err := os.Stat(lockMarker); err == nil {
+						lockFile, _ := os.ReadFile(lockMarker)
 						fmt.Fprintf(os.Stderr, "[workstealer] Warning: Already owned %s\n", string(lockFile))
 					}
 				}

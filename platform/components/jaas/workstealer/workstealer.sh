@@ -28,18 +28,28 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 (inotifywait -r -m -e create -e moved_to $QUEUE |
      while read directory action file
      do
+         if [[ "$action" = "CREATE,ISDIR" ]]
+         then continue
+         elif [[ "$file" =~ ".lock" ]]
+         then continue
+         elif [[ "$file" =~ ".done" ]]
+         then continue
+         elif [[ "$file" =~ ".partial" ]]
+         then continue
+         fi
+
          echo "Launching workstealer processor due to change directory=$directory action=$action file=$file"
          "$SCRIPTDIR"/workstealer | while read file
          do
              remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
              echo "Uploading changed file: $file -> $remotefile"
-             rclone --config /tmp/rclone.conf sync $file $remotefile
+             rclone --config /tmp/rclone.conf copyto $file $remotefile
          done
      done
 ) &
 
 while true
 do
-    rclone --config /tmp/rclone.conf sync $remote $QUEUE
+    rclone --config /tmp/rclone.conf sync --exclude '*.partial' $remote $QUEUE
     sleep ${QUEUE_POLL_INTERVAL_SECONDS:-3}
 done
