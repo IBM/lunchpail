@@ -4,8 +4,9 @@ services:
   - xvfb
 
 env:
-  - SCRIPT=test.sh
-  - SCRIPT=test.sh SCRIPT_ARGS="-l -i 'test7.*'" # run in "lite" mode and run only the test7* tests
+  - SCRIPT=test.sh NEEDS_CSI_S3=true
+  - SCRIPT=test.sh SCRIPT_ARGS="-l -i 'test7.*' -e test7g" # run in "lite" mode and run only the test7* tests, excluding test7g
+  - SCRIPT=test.sh SCRIPT_ARGS="-l test7g" NEEDS_CSI_S3=true # ibid, but test7g needs a mounted s3 (that is its purpose)
 #  - SCRIPT=ibmcloud-gpu.sh <-- FIXME gpu allocations are failing
   - SCRIPT=dashboard.sh
 
