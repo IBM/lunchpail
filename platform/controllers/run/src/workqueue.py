@@ -42,7 +42,7 @@ def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str
         dataset_labels = add_dataset(queue_dataset, "configmap", dataset_labels_arr)
         
         workqueue_out = subprocess.run([
-            "/src/workqueue.sh",
+            "./workqueue.sh",
             uid,
             name,
             namespace,

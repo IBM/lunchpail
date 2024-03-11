@@ -37,7 +37,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
     
     try:
         out = subprocess.run([
-            "/src/workdispatcher.sh",
+            "./workdispatcher.sh",
             uid,
             name,
             namespace,

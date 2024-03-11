@@ -63,7 +63,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
 
     try:
         torchx_out = subprocess.run([
-            "/src/torchx.sh",
+            "./torchx.sh",
             uid, # $1
             name, # $2
             namespace, # $3

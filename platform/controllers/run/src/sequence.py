@@ -26,7 +26,7 @@ def create_run_sequence(v1Api, customApi, application, namespace: str, uid: str,
         #applications = fetch_all(application_names, namespace, customApi) # for now, just verify they exist
 
         args = [
-            "/src/sequence.sh",
+            "./sequence.sh",
             uid,
             name,
             namespace,

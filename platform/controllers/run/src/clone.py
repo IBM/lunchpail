@@ -40,7 +40,7 @@ def clone_from_git(v1Api, customApi, name: str, workdir: str, repo: str):
     except Exception as e:
         logging.info(f"Error finding PlatformRepoSecret. {str(e)}")
 
-    clone_out = subprocess.run(["/src/clone.sh", name, workdir, repo, user_b64, pat_b64], capture_output=True)
+    clone_out = subprocess.run(["./clone.sh", name, workdir, repo, user_b64, pat_b64], capture_output=True)
     if clone_out.returncode != 0:
         raise PermanentError(f"Failed to clone code. {clone_out.stderr.decode('utf-8')}")
 

@@ -83,7 +83,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         logging.info(f"About to call out to WorkerPool launcher")
         try:
             out = subprocess.run([
-                "/src/workerpool.sh",
+                "./workerpool.sh",
                 uid,
                 name,
                 namespace,

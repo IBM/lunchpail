@@ -41,7 +41,7 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
     logging.info(f"About to call out to ray run_id={run_id} subPath={subPath}")
     try:
         ray_out = subprocess.run([
-            "/src/ray.sh",
+            "./ray.sh",
             uid,
             name,
             namespace,

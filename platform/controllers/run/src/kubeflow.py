@@ -25,7 +25,7 @@ def create_run_kubeflow(v1Api, customApi, application, namespace: str, uid: str,
     logging.info(f"About to call out to kubeflow run_id={run_id} subPath={subPath}")
     try:
         kubeflow_out = subprocess.run([
-            "/src/kfp/kubeflow.sh",
+            "./kfp/kubeflow.sh",
             uid,
             name,
             namespace,

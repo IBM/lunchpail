@@ -42,7 +42,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
 
     try:
         shell_out = subprocess.run([
-            "/src/shell.sh",
+            "./shell.sh",
             uid,
             name,
             namespace,

@@ -8,5 +8,5 @@ USER lunchpail
 ENV HOME=/home/lunchpail
 WORKDIR /home/lunchpail
 
-ADD src /src
-CMD kopf run /src/handlers.py --verbose
+COPY --chown=lunchpail:root src .
+CMD kopf run handlers.py --verbose
