@@ -4,7 +4,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
 # kill any test resources before we bring down controllers
-"$SCRIPTDIR"/../tests/bin/undeploy-tests.sh || kubectl delete ns codeflare-test --ignore-not-found || true
+"$SCRIPTDIR"/../tests/bin/undeploy-tests.sh || $KUBECTL delete ns codeflare-test --ignore-not-found || true
 
 # sigh, some components use kustomize, not helm
 if [[ -z "$LITE" ]] && [[ -d "$SCRIPTDIR"/../platform/kustomize ]]
