@@ -1,4 +1,4 @@
-FROM bitnami/kubectl
+FROM docker.io/bitnami/kubectl
 
 USER root
 COPY main.sh /usr/local/bin/jaas-sequencer.sh

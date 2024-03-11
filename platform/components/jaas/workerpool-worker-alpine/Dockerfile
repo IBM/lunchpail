@@ -1,4 +1,4 @@
-FROM alpine:3
+FROM docker.io/alpine:3
 
 # Note: watcher.sh depends on some bash-isms at the moment
 RUN apk update && \

@@ -1,4 +1,4 @@
-FROM bitnami/minio-client:2024.3.3
+FROM docker.io/bitnami/minio-client:2024.3.3
 
 USER root
 RUN apt update && \
