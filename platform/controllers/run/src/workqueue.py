@@ -15,7 +15,7 @@ from workerpool import find_default_queue_for_namespace
 # We use `./workqueue.sh` which in turn uses the `./workqueue/` helm
 # chart to create the WorkStealer for this Run.
 #
-def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels_arr: List[str], patch):
+def create_run_workqueue(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels_arr: List[str], volumes, volumeMounts, patch):
     application_name = spec['application']['name']
     logging.info(f"Handling WorkQueue Run: app={application_name} run={name}")
 

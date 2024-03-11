@@ -1,0 +1,13 @@
+{{ if and .Values.nfs.enabled (or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test6b")) }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: test6b
+  namespace: {{ .Values.namespace }}
+spec:
+  application:
+    name: test6b
+  options: "-x xxxx yyyy zzzz"
+  env:
+    yyy: "5555" # override just yyy from the env in app.yaml
+{{ end }}

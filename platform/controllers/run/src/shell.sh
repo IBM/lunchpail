@@ -21,6 +21,8 @@ memory="${12}"
 gpu="${13}"
 env="${14}"
 dataset_labels="${15}"
+volumes="${16}"
+volumeMounts="${17}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -40,6 +42,8 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
+     --set volumes=$volumes \
+     --set volumeMounts=$volumeMounts \
      --set env="$env" \
      --set s3Endpoint=$INTERNAL_S3_ENDPOINT \
      --set s3AccessKey=$INTERNAL_S3_ACCESSKEY \

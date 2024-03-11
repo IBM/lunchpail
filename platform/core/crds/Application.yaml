@@ -73,6 +73,26 @@ spec:
                 supportsGpu:
                   type: boolean
                   default: false
+
+                datasets:
+                  type: array
+                  items:
+                    type: object
+                    required: [name,nfs]
+                    properties:
+                      name:
+                        type: string
+                      mountPath:
+                        type: string
+                      nfs:
+                        type: object
+                        required: [server,path]
+                        properties:
+                          server:
+                            type: string
+                          path:
+                            type: string
+
                 inputs:
                   type: array
                   items:

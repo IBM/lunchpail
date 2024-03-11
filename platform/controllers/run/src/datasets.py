@@ -58,10 +58,12 @@ def prepare_dataset_labels_for_workerpool(customApi, queue_dataset: str, namespa
     return to_string(dataset_labels)
 
 def prepare_dataset_labels2(customApi, run_name: str, run_namespace: str, run_spec, application):
+    labels = []
+    datasets = []
+    volumes = []
+    volumeMounts = []
     if "inputs" in application["spec"]:
         idx = 0
-        labels = []
-        datasets = []
         for input in application["spec"]["inputs"]:
             if 'input' in run_spec:
                 size = run_spec['input']
@@ -82,13 +84,31 @@ def prepare_dataset_labels2(customApi, run_name: str, run_namespace: str, run_sp
 
             idx = idx + 1
 
-        return datasets, labels
+    if "datasets" in application["spec"]:
+        idx = 0
+        for dataset in application["spec"]["datasets"]:
+            name = dataset["name"]
+            if "nfs" in dataset:
+                volumes.append({
+                    "name": name,
+                    "nfs": {
+                        "path": dataset["nfs"]["path"],
+                        "server": dataset["nfs"]["server"],
+                    }
+                })
+                volumeMounts.append({
+                    "name": name,
+                    "mountPath": dataset["mountPath"] if "mountPath" in dataset else f"/mnt/datasets/{name}",
+                })
 
-    return None, None
+    if len(datasets) == 0 and len(labels) == 0 and len(volumes) == 0 and len(volumeMounts) == 0:
+        return None, None, None, None
+    else:
+        return datasets, labels, volumes, volumeMounts
 
 def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spec, application):
-    datasets, dataset_labels = prepare_dataset_labels2(customApi, run_name, run_namespace, run_spec, application)
+    datasets, dataset_labels, volumes, volumeMounts = prepare_dataset_labels2(customApi, run_name, run_namespace, run_spec, application)
     if dataset_labels is None:
-        return datasets, dataset_labels, None
+        return datasets, dataset_labels, None, volumes, volumeMounts
     else:
-        return datasets, to_string(dataset_labels), dataset_labels
+        return datasets, to_string(dataset_labels), dataset_labels, volumes, volumeMounts

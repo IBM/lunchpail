@@ -1,0 +1,35 @@
+{{ if and .Values.nfs.enabled (or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test6b")) }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test6b
+  namespace: {{ .Values.namespace }}
+spec:
+  api: shell
+  image: ubuntu
+  code: |
+    while getopts "x:" opt
+    do
+        case $opt in
+            x) X="${OPTARG}"; continue;;
+        esac
+    done
+    shift $((OPTIND-1))
+
+    if [[ ! -d  /mnt/datasets/nfs ]]
+    then echo "Error: nfs not mounted"
+    fi
+
+    echo "PASS: Shell Application test6 idx=$JOB_COMPLETION_INDEX x=\"$X\" rest=\"$@\" xxx=$xxx yyy=$yyy"
+    
+  command: ./literal.sh
+  supportsGpu: True
+  env:
+    xxx: "3333"
+    yyy: "4444"
+  datasets:
+    - name: nfs
+      nfs:
+        path: "/"
+        server: {{ .Values.nfs.clusterIP }}
+{{- end }}

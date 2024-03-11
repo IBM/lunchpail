@@ -45,7 +45,6 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         logging.info(f"WorkDispatcher creation for run={run_name} uid={uid}")
 
         run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(customApi, run_name, run_namespace)
-            
         dataset_labels = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, [], [])
 
         # we will then set the status below in the pod status watcher (look for 'component(labels) == "workdispatcher"')
@@ -98,7 +97,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         # pool's preference to take priority here; but any datasets
         # the application needs that the pool has no opinions on, we
         # will use the config from the application
-        datasets, dataset_labels = prepare_dataset_labels2(customApi, name, namespace, spec, application)
+        datasets, dataset_labels, volumes, volumeMounts = prepare_dataset_labels2(customApi, name, namespace, spec, application)
         dataset_labels = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, datasets, dataset_labels)
 
         if dataset_labels is not None:
@@ -146,7 +145,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         else:
             command_line_options = ""
 
-        datasets, dataset_labels, dataset_labels_arr = prepare_dataset_labels(customApi, name, namespace, spec, application)
+        datasets, dataset_labels, dataset_labels_arr, volumes, volumeMounts = prepare_dataset_labels(customApi, name, namespace, spec, application)
         if dataset_labels is not None:
             logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
 
@@ -154,17 +153,17 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
 
         if api == "ray":
-            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "torch":
-            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "shell":
-            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, patch)
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         elif api == "kubeflow":
-            head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_kubeflow(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "sequence":
-            head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, patch)
+            head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "workqueue":
-            head_pod_name = create_run_workqueue(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, patch)
+            head_pod_name = create_run_workqueue(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         else:
             raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
 

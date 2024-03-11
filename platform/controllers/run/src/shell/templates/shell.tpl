@@ -31,6 +31,9 @@ spec:
       restartPolicy: OnFailure
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
+        {{- if .Values.volumes }}
+        {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 8 }}
+        {{- end }}
         {{- include "rclone.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
       initContainers:

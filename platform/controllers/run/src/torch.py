@@ -10,7 +10,7 @@ from clone import clone
 from run_id import alloc_run_id
 from image_pull_secret import find_image_pull_secret
 
-def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, patch):
+def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch):
     logging.info(f"Handling Torch Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
     command = application['spec']['command']
 

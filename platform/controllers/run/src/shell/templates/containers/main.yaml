@@ -20,6 +20,9 @@
 
   {{- include "codeflare.dev/workdir.path" . | indent 2 }}
   volumeMounts:
+    {{- if .Values.volumeMounts }}
+    {{- .Values.volumeMounts | b64dec | fromJsonArray | toYaml | nindent 4 }}
+    {{- end }}
     {{- include "codeflare.dev/workdir.volumeMount" . | indent 4 }}
   resources:
     limits:

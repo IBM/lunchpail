@@ -15,7 +15,7 @@ def fetch(application_name: str, application_namespace: str, customApi):
 def fetch_all(application_names: List[str], application_namespace: str, customApi):
     return map(lambda application_name: fetch(application_name, application_namespace, customApi), application_names)
 
-def create_run_sequence(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, patch):
+def create_run_sequence(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch):
     application_name = spec['application']['name']
     logging.info(f"Handling Sequence Run: app={application_name} run={name} part_of={part_of} step={step}")
 

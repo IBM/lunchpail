@@ -19,3 +19,9 @@ image:
   registry: ghcr.io
   repo: project-codeflare
   version: 0.0.1
+
+
+# for nfs tests
+nfs:
+  enabled: false
+  clusterIP: 10.96.93.144
