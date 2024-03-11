@@ -76,7 +76,7 @@ fi
 echo "Final shrinkwrap HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS"
 
 # prereqs that the core depends on
-helm template \
+$HELM_TEMPLATE \
      --include-crds \
      $NAMESPACE_SYSTEM \
      -n $NAMESPACE_SYSTEM \
@@ -95,7 +95,7 @@ helm template \
      > "$PREREQS1"
 
 # prereqs that depend on the core
-helm template \
+$HELM_TEMPLATE \
      --include-crds \
      $NAMESPACE_SYSTEM \
      -n $NAMESPACE_SYSTEM \
@@ -114,7 +114,7 @@ helm template \
      > "$PREREQS2"
 
 # core deployment
-helm template \
+$HELM_TEMPLATE \
      --include-crds \
      $NAMESPACE_SYSTEM \
      -n $NAMESPACE_SYSTEM \
@@ -137,7 +137,7 @@ helm template \
 echo "$NAMESPACE_SYSTEM" > "${CORE%%.yml}.namespace"
 
 # defaults
-helm template \
+$HELM_TEMPLATE \
      jaas-defaults \
      -n $NAMESPACE_SYSTEM \
      "$TOP"/platform \
@@ -153,7 +153,7 @@ helm template \
      > "$DEFAULTS" 
 
 # default-user
-helm template \
+$HELM_TEMPLATE \
      jaas-default-user \
      "$TOP"/platform \
      $HELM_DEMO_SECRETS $HELM_INSTALL_FLAGS \

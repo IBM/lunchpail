@@ -31,7 +31,7 @@ NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
 
 if [[ -z "$NO_GETOPTS" ]]
 then
-    while getopts "c:ltk:opr" opt
+    while getopts "c:ltk:oprs" opt
     do
         case $opt in
             c) export CONTEXT_NAME=$OPTARG; continue;;
@@ -41,6 +41,7 @@ then
             o) export CLUSTER_TYPE=oc; continue;;
             p) export PROD=true; continue;;
             r) RUN_AS_ROOT=true; continue;;
+            s) SUDO=sudo; continue;;
         esac
     done
     shift $((OPTIND-1))
@@ -73,8 +74,10 @@ HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESP
 # this will limit the platform to just api=workqueue
 HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true --set tags.gpu=false"
 
-export KUBECTL="kubectl --context $CONTEXT_NAME"
-export HELM="helm --kube-context $CONTEXT_NAME"
+export KUBECTL="$SUDO $(which kubectl || echo /usr/local/bin/kubectl) --context $CONTEXT_NAME"
+export HELM_TEMPLATE="$(which helml || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME template"
+export HELM="$SUDO $(which helml || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME"
+export KIND="$SUDO $(which kind || echo /usr/local/bin/kind)"
 
 # deploy ray, spark, etc. support?
 export JAAS_FULL=${JAAS_FULL:-true}

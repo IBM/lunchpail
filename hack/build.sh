@@ -94,20 +94,20 @@ function push {
             if [[ -n "$USING_PODMAN" ]]
             then
                 local image2=${image%%:$VERSION}
-                curhash=$(podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep "$image2 " | grep $VERSION | awk '{print $3}' | head -c 12 || echo "nope")
+                curhash=$($SUDO podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep "$image2 " | grep $VERSION | awk '{print $3}' | head -c 12 || echo "nope")
                 newhash=$(podman image ls | grep "$image2 " | grep $VERSION | awk '{print $3}' | head -c 12 || echo "nope2")
                 if [[ "$curhash" != "$newhash" ]]
                 then
                     echo "pushing $image $curhash $newhash"
                     T=$(mktemp)
                     podman save $image -o $T
-                    kind -n $CLUSTER_NAME load image-archive $T
+                    $KIND -n $CLUSTER_NAME load image-archive $T
                     rm -f $T
                 else
                     echo "already pushed $image"
                 fi
             else
-                kind load docker-image -n $CLUSTER_NAME $image
+                $KIND load docker-image -n $CLUSTER_NAME $image
             fi
         else
             echo "!!TODO push to remote container registry"

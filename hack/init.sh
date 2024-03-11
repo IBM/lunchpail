@@ -124,7 +124,7 @@ function get_nvidia {
 
 function create_kind_cluster {
     if [[ -z "$NO_KIND" ]]; then
-        if ! kind get clusters | grep -q $CLUSTER_NAME; then
+        if ! $KIND get clusters | grep -q $CLUSTER_NAME; then
             # allows selectively hacking kind cluster config; e.g. see ./travis/setup.sh
             if [[ -f /tmp/kindhack.yaml ]]
             then
@@ -133,7 +133,7 @@ function create_kind_cluster {
             fi
 
             echo "Creating kind cluster $(tput setaf 6)$CLUSTER_NAME $CLUSTER_CONFIG$(tput sgr0)" 1>&2
-            kind create cluster --name $CLUSTER_NAME --wait 10m $CLUSTER_CONFIG
+            $KIND create cluster --name $CLUSTER_NAME --wait 10m $CLUSTER_CONFIG
         fi
     fi
 }
