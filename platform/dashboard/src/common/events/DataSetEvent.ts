@@ -1,3 +1,3 @@
-import TaskQueueEvent from "./TaskQueueEvent"
+import type TaskQueueEvent from "./TaskQueueEvent"
 
-export default TaskQueueEvent
+export type { TaskQueueEvent as default }

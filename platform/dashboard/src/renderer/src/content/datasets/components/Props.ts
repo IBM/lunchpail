@@ -1,3 +1,3 @@
 import type DataSetEvent from "@jaas/common/events/DataSetEvent"
 
-export default DataSetEvent
+export type { DataSetEvent as default }
