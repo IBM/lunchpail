@@ -11,7 +11,7 @@ RUN chmod a+rX workstealer
 FROM docker.io/alpine:3
 COPY --from=0 /opt/lunchpail/bin/workstealer /opt/lunchpail/bin/workstealer
 
-RUN apk update && apk add --no-cache rclone inotify-tools bash
+RUN apk update && apk add --no-cache rclone bash
 
 ADD sysctl.conf /etc/sysctl.d/lunchpail.conf
 COPY workstealer.sh /opt/lunchpail/bin/workstealer.sh
