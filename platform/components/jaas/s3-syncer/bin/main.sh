@@ -3,11 +3,11 @@
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
-if [[ -z "$REMOTE_PATH_VAR" ]]; then
-    echo "Error: REMOTE_PATH_VAR not defined"
+if [[ -z "$TASKQUEUE_VAR" ]]; then
+    echo "Error: TASKQUEUE_VAR not defined"
     exit 1
-elif [[ -z ${!REMOTE_PATH_VAR} ]]; then
-    echo "Error: ${!REMOTE_PATH_VAR} not defined"
+elif [[ -z ${!TASKQUEUE_VAR} ]]; then
+    echo "Error: ${!TASKQUEUE_VAR} not defined"
 fi
 
 if [[ -z "$AWS_ACCESS_KEY_ID_VAR" ]]; then
@@ -35,7 +35,7 @@ if [[ -z "$JOB_COMPLETION_INDEX" ]]; then
 fi
 
 config=/tmp/rclone.conf
-remote=s3:/${!REMOTE_PATH_VAR}/$RUN_NAME/queues/$POOL.$JOB_COMPLETION_INDEX
+remote=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/queues/$POOL.$JOB_COMPLETION_INDEX
 local=$WORKQUEUE/$JOB_COMPLETION_INDEX
 
 cat <<EOF > $config

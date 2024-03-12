@@ -116,6 +116,9 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     
     run_name = run['metadata']['name']
 
+    # product name; used in paths
+    lunchpail = os.getenv("LUNCHPAIL")
+
     # environment variables; merge application spec with workdispatcher spec
     env = application['spec']['env'] if application is not None and 'env' in application['spec'] else {}
     if 'env' in spec:
@@ -126,7 +129,8 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
         "S3_ENDPOINT_VAR": f"{queue_dataset}_endpoint",
         "AWS_ACCESS_KEY_ID_VAR": f"{queue_dataset}_accessKeyID",
         "AWS_SECRET_ACCESS_KEY_VAR": f"{queue_dataset}_secretAccessKey",
-        "REMOTE_PATH_VAR": f"{queue_dataset}_bucket",
+        "TASKQUEUE_VAR": f"{queue_dataset}_bucket",
+        "LUNCHPAIL": lunchpail,
     })
 
     group = "codeflare.dev"
@@ -137,8 +141,8 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     if 'queue' in spec['application'] and 'useas' in spec['application']['queue']:
         queue_useas = spec['application']['queue']['useas']
         env.update({
-            "INBOX": f"/mnt/datasets/{queue_dataset}/{run_name}/inbox",
-            "OUTBOX": f"/mnt/datasets/{queue_dataset}/{run_name}/outbox",
+            "INBOX": f"/mnt/datasets/{queue_dataset}/{lunchpail}/{run_name}/inbox",
+            "OUTBOX": f"/mnt/datasets/{queue_dataset}/{lunchpail}/{run_name}/outbox",
         })
 
     body = {

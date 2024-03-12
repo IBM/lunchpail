@@ -24,6 +24,7 @@ helm install --dry-run --debug $run_name "$SCRIPTDIR"/workqueue/ -n ${namespace}
      --set namespace=$namespace \
      --set partOf=$part_of \
      --set inbox="$inbox" \
+     --set lunchpail=$LUNCHPAIL \
      --set taskqueue.create=$create_queue \
      --set taskqueue.dataset=$queue_dataset \
      --set taskqueue.bucket=$run_name \

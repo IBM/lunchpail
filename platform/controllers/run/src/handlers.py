@@ -308,7 +308,7 @@ def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
 @kopf.on.update('events', field="involvedObject.kind", value="Pod")
 def on_pod_event(name: str, namespace: str, body, **kwargs):
     try:
-        if "reason" in body and "component" in body["source"] and body["source"]["component"] != "kopf":
+        if "reason" in body and "component" in body["source"] and body["source"]["component"] != "kopf" and "involvedObject" in body:
             pod_name = body["involvedObject"]["name"]
             logging.info(f"Pod event for pod_name={pod_name}")
             pod = v1Api.read_namespaced_pod(pod_name, namespace)

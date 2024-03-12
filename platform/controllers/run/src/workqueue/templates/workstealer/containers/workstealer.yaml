@@ -16,6 +16,8 @@
       value: {{ print .Values.taskqueue.dataset "_accessKeyID" }}
     - name: AWS_SECRET_ACCESS_KEY_VAR
       value: {{ print .Values.taskqueue.dataset "_secretAccessKey" }}
-    - name: REMOTE_PATH_VAR
+    - name: TASKQUEUE_VAR
       value: {{ print .Values.taskqueue.dataset "_bucket" }}
+    - name: LUNCHPAIL
+      value: {{ .Values.lunchpail }}
 {{- end }}

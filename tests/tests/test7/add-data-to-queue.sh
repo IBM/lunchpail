@@ -17,7 +17,7 @@ MINWAIT=${4-1}
 MAXWAIT=${5-5}
 
 B=$(mktemp -d)/$BUCKET # bucket path
-D=$B/$RUN_NAME # data folder within that bucket
+D=$B/$LUNCHPAIL/$RUN_NAME # data folder within that bucket
 mkdir -p "$D/inbox"
 echo "Staging to $D" 1>&2
 

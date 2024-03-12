@@ -3,7 +3,7 @@
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 LOCAL_QUEUE_ROOT=$(mktemp -d)
-QUEUE_PATH=${!REMOTE_PATH_VAR}/$RUN_NAME
+QUEUE_PATH=${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME
 export QUEUE=$LOCAL_QUEUE_ROOT/$QUEUE_PATH
 
 echo "Workstealer starting QUEUE=$QUEUE"
@@ -36,7 +36,7 @@ mkdir -p $QUEUE
 (inotifywait -r -m -e create -e moved_to -e delete $QUEUE |
      while read directory action file
      do
-         if [[ "$action" = "CREATE,ISDIR" ]]
+         if [[ "$action" = "CREATE,ISDIR" ]] || [[ "$action" = "DELETE,ISDIR" ]]
          then continue
          elif [[ "$file" =~ ".lock" ]]
          then continue
@@ -51,20 +51,37 @@ mkdir -p $QUEUE
          # changes by uploading back to the remote using `rclone
          # copyto`
          echo "Launching workstealer processor due to change directory=$directory action=$action file=$file"
+         find $QUEUE
+         echo "-----------------------------------------"
+         
          "$SCRIPTDIR"/workstealer | while read file
          do
              remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
              echo "Uploading changed file: $file -> $remotefile"
-             rclone --config $config copyto --retries 20 $file $remotefile
+             rclone --config $config copyto --retries 20 --retries-sleep=1s $file $remotefile
          done
      done
 ) &
+
+# hmm, we may need to wait a bit for the inotifywait to register
+sleep 5
 
 # Poll for changes to the remote, using `rclone sync` to copy them
 # locally. Then, the above inotifywait will be ... notified and then
 # react to those changes.
 while true
 do
-    rclone --config $config sync --update --exclude '*.partial' $remote $QUEUE
+    echo "About to clone"
+    rclone --config $config tree $remote
+    echo "+++++++++++++++++++++++++++++++++++++++++++++++"
+
+    rclone --config $config sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --update --exclude '*.partial' $remote $QUEUE
+
+    if [[ $? != 0 ]]
+    then
+        echo "Error with rclone sync. Here is an rclone tree of remote=$remote"
+        rclone --config $config tree $remote
+    fi
+
     sleep ${QUEUE_POLL_INTERVAL_SECONDS:-3}
 done

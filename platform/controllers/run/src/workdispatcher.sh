@@ -43,6 +43,7 @@ helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace
      --set namespace=$namespace \
      --set method=$method \
      --set partOf=$dataset_name \
+     --set lunchpail=$LUNCHPAIL \
      --set queue.dataset=$queue_dataset \
      --set injectedTasksPerInterval=$injectedTasksPerInterval \
      --set intervalSeconds=$intervalSeconds \

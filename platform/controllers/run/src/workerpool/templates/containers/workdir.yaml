@@ -12,5 +12,5 @@
     - -c
     - |
       rclone --config /tmp/rclone.conf sync $REMOTE_WORKDIR /workdir
-      find /workdir -name '*.sh' -exec chmod +x {} \;
+      find /workdir -exec chmod +x {} \;
 {{- end }}

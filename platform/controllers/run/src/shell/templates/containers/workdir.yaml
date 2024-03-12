@@ -11,8 +11,6 @@
     - /bin/sh
     - -c
     - |
-      echo "!!!!!!!!!!!!!!! $(pwd) $REMOTE_WORKDIR"
-      cat /tmp/rclone.conf
       rclone --config /tmp/rclone.conf sync $REMOTE_WORKDIR /workdir
-      find /workdir -name '*.sh' -exec chmod +x {} \;
+      find /workdir -exec chmod +x {} \;
 {{- end }}

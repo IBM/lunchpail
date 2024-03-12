@@ -10,7 +10,7 @@ fi
 printenv
 
 config=/tmp/rclone.conf
-remote=s3:/${!REMOTE_PATH_VAR}/${RUN_NAME}/inbox
+remote=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/${RUN_NAME}/inbox
 cat <<EOF > $config
 [s3]
 type = s3

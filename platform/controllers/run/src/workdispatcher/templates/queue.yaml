@@ -10,8 +10,10 @@
   value: {{ print .Values.queue.dataset "_accessKeyID" }}
 - name: AWS_SECRET_ACCESS_KEY_VAR
   value: {{ print .Values.queue.dataset "_secretAccessKey" }}
-- name: REMOTE_PATH_VAR
+- name: TASKQUEUE_VAR
   value: {{ print .Values.queue.dataset "_bucket" }}
+- name: LUNCHPAIL
+  value: {{ .Values.lunchpail }}
 {{- end }}
 
 {{- define "codeflare.dev/queue.volumeMount" }}
