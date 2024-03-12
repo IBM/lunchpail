@@ -65,6 +65,6 @@ mkdir -p $QUEUE
 # react to those changes.
 while true
 do
-    rclone --config $config sync --exclude '*.partial' $remote $QUEUE
+    rclone --config $config sync --update --exclude '*.partial' $remote $QUEUE
     sleep ${QUEUE_POLL_INTERVAL_SECONDS:-3}
 done
