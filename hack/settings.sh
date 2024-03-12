@@ -75,6 +75,7 @@ HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESP
 HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true --set tags.gpu=false"
 
 export KUBECTL="$SUDO $(which kubectl || echo /usr/local/bin/kubectl) --context $CONTEXT_NAME"
+export HELM_DEPENDENCY="$(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME dependency"
 export HELM_TEMPLATE="$(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME template"
 export HELM="$SUDO $(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME"
 export KIND="$SUDO $(which kind || echo /usr/local/bin/kind)"

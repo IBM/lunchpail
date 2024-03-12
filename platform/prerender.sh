@@ -19,4 +19,11 @@ then
     (cd scheduler-plugins && \
          git sparse-checkout set --cone manifests && \
          git checkout $SCHEDULER_PLUGINS)
+else
+    # ugh, make `helm dependency update` happy
+    mkdir -p scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
+    cat <<EOF > scheduler-plugins/manifests/install/charts/as-a-second-scheduler/Chart.yaml
+name: scheduler-plugins
+version: 0.26.7
+EOF
 fi

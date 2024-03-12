@@ -45,14 +45,14 @@ function build {
     then return
     elif [[ -n "$PROD" ]]
     then
-        if ${DOCKER-docker} image exists $image && ! ${DOCKER-docker} manifest exists $image
+        if ${DOCKER-docker} image exists $image 2> /dev/null && ! ${DOCKER-docker} manifest exists $image 2> /dev/null
         then
             # we have a previously built image that is not a manifest
             echo "Clearing out prior non-manifest image $image"
             ${DOCKER-docker} image rm $image
         fi
     
-        if ! ${DOCKER-docker} manifest exists $image
+        if ! ${DOCKER-docker} manifest exists $image 2> /dev/null
         then
             echo "Creating manifest $image"
             ${DOCKER-docker} manifest create $image
@@ -67,7 +67,7 @@ function build {
                               .
         )
     else
-        if ${DOCKER-docker} manifest exists $image
+        if ${DOCKER-docker} manifest exists $image 2> /dev/null
         then
             echo "Removing prior manifest from prod builds $image"
             ${DOCKER-docker} manifest rm $image
