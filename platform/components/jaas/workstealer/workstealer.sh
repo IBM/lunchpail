@@ -55,7 +55,7 @@ mkdir -p $QUEUE
          do
              remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
              echo "Uploading changed file: $file -> $remotefile"
-             rclone --config $config copyto $file $remotefile
+             rclone --config $config copyto --retries 20 $file $remotefile
          done
      done
 ) &
