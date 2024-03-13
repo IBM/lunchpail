@@ -3,12 +3,25 @@
 set -e
 set -o pipefail
 
+#
+# Usage: hack/build.sh [-l] [-p] [<buildfilter>]
+#
+# -l: build only images essential for core jobs operation (no ray, torch, etc.)
+# -p: build and push production images (otherwise, images will be pushed to kind)
+# $1: buildfilter a regexp pattern to limit what is built, e.g. `workstealer` to build just the workstealer image
+#
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
 trap "pkill -P $$" SIGINT
 
 echo "$(tput setaf 2)Building JaaS$(tput sgr0)"
+
+FILTER=$1
+if [[ -n "$FILTER" ]]
+then echo "$(tput setaf 3)Using filter=$FILTER$(tput sgr0)"
+fi
 
 if [[ -n "$CI" ]] && [[ -z "$DEBUG" ]]
 then
@@ -121,6 +134,12 @@ function build_controllers {
     do
         local controller=$(basename "$controllerDir")
 
+        if [[ -n "$FILTER" ]] && [[ ! $controller =~ $FILTER ]]
+        then
+            echo "$(tput setaf 3)Skipping excluded controller $controller$(tput sgr0)"
+            continue
+        fi
+
         if [[ -z "$LITE" ]]
         then
             local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller:$VERSION
@@ -141,6 +160,13 @@ function buildAndPush {
 
     local component=$(basename "$componentDir")
     local image=${IMAGE_REPO_FOR_BUILD}${provider}-${component}-component:$VERSION
+
+    if [[ -n "$FILTER" ]] && [[ ! $component =~ $FILTER ]]
+    then
+        echo "$(tput setaf 3)Skipping excluded component=$component$(tput sgr0)"
+        return
+    fi
+    
     build "$componentDir" $image
     push $image
     echo "Successfully built component $image"
@@ -160,6 +186,7 @@ function build_components {
                         export -f build
                         export -f push
                         export PROD
+                        export FILTER
                         export VERSION
                         export CLUSTER_NAME
                         export IMAGE_REPO_FOR_BUILD
