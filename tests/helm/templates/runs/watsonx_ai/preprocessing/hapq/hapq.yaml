@@ -8,7 +8,6 @@ spec:
   workers: 0
   application:
     name: hapq
-  inbox: "."
 
   {{- if eq .Values.supportsGpu true }}
   size: md

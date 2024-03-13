@@ -1,254 +1,356 @@
 package main
 
 import (
+	"io"
+	"os"
 	"fmt"
 	"log"
+	"bufio"
+	"regexp"
+	//	"strings"
 	"math/rand"
-	"os"
 	"path/filepath"
-	"strings"
 )
 
-func reportUnassigned(size uint) {
+//
+// We want to identify four classes of changes:
+//
+// 1. Unassigned/Assigned/Finished Tasks, indicated by any new files in inbox/assigned/finished
+// 2. LiveWorkers, indicated by new .alive file in queues/{workerId}/inbox/.alive
+// 3. DeadWorkers, indicated by deletion of .alive files
+// 4. CompletedTaskByWorker, indicated by any new files in queues/{workerId}/outbox
+//
+type HowChanged int
+const (
+	Added HowChanged = iota
+	Removed
+	Unchanged
+)
+type WhatChanged int
+const (
+	UnassignedTask WhatChanged = iota
+	AssignedTask
+	FinishedTask
+
+	LiveWorker
+	DeadWorker
+
+	CompletedTaskByWorker
+
+	Nothing
+)
+
+var queue = os.Getenv("QUEUE")
+var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
+var assigned = filepath.Join(queue, "assigned")
+var finished = filepath.Join(queue, "finished")
+var outbox = filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
+var queues = filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
+
+var unassignedTaskPattern = regexp.MustCompile("^inbox/(.+)$")
+var assignedTaskPattern = regexp.MustCompile("^assigned/(.+)$")
+var finishedTaskPattern = regexp.MustCompile("^finished/(.+)$")
+var liveWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]alive$")
+var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)$")
+
+//
+// Indicate the current number of unassigned tasks 
+//
+func reportUnassigned(size int) {
 	fmt.Fprintf(os.Stderr, "jaas.dev unassigned %d\n", size)
 }
 
-func reportDone(size uint) {
+//
+// Indicate the current number of assigned tasks 
+//
+func reportAssigned(size int) {
+	fmt.Fprintf(os.Stderr, "jaas.dev assigned %d\n", size)
+}
+
+//
+// Indicate the current number of fully completed tasks 
+//
+func reportDone(size int) {
 	fmt.Fprintf(os.Stderr, "jaas.dev done %d\n", size)
 }
 
-/**
- * Emit the path to the file we changed
- */
+//
+// Indicate the current number of live workers
+//
+func reportLiveWorkers(size int) {
+	fmt.Fprintf(os.Stderr, "jaas.dev liveworkers %d\n", size)
+}
+
+//
+// Emit the path to the file we changed
+//
 func reportChangedFile(filepath string) {
 	fmt.Printf("%s\n", filepath)
 }
 
-/**
- * Assumed to be called every time something has changed in the
- * `queue` directory. This will emit to stdout a newline-separated
- * stream of filepaths, one per file that it has changed in some way.
- */
-func main() {
-	queue := os.Getenv("QUEUE")
-	inbox := filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
-	outbox := filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
-	queues := filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
+//
+// Determine from a diff the `HowChanged` property
+//
+func howChanged(marker byte) HowChanged {
+	switch marker {
+	case '+':
+		return Added
+	case '-':
+		return Removed
+	default:
+		return Unchanged
+	}
+}
 
-	fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
-
-	err := os.MkdirAll(outbox, 0700)
-	if err != nil {
-		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
-		return
+//
+// Determine from a HowChanged (Added, Removed, Unchanged) and a
+// changed line the nature of `WhatChanged`
+//
+func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
+	if match := unassignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
+		return UnassignedTask, match[1], ""
+	} else if match := assignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
+		return AssignedTask, match[1], ""
+	} else if match := finishedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
+		return FinishedTask, match[1], ""
+	} else if match := liveWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
+		if how == Removed {
+			return DeadWorker, match[1], ""
+		} else {
+			return LiveWorker, match[1], ""
+		}
+	} else if match := completedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
+		if how == Added {
+			return CompletedTaskByWorker, match[1], match[2]
+		} else {
+			log.Printf("[workstealer] Warning: got non-added work in Worker outbox: %v %s\n", how, line)
+		}
 	}
 
-	// Check for existence of unassigned inbox
-	if f, err := os.Stat(inbox); err == nil && f.IsDir() {
-		fmt.Fprintf(os.Stderr, "[workstealer] Scanning inbox: %s\n", inbox)
+	return Nothing, "", ""
+}
 
-		// We will enumerate the unassigned inbox to find the current unassigned work items
-		f, err := os.Open(inbox)
-		if err != nil {
-			log.Fatalf("[workstealer] Failed to read inbox directory: %v\n", err)
-			return
+//
+// A Task that was completed by a given Worker
+//
+type CompletedTask struct {
+	worker string
+	task string
+}
+
+//
+// We will be passed a stream of diffs
+//
+func parseUpdatesFromStdin() ([]string, []string, []string, []string, []string, []CompletedTask) {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	unassignedTasks := []string{}
+	assignedTasks := []string{}
+	finishedTasks := []string{}
+	liveWorkers := []string{}
+	deadWorkers := []string{}
+	completedTasks := []CompletedTask{}
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		how := howChanged(line[0])
+		what, thing, thing2 := whatChanged(line[1:], how)
+
+		fmt.Fprintf(os.Stderr, "Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
+
+		switch what {
+		case UnassignedTask:
+			unassignedTasks = append(unassignedTasks, thing)
+		case AssignedTask:
+			assignedTasks = append(assignedTasks, thing)
+		case FinishedTask:
+			finishedTasks= append(finishedTasks, thing)
+		case LiveWorker:
+			liveWorkers = append(liveWorkers, thing)
+		case DeadWorker:
+			deadWorkers = append(deadWorkers, thing)
+		case CompletedTaskByWorker:
+			completedTasks = append(completedTasks, CompletedTask{thing, thing2})
 		}
+	}
 
-		// Here is the readdir/enumeration of the unassigned directory
-		files, err := f.Readdir(0)
-		if err != nil {
-			log.Fatalf("[workstealer] Failed to read contents of inbox directory: %v\n", err)
-		}
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("[workerstealer] Error parsing model from stdin: %v\n", err)
+	}
 
-		// We will tally up the total number of tasks (nFiles) and the number already assigned to
-		// a worker (nAssigned)
-		var nFiles uint = 0
-		var nAssigned uint = 0
+	return unassignedTasks, assignedTasks, finishedTasks, liveWorkers, deadWorkers, completedTasks
+}
 
-		// Keep track of how many tasks we have moved to the final
-		// outbox. TODO: don't start from 0, we need to scan the
-		// outbox to look for bits from prior instances of the
-		// WorkStealer (e.g. if the pod fails)
-		var nDone uint = 0
+//
+// Pick a good worker to assign work to. For now, this is
+// random. TODO: be intelligent about distributing load.
+//
+func pickAWorker(liveWorkers []string) string {
+	nWorkers := len(liveWorkers)
+	if nWorkers == 0 {
+		return ""
+	} else {
+		return liveWorkers[rand.Intn(nWorkers)]
+	}
+}
 
-		// Here is the loop over files in the unassigned inbox directory
-		for _, file := range files {
-			fileName := file.Name()
-			if strings.HasSuffix(fileName, ".lock") || strings.HasSuffix(fileName, ".done") {
-				// Skip over the marker files
-				continue
-			}
+//
+// Assign a Task to a Worker
+//
+func Lock(task string, worker string) {
+	lockMarker := filepath.Join(assigned, task)
+	if err := os.MkdirAll(assigned, 0700); err != nil {
+		log.Fatalf("[workstealer] Failed to create assigned directory: %v\n", err)
+	} else if err := os.WriteFile(lockMarker, []byte(worker), 0644); err != nil {
+		log.Fatalf("[workstealer] Failed to touch lock marker: %v\n", err)
+	} else {
+		reportChangedFile(lockMarker)
+	}
+}
 
-			// We want nUnassigned... we will compute this
-			// by tallying nFiles (total number of files
-			// in global inbox) and nAssigned (the subset
-			// already assigned to a worker) and take the
-			// difference at the end.
-			nFiles++
+//
+// Unassign a Task to a Worker
+//
+func Unlock(task string) {
+	lockMarker := filepath.Join(assigned, task)
+	if err := os.Remove(lockMarker); err != nil {
+		log.Fatalf("[workstealer] Failed to remove lock marker: %v\n", err)
+	} else {
+		reportChangedFile(lockMarker)
+	}
+}
 
-			filePath := filepath.Join(inbox, fileName)
-			doneMarker := filePath+".done"
-			lockMarker := filePath+".lock"
+//
+// A Task has been fully completed by a Worker
+//
+func MarkDone(task string) {
+	finishedMarker := filepath.Join(finished, task)
+	if err := os.MkdirAll(finished, 0700); err != nil {
+		log.Fatalf("[workstealer] Failed to create finished directory: %v\n", err)
+	} else if err := os.WriteFile(finishedMarker, []byte{}, 0644); err != nil {
+		log.Fatalf("[workstealer] Failed to touch finished marker: %v\n", err)
+	} else {
+		reportChangedFile(finishedMarker)
+	}
+}
 
-			// Check if the file is already done (worker finished processing)
-			if _, err := os.Stat(doneMarker); err == nil {
-				// Then this task is already flagged as done
-				nDone++
-				nAssigned++
-				fmt.Fprintf(os.Stderr, "[workstealer] skipping already-done file=%s nAassigned=%d\n", fileName, nAssigned)
-				continue
-			}
+//
+// Utility function to copy src file to dst file
+//
+func Copy(src string, dst string) error {
+	from, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer from.Close()
 
-			// Check if the file is locked (assigned to a worker)
-			if _, err := os.Stat(lockMarker); err == nil {
-				// Then this task is locked, i.e. already assigned to a worker.
-				lockFile, err := os.ReadFile(lockMarker)
-				if err != nil {
-					log.Fatalf("[workstealer] Failed to read lock file: %v\n", err)
-				}
+	to, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer to.Close()
 
-				// The lock file contents will the id of the owning worker
-				worker := strings.TrimSpace(string(lockFile))
+	if _, err = io.Copy(to, from); err != nil {
+		return err
+	}
 
-				// Check the worker's outbox for the task
-				fileInWorkerOutbox := filepath.Join(worker, "outbox", fileName)
+	return nil
+}
 
-				// The file is locked by a worker, but
-				// perhaps the worker has already
-				// completed this task
-				fmt.Fprintf(os.Stderr, "[workstealer] checking worker outbox %s\n", fileInWorkerOutbox)
-				if _, err := os.Stat(fileInWorkerOutbox); err == nil {
-					// Then yes, this task is done. Flag it as such: increment nAssigned,
-					// touch the .done file and remove the .lock file
-					nAssigned++
-					fmt.Fprintf(os.Stderr, "[workstealer] skipping already-done (2) file=%s nAssigned=%d\n", fileName, nAssigned)
+//
+// As part of assigning a Task to a Worker, we will move the Task to its Inbox
+//
+func MoveToWorkerInbox(task string, worker string) {
+	unassignedFilePath := filepath.Join(inbox, task)
+	workerInboxFilePath := filepath.Join(queues, worker, "inbox", task)
 
-					// ...touch the done file
-					if err := os.WriteFile(doneMarker, []byte{}, 0644); err != nil {
-						log.Fatalf("[workstealer] Failed to touch done file: %v\n", err)
-					} else {
-						reportChangedFile(doneMarker)
-					}
+	if err := Copy(unassignedFilePath, workerInboxFilePath); err != nil {
+		log.Fatalf("[workstealer] Failed to copy task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
+	} else {
+		reportChangedFile(workerInboxFilePath)
+	}
+}
 
-					// ...remove the lock file
-					if err := os.Remove(lockMarker); err != nil {
-						log.Fatalf("[workstealer] Failed to remove lock file: %v\n", err)
-					} else {
-						reportChangedFile(lockMarker)
-					}
+//
+// Indicate that we are not yet ready to process this Task,
+// e.g. because there are no LiveWorkers
+//
+func IgnoreTaskForNow(task string) {
+	fmt.Fprintf(os.Stderr, "[workstealer] Ignoring unassigned task for now: %s\n", task)
+	unassignedFilePath := filepath.Join(inbox, task)
+	if err := os.Remove(unassignedFilePath); err != nil {
+		log.Fatalf("[workstealer] Failed to remove task from unassigned: %v\n", err)
+	}
+}
 
-					// move the output to the final/global (i.e. not per-worker) outbox
-					fullyDoneOutputFilePath := filepath.Join(outbox, fileName)
-					err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath)
-					nDone++
-					if err != nil {
-						log.Fatalf("[workstealer] Failed to copy output to final outbox: %v\n", err)
-					} else {
-						reportChangedFile(fullyDoneOutputFilePath)
-					}
+//
+// As part of finishing up a Task, move it from the Worker's Outbox to the final Outbox
+//
+func MoveToFinalOutbox(task string, worker string) {
+	fileInWorkerOutbox := filepath.Join(worker, "outbox", task)
+	fullyDoneOutputFilePath := filepath.Join(outbox, task)
 
-					// Nothing more to do for this task file
-					continue
-				}
-			}
+	if err := os.MkdirAll(outbox, 0700); err != nil {
+		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
+	} else if err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
+		log.Fatalf("[workstealer] Failed to copy output to final outbox: %v\n", err)
+	} else {
+		reportChangedFile(fullyDoneOutputFilePath)
+	}
+}
 
-			// If we get here, then we have an unassigned task. Pick a worker randomly
-			// and send the task to that worker's queue.
-			workerDirs, err := filepath.Glob(filepath.Join(queues, "*"))
-			if err != nil {
-				log.Fatalf("[workstealer] Failed to get worker directories: %v\n", err)
-			}
+//
+// Assign an unassigned Task to one of the given LiveWorkers
+//
+func AssignNewTask(task string, liveWorkers []string) {
+	worker := pickAWorker(liveWorkers)
+	if worker != "" {
+		Lock(task, worker)
+		MoveToWorkerInbox(task, worker)
+	} else {
+		IgnoreTaskForNow(task)
+	}
+}
 
-			if len(workerDirs) == 0 {
-				fmt.Fprintln(os.Stderr, "[workstealer] Warning: no queues ready")
-				continue
-			}
+//
+// A Worker has transitioned from Live to Dead. Reassign its Tasks.
+//
+func CleanupForDeadWorker(worker string, liveWorkers []string) {
+	// TODO
+}
 
-			// Pick a random worker
-			workerDir := workerDirs[rand.Intn(len(workerDirs))]
-			queue := filepath.Join(workerDir, "inbox")
+//
+// A Task has completed
+//
+func CleanupForCompletedTask(completedTask CompletedTask) {
+	MarkDone(completedTask.task)
+	MoveToFinalOutbox(completedTask.task, completedTask.worker)
+}
 
-			// Check if that worker is no longer alive
-			if _, err := os.Stat(filepath.Join(queue, ".alive")); os.IsNotExist(err) {
-				/* TODO: maybe we need to loop more tightly
-					   here over possibly available workers?
-					   otherwise, we may delay 5 seconds in
-					   assigning a task, even when there are other
-					   workers that *are* active? */
-				fmt.Fprintf(os.Stderr, "[workstealer] skipping inactive queue=%s\n", queue)
+//
+// Assumed to be called every time something has changed in the
+// `queue` directory. This will emit to stdout a newline-separated
+// stream of filepaths, one per file that it has changed in some way.
+//
+func main() {
+	fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 
-				// If the worker has any assigned tasks, unlock those files owned by that worker
-				lockFiles, err := filepath.Glob(filepath.Join(inbox, "*.lock"))
-				if err != nil {
-					log.Fatalf("[workstealer] Failed to get lock files: %v\n", err)
-				}
+	unassignedTasks, assignedTasks, finishedTasks, liveWorkers, deadWorkers, completedTasks := parseUpdatesFromStdin()
 
-				// Iterate over files locked by this worker
-				for _, lockFile := range lockFiles {
-					lockContent, err := os.ReadFile(lockFile)
-					if err != nil {
-						log.Fatalf("[workstealer] Failed to read lock file: %v\n", err)
-					}
-					if strings.TrimSpace(string(lockContent)) == workerDir {
-						doneFile := filepath.Join(workerDir, "outbox", strings.TrimSuffix(filepath.Base(lockFile), ".lock"))
-						fmt.Fprintf(os.Stderr, "[workstealer] Checking if task is done: %s\n", doneFile)
-						_, err := os.Stat(doneFile)
-						if err == nil {
-							fmt.Fprintf(os.Stderr, "[workstealer] Removing finished task owned by dead worker=%s filelock=%s\n", workerDir, lockFile)
-							filePath = strings.TrimSuffix(filepath.Base(lockFile), ".lock")
-							if err := os.WriteFile(doneMarker, []byte{}, 0644); err != nil {
-								log.Fatalf("[workstealer] Failed to touch done file: %v\n", err)
-							} else {
-								reportChangedFile(doneMarker)
-							}
-						} else {
-							fmt.Fprintf(os.Stderr, "[workstealer] Unlocking task owned by dead worker=%s filelock=%s", workerDir, lockFile)
-						}
-						if err := os.Remove(lockFile); err != nil {
-							log.Fatalf("[workstealer] Failed to remove lock file: %v\n", err)
-						} else {
-							reportChangedFile(lockFile)
-						}
-					}
-				}
+	reportUnassigned(len(unassignedTasks)-len(assignedTasks))
+	reportAssigned(len(assignedTasks))
+	reportDone(len(finishedTasks))
+	reportLiveWorkers(len(liveWorkers))
 
-				continue
-			}
+	for _, task := range unassignedTasks {
+		AssignNewTask(task, liveWorkers)
+	}
 
-			if _, err := os.Stat(lockMarker); err == nil {
-				nAssigned++
-				fmt.Fprintf(os.Stderr, "[workstealer] skipping already-locked file=%s nAssigned=%d\n", fileName, nAssigned)
-			} else if fi, err := os.Stat(queue); err == nil && fi.IsDir() && fileName != "" {
-				// here is where we assign a task to a worker
-				nAssigned++
-				fmt.Fprintf(os.Stderr, "[workstealer] Moving task=%s to queue=%s nAssigned=%d\n", fileName, queue, nAssigned)
-				filePathToWorkerInbox := filepath.Join(queue, fileName)
+	for _, worker := range deadWorkers {
+		CleanupForDeadWorker(worker, liveWorkers)
+	}
 
-				os.WriteFile(lockMarker, []byte(workerDir), 0644)
-				data, _ := os.ReadFile(filepath.Join(inbox, fileName))
-				os.WriteFile(filePathToWorkerInbox, data, 0644)
-
-				reportChangedFile(lockMarker)
-				reportChangedFile(filePathToWorkerInbox)
-			} else {
-				fmt.Fprintf(os.Stderr, "[workstealer] Warning: strange! Unable to assign task to a worker: %s\n", fileName)
-				if _, err := os.Stat(queue); os.IsNotExist(err) {
-					fmt.Fprintf(os.Stderr, "[workstealer] Warning: Not a directory=%s\n", queue)
-				}
-				if fileName == "" {
-					fmt.Fprintln(os.Stderr, "[workstealer] Warning: Empty")
-				}
-				if _, err := os.Stat(filepath.Join(inbox, fileName)); os.IsNotExist(err) {
-					fmt.Fprintf(os.Stderr, "[workstealer] Warning: Not a file task=%s\n", filepath.Join(inbox, fileName))
-				}
-				if _, err := os.Stat(lockMarker); err == nil {
-					lockFile, _ := os.ReadFile(lockMarker)
-					fmt.Fprintf(os.Stderr, "[workstealer] Warning: Already owned %s\n", string(lockFile))
-				}
-			}
-		}
-
-		reportUnassigned(nFiles - nAssigned)
-		reportDone(nDone)
+	for _, completedTask := range completedTasks {
+		CleanupForCompletedTask(completedTask)
 	}
 }

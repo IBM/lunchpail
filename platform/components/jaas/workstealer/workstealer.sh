@@ -24,48 +24,23 @@ secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
 acl = public-read
 EOF
 
-# We need to do this up front, otherwise inotifywait won't have an
-# inode to watch
-# mkdir -p $QUEUE
-#
-# -r: look recursively for changes
-# -m: keep on watching ("monitor" mode)
-# -e create: tell us when a file is created
-# -e moved_to: tell us when a file is renamed
-# -e delete: tell us when a file is deleted
-# (inotifywait -r -m -e create -e moved_to -e delete $QUEUE |
-#      while read directory action file
-#      do
-#          if [[ "$action" = "CREATE,ISDIR" ]] || [[ "$action" = "DELETE,ISDIR" ]]
-#          then continue
-#          elif [[ "$file" =~ ".lock" ]]
-#          then continue
-#          elif [[ "$file" =~ ".done" ]]
-#          then continue
-#          elif [[ "$file" =~ ".partial" ]]
-#          then continue
-#          fi
+# Upload a file `$1` to the remote
+function upload {
+    local file=$1
+    remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
+    echo "Uploading changed file: $file -> $remotefile"
+    rclone --config $config copyto --retries 20 --retries-sleep=1s $file $remotefile
+}
 
-#          # Launch the go code, which will emit a newline-separated
-#          # stream of files it has changed; here we react to those
-#          # changes by uploading back to the remote using `rclone
-#          # copyto`
-#          echo "Launching workstealer processor due to change directory=$directory action=$action file=$file"
-#          find $QUEUE
-#          echo "-----------------------------------------"
-         
-#          "$SCRIPTDIR"/workstealer | while read file
-#          do
-#              remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
-#              echo "Uploading changed file: $file -> $remotefile"
-#              rclone --config $config copyto --retries 20 --retries-sleep=1s $file $remotefile
-#          done
-#      done
-# ) &
+# Capture state of files
+function capture {
+    if [[ -d $QUEUE ]]
+    then (cd $QUEUE && find * > $1)
+    else echo "" > $1
+    fi
+}
 
-# # hmm, we may need to wait a bit for the inotifywait to register
-# sleep 5
-
+# We will do an B/A comparison (Before/After) of the queue files
 B=$(mktemp)
 A=$(mktemp)
 
@@ -74,19 +49,23 @@ A=$(mktemp)
 # react to those changes.
 while true
 do
-    find $QUEUE | grep -Ev '.lock|.done' > $B
-    rclone --config $config sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*/processing/*' --update --exclude '*.partial' $remote $QUEUE
+    # Capture Before files...
+    capture $B
+
+    # Sync in changes from remote
+    rclone --config $config sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*/processing/*' --exclude '*.partial' $remote $QUEUE
 
     if [[ $? != 0 ]]
     then
-        # then the rclone failed
+        # Then the rclone sync failed
         echo "Error with rclone sync. Here is an rclone tree of remote=$remote"
         rclone --config $config tree $remote
     else
-        find $QUEUE | grep -Ev '.lock|.done' > $A
+        # Capture After files...
+        capture $A
 
-        beforesum=$(cat $B | grep -Ev '.lock|.done|.partial' | sha256sum)
-        aftersum=$(cat $A | grep -Ev '.lock|.done|.partial' | sha256sum)
+        beforesum=$(sha256sum $B | awk '{print $1}')
+        aftersum=$(sha256sum $A | awk '{print $1}')
         if [[ $beforesum != $aftersum ]]
         then
             # Then we sync'd in some updates. Launch the go code, which
@@ -94,16 +73,20 @@ do
             # changed; here we react to those changes by uploading back to
             # the remote using `rclone copyto`
 
-            echo "Launching workstealer processor due to change $beforesum != $aftersum"
+            echo "Launching workstealer processor due to these changes:"
+            diff --new-line-format='+%L' --old-line-format='-%L' --unchanged-line-format=' %L' $B $A # to improve debuggability, report diff to stdout
 
-            # Identify changes
-            # diff $B $A | tail -n +5 | grep -Ev '^ '
-
-            "$SCRIPTDIR"/workstealer | while read file
-            do
-                remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
-                echo "Uploading changed file: $file -> $remotefile"
-                rclone --config $config copyto --retries 20 --retries-sleep=1s $file $remotefile
+            # Note re: the line-format; the default behavior of both
+            # busybox diff and GNU diff is to ignore some
+            # non-changes. Honestly, I don't know the semantics of
+            # what is ignored, but I think they do not report (by
+            # default) trailing non-changes. With this combination of
+            # line-formats, we are assured to get a line report for
+            # every line of both files.
+            
+            # And also stream the diff to stdin of the go code
+            diff --new-line-format='+%L' --old-line-format='-%L' --unchanged-line-format=' %L' $B $A | "$SCRIPTDIR"/workstealer | while read file
+            do upload $file
             done
         fi
     fi
