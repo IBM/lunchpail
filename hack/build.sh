@@ -163,7 +163,7 @@ function build_components {
                         export VERSION
                         export CLUSTER_NAME
                         export IMAGE_REPO_FOR_BUILD
-                        xargs -I{} --max-procs 4 bash -c "buildAndPush {} $provider"
+                        xargs -I{} --max-procs $(nproc) bash -c "buildAndPush {} $provider"
                     ) && break || echo "Retrying build_components"
             done
         fi
