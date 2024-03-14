@@ -41,7 +41,7 @@ Now you should be able to build and push:
 ```shell
 # whatever you need here, but note that the Dockerfiles
 # may need to change, as you update these image names and tags
-TAG=ghcr.io/project-codeflare/lightning:0.0.5
+TAG=ghcr.io/lunchpail/lightning:0.0.7
 
 # build for aarch64 (arm64/v8) and amd64
 PLATFORMS=linux/arm64/v8,linux/amd64

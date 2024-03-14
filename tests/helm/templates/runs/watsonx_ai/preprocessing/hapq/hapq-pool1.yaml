@@ -9,6 +9,10 @@ spec:
     name: hapq
   workers:
     count: 1
-    size: md
     supportsGpu: {{ .Values.supportsGpu | default false }}
+    {{- if .Values.supportsGpu }}
+    size: md
+    {{- else }}
+    size: xxs
+    {{- end }}
 {{- end }}

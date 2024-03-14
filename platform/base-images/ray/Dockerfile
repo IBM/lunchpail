@@ -1,4 +1,4 @@
-FROM ghcr.io/project-codeflare/transformers:0.0.2
+FROM ghcr.io/lunchpail/transformers:0.0.3
 
 ENV \
     DEBIAN_FRONTEND="noninteractive" \

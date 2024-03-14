@@ -1,4 +1,4 @@
-FROM ghcr.io/project-codeflare/torchx-slim:0.0.8
+FROM ghcr.io/lunchpail/torchx-slim:0.0.10
 
 # install rclone
 RUN apt update && apt install -y rclone && apt autoremove -y && rm -rf /var/lib/apt/lists/*

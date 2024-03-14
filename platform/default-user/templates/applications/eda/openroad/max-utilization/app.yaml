@@ -12,7 +12,7 @@ spec:
   command: /opt/lunchpail/worker/bin/watcher.sh python3 -u literal.py
   description: >-
     Our goal is to find a maximum acheivable utilization for a given design.
-  image: ghcr.io/project-codeflare/workerpool-worker-ubuntu-python-openroad:0.0.1
+  image: ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.0.2
   inputs:
     - sizes:
         xs: openroad-max-util-templates

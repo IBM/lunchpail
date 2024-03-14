@@ -1,4 +1,4 @@
-FROM ghcr.io/project-codeflare/kopf:0.0.3
+FROM ghcr.io/lunchpail/kopf:0.0.4
 
 # install rclone
 RUN apk update && apk add --no-cache rclone

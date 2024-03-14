@@ -7,7 +7,7 @@ gpu-operator:
 # these values may be overriden by hack/up.sh
 image:
   registry: ghcr.io
-  repo: project-codeflare
+  repo: lunchpail
   version: 0.0.1
 
 global:

@@ -13,7 +13,7 @@ TOP="$SCRIPTDIR"/../../..
 ENDPOINT="https://s3.us-east.cloud-object-storage.appdomain.cloud"
 MC_BUCKET_PATH=cfp/cfp-hap-xs
 
-LOCAL_PATH="$TOP"/data/s3/hapq
+LOCAL_PATH="$TOP"/data/s3/hapq/$LUNCHPAIL/hapq/inbox
 
 if ! which mc > /dev/null
 then
@@ -42,4 +42,3 @@ mc ls $MC_BUCKET_PATH | awk '{print $NF}' | grep '\.parquet' |
     do
         mc cp "$MC_BUCKET_PATH/$file" "$LOCAL_PATH"
     done
-

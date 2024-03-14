@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   api: kubeflow
-  image: ghcr.io/project-codeflare/kfp2:0.0.1
+  image: ghcr.io/lunchpail/kfp2:0.0.2
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test3
   command: python3 main.py
 {{- end }}

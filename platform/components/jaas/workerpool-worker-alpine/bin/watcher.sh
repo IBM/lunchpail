@@ -44,7 +44,14 @@ function start_watch {
             in=$queue/$file
             inprogress=$WORKQUEUE/$processing/$file
             out=$WORKQUEUE/$outbox/$file
-            $handler $in $inprogress $out
+
+            if [[ -f $in ]]
+            then
+                echo "[workerpool worker $JOB_COMPLETION_INDEX] sending file to handler: $in"
+                $handler $in $inprogress $out
+            else
+                echo "[workerpool worker $JOB_COMPLETION_INDEX] skipping non-file: $in"
+            fi
         done
 }
 

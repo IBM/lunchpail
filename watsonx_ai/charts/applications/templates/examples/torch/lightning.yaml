@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Values.namespace.examples }}
 spec:
   api: torch
-  image: ghcr.io/project-codeflare/lightning:0.0.6
+  image: ghcr.io/lunchpail/lightning:0.0.7
   repo: https://github.ibm.com/ai-foundation/foundation-model-stack/tree/main/examples/src/ddp_example
   command: python3 lightning_ddp_example.py
   supportsGpu: true
