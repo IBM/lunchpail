@@ -40,6 +40,26 @@ const (
 	Nothing
 )
 
+//
+// A Task that was completed by a given Worker
+//
+type CompletedTask struct {
+	worker string
+	task string
+}
+
+//
+// The current state of the world
+//
+type Model struct {
+	UnassignedTasks []string
+	AssignedTasks []string
+	FinishedTasks []string
+	LiveWorkers []string
+	DeadWorkers []string
+	CompletedTasks []CompletedTask
+}
+
 var queue = os.Getenv("QUEUE")
 var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
 var assigned = filepath.Join(queue, "assigned")
@@ -131,17 +151,9 @@ func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
 }
 
 //
-// A Task that was completed by a given Worker
-//
-type CompletedTask struct {
-	worker string
-	task string
-}
-
-//
 // We will be passed a stream of diffs
 //
-func parseUpdatesFromStdin() ([]string, []string, []string, []string, []string, []CompletedTask) {
+func parseUpdatesFromStdin() Model {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	unassignedTasks := []string{}
@@ -178,7 +190,7 @@ func parseUpdatesFromStdin() ([]string, []string, []string, []string, []string, 
 		log.Fatalf("[workerstealer] Error parsing model from stdin: %v\n", err)
 	}
 
-	return unassignedTasks, assignedTasks, finishedTasks, liveWorkers, deadWorkers, completedTasks
+	return Model{unassignedTasks, assignedTasks, finishedTasks, liveWorkers, deadWorkers, completedTasks}
 }
 
 //
@@ -328,6 +340,13 @@ func CleanupForCompletedTask(completedTask CompletedTask) {
 }
 
 //
+// Return a model of the world
+//
+func parseUpdates() Model {
+	return parseUpdatesFromStdin()
+}
+
+//
 // Assumed to be called every time something has changed in the
 // `queue` directory. This will emit to stdout a newline-separated
 // stream of filepaths, one per file that it has changed in some way.
@@ -335,22 +354,22 @@ func CleanupForCompletedTask(completedTask CompletedTask) {
 func main() {
 	fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 
-	unassignedTasks, assignedTasks, finishedTasks, liveWorkers, deadWorkers, completedTasks := parseUpdatesFromStdin()
+	model := parseUpdates()
 
-	reportUnassigned(len(unassignedTasks)-len(assignedTasks))
-	reportAssigned(len(assignedTasks))
-	reportDone(len(finishedTasks))
-	reportLiveWorkers(len(liveWorkers))
+	reportUnassigned(len(model.UnassignedTasks)-len(model.AssignedTasks))
+	reportAssigned(len(model.AssignedTasks))
+	reportDone(len(model.FinishedTasks))
+	reportLiveWorkers(len(model.LiveWorkers))
 
-	for _, task := range unassignedTasks {
-		AssignNewTask(task, liveWorkers)
+	for _, task := range model.UnassignedTasks {
+		AssignNewTask(task, model.LiveWorkers)
 	}
 
-	for _, worker := range deadWorkers {
-		CleanupForDeadWorker(worker, liveWorkers)
+	for _, worker := range model.DeadWorkers {
+		CleanupForDeadWorker(worker, model.LiveWorkers)
 	}
 
-	for _, completedTask := range completedTasks {
+	for _, completedTask := range model.CompletedTasks {
 		CleanupForCompletedTask(completedTask)
 	}
 }
