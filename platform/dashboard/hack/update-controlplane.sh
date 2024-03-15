@@ -20,6 +20,11 @@ RESOURCES="$SCRIPTDIR"/../resources
 
 if [[ ! -n "$INIT" ]]; then 
     set +e
+
+    # Hack to delete dataset finalizers
+    # https://github.com/datashim-io/datashim/issues/341
+    $KUBECTL get dataset -n $NAMESPACE_USER -o name | xargs $KUBECTL patch -p '{"metadata":{"finalizers":null}}' --type=merge -n $NAMESPACE_USER
+
     # iterate over the shrinkwraps in reverse order, since the natural
     # order will place preqreqs up front
     for f in $(ls "$RESOURCES"/*.yml | sort -r)
