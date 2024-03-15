@@ -9,4 +9,4 @@ ENV HOME=/home/lunchpail
 WORKDIR /home/lunchpail
 
 COPY --chown=lunchpail:root src .
-CMD kopf run handlers.py --verbose
+CMD kopf run application_handlers.py run_handlers.py --verbose
