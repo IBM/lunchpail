@@ -26,7 +26,7 @@ do
         l) LITE=1; continue;;
     esac
 done
-shift $((OPTIND-1))
+OPTIND=1
 
 if [[ -n "$OUTDIR" ]]
 then
