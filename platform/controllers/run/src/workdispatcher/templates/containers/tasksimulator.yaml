@@ -3,8 +3,8 @@
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-tasksimulator-parquet-component:" .Values.global.image.version }}
   volumeMounts:
     - name: script
-      mountPath: "/opt/tasksimulator/bin"
-  command: ["/opt/tasksimulator/bin/simulator.sh"]
+      mountPath: "/opt/lunchpail/bin"
+  command: ["/opt/lunchpail/bin/simulator.sh"]
   env:
     - name: RUN_NAME
       value: {{ .Values.runName }}

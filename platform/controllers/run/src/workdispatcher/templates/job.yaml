@@ -31,5 +31,5 @@ spec:
   - name: script
     configMap:
       name: {{ print .Release.Name "-script" }}
-      defaultMode: 0500
+      defaultMode: 0755
 {{- end }}
