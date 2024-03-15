@@ -66,13 +66,6 @@ dependencies:
   tags:
     - prereqs1
 
-- name: jaas-prereqs-2
-  version: 0.0.1
-  repository: file://./prereqs2
-  condition: prereqs2.enabled
-  tags:
-    - prereqs2
-
 - name: dlf-chart
   version: 0.1.0
   repository: file://./datashim

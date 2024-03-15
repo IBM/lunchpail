@@ -33,7 +33,6 @@ then
     echo "Multi-file output to $OUTDIR"
     PREREQS1="$OUTDIR"/01-jaas-prereqs1.yml
     CORE="$OUTDIR"/02-jaas.yml
-    PREREQS2="$OUTDIR"/03-jaas-prereqs2.yml
     DEFAULTS="$OUTDIR"/04-jaas-defaults.yml
     DEFAULT_USER="$OUTDIR"/05-jaas-default-user.yml
 
@@ -87,31 +86,11 @@ $HELM_TEMPLATE \
      --set tags.full=false \
      --set tags.core=false \
      --set tags.prereqs1=true \
-     --set tags.prereqs2=false \
      --set tags.defaults=false \
      --set tags.default-user=false \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$PREREQS1"
-
-# prereqs that depend on the core
-$HELM_TEMPLATE \
-     --include-crds \
-     $NAMESPACE_SYSTEM \
-     -n $NAMESPACE_SYSTEM \
-     "$TOP"/platform \
-     $HELM_DEMO_SECRETS \
-     $HELM_INSTALL_FLAGS \
-     --set global.jaas.namespace.create=true \
-     --set tags.full=false \
-     --set tags.core=false \
-     --set tags.prereqs1=false \
-     --set tags.prereqs2=true \
-     --set tags.defaults=false \
-     --set tags.default-user=false \
-     2> >(grep -v 'found symbolic link' >&2) \
-     2> >(grep -v 'Contents of linked' >&2) \
-     > "$PREREQS2"
 
 # core deployment
 $HELM_TEMPLATE \
@@ -125,7 +104,6 @@ $HELM_TEMPLATE \
      --set tags.full=$JAAS_FULL \
      --set tags.core=true \
      --set tags.prereqs1=false \
-     --set tags.prereqs2=false \
      --set tags.defaults=false \
      --set tags.default-user=false \
      2> >(grep -v 'found symbolic link' >&2) \
@@ -145,7 +123,6 @@ $HELM_TEMPLATE \
      --set tags.full=false \
      --set tags.core=false \
      --set tags.prereqs1=false \
-     --set tags.prereqs2=false \
      --set tags.defaults=true \
      --set tags.default-user=false \
      2> >(grep -v 'found symbolic link' >&2) \
@@ -161,7 +138,6 @@ $HELM_TEMPLATE \
      --set tags.full=false \
      --set tags.core=false \
      --set tags.prereqs1=false \
-     --set tags.prereqs2=false \
      --set tags.defaults=false \
      --set tags.default-user=true \
      2> >(grep -v 'found symbolic link' >&2) \

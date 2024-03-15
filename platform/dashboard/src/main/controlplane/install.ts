@@ -24,14 +24,6 @@ async function prereq1() {
   return yaml
 }
 
-/** Install/delete the pre requisites from the control plane */
-async function prereq2() {
-  // @ts-ignore
-  const { default: yaml } = await import("../../../resources/03-jaas-prereqs2.yml?raw")
-
-  return yaml
-}
-
 /** Install/delete the defaults from the control plane */
 async function defaults() {
   // @ts-ignore
@@ -50,7 +42,7 @@ async function defaultUser() {
 
 /** Install/delete all of the requested control plane components */
 async function applyAll(_config: Config, props: ApplyProps) {
-  const coreYamls = await Promise.all([prereq1(), core(), prereq2()])
+  const coreYamls = await Promise.all([prereq1(), core()])
   const noncoreYamls = await Promise.all([defaults(), defaultUser()])
   const coreYamlsReversed = coreYamls.toReversed()
   const noncoreYamlsReversed = noncoreYamls.toReversed()
