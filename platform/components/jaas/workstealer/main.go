@@ -18,7 +18,9 @@ import (
 // 1. Unassigned/Assigned/Finished Tasks, indicated by any new files in inbox/assigned/finished
 // 2. LiveWorkers, indicated by new .alive file in queues/{workerId}/inbox/.alive
 // 3. DeadWorkers, indicated by deletion of .alive files
-// 4. CompletedTaskByWorker, indicated by any new files in queues/{workerId}/outbox
+// 4. AssignedTaskByWorker, indicated by any new files in queues/{workerId}/inbox
+// 5. ProcessingTaskByWorker, indicated by any new files in queues/{workerId}/processing
+// 6. CompletedTaskByWorker, indicated by any new files in queues/{workerId}/outbox
 //
 type HowChanged int
 const (
@@ -29,12 +31,13 @@ const (
 type WhatChanged int
 const (
 	UnassignedTask WhatChanged = iota
-	AssignedTask
 	FinishedTask
 
 	LiveWorker
 	DeadWorker
 
+	AssignedTaskByWorker
+	ProcessingTaskByWorker
 	CompletedTaskByWorker
 
 	Nothing
@@ -43,7 +46,7 @@ const (
 //
 // A Task that was completed by a given Worker
 //
-type CompletedTask struct {
+type AssignedTask struct {
 	worker string
 	task string
 }
@@ -53,59 +56,44 @@ type CompletedTask struct {
 //
 type Model struct {
 	UnassignedTasks []string
-	AssignedTasks []string
 	FinishedTasks []string
 	LiveWorkers []string
 	DeadWorkers []string
-	CompletedTasks []CompletedTask
+
+	AssignedTasks []AssignedTask
+	ProcessingTasks []AssignedTask
+	CompletedTasks []AssignedTask
 }
 
 var queue = os.Getenv("QUEUE")
 var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
-var assigned = filepath.Join(queue, "assigned")
 var finished = filepath.Join(queue, "finished")
 var outbox = filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
 var queues = filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 
 var unassignedTaskPattern = regexp.MustCompile("^inbox/(.+)$")
-var assignedTaskPattern = regexp.MustCompile("^assigned/(.+)$")
 var finishedTaskPattern = regexp.MustCompile("^finished/(.+)$")
 var liveWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]alive$")
+var assignedTaskPattern = regexp.MustCompile("^queues/(.+)/inbox/(.+)$")
+var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)$")
-
-//
-// Indicate the current number of unassigned tasks 
-//
-func reportUnassigned(size int) {
-	fmt.Fprintf(os.Stderr, "jaas.dev unassigned %d\n", size)
-}
-
-//
-// Indicate the current number of assigned tasks 
-//
-func reportAssigned(size int) {
-	fmt.Fprintf(os.Stderr, "jaas.dev assigned %d\n", size)
-}
-
-//
-// Indicate the current number of fully completed tasks 
-//
-func reportDone(size int) {
-	fmt.Fprintf(os.Stderr, "jaas.dev done %d\n", size)
-}
-
-//
-// Indicate the current number of live workers
-//
-func reportLiveWorkers(size int) {
-	fmt.Fprintf(os.Stderr, "jaas.dev liveworkers %d\n", size)
-}
 
 //
 // Emit the path to the file we changed
 //
 func reportChangedFile(filepath string) {
 	fmt.Printf("%s\n", filepath)
+}
+
+//
+// Record the current state of Model for observability
+//
+func reportState(model Model) {
+	fmt.Fprintf(os.Stderr, "jaas.dev unassigned %d\n", len(model.UnassignedTasks)-len(model.AssignedTasks)-len(model.ProcessingTasks)-len(model.CompletedTasks))
+	fmt.Fprintf(os.Stderr, "jaas.dev assigned %d\n", len(model.AssignedTasks))
+	fmt.Fprintf(os.Stderr, "jaas.dev processing %d\n", len(model.ProcessingTasks))
+	fmt.Fprintf(os.Stderr, "jaas.dev done %d\n", len(model.FinishedTasks))
+	fmt.Fprintf(os.Stderr, "jaas.dev liveworkers %d\n", len(model.LiveWorkers))
 }
 
 //
@@ -129,8 +117,6 @@ func howChanged(marker byte) HowChanged {
 func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
 	if match := unassignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return UnassignedTask, match[1], ""
-	} else if match := assignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
-		return AssignedTask, match[1], ""
 	} else if match := finishedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return FinishedTask, match[1], ""
 	} else if match := liveWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
@@ -138,6 +124,14 @@ func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
 			return DeadWorker, match[1], ""
 		} else {
 			return LiveWorker, match[1], ""
+		}
+	} else if match := assignedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
+		if how == Added {
+			return AssignedTaskByWorker, match[1], match[2]
+		}
+	} else if match := processingTaskPattern.FindStringSubmatch(line); len(match) == 3 {
+		if how == Added {
+			return ProcessingTaskByWorker, match[1], match[2]
 		}
 	} else if match := completedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
 		if how == Added {
@@ -157,11 +151,12 @@ func parseUpdatesFromStdin() Model {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	unassignedTasks := []string{}
-	assignedTasks := []string{}
 	finishedTasks := []string{}
 	liveWorkers := []string{}
 	deadWorkers := []string{}
-	completedTasks := []CompletedTask{}
+	assignedTasks := []AssignedTask{}
+	processingTasks := []AssignedTask{}
+	completedTasks := []AssignedTask{}
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -173,16 +168,18 @@ func parseUpdatesFromStdin() Model {
 		switch what {
 		case UnassignedTask:
 			unassignedTasks = append(unassignedTasks, thing)
-		case AssignedTask:
-			assignedTasks = append(assignedTasks, thing)
 		case FinishedTask:
 			finishedTasks= append(finishedTasks, thing)
 		case LiveWorker:
 			liveWorkers = append(liveWorkers, thing)
 		case DeadWorker:
 			deadWorkers = append(deadWorkers, thing)
+		case AssignedTaskByWorker:
+			assignedTasks = append(assignedTasks, AssignedTask{thing, thing2})
+		case ProcessingTaskByWorker:
+			processingTasks = append(processingTasks, AssignedTask{thing, thing2})
 		case CompletedTaskByWorker:
-			completedTasks = append(completedTasks, CompletedTask{thing, thing2})
+			completedTasks = append(completedTasks, AssignedTask{thing, thing2})
 		}
 	}
 
@@ -190,7 +187,14 @@ func parseUpdatesFromStdin() Model {
 		log.Fatalf("[workerstealer] Error parsing model from stdin: %v\n", err)
 	}
 
-	return Model{unassignedTasks, assignedTasks, finishedTasks, liveWorkers, deadWorkers, completedTasks}
+	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, completedTasks}
+}
+
+//
+// Return a model of the world
+//
+func ParseUpdates() Model {
+	return parseUpdatesFromStdin()
 }
 
 //
@@ -203,32 +207,6 @@ func pickAWorker(liveWorkers []string) string {
 		return ""
 	} else {
 		return liveWorkers[rand.Intn(nWorkers)]
-	}
-}
-
-//
-// Assign a Task to a Worker
-//
-func Lock(task string, worker string) {
-	lockMarker := filepath.Join(assigned, task)
-	if err := os.MkdirAll(assigned, 0700); err != nil {
-		log.Fatalf("[workstealer] Failed to create assigned directory: %v\n", err)
-	} else if err := os.WriteFile(lockMarker, []byte(worker), 0644); err != nil {
-		log.Fatalf("[workstealer] Failed to touch lock marker: %v\n", err)
-	} else {
-		reportChangedFile(lockMarker)
-	}
-}
-
-//
-// Unassign a Task to a Worker
-//
-func Unlock(task string) {
-	lockMarker := filepath.Join(assigned, task)
-	if err := os.Remove(lockMarker); err != nil {
-		log.Fatalf("[workstealer] Failed to remove lock marker: %v\n", err)
-	} else {
-		reportChangedFile(lockMarker)
 	}
 }
 
@@ -299,7 +277,7 @@ func IgnoreTaskForNow(task string) {
 // As part of finishing up a Task, move it from the Worker's Outbox to the final Outbox
 //
 func MoveToFinalOutbox(task string, worker string) {
-	fileInWorkerOutbox := filepath.Join(worker, "outbox", task)
+	fileInWorkerOutbox := filepath.Join(queues, worker, "outbox", task)
 	fullyDoneOutputFilePath := filepath.Join(outbox, task)
 
 	if err := os.MkdirAll(outbox, 0700); err != nil {
@@ -317,33 +295,52 @@ func MoveToFinalOutbox(task string, worker string) {
 func AssignNewTask(task string, liveWorkers []string) {
 	worker := pickAWorker(liveWorkers)
 	if worker != "" {
-		Lock(task, worker)
 		MoveToWorkerInbox(task, worker)
 	} else {
 		IgnoreTaskForNow(task)
 	}
 }
 
+type Box string
+const (
+	Inbox = "inbox"
+	Processing = "processing"
+	Outbox = "outbox"
+)
+
+//
+// A Worker has died. Unassign this task that it owns
+//
+func moveTaskBackToUnassigned(assignedTask AssignedTask, box Box) {
+	inWorkerFilePath := filepath.Join(assignedTask.worker, string(box), assignedTask.task)
+	unassignedFilePath := filepath.Join(inbox, assignedTask.task)
+
+	if err := os.Rename(inWorkerFilePath, unassignedFilePath); err != nil {
+		log.Fatalf("[workstealer] Failed to move assigned task back to unassigned: %v\n", err)
+	} else {
+		reportChangedFile(inWorkerFilePath)
+		reportChangedFile(unassignedFilePath)
+	}
+}
+
 //
 // A Worker has transitioned from Live to Dead. Reassign its Tasks.
 //
-func CleanupForDeadWorker(worker string, liveWorkers []string) {
-	// TODO
+func CleanupForDeadWorker(worker string, model Model) {
+	for _, assignedTask := range model.AssignedTasks {
+		moveTaskBackToUnassigned(assignedTask, "inbox")
+	}
+	for _, processingTask := range model.ProcessingTasks {
+		moveTaskBackToUnassigned(processingTask, "processing")
+	}	
 }
 
 //
 // A Task has completed
 //
-func CleanupForCompletedTask(completedTask CompletedTask) {
+func CleanupForCompletedTask(completedTask AssignedTask) {
 	MarkDone(completedTask.task)
 	MoveToFinalOutbox(completedTask.task, completedTask.worker)
-}
-
-//
-// Return a model of the world
-//
-func parseUpdates() Model {
-	return parseUpdatesFromStdin()
 }
 
 //
@@ -354,19 +351,15 @@ func parseUpdates() Model {
 func main() {
 	fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 
-	model := parseUpdates()
-
-	reportUnassigned(len(model.UnassignedTasks)-len(model.AssignedTasks))
-	reportAssigned(len(model.AssignedTasks))
-	reportDone(len(model.FinishedTasks))
-	reportLiveWorkers(len(model.LiveWorkers))
+	model := ParseUpdates()
+	reportState(model)
 
 	for _, task := range model.UnassignedTasks {
 		AssignNewTask(task, model.LiveWorkers)
 	}
 
 	for _, worker := range model.DeadWorkers {
-		CleanupForDeadWorker(worker, model.LiveWorkers)
+		CleanupForDeadWorker(worker, model)
 	}
 
 	for _, completedTask := range model.CompletedTasks {

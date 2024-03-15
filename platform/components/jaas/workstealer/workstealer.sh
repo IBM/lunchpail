@@ -53,7 +53,7 @@ do
     capture $B
 
     # Sync in changes from remote
-    rclone --config $config sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*/processing/*' --exclude '*.partial' $remote $QUEUE
+    rclone --config $config sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*.partial' $remote $QUEUE
 
     if [[ $? != 0 ]]
     then
