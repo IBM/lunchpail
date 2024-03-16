@@ -1,11 +1,9 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test8") }}
 apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
-  labels:
-    app.kubernetes.io/component: openroad-max-util
-    app.kubernetes.io/part-of: codeflare.dev
-  name: openroad-max-util
-  namespace: {{ .Values.namespace.user }}
+  name: test8
+  namespace: {{ .Values.namespace }}
 spec:
   api: workqueue
   tags: [EDA]
@@ -15,8 +13,9 @@ spec:
   image: ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.0.3
   inputs:
     - sizes:
-        xs: openroad-max-util-templates
+        xs: test8-templates
       useas: mount
   supportsGpu: true
   code: |
-{{ .Files.Get "src/openroad/max-utilization/main.py" | indent 4 }}
+{{ .Files.Get "src/test8/main.py" | indent 4 }}
+{{- end }}

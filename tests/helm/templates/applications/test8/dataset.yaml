@@ -1,0 +1,20 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test8") }}
+apiVersion: com.ie.ibm.hpsys/v1alpha1
+kind: Dataset
+metadata:
+  annotations:
+    codeflare.dev/description: OpenROAD templates for max utilization demo
+  labels:
+    app.kubernetes.io/component: dataset
+  name: test8-templates
+  namespace: {{ .Values.namespace }}
+spec:
+  local:
+    bucket: test8-templates
+    endpoint: {{ .Values.global.s3Endpoint }}
+    provision: 'true'
+    readonly: 'false'
+    secret-name: test8secret
+    secret-namespace: {{ .Values.namespace }}
+    type: COS
+{{- end }}
