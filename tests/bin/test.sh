@@ -94,7 +94,7 @@ do
             TEST_NAME=$testname "$path"/init.sh
         fi
         
-        ${handler-waitForIt} $testname ${namespace-codeflare-test} "${expected[@]}" $api
+        ${handler-waitForIt} $testname ${namespace-$CLUSTER_NAME-test} "${expected[@]}" $api
         undeploy $testname
     fi
 done

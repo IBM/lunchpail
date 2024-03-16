@@ -189,8 +189,8 @@ function undeploy {
 
 function watch {
     if [[ -n "$CI" ]]; then
-        $KUBECTL get appwrapper --show-kind -n codeflare-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
-        $KUBECTL get pod --show-kind -n codeflare-test --watch &
+        $KUBECTL get appwrapper --show-kind -n $CLUSTER_NAME-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
+        $KUBECTL get pod --show-kind -n $CLUSTER_NAME-test --watch &
     fi
     $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
     $KUBECTL get run --all-namespaces --watch &

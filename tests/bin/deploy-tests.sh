@@ -17,9 +17,10 @@ if which lspci && lspci | grep -iq nvidia; then
 fi
 
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) $HELM_INSTALL_FLAGS |||||||| $HELM_IMAGE_PULL_SECRETS"
-$HELM install codeflare-tests "$SCRIPTDIR"/../helm $HELM_SECRETS --wait \
+$HELM install $CLUSTER_NAME-tests "$SCRIPTDIR"/../helm $HELM_SECRETS --wait \
       $HELM_INSTALL_FLAGS \
       $HELM_IMAGE_PULL_SECRETS \
+      --set namespace=$CLUSTER_NAME-test \
       --set nfs.enabled=$NEEDS_NFS \
       --set global.arch=$ARCH $APP $GPU \
       --set kubernetes.context=kind-jaas \
