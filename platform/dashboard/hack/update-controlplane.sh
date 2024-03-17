@@ -57,10 +57,11 @@ fi
 "$TOP"/hack/build.sh -l & "$TOP"/hack/shrinkwrap.sh -l -d "$RESOURCES"
 wait
 
-for f in "$RESOURCES/*.yml"
+for f in $(ls "$RESOURCES"/*.yml)
 do
     if [[ -n "$RUNNING_TESTS" ]] && [[ $(basename $f) =~ default-user ]]
     then echo "Skipping default-user for tests"
+    else echo "Installing $f"
     fi
 
     if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
