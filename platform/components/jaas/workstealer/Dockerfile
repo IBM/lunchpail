@@ -1,4 +1,4 @@
-FROM docker.io/golang:1.22.0-alpine
+FROM docker.io/golang:1.22.1-alpine
 WORKDIR /workstealer
 
 COPY go.* ./

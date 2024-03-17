@@ -1,3 +1,3 @@
-module github.ibm.com/cloud-computer/jaas/platform/components/codefalre/workstealer
+module github.ibm.com/cloud-computer/jaas/platform/components/jaas/workstealer
 
-go 1.21.6
+go 1.22.1
