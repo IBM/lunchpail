@@ -7,7 +7,6 @@ import (
 	"log"
 	"bufio"
 	"regexp"
-	//	"strings"
 	"math/rand"
 	"path/filepath"
 )
@@ -51,14 +50,20 @@ type AssignedTask struct {
 	task string
 }
 
+type Worker struct {
+	name string
+	assignedTasks []string
+	processingTasks []string
+}
+
 //
 // The current state of the world
 //
 type Model struct {
 	UnassignedTasks []string
 	FinishedTasks []string
-	LiveWorkers []string
-	DeadWorkers []string
+	LiveWorkers []Worker
+	DeadWorkers []Worker
 
 	AssignedTasks []AssignedTask
 	ProcessingTasks []AssignedTask
@@ -152,12 +157,14 @@ func parseUpdatesFromStdin() Model {
 
 	unassignedTasks := []string{}
 	finishedTasks := []string{}
-	liveWorkers := []string{}
-	deadWorkers := []string{}
+	liveWorkers := []Worker{}
+	deadWorkers := []Worker{}
 	assignedTasks := []AssignedTask{}
 	processingTasks := []AssignedTask{}
 	completedTasks := []AssignedTask{}
-	
+
+	workersLookup := make(map[string]Worker)
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		how := howChanged(line[0])
@@ -171,14 +178,27 @@ func parseUpdatesFromStdin() Model {
 		case FinishedTask:
 			finishedTasks= append(finishedTasks, thing)
 		case LiveWorker:
-			liveWorkers = append(liveWorkers, thing)
+			worker := Worker{thing, []string{}, []string{}}
+			liveWorkers = append(liveWorkers, worker)
+			workersLookup[thing] = worker
 		case DeadWorker:
-			deadWorkers = append(deadWorkers, thing)
+			worker := Worker{thing, []string{}, []string{}}
+			deadWorkers = append(deadWorkers, worker)
+			workersLookup[thing] = worker
 		case AssignedTaskByWorker:
+			// thing is worker name, thing2 is task name
 			assignedTasks = append(assignedTasks, AssignedTask{thing, thing2})
+			if worker, ok := workersLookup[thing]; ok {
+				worker.assignedTasks = append(worker.assignedTasks, thing2)
+			}
 		case ProcessingTaskByWorker:
+			// thing is worker name, thing2 is task name
 			processingTasks = append(processingTasks, AssignedTask{thing, thing2})
+			if worker, ok := workersLookup[thing]; ok {
+				worker.processingTasks = append(worker.processingTasks, thing2)
+			}
 		case CompletedTaskByWorker:
+			// thing is worker name, thing2 is task name
 			completedTasks = append(completedTasks, AssignedTask{thing, thing2})
 		}
 	}
@@ -201,12 +221,12 @@ func ParseUpdates() Model {
 // Pick a good worker to assign work to. For now, this is
 // random. TODO: be intelligent about distributing load.
 //
-func pickAWorker(liveWorkers []string) string {
+func pickAWorker(liveWorkers []Worker) int {
 	nWorkers := len(liveWorkers)
 	if nWorkers == 0 {
-		return ""
+		return -1
 	} else {
-		return liveWorkers[rand.Intn(nWorkers)]
+		return rand.Intn(nWorkers)
 	}
 }
 
@@ -250,9 +270,9 @@ func Copy(src string, dst string) error {
 //
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
 //
-func MoveToWorkerInbox(task string, worker string) {
+func MoveToWorkerInbox(task string, worker Worker) {
 	unassignedFilePath := filepath.Join(inbox, task)
-	workerInboxFilePath := filepath.Join(queues, worker, "inbox", task)
+	workerInboxFilePath := filepath.Join(queues, worker.name, "inbox", task)
 
 	if err := Copy(unassignedFilePath, workerInboxFilePath); err != nil {
 		log.Fatalf("[workstealer] Failed to copy task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
@@ -292,10 +312,10 @@ func MoveToFinalOutbox(task string, worker string) {
 //
 // Assign an unassigned Task to one of the given LiveWorkers
 //
-func AssignNewTask(task string, liveWorkers []string) {
-	worker := pickAWorker(liveWorkers)
-	if worker != "" {
-		MoveToWorkerInbox(task, worker)
+func AssignNewTask(task string, liveWorkers []Worker) {
+	liveWorkerIdx := pickAWorker(liveWorkers)
+	if liveWorkerIdx != -1 {
+		MoveToWorkerInbox(task, liveWorkers[liveWorkerIdx])
 	} else {
 		IgnoreTaskForNow(task)
 	}
@@ -311,9 +331,9 @@ const (
 //
 // A Worker has died. Unassign this task that it owns
 //
-func moveTaskBackToUnassigned(assignedTask AssignedTask, box Box) {
-	inWorkerFilePath := filepath.Join(assignedTask.worker, string(box), assignedTask.task)
-	unassignedFilePath := filepath.Join(inbox, assignedTask.task)
+func moveTaskBackToUnassigned(task string, worker Worker, box Box) {
+	inWorkerFilePath := filepath.Join(worker.name, string(box), task)
+	unassignedFilePath := filepath.Join(inbox, task)
 
 	if err := os.Rename(inWorkerFilePath, unassignedFilePath); err != nil {
 		log.Fatalf("[workstealer] Failed to move assigned task back to unassigned: %v\n", err)
@@ -326,13 +346,13 @@ func moveTaskBackToUnassigned(assignedTask AssignedTask, box Box) {
 //
 // A Worker has transitioned from Live to Dead. Reassign its Tasks.
 //
-func CleanupForDeadWorker(worker string, model Model) {
-	for _, assignedTask := range model.AssignedTasks {
-		moveTaskBackToUnassigned(assignedTask, "inbox")
+func CleanupForDeadWorker(worker Worker) {
+	for _, assignedTask := range worker.assignedTasks {
+		moveTaskBackToUnassigned(assignedTask, worker, "inbox")
 	}
-	for _, processingTask := range model.ProcessingTasks {
-		moveTaskBackToUnassigned(processingTask, "processing")
-	}	
+	for _, assignedTask := range worker.processingTasks {
+		moveTaskBackToUnassigned(assignedTask, worker, "processing")
+	}
 }
 
 //
@@ -341,6 +361,79 @@ func CleanupForDeadWorker(worker string, model Model) {
 func CleanupForCompletedTask(completedTask AssignedTask) {
 	MarkDone(completedTask.task)
 	MoveToFinalOutbox(completedTask.task, completedTask.worker)
+}
+
+func assignNewTasks(model Model) {
+	for _, task := range model.UnassignedTasks {
+		AssignNewTask(task, model.LiveWorkers)
+	}
+}
+
+//
+// Handle dead Workers
+//
+func reassignDeadWorkerTasks(model Model) {
+	for _, worker := range model.DeadWorkers {
+		CleanupForDeadWorker(worker)
+	}
+}
+
+//
+// Handle completed Tasks
+//
+func cleanupCompletedTasks(model Model) {
+	for _, completedTask := range model.CompletedTasks {
+		CleanupForCompletedTask(completedTask)
+	}
+}
+
+//
+// See if we need to rebalance workloads
+//
+func rebalance(model Model) bool {
+	if len(model.UnassignedTasks) == 0 {
+		// If we had some unassigned Tasks, we probably
+		// wouldnm't need to rebalance; we could just send
+		// those Tasks to the starving Workers. Since we have
+		// no unassigned Tasks, we might want to consider
+		// reassigning Tasks between Workers.
+
+		// Tally up live Workers with and without work. We aim
+		// to shift load from those with to those without.
+		workersWithWork := []Worker{}
+		workersWithoutWork := []Worker{}
+		for _, worker := range model.LiveWorkers {
+			if len(worker.assignedTasks) == 0 {
+				workersWithoutWork = append(workersWithoutWork, worker)
+			} else {
+				workersWithWork = append(workersWithWork, worker)
+			}
+		}
+
+		if len(workersWithWork) > 0 && len(workersWithoutWork) > 0 {
+			// Then we can shift load from those with to
+			// those without!
+			desiredLevel := max(1, (len(model.AssignedTasks) + len(model.ProcessingTasks)) / len(model.LiveWorkers))
+			fmt.Fprintf(os.Stderr, "[workstealer] Rebalancing to desiredLevel=%d\n", desiredLevel)
+
+			// then we can steal at least one Task 
+			for _, workerWithWork := range workersWithWork {
+				stealThisMany := max(0, len(workerWithWork.assignedTasks) - desiredLevel)
+				fmt.Fprintf(os.Stderr, "[workstealer] Rebalancer stealing %d tasks from worker=%s\n", stealThisMany, workerWithWork.name)
+
+				for i := range stealThisMany {
+					taskToSteal := workerWithWork.assignedTasks[i]
+					moveTaskBackToUnassigned(taskToSteal, workerWithWork, "inbox")
+				}
+			}
+
+			// Indicate that we did rebalance
+			return true
+		}
+	}
+
+	// Indicate that we didn't rebalance
+	return false
 }
 
 //
@@ -354,15 +447,9 @@ func main() {
 	model := ParseUpdates()
 	reportState(model)
 
-	for _, task := range model.UnassignedTasks {
-		AssignNewTask(task, model.LiveWorkers)
-	}
-
-	for _, worker := range model.DeadWorkers {
-		CleanupForDeadWorker(worker, model)
-	}
-
-	for _, completedTask := range model.CompletedTasks {
-		CleanupForCompletedTask(completedTask)
+	if !rebalance(model) {
+		assignNewTasks(model)
+		reassignDeadWorkerTasks(model)
+		cleanupCompletedTasks(model)
 	}
 }
