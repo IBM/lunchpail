@@ -286,7 +286,6 @@ DEFAULT_BATCH_SIZE = 128
 async def main():
     parser = argparse.ArgumentParser(description='Driver for HAP processing, yo')
     parser.add_argument('input_file', default='/dev/cos/bluepile-processing/v2/dedup_lid_split/dataset=stackexchange/')
-    parser.add_argument('processing_file', default='/dev/cos/klwu_hap_test/output/')
     parser.add_argument('output_file', default='/dev/cos/klwu_hap_test/output/')
     parser.add_argument('-m', '--models_folder', default='/dev/cos/hap-models/')
     # if -b or --scoring_batch is set at the command line, then it is the fixed batch size for model scoring
@@ -310,15 +309,12 @@ async def main():
         scoring_batch_size = DEFAULT_BATCH_SIZE
         print(f"dynamic scoring batch is used.")
 
-    print(f"Marking input file as processing input_file={args.input_file} processing_file={args.processing_file}")
-    move(args.input_file, args.processing_file)
     await actor.process_parquet_file(
-        args.processing_file,
+        args.input_file,
         args.output_file,
         fixed_batch,
         scoring_batch_size
     )
-    os.remove(args.processing_file)
 
 if __name__ == "__main__":
     asyncio.run(main())

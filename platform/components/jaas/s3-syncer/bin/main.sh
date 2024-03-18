@@ -77,7 +77,7 @@ rclone --config $config touch $alive
 
 # Listen for new work on `inbox`, finished work on `outbox`, and
 # in-progress work on `processing`
-"$SCRIPTDIR"/get.sh $config $remote $local $inbox &
+"$SCRIPTDIR"/get.sh $config $remote $local $inbox processing &
 "$SCRIPTDIR"/put.sh $config $remote $local outbox &
 "$SCRIPTDIR"/put.sh $config $remote $local processing &
 

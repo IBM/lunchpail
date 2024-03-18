@@ -5,4 +5,4 @@
 
 # "tasky" and 3333 come from a values override in the workdispatcher.yaml
 
-expected=('Processing /queue/[[:digit:]]+/inbox/tasky3333.1.txt' 'Processing /queue/[[:digit:]]+/inbox/tasky3333.3.txt' 'Processing /queue/[[:digit:]]+/inbox/tasky3333.5.txt' 'Processing /queue/[[:digit:]]+/inbox/tasky3333.2.txt' 'Processing /queue/[[:digit:]]+/inbox/tasky3333.4.txt' 'Processing /queue/[[:digit:]]+/inbox/tasky3333.6.txt')
+expected=('Processing /queue/[[:digit:]]+/processing/tasky3333.1.txt' 'Processing /queue/[[:digit:]]+/processing/tasky3333.3.txt' 'Processing /queue/[[:digit:]]+/processing/tasky3333.5.txt' 'Processing /queue/[[:digit:]]+/processing/tasky3333.2.txt' 'Processing /queue/[[:digit:]]+/processing/tasky3333.4.txt' 'Processing /queue/[[:digit:]]+/processing/tasky3333.6.txt')

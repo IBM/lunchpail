@@ -4,14 +4,10 @@
 # $2 processing folder
 # $3 outbox folder
 in="$1"
-processing="$2"
-out="$3"
+out="$2"
 
 echo "Processing $in"
-mv $in $processing
-
 sleep 5
 
-echo "Done with $processing"
-mv $processing $out
+echo "Done with $in"
 

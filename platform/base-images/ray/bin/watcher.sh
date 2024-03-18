@@ -48,7 +48,23 @@ function start_watch {
             if [[ -f $in ]]
             then
                 echo "[workerpool worker $JOB_COMPLETION_INDEX] sending file to handler: $in"
-                $handler $in $inprogress $out
+                mv $in $inprogress
+                $handler $inprogress $out
+                EC=$?
+
+                if [[ $EC = 0 ]]
+                then
+                    echo "[workerpool worker $JOB_COMPLETION_INDEX] handler success: $in"
+                    # if the application itself hasn't written to
+                    # $out, move the marker there to signify we are
+                    # done
+                    if [[ ! -e $out ]]
+                    then mv $inprogress $out
+                    fi
+                else
+                    echo "[workerpool worker $JOB_COMPLETION_INDEX] handler error with exit code $EC: $in"
+                    mv $inprogress $in
+                fi
             else
                 echo "[workerpool worker $JOB_COMPLETION_INDEX] skipping non-file: $in"
             fi

@@ -9,8 +9,7 @@ from os import path, remove
 from shutil import move
 
 in_file = sys.argv[1]
-processing_file = sys.argv[2]
-out_file = sys.argv[3]
+out_file = sys.argv[2]
 
 print(f"in_file={in_file}")
 
@@ -18,9 +17,6 @@ with open(in_file) as f:
     util = int(f.readline())
 
 print(f"FP util={util}")
-
-# 0. mark work as underway
-move(in_file, processing_file)
 
 # 1. Copy experiment template
 mountpath = "/mnt/datasets/openroad-max-util-templates/"
@@ -45,11 +41,7 @@ subprocess.call(f"make DESIGN_CONFIG=./config.mk",
                 cwd=workspace,
                 shell=True)
 
-# 4. mark work as done
-print("Marking work as done")
-move(processing_file, out_file)
-
-# 5. TODO somehow send real output in out_file
+# 4. TODO somehow send real output in out_file
 # subprocess.call(f"cp -r {workspace} {mountpath}", shell=True)
 
 print(f"FP util {util} -- Done.")

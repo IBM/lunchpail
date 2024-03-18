@@ -5,20 +5,20 @@ image.
 ```shell
 podman build \
     --platform=linux/amd64 \
-        --tag ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.0.3 .
+        --tag ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.1.0 .
 ```
 
 ## TODO whenever we support arm64
 
 ```shell
-podman manifest create ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.0.3
+podman manifest create ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.1.0
 podman build \
     --platform=linux/arm64/v8,linux/amd64 \
-        --manifest ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.0.3 .
+        --manifest ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.1.0 .
 ```
 
 Then, to push:
 
 ```shell
-podman manifest push ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.0.3
+podman manifest push ghcr.io/lunchpail/workerpool-worker-ubuntu-python-openroad:0.1.0
 ```
