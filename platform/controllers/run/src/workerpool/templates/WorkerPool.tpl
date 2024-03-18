@@ -28,7 +28,7 @@ spec:
         {{ end }}
     spec:
       restartPolicy: OnFailure
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 10 # the s3-syncer has a 5-second poll
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
         {{ include "rclone.volume" . | indent 8 }}

@@ -13,6 +13,21 @@ from status import set_status, add_error_condition, set_status_after_clone_failu
 from run_id import alloc_run_id
 from run_size import load_run_size_config
 
+# parse 6s/6m/6d/6w into units of seconds
+def startup_delay_from_spec(delayString: str):
+    seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
+    unit = seconds_per_unit[delayString[-1]] if delayString[-1] in seconds_per_unit else None
+
+    if unit is None:
+        # then we were given just a number, which we will interpret as
+        # seconds
+        unit = 1
+        quantity = delayString
+    else:
+        quantity = delayString[:-1]
+
+    return int(quantity) * unit
+
 # FIXME this is duplicated from run_size.py because that code looks in
 # spec['supportsGpu'] whereas we have spec['workers']['supportsGpu']
 def run_size(customApi, spec, application):
@@ -101,6 +116,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 kubecontext,
                 kubeconfig,
                 base64.b64encode(json.dumps(env).encode('ascii')),
+                str(startup_delay_from_spec(spec["startupDelay"] if "startupDelay" in spec else "0")),
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:

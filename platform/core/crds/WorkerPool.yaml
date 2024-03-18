@@ -31,6 +31,12 @@ spec:
                   type: object
                   additionalProperties:
                     type: string
+                startupDelay:
+                  description: |
+                    In the form of 6s or 6m or 6h or 6d or 6w. If no
+                    unit suffix is given, the value is assumed to be
+                    in seconds.
+                  type: string
                 workers:
                   type: object
                   required: [count,size]

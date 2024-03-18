@@ -1,0 +1,34 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7h") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test7h
+  namespace: {{ .Values.namespace }}
+spec:
+  api: workqueue
+  code: |
+    #!/usr/bin/env sh
+
+    # $1 filepath
+    # $2 processing folder
+    # $3 outbox folder
+    in="$1"
+    processing="$2"
+    out="$3"
+
+    echo "Processing $in"
+    mv $in $processing
+
+    sleep 5
+
+    echo "Done with $processing"
+    mv $processing $out
+
+  command: /opt/lunchpail/worker/bin/watcher.sh ./literal.sh
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
+
+# TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
+#  inputs:
+#    - sizes:
+#        lg: test7hdata
+{{- end }}

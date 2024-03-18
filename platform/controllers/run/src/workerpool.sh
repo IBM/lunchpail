@@ -23,6 +23,7 @@ datasets="${14}"
 kubecontext="${15}"
 kubeconfig="${16}"
 env="${17}"
+startupDelay="${18}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -65,6 +66,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set queue.dataset=$queue_dataset \
      --set datasets=$datasets \
      --set env="$env" \
+     --set startupDelay=$startupDelay \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \

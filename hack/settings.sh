@@ -33,9 +33,10 @@ NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
 
 if [[ -z "$NO_GETOPTS" ]]
 then
-    while getopts "c:ltk:oprs" opt
+    while getopts "c:ltk:noprs" opt
     do
         case $opt in
+            n) export NO_BUILD=1; continue;;
             c) export CONTEXT_NAME=$OPTARG; continue;;
             l) echo "Running up in lite mode"; export NO_KUBEFLOW=1; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
             t) export RUNNING_TESTS=true; continue;;

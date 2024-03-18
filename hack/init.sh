@@ -144,6 +144,10 @@ function create_kind_cluster {
 }
 
 function update_helm_dependencies {
+    if [[ -n "$NO_BUILD" ]]
+    then return
+    fi
+
     # i'm not sure how to manage this without hard-coding the
     # sub-charts that pull in external dependencies
     "$SCRIPTDIR"/../platform/prerender.sh

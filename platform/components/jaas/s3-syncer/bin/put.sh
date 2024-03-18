@@ -4,6 +4,7 @@ config=$1
 remote=$2
 local=$3
 outbox=$4
+justonce=$5
 
 mkdir -p $local/$outbox
 
@@ -30,6 +31,10 @@ while true; do
             size=$new_size
             report_size
         fi
+    fi
+
+    if [[ -n "$justonce" ]]
+    then break
     fi
 
     sleep 5

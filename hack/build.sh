@@ -11,6 +11,10 @@ set -o pipefail
 # $1: buildfilter a regexp pattern to limit what is built, e.g. `workstealer` to build just the workstealer image
 #
 
+if [[ -n "$NO_BUILD" ]]
+then exit
+fi
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 

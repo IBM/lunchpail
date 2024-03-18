@@ -8,7 +8,7 @@ set -o pipefail
 # e.g. see 7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
-while getopts "c:lgui:e:opr" opt
+while getopts "c:lgui:e:nopr" opt
 do
     case $opt in
         l) export HELM_INSTALL_FLAGS="--set lite=true"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
@@ -105,9 +105,13 @@ function waitForUnassignedAndOutbox {
     local expectedUnassignedTasks=$3
     local expectedNumInOutbox=$4
     local dataset=$5
+    local waitForMix=$6 # wait for a mix of values that sum up to $expectedNumInOutbox
     
     echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
 
+    if ! [[ $expectedUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: expectedUnassignedTasks not a number: '$expectedUnassignedTasks'"; fi
+    if ! [[ $expectedNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: expectedNumInOutbox not a number: '$expectedNumInOutbox'"; fi
+    
     runNum=1
     while true
     do
@@ -117,7 +121,6 @@ function waitForUnassignedAndOutbox {
         actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o json | jq '.metadata.annotations | to_entries | map(select(.key | match("^jaas.dev/unassigned"))) | map(.value | tonumber) | reduce .[] as $num (0; .+$num)' || echo "there was an issue running the kubectl command😢")
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
-        if ! [[ $expectedUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: expectedUnassignedTasks not a number: '$expectedUnassignedTasks'"; fi
 
         echo "expected unassigned tasks=${expectedUnassignedTasks} and actual num unassigned=${actualUnassignedTasks}"
         if [[ "$actualUnassignedTasks" != "$expectedUnassignedTasks" ]]
@@ -136,12 +139,37 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        actualNumInOutbox=$($KUBECTL get queue -A -o custom-columns=INBOX:.metadata.annotations.codeflare\\.dev/outbox --no-headers)
-        
-        if ! [[ $actualNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: actualNumInOutbox not a number: '$actualNumInOutbox'"; fi
-        if ! [[ $expectedNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: expectedNumInOutbox not a number: '$expectedNumInOutbox'"; fi
+        numQueues=$($KUBECTL get queue -n $ns -l app.kubernetes.io/part-of=$name --no-headers | wc -l | xargs)
+        actualNumInOutbox=$($KUBECTL get queue -n $ns -l app.kubernetes.io/part-of=$name -o custom-columns=INBOX:.metadata.annotations.codeflare\\.dev/outbox --no-headers | tr '\n' ' ' | xargs)
 
-        if [[ "$actualNumInOutbox" != "$expectedNumInOutbox" ]]; then echo "tasks in outboxes should be ${expectedNumInOutbox} but we got ${actualNumInOutbox}"; sleep 2; else break; fi
+        if [[ -z "$waitForMix" ]]
+        then
+            # Wait for a single value (single pool tests)
+            if ! [[ $actualNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: actualNumInOutbox not a number: '$actualNumInOutbox'"; fi
+            if [[ "$actualNumInOutbox" != "$expectedNumInOutbox" ]]; then echo "tasks in outboxes should be ${expectedNumInOutbox} but we got ${actualNumInOutbox}"; sleep 2; else break; fi
+        else
+            # Wait for a mix of values (multi-pool tests). The "mix" is
+            # one per worker, and we want the total to be what we
+            # expect, and that each worker contributes at least one
+            gotMixFrom=0
+            gotMixTotal=0
+            for actual in $actualNumInOutbox
+            do
+                if [[ $actual > 0 ]]
+                then
+                    gotMixFrom=$((gotMixFrom+1))
+                    gotMixTotal=$((gotMixTotal+$actual))
+                fi
+            done
+
+            if [[ $gotMixFrom = $numQueues ]] && [[ $gotMixTotal -ge $expectedNumInOutbox ]]
+            then break
+            else
+                echo "non-zero tasks in outboxes should be ${numQueues} but we got $gotMixFrom; gotMixTotal=$gotMixTotal vs expectedNumInOutbox=$expectedNumInOutbox actualNumInOutbox=${actualNumInOutbox}"
+                sleep 2
+            fi
+        fi
+
         runIter=$((runIter+1))
     done
 

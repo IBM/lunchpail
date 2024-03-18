@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"os"
 	"fmt"
 	"log"
@@ -51,6 +50,7 @@ type AssignedTask struct {
 }
 
 type Worker struct {
+	alive bool
 	name string
 	assignedTasks []string
 	processingTasks []string
@@ -84,6 +84,13 @@ var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)$")
 
 //
+// Emit the path to the file we deleted
+//
+func reportMovedFile(src, dst string) {
+	fmt.Printf("%s %s move\n", src, dst)
+}
+
+//
 // Emit the path to the file we changed
 //
 func reportChangedFile(filepath string) {
@@ -94,11 +101,15 @@ func reportChangedFile(filepath string) {
 // Record the current state of Model for observability
 //
 func reportState(model Model) {
-	fmt.Fprintf(os.Stderr, "jaas.dev unassigned %d\n", len(model.UnassignedTasks)-len(model.AssignedTasks)-len(model.ProcessingTasks)-len(model.CompletedTasks))
+	fmt.Fprintf(os.Stderr, "jaas.dev unassigned %d\n", len(model.UnassignedTasks))
 	fmt.Fprintf(os.Stderr, "jaas.dev assigned %d\n", len(model.AssignedTasks))
 	fmt.Fprintf(os.Stderr, "jaas.dev processing %d\n", len(model.ProcessingTasks))
 	fmt.Fprintf(os.Stderr, "jaas.dev done %d\n", len(model.FinishedTasks))
 	fmt.Fprintf(os.Stderr, "jaas.dev liveworkers %d\n", len(model.LiveWorkers))
+
+	for _, worker := range model.LiveWorkers {
+		fmt.Fprintf(os.Stderr, "jaas.dev liveworker %s %d %d\n", worker.name, len(worker.assignedTasks), len(worker.processingTasks))
+	}
 }
 
 //
@@ -131,19 +142,11 @@ func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
 			return LiveWorker, match[1], ""
 		}
 	} else if match := assignedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
-		if how == Added {
-			return AssignedTaskByWorker, match[1], match[2]
-		}
+		return AssignedTaskByWorker, match[1], match[2]
 	} else if match := processingTaskPattern.FindStringSubmatch(line); len(match) == 3 {
-		if how == Added {
-			return ProcessingTaskByWorker, match[1], match[2]
-		}
+		return ProcessingTaskByWorker, match[1], match[2]
 	} else if match := completedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
-		if how == Added {
-			return CompletedTaskByWorker, match[1], match[2]
-		} else {
-			log.Printf("[workstealer] Warning: got non-added work in Worker outbox: %v %s\n", how, line)
-		}
+		return CompletedTaskByWorker, match[1], match[2]
 	}
 
 	return Nothing, "", ""
@@ -157,8 +160,6 @@ func parseUpdatesFromStdin() Model {
 
 	unassignedTasks := []string{}
 	finishedTasks := []string{}
-	liveWorkers := []Worker{}
-	deadWorkers := []Worker{}
 	assignedTasks := []AssignedTask{}
 	processingTasks := []AssignedTask{}
 	completedTasks := []AssignedTask{}
@@ -170,7 +171,7 @@ func parseUpdatesFromStdin() Model {
 		how := howChanged(line[0])
 		what, thing, thing2 := whatChanged(line[1:], how)
 
-		fmt.Fprintf(os.Stderr, "Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
+		fmt.Fprintf(os.Stderr, "[workstealer] Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
 
 		switch what {
 		case UnassignedTask:
@@ -178,24 +179,26 @@ func parseUpdatesFromStdin() Model {
 		case FinishedTask:
 			finishedTasks= append(finishedTasks, thing)
 		case LiveWorker:
-			worker := Worker{thing, []string{}, []string{}}
-			liveWorkers = append(liveWorkers, worker)
+			worker := Worker{true, thing, []string{}, []string{}}
 			workersLookup[thing] = worker
 		case DeadWorker:
-			worker := Worker{thing, []string{}, []string{}}
-			deadWorkers = append(deadWorkers, worker)
+			worker := Worker{false, thing, []string{}, []string{}}
 			workersLookup[thing] = worker
 		case AssignedTaskByWorker:
 			// thing is worker name, thing2 is task name
 			assignedTasks = append(assignedTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				worker.assignedTasks = append(worker.assignedTasks, thing2)
+				workersLookup[thing] = Worker{worker.alive, worker.name, append(worker.assignedTasks, thing2), worker.processingTasks}
+			} else {
+				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
 		case ProcessingTaskByWorker:
 			// thing is worker name, thing2 is task name
 			processingTasks = append(processingTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				worker.processingTasks = append(worker.processingTasks, thing2)
+				workersLookup[thing] = Worker{worker.alive, worker.name, worker.assignedTasks, append(worker.processingTasks, thing2)}
+			} else {
+				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
 		case CompletedTaskByWorker:
 			// thing is worker name, thing2 is task name
@@ -207,6 +210,16 @@ func parseUpdatesFromStdin() Model {
 		log.Fatalf("[workerstealer] Error parsing model from stdin: %v\n", err)
 	}
 
+	liveWorkers := []Worker{}
+	deadWorkers := []Worker{}
+	for _, worker := range workersLookup {
+		if worker.alive {
+			liveWorkers = append(liveWorkers, worker)
+		} else {
+			deadWorkers = append(deadWorkers, worker)
+		}
+	}
+	
 	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, completedTasks}
 }
 
@@ -245,39 +258,16 @@ func MarkDone(task string) {
 }
 
 //
-// Utility function to copy src file to dst file
-//
-func Copy(src string, dst string) error {
-	from, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer from.Close()
-
-	to, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		return err
-	}
-	defer to.Close()
-
-	if _, err = io.Copy(to, from); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
 //
 func MoveToWorkerInbox(task string, worker Worker) {
 	unassignedFilePath := filepath.Join(inbox, task)
 	workerInboxFilePath := filepath.Join(queues, worker.name, "inbox", task)
 
-	if err := Copy(unassignedFilePath, workerInboxFilePath); err != nil {
-		log.Fatalf("[workstealer] Failed to copy task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
+	if err := os.Rename(unassignedFilePath, workerInboxFilePath); err != nil {
+		log.Fatalf("[workstealer] Failed to move task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
 	} else {
-		reportChangedFile(workerInboxFilePath)
+		reportMovedFile(unassignedFilePath, workerInboxFilePath)
 	}
 }
 
@@ -303,9 +293,9 @@ func MoveToFinalOutbox(task string, worker string) {
 	if err := os.MkdirAll(outbox, 0700); err != nil {
 		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
 	} else if err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
-		log.Fatalf("[workstealer] Failed to copy output to final outbox: %v\n", err)
+		log.Fatalf("[workstealer] Failed to move output to final outbox: %v\n", err)
 	} else {
-		reportChangedFile(fullyDoneOutputFilePath)
+		reportMovedFile(fileInWorkerOutbox, fullyDoneOutputFilePath)
 	}
 }
 
@@ -315,6 +305,7 @@ func MoveToFinalOutbox(task string, worker string) {
 func AssignNewTask(task string, liveWorkers []Worker) {
 	liveWorkerIdx := pickAWorker(liveWorkers)
 	if liveWorkerIdx != -1 {
+		fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s task=%s\n", liveWorkers[liveWorkerIdx].name, task)
 		MoveToWorkerInbox(task, liveWorkers[liveWorkerIdx])
 	} else {
 		IgnoreTaskForNow(task)
@@ -332,14 +323,15 @@ const (
 // A Worker has died. Unassign this task that it owns
 //
 func moveTaskBackToUnassigned(task string, worker Worker, box Box) {
-	inWorkerFilePath := filepath.Join(worker.name, string(box), task)
+	inWorkerFilePath := filepath.Join(queues, worker.name, string(box), task)
 	unassignedFilePath := filepath.Join(inbox, task)
 
-	if err := os.Rename(inWorkerFilePath, unassignedFilePath); err != nil {
+	if err := os.MkdirAll(inbox, 0700); err != nil {
+		log.Fatalf("[workstealer] Failed to create inbox directory: %v\n", err)
+	} else if err := os.Rename(inWorkerFilePath, unassignedFilePath); err != nil {
 		log.Fatalf("[workstealer] Failed to move assigned task back to unassigned: %v\n", err)
 	} else {
-		reportChangedFile(inWorkerFilePath)
-		reportChangedFile(unassignedFilePath)
+		reportMovedFile(inWorkerFilePath, unassignedFilePath)
 	}
 }
 
@@ -422,7 +414,8 @@ func rebalance(model Model) bool {
 				fmt.Fprintf(os.Stderr, "[workstealer] Rebalancer stealing %d tasks from worker=%s\n", stealThisMany, workerWithWork.name)
 
 				for i := range stealThisMany {
-					taskToSteal := workerWithWork.assignedTasks[i]
+					j := len(workerWithWork.assignedTasks) - i - 1
+					taskToSteal := workerWithWork.assignedTasks[j]
 					moveTaskBackToUnassigned(taskToSteal, workerWithWork, "inbox")
 				}
 			}
@@ -442,8 +435,7 @@ func rebalance(model Model) bool {
 // stream of filepaths, one per file that it has changed in some way.
 //
 func main() {
-	fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
-
+	// fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 	model := ParseUpdates()
 	reportState(model)
 

@@ -54,11 +54,29 @@ inbox=inbox
 alive=$remote/$inbox/.alive
 function cleanup {
     echo "[workerpool s3-syncer-main $(basename $local)] Terminating..."
+
+    # deregister ourselves
     rclone --config $config delete $alive
+
+    # one last upload...
+    "$SCRIPTDIR"/put.sh $config $remote $local outbox 1
+    "$SCRIPTDIR"/put.sh $config $remote $local processing 1
 }
 trap cleanup INT TERM EXIT
+
+# Delay if we were asked to do so by a spec.startupDelay in the
+# associated WorkerPool
+if [[ -n "$LUNCHPAIL_STARTUP_DELAY" ]] && [[ "LUNCHPAIL_STARTUP_DELAY" != 0 ]]
+then
+    echo "[workerpool s3-syncer-main $(basename $local)] Delaying startup by $LUNCHPAIL_STARTUP_DELAY seconds"
+    sleep ${LUNCHPAIL_STARTUP_DELAY}
+fi
+
+# Now tell the world we are ready to accept load
 rclone --config $config touch $alive
 
+# Listen for new work on `inbox`, finished work on `outbox`, and
+# in-progress work on `processing`
 "$SCRIPTDIR"/get.sh $config $remote $local $inbox &
 "$SCRIPTDIR"/put.sh $config $remote $local outbox &
 "$SCRIPTDIR"/put.sh $config $remote $local processing &

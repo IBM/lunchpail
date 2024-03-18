@@ -1,0 +1,18 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7h") }}
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: test7hdata # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: taskqueue
+spec:
+  local:
+    type: "COS"
+    bucket: test7h
+    endpoint: {{ .Values.global.s3Endpoint }}
+    secret-name: test7hdata-cfsecret
+    secret-namespace: {{ .Values.namespace }}
+    #readonly: "true" # default is false
+    provision: "true"
+{{- end }}
