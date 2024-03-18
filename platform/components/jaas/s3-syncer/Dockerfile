@@ -1,4 +1,4 @@
-FROM docker.io/rclone/rclone:1.65
+FROM docker.io/rclone/rclone:1
 
 RUN apk update && apk add --no-cache bash
 
