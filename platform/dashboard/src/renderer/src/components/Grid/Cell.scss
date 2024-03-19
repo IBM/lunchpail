@@ -23,6 +23,7 @@ $label-size: 0.5rem;
     .codeflare--grid-cell[data-index="#{$idx - 1}"][data-depth="#{$depth}"] {
       background-color: $color;
       --jaas-grid-outline-color: #{map.get($colormap, 0)};
+      --jaas-grid-label-color: #{map.get($colormap, 0)};
     }
   }
 }
@@ -45,10 +46,10 @@ $label-size: 0.5rem;
   }
 
   span {
-    color: white;
+    color: var(--jaas-grid-label-color);
     display: flex;
     font-size: $label-size;
-    mix-blend-mode: overlay;
+    mix-blend-mode: exclusion;
     /*animation: spin 4s linear infinite;*/
   }
 

@@ -28,6 +28,7 @@ export default function GridCell(props: Props) {
     <Tooltip content={tooltip}>
       <div className="codeflare--grid-cell" data-index={index} data-depth={props.stackDepth}>
         {props.kind === "completed" && <HealthyIcon className="codeflare--status-completed" />}
+        <span>{props.stackDepth}</span>
       </div>
     </Tooltip>
   )
