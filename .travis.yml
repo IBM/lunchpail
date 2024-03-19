@@ -6,10 +6,10 @@ services:
   - xvfb
 
 env:
-  - ARGS="-e 'test7.*'" NEEDS_CSI_S3=true # full mode, excluding test7*
-  - ARGS="-i 'test7.*'" NEEDS_CSI_S3=true # full mode, including only test7*
-  - ARGS="-l -i 'test7.*' -e 'test(7g|8)'"     # lite, including only test7* tests, excluding test7g and test8 (as they NEEDS_CSI_S3)
-  - ARGS="-l 'test(7g|8)'" NEEDS_CSI_S3=true    # lite, only test7g and test8 which need a mounted s3
+  - ARGS="-e 'test(7.*|8)'" NEEDS_CSI_S3=true   # full mode, excluding test7*
+  - ARGS="-i 'test(7.*|8)'" NEEDS_CSI_S3=true   # full mode, including only test7*
+  - ARGS="-l -i 'test7.*' -e 'test7g'"          # lite, including only test7* tests, excluding test7g and test8 (as they NEEDS_CSI_S3)
+  - ARGS="-l -i 'test(7g|8)'" NEEDS_CSI_S3=true # lite, only test7g and test8 which need a mounted s3
   - SCRIPT=dashboard.sh
 
 before_install: ./hack/travis/setup.sh
