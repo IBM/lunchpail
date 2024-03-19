@@ -21,6 +21,24 @@ export async function get(): Promise<ExecResponse> {
 }
 
 /**
+ * There may be two context entries that represent the same
+ * ... context, as in the unique triple (cluster, name,
+ * namespace). This can happen e.g. if a user issues a `kubectl config
+ * rename-context foo bar`, and then subsequently re-authenticates
+ * using an `oc login` which restores `foo` :/
+ */
+function removeDuplicateContexts(contexts: KubeConfig["contexts"]) {
+  const byShortestName: Record<string, KubeConfig["contexts"][number]> = contexts.reduce((M, context) => {
+    const key = context.context.cluster + "." + context.context.user + "." + context.context.namespace
+    if (!(key in M) || context.name.length < M[key].name.length) {
+      M[key] = context
+    }
+    return M
+  }, {})
+  return Object.values(byShortestName)
+}
+
+/**
  * @return the current `KubeConfig` model
  */
 export async function getConfig(): Promise<KubeConfig> {
@@ -49,7 +67,8 @@ export async function getConfig(): Promise<KubeConfig> {
         if (code === 0) {
           // it is important to trim before the split, to avoid a
           // trailing empty string inthe returned array
-          resolve(JSON.parse(out))
+          const config = JSON.parse(out) as KubeConfig
+          resolve(Object.assign(config, { contexts: removeDuplicateContexts(config.contexts) }))
         } else {
           reject(new Error(err))
         }

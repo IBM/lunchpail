@@ -103,13 +103,13 @@ async function* computeTargetsGenerator(): AsyncGenerator<ComputeTargetEvent[], 
         // `ComputeTargetEvents`.
         const config = await getConfig()
         const events = await Promise.all(
-          (config.contexts || []).map(async ({ context }) => {
+          (config.contexts || []).map(async ({ name, context }) => {
             const [jaasManager, isJaaSWorkerHost] = await Promise.all([
               context.cluster !== controlPlaneClusterName ? (false as const) : getControlPlaneStatus(context.cluster),
               isRuntimeProvisioned(context.cluster, true).catch(() => false),
             ])
 
-            return ComputeTargetEvent(context.cluster, {
+            return ComputeTargetEvent(name, {
               jaasManager,
               isJaaSWorkerHost,
               isDeletable: isKindCluster(context),
