@@ -14,7 +14,8 @@ spec:
   parallelism: {{ .Values.workers.count }}
   completions: {{ .Values.workers.count }}
   completionMode: Indexed
-  ttlSecondsAfterFinished: 1000
+  ttlSecondsAfterFinished: 10000
+  backoffLimit: 6
   template:
     metadata:
       labels:
@@ -27,7 +28,13 @@ spec:
 {{ .Values.datasets | b64dec | indent 8 }}
         {{ end }}
     spec:
-      restartPolicy: OnFailure
+      # see
+      # https://stackoverflow.com/questions/54091659/kubernetes-pods-disappear-after-failed-jobs#comment133585091_54165455
+      # "when Restart=Never and backoffLimit>1 then a separately named
+      # pod (different random 5 digit extension) will stay around for
+      # each failure, allowing you to go back and review each"
+      restartPolicy: Never
+
       terminationGracePeriodSeconds: 10 # the s3-syncer has a 5-second poll
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
