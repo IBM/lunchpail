@@ -1,4 +1,6 @@
-language: bash
+language: node_js
+node_js:
+  - 18.19.0
 
 services:
   - xvfb
