@@ -1,17 +1,17 @@
-{{- if .Values.env }}
+# a configmap to house the watcher.sh script
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ print .Release.Name | trunc 53 }}
+  name: {{ print (.Release.Name | trunc 45) "-watcher" }}
   namespace: {{ .Values.namespace }}
   labels:
-    app.kubernetes.io/component: shell
+    app.kubernetes.io/component: workerpool
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/managed-by: codeflare.dev
   ownerReferences:
     {{ include "owner" . | indent 4 }}
 data:
-  {{ .Values.env | b64dec }}
-{{- end }}
+  watcher.sh: |
+{{ .Files.Get "watcher.sh" | indent 4 }}

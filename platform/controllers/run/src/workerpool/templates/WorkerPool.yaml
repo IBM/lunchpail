@@ -10,11 +10,7 @@ metadata:
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/managed-by: codeflare.dev
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
-      controller: true
-      kind: WorkerPool
-      name: {{ .Values.name }}
-      uid: {{ .Values.uid }}
+    {{ include "owner" . | indent 4 }}
 spec:
   resources:
     Items: []

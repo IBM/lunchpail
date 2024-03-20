@@ -8,7 +8,7 @@ spec:
   image: ghcr.io/lunchpail/ray22:0.2.0
 #  repo: https://github.ibm.com/tmhoangt/foundation-model-stack/tree/RHODS_pipeline/src/llm/rhods/python/ods-automated-hap
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/preprocessing/hapq
-  command: /opt/codeflare/worker/bin/watcher.sh python -u hapq.py --models_folder=/mnt/datasets/hap-models
+  command: python -u hapq.py --models_folder=/mnt/datasets/hap-models
   supportsGpu: true
   description: >-
     Eliminate Hate and Profanity from a given input (a set of parquet

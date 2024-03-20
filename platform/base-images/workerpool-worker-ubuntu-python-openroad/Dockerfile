@@ -1,6 +1,6 @@
 FROM --platform=linux/amd64 ubuntu:18.04
 
-# Note: watcher.sh depends on some bash-isms at the moment
+# Note: lunchpail depends on some bash-isms at the moment and also inotify-tools
 RUN apt update && \
     apt install -y inotify-tools bash make python3 libtcl8.5 time libgomp1 libpython3.6 libqt5widgets5 curl ca-certificates && \
     curl -LO https://www.klayout.org/downloads/Ubuntu-18/klayout_0.28.13-1_amd64.deb && \
@@ -10,10 +10,7 @@ RUN apt update && \
     apt autoremove && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/
 
-ADD sysctl.conf /etc/sysctl.d/lunchpail.conf
 COPY bin /opt/lunchpail/worker/bin
-
-CMD ["/opt/lunchpail/worker/bin/watcher.sh"]
 
 COPY --from=jinwookjung/rdf-openroad-ray /openroad /openroad
 #COPY --from=openroad/yosys /install ./tools/install/yosys

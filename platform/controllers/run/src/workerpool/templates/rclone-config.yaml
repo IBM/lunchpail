@@ -3,6 +3,8 @@ kind: Secret
 metadata:
   name: {{ print .Release.Name "-rclone-config" }}
   namespace: {{ .Release.Namespace }}
+  ownerReferences:
+    {{ include "owner" . | indent 4 }}
 type: Opaque
 stringData:
   rclone.conf: |

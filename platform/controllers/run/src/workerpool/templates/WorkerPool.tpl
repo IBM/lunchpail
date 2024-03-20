@@ -44,6 +44,7 @@ spec:
         {{ include "rclone.volume" . | indent 8 }}
         {{- include "codeflare.dev/queue.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
+        {{- include "watcher.volume" . | indent 8 }}
       initContainers:
         {{- include "containers/workdir" . | indent 8 }}
       containers:

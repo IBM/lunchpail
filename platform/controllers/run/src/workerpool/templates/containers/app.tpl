@@ -1,7 +1,7 @@
 {{- define "containers/app" }}
 - name: app
   image: {{ .Values.image.app }}
-  command: ["/bin/bash", "-c", {{ .Values.command | quote }}]
+  command: ["/bin/bash", "-c", {{ print "/usr/local/bin/watcher.sh " .Values.command  }}]
   env:
     {{- include "codeflare.dev/queue.env" . | indent 4 }}
 
@@ -18,6 +18,7 @@
     {{- end }}
     {{- include "codeflare.dev/queue.volumeMount" . | indent 4 }}
     {{- include "codeflare.dev/workdir.volumeMount" . | indent 4 }}
+    {{- include "watcher.volumeMount" . | indent 4 }}
   resources:
     limits:
       cpu: {{ .Values.workers.cpu }}
