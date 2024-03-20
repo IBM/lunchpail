@@ -24,6 +24,8 @@ kubecontext="${15}"
 kubeconfig="${16}"
 env="${17}"
 startupDelay="${18}"
+volumes="${19}"
+volumeMounts="${20}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -65,6 +67,8 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set lunchpail=$LUNCHPAIL \
      --set queue.dataset=$queue_dataset \
      --set datasets=$datasets \
+     --set volumes=$volumes \
+     --set volumeMounts=$volumeMounts \
      --set env="$env" \
      --set startupDelay=$startupDelay \
      --set rbac.runAsRoot=$RUN_AS_ROOT \

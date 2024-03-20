@@ -58,7 +58,7 @@ def run_size(customApi, spec, application):
 # We use `./workerpool.sh` to invoke the `./workerpool/` helm chart
 # which in turn creates the pod/job resources for the pool.
 #
-def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, queue_dataset: str, dataset_labels, patch):
+def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, queue_dataset: str, dataset_labels, volumes, volumeMounts, patch):
     try:
         api = application['spec']['api']
         if api != "workqueue":
@@ -117,6 +117,8 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 kubeconfig,
                 base64.b64encode(json.dumps(env).encode('ascii')),
                 str(startup_delay_from_spec(spec["startupDelay"] if "startupDelay" in spec else "0")),
+                base64.b64encode(json.dumps(volumes).encode('ascii')) if volumes is not None and len(volumes) > 0 else "",
+                base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None and len(volumeMounts) > 0 else "",
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:

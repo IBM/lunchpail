@@ -58,8 +58,8 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             str(gpu),
             base64.b64encode(json.dumps(env).encode('ascii')),
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
-            base64.b64encode(json.dumps(volumes).encode('ascii')) if volumes is not None else "",
-            base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None else "",
+            base64.b64encode(json.dumps(volumes).encode('ascii')) if volumes is not None and len(volumes) > 0 else "",
+            base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None and len(volumeMounts) > 0 else "",
         ], capture_output=True)
 
         logging.info(f"Shell callout done for name={name} with returncode={shell_out.returncode}")

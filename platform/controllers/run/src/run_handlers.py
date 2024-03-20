@@ -103,7 +103,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         if dataset_labels is not None:
             logging.info(f"Attaching datasets WorkerPool={name} datasets={dataset_labels}")
 
-        create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, queue_dataset, dataset_labels, patch)
+        create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, queue_dataset, dataset_labels, volumes, volumeMounts, patch)
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
         set_status(name, namespace, 'Failed', patch)

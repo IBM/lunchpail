@@ -38,6 +38,9 @@ spec:
       terminationGracePeriodSeconds: 10 # the s3-syncer has a 5-second poll
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
+        {{- if .Values.volumes }}
+        {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 8 }}
+        {{- end }}
         {{ include "rclone.volume" . | indent 8 }}
         {{- include "codeflare.dev/queue.volume" . | indent 8 }}
         {{- include "codeflare.dev/workdir.volume" . | indent 8 }}
