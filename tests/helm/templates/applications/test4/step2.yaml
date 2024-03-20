@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   api: ray
-  image: ghcr.io/lunchpail/ray22:0.2.0
+  image: ghcr.io/lunchpail/ray22:0.3.0
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test4
   command: python3 step2.py
 {{- end }}

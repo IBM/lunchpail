@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Values.namespace.preprocessing }}
 spec:
   api: workqueue
-  image: ghcr.io/lunchpail/ray22:0.2.0
+  image: ghcr.io/lunchpail/ray22:0.3.0
 #  repo: https://github.ibm.com/tmhoangt/foundation-model-stack/tree/RHODS_pipeline/src/llm/rhods/python/ods-automated-hap
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/preprocessing/hapq
   command: python -u hapq.py --models_folder=/mnt/datasets/hap-models
