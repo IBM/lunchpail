@@ -11,7 +11,7 @@ mkdir -p $local/$outbox
 size=0
 
 function report_size {
-    echo "codeflare.dev queue $(basename $local) $outbox $size"
+    echo "lunchpail.io queue $(basename $local) $outbox $size"
 }
 
 # initial report_size
@@ -26,7 +26,7 @@ while true; do
     if [[ -d $local/$outbox ]]; then
         rclone --config $config sync $PROGRESS --create-empty-src-dirs $local/$outbox $remote/$outbox
  
-        new_size=$(ls $local/$outbox | wc -l)
+        new_size=$(ls $local/$outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | wc -l | xargs)
         if [[ $size != $new_size ]]; then
             size=$new_size
             report_size

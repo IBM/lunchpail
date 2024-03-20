@@ -12,7 +12,7 @@ mkdir -p $local/$inbox
 size=0
 
 function report_size {
-    echo "codeflare.dev queue $(basename $local) $inbox $size"
+    echo "lunchpail.io queue $(basename $local) $inbox $size"
 }
 
 # initial report

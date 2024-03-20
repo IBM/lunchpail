@@ -1,4 +1,4 @@
-# api=workqueue
+api=workqueue
 
 # /queue/0,1 <-- 2 workers
 # task.1,task.3,task.5 <-- 3 tasks per iter

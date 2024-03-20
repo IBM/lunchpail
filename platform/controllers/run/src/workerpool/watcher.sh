@@ -45,28 +45,47 @@ function start_watch {
             inprogress=$WORKQUEUE/$processing/$file
             out=$WORKQUEUE/$outbox/$file
 
+            # capture exit code, stdout and stderr of the handler
+            ec=$WORKQUEUE/$outbox/$file.code
+            stdout=$WORKQUEUE/$outbox/$file.stdout
+            stderr=$WORKQUEUE/$outbox/$file.stderr
+
             if [[ -f $in ]]
             then
                 echo "[workerpool worker $JOB_COMPLETION_INDEX] sending file to handler: $in"
                 rm -f $out
                 mv $in $inprogress
-                $handler $inprogress $out
-                EC=$?
 
+                # signify that the process is still going... or prematurely terminated
+                echo "-1" > "$ec"
+
+                # record a sigterm/sigkill exit code
+                trap "echo 137 > $ec" KILL
+                trap "echo 143 > $ec" TERM
+
+                ($handler $inprogress $out | tee $stdout) 3>&1 1>&2 2>&3 | tee $stderr
+                EC=$?
+                echo "$EC" > "$ec"
+
+                # remove sigterm/sigkill handlers
+                trap "" KILL
+                trap "" TERM
+                
                 if [[ $EC = 0 ]]
                 then
                     echo "[workerpool worker $JOB_COMPLETION_INDEX] handler success: $in"
-                    # if the application itself hasn't written to
-                    # $out, move the marker there to signify we are
-                    # done
-                    if [[ ! -e $out ]]
-                    then mv $inprogress $out
-                    else echo "[workerpool worker $JOB_COMPLETION_INDEX] out already exists: $out"
-                    fi
                 else
                     echo "[workerpool worker $JOB_COMPLETION_INDEX] handler error with exit code $EC: $in"
-                    mv $inprogress $in
                 fi
+
+                # if the application itself hasn't written to
+                # $out, move the marker there to signify we are
+                # done
+                if [[ ! -e $out ]]
+                then mv $inprogress $out
+                else echo "[workerpool worker $JOB_COMPLETION_INDEX] out already exists: $out"
+                fi
+
             else
                 echo "[workerpool worker $JOB_COMPLETION_INDEX] skipping non-file: $in"
             fi

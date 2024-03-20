@@ -94,8 +94,13 @@ do
             TEST_NAME=$testname "$path"/init.sh
         fi
         
-        ${handler-waitForIt} $testname ${namespace-$CLUSTER_NAME-test} "${expected[@]}" $api
+        ${handler-waitForIt} $testname ${namespace-$CLUSTER_NAME-test} $api "${expected[@]}"
+        EC=$?
         undeploy $testname
+
+        if [[ $EC != 0 ]]
+        then exit $EC
+        fi
     fi
 done
 

@@ -44,7 +44,8 @@ function up {
 function waitForIt {
     local name=$1
     local ns=$2
-    local dones=("${@:3}") # an array formed from everything from the third argument on... 
+    local api=$3
+    local dones=("${@:4}") # an array formed from everything from the fourth argument on... 
 
     # Future readers: the != part is meant to avoid any pods that are
     # known to be short-lived without this, we may witness a
@@ -53,7 +54,7 @@ function waitForIt {
     # either to be all-Ready or all-not-Ready.
     local selector=app.kubernetes.io/part-of=$name,app.kubernetes.io/component!=workdispatcher
 
-    if [[ "$4" = ray ]]; then
+    if [[ "$api" = ray ]]; then
         local containers="-c job-logs"
     else
         local containers="--all-containers"
@@ -75,7 +76,7 @@ function waitForIt {
     for done in "${dones[@]}"; do
         idx=0
         while true; do
-            $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done... $selector$(tput sgr0)"
+            $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
 
             if [[ -n $DEBUG ]] || (( $idx > 10 )); then
                 # if we can't find $done in the logs after a few
@@ -92,20 +93,63 @@ function waitForIt {
         done
     done
 
-    echo "✅ PASS run-controller run test $selector"
-
     $KUBECTL delete run $name -n $ns
-    echo "✅ PASS run-controller delete test $selector"
+    echo "✅ PASS run-controller delete test=$name"
+
+    if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
+    then echo "✅ PASS run-controller run api=$api test=$name"
+    else
+        echo "$(tput setaf 2)🧪 Checking output files test=$name$(tput sgr0)" 1>&2
+        nOutputs=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                            mc ls s3/$name/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+
+        if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
+        then
+            echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
+            outputs=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                               mc ls s3/$name/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}')
+            echo "Outputs: $outputs"
+            for output in $outputs
+            do
+                echo "Checking output=$output"
+                code=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                                mc cat s3/$name/lunchpail/$name/outbox/${output}.code)
+                if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
+                then echo "✅ PASS run-controller test=$name output=$output code=0"
+                else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
+                fi
+
+                stdout=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                                  mc ls s3/$name/lunchpail/$name/outbox/${output}.stdout | wc -l | xargs)
+                if [[ $stdout != 1 ]]
+                then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
+                else echo "✅ PASS run-controller got stdout file test=$name output=$output"
+                fi
+
+                stderr=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                                  mc ls s3/$name/lunchpail/$name/outbox/${output}.stderr | wc -l | xargs)
+                if [[ $stderr != 1 ]]
+                then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
+                else echo "✅ PASS run-controller got stderr file test=$name output=$output"
+                fi
+            done
+        else
+            echo "❌ FAIL run-controller run test $selector: bad nOutputs=$nOutputs" && return 1
+        fi
+    fi
+
+    return 0
 }
 
 # Checks if the the amount of unassigned tasks remaining is 0 and the number of tasks in the outbox is 6
 function waitForUnassignedAndOutbox {
     local name=$1
     local ns=$2
-    local expectedUnassignedTasks=$3
-    local expectedNumInOutbox=$4
-    local dataset=$5
-    local waitForMix=$6 # wait for a mix of values that sum up to $expectedNumInOutbox
+    local api=$3
+    local expectedUnassignedTasks=$4
+    local expectedNumInOutbox=$5
+    local dataset=$6
+    local waitForMix=$7 # wait for a mix of values that sum up to $expectedNumInOutbox
     
     echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
 
@@ -182,7 +226,8 @@ function waitForUnassignedAndOutbox {
 function waitForStatus {
     local name=$1
     local ns=$2
-    local statuses=("${@:3}") # an array formed from everything from the third argument on... 
+    local api=$3
+    local statuses=("${@:4}") # an array formed from everything from the fourth argument on... 
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 

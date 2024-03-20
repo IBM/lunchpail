@@ -196,7 +196,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
 import re
 def look_for_queue_updates(line: str):
     logging.info(f"Queue update {line}")
-    m = re.search("^codeflare.dev queue (\d+) (\w+) (\d+)$", line)
+    m = re.search("^lunchpail.io queue (\d+) (\w+) (\d+)$", line)
     if m is not None:
         worker_idx = m.group(1)
         box_name = m.group(2)
