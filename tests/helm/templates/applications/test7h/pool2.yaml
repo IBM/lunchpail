@@ -7,7 +7,7 @@ metadata:
 spec:
   run:
     name: test7h
-  startupDelay: 10s
+  startupDelay: 5s
   workers:
     count: 1
     size: xxs
