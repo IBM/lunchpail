@@ -74,6 +74,12 @@ spec:
                   type: boolean
                   default: false
 
+                expose:
+                  description: Expose service on given ports
+                  type: array
+                  items:
+                    type: integer
+                  
                 datasets:
                   type: array
                   items:

@@ -1,0 +1,17 @@
+{{- if .Values.expose }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+  {{- range $port := .Values.expose }}
+  - name: {{ print "port-" $port }}
+    port: {{ $port }}
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/component: shell
+  {{- end }}
+{{- end }}

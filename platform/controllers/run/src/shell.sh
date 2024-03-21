@@ -23,6 +23,7 @@ env="${14}"
 dataset_labels="${15}"
 volumes="${16}"
 volumeMounts="${17}"
+expose="${18}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -49,6 +50,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set s3AccessKey=$INTERNAL_S3_ACCESSKEY \
      --set s3SecretKey=$INTERNAL_S3_SECRETKEY \
      --set datasets=$dataset_labels \
+     --set expose=$expose \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
