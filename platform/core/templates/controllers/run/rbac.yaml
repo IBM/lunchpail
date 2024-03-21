@@ -32,7 +32,7 @@ rules:
     verbs: [get,create] # create needed by workqueue/ helm template
 
   - apiGroups: [""]
-    resources: [configmaps]
+    resources: [configmaps,services]
     verbs: [get,create,list]
 
   # to find the torchx head pod

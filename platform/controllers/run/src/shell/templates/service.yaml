@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
+  ownerReferences:
+    {{ include "owner" . | indent 4 }}
 spec:
   ports:
   {{- range $port := .Values.expose }}
@@ -11,7 +13,7 @@ spec:
     port: {{ $port }}
     protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/name: {{ $.Release.Name }}
     app.kubernetes.io/component: shell
   {{- end }}
 {{- end }}
