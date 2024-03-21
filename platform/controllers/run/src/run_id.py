@@ -9,7 +9,7 @@ def alloc_run_id(api: str, name: str):
     # resources cannot end in a dash.
 
     rando = ''.join(random.choice(string.ascii_lowercase) for i in range(12))
-    run_id =  f"{api}-{name}-{rando}"[:53].rstrip("-")
+    run_id =  f"{name}-{rando}"[:53].rstrip("-")
     workdir = os.path.join(os.environ.get("WORKDIR"), run_id)
 
     return run_id, workdir

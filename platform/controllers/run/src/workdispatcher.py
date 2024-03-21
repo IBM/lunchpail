@@ -149,7 +149,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
         "apiVersion": "codeflare.dev/v1alpha1",
         "kind": "Run",
         "metadata": {
-            "name": workdispatcher_name + "-workdispatcher-run",
+            "name": workdispatcher_name + "-dispatcher",
             "labels": {
                 "app.kubernetes.io/name": workdispatcher_name,
                 # TODO, this currently results in the pod status tracker updating run_name "app.kubernetes.io/part-of": run_name,
