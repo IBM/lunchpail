@@ -75,11 +75,22 @@ spec:
                   default: false
 
                 expose:
-                  description: Expose service on given ports
+                  description: |
+                    Expose service on given ports
                   type: array
                   items:
                     type: integer
-                  
+
+                securityContext:
+                  description: |
+                    The required container securityContext
+                  type: object
+                  properties:
+                    runAsUser:
+                      type: integer
+                    runAsGroup:
+                      type: integer
+
                 datasets:
                   type: array
                   items:

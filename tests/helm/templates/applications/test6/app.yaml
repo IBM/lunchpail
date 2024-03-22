@@ -15,4 +15,7 @@ spec:
   env:
     xxx: "3333"
     yyy: "4444"
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
 {{- end }}

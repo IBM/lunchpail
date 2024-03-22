@@ -119,6 +119,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 str(startup_delay_from_spec(spec["startupDelay"] if "startupDelay" in spec else "0")),
                 base64.b64encode(json.dumps(volumes).encode('ascii')) if volumes is not None and len(volumes) > 0 else "",
                 base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None and len(volumeMounts) > 0 else "",
+                base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:

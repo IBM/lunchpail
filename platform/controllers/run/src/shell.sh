@@ -24,6 +24,7 @@ dataset_labels="${15}"
 volumes="${16}"
 volumeMounts="${17}"
 expose="${18}"
+securityContext="${19}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -53,6 +54,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set expose=$expose \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
+     --set securityContext=$securityContext \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
