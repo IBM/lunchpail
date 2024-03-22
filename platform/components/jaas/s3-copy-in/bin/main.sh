@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 if [[ -z "$S3_ENDPOINT" ]]
 then
@@ -41,11 +41,11 @@ echo "S3 copy-in bucket=$COPYIN_BUCKET"
 echo "S3 copy-in origin=$COPYIN_ORIGIN"
 echo "S3 copy-in repo=$COPYIN_REPO"
 
-until mc alias set s3 $S3_ENDPOINT $accessKeyID $secretAccessKey
+until mcli alias set s3 $S3_ENDPOINT $accessKeyID $secretAccessKey
 do sleep 2
 done
 
-mc mb --ignore-existing s3/$COPYIN_BUCKET
+mcli mb --ignore-existing s3/$COPYIN_BUCKET
 
 if [[ "${COPYIN_ORIGIN}" = git ]]
 then
@@ -81,5 +81,5 @@ then
     echo "Here are the files we will upload:"
     find .
 
-    mc cp -r * s3/$COPYIN_BUCKET
+    mcli cp -r * s3/$COPYIN_BUCKET
 fi

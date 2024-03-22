@@ -1,12 +1,15 @@
-FROM docker.io/bitnami/minio-client:2024.3.3
+FROM docker.io/alpine:3
 
 USER root
-RUN apt update && \
-    apt -y install git ca-certificates ncurses-bin && \
-    apt clean autoclean && apt autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
-ADD bin /opt/lunchpail/bin
+RUN apk update && \
+    apk add --no-cache git ca-certificates minio-client
 
-USER 1001
+RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
+USER lunchpail
+ENV HOME=/home/lunchpail
 ENV TERM=xterm-256color
+WORKDIR /home/lunchpail
 
-ENTRYPOINT ["/opt/lunchpail/bin/main.sh"]
+COPY --chown=lunchpail:root bin .
+
+ENTRYPOINT ["./main.sh"]
