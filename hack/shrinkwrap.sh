@@ -144,9 +144,13 @@ $HELM_TEMPLATE \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$DEFAULT_USER"
 
-# up.sh
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/up.sh
+# up
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/up
 #!/bin/sh
+
+#
+# up: bring up the services
+#
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
@@ -163,11 +167,15 @@ do
     fi
 done
 EOF
-chmod +x "$OUTDIR"/up.sh
+chmod +x "$OUTDIR"/up
 
-# down.sh
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" > "$OUTDIR"/down.sh
+# down
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" > "$OUTDIR"/down
 #!/bin/sh
+
+#
+# down: bring down the services
+#
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
@@ -177,4 +185,46 @@ do
     kubectl delete -f $f $ns
 done
 EOF
-chmod +x "$OUTDIR"/down.sh
+chmod +x "$OUTDIR"/down
+
+# qstat
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qstat
+#!/bin/sh
+
+#
+# qstat: stream statistics on queue depth and live workers
+#
+
+kubectl logs -l app.kubernetes.io/component=workstealer -n jaas-user -f --tail=-1 | grep jaas.dev
+EOF
+chmod +x "$OUTDIR"/qstat
+
+# qls
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qls
+#!/bin/sh
+
+#
+# qls: cat the contents of a file in the queue. With no arguments, it
+#      will print the root of the queue. Provided an argument, it will list
+#      the contents of that filepath in the queue
+#
+# Usage: qcat [filepath]
+#
+
+kubectl exec $(kubectl get pod -l app.kubernetes.io/component=s3 -n jaas-system -o name --no-headers | head -1) -n jaas-system -- mc ls s3/$1
+EOF
+chmod +x "$OUTDIR"/qls
+
+# qcat
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qcat
+#!/bin/sh
+
+#
+# qcat: cat the contents of a file in the queue.
+#
+# Usage: qcat [filepath]
+#
+
+kubectl exec $(kubectl get pod -l app.kubernetes.io/component=s3 -n jaas-system -o name --no-headers | head -1) -n jaas-system -- mc cat s3/$1
+EOF
+chmod +x "$OUTDIR"/qcat
