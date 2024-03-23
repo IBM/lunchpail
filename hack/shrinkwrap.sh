@@ -17,7 +17,7 @@ set -o pipefail
 
 JAAS_FULL=${JAAS_FULL:-false}
 
-while getopts "ad:fl" opt
+while getopts "ac:d:fl" opt
 do
     case $opt in
         d) OUTDIR=${OPTARG}; continue;;
@@ -143,3 +143,38 @@ $HELM_TEMPLATE \
      2> >(grep -v 'found symbolic link' >&2) \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$DEFAULT_USER"
+
+# up.sh
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/up.sh
+#!/bin/sh
+
+SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+
+for f in "$SCRIPTDIR"/01-jaas-prereqs1.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/05-jaas-default-user.yml
+do
+    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+    kubectl apply -f $f $ns
+
+    if [[ $f =~ 02 ]]
+    then
+        echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
+        kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s
+        kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
+    fi
+done
+EOF
+chmod +x "$OUTDIR"/up.sh
+
+# down.sh
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" > "$OUTDIR"/down.sh
+#!/bin/sh
+
+SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+
+for f in "$SCRIPTDIR"/05-jaas-default-user.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/01-jaas-prereqs1.yml
+do
+    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+    kubectl delete -f $f $ns
+done
+EOF
+chmod +x "$OUTDIR"/down.sh
