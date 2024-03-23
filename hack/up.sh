@@ -34,17 +34,7 @@ echo "Creating shrinkwraps JAAS_FULL=$JAAS_FULL base-HELM_INSTALL_FLAGS=$HELM_IN
 HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/shrinkwrap.sh -d "$SCRIPTDIR"/shrinks
 
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
-for f in "$SCRIPTDIR"/shrinks/*.yml
-do
-    if [[ -n "$RUNNING_TESTS" ]] && [[ $(basename $f) =~ default-user ]]
-    then
-        echo "Skipping default-user for tests"
-        continue
-    fi
-
-    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
-    $KUBECTL apply -f "$f" $ns --server-side --force-conflicts
-done
+"$SCRIPTDIR"/shrinks/up
 
 if [[ -z "$LITE" ]]
 then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS
@@ -59,23 +49,21 @@ then
     done
 fi
 
+function cleanup {
+    if [[ -n "$watchpid" ]]
+    then kill $watchpid >& /dev/null || true
+    fi
+}
+trap cleanup EXIT
+
 $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
-watch=$!
-
-echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
-$KUBECTL wait pod -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/name!=spark-operator -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
-
-echo "$(tput setaf 2)Waiting for datashim to be ready$(tput sgr0)"
-$KUBECTL wait pod -l app.kubernetes.io/name=dlf -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
-
-# echo "$(tput setaf 2)Waiting for image cacher to be ready$(tput sgr0)"
-# $KUBECTL wait pod -l app.kubernetes.io/name=kube-fledged -n default --for=condition=ready --timeout=-1s
+watchpid=$!
 
 if [[ "$HAS_NVIDIA" = true ]]; then
     echo "$(tput setaf 2)Waiting for gpu operator to be ready$(tput sgr0)"
     $KUBECTL wait pod -l app.kubernetes.io/managed-by=gpu-operator -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
 fi
 
-kill $watch 2> /dev/null
+cleanup
 
 "$SCRIPTDIR"/s3-copyin.sh

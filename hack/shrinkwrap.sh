@@ -156,10 +156,10 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 for f in "$SCRIPTDIR"/01-jaas-prereqs1.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/05-jaas-default-user.yml
 do
-    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
-    kubectl apply -f $f $ns
+    if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+    kubectl apply --server-side -f $f $ns
 
-    if [[ $f =~ 02 ]]
+    if [ "$(basename $f)" = "02-jaas.yml" ]
     then
         echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
         kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s
@@ -181,7 +181,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 for f in "$SCRIPTDIR"/05-jaas-default-user.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/01-jaas-prereqs1.yml
 do
-    if [[ -f "${f%%.yml}.namespace" ]]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
+    if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
     kubectl delete -f $f $ns
 done
 EOF
