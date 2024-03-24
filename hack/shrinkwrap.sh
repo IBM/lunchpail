@@ -163,9 +163,16 @@ do
 
     if [ "$(basename $f)" = "02-jaas.yml" ]
     then
-        echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
-        kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s
-        kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
+        if which -s gum
+        then
+            gum spin --title "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)" -- \
+              kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s && \
+                kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
+        else
+            echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
+            kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s
+            kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
+        fi
     fi
 done
 EOF
@@ -219,13 +226,22 @@ done
 
 SELECTOR=app.kubernetes.io/component=workstealer$APP_SELECTOR
 
-while [[ $(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]
-do echo "Waiting for workload to start: app=${APP:-all} namespace=${NS:-jaas-user}" && sleep 2
-done
+if which -s gum
+then
+    gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS:-jaas-user})" -- \
+        sh -c "while [[ \$(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]; do sleep 2; done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready"
+else
+    while [[ $(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]
+    do echo "Waiting for workload to start: app=${APP:-all} namespace=${NS:-jaas-user}" && sleep 2
+    done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready
+fi
+EC=$?
 
-kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready
-
-exec kubectl logs -l $SELECTOR -n $NS -f --tail=$TAIL $EXTRA | grep lunchpail.io
+if [[ $EC = 0 ]]
+then
+    exec kubectl logs -l $SELECTOR -n $NS -f --tail=$TAIL $EXTRA | grep lunchpail.io
+else exit $EC
+fi
 EOF
 chmod +x "$OUTDIR"/qstat
 
@@ -260,9 +276,45 @@ EOF
 chmod +x "$OUTDIR"/qcat
 
 # lunchpail controller logs
-mkdir -p "$OUTDIR"/debug/logs/controllers
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/debug/logs/controllers/lunchpail
+mkdir -p "$OUTDIR"/logs/controllers
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/controllers/lunchpail
 #!/bin/sh
 exec kubectl logs -n jaas-system -l app.kubernetes.io/name=run-controller --tail=-1 $@
 EOF
-chmod +x "$OUTDIR"/debug/logs/controllers/lunchpail
+chmod +x "$OUTDIR"/logs/controllers/lunchpail
+
+# workerpool logs
+mkdir -p "$OUTDIR"/logs
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/workers
+#!/bin/sh
+
+NS=jaas-user
+CONTAINERS="-c app"
+FILTER="workerpool worker"
+
+while getopts "a:gn:" opt
+do
+    case $opt in
+        a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
+        g) FILTER=""; CONTAINERS="--all-containers"; continue;;
+        n) NS=${OPTARG}; continue;;
+    esac
+done
+shift $((OPTIND-1))
+
+SELECTOR=app.kubernetes.io/component=workerpool$APP_SELECTOR
+
+if which -s gum
+then
+    gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS})" -- \
+        sh -c "while [[ \$(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]; do sleep 2; done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready"
+else
+    while [[ $(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]
+    do echo "Waiting for workload to start: app=${APP} namespace=${NS}" && sleep 2
+    done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready
+fi
+EC=$?
+
+exec kubectl logs -n $NS -l $SELECTOR --tail=-1 -f $CONTAINERS $@ | grep -v "$FILTER"
+EOF
+chmod +x "$OUTDIR"/logs/workers
