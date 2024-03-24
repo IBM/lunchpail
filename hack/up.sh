@@ -31,10 +31,10 @@ then
 fi
 
 echo "Creating shrinkwraps JAAS_FULL=$JAAS_FULL base-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS"
-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/shrinkwrap.sh -d "$SCRIPTDIR"/shrinks
+HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/shrinkwrap.sh -d "$SCRIPTDIR"/../builds/dev
 
 echo "$(tput setaf 2)Booting JaaS for arch=$ARCH$(tput sgr0)"
-"$SCRIPTDIR"/shrinks/up
+"$SCRIPTDIR"/../builds/dev/up
 
 if [[ -z "$LITE" ]]
 then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS

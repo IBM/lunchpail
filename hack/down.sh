@@ -22,6 +22,6 @@ fi
 
 # iterate over the shrinkwraps in reverse order, since the natural
 # order will place preqreqs up front
-if [[ -f "$SCRIPTDIR"/shrinks/down ]]
-then "$SCRIPTDIR"/shrinks/down
+if [[ -f "$SCRIPTDIR"/../builds/dev/down ]]
+then "$SCRIPTDIR"/builds/dev/down
 fi
