@@ -4,9 +4,8 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/settings.sh
 
 # kill any test resources before we bring down controllers
-"$SCRIPTDIR"/../tests/bin/undeploy-tests.sh || $KUBECTL delete ns codeflare-test --ignore-not-found || true
+"$SCRIPTDIR"/../tests/bin/undeploy-tests.sh || $KUBECTL delete ns jaas-test --ignore-not-found || true
 
-echo "$(tput setaf 2)Shutting down JaaS$(tput sgr0)"
 if [[ -z "$LITE" ]]
 then ($HELM ls -A | grep -q $IBM) && $HELM delete --wait $IBM
 fi

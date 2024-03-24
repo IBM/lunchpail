@@ -160,7 +160,7 @@ get_kubectl
 get_helm
 check_podman
 
-if [[ -z "$CODEFLARE_PREP_INIT" ]]; then
+if [[ -z "$LUNCHPAIL_PREP_INIT" ]]; then
     # allows us to do some docker builds in parallel with these expensive steps
     update_helm_dependencies
     get_kind
