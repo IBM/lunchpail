@@ -38,7 +38,7 @@ then
         case $opt in
             n) export NO_BUILD=1; continue;;
             c) export CONTEXT_NAME=$OPTARG; continue;;
-            l) echo "Running up in lite mode"; export NO_KUBEFLOW=1; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
+            l) echo "Running up in lite mode"; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
             t) export RUNNING_TESTS=true; continue;;
             k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
             o) export CLUSTER_TYPE=oc; continue;;
@@ -50,11 +50,9 @@ then
     shift $((OPTIND-1))
 fi
 
-PLA=$(grep name "$SETTINGS_SCRIPTDIR"/../platform/Chart.yaml | awk '{print $2}' | head -1)
 IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}' | head -1)
 
 ARCH=${ARCH-$(uname -m)}
-export KFP_VERSION=2.0.0
 
 # Note: a trailing slash is required, if this is non-empty
 IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/

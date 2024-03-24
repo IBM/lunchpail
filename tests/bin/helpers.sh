@@ -33,12 +33,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-    if [[ -z "$NO_KUBEFLOW" ]]
-    then
-        "$MAIN_SCRIPTDIR"/../../hack/up.sh -t $UP_FLAGS # -t says don't watch, just return when you are done
-    else
-        "$MAIN_SCRIPTDIR"/../../hack/up-no-kfp.sh -t $UP_FLAGS # -t says don't watch, just return when you are done
-    fi
+    "$MAIN_SCRIPTDIR"/../../hack/up.sh -t $UP_FLAGS # -t says don't watch, just return when you are done
 }
 
 function waitForIt {

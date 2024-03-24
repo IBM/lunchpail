@@ -15,7 +15,7 @@ the coverage with the original owner of that use case's code.
 | test0b    | n/a      |          |            |              |              | Yes: bogus repo  |              |
 | test1     | ray      |          |            |              |     Yes      |                  |              |
 | test2     | torch    |          |            |              |              |                  |              |
-| test3     | kubeflow |          |            |              |              |                  |              |
+| test3     | <deleted>|          |            |              |              |                  |              |
 | test4     | sequence |          |            |              |              |                  |              |
 | test5     | torch    |          |            |    Yes/Yes   |              |                  |              |
 | test6     | shell    |          |            |              |              |                  |              |

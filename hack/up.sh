@@ -40,15 +40,6 @@ if [[ -z "$LITE" ]]
 then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS
 fi
 
-# sigh, some components may use kustomize, not helm
-if [[ -d "$SCRIPTDIR"/../platform/kustomize ]]
-then
-    for kusto in "$SCRIPTDIR"/../platform/kustomize/*.sh
-    do
-        ($kusto up || exit 0)
-    done
-fi
-
 function cleanup {
     if [[ -n "$watchpid" ]]
     then kill $watchpid >& /dev/null || true
