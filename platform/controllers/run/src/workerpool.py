@@ -226,7 +226,7 @@ def track_queue_logs(pod_name: str, namespace: str, labels):
 # e.g. codeflare.dev queue 0 inbox 30
 def look_for_workstealer_updates(context_name: str, run_namespace: str, run_name: str, line: str):
     # logging.info(f"Workstealer update {line}")
-    m = re.search("^jaas.dev (done|unassigned) (\d+)$", line)
+    m = re.search("^lunchpail.io (done|unassigned) (\d+)$", line)
     if m is not None:
         state = m.group(1) # done or unassigned
         count = m.group(2) # how many are done, or how many are unassigned

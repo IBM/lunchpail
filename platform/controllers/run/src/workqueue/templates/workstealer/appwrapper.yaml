@@ -21,4 +21,4 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
-          {{ include "jaas.dev/WorkStealerJob" . | indent 10 }}
+          {{ include "job" . | indent 10 }}

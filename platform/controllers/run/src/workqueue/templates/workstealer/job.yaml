@@ -1,4 +1,4 @@
-{{- define "jaas.dev/WorkStealerJob" }}
+{{- define "job" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -30,5 +30,5 @@ spec:
       terminationGracePeriodSeconds: 0
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       containers:
-        {{- include "jaas.dev/containers/workstealer" . | indent 8 }}
+        {{- include "containers/workstealer" . | indent 8 }}
 {{- end }}

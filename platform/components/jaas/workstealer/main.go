@@ -70,6 +70,7 @@ type Model struct {
 	CompletedTasks []AssignedTask
 }
 
+var run = os.Getenv("RUN_NAME")
 var queue = os.Getenv("QUEUE")
 var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
 var finished = filepath.Join(queue, "finished")
@@ -101,14 +102,14 @@ func reportChangedFile(filepath string) {
 // Record the current state of Model for observability
 //
 func reportState(model Model) {
-	fmt.Fprintf(os.Stderr, "jaas.dev unassigned %d\n", len(model.UnassignedTasks))
-	fmt.Fprintf(os.Stderr, "jaas.dev assigned %d\n", len(model.AssignedTasks))
-	fmt.Fprintf(os.Stderr, "jaas.dev processing %d\n", len(model.ProcessingTasks))
-	fmt.Fprintf(os.Stderr, "jaas.dev done %d\n", len(model.FinishedTasks))
-	fmt.Fprintf(os.Stderr, "jaas.dev liveworkers %d\n", len(model.LiveWorkers))
+	fmt.Fprintf(os.Stderr, "lunchpail.io unassigned %d %s\n", len(model.UnassignedTasks), run)
+	fmt.Fprintf(os.Stderr, "lunchpail.io assigned %d %s\n", len(model.AssignedTasks), run)
+	fmt.Fprintf(os.Stderr, "lunchpail.io processing %d %s\n", len(model.ProcessingTasks), run)
+	fmt.Fprintf(os.Stderr, "lunchpail.io done %d %s\n", len(model.FinishedTasks), run)
+	fmt.Fprintf(os.Stderr, "lunchpail.io liveworkers %d %s\n", len(model.LiveWorkers), run)
 
 	for _, worker := range model.LiveWorkers {
-		fmt.Fprintf(os.Stderr, "jaas.dev liveworker %s %d %d\n", worker.name, len(worker.assignedTasks), len(worker.processingTasks))
+		fmt.Fprintf(os.Stderr, "lunchpail.io liveworker %s %d %d %s\n", worker.name, len(worker.assignedTasks), len(worker.processingTasks), run)
 	}
 }
 
