@@ -47,6 +47,7 @@ fi
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/..
+WRAPS="$SCRIPTDIR"/shrinkwrap
 
 if [[ -z "$HELM_DEPENDENCY_DONE" ]]
 then
@@ -144,218 +145,36 @@ $HELM_TEMPLATE \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$DEFAULT_USER"
 
+mkdir -p "$OUTDIR"/logs/controllers
+
 # up
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | sed "s#\$ARCH#$ARCH#g" > "$OUTDIR"/up
-#!/bin/sh
-
-#
-# up: bring up the services
-#
-
-SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-
-echo "$(tput setaf 2)Booting Lunchpail for arch=$ARCH$(tput sgr0)"
-
-for f in "$SCRIPTDIR"/01-jaas-prereqs1.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/05-jaas-default-user.yml
-do
-    if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
-    kubectl apply --server-side -f $f $ns
-
-    if [ "$(basename $f)" = "02-jaas.yml" ]
-    then
-        if which gum > /dev/null 2>&1
-        then
-            gum spin --title "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)" -- \
-              kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s && \
-                kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
-        else
-            echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
-            kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s
-            kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
-        fi
-    fi
-done
-EOF
+cat "$WRAPS"/up.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | sed "s#\$ARCH#$ARCH#g" > "$OUTDIR"/up
 chmod +x "$OUTDIR"/up
 
-# Future: wait for nvidia operators, too
-#if [[ "$HAS_NVIDIA" = true ]]; then
-#    echo "$(tput setaf 2)Waiting for gpu operator to be ready$(tput sgr0)"
-#    $KUBECTL wait pod -l app.kubernetes.io/managed-by=gpu-operator -n $NAMESPACE_SYSTEM --for=condition=ready --timeout=-1s
-#fi
-
 # down
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" > "$OUTDIR"/down
-#!/bin/sh
-
-#
-# down: bring down the services
-#
-
-SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-
-echo "$(tput setaf 2)Shutting down Lunchpail$(tput sgr0)"
-
-for f in "$SCRIPTDIR"/05-jaas-default-user.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/01-jaas-prereqs1.yml
-do
-    if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
-    kubectl delete -f $f $ns
-done
-EOF
+cat "$WRAPS"/down.sh | sed "s#kubectl#$KUBECTL#g" > "$OUTDIR"/down
 chmod +x "$OUTDIR"/down
 
 # qstat
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qstat
-#!/bin/sh
-
-#
-# qstat: stream statistics on queue depth and live workers
-#
-
-NS=jaas-user
-TAIL=-1
-
-while getopts "a:n:t:" opt
-do
-    case $opt in
-        a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
-        n) NS=${OPTARG}; continue;;
-        t) TAIL=${OPTARG}; continue;;
-    esac
-done
-
-SELECTOR=app.kubernetes.io/component=workstealer$APP_SELECTOR
-
-if which gum > /dev/null 2>&1
-then
-    gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS:-jaas-user})" -- \
-        sh -c "while [[ \$(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]; do sleep 2; done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready"
-else
-    while [[ $(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]
-    do echo "Waiting for workload to start: app=${APP:-all} namespace=${NS:-jaas-user}" && sleep 2
-    done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready
-fi
-EC=$?
-
-if [[ $EC = 0 ]]
-then
-    exec kubectl logs -l $SELECTOR -n $NS -f --tail=$TAIL $EXTRA | grep lunchpail.io
-else exit $EC
-fi
-EOF
+cat "$WRAPS"/qstat.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qstat
 chmod +x "$OUTDIR"/qstat
 
 # qls
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qls
-#!/bin/sh
-
-#
-# qls: cat the contents of a file in the queue. With no arguments, it
-#      will print the root of the queue. Provided an argument, it will list
-#      the contents of that filepath in the queue
-#
-# Usage: qcat [filepath]
-#
-
-exec kubectl exec $(kubectl get pod -l app.kubernetes.io/component=s3 -n jaas-system -o name --no-headers | head -1) -n jaas-system -- mc ls s3/$1
-EOF
+cat "$WRAPS"/qls.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qls
 chmod +x "$OUTDIR"/qls
 
 # qcat
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qcat
-#!/bin/sh
-
-#
-# qcat: cat the contents of a file in the queue.
-#
-# Usage: qcat [filepath]
-#
-
-exec kubectl exec $(kubectl get pod -l app.kubernetes.io/component=s3 -n jaas-system -o name --no-headers | head -1) -n jaas-system -- mc cat s3/$1
-EOF
+cat "$WRAPS"/qcat.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qcat
 chmod +x "$OUTDIR"/qcat
 
 # lunchpail controller logs
-mkdir -p "$OUTDIR"/logs/controllers
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/controllers/lunchpail
-#!/bin/sh
-exec kubectl logs -n jaas-system -l app.kubernetes.io/name=run-controller --tail=-1 $@
-EOF
+cat "$WRAPS"/logs/controllers/lunchpail.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/controllers/lunchpail
 chmod +x "$OUTDIR"/logs/controllers/lunchpail
 
 # workerpool logs
-mkdir -p "$OUTDIR"/logs
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/workers
-#!/bin/sh
-
-NS=jaas-user
-CONTAINERS="-c app"
-FILTER="workerpool worker"
-
-while getopts "a:gn:" opt
-do
-    case $opt in
-        a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
-        g) FILTER=""; CONTAINERS="--all-containers"; continue;;
-        n) NS=${OPTARG}; continue;;
-    esac
-done
-shift $((OPTIND-1))
-
-SELECTOR=app.kubernetes.io/component=workerpool$APP_SELECTOR
-
-if which gum > /dev/null 2>&1
-then
-    gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS})" -- \
-        sh -c "while [[ \$(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]; do sleep 2; done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready"
-else
-    while [[ $(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]
-    do echo "Waiting for workload to start: app=${APP} namespace=${NS}" && sleep 2
-    done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready
-fi
-EC=$?
-
-if [[ $EC = 0 ]]
-then
-    exec kubectl logs -n $NS -l $SELECTOR --tail=-1 -f $CONTAINERS $@ | grep -v "$FILTER"
-fi
-EOF
+cat "$WRAPS"/logs/workers.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/workers
 chmod +x "$OUTDIR"/logs/workers
 
 # dispatcher logs
-mkdir -p "$OUTDIR"/logs
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/dispatcher
-#!/bin/sh
-
-NS=jaas-user
-CONTAINERS="-c main"
-
-while getopts "a:gn:" opt
-do
-    case $opt in
-        a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
-        g) FILTER=""; CONTAINERS="--all-containers"; continue;;
-        n) NS=${OPTARG}; continue;;
-    esac
-done
-shift $((OPTIND-1))
-
-SELECTOR=app.kubernetes.io/component=workdispatcher$APP_SELECTOR
-
-if which gum > /dev/null 2>&1
-then
-    gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS})" -- \
-        sh -c "until [[ \$(kubectl get pods -l $SELECTOR -o 'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}' -n $NS --ignore-not-found) = True ]] || [[ \$(kubectl get pods -l $SELECTOR -o 'jsonpath={..status.phase}' -n $NS --ignore-not-found) = Succeeded ]]; do sleep 2; done"
-else
-    until [[ $(kubectl get pods -l $SELECTOR -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' -n $NS --ignore-not-found) = True ]] || [[ $(kubectl get pods -l $SELECTOR -o 'jsonpath={..status.phase}' -n $NS --ignore-not-found) = Succeeded ]]
-    do echo "Waiting for workload to start: app=${APP} namespace=${NS}" && sleep 2
-    done
-fi
-EC=$?
-
-if [[ $EC = 0 ]]
-then
-    exec kubectl logs -n $NS -l $SELECTOR --tail=-1 -f $CONTAINERS $@
-fi
-EOF
+cat "$WRAPS"/logs/dispatcher.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/dispatcher
 chmod +x "$OUTDIR"/logs/dispatcher
