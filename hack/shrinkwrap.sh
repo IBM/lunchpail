@@ -145,7 +145,7 @@ $HELM_TEMPLATE \
      > "$DEFAULT_USER"
 
 # up
-cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/up
+cat <<'EOF' | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | sed "s#\$ARCH#$ARCH#g" > "$OUTDIR"/up
 #!/bin/sh
 
 #
