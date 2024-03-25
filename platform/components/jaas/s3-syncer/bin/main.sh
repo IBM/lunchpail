@@ -55,12 +55,11 @@ alive=$remote/$inbox/.alive
 function cleanup {
     echo "[workerpool s3-syncer-main $(basename $local)] Terminating..."
 
-    # deregister ourselves
+    # deregister ourselves as a live worker
     rclone --config $config delete $alive
 
     # one last upload...
-    "$SCRIPTDIR"/put.sh $config $remote $local outbox 1
-    "$SCRIPTDIR"/put.sh $config $remote $local processing 1
+    "$SCRIPTDIR"/sync.sh $config $remote $local $inbox processing outbox 1
 }
 trap cleanup INT TERM EXIT
 
@@ -77,8 +76,4 @@ rclone --config $config touch $alive
 
 # Listen for new work on `inbox`, finished work on `outbox`, and
 # in-progress work on `processing`
-"$SCRIPTDIR"/get.sh $config $remote $local $inbox processing &
-"$SCRIPTDIR"/put.sh $config $remote $local outbox &
-"$SCRIPTDIR"/put.sh $config $remote $local processing &
-
-wait
+"$SCRIPTDIR"/sync.sh $config $remote $local $inbox processing outbox
