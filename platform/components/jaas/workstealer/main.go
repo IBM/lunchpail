@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"math/rand"
 	"path/filepath"
+	"text/tabwriter"
 )
 
 //
@@ -91,6 +92,8 @@ var assignedTaskPattern = regexp.MustCompile("^queues/(.+)/inbox/(.+)$")
 var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
 
+var writer = tabwriter.NewWriter(os.Stderr, 0, 8, 1, '\t', tabwriter.AlignRight)
+
 //
 // Emit the path to the file we deleted
 //
@@ -111,18 +114,20 @@ func reportChangedFile(filepath string) {
 func reportState(model Model) {
 	now := time.Now().UnixNano()
 
-	fmt.Fprintf(os.Stderr, "lunchpail.io unassigned %d %s %d\n", len(model.UnassignedTasks), run, now)
-	fmt.Fprintf(os.Stderr, "lunchpail.io assigned %d %s %d\n", len(model.AssignedTasks), run, now)
-	fmt.Fprintf(os.Stderr, "lunchpail.io processing %d %s %d\n", len(model.ProcessingTasks), run, now)
-	fmt.Fprintf(os.Stderr, "lunchpail.io done %d %d %s %d\n", len(model.SuccessfulTasks), len(model.FailedTasks), run, now)
-	fmt.Fprintf(os.Stderr, "lunchpail.io liveworkers %d %s %d\n", len(model.LiveWorkers), run, now)
+	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%d\n", len(model.UnassignedTasks), run, now)
+	fmt.Fprintf(writer, "lunchpail.io\tassigned\t%d\t\t\t\t\t%s\t%d\n", len(model.AssignedTasks), run, now)
+	fmt.Fprintf(writer, "lunchpail.io\tprocessing\t\t%d\t\t\t\t%s\t%d\n", len(model.ProcessingTasks), run, now)
+	fmt.Fprintf(writer, "lunchpail.io\tdone\t\t\t%d\t%d\t\t%s\t%d\n", len(model.SuccessfulTasks), len(model.FailedTasks), run, now)
+	fmt.Fprintf(writer, "lunchpail.io\tliveworkers\t%d\t\t\t\t\t%s\t%d\n", len(model.LiveWorkers), run, now)
 
 	for _, worker := range model.LiveWorkers {
 		fmt.Fprintf(
-			os.Stderr, "lunchpail.io liveworker %s %d %d %d %d %s %d\n",
-			worker.name, len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, run, now,
+			writer, "lunchpail.io\tliveworker\t%d\t%d\t%d\t%d\t%s\t%s\t%d\n",
+			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run, now,
 		)
 	}
+
+	writer.Flush()
 }
 
 //
