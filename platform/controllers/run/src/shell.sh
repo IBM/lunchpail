@@ -25,6 +25,7 @@ volumes="${16}"
 volumeMounts="${17}"
 expose="${18}"
 securityContext="${19}"
+component="${20}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -35,6 +36,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set uid=$uid \
      --set name=$name \
      --set partOf=$part_of \
+     --set component=$component \
      --set enclosingStep=$step \
      --set image=$image \
      --set namespace=$namespace \

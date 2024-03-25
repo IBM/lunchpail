@@ -5,7 +5,7 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
   labels:
-    app.kubernetes.io/component: shell
+    app.kubernetes.io/component: {{ .Values.component }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
     app.kubernetes.io/name: {{ .Values.name }}

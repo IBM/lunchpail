@@ -9,7 +9,7 @@ from clone import clone
 from run_id import alloc_run_id
 from datasets import add_dataset, to_string
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch):
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, component: str, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch):
     logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
 
     image = application['spec']['image']
@@ -62,6 +62,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None and len(volumeMounts) > 0 else "",
             ("{" + ",".join(map(str, application["spec"]["expose"]))+ "}") if "expose" in application["spec"] and len(application["spec"]["expose"]) > 0 else "",
             base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
+            component if component is not None else "shell",
         ], capture_output=True)
 
         logging.info(f"Shell callout done for name={name} with returncode={shell_out.returncode}")

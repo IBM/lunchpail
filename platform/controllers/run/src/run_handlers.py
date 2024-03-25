@@ -123,6 +123,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         # also, if part of a sequence, which step are we?
         part_of = labels['app.kubernetes.io/part-of'] if 'app.kubernetes.io/part-of' in labels else name
         step = labels['app.kubernetes.io/step'] if 'app.kubernetes.io/step' in labels else '0'
+        component = labels['app.kubernetes.io/component'] if 'app.kubernetes.io/component' in labels else None
 
         application_name = spec['application']['name']
         application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
@@ -156,7 +157,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         elif api == "torch":
             head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "shell":
-            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, component, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         elif api == "sequence":
             head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "workqueue":
