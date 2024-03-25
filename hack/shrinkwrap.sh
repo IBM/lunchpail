@@ -159,6 +159,10 @@ chmod +x "$OUTDIR"/down
 cat "$WRAPS"/qstat.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qstat
 chmod +x "$OUTDIR"/qstat
 
+# qtop
+cat "$WRAPS"/qtop.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qtop
+chmod +x "$OUTDIR"/qtop
+
 # qls
 cat "$WRAPS"/qls.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qls
 chmod +x "$OUTDIR"/qls
