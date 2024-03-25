@@ -4,6 +4,7 @@ import (
 	"os"
 	"fmt"
 	"log"
+	"time"
 	"bufio"
 	"regexp"
 	"math/rand"
@@ -18,7 +19,8 @@ import (
 // 3. DeadWorkers, indicated by deletion of .alive files
 // 4. AssignedTaskByWorker, indicated by any new files in queues/{workerId}/inbox
 // 5. ProcessingTaskByWorker, indicated by any new files in queues/{workerId}/processing
-// 6. CompletedTaskByWorker, indicated by any new files in queues/{workerId}/outbox
+// 6. SuccessfulTaskByWorker, indicated by any new files in queues/{workerId}/outbox.succeeded
+// 6. FailedTaskByWorker, indicated by any new files in queues/{workerId}/outbox.failed
 //
 type HowChanged int
 const (
@@ -36,13 +38,14 @@ const (
 
 	AssignedTaskByWorker
 	ProcessingTaskByWorker
-	CompletedTaskByWorker
+	SuccessfulTaskByWorker
+	FailedTaskByWorker
 
 	Nothing
 )
 
 //
-// A Task that was completed by a given Worker
+// A Task that was assigned to a given Worker
 //
 type AssignedTask struct {
 	worker string
@@ -51,6 +54,8 @@ type AssignedTask struct {
 
 type Worker struct {
 	alive bool
+	nSuccess uint
+	nFail uint
 	name string
 	assignedTasks []string
 	processingTasks []string
@@ -67,7 +72,9 @@ type Model struct {
 
 	AssignedTasks []AssignedTask
 	ProcessingTasks []AssignedTask
-	CompletedTasks []AssignedTask
+
+	SuccessfulTasks []AssignedTask
+	FailedTasks []AssignedTask
 }
 
 var run = os.Getenv("RUN_NAME")
@@ -82,7 +89,7 @@ var finishedTaskPattern = regexp.MustCompile("^finished/(.+)$")
 var liveWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]alive$")
 var assignedTaskPattern = regexp.MustCompile("^queues/(.+)/inbox/(.+)$")
 var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
-var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)$")
+var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
 
 //
 // Emit the path to the file we deleted
@@ -102,14 +109,19 @@ func reportChangedFile(filepath string) {
 // Record the current state of Model for observability
 //
 func reportState(model Model) {
-	fmt.Fprintf(os.Stderr, "lunchpail.io unassigned %d %s\n", len(model.UnassignedTasks), run)
-	fmt.Fprintf(os.Stderr, "lunchpail.io assigned %d %s\n", len(model.AssignedTasks), run)
-	fmt.Fprintf(os.Stderr, "lunchpail.io processing %d %s\n", len(model.ProcessingTasks), run)
-	fmt.Fprintf(os.Stderr, "lunchpail.io done %d %s\n", len(model.FinishedTasks), run)
-	fmt.Fprintf(os.Stderr, "lunchpail.io liveworkers %d %s\n", len(model.LiveWorkers), run)
+	now := time.Now().UnixNano()
+
+	fmt.Fprintf(os.Stderr, "lunchpail.io unassigned %d %s %d\n", len(model.UnassignedTasks), run, now)
+	fmt.Fprintf(os.Stderr, "lunchpail.io assigned %d %s %d\n", len(model.AssignedTasks), run, now)
+	fmt.Fprintf(os.Stderr, "lunchpail.io processing %d %s %d\n", len(model.ProcessingTasks), run, now)
+	fmt.Fprintf(os.Stderr, "lunchpail.io done %d %d %s %d\n", len(model.SuccessfulTasks), len(model.FailedTasks), run, now)
+	fmt.Fprintf(os.Stderr, "lunchpail.io liveworkers %d %s %d\n", len(model.LiveWorkers), run, now)
 
 	for _, worker := range model.LiveWorkers {
-		fmt.Fprintf(os.Stderr, "lunchpail.io liveworker %s %d %d %s\n", worker.name, len(worker.assignedTasks), len(worker.processingTasks), run)
+		fmt.Fprintf(
+			os.Stderr, "lunchpail.io liveworker %s %d %d %d %d %s %d\n",
+			worker.name, len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, run, now,
+		)
 	}
 }
 
@@ -146,8 +158,12 @@ func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
 		return AssignedTaskByWorker, match[1], match[2]
 	} else if match := processingTaskPattern.FindStringSubmatch(line); len(match) == 3 {
 		return ProcessingTaskByWorker, match[1], match[2]
-	} else if match := completedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
-		return CompletedTaskByWorker, match[1], match[2]
+	} else if match := completedTaskPattern.FindStringSubmatch(line); len(match) == 4 {
+		if match[3] == "succeeded" {
+			return SuccessfulTaskByWorker, match[1], match[2]
+		} else {
+			return FailedTaskByWorker, match[1], match[2]
+		}
 	}
 
 	return Nothing, "", ""
@@ -163,7 +179,8 @@ func parseUpdatesFromStdin() Model {
 	finishedTasks := []string{}
 	assignedTasks := []AssignedTask{}
 	processingTasks := []AssignedTask{}
-	completedTasks := []AssignedTask{}
+	successfulTasks := []AssignedTask{}
+	failedTasks := []AssignedTask{}
 
 	workersLookup := make(map[string]Worker)
 
@@ -180,16 +197,16 @@ func parseUpdatesFromStdin() Model {
 		case FinishedTask:
 			finishedTasks= append(finishedTasks, thing)
 		case LiveWorker:
-			worker := Worker{true, thing, []string{}, []string{}}
+			worker := Worker{true, 0, 0, thing, []string{}, []string{}}
 			workersLookup[thing] = worker
 		case DeadWorker:
-			worker := Worker{false, thing, []string{}, []string{}}
+			worker := Worker{false, 0, 0, thing, []string{}, []string{}}
 			workersLookup[thing] = worker
 		case AssignedTaskByWorker:
 			// thing is worker name, thing2 is task name
 			assignedTasks = append(assignedTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				workersLookup[thing] = Worker{worker.alive, worker.name, append(worker.assignedTasks, thing2), worker.processingTasks}
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, append(worker.assignedTasks, thing2), worker.processingTasks}
 			} else {
 				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
@@ -197,13 +214,27 @@ func parseUpdatesFromStdin() Model {
 			// thing is worker name, thing2 is task name
 			processingTasks = append(processingTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				workersLookup[thing] = Worker{worker.alive, worker.name, worker.assignedTasks, append(worker.processingTasks, thing2)}
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, worker.assignedTasks, append(worker.processingTasks, thing2)}
 			} else {
 				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
-		case CompletedTaskByWorker:
+		case SuccessfulTaskByWorker:
 			// thing is worker name, thing2 is task name
-			completedTasks = append(completedTasks, AssignedTask{thing, thing2})
+			successfulTasks = append(successfulTasks, AssignedTask{thing, thing2})
+			if worker, ok := workersLookup[thing]; ok {
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess + 1, worker.nFail, worker.name, worker.assignedTasks, worker.processingTasks}
+			} else {
+				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+			}
+
+		case FailedTaskByWorker:
+			// thing is worker name, thing2 is task name
+			failedTasks = append(failedTasks, AssignedTask{thing, thing2})
+			if worker, ok := workersLookup[thing]; ok {
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail + 1, worker.name, worker.assignedTasks, worker.processingTasks}
+			} else {
+				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+			}
 		}
 	}
 
@@ -221,7 +252,7 @@ func parseUpdatesFromStdin() Model {
 		}
 	}
 	
-	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, completedTasks}
+	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, successfulTasks, failedTasks}
 }
 
 //
@@ -291,12 +322,41 @@ func MoveToFinalOutbox(task string, worker string) {
 	fileInWorkerOutbox := filepath.Join(queues, worker, "outbox", task)
 	fullyDoneOutputFilePath := filepath.Join(outbox, task)
 
+	codeFileInWorkerOutbox := fileInWorkerOutbox + ".code"
+	fullyDoneCodeFilePath := fullyDoneOutputFilePath + ".code"
+
+	stdoutFileInWorkerOutbox := fileInWorkerOutbox + ".stdout"
+	fullyDoneStdoutFilePath := fullyDoneOutputFilePath + ".stdout"
+
+	stderrFileInWorkerOutbox := fileInWorkerOutbox + ".stderr"
+	fullyDoneStderrFilePath := fullyDoneOutputFilePath + ".stderr"
+
 	if err := os.MkdirAll(outbox, 0700); err != nil {
 		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
-	} else if err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
-		log.Fatalf("[workstealer] Failed to move output to final outbox: %v\n", err)
 	} else {
-		reportMovedFile(fileInWorkerOutbox, fullyDoneOutputFilePath)
+		if err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
+			log.Fatalf("[workstealer] Failed to move output to final outbox: %v\n", err)
+		} else {
+			reportMovedFile(fileInWorkerOutbox, fullyDoneOutputFilePath)
+		}
+
+		if err := os.Rename(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil {
+			log.Fatalf("[workstealer] Failed to move code to final outbox: %v\n", err)
+		} else {
+			reportMovedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath)
+		}
+
+		if err := os.Rename(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil {
+			log.Fatalf("[workstealer] Failed to move stdout to final outbox: %v\n", err)
+		} else {
+			reportMovedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath)
+		}
+
+		if err := os.Rename(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil {
+			log.Fatalf("[workstealer] Failed to move stderr to final outbox: %v\n", err)
+		} else {
+			reportMovedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath)
+		}			
 	}
 }
 
@@ -375,7 +435,10 @@ func reassignDeadWorkerTasks(model Model) {
 // Handle completed Tasks
 //
 func cleanupCompletedTasks(model Model) {
-	for _, completedTask := range model.CompletedTasks {
+	for _, completedTask := range model.SuccessfulTasks {
+		CleanupForCompletedTask(completedTask)
+	}
+	for _, completedTask := range model.FailedTasks {
 		CleanupForCompletedTask(completedTask)
 	}
 }

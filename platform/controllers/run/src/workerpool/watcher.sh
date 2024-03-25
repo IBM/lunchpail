@@ -47,6 +47,8 @@ function start_watch {
 
             # capture exit code, stdout and stderr of the handler
             ec=$WORKQUEUE/$outbox/$file.code
+            succeeded=$WORKQUEUE/$outbox/$file.succeeded
+            failed=$WORKQUEUE/$outbox/$file.failed
             stdout=$WORKQUEUE/$outbox/$file.stdout
             stderr=$WORKQUEUE/$outbox/$file.stderr
 
@@ -73,8 +75,10 @@ function start_watch {
                 
                 if [[ $EC = 0 ]]
                 then
+                    touch "$succeeded"
                     echo "[workerpool worker $JOB_COMPLETION_INDEX] handler success: $in"
                 else
+                    touch "$failed"
                     echo "[workerpool worker $JOB_COMPLETION_INDEX] handler error with exit code $EC: $in"
                 fi
 
