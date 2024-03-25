@@ -47,7 +47,6 @@ fi
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/..
-WRAPS="$SCRIPTDIR"/shrinkwrap
 
 if [[ -z "$HELM_DEPENDENCY_DONE" ]]
 then
@@ -145,40 +144,34 @@ $HELM_TEMPLATE \
      2> >(grep -v 'Contents of linked' >&2) \
      > "$DEFAULT_USER"
 
-mkdir -p "$OUTDIR"/logs/controllers
+function add_dir {
+    local indir=$1
+    local outdir="$2"
+    mkdir -p "$outdir"
 
-# up
-cat "$WRAPS"/up.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | sed "s#\$ARCH#$ARCH#g" > "$OUTDIR"/up
-chmod +x "$OUTDIR"/up
+    for f in "$indir"/*
+    do
+        if [[ "$f" =~ "~" ]]
+        then continue
+        elif [[ -f "$f" ]]
+        then
+            local in="$f"
+            local out="$outdir"/$(basename "${f%%.sh}")
 
-# down
-cat "$WRAPS"/down.sh | sed "s#kubectl#$KUBECTL#g" > "$OUTDIR"/down
-chmod +x "$OUTDIR"/down
+            cat "$in" | \
+                sed "s#kubectl#$KUBECTL#g" | \
+                sed "s#jaas-user#$NAMESPACE_USER#g" | \
+                sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | \
+                sed "s#\$ARCH#$ARCH#g" \
+                    > "$out"
 
-# qstat
-cat "$WRAPS"/qstat.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qstat
-chmod +x "$OUTDIR"/qstat
+            if [[ "$f" =~ ".sh" ]]
+            then chmod +x "$out"
+            fi
+        elif [[ -d "$1" ]]
+        then add_dir "$f" "$outdir"/"$(basename $f)"
+        fi
+    done
+}
 
-# qtop
-cat "$WRAPS"/qtop.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-user#$NAMESPACE_USER#g" > "$OUTDIR"/qtop
-chmod +x "$OUTDIR"/qtop
-
-# qls
-cat "$WRAPS"/qls.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qls
-chmod +x "$OUTDIR"/qls
-
-# qcat
-cat "$WRAPS"/qcat.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/qcat
-chmod +x "$OUTDIR"/qcat
-
-# lunchpail controller logs
-cat "$WRAPS"/logs/controllers/lunchpail.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/controllers/lunchpail
-chmod +x "$OUTDIR"/logs/controllers/lunchpail
-
-# workerpool logs
-cat "$WRAPS"/logs/workers.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/workers
-chmod +x "$OUTDIR"/logs/workers
-
-# dispatcher logs
-cat "$WRAPS"/logs/dispatcher.sh | sed "s#kubectl#$KUBECTL#g" | sed "s#jaas-system#$NAMESPACE_SYSTEM#g" > "$OUTDIR"/logs/dispatcher
-chmod +x "$OUTDIR"/logs/dispatcher
+add_dir "$SCRIPTDIR"/shrinkwrap/scripts "$OUTDIR"

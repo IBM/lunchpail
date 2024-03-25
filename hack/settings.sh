@@ -33,7 +33,7 @@ NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
 
 if [[ -z "$NO_GETOPTS" ]]
 then
-    while getopts "c:ltk:noprs" opt
+    while getopts "c:dltk:noprs" opt
     do
         case $opt in
             n) export NO_BUILD=1; continue;;
