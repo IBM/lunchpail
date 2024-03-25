@@ -33,7 +33,7 @@ fi
 function syncDeletes {
     for f in $local/$2/*
     do
-        if [[ ! -e $local/$1/$(basename $f) ]]
+        if [[ $(basename $f) != "*" ]] && [[ ! -e $local/$1/$(basename $f) ]]
         then rclone --quiet --config $config deletefile $remote/$1/$(basename $f)
         fi
     done
