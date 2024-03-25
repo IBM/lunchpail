@@ -163,7 +163,7 @@ do
 
     if [ "$(basename $f)" = "02-jaas.yml" ]
     then
-        if which -s gum
+        if which gum > /dev/null 2>&1 /dev/null
         then
             gum spin --title "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)" -- \
               kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s && \
@@ -226,7 +226,7 @@ done
 
 SELECTOR=app.kubernetes.io/component=workstealer$APP_SELECTOR
 
-if which -s gum
+if which gum > /dev/null 2>&1 /dev/null
 then
     gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS:-jaas-user})" -- \
         sh -c "while [[ \$(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]; do sleep 2; done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready"
@@ -304,7 +304,7 @@ shift $((OPTIND-1))
 
 SELECTOR=app.kubernetes.io/component=workerpool$APP_SELECTOR
 
-if which -s gum
+if which gum > /dev/null 2>&1 /dev/null
 then
     gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS})" -- \
         sh -c "while [[ \$(kubectl get pods -l $SELECTOR -n $NS --no-headers --ignore-not-found | wc -l | xargs) = 0 ]]; do sleep 2; done && kubectl wait pods -l $SELECTOR -n $NS --for=condition=ready"
