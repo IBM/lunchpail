@@ -1,7 +1,7 @@
 {{- define "containers/main" }}
 - name: main
   image: {{ .Values.image }}
-  command: ["/bin/bash", "-c", {{ .Values.command | quote }}]
+  command: ["/bin/bash", "-c", {{ print "touch /tmp/alive && " .Values.command }}]
   env:
     - name: NAME
       value: {{ .Release.Name }}
@@ -47,4 +47,12 @@
   securityContext:
     privileged: true
   {{- end }}
+
+  readinessProbe:
+    exec:
+      command:
+      - cat
+      - /tmp/alive
+    initialDelaySeconds: 1
+    periodSeconds: 1
 {{- end }}
