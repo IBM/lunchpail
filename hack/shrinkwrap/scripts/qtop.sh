@@ -11,7 +11,7 @@ nLines=0
 "$SCRIPTDIR"/qstat $@ |
     while read -r line
     do
-        if [[ $(cut -w -f 2 "$line") = unassigned ]]
+        if [[ $(awk '{print $2}' <<< "$line") = unassigned ]]
         then
             if [[ $nLines != 0 ]]
             then
