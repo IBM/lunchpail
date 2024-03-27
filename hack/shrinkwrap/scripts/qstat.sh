@@ -43,6 +43,6 @@ then
         | sed -E $SED_OPTIONS 's/^(processing\t+)([[:digit:]]+\t)/\1\x1b[1;7;34m\2\x1b[0m/g' \
         | sed -E $SED_OPTIONS 's/^(done\t+)([[:digit:]]+\t)([[:digit:]]+\t)/\1\x1b[1;7;32m\2\x1b[0;1;7;31m\3\x1b[0m/g' \
         | sed -E $SED_OPTIONS 's/^(liveworker\t+)([[:digit:]]+\t)([[:digit:]]+\t)([[:digit:]]+\t)([[:digit:]]+\t)/\1\x1b[1;7;33m\2\x1b[0;1;7;34m\3\x1b[0;1;7;32m\4\x1b[10;;7;31m\5\x1b[0m/g' \
-        | sed $SED_OPTIONS "s/$APP\t//g"
+        | sed $SED_OPTIONS "s/${APP:-xxxxxxxxxxxxxxxxx}\t//g"
 else exit $EC
 fi
