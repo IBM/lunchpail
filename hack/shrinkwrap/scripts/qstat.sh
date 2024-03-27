@@ -13,7 +13,7 @@ do
         a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
         n) NS=${OPTARG}; continue;;
         t) TAIL=${OPTARG}; continue;;
-        u) GREP_OPTIONS="--line-buffered"; continue;;
+        u) GREP_OPTIONS="--line-buffered"; SED_OPTIONS="-u"; continue;;
     esac
 done
 
@@ -36,6 +36,13 @@ EC=$?
 
 if [[ $EC = 0 ]]
 then
-    exec kubectl logs -l $SELECTOR -n $NS -f --tail=$TAIL $EXTRA | grep $GREP_OPTIONS lunchpail.io
+    exec kubectl logs -l $SELECTOR -n $NS -f --tail=$TAIL $EXTRA | grep $GREP_OPTIONS lunchpail.io \
+        | grep $GREP_OPTIONS lunchpail.io \
+        | sed -E $SED_OPTIONS 's/^lunchpail.io\t//' \
+        | sed -E $SED_OPTIONS 's/^(unassigned|assigned)(\t)([[:digit:]]+\t)/\1\2\x1b[1;7;33m\3\x1b[0m/g' \
+        | sed -E $SED_OPTIONS 's/^(processing\t+)([[:digit:]]+\t)/\1\x1b[1;7;34m\2\x1b[0m/g' \
+        | sed -E $SED_OPTIONS 's/^(done\t+)([[:digit:]]+\t)([[:digit:]]+\t)/\1\x1b[1;7;32m\2\x1b[0;1;7;31m\3\x1b[0m/g' \
+        | sed -E $SED_OPTIONS 's/^(liveworker\t+)([[:digit:]]+\t)([[:digit:]]+\t)([[:digit:]]+\t)([[:digit:]]+\t)/\1\x1b[1;7;33m\2\x1b[0;1;7;34m\3\x1b[0;1;7;32m\4\x1b[10;;7;31m\5\x1b[0m/g' \
+        | sed $SED_OPTIONS "s/$APP\t//g"
 else exit $EC
 fi
