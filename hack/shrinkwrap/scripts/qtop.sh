@@ -19,8 +19,12 @@ nLines=0
                  tput ed
                  nLines=0
              fi
+
+             echo "$line"
+        else
+            # remove timestamp from all but the first line
+            sed -E 's/[[:digit:]]+$//' <<< "$line"
         fi
 
-        echo "$line"
         nLines=$((nLines+1))
     done
