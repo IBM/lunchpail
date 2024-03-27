@@ -157,7 +157,7 @@ function waitForUnassignedAndOutbox {
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
         # here we use jq to sum up all of the unassigned annotations
-        actualUnassignedTasks=$($KUBECTL -n $ns get dataset $dataset -o json | jq '.metadata.annotations | to_entries | map(select(.key | match("^jaas.dev/unassigned"))) | map(.value | tonumber) | reduce .[] as $num (0; .+$num)' || echo "there was an issue running the kubectl command😢")
+        actualUnassignedTasks=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns unassigned)
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
 
@@ -178,8 +178,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$($KUBECTL get queue -n $ns -l app.kubernetes.io/part-of=$name --no-headers | wc -l | xargs)
-        actualNumInOutbox=$($KUBECTL get queue -n $ns -l app.kubernetes.io/part-of=$name -o custom-columns=INBOX:.metadata.annotations.codeflare\\.dev/outbox --no-headers | tr '\n' ' ' | xargs)
+        numQueues=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns liveworkers)
+        actualNumInOutbox=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns done)
 
         if [[ -z "$waitForMix" ]]
         then
@@ -190,9 +190,10 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
+            gotMix=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns liveworker 4)
             gotMixFrom=0
             gotMixTotal=0
-            for actual in $actualNumInOutbox
+            for actual in $gotMix
             do
                 if [[ $actual > 0 ]]
                 then

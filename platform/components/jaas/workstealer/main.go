@@ -88,6 +88,7 @@ var queues = filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 var unassignedTaskPattern = regexp.MustCompile("^inbox/(.+)$")
 var finishedTaskPattern = regexp.MustCompile("^finished/(.+)$")
 var liveWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]alive$")
+var deadWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]dead$")
 var assignedTaskPattern = regexp.MustCompile("^queues/(.+)/inbox/(.+)$")
 var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
@@ -112,18 +113,25 @@ func reportChangedFile(filepath string) {
 // Record the current state of Model for observability
 //
 func reportState(model Model) {
-	now := time.Now().UnixNano()
+	now := time.Now()
 
-	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%d\n", len(model.UnassignedTasks), run, now)
-	fmt.Fprintf(writer, "lunchpail.io\tassigned\t%d\t\t\t\t\t%s\t%d\n", len(model.AssignedTasks), run, now)
-	fmt.Fprintf(writer, "lunchpail.io\tprocessing\t\t%d\t\t\t\t%s\t%d\n", len(model.ProcessingTasks), run, now)
-	fmt.Fprintf(writer, "lunchpail.io\tdone\t\t\t%d\t%d\t\t%s\t%d\n", len(model.SuccessfulTasks), len(model.FailedTasks), run, now)
-	fmt.Fprintf(writer, "lunchpail.io\tliveworkers\t%d\t\t\t\t\t%s\t%d\n", len(model.LiveWorkers), run, now)
+	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%s\n", len(model.UnassignedTasks), run, now.Format(time.UnixDate))
+	fmt.Fprintf(writer, "lunchpail.io\tassigned\t%d\t\t\t\t\t%s\n", len(model.AssignedTasks), run)
+	fmt.Fprintf(writer, "lunchpail.io\tprocessing\t\t%d\t\t\t\t%s\n", len(model.ProcessingTasks), run)
+	fmt.Fprintf(writer, "lunchpail.io\tdone\t\t\t%d\t%d\t\t%s\n", len(model.SuccessfulTasks), len(model.FailedTasks), run)
+	fmt.Fprintf(writer, "lunchpail.io\tliveworkers\t%d\t\t\t\t\t%s\n", len(model.LiveWorkers), run)
+	fmt.Fprintf(writer, "lunchpail.io\tdeadworkers\t%d\t\t\t\t\t%s\n", len(model.DeadWorkers), run)
 
 	for _, worker := range model.LiveWorkers {
 		fmt.Fprintf(
-			writer, "lunchpail.io\tliveworker\t%d\t%d\t%d\t%d\t%s\t%s\t%d\n",
-			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run, now,
+			writer, "lunchpail.io\tliveworker\t%d\t%d\t%d\t%d\t%s\t%s\n",
+			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run,
+		)
+	}
+	for _, worker := range model.DeadWorkers {
+		fmt.Fprintf(
+			writer, "lunchpail.io\tdeadworker\t%d\t%d\t%d\t%d\t%s\t%s\n",
+			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run,
 		)
 	}
 
@@ -148,17 +156,15 @@ func howChanged(marker byte) HowChanged {
 // Determine from a HowChanged (Added, Removed, Unchanged) and a
 // changed line the nature of `WhatChanged`
 //
-func whatChanged(line string, how HowChanged) (WhatChanged, string, string) {
+func whatChanged(line string) (WhatChanged, string, string) {
 	if match := unassignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return UnassignedTask, match[1], ""
 	} else if match := finishedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return FinishedTask, match[1], ""
 	} else if match := liveWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
-		if how == Removed {
-			return DeadWorker, match[1], ""
-		} else {
-			return LiveWorker, match[1], ""
-		}
+		return LiveWorker, match[1], ""
+	} else if match := deadWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
+		return DeadWorker, match[1], ""
 	} else if match := assignedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
 		return AssignedTaskByWorker, match[1], match[2]
 	} else if match := processingTaskPattern.FindStringSubmatch(line); len(match) == 3 {
@@ -192,7 +198,7 @@ func parseUpdatesFromStdin() Model {
 	for scanner.Scan() {
 		line := scanner.Text()
 		how := howChanged(line[0])
-		what, thing, thing2 := whatChanged(line[1:], how)
+		what, thing, thing2 := whatChanged(line[1:])
 
 		fmt.Fprintf(os.Stderr, "[workstealer] Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
 

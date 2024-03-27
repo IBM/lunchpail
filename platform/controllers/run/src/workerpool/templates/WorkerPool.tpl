@@ -35,7 +35,7 @@ spec:
       # each failure, allowing you to go back and review each"
       restartPolicy: Never
 
-      terminationGracePeriodSeconds: 10 # the s3-syncer has a 5-second poll
+      terminationGracePeriodSeconds: 20 # give time for the preStop in the syncer container
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
         {{- if .Values.volumes }}

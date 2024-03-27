@@ -4,6 +4,10 @@
   env:
     - name: LUNCHPAIL_STARTUP_DELAY
       value: {{ .Values.startupDelay | default 0 | quote }}
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     {{- include "codeflare.dev/queue.env" . | indent 4 }}
     {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
   volumeMounts:
@@ -12,4 +16,11 @@
     limits:
       cpu: 500m
       memory: 512Mi
+  lifecycle:
+    postStart:
+        exec:
+          command: ["./poststart.sh"]
+    preStop:
+        exec:
+          command: ["./prestop.sh"]
 {{- end }}

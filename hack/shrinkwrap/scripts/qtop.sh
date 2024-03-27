@@ -8,6 +8,9 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 nLines=0
 
+# clear screen
+printf "\033c"
+
 "$SCRIPTDIR"/qstat $@ |
     while read -r line
     do
@@ -19,12 +22,8 @@ nLines=0
                  tput ed
                  nLines=0
              fi
-
-             echo "$line"
-        else
-            # remove timestamp from all but the first line
-            sed -E 's/[[:digit:]]+$//' <<< "$line"
         fi
 
+        echo "$line"
         nLines=$((nLines+1))
     done
