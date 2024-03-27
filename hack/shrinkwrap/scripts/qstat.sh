@@ -6,6 +6,8 @@
 
 NS=jaas-user
 TAIL=-1
+GREP_OPTIONS="--line-buffered"
+SED_OPTIONS="-u"
 
 while getopts "a:n:t:u" opt
 do
@@ -13,7 +15,6 @@ do
         a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
         n) NS=${OPTARG}; continue;;
         t) TAIL=${OPTARG}; continue;;
-        u) GREP_OPTIONS="--line-buffered"; SED_OPTIONS="-u"; continue;;
     esac
 done
 

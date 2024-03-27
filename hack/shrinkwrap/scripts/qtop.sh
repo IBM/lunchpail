@@ -8,7 +8,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 nLines=0
 
-"$SCRIPTDIR"/qstat -u $@ |
+"$SCRIPTDIR"/qstat $@ |
     while read -r line
     do
         if [[ $(awk '{print $1}' <<< "$line") = unassigned ]]
