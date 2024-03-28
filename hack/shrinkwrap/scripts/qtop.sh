@@ -11,7 +11,7 @@ nLines=0
 # clear screen
 printf "\033c"
 
-"$SCRIPTDIR"/qstat $@ |
+"$SCRIPTDIR"/qstat -t 1000 $@ |
     while read -r line
     do
         if [[ $(awk '{print $1}' <<< "$line") = unassigned ]]
