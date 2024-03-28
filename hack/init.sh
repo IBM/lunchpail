@@ -41,7 +41,7 @@ function check_podman {
     then return
     fi
 
-    if which podman
+    if which podman > /dev/null 2>&1
     then
         export KIND_EXPERIMENTAL_PROVIDER=podman
         export DOCKER=podman
@@ -58,14 +58,14 @@ function check_podman {
 
     if [[ $DOCKER = podman ]]
     then
-        if ! podman machine inspect | grep State | grep running
+        if ! podman machine inspect | grep State | grep -q running
         then podman machine start
         fi
     fi
 }
 
 function get_helm {
-    if ! which helm >& /dev/null; then
+    if ! which helm > /dev/null 2>&1; then
         echo "$(tput setaf 2)Installing helm$(tput sgr0)"
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
         chmod 700 get_helm.sh
@@ -75,7 +75,7 @@ function get_helm {
 }
 
 function get_kubectl {
-    if ! which kubectl >& /dev/null; then
+    if ! which kubectl > /dev/null 2>&1; then
         echo "$(tput setaf 2)Installing kubectl$(tput sgr0)"
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/$(kos)/$(karch)/kubectl"
         chmod +x kubectl
@@ -84,7 +84,7 @@ function get_kubectl {
 }
 
 function get_kind {
-    if ! which kind >& /dev/null; then
+    if ! which kind > /dev/null 2>&1; then
         echo "$(tput setaf 2)Installing kind$(tput sgr0)"
 
         if lspci | grep -iq nvidia; then
@@ -110,7 +110,7 @@ function get_nvidia {
 	if lspci | grep -iq nvidia; then
             CLUSTER_CONFIG="--config $SCRIPTDIR/cluster-gpus.yaml"
 
-            if ! which nvidia-smi; then
+            if ! which nvidia-smi > /dev/null 2>&1; then
 		echo "$(tput setaf 2)Installing nvidia drivers$(tput sgr0)"
 		wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
 		sudo dpkg -i cuda-keyring_1.1-1_all.deb
