@@ -1,7 +1,0 @@
-namespace: codeflare-ibm-internal
-
-github_ibm_com:
-  secret:
-    name: github-ibm-com-ai-foundation
-    user: xxx
-    pat: yyy

@@ -10,18 +10,17 @@ GREP_OPTIONS="--line-buffered"
 SED_OPTIONS="-u"
 FILTER=""
 FOLLOW="-f"
+APP=the_lunchpail_app
 
-while getopts "a:n:ot:" opt
+while getopts "ot:" opt
 do
     case $opt in
-        a) APP=${OPTARG}; APP_SELECTOR=",app.kubernetes.io/part-of=${APP}"; continue;;
-        n) NS=${OPTARG}; continue;;
         o) FOLLOW=""; continue;;
         t) TAIL=${OPTARG}; continue;;
     esac
 done
 
-SELECTOR=app.kubernetes.io/component=workstealer$APP_SELECTOR
+SELECTOR=app.kubernetes.io/component=workstealer,app.kubernetes.io/part-of=the_lunchpail_app
 
 if which gum > /dev/null 2>&1 && [ -n "$FOLLOW" ]
 then

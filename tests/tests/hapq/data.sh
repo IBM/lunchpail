@@ -13,7 +13,7 @@ TOP="$SCRIPTDIR"/../../..
 ENDPOINT="https://s3.us-east.cloud-object-storage.appdomain.cloud"
 MC_BUCKET_PATH=cfp/cfp-hap-xs
 
-LOCAL_PATH="$TOP"/data/s3/hapq/$LUNCHPAIL/hapq/inbox
+LOCAL_PATH="$TOP"/data/s3/defaultjaasqueue/$LUNCHPAIL/hapq/inbox
 
 if ! which mc > /dev/null
 then

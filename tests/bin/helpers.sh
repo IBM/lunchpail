@@ -8,7 +8,7 @@ set -o pipefail
 # e.g. see 7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
-while getopts "c:lgui:e:nopr" opt
+while getopts "c:lgui:e:noprx:" opt
 do
     case $opt in
         l) export HELM_INSTALL_FLAGS="--set lite=true"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
@@ -33,7 +33,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-    "$MAIN_SCRIPTDIR"/../../hack/up.sh -t $UP_FLAGS # -t says don't watch, just return when you are done
+    "$MAIN_SCRIPTDIR"/../../hack/up.sh
 }
 
 function waitForIt {
@@ -94,35 +94,37 @@ function waitForIt {
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
     else
+        local queue=${taskqueue:-defaultjaasqueue} # TODO on default?
+
         echo "$(tput setaf 2)🧪 Checking output files test=$name$(tput sgr0)" 1>&2
         nOutputs=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                            mc ls s3/$name/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+                            mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
             outputs=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                               mc ls s3/$name/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}')
+                               mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
                 code=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                                mc cat s3/$name/lunchpail/$name/outbox/${output}.code)
+                                mc cat s3/$queue/lunchpail/$name/outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
                 fi
 
                 stdout=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                                  mc ls s3/$name/lunchpail/$name/outbox/${output}.stdout | wc -l | xargs)
+                                  mc ls s3/$queue/lunchpail/$name/outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
                 stderr=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                                  mc ls s3/$name/lunchpail/$name/outbox/${output}.stderr | wc -l | xargs)
+                                  mc ls s3/$queue/lunchpail/$name/outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stderr file test=$name output=$output"
@@ -157,7 +159,7 @@ function waitForUnassignedAndOutbox {
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
         # here we use jq to sum up all of the unassigned annotations
-        actualUnassignedTasks=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns unassigned)
+        actualUnassignedTasks=$("$SCRIPTDIR"/../../builds/test/$name/qlast unassigned)
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
 
@@ -178,8 +180,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns liveworkers)
-        actualNumInOutbox=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns done)
+        numQueues=$("$SCRIPTDIR"/../../builds/test/$name/qlast liveworkers)
+        actualNumInOutbox=$("$SCRIPTDIR"/../../builds/test/$name/qlast done)
 
         if [[ -z "$waitForMix" ]]
         then
@@ -190,7 +192,7 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
-            gotMix=$("$SCRIPTDIR"/../../builds/dev/qlast -a $name -n $ns liveworker 4)
+            gotMix=$("$SCRIPTDIR"/../../builds/test/$name/qlast liveworker 4)
             gotMixFrom=0
             gotMixTotal=0
             for actual in $gotMix
@@ -245,7 +247,7 @@ function waitForStatus {
 }
 
 function deploy {
-    "$SCRIPTDIR"/deploy-tests.sh $1
+    "$SCRIPTDIR"/deploy-tests.sh $@
 }
 
 function undeploy {
@@ -258,10 +260,10 @@ function undeploy {
 
 function watch {
     if [[ -n "$CI" ]]; then
-        $KUBECTL get appwrapper --show-kind -n $CLUSTER_NAME-test -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
-        $KUBECTL get pod --show-kind -n $CLUSTER_NAME-test --watch &
+        $KUBECTL get appwrapper --show-kind -n $NAMESPACE_USER -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
+        $KUBECTL get pod --show-kind -n $NAMESPACE_USER --watch &
     fi
     $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
-    $KUBECTL get run --all-namespaces --watch &
+    $KUBECTL get run --show-kind --all-namespaces --watch &
     $KUBECTL get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.codeflare\\.dev/status,MESSAGE:.metadata.annotations.codeflare\\.dev/message &
 }

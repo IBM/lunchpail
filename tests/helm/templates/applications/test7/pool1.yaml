@@ -3,7 +3,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: WorkerPool
 metadata:
   name: test7-pool1
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   run:
     name: test7

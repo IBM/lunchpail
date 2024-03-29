@@ -2,12 +2,13 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: example-ray-qiskit
-  namespace: {{ .Values.namespace.examples }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   api: ray
   image: ghcr.io/lunchpail/ray22:0.3.0
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/examples/ray
-  command: python3 main.py
+#  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/examples/ray
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/shrinkwrap-app-from-git/watsonx_ai/charts/applications/templates/examples/ray
+  command: python3 src/main.py
   supportsGpu: false
   requirements:
     - qiskit==0.37.0

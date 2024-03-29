@@ -1,0 +1,18 @@
+{{- if .Values.github_ibm_com }}
+{{- if .Values.github_ibm_com.secret }}
+{{- if .Values.github_ibm_com.secret.user }}
+{{- if .Values.github_ibm_com.secret.pat }}
+# TODO: this really should be a range over some array, not hard-coded to github.ibm.com
+apiVersion: codeflare.dev/v1alpha1
+kind: PlatformRepoSecret
+metadata:
+  name: github-ibm-com
+spec:
+  repo: https://github.ibm.com
+  secret:
+    name: github-ibm-com
+    namespace: {{ .Values.namespace.user }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

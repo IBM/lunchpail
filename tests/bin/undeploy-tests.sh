@@ -4,7 +4,8 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/../../hack/settings.sh
+TOP="$SCRIPTDIR"/../../
+. "$TOP"/hack/settings.sh
 
 # in travis this can help us see whether there are straggler
 # namespaces, etc.
@@ -15,31 +16,31 @@ function report_stragglers {
     $KUBECTL get ns
 
     echo "Checking for straggler PODS"
-    $KUBECTL get pod -n $CLUSTER_NAME-test
+    $KUBECTL get pod -n $NAMESPACE_USER
 
     echo "Checking for straggler PODS details"
-    $KUBECTL get pod -n $CLUSTER_NAME-test -o yaml
+    $KUBECTL get pod -n $NAMESPACE_USER -o yaml
     
     echo "Checking for straggler APPLICATIONS"
-    $KUBECTL get application -n $CLUSTER_NAME-test
+    $KUBECTL get application -n $NAMESPACE_USER
     
     echo "Checking for straggler WORKERPOOLS"
-    $KUBECTL get workerpools -n $CLUSTER_NAME-test
+    $KUBECTL get workerpools -n $NAMESPACE_USER
 
     echo "Checking for straggler WORKDISPATCHERS"
-    $KUBECTL get workdispatchers -n $CLUSTER_NAME-test
+    $KUBECTL get workdispatchers -n $NAMESPACE_USER
 
     echo "Checking for straggler DATASETS"
-    $KUBECTL get datasets -n $CLUSTER_NAME-test
+    $KUBECTL get datasets -n $NAMESPACE_USER
 
-    echo "$CLUSTER_NAME-test pod logs"
-    $KUBECTL logs -n $CLUSTER_NAME-test -l app.kubernetes.io/managed-by=codeflare.dev
+    echo "$NAMESPACE_USER pod logs"
+    $KUBECTL logs -n $NAMESPACE_USER -l app.kubernetes.io/managed-by=codeflare.dev
 
-    echo "$CLUSTER_NAME-test events"
-    $KUBECTL get events -n $CLUSTER_NAME-test
+    echo "$NAMESPACE_USER events"
+    $KUBECTL get events -n $NAMESPACE_USER
     
     echo "Run controller logs"
-    TAIL=1000 "$SCRIPTDIR"/../../hack/logs/run.sh
+    TAIL=1000 "$TOP"/hack/logs/run.sh
 
     # since we are only here if there was a failure
     return 1
@@ -48,16 +49,19 @@ function report_stragglers {
 # retry once after failure; this may help to cope with `etcdserver:
 # request timed out` errors
 echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
-$HELM delete --ignore-not-found $CLUSTER_NAME-tests --wait || \
-    report_stragglers || \
-    $HELM delete --ignore-not-found $CLUSTER_NAME-tests --wait || \
-    report_stragglers
+
+# Undeploy prior test installations. Here we sort by last modified
+# time `ls -t`, so that we undeploy the most recently modified
+# shrinkwraps first
+for dir in $(ls -t "$TOP"/builds/test)
+do "$TOP"/builds/test/"$dir"/down
+done
 
 if [[ -n "$RUNNING_CODEFLARE_TESTS" ]]
 then
     while true
     do
-        $KUBECTL get ns $CLUSTER_NAME-test || break
+        $KUBECTL get ns $NAMESPACE_USER || break
         echo "Waiting for namespace cleanup"
         sleep 2
     done

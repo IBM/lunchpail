@@ -66,15 +66,23 @@ do
     echo "$(tput setaf 2)🧪 Commencing test $base$(tput sgr0)"
 
     unset api
+    unset app
+    unset branch
+    unset taskqueue
     unset handler
     unset namespace
     unset testname
+    unset deployname
     expected=()
 
     . "$path"/settings.sh
 
     testname="${testname-$(basename $path)}"
 
+    if [[ -z "$app" ]]
+    then app=$TOP/tests/helm/templates/applications/$testname
+    fi
+    
     if [[ -e "$path"/data.sh ]]; then
         echo "$(tput setaf 2)🧪 Copying in data for $testname$(tput sgr0)" 1>&2
         echo ""
@@ -85,13 +93,13 @@ do
     
     if [[ ${#expected[@]} != 0 ]]
     then
-        deploy $testname
+        deploy $testname $app $branch $deployname
 
         if [[ -e "$path"/init.sh ]]; then
             TEST_NAME=$testname "$path"/init.sh
         fi
         
-        ${handler-waitForIt} $testname ${namespace-$CLUSTER_NAME-test} $api "${expected[@]}"
+        ${handler-waitForIt} ${deployname:-$testname} ${namespace-$NAMESPACE_USER} $api "${expected[@]}"
         EC=$?
         undeploy $testname
 

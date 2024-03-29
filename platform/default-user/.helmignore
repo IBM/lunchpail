@@ -1,5 +1,7 @@
+README.md
+.git
+.gitignore
 *~
-*.sh
 .DS_Store
 .cache
 node_modules

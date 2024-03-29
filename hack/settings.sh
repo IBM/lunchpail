@@ -33,13 +33,12 @@ NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
 
 if [[ -z "$NO_GETOPTS" ]]
 then
-    while getopts "c:dltk:noprs" opt
+    while getopts "x:dlk:noprs" opt
     do
         case $opt in
             n) export NO_BUILD=1; continue;;
-            c) export CONTEXT_NAME=$OPTARG; continue;;
+            x) export CONTEXT_NAME=$OPTARG; continue;;
             l) echo "Running up in lite mode"; export LITE=1; export JAAS_FULL=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
-            t) export RUNNING_TESTS=true; continue;;
             k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
             o) export CLUSTER_TYPE=oc; continue;;
             p) export PROD=true; continue;;
@@ -49,8 +48,6 @@ then
     done
     shift $((OPTIND-1))
 fi
-
-IBM=$(grep name "$SETTINGS_SCRIPTDIR"/../watsonx_ai/Chart.yaml | awk '{print $2}' | head -1)
 
 ARCH=${ARCH-$(uname -m)}
 

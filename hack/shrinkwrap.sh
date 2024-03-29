@@ -15,17 +15,26 @@
 set -e
 set -o pipefail
 
+SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+. "$SCRIPTDIR"/shrinkwrap-helpers.sh
+
 JAAS_FULL=${JAAS_FULL:-false}
 
-while getopts "ac:d:fl" opt
+while getopts "ab:cd:fh:ln:" opt
 do
     case $opt in
+        b) appbranch="-b ${OPTARG}"; continue;;
         d) OUTDIR=${OPTARG}; continue;;
         f) JAAS_FULL=true; continue;;
-        a) EXTRA_HELM_INSTALL_FLAGS="${OPTARG}"; continue;;
+        a) APP_ONLY=true; continue;;
+        c) CORE_ONLY=true; continue;;
         l) LITE=1; continue;;
+        h) EXTRA_HELM_INSTALL_FLAGS="${OPTARG}"; continue;;
+        n) APP_NAME=${OPTARG}; continue;;
     esac
 done
+shift $((OPTIND-1))
+appgit=$1
 OPTIND=1
 
 if [[ -n "$OUTDIR" ]]
@@ -74,104 +83,17 @@ fi
 
 echo "Final shrinkwrap HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS"
 
-# prereqs that the core depends on
-$HELM_TEMPLATE \
-     --include-crds \
-     $NAMESPACE_SYSTEM \
-     -n $NAMESPACE_SYSTEM \
-     "$TOP"/platform \
-     $HELM_DEMO_SECRETS \
-     $HELM_INSTALL_FLAGS \
-     --set global.jaas.namespace.create=true \
-     --set tags.full=false \
-     --set tags.core=false \
-     --set tags.prereqs1=true \
-     --set tags.defaults=false \
-     --set tags.default-user=false \
-     2> >(grep -v 'found symbolic link' >&2) \
-     2> >(grep -v 'Contents of linked' >&2) \
-     > "$PREREQS1"
+if [[ -z "$APP_ONLY" ]]
+then shrink_core
+fi
 
-# core deployment
-$HELM_TEMPLATE \
-     --include-crds \
-     $NAMESPACE_SYSTEM \
-     -n $NAMESPACE_SYSTEM \
-     "$TOP"/platform \
-     $HELM_DEMO_SECRETS \
-     $HELM_IMAGE_PULL_SECRETS \
-     $HELM_INSTALL_FLAGS \
-     --set tags.full=$JAAS_FULL \
-     --set tags.core=true \
-     --set tags.prereqs1=false \
-     --set tags.defaults=false \
-     --set tags.default-user=false \
-     2> >(grep -v 'found symbolic link' >&2) \
-     2> >(grep -v 'Contents of linked' >&2) \
-     > "$CORE"
+if [[ -n "$appgit" ]] && [[ -z "$CORE_ONLY" ]]
+then
+    USERTMP=$(mktemp -d /tmp/lunchpail-shrink.XXXXXXXX)
+    tar -C "$TOP"/platform/default-user -cf - . | tar -C "$USERTMP" -xf -
 
-# the kuberay-operator chart has some problems with namespaces; ensure
-# that we force everything in core into $NAMESPACE_SYSTEM
-echo "$NAMESPACE_SYSTEM" > "${CORE%%.yml}.namespace"
+    copy_app $USERTMP $appgit "$appbranch" $APP_NAME
+    shrink_user $USERTMP
+fi
 
-# defaults
-$HELM_TEMPLATE \
-     jaas-defaults \
-     -n $NAMESPACE_SYSTEM \
-     "$TOP"/platform \
-     $HELM_INSTALL_FLAGS \
-     --set tags.full=false \
-     --set tags.core=false \
-     --set tags.prereqs1=false \
-     --set tags.defaults=true \
-     --set tags.default-user=false \
-     2> >(grep -v 'found symbolic link' >&2) \
-     2> >(grep -v 'Contents of linked' >&2) \
-     > "$DEFAULTS" 
-
-# default-user
-$HELM_TEMPLATE \
-     jaas-default-user \
-     "$TOP"/platform \
-     $HELM_DEMO_SECRETS $HELM_INSTALL_FLAGS \
-     $HELM_IMAGE_PULL_SECRETS \
-     --set tags.full=false \
-     --set tags.core=false \
-     --set tags.prereqs1=false \
-     --set tags.defaults=false \
-     --set tags.default-user=true \
-     2> >(grep -v 'found symbolic link' >&2) \
-     2> >(grep -v 'Contents of linked' >&2) \
-     > "$DEFAULT_USER"
-
-function add_dir {
-    local indir=$1
-    local outdir="$2"
-    mkdir -p "$outdir"
-
-    for f in "$indir"/*
-    do
-        if [[ "$f" =~ "~" ]]
-        then continue
-        elif [[ -f "$f" ]]
-        then
-            local in="$f"
-            local out="$outdir"/$(basename "${f%%.sh}")
-
-            cat "$in" | \
-                sed "s#kubectl#$KUBECTL#g" | \
-                sed "s#jaas-user#$NAMESPACE_USER#g" | \
-                sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | \
-                sed "s#\$ARCH#$ARCH#g" \
-                    > "$out"
-
-            if [[ "$f" =~ ".sh" ]]
-            then chmod +x "$out"
-            fi
-        elif [[ -d "$1" ]]
-        then add_dir "$f" "$outdir"/"$(basename $f)"
-        fi
-    done
-}
-
-add_dir "$SCRIPTDIR"/shrinkwrap/scripts "$OUTDIR"
+add_dir "$SCRIPTDIR"/shrinkwrap/scripts "$OUTDIR" $APP_NAME

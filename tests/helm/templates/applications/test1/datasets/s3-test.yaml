@@ -1,0 +1,14 @@
+apiVersion: {{ .Values.datashim.apiVersion }}
+kind: Dataset
+metadata:
+  name: test-dataset-s3
+  namespace: {{ .Values.namespace.user }}
+spec:
+  local:
+    type: "COS"
+    endpoint: {{ .Values.global.s3Endpoint }}
+    secret-name: testdatasets3
+    secret-namespace: {{ .Values.namespace.user }}
+    provision: "true" # DLF will allocate bucket on the COS if it doesn't exist [Default: false]
+    bucket: {{ .Values.global.buckets.test }}
+    readonly: "true" # default is false

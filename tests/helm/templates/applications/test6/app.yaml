@@ -3,12 +3,13 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: test6
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   api: shell
   image: ubuntu
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test6
-  command: ./main.sh
+#  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test6
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/shrinkwrap-app-from-git/tests/helm/templates/applications/test6
+  command: ./src/main.sh
   supportsGpu: True
   expose:
     - 8080

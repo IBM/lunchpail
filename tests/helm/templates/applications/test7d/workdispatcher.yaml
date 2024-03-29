@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: test7d
     app.kubernetes.io/part-of: codeflare.dev
   name: test7d
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   run: test7d
   method: helm

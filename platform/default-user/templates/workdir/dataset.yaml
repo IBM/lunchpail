@@ -1,5 +1,5 @@
 # TODO run controller should create this on demand?
-apiVersion: {{ .Values.global.datashim.apiVersion }}
+apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
   name: workdir

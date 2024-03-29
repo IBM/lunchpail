@@ -26,12 +26,8 @@ then
 fi
 
 echo "$(tput setaf 2)Creating shrinkwraps JAAS_FULL=$JAAS_FULL base-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS$(tput sgr0)"
-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/shrinkwrap.sh -d "$SCRIPTDIR"/../builds/dev
+HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/shrinkwrap.sh -c -d "$SCRIPTDIR"/../builds/dev
 
 "$SCRIPTDIR"/../builds/dev/up
-
-if [[ -z "$LITE" ]]
-then $HELM install $IBM watsonx_ai $HELM_SECRETS --set global.arch=$ARCH --set nvidia.enabled=$HAS_NVIDIA $HELM_INSTALL_FLAGS
-fi
 
 "$SCRIPTDIR"/s3-copyin.sh

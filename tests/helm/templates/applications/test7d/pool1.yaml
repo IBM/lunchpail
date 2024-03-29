@@ -3,7 +3,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: WorkerPool
 metadata:
   name: test7d-pool1
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   # here, we ask that this pool run in a particular kubernetes cluster
   target:

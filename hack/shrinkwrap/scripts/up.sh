@@ -6,10 +6,14 @@
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
-echo "$(tput setaf 2)Booting Lunchpail for arch=$ARCH$(tput sgr0)"
+echo "$(tput setaf 2)Booting Lunchpail for app=the_lunchpail_app arch=$ARCH$(tput sgr0)"
 
 for f in "$SCRIPTDIR"/01-jaas-prereqs1.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/05-jaas-default-user.yml
 do
+    if [ ! -f "$f" ]
+    then continue
+    fi
+
     if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
     kubectl apply --server-side -f $f $ns
 

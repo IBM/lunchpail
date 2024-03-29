@@ -1,6 +1,6 @@
 # hapq test
+app="$TOP"/watsonx_ai/charts/applications/templates/preprocessing/hapq
 expected=('HAPq processing input_file=')
-namespace=codeflare-watsonxai-preprocessing
 
 if which lspci && lspci | grep -iq nvidia; then
     expected+=('running in GPU mode')

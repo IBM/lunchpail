@@ -7,7 +7,7 @@ metadata:
   labels:
     app.kubernetes.io/component: dataset
   name: test8-templates
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   local:
     bucket: test8-templates
@@ -15,6 +15,6 @@ spec:
     provision: 'true'
     readonly: 'false'
     secret-name: test8secret
-    secret-namespace: {{ .Values.namespace }}
+    secret-namespace: {{ .Values.namespace.user }}
     type: COS
 {{- end }}

@@ -32,18 +32,10 @@ async function defaults() {
   return yaml
 }
 
-/** Install/delete the default-user from the control plane */
-async function defaultUser() {
-  // @ts-ignore
-  const { default: yaml } = await import("../../../resources/05-jaas-default-user.yml?raw")
-
-  return yaml
-}
-
 /** Install/delete all of the requested control plane components */
 async function applyAll(_config: Config, props: ApplyProps) {
   const coreYamls = await Promise.all([prereq1(), core()])
-  const noncoreYamls = await Promise.all([defaults(), defaultUser()])
+  const noncoreYamls = await Promise.all([defaults()])
   const coreYamlsReversed = coreYamls.toReversed()
   const noncoreYamlsReversed = noncoreYamls.toReversed()
 

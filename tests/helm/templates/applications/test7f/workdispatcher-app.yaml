@@ -3,18 +3,15 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: test7f-workdispatcher
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   api: shell
-  values: >-
-    {"taskprefix":{"a":"tasky","b":3333}}
-
-  command: ./main
+  command: ./main.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-s3-syncer-component:" .Values.global.image.version }}
   env:
     # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2
     taskprefix: WRONG_YOU_HAVE_A_BUG_IN_WORKDISPATCHER_PY # workdispatcher.yaml should override (via run controller workdispatcher.py)
     taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
   code: |
-{{ .Files.Get "src/test7f/main" | indent 4 }}
+{{ .Files.Get "src/test7f/main.sh" | indent 4 }}
 {{- end }}

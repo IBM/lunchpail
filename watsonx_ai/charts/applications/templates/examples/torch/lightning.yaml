@@ -2,7 +2,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: example-torch-lightning
-  namespace: {{ .Values.namespace.examples }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   api: torch
   image: ghcr.io/lunchpail/lightning:0.0.7

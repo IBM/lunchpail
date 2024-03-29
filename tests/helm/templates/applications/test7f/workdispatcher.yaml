@@ -3,7 +3,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: WorkDispatcher
 metadata:
   name: test7f
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   run: test7f
   method: application

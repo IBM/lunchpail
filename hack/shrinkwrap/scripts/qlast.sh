@@ -9,7 +9,7 @@
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 ARGS="$@"
-while getopts "a:n:ot:" opt; do true; done
+while getopts "ot:" opt; do true; done
 shift $((OPTIND-1))
 
 ROW_FIELD=$1

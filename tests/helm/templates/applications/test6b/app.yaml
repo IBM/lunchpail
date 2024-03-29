@@ -3,7 +3,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: test6b
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   api: shell
   image: ubuntu

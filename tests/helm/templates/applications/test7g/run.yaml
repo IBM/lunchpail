@@ -3,7 +3,7 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Run
 metadata:
   name: test7g
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   application:
     name: test7g

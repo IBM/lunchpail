@@ -3,10 +3,11 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: test4-step2
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
 spec:
   api: ray
   image: ghcr.io/lunchpail/ray22:0.3.0
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test4
-  command: python3 step2.py
+#  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test4
+  repo: https://github.ibm.com/nickm/codeflare-platform/tree/shrinkwrap-app-from-git/tests/helm/templates/applications/test4
+  command: python3 src/step2.py
 {{- end }}

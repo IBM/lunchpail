@@ -1,6 +1,0 @@
-namespace:
-  examples: codeflare-watsonxai-examples
-  preprocessing: codeflare-watsonxai-preprocessing
-
-datashim:
-  apiVersion: com.ie.ibm.hpsys/v1alpha1
