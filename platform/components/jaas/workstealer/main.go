@@ -2,12 +2,13 @@ package main
 
 import (
 	"os"
+	"cmp"
 	"fmt"
 	"log"
+	"slices"
 	"time"
 	"bufio"
 	"regexp"
-	"math/rand"
 	"path/filepath"
 	"text/tabwriter"
 )
@@ -262,7 +263,14 @@ func parseUpdatesFromStdin() Model {
 			deadWorkers = append(deadWorkers, worker)
 		}
 	}
-	
+
+	slices.SortFunc(liveWorkers, func(a, b Worker) int {
+		return cmp.Compare(a.name, b.name)
+	})
+	slices.SortFunc(deadWorkers, func(a, b Worker) int {
+		return cmp.Compare(a.name, b.name)
+	})
+
 	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, successfulTasks, failedTasks}
 }
 
@@ -271,19 +279,6 @@ func parseUpdatesFromStdin() Model {
 //
 func ParseUpdates() Model {
 	return parseUpdatesFromStdin()
-}
-
-//
-// Pick a good worker to assign work to. For now, this is
-// random. TODO: be intelligent about distributing load.
-//
-func pickAWorker(liveWorkers []Worker) int {
-	nWorkers := len(liveWorkers)
-	if nWorkers == 0 {
-		return -1
-	} else {
-		return rand.Intn(nWorkers)
-	}
 }
 
 //
@@ -311,18 +306,6 @@ func MoveToWorkerInbox(task string, worker Worker) {
 		log.Fatalf("[workstealer] Failed to move task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
 	} else {
 		reportMovedFile(unassignedFilePath, workerInboxFilePath)
-	}
-}
-
-//
-// Indicate that we are not yet ready to process this Task,
-// e.g. because there are no LiveWorkers
-//
-func IgnoreTaskForNow(task string) {
-	fmt.Fprintf(os.Stderr, "[workstealer] Ignoring unassigned task for now: %s\n", task)
-	unassignedFilePath := filepath.Join(inbox, task)
-	if err := os.Remove(unassignedFilePath); err != nil {
-		log.Fatalf("[workstealer] Failed to remove task from unassigned: %v\n", err)
 	}
 }
 
@@ -374,14 +357,9 @@ func MoveToFinalOutbox(task string, worker string) {
 //
 // Assign an unassigned Task to one of the given LiveWorkers
 //
-func AssignNewTask(task string, liveWorkers []Worker) {
-	liveWorkerIdx := pickAWorker(liveWorkers)
-	if liveWorkerIdx != -1 {
-		fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s task=%s\n", liveWorkers[liveWorkerIdx].name, task)
-		MoveToWorkerInbox(task, liveWorkers[liveWorkerIdx])
-	} else {
-		IgnoreTaskForNow(task)
-	}
+func AssignNewTaskToWorker(task string, worker Worker) {
+	fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s task=%s\n", worker.name, task)
+	MoveToWorkerInbox(task, worker)
 }
 
 type Box string
@@ -427,9 +405,56 @@ func CleanupForCompletedTask(completedTask AssignedTask) {
 	MoveToFinalOutbox(completedTask.task, completedTask.worker)
 }
 
+type Apportionment struct {
+	startIdx int
+	endIdx int
+	worker Worker
+}
+
+func apportion(model Model) []Apportionment {
+	As := []Apportionment{}
+	desiredLevel := max(1, len(model.UnassignedTasks) / len(model.LiveWorkers))
+
+	nUnderutilizedWorkers := 0
+	for _, worker := range model.LiveWorkers {
+		assignThisMany := max(0, desiredLevel - len(worker.assignedTasks))
+		if assignThisMany > 0 {
+			nUnderutilizedWorkers++
+		}
+	}
+
+	if nUnderutilizedWorkers > 0 {
+		startIdx := 0
+		desiredLevel = max(1, len(model.UnassignedTasks) / nUnderutilizedWorkers)
+		fmt.Fprintf(
+			os.Stderr,
+			"[workstealer] Apportionment desiredLevel=%d nUnassigned=%d nLiveWorkers=%d\n",
+			desiredLevel,
+			len(model.UnassignedTasks),
+			len(model.LiveWorkers),
+		)
+		for _, worker := range model.LiveWorkers {
+			if startIdx >= len(model.UnassignedTasks) {
+				break
+			}
+
+			assignThisMany := max(0, desiredLevel - len(worker.assignedTasks))
+			endIdx := startIdx + assignThisMany
+			As = append(As, Apportionment{startIdx, endIdx, worker})
+			startIdx = endIdx
+		}
+	}
+
+	return As
+}
+	
 func assignNewTasks(model Model) {
-	for _, task := range model.UnassignedTasks {
-		AssignNewTask(task, model.LiveWorkers)
+	for _, A := range apportion(model) {
+		fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s startIdx=%d endIdx=%d\n", A.worker.name, A.startIdx, A.endIdx)
+		for idx := range A.endIdx - A.startIdx {
+			task := model.UnassignedTasks[A.startIdx + idx]
+			MoveToWorkerInbox(task, A.worker)
+		}
 	}
 }
 
