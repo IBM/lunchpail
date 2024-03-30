@@ -62,7 +62,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     nprocs_per_node = 1 if gpus == 0 else gpus
 
     try:
-        torchx_out = subprocess.run([
+        proc = subprocess.Popen([
             "./torchx.sh",
             uid, # $1
             name, # $2
@@ -83,16 +83,20 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
             base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "", # $17
             base64.b64encode(command_line_options.encode('ascii')),
             base64.b64encode(env_run_arg.encode('ascii'))
-        ], capture_output=True, timeout=30)
-        logging.info(f"Torchx callout done for name={name} with returncode={torchx_out.returncode}")
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        logging.info(f"Torchx callout done for name={name} with returncode={proc.returncode}")
+
+        stdout, stderr = proc.communicate(timeout=30)
+        if proc.returncode != 0:
+            raise PermanentError(f"Failed to launch via torchx (3). {stderr}")
+
+        head_pod_name = stdout
+        logging.info(f"Torchx run head_pod_name={head_pod_name} returncode={proc.returncode}")
+        return head_pod_name
+
     except subprocess.TimeoutExpired as e:
-        raise PermanentError(f"Failed to launch via torchx (1). {str(e)}\n----------------stdout----------------\n{e.stdout.decode('utf-8')}\n----------------stderr----------------\n{e.stderr.decode('utf-8')}")
+        proc.kill()
+        stdout, stderr = proc.communicate()
+        raise PermanentError(f"Failed to launch via torchx (1). {str(e)}\n----------------stdout----------------\n{stdout}\n----------------stderr----------------\n{stderr}")
     except Exception as e:
         raise PermanentError(f"Failed to launch via torchx (2). {str(e)}")
-
-    if torchx_out.returncode != 0:
-        raise PermanentError(f"Failed to launch via torchx (3). {torchx_out.stderr.decode('utf-8')}")
-
-    head_pod_name = torchx_out.stdout.decode('utf-8')
-    logging.info(f"Torchx run head_pod_name={head_pod_name}")
-    return head_pod_name
