@@ -1,3 +1,4 @@
 # test7h
 
-As with test7e but with two WorkerPools
+Same as test7e, but with two WorkerPools, one of which has a
+startupDelay.

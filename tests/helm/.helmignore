@@ -1,7 +1,0 @@
-*~
-#*
-templates/*/*/*.sh
-templates/*/*/*.py
-*.md
-.helmignore
-.DS_Store

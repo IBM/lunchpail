@@ -79,8 +79,12 @@ do
 
     testname="${testname-$(basename $path)}"
 
+    #
+    # If the settings.sh hasn't defined the path to the app, we
+    # default to looking in tests/tests/<testname>/pail.
+    #
     if [[ -z "$app" ]]
-    then app=$TOP/tests/helm/templates/applications/$testname
+    then app="$SCRIPTDIR"/../tests/$testname/pail
     fi
     
     if [[ -e "$path"/data.sh ]]; then

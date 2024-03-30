@@ -7,8 +7,7 @@ spec:
   api: workqueue
   image: ghcr.io/lunchpail/ray22:0.3.0
 #  repo: https://github.ibm.com/tmhoangt/foundation-model-stack/tree/RHODS_pipeline/src/llm/rhods/python/ods-automated-hap
-#  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/preprocessing/hapq
-  repo: https://github.ibm.com/nickm/codeflare-platform/tree/shrinkwrap-app-from-git/watsonx_ai/charts/applications/templates/preprocessing/hapq
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/watsonx_ai/charts/applications/templates/preprocessing/hapq
   command: python -u src/hapq.py --models_folder=/mnt/datasets/hap-models
   supportsGpu: true
   description: >-

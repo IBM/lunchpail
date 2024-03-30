@@ -1,0 +1,15 @@
+{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test2") }}
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test2
+  namespace: {{ .Values.namespace.user }}
+spec:
+  api: ray
+  image: ghcr.io/lunchpail/ray22:0.3.0
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test2
+  command: python3 src/main.py
+  inputs:
+    - sizes:
+        xs: test-dataset-s3
+{{- end }}
