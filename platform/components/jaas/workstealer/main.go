@@ -413,6 +413,11 @@ type Apportionment struct {
 
 func apportion(model Model) []Apportionment {
 	As := []Apportionment{}
+
+	if len(model.LiveWorkers) == 0 {
+		return As
+	}
+
 	desiredLevel := max(1, len(model.UnassignedTasks) / len(model.LiveWorkers))
 
 	nUnderutilizedWorkers := 0
