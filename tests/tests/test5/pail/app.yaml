@@ -7,7 +7,7 @@ metadata:
 spec:
   api: torch
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-gpu1-test:" .Values.global.image.version }}
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/helm/templates/applications/test5
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test5/pail
   command: python3 src/main.py
   supportsGpu: True
 {{- end }}
