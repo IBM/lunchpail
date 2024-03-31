@@ -13,6 +13,8 @@ TOP="$SCRIPTDIR"/../..
 
 . "$SCRIPTDIR"/helpers.sh
 
+trap "pkill -P $$" SIGINT
+
 undeploy
 up
 watch

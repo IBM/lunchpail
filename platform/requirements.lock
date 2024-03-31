@@ -20,17 +20,11 @@ dependencies:
 - name: scheduler-plugins
   repository: file://./scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
   version: 0.26.7
-- name: jaas-prereqs-1
-  repository: file://./prereqs1
-  version: 0.0.1
 - name: dlf-chart
   repository: file://./datashim
   version: 0.1.0
-- name: jaas-defaults
-  repository: file://./defaults
-  version: 0.0.1
 - name: jaas-default-user
   repository: file://./default-user
   version: 0.0.1
-digest: sha256:43cf9b7f79828ff8467d2233b52cc71d432ac84c0e5f928031af7871688868fb
-generated: "2024-03-31T12:50:24.682931-04:00"
+digest: sha256:b5af781541ddb5bd870b709f9fedaafabeba7208b3b7874866df5afcfd13ae3c
+generated: "2024-03-31T18:16:22.852977-04:00"

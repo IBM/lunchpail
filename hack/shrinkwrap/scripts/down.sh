@@ -8,7 +8,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 echo "$(tput setaf 2)Shutting down Lunchpail app=the_lunchpail_app$(tput sgr0)"
 
-for f in "$SCRIPTDIR"/05-jaas-default-user.yml "$SCRIPTDIR"/04-jaas-defaults.yml "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/01-jaas-prereqs1.yml
+for f in "$SCRIPTDIR"/05-jaas-default-user.yml "$SCRIPTDIR"/02-jaas.yml
 do
     if [ ! -f "$f" ]
     then continue

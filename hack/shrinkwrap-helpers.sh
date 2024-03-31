@@ -78,23 +78,15 @@ function copy_app {
 }
 
 function shrink_core {
-    # prereqs that the core depends on
-    $HELM_TEMPLATE \
-        --include-crds \
-        $NAMESPACE_SYSTEM \
-        -n $NAMESPACE_SYSTEM \
-        "$TOP"/platform \
-        $HELM_DEMO_SECRETS \
-        $HELM_INSTALL_FLAGS \
-        --set global.jaas.namespace.create=true \
-        --set tags.full=false \
-        --set tags.core=false \
-        --set tags.prereqs1=true \
-        --set tags.defaults=false \
-        --set tags.default-user=false \
-        2> >(grep -v 'found symbolic link' >&2) \
-        2> >(grep -v 'Contents of linked' >&2) \
-        > "$PREREQS1"
+    (cd "$TOP"/platform && ./prerender.sh)
+    if [[ -z "$HELM_DEPENDENCY_DONE" ]]
+    then
+        (cd "$TOP"/platform && helm dependency update . \
+           2> >(grep -v 'found symbolic link' >&2) \
+           2> >(grep -v 'Contents of linked' >&2))
+        # Note re: the 2> stderr filters below. scheduler-plugins as of 0.27.8
+        # has symbolic links :( and helm warns us about these
+    fi
 
     # core deployment
     $HELM_TEMPLATE \
@@ -107,9 +99,8 @@ function shrink_core {
         $HELM_INSTALL_FLAGS \
         --set tags.full=$JAAS_FULL \
         --set tags.core=true \
-        --set tags.prereqs1=false \
-        --set tags.defaults=false \
         --set tags.default-user=false \
+        --set global.jaas.namespace.create=true \
         2> >(grep -v 'found symbolic link' >&2) \
         2> >(grep -v 'Contents of linked' >&2) \
         > "$CORE"
@@ -117,21 +108,6 @@ function shrink_core {
     # the kuberay-operator chart has some problems with namespaces; ensure
     # that we force everything in core into $NAMESPACE_SYSTEM
     echo "$NAMESPACE_SYSTEM" > "${CORE%%.yml}.namespace"
-
-    # defaults
-    $HELM_TEMPLATE \
-        jaas-defaults \
-        -n $NAMESPACE_SYSTEM \
-        "$TOP"/platform \
-        $HELM_INSTALL_FLAGS \
-        --set tags.full=false \
-        --set tags.core=false \
-        --set tags.prereqs1=false \
-        --set tags.defaults=true \
-        --set tags.default-user=false \
-        2> >(grep -v 'found symbolic link' >&2) \
-        2> >(grep -v 'Contents of linked' >&2) \
-        > "$DEFAULTS"
 }
 
 function shrink_user {

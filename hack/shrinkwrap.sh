@@ -39,10 +39,8 @@ OPTIND=1
 
 if [[ -n "$OUTDIR" ]]
 then
-    echo "Multi-file output to $OUTDIR"
-    PREREQS1="$OUTDIR"/01-jaas-prereqs1.yml
+    echo "Shrinkwrapping to $OUTDIR"
     CORE="$OUTDIR"/02-jaas.yml
-    DEFAULTS="$OUTDIR"/04-jaas-defaults.yml
     DEFAULT_USER="$OUTDIR"/05-jaas-default-user.yml
 
     if [[ ! -e "$OUTDIR" ]]
@@ -68,18 +66,6 @@ HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $EXTRA_HELM_INSTALL_FLAGS"
 if [[ -n "$LITE" ]]
 then HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"
 fi
-
-(cd "$TOP"/platform && ./prerender.sh)
-
-if [[ -z "$HELM_DEPENDENCY_DONE" ]]
-then
-  (cd "$TOP"/platform && helm dependency update . \
-       2> >(grep -v 'found symbolic link' >&2) \
-       2> >(grep -v 'Contents of linked' >&2))
-fi
-
-# Note re: the 2> stderr filters below. scheduler-plugins as of 0.27.8
-# has symbolic links :( and helm warns us about these
 
 echo "Final shrinkwrap HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS"
 

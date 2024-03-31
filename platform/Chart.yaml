@@ -43,7 +43,7 @@ dependencies:
   repository: file://./mcad-controller
   condition: mcad.enabled
   tags:
-    - prereqs1
+    - core
 
 - name: jaas-s3
   version: 0.0.1
@@ -57,28 +57,14 @@ dependencies:
   repository: file://./scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
   condition: gangScheduling.enabled
   tags:
-    - prereqs1
-
-- name: jaas-prereqs-1
-  version: 0.0.1
-  repository: file://./prereqs1
-  condition: prereqs1.enabled
-  tags:
-    - prereqs1
+    - core
 
 - name: dlf-chart
   version: 0.1.0
   repository: file://./datashim
-  condition: prereqs.enabled
+  condition: core.enabled
   tags:
     - core
-
-- name: jaas-defaults
-  version: 0.0.1
-  repository: file://./defaults
-  condition: defaults.enabled
-  tags:
-    - defaults
 
 - name: jaas-default-user
   version: 0.0.1

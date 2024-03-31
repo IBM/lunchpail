@@ -21,14 +21,67 @@ def sizeof(inp):
         elif 'xxl' in sizes:
             return 'xxl'
 
+default_config = {
+    "spec": {
+        "config": {
+            "xxs": {
+                "workers": 1,
+                "cpu": "500m",
+                "memory": "1.5Gi",
+                "gpu": 0,
+            },
+            "xs": {
+                "workers": 1,
+                "cpu": 1,
+                "memory": "4Gi",
+                "gpu": 1,
+            },
+            "sm": {
+                "workers": 2,
+                "cpu": 1,
+                "memory": "8Gi",
+                "gpu": 1,
+            },
+            "md": {
+                "workers": 4,
+                "cpu": 2,
+                "memory": "16Gi",
+                "gpu": 1,
+            },
+            "lg": {
+                "workers": 8,
+                "cpu": 4,
+                "memory": "32Gi",
+                "gpu": 1,
+            },
+            "xl": {
+                "workers": 20,
+                "cpu": 4,
+                "memory": "48Gi",
+                "gpu": 1,
+            },
+            "xxl": {
+                "workers": 40,
+                "cpu": 8,
+                "memory": "64Gi",
+                "gpu": 1,
+            }
+        }
+    }
+}
+
 def load_run_size_config(customApi, size: str):
     try:
         items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
         return sorted(items,
                       key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
     except Exception as e:
-        logging.info(f"RunSizeConfiguration policy not found")
-        return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
+        logging.info(f"RunSizeConfiguration policy not found for size={size}")
+        try:
+            return default_config['spec']['config'][size].copy() # copy since we may modify it below!!
+        except Exception as e2:
+            logging.info(f"RunSizeConfiguration default policy has no rule for size={size}")
+            return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
 
 def run_size(customApi, name: str, spec, application):
     size = "xs" # default
@@ -42,9 +95,9 @@ def run_size(customApi, name: str, spec, application):
         for inp in inputs:
             # TODO this isn't right; what do we do for multi-input applications?
             size = sizeof(inp)
-    logging.info(f"Using size={size} for run={name}")
 
     run_size_config = load_run_size_config(customApi, size)
+    logging.info(f"Using size={size} for run={name} run_size_config(base)={run_size_config}")
 
     # TODOs:
     # 1) the default-run-size-config should not include GPUs if the cluster does not support them
@@ -58,8 +111,10 @@ def run_size(customApi, name: str, spec, application):
         run_size_config['gpu'] = 0
 
     if 'workers' in spec:
+        logging.info(f"Using workers from Run spec for run_size_config workers={spec['workers']}")
         run_size_config['workers'] = spec['workers']
     elif 'workers' in application['spec']:
+        logging.info(f"Using workers from Application spec for run_size_config workers={application['spec']['workers']}")
         run_size_config['workers'] = application['spec']['workers']
         
     return run_size_config
