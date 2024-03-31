@@ -43,7 +43,7 @@ fi
 function check_podman {
     export DOCKER=docker
     
-    if which podman
+    if which podman > /dev/null 2>&1
     then
         export USING_PODMAN=1
         echo "Using podman for build.sh"

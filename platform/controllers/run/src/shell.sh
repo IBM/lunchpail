@@ -54,6 +54,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set s3SecretKey=$INTERNAL_S3_SECRETKEY \
      --set datasets=$dataset_labels \
      --set expose=$expose \
+     --set mcad.enabled=${MCAD_ENABLED:-false } \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
      --set securityContext=$securityContext \

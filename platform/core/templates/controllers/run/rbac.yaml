@@ -48,6 +48,10 @@ rules:
     resources: [pods/log]
     verbs: [get, watch]
 
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [create,list,get,watch,patch]
+
   - apiGroups: [rbac.authorization.k8s.io]
     resources: [rolebindings,roles]
     verbs: [get,create,delete]
@@ -152,7 +156,7 @@ rules:
 
   # Application: other resources it produces and manipulates.
   # Here, we create Jobs+PVCs+Pods, but we do not patch/update/delete them ever.
-  - apiGroups: [batch, extensions]
+  - apiGroups: [extensions]
     resources: [jobs]
     verbs: [create]
   - apiGroups: [""]

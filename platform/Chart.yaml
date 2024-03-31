@@ -41,7 +41,7 @@ dependencies:
 - name: mcad-controller
   version: 0.1.0
   repository: file://./mcad-controller
-  condition: prereqs1.enabled
+  condition: mcad.enabled
   tags:
     - prereqs1
 

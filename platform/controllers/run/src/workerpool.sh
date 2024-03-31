@@ -72,6 +72,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set volumeMounts=$volumeMounts \
      --set env="$env" \
      --set startupDelay=$startupDelay \
+     --set mcad.enabled=${MCAD_ENABLED:-false} \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
      --set securityContext=$securityContext \

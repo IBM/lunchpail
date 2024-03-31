@@ -1,3 +1,4 @@
+{{- if .Values.mcad.enabled }}
 apiVersion: mcad.ibm.com/v1beta1
 kind: AppWrapper
 metadata:
@@ -10,11 +11,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: codeflare.dev
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
-      controller: true
-      kind: Run
-      name: {{ .Values.name }}
-      uid: {{ .Values.uid }}
+    {{- include "owner" . | indent 4 }}
 spec:
   resources:
     Items: []
@@ -22,3 +19,6 @@ spec:
       - replicas: 1
         generictemplate:
           {{ include "job" . | indent 10 }}
+{{- else }}
+{{ include "job" . }}
+{{- end }}
