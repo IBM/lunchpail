@@ -86,7 +86,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         run_id, workdir = alloc_run_id("workerpool", name)
 
         try:
-            cloned_subPath = clone(v1Api, customApi, application, name, workdir)
+            cloned_subPath = clone(v1Api, customApi, application, name, namespace, workdir)
         except Exception as e:
             set_status_after_clone_failure(customApi, name, namespace, e, patch)
 

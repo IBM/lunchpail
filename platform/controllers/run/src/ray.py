@@ -27,7 +27,7 @@ def create_run_ray(v1Api, customApi, application, namespace: str, uid: str, name
         runtimeEnv["env_vars"] = application['spec']['env']
 
     run_id, workdir = alloc_run_id("ray", name)
-    cloned_subPath = clone(v1Api, customApi, application, name, workdir)
+    cloned_subPath = clone(v1Api, customApi, application, name, namespace, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
 
     gpu = run_size_config['gpu']

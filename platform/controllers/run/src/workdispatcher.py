@@ -82,7 +82,7 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
     workdir = tempfile.mkdtemp()
 
     try:
-        cloned_subPath = clone_from_git(v1Api, customApi, name, workdir, spec['repo'])
+        cloned_subPath = clone_from_git(v1Api, customApi, name, namespace, workdir, spec['repo'])
     except Exception as e:
         # failed clone
         set_status_after_clone_failure(customApi, name, namespace, e, patch)

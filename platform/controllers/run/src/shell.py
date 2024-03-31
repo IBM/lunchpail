@@ -16,7 +16,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     command = f"{application['spec']['command']} {command_line_options}"
 
     run_id, workdir = alloc_run_id("shell", name)
-    cloned_subPath = clone(v1Api, customApi, application, name, workdir)
+    cloned_subPath = clone(v1Api, customApi, application, name, namespace, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
 
     gpu = run_size_config['gpu']

@@ -51,7 +51,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     if imagePullSecret is not None:
         scheduler_args.append(f"image_secret={imagePullSecret}")
 
-    cloned_subPath = clone(v1Api, customApi, application, name, workdir)
+    cloned_subPath = clone(v1Api, customApi, application, name, namespace, workdir)
     subPath = os.path.join(run_id, cloned_subPath)
     logging.info(f"Torchx subPath={subPath}")
 

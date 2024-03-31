@@ -17,13 +17,13 @@ def fetch_secret(v1Api, name: str, namespace: str):
 # prefix plus the subpath inside the repo as specified by that `repo`
 # spec.
 #
-def clone_from_git(v1Api, customApi, name: str, workdir: str, repo: str):
+def clone_from_git(v1Api, customApi, name: str, namespace: str, workdir: str, repo: str):
     user_b64 = ""
     pat_b64 = ""
 
     # see if we have a matching PlatformRepoSecret
     try:
-        allRepos = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="platformreposecrets")['items']
+        allRepos = customApi.list_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="platformreposecrets", namespace=namespace)['items']
         logging.info(f"PlatformRepoSecrets {allRepos}")
         matchingRepos = list(filter(lambda prs: re.search(prs['spec']['repo'], repo) is not None,
                                     allRepos))
@@ -33,7 +33,7 @@ def clone_from_git(v1Api, customApi, name: str, workdir: str, repo: str):
             logging.info(f"PlatformRepoSecrets match {prs}")
             try:
                 secret_name = prs['secret']['name']
-                secret_namespace = prs['secret']['namespace']
+                secret_namespace = namespace
                 user_b64, pat_b64 = fetch_secret(v1Api, secret_name, secret_namespace)
             except Exception as e:
                 raise PermanentError(f"Error processing PlatformRepoSecret matches={matchingRepos}. {str(e)}")
@@ -76,7 +76,7 @@ def pseudo_clone_from_literal(application, workdir: str):
 # then invoke `clone_from_git` otherwise invoke
 # `pseudo_clone_from_literal`.
 #
-def clone(v1Api, customApi, application, name: str, workdir: str):
+def clone(v1Api, customApi, application, name: str, namespace: str, workdir: str):
     if 'code' in application['spec']:
         # then the Application specifies a `spec.code` literal
         # (i.e. inlined code directly in the Application yaml)
@@ -84,7 +84,7 @@ def clone(v1Api, customApi, application, name: str, workdir: str):
     else:
         # otherwise the Application specifies code via a reference to
         # a github `spec.repo`
-        cloned_subPath = clone_from_git(v1Api, customApi, name, workdir, application['spec']['repo'])
+        cloned_subPath = clone_from_git(v1Api, customApi, name, namespace, workdir, application['spec']['repo'])
 
     logging.info(f"cloned_subPath={cloned_subPath}")
     return cloned_subPath
