@@ -1,5 +1,5 @@
 # hapq test
-app="$TOP"/watsonx_ai/charts/applications/templates/preprocessing/hapq
+app="$TOP"/watsonx_ai/preprocessing/hapq
 expected=('HAPq processing input_file=')
 
 if which lspci && lspci | grep -iq nvidia; then

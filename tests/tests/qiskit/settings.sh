@@ -1,3 +1,3 @@
 api=ray
-app="$TOP"/watsonx_ai/charts/applications/templates/examples/ray
+app="$TOP"/watsonx_ai/examples/ray
 expected=('eigenvalue')

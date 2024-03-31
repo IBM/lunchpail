@@ -1,3 +1,3 @@
 # basic torch test
-app="$TOP"/watsonx_ai/charts/applications/templates/examples/torch
+app="$TOP"/watsonx_ai/examples/torch
 expected=('Trainable params')
