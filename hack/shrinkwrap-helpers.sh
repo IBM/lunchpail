@@ -49,16 +49,16 @@ function copy_app {
         then
             # git@github.ibm.com:user/repo.git -> https://patuser:pat@github.ibm.com/user/repo.git
             local apphttps=$(echo $appgit | sed -E "s#^git\@([^:]+):([^/]+)/([^.]+)[.]git\$#https://${AI_FOUNDATION_GITHUB_USER}:${AI_FOUNDATION_GITHUB_PAT}@\1/\2/\3.git#")
-            (cd $appdir && git clone $apphttps $appbranch $appname)
+            (cd $appdir && git clone $QUIET $apphttps $appbranch $appname)
         else
-            (cd $appdir && git clone $appgit $appbranch $appname)
+            (cd $appdir && git clone QUIET $appgit $appbranch $appname)
         fi
     else
         mkdir -p $appdir/$appname
         tar -C $appgit -cf - . | tar -C $appdir/$appname -xf -
     fi
     
-    pushd $appdir
+    pushd $appdir >& /dev/null
 
     if [[ -d $appdir/$appname/src ]]
     then
@@ -71,8 +71,8 @@ function copy_app {
         cat $appdir/$appname/values.yaml >> $target/values.yaml
         rm -f $appdir/$appname/values.yaml
     fi
-    
-    popd
+
+    popd >& /dev/null
 
     APP_NAME=$appname
 }
@@ -107,7 +107,9 @@ function shrink_core {
 
     # the kuberay-operator chart has some problems with namespaces; ensure
     # that we force everything in core into $NAMESPACE_SYSTEM
-    echo "$NAMESPACE_SYSTEM" > "${CORE%%.yml}.namespace"
+    if [[ -z "$LITE" ]]
+    then echo "$NAMESPACE_SYSTEM" > "${CORE%%.yml}.namespace"
+    fi
 }
 
 function shrink_user {

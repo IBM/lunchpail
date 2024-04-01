@@ -18,14 +18,16 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 . "$SCRIPTDIR"/shrinkwrap-helpers.sh
 
+QUIET="-q"
 JAAS_FULL=${JAAS_FULL:-false}
 
-while getopts "ab:cd:fh:ln:" opt
+while getopts "ab:cd:fgh:ln:" opt
 do
     case $opt in
         b) appbranch="-b ${OPTARG}"; continue;;
         d) OUTDIR=${OPTARG}; continue;;
         f) JAAS_FULL=true; continue;;
+        g) DEBUG=true; QUIET=""; continue;;
         a) APP_ONLY=true; continue;;
         c) CORE_ONLY=true; continue;;
         l) LITE=1; continue;;
@@ -33,13 +35,12 @@ do
         n) APP_NAME=${OPTARG}; continue;;
     esac
 done
-shift $((OPTIND-1))
-appgit=$1
+appgit=${@:$((OPTIND))}
 OPTIND=1
 
 if [[ -n "$OUTDIR" ]]
 then
-    echo "Shrinkwrapping to $OUTDIR"
+    echo "📦 Shrinkwrapping to $OUTDIR"
     CORE="$OUTDIR"/02-jaas.yml
     DEFAULT_USER="$OUTDIR"/05-jaas-default-user.yml
 
@@ -67,7 +68,9 @@ if [[ -n "$LITE" ]]
 then HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"
 fi
 
-echo "Final shrinkwrap HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS"
+if [[ -n "$DEBUG" ]]
+then echo "$(tput setaf 2)Final shrinkwrap HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS$(tput sgr0)"
+fi
 
 if [[ -z "$APP_ONLY" ]]
 then shrink_core
@@ -77,6 +80,10 @@ if [[ -n "$appgit" ]] && [[ -z "$CORE_ONLY" ]]
 then
     USERTMP=$(mktemp -d /tmp/lunchpail-shrink.XXXXXXXX)
     tar -C "$TOP"/platform/default-user -cf - . | tar -C "$USERTMP" -xf -
+
+    if [[ -n "$DEBUG" ]]
+    then echo "$(tput setaf 33)Staging to $USERTMP$(tput sgr0)"
+    fi
 
     copy_app $USERTMP $appgit "$appbranch" $APP_NAME
     shrink_user $USERTMP
