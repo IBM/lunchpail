@@ -83,8 +83,8 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
             set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
             set_status(name, namespace, "0", patch, "ready")
 
-        run_name = spec['run']['name']
-        run_namespace = spec['run']['namespace'] if 'namespace' in spec['run'] else namespace
+        run_name = spec['run']
+        run_namespace = namespace
         logging.info(f"WorkerPool creation for run={run_name} uid={uid}")
 
         run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(customApi, run_name, run_namespace)

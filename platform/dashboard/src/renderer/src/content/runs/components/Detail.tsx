@@ -44,7 +44,7 @@ function otherTabs(props: PropsWithPotentiallyMissingApplication) {
 function computeGroup(props: Pick<Props, "run" | "workerpools">) {
   const workerpools = props.workerpools.filter(
     (_) =>
-      _.spec.run.name ===
+      _.spec.run ===
       props.run.metadata.name /* && _.spec.application.namespace === props.application.metadata.namespace */,
   )
   return descriptionGroup(Compute, linkToAllDetails("workerpools", workerpools), workerpools.length)

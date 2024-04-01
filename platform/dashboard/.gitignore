@@ -11,3 +11,8 @@ out
 # we will generate these in postinstall via `npm run build:installers`
 /resources/*jaas*.yml
 /resources/*jaas*.namespace
+/resources/q*
+/resources/up
+/resources/down
+/resources/logs/
+/resources/README.md

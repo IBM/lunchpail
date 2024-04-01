@@ -5,8 +5,7 @@ metadata:
   name: test7h-pool2
   namespace: {{ .Values.namespace.user }}
 spec:
-  run:
-    name: test7h
+  run: test7h
   startupDelay: 5s
   workers:
     count: 1

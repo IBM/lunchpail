@@ -4,8 +4,7 @@ metadata:
   name: hapq-pool1
   namespace: {{ .Values.namespace.user }}
 spec:
-  run:
-    name: hapq
+  run: hapq
   workers:
     count: 1
     supportsGpu: {{ .Values.supportsGpu | default false }}

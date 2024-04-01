@@ -18,7 +18,7 @@ function completionRate(events: Props["model"]["events"]) {
 }
 
 function associatedRuns(workerpool: WorkerPoolStatusEvent) {
-  return [workerpool.spec.run.name]
+  return [workerpool.spec.run]
 }
 
 export function gridCellsGroup(inbox: number[], processing: number[], outbox: number[]) {

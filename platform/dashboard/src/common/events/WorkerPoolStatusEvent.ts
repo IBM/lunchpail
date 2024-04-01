@@ -8,9 +8,7 @@ type WorkerPoolStatusEvent = KubernetesResource<
   "WorkerPool",
   {
     /** Run that this WorkerPool supports */
-    run: {
-      name: string
-    }
+    run: string
 
     /** Attributes of the workers */
     workers: {

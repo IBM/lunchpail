@@ -14,8 +14,7 @@ function associatedQueues(props: Props, workerpool: Props["workerpools"][number]
 
 function associatedWorkerPools(props: Props) {
   return props.workerpools.filter(
-    ({ metadata, spec }) =>
-      spec.run.name === props.run.metadata.name && metadata.context === props.run.metadata.context,
+    ({ metadata, spec }) => spec.run === props.run.metadata.name && metadata.context === props.run.metadata.context,
   )
 }
 

@@ -67,7 +67,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
         image = application['spec']['image']
         command = application['spec']['command']
 
-        run_name = spec['run']['name']
+        run_name = spec['run']
 
         # environment variables; merge application spec with workerpool spec
         env = application['spec']['env'] if 'env' in application['spec'] else {}
@@ -149,7 +149,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
     pool_name = labels["app.kubernetes.io/name"]
     pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
 
-    run_name = pool["spec"]["run"]["name"]
+    run_name = pool["spec"]["run"]
 
     queue_dataset = find_queue_for_run_by_name(customApi, run_name, namespace)
     if queue_dataset is None:

@@ -54,7 +54,7 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
         },
       },
       spec: {
-        run: { name: workerpool.run },
+        run: workerpool.run,
         workers: {
           size: "md",
           supportsGpu: false,

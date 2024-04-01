@@ -43,7 +43,7 @@ export default function toWorkerPoolModel(
     label: pool.metadata.name,
     context: pool.metadata.context,
     namespace: pool.metadata.namespace,
-    run: pool.spec.run.name,
+    run: pool.spec.run,
     inbox: backfill(model.inbox),
     outbox: backfill(model.outbox),
     processing: backfill(model.processing),

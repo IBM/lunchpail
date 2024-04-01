@@ -5,8 +5,7 @@ metadata:
   name: test7h-pool1
   namespace: {{ .Values.namespace.user }}
 spec:
-  run:
-    name: test7h
+  run: test7h
   workers:
     count: 1
     size: xxs

@@ -22,11 +22,7 @@ spec:
               required: [run,workers]
               properties:
                 run:
-                  type: object
-                  required: [name]
-                  properties:
-                    name:
-                      type: string
+                  type: string
                 env:
                   type: object
                   additionalProperties:
