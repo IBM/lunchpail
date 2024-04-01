@@ -1,4 +1,4 @@
-# TODO run controller should create this on demand?
+{{- if .Values.workdir_via_mount }}
 apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
@@ -16,3 +16,4 @@ spec:
     secret-namespace: {{ .Values.namespace.user }}
     #readonly: "true" # default is false
     provision: "true"
+{{- end }}
