@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+#
+# test.sh: run all tests subject to optional inclusion `-i` and
+# exclusion `-e` filters. After ensuring that the system is ready, we
+# invoke `./run.sh` to do the heavy lifting of the actual run.
+#
+
 set -e
 set -o pipefail
 
-# in case there are things we want to do differently knowing that we
+# In case there are things we want to do differently knowing that we
 # are running a test (e.g. to produce more predictible output);
 # e.g. see test7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
@@ -13,13 +19,16 @@ TOP="$SCRIPTDIR"/../..
 
 . "$SCRIPTDIR"/helpers.sh
 
+# On ctrl+c, kill the subprocesses that `watch` may have launched
 trap "pkill -P $$" SIGINT
 
 undeploy
 up
 watch
 
-# test app not found
+#
+# Iterate over the tests/* directory
+#
 for path in "$SCRIPTDIR"/../tests/*
 do
     base="$(basename $path)"
@@ -58,61 +67,7 @@ do
         continue
     fi
 
-    # skip over disabled tests
-    if [[ -e "$path"/.disabled ]]
-    then
-        echo "$(tput setaf 3)🧪 Skipping disabled test $base$(tput sgr0)"
-        continue
-    fi
-
-    echo "$(tput setaf 2)🧪 Commencing test $base$(tput sgr0)"
-
-    unset api
-    unset app
-    unset branch
-    unset taskqueue
-    unset handler
-    unset namespace
-    unset testname
-    unset deployname
-    expected=()
-
-    . "$path"/settings.sh
-
-    testname="${testname-$(basename $path)}"
-
-    #
-    # If the settings.sh hasn't defined the path to the app, we
-    # default to looking in tests/tests/<testname>/pail.
-    #
-    if [[ -z "$app" ]]
-    then app="$SCRIPTDIR"/../tests/$testname/pail
-    fi
-    
-    if [[ -e "$path"/data.sh ]]; then
-        echo "$(tput setaf 2)🧪 Copying in data for $testname$(tput sgr0)" 1>&2
-        echo ""
-        "$path"/data.sh
-        "$TOP"/hack/s3-copyin.sh
-        echo "✅ Done copying in data for $testname"
-    fi
-    
-    if [[ ${#expected[@]} != 0 ]]
-    then
-        deploy $testname $app $branch $deployname
-
-        if [[ -e "$path"/init.sh ]]; then
-            TEST_NAME=$testname "$path"/init.sh
-        fi
-        
-        ${handler-waitForIt} ${deployname:-$testname} ${namespace-$NAMESPACE_USER} $api "${expected[@]}"
-        EC=$?
-        undeploy $testname
-
-        if [[ $EC != 0 ]]
-        then exit $EC
-        fi
-    fi
+    "$SCRIPTDIR"/run.sh "$path"
 done
 
 echo "Test runs complete"
