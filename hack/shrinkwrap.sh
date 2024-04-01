@@ -79,7 +79,7 @@ fi
 if [[ -n "$appgit" ]] && [[ -z "$CORE_ONLY" ]]
 then
     USERTMP=$(mktemp -d /tmp/lunchpail-shrink.XXXXXXXX)
-    tar -C "$TOP"/platform/default-user -cf - . | tar -C "$USERTMP" -xf -
+    tar --exclude '*~' -C "$TOP"/platform/default-user -cf - . | tar -C "$USERTMP" -xf -
 
     if [[ -n "$DEBUG" ]]
     then echo "$(tput setaf 33)Staging to $USERTMP$(tput sgr0)"

@@ -55,7 +55,7 @@ function copy_app {
         fi
     else
         mkdir -p $appdir/$appname
-        tar -C $appgit -cf - . | tar -C $appdir/$appname -xf -
+        tar --exclude '*~' -C $appgit -cf - . | tar -C $appdir/$appname -xf -
     fi
     
     pushd $appdir >& /dev/null
