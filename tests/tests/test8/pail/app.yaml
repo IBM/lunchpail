@@ -17,5 +17,5 @@ spec:
       useas: mount
   supportsGpu: true
   code: |
-{{ .Files.Get "src/test8/main.py" | indent 4 }}
+{{ .Files.Get "src/main.py" | indent 4 }}
 {{- end }}

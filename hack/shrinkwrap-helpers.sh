@@ -63,7 +63,7 @@ function copy_app {
     if [[ -d $appdir/$appname/src ]]
     then
         mkdir -p $target/src/
-        mv $appdir/$appname/src $target/src/$appname
+        mv $appdir/$appname/src/* $target/src
     fi
 
     if [[ -f $appdir/$appname/values.yaml ]]
