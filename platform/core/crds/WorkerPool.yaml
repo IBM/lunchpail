@@ -88,7 +88,7 @@ spec:
       additionalPrinterColumns:
         - name: Run
           type: string
-          jsonPath: .spec.run.name
+          jsonPath: .spec.run
         - name: DataSet
           type: string
           jsonPath: .spec.dataset
