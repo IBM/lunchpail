@@ -102,7 +102,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     logging.info(f"Creating WorkDispatcher from application name={workdispatcher_name} namespace={workdispatcher_namespace} queue_dataset={queue_dataset}")
 
     workdispatcher_app_name = spec['application']['name']
-    workdispatcher_app_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else workdispatcher_namespace
+    workdispatcher_app_namespace = workdispatcher_namespace
     workdispatcher_app_size = spec['application']['size'] if 'size' in spec['application'] else "xxs"
 
     # confirm that the linked application exists

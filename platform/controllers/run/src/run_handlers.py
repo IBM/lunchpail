@@ -19,7 +19,7 @@ from workqueue import create_run_workqueue
 from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
 from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
 
-from fetch_application import fetch_run_and_application_and_queue_dataset
+from fetch_application import fetch_application_for_run, fetch_run_and_application_and_queue_dataset
 
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
@@ -116,7 +116,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
 
 # A Run has been created.
 @kopf.on.create('runs.codeflare.dev')
-def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwargs):
+def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, **kwargs):
     try:
         # what top-level run is this part of? this could be this very run,
         # if it is a top-level run...
@@ -125,15 +125,13 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         step = labels['app.kubernetes.io/step'] if 'app.kubernetes.io/step' in labels else '0'
         component = labels['app.kubernetes.io/component'] if 'app.kubernetes.io/component' in labels else None
 
-        application_name = spec['application']['name']
-        application_namespace = spec['application']['namespace'] if 'namespace' in spec['application'] else namespace
-        logging.info(f"Run for application={application_name} application_namespace={application_namespace} run_uid={uid}")
-
         try:
-            application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
+            application = fetch_application_for_run(customApi, body)
+            api = application['spec']['api']
+            logging.info(f"Run for application={application['metadata']['name']} application_namespace={application['metadata']['namespace']} api={api} run_uid={uid}")
         except ApiException as e:
             set_status(name, namespace, 'Failed', patch)
-            raise kopf.PermanentError(f"Application {application_name} not found. {str(e)}")
+            raise e
 
         run_size_config = run_size(customApi, name, spec, application)
         logging.info(f"Using name={name} run_size_config={str(run_size_config)}")
@@ -149,9 +147,6 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         if dataset_labels is not None:
             logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
 
-        api = application['spec']['api']
-        logging.info(f"Found application={application_name} api={api} ns={application_namespace}")
-
         if api == "ray":
             head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
         elif api == "torch":
@@ -163,7 +158,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, patch, **kwarg
         elif api == "workqueue":
             head_pod_name = create_run_workqueue(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         else:
-            raise kopf.PermanentError(f"Invalid API {api} for application={application_name}.")
+            raise kopf.PermanentError(f"Invalid api={api} for application={application['metadata']['name']}")
 
         if head_pod_name is not None and len(head_pod_name) > 0:
             track_job_logs(name, head_pod_name, namespace, api)

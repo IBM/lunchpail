@@ -23,14 +23,17 @@ spec:
               properties:
                 application:
                   type: object
-                  required: [name]
                   description: |
-                    The application logic that workers should execute
+                    The application logic that dispatchers or workers should execute
+                  oneOf:
+                    - required: [name]
+                    - required: [fromRole]
                   properties:
                     name:
                       type: string
-                    namespace:
+                    fromRole:
                       type: string
+                      enum: [worker,dispatcher]
                 options:
                   type: string
                 env:

@@ -1,0 +1,10 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: WorkerPool
+metadata:
+  name: test7e-by-role-pool1
+  namespace: {{ .Values.namespace.user }}
+spec:
+  run: test7e-by-role
+  workers:
+    count: 1
+    size: xxs

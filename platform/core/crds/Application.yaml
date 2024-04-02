@@ -40,6 +40,11 @@ spec:
                 code:
                   type: string
 
+                # for api=workqueue
+                role:
+                  type: string
+                  enum: [dispatcher,worker]
+
                 image:
                   type: string
                 repo:

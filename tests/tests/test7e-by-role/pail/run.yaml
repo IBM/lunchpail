@@ -1,0 +1,8 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Run
+metadata:
+  name: test7e-by-role
+  namespace: {{ .Values.namespace.user }}
+spec:
+  application:
+    fromRole: worker

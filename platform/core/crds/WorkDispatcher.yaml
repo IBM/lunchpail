@@ -42,8 +42,6 @@ spec:
                   properties:
                     name:
                       type: string
-                    namespace:
-                      type: string
                     size:
                       type: string
                       enum: [xxs,xs,sm,md,lg,xl,xxl]

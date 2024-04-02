@@ -3,19 +3,40 @@ from kubernetes.client.rest import ApiException
 
 from workerpool import find_queue_for_run
 
+def fetch_application_for_run(customApi, run):
+    application_namespace = run['metadata']['namespace']
+
+    if 'name' in run['spec']['application']:
+        # then the application was specified by name
+        application_name = run['spec']['application']['name']
+        try:
+            return customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
+
+        except ApiException as e:
+            raise PermanentError(f"Application {application_name} not found. {str(e)}")
+    else:
+        # else the application was specified by role
+        application_role = run['spec']['application']['fromRole']
+
+        applications_with_role = list(filter(
+            lambda app: 'role' in app['spec'] and app['spec']['role'] == application_role,
+            customApi.list_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", namespace=application_namespace)['items']
+        ))
+        match_count = len(applications_with_role)
+        if match_count == 0:
+            raise TemporaryError(f"No applications with role={application_role} in namespace={namespace}")
+        elif match_count > 1:
+            raise TemporaryError(f"Multiple ({match_count}) applications with role={application_role} in namespace={namespace}")
+
+        return applications_with_role[0]
+
 def fetch_run_and_application(customApi, run_name: str, run_namespace: str):
     try:
         run = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
+        application = fetch_application_for_run(customApi, run)
 
-        application_name = run['spec']['application']['name']
-        application_namespace = run['spec']['application']['namespace'] if 'namespace' in run['spec']['application'] else run_namespace
+        return run, application
 
-        try:
-            application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
-
-            return run, application
-        except ApiException as e:
-            raise PermanentError(f"Application {application_name} not found. {str(e)}")
     except ApiException as e:
         raise PermanentError(f"Run {run_name} not found. {str(e)}")
 
