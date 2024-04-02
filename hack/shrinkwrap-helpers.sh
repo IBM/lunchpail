@@ -114,6 +114,13 @@ function shrink_core {
 
 function shrink_user {
     local userdir=$1
+    local appname=$2
+
+    if ! grep -qr '^kind:\s*Run$' $userdir/templates/$appname
+    then
+        echo "$(tput setaf 5)Auto-Injecting WorkStealer startup$(tput sgr0)"
+        local helm_auto_run="--set autorun=$appname"
+    fi
 
     # default-user
     $HELM_TEMPLATE \
@@ -122,6 +129,7 @@ function shrink_user {
         $HELM_SECRETS \
         $HELM_DEMO_SECRETS $HELM_INSTALL_FLAGS \
         $HELM_IMAGE_PULL_SECRETS \
+        $helm_auto_run \
         --set tags.default-user=true \
         2> >(grep -v 'found symbolic link' >&2) \
         2> >(grep -v 'Contents of linked' >&2) \

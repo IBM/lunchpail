@@ -1,0 +1,28 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test7e-by-role-autorun
+  namespace: {{ .Values.namespace.user }}
+spec:
+  api: workqueue
+  code: |
+    #!/usr/bin/env sh
+
+    # $1 input filepath
+    # $2 output filepath
+    in="$1"
+    out="$2"
+
+    echo "Processing $in"
+    sleep 5
+
+    echo "Done with $in"
+
+  role: worker
+  command: ./literal.sh
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
+
+# TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
+#  inputs:
+#    - sizes:
+#        lg: test7edata

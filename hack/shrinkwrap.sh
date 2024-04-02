@@ -82,12 +82,12 @@ then
     tar --exclude '*~' -C "$TOP"/platform/default-user -cf - . | tar -C "$USERTMP" -xf -
 
     if [[ -n "$DEBUG" ]]
-    then echo "$(tput setaf 33)Staging to $USERTMP$(tput sgr0)"
+    then echo "$(tput setaf 3)Staging to $USERTMP$(tput sgr0)"
     else trap "rm -rf $USERTMP" EXIT
     fi
 
     copy_app $USERTMP $appgit "$appbranch" $APP_NAME
-    shrink_user $USERTMP
+    shrink_user $USERTMP $APP_NAME
 fi
 
 add_dir "$SCRIPTDIR"/shrinkwrap/scripts "$OUTDIR" $APP_NAME
