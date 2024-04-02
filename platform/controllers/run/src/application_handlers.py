@@ -36,27 +36,27 @@ def create_application(name: str, namespace: str, spec, patch, **kwargs):
     logging.info(f"Handling Application create name={name}")
     set_status(name, namespace, "Ready")
 
-@kopf.on.delete('applications.codeflare.dev')
-def delete_application(name: str, namespace: str, spec, patch, **kwargs):
-    logging.info(f"Handling Application delete name={name}")
-    set_status(name, namespace, "Terminating")
+# @kopf.on.delete('applications.codeflare.dev')
+# def delete_application(name: str, namespace: str, spec, patch, **kwargs):
+#     logging.info(f"Handling Application delete name={name}")
+#     set_status(name, namespace, "Terminating")
 
 @kopf.on.create('platformreposecrets.codeflare.dev')
 def create_platformreposecret(name: str, namespace: str, spec, patch, **kwargs):
     logging.info(f"Handling PlatformRepoSecret create name={name} namespace={namespace}")
     set_status(name, namespace, "Ready", "platformreposecrets")
 
-@kopf.on.delete('platformreposecrets.codeflare.dev')
-def delete_platformreposecret(name: str, namespace: str, spec, patch, **kwargs):
-    logging.info(f"Handling PlatformRepoSecret delete name={name}")
-    set_status(name, namespace, "Terminating", "platformreposecrets")
+# @kopf.on.delete('platformreposecrets.codeflare.dev')
+# def delete_platformreposecret(name: str, namespace: str, spec, patch, **kwargs):
+#     logging.info(f"Handling PlatformRepoSecret delete name={name}")
+#     set_status(name, namespace, "Terminating", "platformreposecrets")
     
 @kopf.on.create('datasets.com.ie.ibm.hpsys')
 def create_dataset(name: str, namespace: str, spec, patch, **kwargs):
     logging.info(f"Handling Dataset create name={name}")
     set_status(name, namespace, "Ready", "datasets", "com.ie.ibm.hpsys", "v1alpha1")
 
-@kopf.on.delete('datasets.com.ie.ibm.hpsys')
-def delete_dataset(name: str, namespace: str, spec, patch, **kwargs):
-    logging.info(f"Handling Dataset delete name={name}")
-    set_status(name, namespace, "Terminating", "datasets", "com.ie.ibm.hpsys", "v1alpha1")
+# @kopf.on.delete('datasets.com.ie.ibm.hpsys')
+# def delete_dataset(name: str, namespace: str, spec, patch, **kwargs):
+#     logging.info(f"Handling Dataset delete name={name}")
+#     set_status(name, namespace, "Terminating", "datasets", "com.ie.ibm.hpsys", "v1alpha1")

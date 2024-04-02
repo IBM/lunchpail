@@ -26,10 +26,10 @@ v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
 # A WorkDispatcher has been deleted
-@kopf.on.delete('workdispatchers.codeflare.dev')
-def delete_workdispatcher_kopf(name: str, namespace: str, patch, **kwargs):
-    logging.info(f"Handling WorkDispatcher delete name={name} namespace={namespace}")
-    set_status_immediately(customApi, name, namespace, "Terminating", "workdispatchers")
+# @kopf.on.delete('workdispatchers.codeflare.dev')
+# def delete_workdispatcher_kopf(name: str, namespace: str, patch, **kwargs):
+#     logging.info(f"Handling WorkDispatcher delete name={name} namespace={namespace}")
+#     set_status_immediately(customApi, name, namespace, "Terminating", "workdispatchers")
 
 # A WorkDispatcher has been created
 @kopf.on.create('workdispatchers.codeflare.dev')
@@ -64,16 +64,16 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         raise kopf.PermanentError(f"Error handling WorkDispatcher creation. {str(e)}")
 
 # A WorkerPool has been deleted.
-@kopf.on.delete('workerpools.codeflare.dev')
-def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
-    logging.info(f"Handling WorkerPool delete name={name} namespace={namespace}")
-    set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
+# @kopf.on.delete('workerpools.codeflare.dev')
+# def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
+#     logging.info(f"Handling WorkerPool delete name={name} namespace={namespace}")
+#     set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
 
 # A Run has been deleted.
-@kopf.on.delete('runs.codeflare.dev')
-def delete_run_kopf(name: str, namespace: str, patch, **kwargs):
-    logging.info(f"Handling Run delete name={name} namespace={namespace}")
-    set_status_immediately(customApi, name, namespace, "Terminating", "runs")
+# @kopf.on.delete('runs.codeflare.dev')
+# def delete_run_kopf(name: str, namespace: str, patch, **kwargs):
+#     logging.info(f"Handling Run delete name={name} namespace={namespace}")
+#     set_status_immediately(customApi, name, namespace, "Terminating", "runs")
 
 # A WorkerPool has been created.
 @kopf.on.create('workerpools.codeflare.dev')
@@ -274,27 +274,27 @@ def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, ui
         traceback.print_exc()
 
 # Watch each managed Pod for deletion
-@kopf.on.delete('pods', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
-def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
-    try:
-        raw_phase = body['status']['phase']
-        phase = "Offline" if raw_phase == "Running" else raw_phase
+# @kopf.on.delete('pods', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
+# def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
+#     try:
+#         raw_phase = body['status']['phase']
+#         phase = "Offline" if raw_phase == "Running" else raw_phase
 
-        run_name = labels["app.kubernetes.io/part-of"]
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
-        logging.info(f"Handling managed Pod delete run_name={run_name} phase={phase}")
+#         run_name = labels["app.kubernetes.io/part-of"]
+#         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+#         logging.info(f"Handling managed Pod delete run_name={run_name} phase={phase}")
 
-        resp = customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
-    except ApiException as e:
-        if e.status != 404:
-            logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
-    except kopf.TemporaryError as e:
-        # pass through any TemporaryErrors
-        logging.info(f"Passing through TemporaryError for Pod deletion name={name} namespace={namespace}")
-        raise e
-    except Exception as e:
-        logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
-        traceback.print_exc()
+#         resp = customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+#     except ApiException as e:
+#         if e.status != 404:
+#             logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
+#     except kopf.TemporaryError as e:
+#         # pass through any TemporaryErrors
+#         logging.info(f"Passing through TemporaryError for Pod deletion name={name} namespace={namespace}")
+#         raise e
+#     except Exception as e:
+#         logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
+#         traceback.print_exc()
 
 # Watch pod events so we can capture pod scheduling, image pull, etc. status updates and associate them with a Run
 @kopf.on.create('events', field="involvedObject.kind", value="Pod")
