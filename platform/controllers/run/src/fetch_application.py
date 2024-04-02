@@ -24,9 +24,9 @@ def fetch_application_for_run(customApi, run):
         ))
         match_count = len(applications_with_role)
         if match_count == 0:
-            raise TemporaryError(f"No applications with role={application_role} in namespace={namespace}")
+            raise TemporaryError(f"No applications with role={application_role} in namespace={application_namespace}")
         elif match_count > 1:
-            raise TemporaryError(f"Multiple ({match_count}) applications with role={application_role} in namespace={namespace}")
+            raise TemporaryError(f"Multiple ({match_count}) applications with role={application_role} in namespace={application_namespace}")
 
         return applications_with_role[0]
 
