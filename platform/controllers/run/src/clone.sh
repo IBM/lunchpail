@@ -45,7 +45,8 @@ fi
 # Copy the workdir out of temp
 #mkdir -p "$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$_WORKDIR_SUBDIR
 cd $_WORKDIR_SUBDIR/..
-rclone copy $(basename $_WORKDIR_SUBDIR) $PROVIDER"$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$(dirname $_WORKDIR_SUBDIR)/$(basename $_WORKDIR_SUBDIR)
+remote_path=$(sed 's#[.]/##g' <<< $PROVIDER"$CUSTOM_WORKING_DIR"/$_WORKDIR_REPO/$(dirname $_WORKDIR_SUBDIR)/$(basename $_WORKDIR_SUBDIR)) # remote any ./ from dirname
+rclone copy $(basename $_WORKDIR_SUBDIR) $remote_path
 rm -rf $T
 
 echo -n "${_WORKDIR_REPO}/${_WORKDIR_SUBDIR}"
