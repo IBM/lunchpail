@@ -22,6 +22,11 @@ done
 
 SELECTOR=app.kubernetes.io/component=workstealer,app.kubernetes.io/part-of=the_lunchpail_app
 
+SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+if [ -f "$SCRIPTDIR"/05-jaas-default-user.namespace ]
+then NS=$(cat "$SCRIPTDIR"/05-jaas-default-user.namespace)
+fi
+
 if which gum > /dev/null 2>&1 && [ -n "$FOLLOW" ]
 then
     gum spin --title "$(gum log --level info --structured "Waiting for workload to start" app ${APP:-all} namespace ${NS:-jaas-user})" -- \

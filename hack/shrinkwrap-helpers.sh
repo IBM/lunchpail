@@ -39,6 +39,11 @@ function copy_app {
     local appbranch=$3
     local appname=${4:-$(basename ${appgit%%.git})}
 
+    # TODO... how do we really want to get a good name for the app?
+    if [[ $appname = "pail" ]]
+    then appname=${4-$(basename $(dirname ${appgit%%.git}))}
+    fi
+
     local appdir=$target/templates
     mkdir -p $appdir
 
@@ -114,6 +119,7 @@ function shrink_core {
 function shrink_user {
     local userdir=$1
     local appname=$2
+    local ns=$appname # namespace=application name
 
     if ! grep -qr '^kind:\s*Run$' $userdir/templates/$appname
     then
@@ -137,8 +143,11 @@ function shrink_user {
         $HELM_IMAGE_PULL_SECRETS \
         $helm_auto_run \
         $helm_auto_dispatcher \
+        --set namespace.user="$ns" \
         --set tags.default-user=true \
         2> >(grep -v 'found symbolic link' >&2) \
         2> >(grep -v 'Contents of linked' >&2) \
         > "$DEFAULT_USER"
+
+    echo "$ns" > "${DEFAULT_USER%%.yml}.namespace"
 }

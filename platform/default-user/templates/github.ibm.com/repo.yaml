@@ -7,7 +7,6 @@ apiVersion: codeflare.dev/v1alpha1
 kind: PlatformRepoSecret
 metadata:
   name: github-ibm-com
-  namespace: {{ .Values.namespace.user }}
 spec:
   repo: https://github.ibm.com
   secret:

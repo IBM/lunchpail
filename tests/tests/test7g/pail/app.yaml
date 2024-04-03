@@ -3,7 +3,6 @@ apiVersion: codeflare.dev/v1alpha1
 kind: Application
 metadata:
   name: test7g
-  namespace: {{ .Values.namespace.user }}
 spec:
   api: workqueue
   code: |

@@ -2,7 +2,6 @@ apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
   name: test7edata # avoid dashes for now: https://github.com/datashim-io/datashim/issues/285
-  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: taskqueue
 spec:

@@ -3,7 +3,6 @@ apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
   name: workdir
-  namespace: {{ .Values.namespace.user }}
   labels:
     jaas.dev/hidden: "true"
     app.kubernetes.io/component: run-controller

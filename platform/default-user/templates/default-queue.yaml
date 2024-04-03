@@ -2,7 +2,6 @@ apiVersion: {{ .Values.datashim.apiVersion }}
 kind: Dataset
 metadata:
   name: {{ .Values.taskqueue.dataset }}
-  namespace: {{ .Values.namespace.user }}
   annotations:
     jaas.dev/priority: "0"
   labels:
@@ -21,7 +20,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ print .Values.taskqueue.dataset "jaassecret" }}
-  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: taskqueue
     app.kubernetes.io/instance: {{ .Release.Name }}
