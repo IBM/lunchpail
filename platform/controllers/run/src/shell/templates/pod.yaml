@@ -21,6 +21,12 @@ metadata:
 spec:
   restartPolicy: OnFailure
   serviceAccountName: {{ .Values.rbac.serviceaccount }}
+
+  {{- if .Values.securityContext }}
+  securityContext:
+    {{ .Values.securityContext | b64dec | indent 4 }}
+  {{- end }}
+
   volumes:
     {{- if .Values.volumes }}
     {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 4 }}

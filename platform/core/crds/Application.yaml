@@ -94,6 +94,8 @@ spec:
                       type: integer
                     runAsGroup:
                       type: integer
+                    fsGroup:
+                      type: integer
 
                 datasets:
                   type: array

@@ -11,11 +11,6 @@
       name: {{ print .Release.Name "-env" | trunc 53 }}
   {{- end }}
 
-  {{- if .Values.securityContext }}
-  securityContext:
-    {{ .Values.securityContext | b64dec | indent 4 }}
-  {{- end }}
-
   {{- include "codeflare.dev/workdir.path" . | indent 2 }}
   volumeMounts:
     {{- if .Values.volumeMounts }}
