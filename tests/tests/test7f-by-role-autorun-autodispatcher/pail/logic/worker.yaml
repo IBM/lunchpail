@@ -1,0 +1,23 @@
+apiVersion: codeflare.dev/v1alpha1
+kind: Application
+metadata:
+  name: test7f
+  namespace: {{ .Values.namespace.user }}
+spec:
+  api: workqueue
+  role: worker
+  code: |
+    #!/usr/bin/env sh
+
+    # $1 input filepath
+    # $2 output filepath
+    in="$1"
+    out="$2"
+
+    echo "Processing $in"
+    sleep 5
+
+    echo "Done with $in"
+
+  command: ./literal.sh
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}

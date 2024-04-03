@@ -1,5 +1,3 @@
-# test7e
+# test7e-by-role-autorun
 
-As with test7b (api=workqueue test with Application code inlined into
-Application yaml) but where we check that the amount of unassigned 
-tasks remaining is 0 and the number of tasks in the outbox is 6.
+As with test7e-by-role except that the Run itself is auto-generated.

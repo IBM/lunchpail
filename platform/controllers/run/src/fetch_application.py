@@ -6,12 +6,10 @@ from workerpool import find_queue_for_run
 #
 # Find the Application associated with the given Run
 #
-def fetch_application_for_run(customApi, run):
-    application_namespace = run['metadata']['namespace']
-
-    if 'name' in run['spec']['application']:
+def fetch_application_for_appref(customApi, application_namespace: str, appref):
+    if 'name' in appref:
         # then the application was specified by name
-        application_name = run['spec']['application']['name']
+        application_name = appref['name']
         try:
             return customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
 
@@ -19,7 +17,7 @@ def fetch_application_for_run(customApi, run):
             raise PermanentError(f"Application {application_name} not found. {str(e)}")
     else:
         # else the application was specified by role
-        application_role = run['spec']['application']['fromRole']
+        application_role = appref['fromRole']
 
         applications_with_role = list(filter(
             lambda app: 'role' in app['spec'] and app['spec']['role'] == application_role,
@@ -32,6 +30,12 @@ def fetch_application_for_run(customApi, run):
             raise TemporaryError(f"Multiple ({match_count}) applications with role={application_role} in namespace={application_namespace}")
 
         return applications_with_role[0]
+
+#
+# Find the Application associated with the given Run
+#
+def fetch_application_for_run(customApi, run):
+    return fetch_application_for_appref(customApi, run['metadata']['namespace'], run['spec']['application'])
 
 #
 # Find the Run and Application resources for the given named Run

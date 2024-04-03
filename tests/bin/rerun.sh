@@ -8,7 +8,10 @@ TOP="$SCRIPTDIR"/../..
 
 "$TOP"/hack/build.sh -l > /dev/null &
 
-"$TOP"/builds/test/$(basename $1)/down
+if [[ -f "$TOP"/builds/test/$(basename $1)/down ]]
+then "$TOP"/builds/test/$(basename $1)/down
+fi
+
 "$TOP"/builds/lite/down
 "$TOP"/hack/shrinkcore.sh "$TOP"/builds
 

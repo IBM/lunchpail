@@ -122,6 +122,13 @@ function shrink_user {
         local helm_auto_run="--set autorun=$appname"
     fi
 
+    if ! grep -qr '^kind:\s*WorkDispatcher$' $userdir/templates/$appname && \
+            grep -qr '^  role:\s*dispatcher$' $userdir/templates/$appname
+    then
+        echo "$(tput setaf 5)Auto-Injecting WorkDispatcher$(tput sgr0)"
+        local helm_auto_dispatcher="--set autodispatcher.name=$appname --set autodispatcher.application=$appname"
+    fi
+    
     # default-user
     $HELM_TEMPLATE \
         jaas-default-user \
@@ -130,6 +137,7 @@ function shrink_user {
         $HELM_DEMO_SECRETS $HELM_INSTALL_FLAGS \
         $HELM_IMAGE_PULL_SECRETS \
         $helm_auto_run \
+        $helm_auto_dispatcher \
         --set tags.default-user=true \
         2> >(grep -v 'found symbolic link' >&2) \
         2> >(grep -v 'Contents of linked' >&2) \

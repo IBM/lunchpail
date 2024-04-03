@@ -9,6 +9,7 @@ from kubernetes.client.rest import ApiException
 
 from clone import clone_from_git
 from run_id import alloc_run_id
+from fetch_application import fetch_application_for_appref
 
 from status import set_status, add_error_condition, set_status_after_clone_failure
 
@@ -101,8 +102,8 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
 def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str, workdispatcher_namespace: str, workdispatcher_uid: str, spec, run, queue_dataset: str, dataset_labels, patch):
     logging.info(f"Creating WorkDispatcher from application name={workdispatcher_name} namespace={workdispatcher_namespace} queue_dataset={queue_dataset}")
 
-    workdispatcher_app_name = spec['application']['name']
     workdispatcher_app_namespace = workdispatcher_namespace
+    workdispatcher_app_name = fetch_application_for_appref(customApi, workdispatcher_app_namespace, spec['application'])['metadata']['name'] # todo we re-fetch this just below
     workdispatcher_app_size = spec['application']['size'] if 'size' in spec['application'] else "xxs"
 
     # confirm that the linked application exists

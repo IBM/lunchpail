@@ -38,10 +38,15 @@ spec:
                 # method=application fields: [application]
                 application:
                   type: object
-                  required: [name]
+                  oneOf:
+                    - required: [name]
+                    - required: [fromRole]
                   properties:
                     name:
                       type: string
+                    fromRole:
+                      type: string
+                      enum: [dispatcher]
                     size:
                       type: string
                       enum: [xxs,xs,sm,md,lg,xl,xxl]
