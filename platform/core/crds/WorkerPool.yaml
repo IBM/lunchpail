@@ -19,7 +19,7 @@ spec:
           properties:
             spec:
               type: object
-              required: [run,workers]
+              required: [workers]
               properties:
                 run:
                   type: string

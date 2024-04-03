@@ -3,6 +3,9 @@ from kubernetes.client.rest import ApiException
 
 from workerpool import find_queue_for_run
 
+#
+# Find the Application associated with the given Run
+#
 def fetch_application_for_run(customApi, run):
     application_namespace = run['metadata']['namespace']
 
@@ -30,6 +33,9 @@ def fetch_application_for_run(customApi, run):
 
         return applications_with_role[0]
 
+#
+# Find the Run and Application resources for the given named Run
+#
 def fetch_run_and_application(customApi, run_name: str, run_namespace: str):
     try:
         run = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
@@ -40,9 +46,12 @@ def fetch_run_and_application(customApi, run_name: str, run_namespace: str):
     except ApiException as e:
         raise PermanentError(f"Run {run_name} not found. {str(e)}")
 
+#
+# Find the Run and Application and TaskQueue (Dataset) resources for
+# the given named Run
+#
 def fetch_run_and_application_and_queue_dataset(customApi, run_name: str, run_namespace: str):
     run, application = fetch_run_and_application(customApi, run_name, run_namespace)
-
     queue_dataset = find_queue_for_run(customApi, run)
     if queue_dataset is None:
         raise TemporaryError(f"WorkerPool creation failed due to missing queue dataset run_name={run_name} run_namespace={run_namespace}", delay=4)

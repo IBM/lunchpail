@@ -19,6 +19,7 @@ from workqueue import create_run_workqueue
 from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
 from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
 
+from find_run import find_run
 from fetch_application import fetch_application_for_run, fetch_run_and_application_and_queue_dataset
 
 config.load_incluster_config()
@@ -83,7 +84,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
             set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
             set_status(name, namespace, "0", patch, "ready")
 
-        run_name = spec['run']
+        run_name = spec['run'] if 'run' in spec else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
         run_namespace = namespace
         logging.info(f"WorkerPool creation for run={run_name} uid={uid}")
 
@@ -102,7 +103,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         if dataset_labels is not None:
             logging.info(f"Attaching datasets WorkerPool={name} datasets={dataset_labels}")
 
-        create_workerpool(v1Api, customApi, application, namespace, uid, name, spec, queue_dataset, dataset_labels, volumes, volumeMounts, patch)
+        create_workerpool(v1Api, customApi, application, run, namespace, uid, name, spec, queue_dataset, dataset_labels, volumes, volumeMounts, patch)
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
         set_status(name, namespace, 'Failed', patch)

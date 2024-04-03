@@ -11,6 +11,7 @@ from kopf import PermanentError, TemporaryError
 from clone import clone
 from status import set_status, add_error_condition, set_status_after_clone_failure
 from run_id import alloc_run_id
+from find_run import find_run
 from run_size import load_run_size_config
 
 # parse 6s/6m/6d/6w into units of seconds
@@ -58,7 +59,7 @@ def run_size(customApi, spec, application):
 # We use `./workerpool.sh` to invoke the `./workerpool/` helm chart
 # which in turn creates the pod/job resources for the pool.
 #
-def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, queue_dataset: str, dataset_labels, volumes, volumeMounts, patch):
+def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: str, name: str, spec, queue_dataset: str, dataset_labels, volumes, volumeMounts, patch):
     try:
         api = application['spec']['api']
         if api != "workqueue":
@@ -66,8 +67,6 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
 
         image = application['spec']['image']
         command = application['spec']['command']
-
-        run_name = spec['run']
 
         # environment variables; merge application spec with workerpool spec
         env = application['spec']['env'] if 'env' in application['spec'] else {}
@@ -106,7 +105,7 @@ def create_workerpool(v1Api, customApi, application, namespace: str, uid: str, n
                 image,
                 command,
                 subPath,
-                run_name,
+                run["metadata"]["name"],
                 queue_dataset,
                 str(count),
                 str(cpu),
@@ -149,7 +148,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
     pool_name = labels["app.kubernetes.io/name"]
     pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
 
-    run_name = pool["spec"]["run"]
+    run_name = pool['spec']['run'] if 'run' in pool['spec'] else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
 
     queue_dataset = find_queue_for_run_by_name(customApi, run_name, namespace)
     if queue_dataset is None:

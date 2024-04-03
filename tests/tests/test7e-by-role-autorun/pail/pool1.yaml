@@ -4,7 +4,6 @@ metadata:
   name: test7e-by-role-autorun-pool1
   namespace: {{ .Values.namespace.user }}
 spec:
-  run: test7e-by-role-autorun
   workers:
     count: 1
     size: xxs
