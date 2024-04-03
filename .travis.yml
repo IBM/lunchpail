@@ -13,5 +13,5 @@ env:
   - SCRIPT=dashboard.sh
 
 before_install: ./hack/travis/setup.sh
-script: bash -c "./tests/bin/${SCRIPT:-test.sh} $ARGS"
+script: bash -c "./tests/bin/${SCRIPT:-ci.sh} $ARGS"
 after_script: if [[ -f /tmp/gpu-config.json ]]; then ./hack/ibmcloud/delete_vm.sh "$(cat /tmp/gpu-config.json)"; fi
