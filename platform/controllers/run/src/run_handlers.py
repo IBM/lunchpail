@@ -5,7 +5,6 @@ import traceback
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
-from logs import track_job_logs
 from status import set_status, set_status_immediately, add_error_condition
 from run_size import run_size
 from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_dataset_labels_for_workerpool
@@ -16,7 +15,7 @@ from torch import create_run_torch
 from sequence import create_run_sequence
 from workqueue import create_run_workqueue
 
-from workerpool import create_workerpool, on_worker_pod_create, track_queue_logs, track_workstealer_logs
+from workerpool import create_workerpool, on_worker_pod_create
 from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
 
 from find_run import find_run
@@ -161,9 +160,6 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         else:
             raise kopf.PermanentError(f"Invalid api={api} for application={application['metadata']['name']}")
 
-        if head_pod_name is not None and len(head_pod_name) > 0:
-            track_job_logs(name, head_pod_name, namespace, api)
-
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
         logging.info(f"Passing through TemporaryError for Run creation name={name} namespace={namespace}")
@@ -212,14 +208,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
     try:
         phase = body['status']['phase']
 
-        if component(labels) == "workstealer":
-            if phase == "Running":
-                try:
-                    track_workstealer_logs(customApi, name, namespace, labels)
-                except Exception as e:
-                    logging.error(f"Error tracking WorkStealer name={name} phase={phase}. {str(e)}")
-            return
-        elif component(labels) == "workdispatcher":
+        if component(labels) == "workdispatcher":
             workdispatcher_name = labels['app.kubernetes.io/name']
             set_status_immediately(customApi, workdispatcher_name, namespace, phase, 'workdispatchers')
             
@@ -227,7 +216,6 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
             # this isn't quite right. we will need to incr and decr as pods come and go...
             try:
                 if phase == "Running":
-                    track_queue_logs(name, namespace, labels)
                     pool_name = labels["app.kubernetes.io/name"]
                     try:
                         pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)

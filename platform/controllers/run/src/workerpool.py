@@ -2,10 +2,8 @@ import os
 import json
 import base64
 import logging
-import traceback
 import subprocess
 
-from functools import partial
 from kopf import PermanentError, TemporaryError
 
 from clone import clone
@@ -205,34 +203,6 @@ def look_for_queue_updates(line: str):
         patch_body = { "metadata": { "annotations": { f"codeflare.dev/{box_name}": queue_depth } } }
         return patch_body
 
-from logs import track_logs
-def track_queue_logs(pod_name: str, namespace: str, labels):
-    try:
-        if 'codeflare.dev/queue' in labels:
-            queue_name = labels['codeflare.dev/queue']
-            logging.info(f"Setting up queue log watcher queue_name={queue_name} pod_name={pod_name} namespace={namespace}")
-
-            try:
-                # intentionally fire and forget (how bad is this?)
-                track_logs(queue_name, pod_name, namespace, "queues", look_for_queue_updates, "syncer")
-            except Exception as e:
-                logging.error(f"Error setting up log watcher queue_name={queue_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
-        else:
-            logging.info(f"Skipping queue log watcher due to missing queue_name pod_name={pod_name} namespace={namespace}")
-    except Exception as e:
-        logging.error(f"Error log watcher WorkerPool pod for queue stats pod_name={pod_name} namespace={namespace}. {str(e)}")
-            
-# e.g. codeflare.dev queue 0 inbox 30
-def look_for_workstealer_updates(context_name: str, run_namespace: str, run_name: str, line: str):
-    # logging.info(f"Workstealer update {line}")
-    m = re.search("^lunchpail.io (done|unassigned) (\d+)$", line)
-    if m is not None:
-        state = m.group(1) # done or unassigned
-        count = m.group(2) # how many are done, or how many are unassigned
-
-        patch_body = { "metadata": { "annotations": { f"jaas.dev/{state}.{context_name}.{run_namespace}.{run_name}": count } } }
-        return patch_body
-
 # look for the Dataset instance that represents the queue for the given named Run
 def find_queue_for_run(customApi, run):
     run_name = run['metadata']['name']
@@ -280,40 +250,3 @@ def find_default_queue_for_namespace(customApi, namespace: str):
         return None
     else:
         return prioritized_queues[-1]
-
-def track_workstealer_logs(customApi, pod_name: str, namespace: str, labels):
-    try:
-        logging.info(f"Considering workstealer log watcher (1) pod_name={pod_name} namespace={namespace}")
-        run_name = labels["app.kubernetes.io/part-of"]
-        dataset_name = find_queue_for_run_by_name(customApi, run_name, namespace)
-        logging.info(f"Considering workstealer log watcher (2) pod_name={pod_name} namespace={namespace} run_name={run_name} dataset_name={dataset_name}")
-
-        context_name = os.getenv("CONTROL_PLANE_CONTEXT")
-        if context_name is None:
-            raise PermanentError("CONTROL_PLANE_CONTEXT environment variable is not defined")
-
-        log_line_handler = partial(look_for_workstealer_updates, context_name, namespace, run_name)
-
-        if dataset_name:
-            try:
-                dgroup = "com.ie.ibm.hpsys"
-                version = "v1alpha1"
-                plural = "datasets"
-
-                patch_body = { "metadata": { "annotations": { f"jaas.dev/unassigned.{context_name}.{namespace}.{run_name}": "0" } } }
-                logging.info(f"Patching dataset for workstealer operation dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
-                customApi.patch_namespaced_custom_object(group=dgroup, version=version, plural=plural, name=dataset_name, namespace=namespace, body=patch_body)
-
-                # intentionally fire and forget (how bad is this?)
-                logging.info(f"Setting up workstealer log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}")
-                track_logs(dataset_name, pod_name, namespace, plural, log_line_handler, None, dgroup, version)
-            except Exception as e:
-                logging.error(f"Error setting up log watcher dataset_name={dataset_name} pod_name={pod_name} namespace={namespace}. {str(e)}")
-                traceback.print_exc()
-        else:
-            logging.info(f"Skipping workstealer log watcher due to missing queue pod_name={pod_name} namespace={namespace} run_name={run_name} dataset_name={dataset_name}")
-    except TemporaryError as e:
-        raise e
-    except Exception as e:
-        logging.error(f"Error workstealer log watcherpod_name={pod_name} namespace={namespace}. {str(e)}")
-        traceback.print_exc()
