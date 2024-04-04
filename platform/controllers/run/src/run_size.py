@@ -70,18 +70,21 @@ default_config = {
     }
 }
 
-def load_run_size_config(customApi, size: str):
+def load(customApi):
     try:
         items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
         return sorted(items,
-                      key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config'][size]
+                      key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config']
     except Exception as e:
-        logging.info(f"RunSizeConfiguration policy not found for size={size}")
-        try:
-            return default_config['spec']['config'][size].copy() # copy since we may modify it below!!
-        except Exception as e2:
-            logging.info(f"RunSizeConfiguration default policy has no rule for size={size}")
-            return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
+        logging.info("RunSizeConfiguration policy not found. Using built-in config.")
+        return default_config['spec']['config']
+
+def load_run_size_config(customApi, size: str):
+    try:
+        return load(customApi)[size].copy() # copy since we may modify it below!!
+    except Exception as e:
+        logging.info(f"RunSizeConfiguration policy has no rule for size={size}")
+        return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
 
 def run_size(customApi, name: str, spec, application):
     size = "xs" # default

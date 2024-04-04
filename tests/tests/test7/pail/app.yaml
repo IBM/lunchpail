@@ -8,6 +8,7 @@ spec:
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test7/pail
   command: ./src/main.sh
+  minSize: xxs
   securityContext:
     runAsUser: 2000 # lunchpail, same as is specified Dockerfile
     runAsGroup: 0 # root, ibid

@@ -71,9 +71,9 @@ spec:
                   type: string
                 options:
                   type: string
-                minMemory:
+                minSize:
                   type: string
-                  pattern: '^\d+(Ki|K|Mi|M|Gi|G|Ti|T|Pi|P)$'
+                  enum: [xxs,xs,sm,md,lg,xl,xxl]
                 supportsGpu:
                   type: boolean
                   default: false

@@ -9,6 +9,7 @@ from kubernetes.client.rest import ApiException
 
 from clone import clone_from_git
 from run_id import alloc_run_id
+from run_size import load_run_size_config
 from fetch_application import fetch_application_for_appref
 
 from status import set_status, add_error_condition, set_status_after_clone_failure
@@ -104,11 +105,16 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
 
     workdispatcher_app_namespace = workdispatcher_namespace
     workdispatcher_app_name = fetch_application_for_appref(customApi, workdispatcher_app_namespace, spec['application'])['metadata']['name'] # todo we re-fetch this just below
-    workdispatcher_app_size = spec['application']['size'] if 'size' in spec['application'] else "xxs"
+    workdispatcher_app_size = spec['application']['size'] if 'size' in spec['application'] else None
 
     # confirm that the linked application exists
     try:
         application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=workdispatcher_app_name, namespace=workdispatcher_app_namespace)
+
+        if workdispatcher_app_size is None and "minSize" in application["spec"]:
+            logging.info(f"Using minSize from Application to size WorkDispatcher Run name={workdispatcher_name} namespace={workdispatcher_namespace} application={workdispatcher_app_name} minSize={application['spec']['minSize']}")
+            workdispatcher_app_size = load_run_size_config(customApi, application["spec"]["minSize"])
+
     except ApiException as e:
         message = f"Application {workdispatcher_app_name} not found. {str(e)}"
         set_status(workdispatcher_name, workdispatcher_namespace, 'Failed', patch)
