@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/part-of: lunchpail.io
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/component: s3
 spec:
@@ -18,6 +18,6 @@ spec:
     port: 9090
     targetPort: 9090
   selector:
-    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/part-of: lunchpail.io
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/component: s3

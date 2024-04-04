@@ -180,7 +180,7 @@ def component(labels):
     return labels["app.kubernetes.io/component"] if "app.kubernetes.io/component" in labels else ""
 
 # Watch each AppWrapper so that we can update the status of its associated Run
-@kopf.on.field('appwrappers.mcad.ibm.com', field='status.conditions', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT})
+@kopf.on.field('appwrappers.mcad.ibm.com', field='status.conditions', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT})
 def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwargs):
     try:
         conditions = body['status']['conditions']
@@ -203,7 +203,7 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
         traceback.print_exc()
 
 # Watch each managed Pod so that we can update the status of its associated Run
-@kopf.on.field('pods', field='status.phase', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
+@kopf.on.field('pods', field='status.phase', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
 def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
     try:
         phase = body['status']['phase']
@@ -250,7 +250,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
         traceback.print_exc()
 
 # Watch each managed WorkerPool Pod for creation
-@kopf.on.create('pods', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/component": "workerpool", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
+@kopf.on.create('pods', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/component": "workerpool", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
 def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, uid, patch, **kwargs):
     try:
         on_worker_pod_create(v1Api, customApi, name, namespace, uid, annotations, labels, spec, patch)
@@ -263,7 +263,7 @@ def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, ui
         traceback.print_exc()
 
 # Watch each managed Pod for deletion
-# @kopf.on.delete('pods', labels={"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
+# @kopf.on.delete('pods', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
 # def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
 #     try:
 #         raw_phase = body['status']['phase']
@@ -295,7 +295,7 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
             logging.info(f"Pod event for pod_name={pod_name}")
             pod = v1Api.read_namespaced_pod(pod_name, namespace)
             pod_labels = pod.metadata.labels
-            if "app.kubernetes.io/managed-by" in pod_labels and pod_labels["app.kubernetes.io/managed-by"] == "codeflare.dev" and "app.kubernetes.io/part-of" in pod_labels:
+            if "app.kubernetes.io/managed-by" in pod_labels and pod_labels["app.kubernetes.io/managed-by"] == "lunchpail.io" and "app.kubernetes.io/part-of" in pod_labels:
                 phase = body["reason"]
                 if "app.kubernetes.io/part-of" in pod_labels:
                     plural = "runs"

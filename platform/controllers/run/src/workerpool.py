@@ -172,7 +172,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
                 "codeflare.dev/worker-index": worker_index,
                 "app.kubernetes.io/name": pool_name,
                 "app.kubernetes.io/part-of": run_name,
-                "app.kubernetes.io/managed-by": "codeflare.dev",
+                "app.kubernetes.io/managed-by": "lunchpail.io",
                 "app.kubernetes.io/component": "queue"
             },
             "ownerReferences": [{

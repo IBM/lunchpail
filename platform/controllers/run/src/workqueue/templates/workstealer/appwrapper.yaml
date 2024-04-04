@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: codeflare.dev
+    app.kubernetes.io/managed-by: lunchpail.io
   ownerReferences:
     {{- include "owner" . | indent 4 }}
 spec:

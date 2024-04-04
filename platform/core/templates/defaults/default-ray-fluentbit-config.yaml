@@ -7,7 +7,7 @@ metadata:
   labels:
     app.kubernetes.io/name: fluentbit
     app.kubernetes.io/component: defaults
-    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/part-of: lunchpail.io
 data:
   priority: "100"
   fluent-bit.conf: |

@@ -34,7 +34,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     patch.metadata.labels['app.kubernetes.io/instance'] = run_id
     # patch.metadata.annotations['codeflare.dev/namespace'] = application_namespace
 
-    labels = {"app.kubernetes.io/managed-by": "codeflare.dev", "app.kubernetes.io/instance": run_id}
+    labels = {"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/instance": run_id}
 
     # for now, we will handle nfs mounting of the workdir in torchx.sh
     volumes = ""

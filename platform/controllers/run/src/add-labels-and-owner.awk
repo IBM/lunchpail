@@ -14,7 +14,7 @@ BEGIN {
         print "  labels:";
         print "    app.kubernetes.io/name:", name;
         print "    app.kubernetes.io/part-of:", name;
-        print "    app.kubernetes.io/managed-by: codeflare.dev";
+        print "    app.kubernetes.io/managed-by: lunchpail.io";
         print "  ownerReferences:";
         print "    - apiVersion: codeflare.dev/v1alpha1";
         print "      controller: true";

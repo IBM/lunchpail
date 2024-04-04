@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: codeflare.dev
+    app.kubernetes.io/managed-by: lunchpail.io
     {{ if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 4 }}
     {{ end }}

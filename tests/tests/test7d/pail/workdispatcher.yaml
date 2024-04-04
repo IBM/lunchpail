@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/component: workdispatcher
     app.kubernetes.io/name: test7d
-    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/part-of: lunchpail.io
   name: test7d
 spec:
   run: test7d

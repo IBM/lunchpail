@@ -160,7 +160,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
             "labels": {
                 "app.kubernetes.io/name": workdispatcher_name,
                 # TODO, this currently results in the pod status tracker updating run_name "app.kubernetes.io/part-of": run_name,
-                "app.kubernetes.io/managed-by": "codeflare.dev",
+                "app.kubernetes.io/managed-by": "lunchpail.io",
                 "app.kubernetes.io/component": "workdispatcher"
             },
             "ownerReferences": [{

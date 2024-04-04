@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: codeflare.dev
+    app.kubernetes.io/managed-by: lunchpail.io
   {{- if not .Values.mcad.enabled }}
   ownerReferences:
     {{- include "owner" . | indent 4 }}
@@ -25,7 +25,7 @@ spec:
         app.kubernetes.io/part-of: {{ .Values.partOf }}
         app.kubernetes.io/name: {{ .Values.name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: codeflare.dev
+        app.kubernetes.io/managed-by: lunchpail.io
         {{ if .Values.datasets }}
 {{ .Values.datasets | b64dec | indent 8 }}
         {{ end }}

@@ -4,5 +4,5 @@ metadata:
   name: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: noncore
-    app.kubernetes.io/managed-by: codeflare.dev
+    app.kubernetes.io/managed-by: lunchpail.io
     monitor-pods-datasets: enabled # datashim support for "dataset.0.id" pod labels -> volume/volumeMunt

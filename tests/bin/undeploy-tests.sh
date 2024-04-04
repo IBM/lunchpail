@@ -34,7 +34,7 @@ function report_stragglers {
     $KUBECTL get datasets -n $NAMESPACE_USER
 
     echo "$NAMESPACE_USER pod logs"
-    $KUBECTL logs -n $NAMESPACE_USER -l app.kubernetes.io/managed-by=codeflare.dev
+    $KUBECTL logs -n $NAMESPACE_USER -l app.kubernetes.io/managed-by=lunchpail.io
 
     echo "$NAMESPACE_USER events"
     $KUBECTL get events -n $NAMESPACE_USER

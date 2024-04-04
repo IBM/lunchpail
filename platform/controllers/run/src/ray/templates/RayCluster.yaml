@@ -30,7 +30,7 @@ spec:
             app.kuberenets.io/name: {{ .Values.name }}
             app.kubernetes.io/component: ray-autoscaler
             app.kubernetes.io/instance: {{ .Release.Name }}
-            app.kubernetes.io/managed-by: codeflare.dev
+            app.kubernetes.io/managed-by: lunchpail.io
             # A unique identifier for the head node and workers of this cluster.
           name: raycluster-autoscaler
         spec:
@@ -136,7 +136,7 @@ spec:
                   app.kuberenets.io/name: {{ .Values.name }}
                   app.kubernetes.io/component: ray
                   app.kubernetes.io/instance: {{ .Release.Name }}
-                  app.kubernetes.io/managed-by: codeflare.dev
+                  app.kubernetes.io/managed-by: lunchpail.io
               spec:
                 initContainers:
                 # the env var $RAY_IP is set by the operator if missing, with the value of the head service name

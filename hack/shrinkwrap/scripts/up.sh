@@ -23,11 +23,11 @@ do
         then
             gum spin --title "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)" -- \
               kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s && \
-                kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
+                kubectl wait pod -l app.kubernetes.io/part-of=lunchpail.io -n jaas-system --for=condition=ready --timeout=-1s
         else
             echo "$(tput setaf 2)Waiting for controllers to be ready$(tput sgr0)"
             kubectl wait pod -l app.kubernetes.io/name=dlf -n jaas-system --for=condition=ready --timeout=-1s
-            kubectl wait pod -l app.kubernetes.io/part-of=codeflare.dev -n jaas-system --for=condition=ready --timeout=-1s
+            kubectl wait pod -l app.kubernetes.io/part-of=lunchpail.io -n jaas-system --for=condition=ready --timeout=-1s
         fi
     fi
 done

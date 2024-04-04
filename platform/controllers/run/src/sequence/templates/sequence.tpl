@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: codeflare.dev
+    app.kubernetes.io/managed-by: lunchpail.io
 spec:
   parallelism: 1
   completions: {{ .Values.nSteps }}
@@ -23,7 +23,7 @@ spec:
         app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
         app.kubernetes.io/name: {{ .Values.name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/managed-by: codeflare.dev
+        app.kubernetes.io/managed-by: lunchpail.io
     spec:
       restartPolicy: OnFailure
       serviceAccountName: {{ .Release.Name }}
