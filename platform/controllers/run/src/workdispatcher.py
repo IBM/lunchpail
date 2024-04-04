@@ -109,7 +109,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
 
     # confirm that the linked application exists
     try:
-        application = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=workdispatcher_app_name, namespace=workdispatcher_app_namespace)
+        application = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="applications", name=workdispatcher_app_name, namespace=workdispatcher_app_namespace)
 
         if workdispatcher_app_size is None and "minSize" in application["spec"]:
             logging.info(f"Using minSize from Application to size WorkDispatcher Run name={workdispatcher_name} namespace={workdispatcher_namespace} application={workdispatcher_app_name} minSize={application['spec']['minSize']}")
@@ -140,7 +140,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
         "LUNCHPAIL": lunchpail,
     })
 
-    group = "codeflare.dev"
+    group = "lunchpail.io"
     version = "v1alpha1"
     plural = "runs"
     queue_useas = 'configmap'
@@ -153,7 +153,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
         })
 
     body = {
-        "apiVersion": "codeflare.dev/v1alpha1",
+        "apiVersion": f"{group}/{version}",
         "kind": "Run",
         "metadata": {
             "name": workdispatcher_name + "-dispatcher",

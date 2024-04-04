@@ -17,7 +17,7 @@ def find_run(customApi, namespace: str):
     runs = list(filter(
         candidate_runs_filter,
         customApi.list_namespaced_custom_object(
-            group="codeflare.dev",
+            group="lunchpail.io",
             version="v1alpha1",
             plural="runs",
             namespace=namespace)['items']

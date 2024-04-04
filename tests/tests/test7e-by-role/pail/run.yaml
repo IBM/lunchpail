@@ -1,4 +1,4 @@
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Run
 metadata:
   name: test7e-by-role

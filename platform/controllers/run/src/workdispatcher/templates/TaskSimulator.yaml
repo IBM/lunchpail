@@ -1,5 +1,5 @@
 {{- if eq .Values.method "application" }}
-{{ include "codeflare.dev/WorkDispatcherApplicationRun" . }}
+{{ include "run" . }}
 {{- else }}
-{{ include "codeflare.dev/WorkDispatcherJob" . }}
+{{ include "job" . }}
 {{- end }}

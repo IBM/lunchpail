@@ -1,5 +1,5 @@
 {{- define "owner" }}
-- apiVersion: codeflare.dev/v1alpha1
+- apiVersion: lunchpail.io/v1alpha1
   controller: true
   kind: Run
   name: {{ .Values.name }}

@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/managed-by: lunchpail.io
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
+    - apiVersion: lunchpail.io/v1alpha1
       controller: true
       kind: Run
       name: {{ .Values.name }}
@@ -21,4 +21,4 @@ spec:
     GenericItems:
       - replicas: 1
         generictemplate:
-          {{ include "codeflare.dev/Sequence" . | indent 10 }}
+          {{ include "job" . | indent 10 }}

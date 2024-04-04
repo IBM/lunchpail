@@ -8,7 +8,7 @@ from kubernetes.client.rest import ApiException
 from run_id import alloc_run_id
 
 def fetch(application_name: str, application_namespace: str, customApi):
-    return customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
+    return customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
 
 # TODO parallelize the fetches
 # TODO fetch application from different namespace? (requires crd update)

@@ -11,7 +11,7 @@ def fetch_application_for_appref(customApi, application_namespace: str, appref):
         # then the application was specified by name
         application_name = appref['name']
         try:
-            return customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
+            return customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="applications", name=application_name, namespace=application_namespace)
 
         except ApiException as e:
             raise PermanentError(f"Application {application_name} not found. {str(e)}")
@@ -21,7 +21,7 @@ def fetch_application_for_appref(customApi, application_namespace: str, appref):
 
         applications_with_role = list(filter(
             lambda app: 'role' in app['spec'] and app['spec']['role'] == application_role,
-            customApi.list_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="applications", namespace=application_namespace)['items']
+            customApi.list_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="applications", namespace=application_namespace)['items']
         ))
         match_count = len(applications_with_role)
         if match_count == 0:
@@ -42,7 +42,7 @@ def fetch_application_for_run(customApi, run):
 #
 def fetch_run_and_application(customApi, run_name: str, run_namespace: str):
     try:
-        run = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
+        run = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
         application = fetch_application_for_run(customApi, run)
 
         return run, application

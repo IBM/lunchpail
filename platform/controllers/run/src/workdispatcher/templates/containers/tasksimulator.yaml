@@ -1,4 +1,4 @@
-{{- define "codeflare.dev/containers/dispatcher" }}
+{{- define "containers/dispatcher" }}
 - name: dispatcher
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-tasksimulator-parquet-component:" .Values.global.image.version }}
   volumeMounts:
@@ -26,7 +26,7 @@
       value: {{ quote .Values.sweep.max }}
     - name: SWEEP_STEP
       value: {{ quote .Values.sweep.step }}
-    {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
+    {{- include "queue.env.dataset" . | indent 4 }}
 
   {{- if .Values.rbac.runAsRoot }}
   securityContext:

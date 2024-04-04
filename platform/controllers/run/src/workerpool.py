@@ -144,7 +144,7 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
 def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_uid: str, annotations, labels, spec, patch):
     logging.info(f"Handling WorkerPool pod creation pod_name={pod_name} namespace={namespace}")
     pool_name = labels["app.kubernetes.io/name"]
-    pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
+    pool = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
 
     run_name = pool['spec']['run'] if 'run' in pool['spec'] else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
 
@@ -158,7 +158,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
     queue_name = f"{run_name}-{pool_name}-{worker_index}"
 
     body = {
-        "apiVersion": "codeflare.dev/v1alpha1",
+        "apiVersion": "lunchpail.io/v1alpha1",
         "kind": "Queue",
         "metadata": {
             "name": queue_name,
@@ -187,10 +187,10 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
             "dataset": queue_dataset
         }
     }
-    customApi.create_namespaced_custom_object("codeflare.dev", "v1alpha1", namespace, "queues", body)
+    customApi.create_namespaced_custom_object("lunchpail.io", "v1alpha1", namespace, "queues", body)
     patch.metadata.labels["codeflare.dev/queue"] = queue_name
 
-# e.g. codeflare.dev queue 0 inbox 30
+# e.g. lunchpail.io queue 0 inbox 30
 import re
 def look_for_queue_updates(line: str):
     logging.info(f"Queue update {line}")
@@ -228,7 +228,7 @@ def find_queue_for_run(customApi, run):
         return queue_dataset
 
 def find_queue_for_run_by_name(customApi, run_name: str, run_namespace: str):
-    run = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
+    run = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
     return find_queue_for_run(customApi, run)
     
 # look for a default Dataset instance in the given namespace

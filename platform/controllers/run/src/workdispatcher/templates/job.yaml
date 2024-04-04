@@ -1,11 +1,11 @@
-{{- define "codeflare.dev/WorkDispatcherJob" }}
+{{- define "job" }}
 apiVersion: v1
 kind: Pod
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
+    - apiVersion: lunchpail.io/v1alpha1
       controller: true
       kind: WorkDispatcher
       name: {{ .Values.name }}
@@ -24,7 +24,7 @@ spec:
   terminationGracePeriodSeconds: 5
   serviceAccountName: {{ .Values.rbac.serviceaccount }}
   containers:
-    {{- include "codeflare.dev/containers/dispatcher" . | indent 4 }}
+    {{- include "containers/dispatcher" . | indent 4 }}
 
   # shell script from configmap
   volumes:

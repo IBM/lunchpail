@@ -17,7 +17,7 @@ def set_status(name: str, namespace: str, phase: str, patch, status_field = "sta
 
         # patch.status['phase'] = phase
         #body = [{"op": "replace", "path": "/status/phase", "value": phase}]
-        #resp = customApi.patch_namespaced_custom_object_status(group="codeflare.dev", version="v1alpha1", plural="runs", name=name, namespace=namespace, body=body)
+        #resp = customApi.patch_namespaced_custom_object_status(group="lunchpail.io", version="v1alpha1", plural="runs", name=name, namespace=namespace, body=body)
     except Exception as e:
         raise PermanentError(f"Error patching status name={name} namespace={namespace}. {str(e)}.")
 
@@ -25,7 +25,7 @@ def set_status(name: str, namespace: str, phase: str, patch, status_field = "sta
 def set_status_immediately(customApi, name: str, namespace: str, phase: str, plural = "runs"):
     try:
         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "" } } }
-        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural, name=name, namespace=namespace, body=patch_body)
+        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural=plural, name=name, namespace=namespace, body=patch_body)
     except Exception as e:
         logging.error(f"Error patching {plural} on pod event name={name} namespace={namespace} phase={phase}. {str(e)}")
 

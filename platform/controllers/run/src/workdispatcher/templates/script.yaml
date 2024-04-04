@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
+    - apiVersion: lunchpail.io/v1alpha1
       controller: true
       kind: WorkDispatcher
       name: {{ .Values.name }}

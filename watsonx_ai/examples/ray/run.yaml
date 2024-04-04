@@ -1,4 +1,4 @@
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Run
 metadata:
   name: qiskit # must match name in tests/tests/qiskit

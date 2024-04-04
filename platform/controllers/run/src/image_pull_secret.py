@@ -5,7 +5,7 @@ from kubernetes import client
 # see if we have a matching PlatformImagePullSecret
 def find_image_pull_secret(v1Api, customApi, image: str, target_namespace: str):
     try:
-        allSecrets = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="platformimagepullsecrets")['items']
+        allSecrets = customApi.list_cluster_custom_object(group="lunchpail.io", version="v1alpha1", plural="platformimagepullsecrets")['items']
         logging.info(f"PlatformImagePullSecrets {allSecrets}")
         matchingSecrets = list(filter(lambda prs: re.search(prs['spec']['repo'], repo) is not None,
                                     allSecrets))

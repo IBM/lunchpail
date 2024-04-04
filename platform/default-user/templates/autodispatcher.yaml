@@ -1,6 +1,6 @@
 {{- if and .Values.autorun .Values.autodispatcher .Values.autodispatcher.name .Values.autodispatcher.application }}
 # Inject a WorkDispatcher if needed
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: WorkDispatcher
 metadata:
   name: {{ .Values.autodispatcher.name }}

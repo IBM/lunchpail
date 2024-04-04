@@ -26,13 +26,13 @@ v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
 # A WorkDispatcher has been deleted
-# @kopf.on.delete('workdispatchers.codeflare.dev')
+# @kopf.on.delete('workdispatchers.lunchpail.io')
 # def delete_workdispatcher_kopf(name: str, namespace: str, patch, **kwargs):
 #     logging.info(f"Handling WorkDispatcher delete name={name} namespace={namespace}")
 #     set_status_immediately(customApi, name, namespace, "Terminating", "workdispatchers")
 
 # A WorkDispatcher has been created
-@kopf.on.create('workdispatchers.codeflare.dev')
+@kopf.on.create('workdispatchers.lunchpail.io')
 def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations, spec, patch, **kwargs):
     try:
         if not "codeflare.dev/status" in annotations or annotations["codeflare.dev/status"] != "CloneFailed":
@@ -64,19 +64,19 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         raise kopf.PermanentError(f"Error handling WorkDispatcher creation. {str(e)}")
 
 # A WorkerPool has been deleted.
-# @kopf.on.delete('workerpools.codeflare.dev')
+# @kopf.on.delete('workerpools.lunchpail.io')
 # def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
 #     logging.info(f"Handling WorkerPool delete name={name} namespace={namespace}")
 #     set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
 
 # A Run has been deleted.
-# @kopf.on.delete('runs.codeflare.dev')
+# @kopf.on.delete('runs.lunchpail.io')
 # def delete_run_kopf(name: str, namespace: str, patch, **kwargs):
 #     logging.info(f"Handling Run delete name={name} namespace={namespace}")
 #     set_status_immediately(customApi, name, namespace, "Terminating", "runs")
 
 # A WorkerPool has been created.
-@kopf.on.create('workerpools.codeflare.dev')
+@kopf.on.create('workerpools.lunchpail.io')
 def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, labels, spec, patch, **kwargs):
     try:
         if not "codeflare.dev/status" in annotations or annotations["codeflare.dev/status"] != "CloneFailed":
@@ -115,7 +115,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         raise kopf.PermanentError(f"Error handling WorkerPool creation name={name}. {str(e)}")
 
 # A Run has been created.
-@kopf.on.create('runs.codeflare.dev')
+@kopf.on.create('runs.lunchpail.io')
 def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, **kwargs):
     try:
         # what top-level run is this part of? this could be this very run,
@@ -192,7 +192,7 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": message, "codeflare.dev/reason": reason } } }
         logging.info(f"Handling managed AppWrapper update component_name={component_name} phase={phase}")
 
-        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
+        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
 
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
@@ -218,7 +218,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
                 if phase == "Running":
                     pool_name = labels["app.kubernetes.io/name"]
                     try:
-                        pool = customApi.get_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
+                        pool = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
                     except ApiException as e:
                         logging.error(f"Error patching WorkerPool on pod event name={name} phase={phase}. {str(e)}")
                         return
@@ -228,7 +228,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
 
                     logging.info(f"Handling managed pod update for workerpool pool_name={pool_name} phase={phase} prior_ready={ready}")
                     try:
-                        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace, body=patch_body)
+                        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace, body=patch_body)
                     except ApiException as e:
                         logging.error(f"Error patching WorkerPool (1) on pod status update pool_name={pool_name} phase={phase}. {str(e)}")
                         return
@@ -239,7 +239,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
         run_name = labels["app.kubernetes.io/part-of"]
         logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "", "codeflare.dev/reason": "" } } }
-        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
 
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
@@ -273,7 +273,7 @@ def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, ui
 #         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
 #         logging.info(f"Handling managed Pod delete run_name={run_name} phase={phase}")
 
-#         resp = customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
+#         resp = customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
 #     except ApiException as e:
 #         if e.status != 404:
 #             logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
@@ -310,7 +310,7 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
 
                     logging.info(f"Patching from pod event run_name={run_name} plural={plural} phase={phase}")
                     try:
-                        customApi.patch_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural=plural, name=run_name, namespace=namespace, body=patch_body)
+                        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural=plural, name=run_name, namespace=namespace, body=patch_body)
                     except ApiException as e:
                         logging.error(f"Error patching Run on pod event run_name={run_name} phase={phase}. {str(e)}")
         else:

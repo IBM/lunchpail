@@ -72,7 +72,7 @@ default_config = {
 
 def load(customApi):
     try:
-        items = customApi.list_cluster_custom_object(group="codeflare.dev", version="v1alpha1", plural="runsizeconfigurations")['items']
+        items = customApi.list_cluster_custom_object(group="lunchpail.io", version="v1alpha1", plural="runsizeconfigurations")['items']
         return sorted(items,
                       key=lambda rsc: rsc['spec']['priority'] if 'priority' in rsc['spec'] else 1)[0]['spec']['config']
     except Exception as e:

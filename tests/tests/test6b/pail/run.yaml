@@ -1,5 +1,5 @@
 {{ if and .Values.nfs.enabled (or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test6b")) }}
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Run
 metadata:
   name: test6b

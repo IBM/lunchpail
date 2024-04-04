@@ -1,5 +1,5 @@
 {{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test5") }}
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
   name: test5

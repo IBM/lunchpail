@@ -1,2 +1,2 @@
-{{- define "codeflare.dev/WorkDispatcherApplicationRun" }}
+{{- define "run" }}
 {{- end }}

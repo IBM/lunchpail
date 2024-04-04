@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
+    - apiVersion: lunchpail.io/v1alpha1
       controller: true
       kind: Run
       name: {{ .Values.name }}
@@ -18,13 +18,13 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
+    - apiVersion: lunchpail.io/v1alpha1
       controller: true
       kind: Run
       name: {{ .Values.name }}
       uid: {{ .Values.uid }}
 rules:
-- apiGroups: ["codeflare.dev"]
+- apiGroups: ["lunchpail.io"]
   resources: ["runs"]
   verbs: ["list","get","create"]
 - apiGroups: [""]
@@ -37,7 +37,7 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
   ownerReferences:
-    - apiVersion: codeflare.dev/v1alpha1
+    - apiVersion: lunchpail.io/v1alpha1
       controller: true
       kind: Run
       name: {{ .Values.name }}

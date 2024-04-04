@@ -13,7 +13,7 @@ echo "enclosingUid=$ENCLOSING_UID" 1>&2
 echo "enclosingRunName=$ENCLOSING_RUN_NAME" 1>&2
 
 #  ownerReferences:
-#    - apiVersion: codeflare.dev/v1alpha1
+#    - apiVersion: lunchpail.io/v1alpha1
 #      controller: true
 #      kind: Run
 #      name: $ENCLOSING_RUN_NAME
@@ -22,7 +22,7 @@ echo "enclosingRunName=$ENCLOSING_RUN_NAME" 1>&2
 logsSince=$(date --rfc-3339=seconds)
 
 cat <<EOF | kubectl apply -n $NAMESPACE -f -
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Run
 metadata:
   name: $runName

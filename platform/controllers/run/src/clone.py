@@ -23,7 +23,7 @@ def clone_from_git(v1Api, customApi, name: str, namespace: str, workdir: str, re
 
     # see if we have a matching PlatformRepoSecret
     try:
-        allRepos = customApi.list_namespaced_custom_object(group="codeflare.dev", version="v1alpha1", plural="platformreposecrets", namespace=namespace)['items']
+        allRepos = customApi.list_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="platformreposecrets", namespace=namespace)['items']
         logging.info(f"PlatformRepoSecrets {allRepos}")
         matchingRepos = list(filter(lambda prs: re.search(prs['spec']['repo'], repo) is not None,
                                     allRepos))

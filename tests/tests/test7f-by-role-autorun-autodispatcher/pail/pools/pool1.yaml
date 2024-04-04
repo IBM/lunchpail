@@ -1,4 +1,4 @@
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: WorkerPool
 metadata:
   name: test7f-pool1

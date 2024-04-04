@@ -1,6 +1,6 @@
 {{- if and .Values.autorun }}
 # Inject a Run (which commences the WorkStealer) if needed
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Run
 metadata:
   name: {{ .Values.autorun }}

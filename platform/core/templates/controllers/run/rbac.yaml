@@ -16,7 +16,7 @@ metadata:
   name: run-controller
 rules:
   # from former application controller
-  - apiGroups: [codeflare.dev]
+  - apiGroups: [lunchpail.io]
     resources: [applications,applications/status,platformreposecrets,platformreposecrets/status]
     verbs: [list, watch, patch, get]
   - apiGroups: [com.ie.ibm.hpsys]
@@ -79,13 +79,13 @@ rules:
     resources: [datasets]
     verbs: [get, patch, create, list] # create needed by workqueue/ helm template; list needed by track_workstealer_logs->find_queue_for_run
 
-  - apiGroups: [codeflare.dev]
+  - apiGroups: [lunchpail.io]
     resources: [platformreposecrets,platformimagepullsecrets,runsizeconfigurations]
     verbs: [list]
-  - apiGroups: [codeflare.dev]
+  - apiGroups: [lunchpail.io]
     resources: [runs/status, workerpools/status, workdispatchers/status]
     verbs: [list, watch, patch, get]
-  - apiGroups: [codeflare.dev]
+  - apiGroups: [lunchpail.io]
     resources: [applications, queues, runs, workerpools, workdispatchers]
     verbs: [create, list, watch, patch, get]
     
@@ -131,7 +131,7 @@ rules:
     resources: [persistentvolumeclaims, events]
     verbs: [create]
     
-  - apiGroups: [codeflare.dev]
+  - apiGroups: [lunchpail.io]
     resources: [runs, runs/status, applications]
     verbs: [list, watch, patch, get]
     
