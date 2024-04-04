@@ -18,7 +18,6 @@ function add_dir {
             local out="$outdir"/$(basename "${f%%.sh}")
 
             cat "$in" | \
-                sed "s#kubectl#$KUBECTL#g" | \
                 sed "s#the_lunchpail_app#$appname#g" | \
                 sed "s#jaas-user#$NAMESPACE_USER#g" | \
                 sed "s#jaas-system#$NAMESPACE_SYSTEM#g" | \
