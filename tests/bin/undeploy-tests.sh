@@ -54,7 +54,14 @@ echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
 # time `ls -t`, so that we undeploy the most recently modified
 # shrinkwraps first
 for dir in $(ls -t "$TOP"/builds/test)
-do "$TOP"/builds/test/"$dir"/down
+do
+    "$TOP"/builds/test/"$dir"/down
+
+    # in CI, we can speed things up by only undeploying the latest
+    # (i.e. the test we just ran)
+    if [[ -n "$CI" ]]
+    then break
+    fi
 done
 
 if [[ -n "$RUNNING_CODEFLARE_TESTS" ]]
