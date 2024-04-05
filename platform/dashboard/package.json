@@ -82,6 +82,7 @@
     "electron-vite": "^2.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.1",
+    "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -97,12 +98,10 @@
   },
   "lint-staged": {
     "**/*.{scss,css,html,js,json,md,ts,tsx}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "**/*.{js,ts,tsx}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ]
   },
   "eslintIgnore": [
