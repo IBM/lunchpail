@@ -9,7 +9,6 @@ from kubernetes.client.rest import ApiException
 
 from clone import clone_from_git
 from run_id import alloc_run_id
-from run_size import load_run_size_config
 from fetch_application import fetch_application_for_appref
 
 from status import set_status, add_error_condition, set_status_after_clone_failure
@@ -113,7 +112,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
 
         if workdispatcher_app_size is None and "minSize" in application["spec"]:
             logging.info(f"Using minSize from Application to size WorkDispatcher Run name={workdispatcher_name} namespace={workdispatcher_namespace} application={workdispatcher_app_name} minSize={application['spec']['minSize']}")
-            workdispatcher_app_size = load_run_size_config(customApi, application["spec"]["minSize"])
+            workdispatcher_app_size = application["spec"]["minSize"]
 
     except ApiException as e:
         message = f"Application {workdispatcher_app_name} not found. {str(e)}"
@@ -175,7 +174,6 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
             "size": workdispatcher_app_size,
             "application": {
                 "name": workdispatcher_app_name,
-                "namespace": workdispatcher_app_namespace
             },
             "env": env,
             "queue": {
