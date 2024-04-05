@@ -2,17 +2,13 @@
 *.sh
 .DS_Store
 .cache
-node_modules
 
 # none of these is helm related
 /base-images
 /components
 /controllers
-/dashboard
-/kustomize
 
-# dashboard node modules and source aren't important for the backend; for now ignore all of it
-/dashboard
+/kustomize
 
 # these will all be pulled in from Chart.yaml as dependencies
 /core
