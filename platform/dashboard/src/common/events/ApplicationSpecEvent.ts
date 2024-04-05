@@ -1,7 +1,7 @@
 import type KubernetesResource from "./KubernetesResource"
 
 type ApplicationSpecEvent = KubernetesResource<
-  "codeflare.dev/v1alpha1",
+  "lunchpail.io/v1alpha1",
   "Application",
   {
     /** Brief description of this Application */

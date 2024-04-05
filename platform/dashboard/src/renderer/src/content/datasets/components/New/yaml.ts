@@ -25,11 +25,11 @@ metadata:
   name: ${values.name}
   namespace: ${values.namespace}
   annotations:
-    codeflare.dev/description: >-
+    lunchpail.io/description: >-
 ${wordWrap(values.description, { trim: true, indent: "      ", width: 60 })}
   labels:
-    codeflare.dev/created-by: user
-    app.kubernetes.io/part-of: codeflare.dev
+    lunchpail.io/created-by: user
+    app.kubernetes.io/part-of: lunchpail.io
     app.kubernetes.io/component: dataset
 spec:
   local:
@@ -52,7 +52,7 @@ metadata:
   namespace: ${values.namespace}
   labels:
     app.kubernetes.io/component: ${values.name}
-    app.kubernetes.io/part-of: codeflare.dev
+    app.kubernetes.io/part-of: lunchpail.io
     app.kubernetes.io/component: ${values.name}
 type: Opaque
 data:

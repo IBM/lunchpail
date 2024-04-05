@@ -1,13 +1,13 @@
-{{- define "codeflare.dev/workdir.path" }}
+{{- define "workdir/path" }}
 workingDir: /workdir
 {{- end }}
 
-{{- define "codeflare.dev/workdir.volumeMount" }}
+{{- define "workdir/volumeMount" }}
 - name: workdir
   mountPath: /workdir
 {{- end }}
 
-{{- define "codeflare.dev/workdir.volume" }}
+{{- define "workdir/volume" }}
 - name: workdir
   emptyDir: {}
 {{- end }}

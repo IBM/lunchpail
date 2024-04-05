@@ -1,9 +1,9 @@
-{{- define "queue.env" }}
+{{- define "queue/env" }}
 - name: WORKQUEUE
   value: /queue
 {{- end }}
 
-{{- define "queue.env.dataset" }}
+{{- define "queue/env/dataset" }}
 - name: S3_ENDPOINT_VAR
   value: {{ print .Values.queue.dataset "_endpoint" }}
 - name: AWS_ACCESS_KEY_ID_VAR
@@ -16,12 +16,12 @@
   value: {{ .Values.lunchpail }}
 {{- end }}
 
-{{- define "queue.volumeMount" }}
+{{- define "queue/volumeMount" }}
 - mountPath: /queue
   name: queue
 {{- end }}
 
-{{- define "queue.volume" }}
+{{- define "queue/volume" }}
 - name: queue
   emptyDir: {}
 {{- end }}

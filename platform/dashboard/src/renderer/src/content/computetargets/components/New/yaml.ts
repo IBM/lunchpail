@@ -10,7 +10,7 @@ export type YamlProps = Pick<ComputeTarget["metadata"], "name" | "namespace"> & 
  */
 export default function yaml(values: YamlProps) {
   const model: ComputeTarget = {
-    apiVersion: "codeflare.dev/v1alpha1",
+    apiVersion: "lunchpail.io/v1alpha1",
     kind: "ComputeTarget",
     metadata: {
       name: values.name,

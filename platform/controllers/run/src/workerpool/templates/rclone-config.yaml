@@ -17,13 +17,13 @@ stringData:
     access_key_id = {{ .Values.s3AccessKey }}
     secret_access_key = {{ .Values.s3SecretKey }}
 
-{{- define "rclone.volume" }}
+{{- define "rclone/volume" }}
 - name: rclone-config
   secret:
     secretName: {{ print .Release.Name "-rclone-config" }}
 {{- end }}
 
-{{- define "rclone.volumeMount" }}
+{{- define "rclone/volumeMount" }}
 - name: rclone-config
   readOnly: true
   mountPath: "/tmp"

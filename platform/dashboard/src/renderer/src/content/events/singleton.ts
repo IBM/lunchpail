@@ -23,7 +23,7 @@ export default function singletonJsonEventHandler<Kind extends WatchedKind, Even
         const name = event.metadata.name
         const context = event.metadata.context
         const namespace = event.metadata.namespace
-        const status = event.metadata.annotations["codeflare.dev/status"]
+        const status = event.metadata.annotations["lunchpail.io/status"]
 
         setState((A) => {
           const idx = A.findIndex(

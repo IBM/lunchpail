@@ -3,7 +3,7 @@
   image: {{ .Values.image.app }}
   command: ["/bin/bash", "-c", {{ print "/usr/local/bin/watcher.sh " .Values.command  }}]
   env:
-    {{- include "codeflare.dev/queue.env" . | indent 4 }}
+    {{- include "queue/env" . | indent 4 }}
 
   {{- if .Values.env }}
   envFrom:
@@ -11,14 +11,14 @@
       name: {{ print .Release.Name "-env" | trunc 53 }}
   {{- end }}
 
-  {{- include "codeflare.dev/workdir.path" . | indent 2 }}
+  {{- include "workdir/path" . | indent 2 }}
   volumeMounts:
     {{- if .Values.volumeMounts }}
     {{- .Values.volumeMounts | b64dec | fromJsonArray | toYaml | nindent 4 }}
     {{- end }}
-    {{- include "codeflare.dev/queue.volumeMount" . | indent 4 }}
-    {{- include "codeflare.dev/workdir.volumeMount" . | indent 4 }}
-    {{- include "watcher.volumeMount" . | indent 4 }}
+    {{- include "queue/volumeMount" . | indent 4 }}
+    {{- include "workdir/volumeMount" . | indent 4 }}
+    {{- include "watcher/volumeMount" . | indent 4 }}
   resources:
     limits:
       cpu: {{ .Values.workers.cpu }}

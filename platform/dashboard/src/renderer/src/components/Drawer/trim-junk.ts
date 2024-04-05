@@ -13,7 +13,7 @@ export default function trimJunk<R extends KubernetesResource>(resource: R) {
         delete copy.metadata[key]
       } else if (key === "annotations") {
         for (const akey of Object.keys(copy.metadata.annotations)) {
-          if (/^codeflare.dev/.test(akey)) {
+          if (/^lunchpail.io/.test(akey)) {
             //delete copy.metadata.annotations[akey]
           }
         }

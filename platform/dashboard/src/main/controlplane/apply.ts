@@ -93,7 +93,7 @@ export async function waitForNamespaceTermination(props: ApplyProps, component: 
   await execPromise(
     `kubectl wait ns ${clusterOpts(props).join(
       " ",
-    )} -l app.kubernetes.io/managed-by=codeflare.dev,app.kubernetes.io/component=${component} --for=delete --timeout=240s`,
+    )} -l app.kubernetes.io/managed-by=lunchpail.io,app.kubernetes.io/component=${component} --for=delete --timeout=240s`,
   )
 }
 
@@ -102,6 +102,6 @@ export async function restartControllers(props: ApplyProps) {
   await execPromise(
     `kubectl rollout restart deployment -n ${await getControlPlaneNamespaceForExistingInstallation(props.cluster)} ${clusterOpts(
       props,
-    ).join(" ")} -l app.kubernetes.io/part-of=codeflare.dev,app.kubernetes.io/component=controller`,
+    ).join(" ")} -l app.kubernetes.io/part-of=lunchpail.io,app.kubernetes.io/component=controller`,
   )
 }

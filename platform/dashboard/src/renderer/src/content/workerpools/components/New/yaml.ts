@@ -53,7 +53,7 @@ target:
     : ""
 
   return `
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: WorkerPool
 metadata:
   name: ${values.name}

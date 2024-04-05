@@ -4,7 +4,7 @@ import type ControlPlaneStatus from "../status/ControlPlaneStatus"
 export type ComputeTargetType = "Kind" | "Kubernetes" | "OpenShift"
 
 type ComputeTargetEvent = KubernetesResource<
-  "codeflare.dev/v1alpha1",
+  "lunchpail.io/v1alpha1",
   "ComputeTarget",
   {
     /** What kind of cluster is this? */

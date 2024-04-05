@@ -1,7 +1,7 @@
 import type KubernetesResource from "./KubernetesResource"
 
 type RunEvent = KubernetesResource<
-  "codeflare.dev/v1alpha1",
+  "lunchpail.io/v1alpha1",
   "Run",
   {
     /** The Application (code + data bindings) this Run uses */

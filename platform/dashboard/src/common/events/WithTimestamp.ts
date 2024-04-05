@@ -6,7 +6,7 @@ type WithTimestamp<Event> = {
     context: string
     namespace: string
     annotations: {
-      "codeflare.dev/status": string
+      "lunchpail.io/status": string
     }
   }
 }

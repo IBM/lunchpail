@@ -8,7 +8,7 @@ export type YamlProps = Pick<Props["metadata"], "name" | "namespace"> &
 
 export default function yaml(values: YamlProps) {
   return `
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: PlatformRepoSecret
 metadata:
   name: ${values.name}

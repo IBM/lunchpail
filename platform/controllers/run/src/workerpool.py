@@ -163,13 +163,13 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
         "metadata": {
             "name": queue_name,
             "annotations": {
-                "codeflare.dev/inbox": "0",
-                "codeflare.dev/processing": "0",
-                "codeflare.dev/outbox": "0"
+                "lunchpail.io/inbox": "0",
+                "lunchpail.io/processing": "0",
+                "lunchpail.io/outbox": "0"
             },
             "labels": {
-                "codeflare.dev/pod": pod_name,
-                "codeflare.dev/worker-index": worker_index,
+                "lunchpail.io/pod": pod_name,
+                "lunchpail.io/worker-index": worker_index,
                 "app.kubernetes.io/name": pool_name,
                 "app.kubernetes.io/part-of": run_name,
                 "app.kubernetes.io/managed-by": "lunchpail.io",
@@ -188,7 +188,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
         }
     }
     customApi.create_namespaced_custom_object("lunchpail.io", "v1alpha1", namespace, "queues", body)
-    patch.metadata.labels["codeflare.dev/queue"] = queue_name
+    patch.metadata.labels["lunchpail.io/queue"] = queue_name
 
 # e.g. lunchpail.io queue 0 inbox 30
 import re
@@ -200,7 +200,7 @@ def look_for_queue_updates(line: str):
         box_name = m.group(2)
         queue_depth = m.group(3)
 
-        patch_body = { "metadata": { "annotations": { f"codeflare.dev/{box_name}": queue_depth } } }
+        patch_body = { "metadata": { "annotations": { f"lunchpail.io/{box_name}": queue_depth } } }
         return patch_body
 
 # look for the Dataset instance that represents the queue for the given named Run

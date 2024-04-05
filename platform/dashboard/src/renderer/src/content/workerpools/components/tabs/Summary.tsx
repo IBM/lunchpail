@@ -17,9 +17,9 @@ function statusGroup(workerpool?: WorkerPoolStatusEvent) {
 }
 
 export function reasonAndMessageGroups({ metadata }: import("@jaas/common/events/KubernetesResource").default) {
-  const status = metadata.annotations["codeflare.dev/status"]
-  const reason = metadata.annotations["codeflare.dev/reason"]
-  const message = metadata.annotations["codeflare.dev/message"]
+  const status = metadata.annotations["lunchpail.io/status"]
+  const reason = metadata.annotations["lunchpail.io/reason"]
+  const message = metadata.annotations["lunchpail.io/message"]
 
   const groups: import("react").ReactNode[] = []
   if (status !== "Running") {

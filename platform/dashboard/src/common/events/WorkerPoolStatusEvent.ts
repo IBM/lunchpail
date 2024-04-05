@@ -4,7 +4,7 @@ import type KubernetesResource from "./KubernetesResource"
  * An update as to the status of a WorkerPool
  */
 type WorkerPoolStatusEvent = KubernetesResource<
-  "codeflare.dev/v1alpha1",
+  "lunchpail.io/v1alpha1",
   "WorkerPool",
   {
     /** Run that this WorkerPool supports */
@@ -24,7 +24,7 @@ type WorkerPoolStatusEvent = KubernetesResource<
   },
   {
     /** Ready count (TODO) */
-    "codeflare.dev/ready"?: string
+    "lunchpail.io/ready"?: string
   }
 >
 

@@ -6,7 +6,7 @@ import context from "../context"
 import Base, { applications } from "./application"
 
 export const runs: RunEvent[] = applications.map((application, applicationIdx) => ({
-  apiVersion: "codeflare.dev/v1alpha1",
+  apiVersion: "lunchpail.io/v1alpha1",
   kind: "Run",
   metadata: {
     name: application.name,
@@ -15,7 +15,7 @@ export const runs: RunEvent[] = applications.map((application, applicationIdx) =
     creationTimestamp: new Date().toLocaleString(),
     annotations: {
       "jaas.dev/taskqueue": colors[applicationIdx],
-      "codeflare.dev/status": "Running",
+      "lunchpail.io/status": "Running",
     },
   },
   spec: {
@@ -26,17 +26,17 @@ export const runs: RunEvent[] = applications.map((application, applicationIdx) =
 }))
 
 export default class DemoRunSpecEventSource extends Base implements EventSourceLike {
-  private withStatus(status: RunEvent["metadata"]["annotations"]["codeflare.dev/status"], run: RunEvent) {
+  private withStatus(status: RunEvent["metadata"]["annotations"]["lunchpail.io/status"], run: RunEvent) {
     // ok to update in place, as `run` comes from `runs` which is supposed to be our current state
-    if (status === run.metadata.annotations["codeflare.dev/status"]) {
+    if (status === run.metadata.annotations["lunchpail.io/status"]) {
       return run
     } else {
-      run.metadata.annotations["codeflare.dev/status"] = status
+      run.metadata.annotations["lunchpail.io/status"] = status
       return Object.assign({}, run)
     }
   }
 
-  private sendEventForRun = (run: RunEvent, status = run.metadata.annotations["codeflare.dev/status"]) => {
+  private sendEventForRun = (run: RunEvent, status = run.metadata.annotations["lunchpail.io/status"]) => {
     this.handlers.forEach((handler) =>
       handler(new MessageEvent("run", { data: JSON.stringify([this.withStatus(status, run)]) })),
     )

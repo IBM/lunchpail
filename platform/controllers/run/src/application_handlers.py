@@ -8,7 +8,7 @@ v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
 
 def set_status(name: str, namespace: str, phase: str, plural = "applications", group = "lunchpail.io", version = "v1alpha1", field = "status"):
-    patch_body = { "metadata": { "annotations": { f"codeflare.dev/{field}": phase } } }
+    patch_body = { "metadata": { "annotations": { f"lunchpail.io/{field}": phase } } }
 
     try:
         if namespace is None:

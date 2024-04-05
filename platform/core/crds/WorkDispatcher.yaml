@@ -127,14 +127,14 @@ spec:
           jsonPath: .spec.dataset
         - name: Status
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/status"
         - name: Reason
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/reason"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/reason"
           priority: 1 # -o wide only
         - name: Message
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/message"
           priority: 1 # -o wide only
         - name: Age
           type: date

@@ -36,7 +36,7 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
         context,
         creationTimestamp: new Date().toUTCString(),
         annotations: {
-          "codeflare.dev/status": "Ready",
+          "lunchpail.io/status": "Ready",
           [unassignedKey(applications[idx].name)]: "0",
         },
         labels: {
@@ -60,7 +60,7 @@ export default class DemoTaskQueueEventSource extends Base implements EventSourc
 
   private sendEventFor = (
     taskqueue: (typeof this.taskqueues)[number],
-    status = taskqueue.metadata.annotations["codeflare.dev/status"],
+    status = taskqueue.metadata.annotations["lunchpail.io/status"],
   ) => {
     const model: TaskQueueEvent = Object.assign({}, taskqueue, {
       status,

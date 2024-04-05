@@ -114,16 +114,16 @@ spec:
           jsonPath: .metadata.creationTimestamp
         - name: Status
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/status"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/status"
         - name: Epoch
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/epoch"
         - name: Progress
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/epoch-progress"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/epoch-progress"
         - name: Message
           type: string
-          jsonPath: ".metadata.annotations.codeflare\\.dev/message"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/message"
 
   # either Namespaced or Cluster
   scope: Namespaced

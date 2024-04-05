@@ -234,8 +234,8 @@ function waitForStatus {
     do
         while true
         do
-            $KUBECTL -n $ns get run.codeflare.dev $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
-            ($KUBECTL -n $ns get run.codeflare.dev $name --show-kind --no-headers | grep $name || exit 0)
+            $KUBECTL -n $ns get run.lunchpail.io $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
+            ($KUBECTL -n $ns get run.lunchpail.io $name --show-kind --no-headers | grep $name || exit 0)
             sleep 4
         done
     done
@@ -265,5 +265,5 @@ function watch {
     fi
     $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
     $KUBECTL get run --show-kind --all-namespaces --watch &
-    $KUBECTL get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.codeflare\\.dev/status,MESSAGE:.metadata.annotations.codeflare\\.dev/message &
+    $KUBECTL get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.lunchpail\\.io/status,MESSAGE:.metadata.annotations.lunchpail\\.io/message &
 }

@@ -45,7 +45,7 @@ export function statusActions(
   workerpool: undefined | WorkerPoolStatusEvent,
   textComponent?: import("@patternfly/react-core").TextProps["component"],
 ): CardHeaderActionsObject & { actions: [] | [ReactNode] } {
-  const status = workerpool?.metadata.annotations["codeflare.dev/status"] || "Unknown"
+  const status = workerpool?.metadata.annotations["lunchpail.io/status"] || "Unknown"
 
   return {
     hasNoOffset: true,

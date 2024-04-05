@@ -1,9 +1,9 @@
 {{- define "containers/workdir" }}
 - name: workdir
-  image: rclone/rclone:1.65
+  image: rclone/rclone:1
   volumeMounts:
-    {{ include "rclone.volumeMount" . | indent 4 }}
-    {{ include "codeflare.dev/workdir.volumeMount" . | indent 4 }}
+    {{ include "rclone/volumeMount" . | indent 4 }}
+    {{ include "workdir/volumeMount" . | indent 4 }}
   env:
     - name: REMOTE_WORKDIR
       value: {{ print "s3:workdir/" (.Values.subPath | replace "/." "") }}

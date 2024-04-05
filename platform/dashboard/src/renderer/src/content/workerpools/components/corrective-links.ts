@@ -8,9 +8,9 @@ export default function correctiveLinks(
   startOrAdd: "fix" | "create" = "fix",
 ) {
   const latestStatus = props.status
-  const status = latestStatus?.metadata.annotations["codeflare.dev/status"]
-  const reason = latestStatus?.metadata.annotations["codeflare.dev/reason"]
-  const message = latestStatus?.metadata.annotations["codeflare.dev/message"]
+  const status = latestStatus?.metadata.annotations["lunchpail.io/status"]
+  const reason = latestStatus?.metadata.annotations["lunchpail.io/reason"]
+  const message = latestStatus?.metadata.annotations["lunchpail.io/message"]
   if (status === "CloneFailed" && reason === "AccessDenied") {
     const repoMatch = message?.match(/(https:\/\/[^/]+)/)
     const repo = repoMatch ? repoMatch[1] : undefined

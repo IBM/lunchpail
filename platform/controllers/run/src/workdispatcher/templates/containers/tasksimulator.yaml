@@ -26,7 +26,7 @@
       value: {{ quote .Values.sweep.max }}
     - name: SWEEP_STEP
       value: {{ quote .Values.sweep.step }}
-    {{- include "queue.env.dataset" . | indent 4 }}
+    {{- include "queue/env/dataset" . | indent 4 }}
 
   {{- if .Values.rbac.runAsRoot }}
   securityContext:

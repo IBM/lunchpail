@@ -50,7 +50,7 @@ function emitDeletedComputeTarget(context: string) {
 /** Construct a new `ComputeTargetEvent` */
 function ComputeTargetEvent(cluster: string, spec: Omit<ComputeTargetEvent["spec"], "type">) {
   return {
-    apiVersion: "codeflare.dev/v1alpha1" as const,
+    apiVersion: "lunchpail.io/v1alpha1" as const,
     kind: "ComputeTarget" as const,
     metadata: {
       name: cluster,
@@ -58,7 +58,7 @@ function ComputeTargetEvent(cluster: string, spec: Omit<ComputeTargetEvent["spec
       context: cluster,
       creationTimestamp: new Date().toUTCString(),
       annotations: {
-        "codeflare.dev/status": spec.jaasManager ? (spec.isJaaSWorkerHost ? "Online" : "HostConfigured") : "Offline",
+        "lunchpail.io/status": spec.jaasManager ? (spec.isJaaSWorkerHost ? "Online" : "HostConfigured") : "Offline",
       },
     },
     spec: Object.assign({ type: getComputeTargetType(cluster) }, spec),
@@ -81,7 +81,7 @@ async function Placeholder() {
 
 /** Morph `event` to be in a Terminating state */
 function terminating(event: ComputeTargetEvent) {
-  event.metadata.annotations["codeflare.dev/status"] = "Terminating"
+  event.metadata.annotations["lunchpail.io/status"] = "Terminating"
   return event
 }
 
@@ -247,7 +247,7 @@ export async function createComputeTarget(
 }
 
 export const kind = "ComputeTarget"
-export const apiVersion = "codeflare.dev/v1alpha1"
+export const apiVersion = "lunchpail.io/v1alpha1"
 
 export function isComputeTarget(json: unknown): json is ComputeTarget {
   return (

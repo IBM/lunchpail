@@ -27,5 +27,5 @@ export function workerhostHealth(props: Props): Health {
 }
 
 export function status(props: Props) {
-  return props.spec.jaasManager ? props.metadata.annotations["codeflare.dev/status"] : workerhostHealth(props)
+  return props.spec.jaasManager ? props.metadata.annotations["lunchpail.io/status"] : workerhostHealth(props)
 }

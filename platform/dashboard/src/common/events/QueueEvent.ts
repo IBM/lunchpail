@@ -6,7 +6,7 @@ import type KubernetesResource from "./KubernetesResource"
  */
 type QueueEvent = WithTimestamp<
   KubernetesResource<
-    "codeflare.dev/v1alpha1",
+    "lunchpail.io/v1alpha1",
     "Queue",
     {
       /** Name of DataSet that this queue is helping to process */
@@ -14,13 +14,13 @@ type QueueEvent = WithTimestamp<
     },
     {
       /** The number of enqueued tasks */
-      "codeflare.dev/inbox": string
+      "lunchpail.io/inbox": string
 
       /** The number of in-progress tasks */
-      "codeflare.dev/processing": string
+      "lunchpail.io/processing": string
 
       /** The number of completed tasks */
-      "codeflare.dev/outbox": string
+      "lunchpail.io/outbox": string
     },
     {
       labels: {
@@ -31,7 +31,7 @@ type QueueEvent = WithTimestamp<
         "app.kubernetes.io/name": string
 
         /** This queue is assigned to the given indexed worker */
-        "codeflare.dev/worker-index": string
+        "lunchpail.io/worker-index": string
       }
     }
   >

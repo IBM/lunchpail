@@ -2,19 +2,19 @@ import QueueEvent from "@jaas/common/events/QueueEvent"
 import WorkerPoolStatusEvent from "@jaas/common/events/WorkerPoolStatusEvent"
 
 export function queueInbox({ event }: QueueEvent) {
-  return parseInt(event.metadata.annotations["codeflare.dev/inbox"], 10)
+  return parseInt(event.metadata.annotations["lunchpail.io/inbox"], 10)
 }
 
 export function queueProcessing({ event }: QueueEvent) {
-  return parseInt(event.metadata.annotations["codeflare.dev/processing"], 10)
+  return parseInt(event.metadata.annotations["lunchpail.io/processing"], 10)
 }
 
 export function queueOutbox({ event }: QueueEvent) {
-  return parseInt(event.metadata.annotations["codeflare.dev/outbox"], 10)
+  return parseInt(event.metadata.annotations["lunchpail.io/outbox"], 10)
 }
 
 export function queueWorkerIndex({ event }: QueueEvent) {
-  return parseInt(event.metadata.labels["codeflare.dev/worker-index"], 10)
+  return parseInt(event.metadata.labels["lunchpail.io/worker-index"], 10)
 }
 
 export function queueRun({ event }: QueueEvent) {

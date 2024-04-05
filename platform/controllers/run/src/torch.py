@@ -32,7 +32,7 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
     run_id, workdir = alloc_run_id("torch", name)
 
     patch.metadata.labels['app.kubernetes.io/instance'] = run_id
-    # patch.metadata.annotations['codeflare.dev/namespace'] = application_namespace
+    # patch.metadata.annotations['lunchpail.io/namespace'] = application_namespace
 
     labels = {"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/instance": run_id}
 

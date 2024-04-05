@@ -23,7 +23,7 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
         namespace,
         context,
         annotations: {
-          "codeflare.dev/status": "Running",
+          "lunchpail.io/status": "Running",
         },
       },
       event: {
@@ -37,13 +37,13 @@ export default class DemoQueueEventSource extends Base implements EventSourceLik
           labels: {
             "app.kubernetes.io/part-of": run,
             "app.kubernetes.io/name": workerpool.name,
-            "codeflare.dev/worker-index": String(workerIndex),
+            "lunchpail.io/worker-index": String(workerIndex),
           },
           annotations: {
-            "codeflare.dev/status": "Running",
-            "codeflare.dev/inbox": String(workerpool.inboxes[workerIndex][taskqueue] || 0),
-            "codeflare.dev/outbox": String(workerpool.outboxes[workerIndex][taskqueue] || 0),
-            "codeflare.dev/processing": String(workerpool.processing[workerIndex][taskqueue] || 0),
+            "lunchpail.io/status": "Running",
+            "lunchpail.io/inbox": String(workerpool.inboxes[workerIndex][taskqueue] || 0),
+            "lunchpail.io/outbox": String(workerpool.outboxes[workerIndex][taskqueue] || 0),
+            "lunchpail.io/processing": String(workerpool.processing[workerIndex][taskqueue] || 0),
           },
         },
         spec: {

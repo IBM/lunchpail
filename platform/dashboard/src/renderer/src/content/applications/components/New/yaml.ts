@@ -47,14 +47,14 @@ export default function yaml(values: YamlProps) {
         .join("\n")
 
   return `
-apiVersion: codeflare.dev/v1alpha1
+apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
   name: ${values.name}
   namespace: ${values.namespace}
   labels:
-    codeflare.dev/created-by: user
-    app.kubernetes.io/part-of: codeflare.dev
+    lunchpail.io/created-by: user
+    app.kubernetes.io/part-of: lunchpail.io
     app.kubernetes.io/component: ${values.name}
 spec:
   api: workqueue
@@ -66,9 +66,7 @@ ${indent(values.code.trim(), 4)}`
 }
 ${values.method === "github" ? `  repo: ${values.repo}` : ""}
   image: ${values.image}
-  command: /opt/codeflare/worker/bin/watcher.sh ${
-    values.method === "literal" ? commandFromCodeLanguage(values.codeLanguage) : values.command
-  }
+  command: ${values.method === "literal" ? commandFromCodeLanguage(values.codeLanguage) : values.command}
   supportsGpu: ${values.supportsGpu}
   inputs:
     - useas: mount

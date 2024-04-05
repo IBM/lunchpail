@@ -35,7 +35,7 @@ customApi = client.CustomObjectsApi(client.ApiClient())
 @kopf.on.create('workdispatchers.lunchpail.io')
 def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations, spec, patch, **kwargs):
     try:
-        if not "codeflare.dev/status" in annotations or annotations["codeflare.dev/status"] != "CloneFailed":
+        if not "lunchpail.io/status" in annotations or annotations["lunchpail.io/status"] != "CloneFailed":
             logging.info(f"Handling WorkDispatcher create name={name} namespace={namespace}")
             set_status_immediately(customApi, name, namespace, 'Pending', 'workdispatchers')
 
@@ -79,7 +79,7 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
 @kopf.on.create('workerpools.lunchpail.io')
 def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, labels, spec, patch, **kwargs):
     try:
-        if not "codeflare.dev/status" in annotations or annotations["codeflare.dev/status"] != "CloneFailed":
+        if not "lunchpail.io/status" in annotations or annotations["lunchpail.io/status"] != "CloneFailed":
             set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
             set_status(name, namespace, "0", patch, "ready")
 
@@ -189,7 +189,7 @@ def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwarg
         phase = lastCondition['type'] if 'type' in lastCondition else 'Pending'
         message = lastCondition['message'] if 'message' in lastCondition else lastCondition['reason'] if 'reason' in lastCondition else ""
         reason = lastCondition['reason'] if 'reason' in lastCondition else ""
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": message, "codeflare.dev/reason": reason } } }
+        patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase, "lunchpail.io/message": message, "lunchpail.io/reason": reason } } }
         logging.info(f"Handling managed AppWrapper update component_name={component_name} phase={phase}")
 
         customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
@@ -223,8 +223,8 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
                         logging.error(f"Error patching WorkerPool on pod event name={name} phase={phase}. {str(e)}")
                         return
 
-                    ready = int(pool['metadata']['annotations']["codeflare.dev/ready"]) if "codeflare.dev/ready" in pool['metadata']['annotations'] else 0
-                    patch_body = { "metadata": { "annotations": { "codeflare.dev/ready": str(ready + 1) } } }
+                    ready = int(pool['metadata']['annotations']["lunchpail.io/ready"]) if "lunchpail.io/ready" in pool['metadata']['annotations'] else 0
+                    patch_body = { "metadata": { "annotations": { "lunchpail.io/ready": str(ready + 1) } } }
 
                     logging.info(f"Handling managed pod update for workerpool pool_name={pool_name} phase={phase} prior_ready={ready}")
                     try:
@@ -238,7 +238,7 @@ def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
 
         run_name = labels["app.kubernetes.io/part-of"]
         logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
-        patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase, "codeflare.dev/message": "", "codeflare.dev/reason": "" } } }
+        patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase, "lunchpail.io/message": "", "lunchpail.io/reason": "" } } }
         customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
 
     except kopf.TemporaryError as e:
@@ -270,7 +270,7 @@ def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, ui
 #         phase = "Offline" if raw_phase == "Running" else raw_phase
 
 #         run_name = labels["app.kubernetes.io/part-of"]
-#         patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+#         patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase } } }
 #         logging.info(f"Handling managed Pod delete run_name={run_name} phase={phase}")
 
 #         resp = customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
@@ -300,13 +300,13 @@ def on_pod_event(name: str, namespace: str, body, **kwargs):
                 if "app.kubernetes.io/part-of" in pod_labels:
                     plural = "runs"
                     run_name = pod_labels["app.kubernetes.io/part-of"]
-                    patch_body = { "metadata": { "annotations": { "codeflare.dev/status": phase } } }
+                    patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase } } }
 
                     if "message" in body:
-                        patch_body["metadata"]["annotations"]["codeflare.dev/message"] = body["message"]
+                        patch_body["metadata"]["annotations"]["lunchpail.io/message"] = body["message"]
                     else:
-                        patch_body["metadata"]["annotations"]["codeflare.dev/reason"] = ""
-                        patch_body["metadata"]["annotations"]["codeflare.dev/message"] = ""
+                        patch_body["metadata"]["annotations"]["lunchpail.io/reason"] = ""
+                        patch_body["metadata"]["annotations"]["lunchpail.io/message"] = ""
 
                     logging.info(f"Patching from pod event run_name={run_name} plural={plural} phase={phase}")
                     try:

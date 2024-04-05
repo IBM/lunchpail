@@ -37,19 +37,19 @@ spec:
           jsonPath: ".metadata.labels.app\\.kubernetes\\.io/name"
         - name: WorkerIndex
           type: string
-          jsonPath: ".metadata.labels.codeflare\\.dev/worker-index"
+          jsonPath: ".metadata.labels.lunchpail\\.io/worker-index"
         - name: Inbox
           type: string
           description: The number of enqueued inbox tasks
-          jsonPath: ".metadata.annotations.codeflare\\.dev/inbox"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/inbox"
         - name: Processing
           type: string
           description: The number of in-progress tasks
-          jsonPath: ".metadata.annotations.codeflare\\.dev/processing"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/processing"
         - name: Outbox
           type: string
           description: The number of completed tasks
-          jsonPath: ".metadata.annotations.codeflare\\.dev/outbox"
+          jsonPath: ".metadata.annotations.lunchpail\\.io/outbox"
 
   # either Namespaced or Cluster
   scope: Namespaced

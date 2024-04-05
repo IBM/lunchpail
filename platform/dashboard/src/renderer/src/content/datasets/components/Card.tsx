@@ -9,7 +9,7 @@ import DataSetIcon from "./Icon"
 
 export default function DataSetCard(props: DataSetEvent) {
   const groups = [
-    descriptionGroup("description", props.metadata.annotations["codeflare.dev/description"]),
+    descriptionGroup("description", props.metadata.annotations["lunchpail.io/description"]),
     descriptionGroup(
       "endpoint",
       props.spec.local.endpoint,

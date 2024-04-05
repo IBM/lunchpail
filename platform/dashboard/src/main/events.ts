@@ -29,17 +29,17 @@ function streamForKind(kind: WatchedKind, context: string): Promise<import("stre
         selectors: ["jaas.dev/hidden!=true,app.kubernetes.io/component!=taskqueue"],
       })
     case "queues":
-      return startStreamForKind("queues.codeflare.dev", context, { withTimestamp: true })
+      return startStreamForKind("queues.lunchpail.io", context, { withTimestamp: true })
     case "runs":
-      return startStreamForKind("runs.codeflare.dev", context)
+      return startStreamForKind("runs.lunchpail.io", context)
     case "workerpools":
-      return startStreamForKind("workerpools.codeflare.dev", context)
+      return startStreamForKind("workerpools.lunchpail.io", context)
     case "platformreposecrets":
-      return startStreamForKind("platformreposecrets.codeflare.dev", context)
+      return startStreamForKind("platformreposecrets.lunchpail.io", context)
     case "applications":
-      return startStreamForKind("applications.codeflare.dev", context)
+      return startStreamForKind("applications.lunchpail.io", context)
     case "workdispatchers":
-      return startStreamForKind("workdispatchers.codeflare.dev", context)
+      return startStreamForKind("workdispatchers.lunchpail.io", context)
   }
 }
 

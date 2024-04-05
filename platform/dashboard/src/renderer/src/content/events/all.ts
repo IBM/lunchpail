@@ -6,7 +6,7 @@ import type WithTimestamp from "@jaas/common/events/WithTimestamp"
 import type KubernetesResource from "@jaas/common/events/KubernetesResource"
 
 function status({ metadata }: KubernetesResource) {
-  return metadata.annotations["codeflare.dev/status"]
+  return metadata.annotations["lunchpail.io/status"]
 }
 
 function same(a: KubernetesResource, b: KubernetesResource) {

@@ -31,8 +31,8 @@ spec:
     {{- if .Values.volumes }}
     {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 4 }}
     {{- end }}
-    {{- include "rclone.volume" . | indent 4 }}
-    {{- include "codeflare.dev/workdir.volume" . | indent 4 }}
+    {{- include "rclone/volume" . | indent 4 }}
+    {{- include "workdir/volume" . | indent 4 }}
   initContainers:
     {{- include "containers/workdir" . | indent 4 }}
   containers:

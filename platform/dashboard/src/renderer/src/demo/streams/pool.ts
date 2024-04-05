@@ -49,8 +49,8 @@ export default class DemoWorkerPoolStatusEventSource extends Base implements Eve
         namespace: ns,
         creationTimestamp: new Date().toUTCString(),
         annotations: {
-          "codeflare.dev/status": status,
-          "codeflare.dev/ready": Math.round(Math.random() * nWorkers).toString(),
+          "lunchpail.io/status": status,
+          "lunchpail.io/ready": Math.round(Math.random() * nWorkers).toString(),
         },
       },
       spec: {

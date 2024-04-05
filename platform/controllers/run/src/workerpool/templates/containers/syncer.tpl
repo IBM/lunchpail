@@ -8,10 +8,10 @@
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
-    {{- include "codeflare.dev/queue.env" . | indent 4 }}
-    {{- include "codeflare.dev/queue.env.dataset" . | indent 4 }}
+    {{- include "queue/env" . | indent 4 }}
+    {{- include "queue/env/dataset" . | indent 4 }}
   volumeMounts:
-    {{- include "codeflare.dev/queue.volumeMount" . | indent 4 }}
+    {{- include "queue/volumeMount" . | indent 4 }}
   resources:
     limits:
       cpu: 500m

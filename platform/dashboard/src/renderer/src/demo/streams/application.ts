@@ -61,7 +61,7 @@ export default class DemoApplicationSpecEventSource extends Base implements Even
         context,
         creationTimestamp: new Date().toLocaleString(),
         annotations: {
-          "codeflare.dev/status": status,
+          "lunchpail.io/status": status,
         },
       },
       spec: {

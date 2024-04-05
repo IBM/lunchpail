@@ -26,13 +26,13 @@ type KubernetesResource<
     /** Resource annotations */
     annotations: Annotations & {
       /** Status of Resource (TODO) */
-      "codeflare.dev/status": string
+      "lunchpail.io/status": string
 
       /** Coded reason for failure (TODO) */
-      "codeflare.dev/reason"?: string
+      "lunchpail.io/reason"?: string
 
       /** Error message (TODO) */
-      "codeflare.dev/message"?: string
+      "lunchpail.io/message"?: string
     }
   }
 
