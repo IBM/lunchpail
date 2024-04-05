@@ -5,4 +5,5 @@ metadata:
   name: {{ .Values.global.jaas.namespace.name }}
   labels:
     app.kubernetes.io/name: jaas
+    app.kubernetes.io/version: {{ .Values.version }}
 {{- end }}
