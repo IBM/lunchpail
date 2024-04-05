@@ -1,6 +1,6 @@
 # hapq test
 app=git@github.ibm.com:cloud-computer/lunchpail-hapq.git
-branch=v0.0.1
+branch=v0.0.2
 expected=('HAPq processing input_file=')
 
 if which lspci && lspci | grep -iq nvidia; then
