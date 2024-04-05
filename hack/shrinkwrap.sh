@@ -6,11 +6,6 @@
 # Usage:
 #   shrinkwrap.sh -d resources/
 #
-# This will emit four spearate files (prereqs, core, defaults,
-# default-user) in the given directory. By optionally passing `-a
-# '--set key1=val1 --set key2=val2'`, you may inject Helm install
-# values into the srinkwrap.
-#
 
 set -e
 set -o pipefail
@@ -41,9 +36,6 @@ OPTIND=1
 if [[ -n "$OUTDIR" ]]
 then
     echo "📦 Shrinkwrapping to $OUTDIR"
-    CORE="$OUTDIR"/02-jaas.yml
-    DEFAULT_USER="$OUTDIR"/05-jaas-default-user.yml
-
     if [[ ! -e "$OUTDIR" ]]
     then mkdir -p "$OUTDIR"
     else rm -f "$OUTDIR"/*.{yml,namespace}
@@ -79,7 +71,7 @@ fi
 if [[ -n "$appgit" ]] && [[ -z "$CORE_ONLY" ]]
 then
     USERTMP=$(mktemp -d /tmp/$(basename "${appgit%%.git}")-stage.XXXXXXXX)
-    tar --exclude '*~' -C "$TOP"/platform/default-user -cf - . | tar -C "$USERTMP" -xf -
+    tar --exclude '*~' -C "$TOP"/templates/app -cf - . | tar -C "$USERTMP" -xf -
 
     if [[ -n "$DEBUG" ]]
     then echo "$(tput setaf 3)Staging to $USERTMP$(tput sgr0)"

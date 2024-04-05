@@ -92,6 +92,8 @@ function shrink_core {
         # has symbolic links :( and helm warns us about these
     fi
 
+    local CORE_YAML="$OUTDIR"/02-jaas.yml
+    
     # core deployment
     $HELM_TEMPLATE \
         --include-crds \
@@ -103,16 +105,15 @@ function shrink_core {
         $HELM_INSTALL_FLAGS \
         --set tags.full=$JAAS_FULL \
         --set tags.core=true \
-        --set tags.default-user=false \
         --set global.jaas.namespace.create=true \
         2> >(grep -v 'found symbolic link' >&2) \
         2> >(grep -v 'Contents of linked' >&2) \
-        > "$CORE"
+        > "$CORE_YAML"
 
     # the kuberay-operator chart has some problems with namespaces; ensure
     # that we force everything in core into $NAMESPACE_SYSTEM
     if [[ -z "$LITE" ]]
-    then echo "$NAMESPACE_SYSTEM" > "${CORE%%.yml}.namespace"
+    then echo "$NAMESPACE_SYSTEM" > "${CORE_YAML%%.yml}.namespace"
     fi
 }
 
@@ -133,10 +134,11 @@ function shrink_user {
         echo "$(tput setaf 5)Auto-Injecting WorkDispatcher$(tput sgr0)"
         local helm_auto_dispatcher="--set autodispatcher.name=$appname --set autodispatcher.application=$appname"
     fi
-    
-    # default-user
+
+    local APP_YAML="$OUTDIR"/"$appname".yml
+
     $HELM_TEMPLATE \
-        jaas-default-user \
+        "$appname" \
         "$userdir" \
         $HELM_SECRETS \
         $HELM_DEMO_SECRETS $HELM_INSTALL_FLAGS \
@@ -144,10 +146,9 @@ function shrink_user {
         $helm_auto_run \
         $helm_auto_dispatcher \
         --set namespace.user="$ns" \
-        --set tags.default-user=true \
         2> >(grep -v 'found symbolic link' >&2) \
         2> >(grep -v 'Contents of linked' >&2) \
-        > "$DEFAULT_USER"
+        > "$APP_YAML"
 
-    echo "$ns" > "${DEFAULT_USER%%.yml}.namespace"
+    echo "$ns" > "${APP_YAML%%.yml}.namespace"
 }

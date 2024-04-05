@@ -23,8 +23,5 @@ dependencies:
 - name: dlf-chart
   repository: file://./datashim
   version: 0.1.0
-- name: jaas-default-user
-  repository: file://./default-user
-  version: 0.0.1
-digest: sha256:b5af781541ddb5bd870b709f9fedaafabeba7208b3b7874866df5afcfd13ae3c
-generated: "2024-03-31T18:16:22.852977-04:00"
+digest: sha256:1244195b943b5e7f72bf2f252dec73ea03b51822e2dc89f329962f1ca6ed929c
+generated: "2024-04-05T16:59:31.1454-04:00"

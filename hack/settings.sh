@@ -56,23 +56,17 @@ ARCH=${ARCH-$(uname -m)}
 # Note: a trailing slash is required, if this is non-empty
 IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
 
-HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set jaas-core.lunchpail=$LUNCHPAIL --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set jaas-default-user.namespace.user=$NAMESPACE_USER --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set jaas-core.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-s3-chart.enabled=$NEEDS_CSI_S3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.jaas.gangScheduling=$NEEDS_GANG_SCHEDULING --set gangScheduling.enabled=$NEEDS_GANG_SCHEDULING --set global.type=$CLUSTER_TYPE --set global.rbac.serviceaccount=${CLUSTER_NAME} --set global.rbac.runAsRoot=${RUN_AS_ROOT:-false} --set jaas-core.mcad.enabled=${MCAD_ENABLED:-true} --set mcad.enabled=${MCAD_ENABLED:-true} --set mcad-controller.namespace=${NAMESPACE_SYSTEM} --set workdir_via_mount=${WORKDIR_VIA_MOUNT}"
-
-# this will limit the platform to just api=workqueue
-HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true"
+HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set jaas-core.lunchpail=$LUNCHPAIL --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set jaas-core.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-s3-chart.enabled=$NEEDS_CSI_S3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.jaas.gangScheduling=$NEEDS_GANG_SCHEDULING --set gangScheduling.enabled=$NEEDS_GANG_SCHEDULING --set global.type=$CLUSTER_TYPE --set global.rbac.serviceaccount=${CLUSTER_NAME} --set global.rbac.runAsRoot=${RUN_AS_ROOT:-false} --set jaas-core.mcad.enabled=${MCAD_ENABLED:-true} --set mcad.enabled=${MCAD_ENABLED:-true} --set mcad-controller.namespace=${NAMESPACE_SYSTEM} --set workdir_via_mount=${WORKDIR_VIA_MOUNT}"
 
 if lspci 2> /dev/null | grep -iq nvidia
 then HAS_NVIDIA=true
 else HAS_NVIDIA=false
 fi
 
-# Note: a trailing slash is required, if this is non-empty
-IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
-
 HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set tags.gpu=$HAS_NVIDIA"
 
 # this will limit the platform to just api=workqueue
-HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.default-user=false --set tags.defaults=false --set tags.full=false --set tags.core=true --set tags.gpu=false"
+HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.full=false --set tags.core=true --set tags.gpu=false"
 
 export KUBECTL="$SUDO $(which kubectl || echo /usr/local/bin/kubectl) --context $CONTEXT_NAME"
 export HELM_DEPENDENCY="$(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME dependency"

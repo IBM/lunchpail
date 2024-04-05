@@ -79,11 +79,9 @@ then
         TEST_NAME=$testname "$1"/init.sh
     fi
 
-    if [[ -f "$TOP"/builds/test/$testname/05-jaas-default-user.namespace ]]
-    then namespace=$(cat "$TOP"/builds/test/$testname/05-jaas-default-user.namespace)
-    fi
+    namespace=$(cat "$TOP"/builds/test/$testname/*.namespace || echo $NAMESPACE_USER)
 
-    ${handler-waitForIt} ${deployname:-$testname} ${namespace-$NAMESPACE_USER} $api "${expected[@]}"
+    ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
     EC=$?
     undeploy $testname
 

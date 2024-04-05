@@ -23,8 +23,8 @@ done
 SELECTOR=app.kubernetes.io/component=workstealer,app.kubernetes.io/part-of=the_lunchpail_app
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-if [ -f "$SCRIPTDIR"/05-jaas-default-user.namespace ]
-then NS=$(cat "$SCRIPTDIR"/05-jaas-default-user.namespace)
+if [ -f "$SCRIPTDIR"/the_lunchpail_app.namespace ]
+then NS=$(cat "$SCRIPTDIR"/the_lunchpail_app.namespace)
 fi
 
 if which gum > /dev/null 2>&1 && [ -n "$FOLLOW" ]

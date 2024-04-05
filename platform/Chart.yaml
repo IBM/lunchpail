@@ -65,10 +65,3 @@ dependencies:
   condition: core.enabled
   tags:
     - core
-
-- name: jaas-default-user
-  version: 0.0.1
-  repository: file://./default-user
-  condition: default-user.enabled
-  tags:
-    - default-user
