@@ -8,7 +8,7 @@ TOP="$SCRIPTDIR"/../../..
 
 . "$TOP"/hack/secrets.sh
 
-"$TOP"/hack/mc.sh
+"$TOP"/tests/bin/mc.sh
 
 ENDPOINT="https://s3.us-east.cloud-object-storage.appdomain.cloud"
 MC_BUCKET_PATH=cfp/cfp-hap-xs

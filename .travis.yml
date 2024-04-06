@@ -6,6 +6,6 @@ env:
   - ARGS="-l -i 'test7.*' -e 'test7g'"          # lite, including only test7* tests, excluding test7g and test8 (as they NEEDS_CSI_S3)
   - ARGS="-l -i 'test(7g|8)'" NEEDS_CSI_S3=true # lite, only test7g and test8 which need a mounted s3
 
-before_install: ./hack/travis/setup.sh
+before_install: ./tests/bin/travis/setup.sh
 script: bash -c "./tests/bin/${SCRIPT:-ci.sh} $ARGS"
 after_script: if [[ -f /tmp/gpu-config.json ]]; then ./hack/ibmcloud/delete_vm.sh "$(cat /tmp/gpu-config.json)"; fi

@@ -33,7 +33,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-    "$MAIN_SCRIPTDIR"/../../hack/up.sh
+    "$SCRIPTDIR"/up.sh
 }
 
 function waitForIt {

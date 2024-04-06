@@ -9,7 +9,7 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/settings.sh
+. "$SCRIPTDIR"/../../hack/settings.sh
 
 "$SCRIPTDIR"/mc.sh
 

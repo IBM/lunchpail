@@ -4,14 +4,14 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/settings.sh
-. "$SCRIPTDIR"/secrets.sh
+. "$SCRIPTDIR"/../../hack/settings.sh
+. "$SCRIPTDIR"/../../hack/secrets.sh
 
-LUNCHPAIL_PREP_INIT=1 "$SCRIPTDIR"/init.sh
-DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/build.sh &
-"$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/init.sh
+LUNCHPAIL_PREP_INIT=1 "$SCRIPTDIR"/../../hack/init.sh
+DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh &
+"$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/../../hack/init.sh
 wait
-DOING_UP=1 ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/build.sh
+DOING_UP=1 ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh
 
 # in travis, we need to provide a special docker host
 # TODO: is this for linux in general? for docker on linux in general?
@@ -26,8 +26,8 @@ then
 fi
 
 echo "$(tput setaf 2)Creating shrinkwraps JAAS_FULL=$JAAS_FULL base-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS$(tput sgr0)"
-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/shrinkwrap.sh -c -d "$SCRIPTDIR"/../builds/dev
+HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/../../hack/shrinkwrap.sh -c -d "$SCRIPTDIR"/../../builds/dev
 
-"$SCRIPTDIR"/../builds/dev/up
+"$SCRIPTDIR"/../../builds/dev/up
 
 "$SCRIPTDIR"/s3-copyin.sh

@@ -44,6 +44,6 @@ do
         idx=$((idx+1))
     done
 
-    "$SCRIPTDIR"/../../../hack/add-data.sh $B
+    "$SCRIPTDIR"/../../../tests/bin/add-data.sh $B
     sleep $((MINWAIT+RANDOM % (MAXWAIT-MINWAIT)))
 done

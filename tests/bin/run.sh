@@ -64,7 +64,7 @@ if [[ -e "$1"/data.sh ]]; then
     echo "$(tput setaf 2)🧪 Copying in data for $testname$(tput sgr0)" 1>&2
     echo ""
     "$1"/data.sh
-    "$TOP"/hack/s3-copyin.sh
+    "$SCRIPTDIR"/s3-copyin.sh
     echo "✅ Done copying in data for $testname"
 fi
 
