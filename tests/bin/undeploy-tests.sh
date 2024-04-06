@@ -53,25 +53,28 @@ echo "$(tput setaf 2)Uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
 # Undeploy prior test installations. Here we sort by last modified
 # time `ls -t`, so that we undeploy the most recently modified
 # shrinkwraps first
-for dir in $(ls -t "$TOP"/builds/test)
-do
-    "$TOP"/builds/test/"$dir"/down
-
-    # in CI, we can speed things up by only undeploying the latest
-    # (i.e. the test we just ran)
-    if [[ -n "$CI" ]]
-    then break
-    fi
-done
-
-if [[ -n "$RUNNING_CODEFLARE_TESTS" ]]
+if [[ -d "$TOP"/builds/test ]]
 then
-    while true
+    for dir in $(ls -t "$TOP"/builds/test)
     do
-        $KUBECTL get ns $NAMESPACE_USER || break
-        echo "Waiting for namespace cleanup"
-        sleep 2
+        "$TOP"/builds/test/"$dir"/down
+        
+        # in CI, we can speed things up by only undeploying the latest
+        # (i.e. the test we just ran)
+        if [[ -n "$CI" ]]
+        then break
+        fi
     done
+
+    if [[ -n "$RUNNING_CODEFLARE_TESTS" ]]
+    then
+        while true
+        do
+            $KUBECTL get ns $NAMESPACE_USER || break
+            echo "Waiting for namespace cleanup"
+            sleep 2
+        done
+    fi
 fi
 
 echo "$(tput setaf 2)Done uninstalling test Runs for arch=$ARCH $1$(tput sgr0)"
