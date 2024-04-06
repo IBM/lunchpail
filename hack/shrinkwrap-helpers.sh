@@ -82,7 +82,6 @@ function copy_app {
 }
 
 function shrink_core {
-    (cd "$TOP"/platform && ./prerender.sh)
     if [[ -z "$HELM_DEPENDENCY_DONE" ]]
     then
         (cd "$TOP"/platform && helm dependency update . \

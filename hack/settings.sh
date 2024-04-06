@@ -28,8 +28,6 @@ NEEDS_CSI_S3=${NEEDS_CSI_S3:-false}
 NEEDS_CSI_H3=${NEEDS_CSI_H3:-false}
 NEEDS_CSI_NFS=${NEEDS_CSI_NFS:-false}
 
-NEEDS_GANG_SCHEDULING=${NEEDS_GANG_SCHEDULING:-false}
-
 WORKDIR_VIA_MOUNT=${WORKDIR_VIA_MOUNT:-true}
 ###########################################################################################
 
@@ -56,7 +54,7 @@ ARCH=${ARCH-$(uname -m)}
 # Note: a trailing slash is required, if this is non-empty
 IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
 
-HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set jaas-core.lunchpail=$LUNCHPAIL --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set jaas-core.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-s3-chart.enabled=$NEEDS_CSI_S3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.jaas.gangScheduling=$NEEDS_GANG_SCHEDULING --set gangScheduling.enabled=$NEEDS_GANG_SCHEDULING --set global.type=$CLUSTER_TYPE --set global.rbac.serviceaccount=${CLUSTER_NAME} --set global.rbac.runAsRoot=${RUN_AS_ROOT:-false} --set jaas-core.mcad.enabled=${MCAD_ENABLED:-true} --set mcad.enabled=${MCAD_ENABLED:-true} --set mcad-controller.namespace=${NAMESPACE_SYSTEM} --set workdir_via_mount=${WORKDIR_VIA_MOUNT}"
+HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set jaas-core.lunchpail=$LUNCHPAIL --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set jaas-core.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-s3-chart.enabled=$NEEDS_CSI_S3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.type=$CLUSTER_TYPE --set global.rbac.serviceaccount=${CLUSTER_NAME} --set global.rbac.runAsRoot=${RUN_AS_ROOT:-false} --set jaas-core.mcad.enabled=${MCAD_ENABLED:-true} --set mcad.enabled=${MCAD_ENABLED:-true} --set mcad-controller.namespace=${NAMESPACE_SYSTEM} --set workdir_via_mount=${WORKDIR_VIA_MOUNT}"
 
 if lspci 2> /dev/null | grep -iq nvidia
 then HAS_NVIDIA=true

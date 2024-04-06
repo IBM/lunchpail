@@ -37,10 +37,6 @@ echo "Dry running to $DRY" 1>&2
 cm_file=$(mktemp)
 echo -n $loggingPolicy | base64 -d > $cm_file
 
-if [[ -n "$JAAS_USE_GANG_SCHEDULING" ]]
-then gang="--set gangScheduling=true"
-fi
-   
 helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set kind=job \
      --set uid=$uid \
@@ -52,7 +48,6 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/ray/ -n ${namespace} \
      --set namespace=$namespace \
      --set entrypoint="$entrypoint" \
      --set subPath=$subPath \
-     $gang \
      --set workers.count=$nWorkers \
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \

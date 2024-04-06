@@ -44,9 +44,9 @@ def create_run_torch(v1Api, customApi, application, namespace: str, uid: str, na
         f"namespace={namespace}",
     ]
 
-    if os.getenv("JAAS_USE_GANG_SCHEDULING") is not None:
-         # TODO keep this in sync somehow with the helm chart, where the name is also specified
-        scheduler_args.append("coscheduler_name=scheduler-plugins-scheduler")
+    # if os.getenv("JAAS_USE_GANG_SCHEDULING") is not None:
+    #      # TODO keep this in sync somehow with the helm chart, where the name is also specified
+    #     scheduler_args.append("coscheduler_name=scheduler-plugins-scheduler")
 
     if imagePullSecret is not None:
         scheduler_args.append(f"image_secret={imagePullSecret}")

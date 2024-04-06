@@ -150,7 +150,6 @@ function update_helm_dependencies {
 
     # i'm not sure how to manage this without hard-coding the
     # sub-charts that pull in external dependencies
-    "$SCRIPTDIR"/../platform/prerender.sh
     $HELM_DEPENDENCY update "$SCRIPTDIR"/../platform \
          2> >(grep -v 'found symbolic link' >&2) \
          2> >(grep -v 'Contents of linked' >&2)

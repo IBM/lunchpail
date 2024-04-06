@@ -52,13 +52,6 @@ dependencies:
   tags:
     - core
 
-- name: scheduler-plugins
-  version: 0.26.7 # sigh, want 0.27.8, but the v0.27.8 branch still points to the prior version in its Chart.yaml
-  repository: file://./scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
-  condition: gangScheduling.enabled
-  tags:
-    - core
-
 - name: dlf-chart
   version: 0.1.0
   repository: file://./datashim
