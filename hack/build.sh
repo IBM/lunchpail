@@ -177,7 +177,7 @@ function buildAndPush {
 }
 
 function build_components {
-    for providerDir in "$SCRIPTDIR"/../platform/components/*
+    for providerDir in "$SCRIPTDIR"/../images/components/*
     do
         if [[ -d "$providerDir" ]]
         then
