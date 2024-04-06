@@ -84,7 +84,7 @@ function copy_app {
 function shrink_core {
     if [[ -z "$HELM_DEPENDENCY_DONE" ]]
     then
-        (cd "$TOP"/platform && helm dependency update . \
+        (cd "$TOP"/templates/core && helm dependency update . \
            2> >(grep -v 'found symbolic link' >&2) \
            2> >(grep -v 'Contents of linked' >&2))
         # Note re: the 2> stderr filters below. scheduler-plugins as of 0.27.8
@@ -98,7 +98,7 @@ function shrink_core {
         --include-crds \
         $NAMESPACE_SYSTEM \
         -n $NAMESPACE_SYSTEM \
-        "$TOP"/platform \
+        "$TOP"/templates/core \
         $HELM_DEMO_SECRETS \
         $HELM_IMAGE_PULL_SECRETS \
         $HELM_INSTALL_FLAGS \

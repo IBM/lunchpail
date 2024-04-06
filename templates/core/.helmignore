@@ -3,13 +3,6 @@
 .DS_Store
 .cache
 
-# none of these is helm related
-/base-images
-/components
-/controllers
-
-/kustomize
-
 # these will all be pulled in from Chart.yaml as dependencies
 /core
 /datashim

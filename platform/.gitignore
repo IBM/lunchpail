@@ -1,5 +1,0 @@
-charts/*.tgz
-charts/defaults
-
-# we pick this up from git in ./prerender.sh
-scheduler-plugins/
