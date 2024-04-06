@@ -133,28 +133,26 @@ function push {
     fi
 }
 
-function build_controllers {
-    for controllerDir in "$SCRIPTDIR"/../platform/controllers/*
-    do
-        local controller=$(basename "$controllerDir")
+function build_controller {
+    local controller=run
+    local controllerDir="$SCRIPTDIR"/../controller
 
-        if [[ -n "$FILTER" ]] && [[ ! $controller =~ $FILTER ]]
-        then
-            echo "$(tput setaf 3)Skipping excluded controller $controller$(tput sgr0)"
-            continue
-        fi
+    if [[ -n "$FILTER" ]] && [[ ! $controller =~ $FILTER ]]
+    then
+        echo "$(tput setaf 3)Skipping excluded controller $controller$(tput sgr0)"
+        continue
+    fi
 
-        if [[ -z "$LITE" ]]
-        then
-            local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller:$VERSION
-            (build "$controllerDir" $image ; push $image) &
+    if [[ -z "$LITE" ]]
+    then
+        local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller:$VERSION
+        (build "$controllerDir" $image ; push $image) &
         # built "lite" version if Dockerfile.lite exists
-        elif [[ -f "$controllerDir"/Dockerfile.lite ]]
-        then
-            local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller-lite:$VERSION
-            (set -e; build "$controllerDir" $image Dockerfile.lite ; push $image) &
-        fi
-    done
+    elif [[ -f "$controllerDir"/Dockerfile.lite ]]
+    then
+        local image=${IMAGE_REPO_FOR_BUILD}jaas-${controller}-controller-lite:$VERSION
+        (set -e; build "$controllerDir" $image Dockerfile.lite ; push $image) &
+    fi
 }
 
 function buildAndPush {
@@ -221,5 +219,5 @@ check_podman
 build_test_images
 build_components
 wait # ugh, too much concurrency which overloads the podman machine on macOS
-build_controllers
+build_controller
 wait
