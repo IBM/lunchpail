@@ -11,7 +11,7 @@ spec:
   run: test7c
   method: helm
   repo: >-
-    https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/platform/dashboard/tests/workdispatcher1
+    https://github.ibm.com/cloud-computer/lunchpail-dashboard/tree/main/tests/workdispatcher1
   values: >-
     {"taskprefix":{"a":"tasky","b":3333}}
 {{- end }}
