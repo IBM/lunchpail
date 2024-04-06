@@ -17,11 +17,8 @@ dependencies:
 - name: jaas-s3
   repository: file://./s3
   version: 0.0.1
-- name: scheduler-plugins
-  repository: file://./scheduler-plugins/manifests/install/charts/as-a-second-scheduler/
-  version: 0.26.7
 - name: dlf-chart
   repository: file://./datashim
   version: 0.1.0
-digest: sha256:1244195b943b5e7f72bf2f252dec73ea03b51822e2dc89f329962f1ca6ed929c
-generated: "2024-04-05T16:59:31.1454-04:00"
+digest: sha256:4dcf85bd018bf901a7ac3ff3423e2fbcf1899d216b7b0ecaf8090afdec8054d4
+generated: "2024-04-06T17:42:48.642268-04:00"
