@@ -6,8 +6,8 @@
     {{- include "rclone.volumeMount" . | indent 4 }}
 
   {{- if .Values.global.lite }}
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller-lite:" .Values.global.image.version }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller-lite:" .Chart.AppVersion }}
   {{ else }}
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Values.global.image.version }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-run-controller:" .Chart.AppVersion }}
   {{- end }}
 {{- end }}

@@ -31,8 +31,6 @@ func Core(sourcePath, outputPath string, max bool) {
 	imageRegistry := "ghcr.io"
 	imageRepo := "lunchpail"
 
-	version := "0.0.1" // TODO
-
 	namespace := "jaas-system" // FIXME
 
 	runAsRoot := false // TODO
@@ -57,7 +55,6 @@ global:
   image:
     registry: %s # imageRegistry
     repo: %s # imageRepo
-    version: %s # version
   rbac:
     serviceAccount: %s # clusterName
     runAsRoot: %v # runAsRoot
@@ -87,7 +84,6 @@ mcad-controller:
 		clusterType,
 		imageRegistry,
 		imageRepo,
-		version,
 		clusterName,
 		runAsRoot,
 		namespace,
