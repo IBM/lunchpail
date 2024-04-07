@@ -2,6 +2,7 @@ package subcommands
 
 import (
 	"lunchpail.io/pkg/dashboard"
+
 	"github.com/spf13/cobra"
 )
 
