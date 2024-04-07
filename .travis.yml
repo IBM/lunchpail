@@ -1,4 +1,7 @@
-language: shell
+language: go
+
+go:
+- 1.22.x
 
 env:
   - ARGS="-e 'test(7.*|8)'" NEEDS_CSI_S3=true   # full mode, excluding test7*
