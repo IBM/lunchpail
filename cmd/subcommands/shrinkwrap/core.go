@@ -3,38 +3,42 @@ package shrinkwrap
 import (
 	"lunchpail.io/pkg/shrinkwrap"
 
-	"log"
 	"github.com/spf13/cobra"
+	"log"
 )
 
-var namespaceFlag string = "jaas-system"
-var maxFlag bool = false
-var clusterIsOpenShiftFlag bool = false
-var needsCsiH3Flag bool = false
-var needsCsiS3Flag bool = false
-var needsCsiNfsFlag bool = false
-var hasGpuSupportFlag bool = false
-var outputFlag string
+func NewCoreCmd() *cobra.Command {
+	var namespaceFlag string = "jaas-system"
+	var maxFlag bool = false
+	var clusterIsOpenShiftFlag bool = false
+	var needsCsiH3Flag bool = false
+	var needsCsiS3Flag bool = false
+	var needsCsiNfsFlag bool = false
+	var hasGpuSupportFlag bool = false
+	var outputFlag string
+	var dockerHostFlag string = ""
 
-var CoreCmd = &cobra.Command{
-	Use: "core [flags] sourcePath",
-	Short: "Shrinkwrap the core",
-	Long:  "Shrinkwrap the core",
-	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		shrinkwrap.Core(args[0], outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag })
-		return nil
-	},
-}
+	var cmd = &cobra.Command{
+		Use:   "core [flags] sourcePath",
+		Short: "Shrinkwrap the core",
+		Long:  "Shrinkwrap the core",
+		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return shrinkwrap.Core(args[0], outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag})
+		},
+	}
 
-func init() {
-	CoreCmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", namespaceFlag, "Kubernetes namespace to deploy to")
-	CoreCmd.Flags().BoolVarP(&maxFlag, "max", "m", false, "Include Ray, Torch, etc. support")
-	CoreCmd.Flags().BoolVarP(&clusterIsOpenShiftFlag, "openshift", "t", false, "Include support for OpenShift")
-	CoreCmd.Flags().BoolVarP(&hasGpuSupportFlag, "gpu", "", false, "Include Nvidia GPU support")
+	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", namespaceFlag, "Kubernetes namespace to deploy to")
+	cmd.Flags().BoolVarP(&maxFlag, "max", "m", false, "Include Ray, Torch, etc. support")
+	cmd.Flags().BoolVarP(&clusterIsOpenShiftFlag, "openshift", "t", false, "Include support for OpenShift")
+	cmd.Flags().BoolVarP(&hasGpuSupportFlag, "gpu", "", false, "Include Nvidia GPU support")
+	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem (included with --max)")
+	cmd.Flags().StringVarP(&dockerHostFlag, "docker-host", "d", dockerHostFlag, "Hostname/IP address of docker host")
 
-	CoreCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Output file path, using - for stdout")
-	if err := CoreCmd.MarkFlagRequired("output"); err != nil {
+	cmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Output file path, using - for stdout")
+	if err := cmd.MarkFlagRequired("output"); err != nil {
 		log.Fatalf("Required option -o/--output <outputFilePath>")
 	}
+
+	return cmd
 }

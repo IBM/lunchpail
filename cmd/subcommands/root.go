@@ -6,9 +6,9 @@ import (
 
 // RootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:          "lunchpail",
-	Short:        "lunchpail",
-	Long:         "lunchpail",
+	Use:   "lunchpail",
+	Short: "lunchpail",
+	Long:  "lunchpail",
 }
 
 func Execute() {

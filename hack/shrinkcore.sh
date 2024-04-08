@@ -1,13 +1,24 @@
 #!/bin/sh
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+TOP="$SCRIPTDIR"/..
 
-if [[ -z "$1" ]]
+if [ -z "$1" ]
 then
     echo "Usage: shrinkcore <targetdir>" 1>&2
     exit 1
 fi
 
-"$SCRIPTDIR"/shrinkwrap.sh -l -c -d $1/lite
-NEEDS_CSI_S3=true "$SCRIPTDIR"/shrinkwrap.sh -l -c -d $1/s3mounts
-NEEDS_CSI_S3=true "$SCRIPTDIR"/shrinkwrap.sh -f -c -d $1/full
+CORE="$TOP"/templates/core
+OUTDIR="$TOP"/builds
+mkdir -p "$OUTDIR/lite"
+mkdir -p "$OUTDIR/s3mounts"
+mkdir -p "$OUTDIR/full"
+
+if [ ! -f /tmp/lunchpail ]
+then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
+fi
+
+/tmp/lunchpail shrinkwrap core -o "$OUTDIR"/lite/02-jaas.yml $LP_ARGS "$CORE"
+#/tmp/lunchpail shrinkwrap core -o "$OUTDIR"/s3mounts/02-jaas.yml $LP_ARGS "$CORE"
+/tmp/lunchpail shrinkwrap core --max -o "$OUTDIR"/full/02-jaas.yml $LP_ARGS "$CORE"

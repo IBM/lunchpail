@@ -4,14 +4,15 @@ set -e
 set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+TOP="$SCRIPTDIR"/../..
 . "$SCRIPTDIR"/../../hack/settings.sh
 . "$SCRIPTDIR"/../../hack/secrets.sh
 
 LUNCHPAIL_PREP_INIT=1 "$SCRIPTDIR"/../../hack/init.sh
-DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh &
+DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh $UP_FLAGS &
 "$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/../../hack/init.sh
 wait
-DOING_UP=1 ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh
+DOING_UP=1 ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh $UP_FLAGS
 
 # in travis, we need to provide a special docker host
 # TODO: is this for linux in general? for docker on linux in general?
@@ -21,13 +22,9 @@ then
     if [[ "$docker_host_ip" != nope ]]
     then
         echo "Hacking docker_host_ip=${docker_host_ip}"
-        HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.dockerHost=${docker_host_ip}"
+        LP_ARGS="$LP_ARGS --docker-host=$docker_host_ip"
     fi
 fi
 
-echo "$(tput setaf 2)Creating shrinkwraps JAAS_FULL=$JAAS_FULL base-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS$(tput sgr0)"
-HELM_INSTALL_FLAGS=$HELM_INSTALL_FLAGS HELM_DEPENDENCY_DONE=1 "$SCRIPTDIR"/../../hack/shrinkwrap.sh -c -d "$SCRIPTDIR"/../../builds/dev
-
-"$SCRIPTDIR"/../../builds/dev/up
-
+NO_BUILD=1 "$TOP"/hack/update.sh
 "$SCRIPTDIR"/s3-copyin.sh

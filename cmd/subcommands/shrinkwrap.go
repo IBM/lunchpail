@@ -1,8 +1,8 @@
 package subcommands
 
 import (
-	"lunchpail.io/cmd/subcommands/shrinkwrap"
 	"github.com/spf13/cobra"
+	"lunchpail.io/cmd/subcommands/shrinkwrap"
 )
 
 var shrinkwrapCmd = &cobra.Command{
@@ -13,6 +13,6 @@ var shrinkwrapCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(shrinkwrapCmd)
-	shrinkwrapCmd.AddCommand(shrinkwrap.AppCmd)
-	shrinkwrapCmd.AddCommand(shrinkwrap.CoreCmd)
+	shrinkwrapCmd.AddCommand(shrinkwrap.NewAppCmd())
+	shrinkwrapCmd.AddCommand(shrinkwrap.NewCoreCmd())
 }
