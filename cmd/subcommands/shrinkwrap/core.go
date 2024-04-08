@@ -22,9 +22,9 @@ func NewCoreCmd() *cobra.Command {
 		Use:   "core [flags] sourcePath",
 		Short: "Shrinkwrap the core",
 		Long:  "Shrinkwrap the core",
-		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return shrinkwrap.Core(args[0], outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag})
+			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag})
 		},
 	}
 

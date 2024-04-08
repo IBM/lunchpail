@@ -16,6 +16,13 @@ then gum spin --show-output --title "$msg" -- go get ./...
 else echo "$msg" && go get ./...
 fi
 
+msg="Integrating templates"
+if which gum > /dev/null 2>&1
+then gum spin --show-output --title "$msg" -- go generate pkg/shrinkwrap/*.go
+else echo "$msg" && go generate pkg/shrinkwrap/*.go
+fi
+
+
 msg="Building CLI to $(tput setaf 5)$DST$(tput sgr0)"
 if which gum > /dev/null 2>&1
 then gum spin --show-output --title "$msg" -- bash -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o $DST cmd/main.go"

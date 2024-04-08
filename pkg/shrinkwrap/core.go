@@ -1,7 +1,9 @@
 package shrinkwrap
 
 import (
+	"embed"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,14 +24,31 @@ type CoreOptions struct {
 	DockerHost         string
 }
 
-func Core(sourcePath, outputPath string, opts CoreOptions) error {
-	fileInfo, err := os.Stat(sourcePath)
-	if err != nil {
-		return err
+//go:generate tar --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  .
+//go:embed core.tar.gz
+var coreTemplate embed.FS
+
+func stageCoreTemplate() (string, error) {
+	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
+		return "", err
+	} else {
+		if reader, err := coreTemplate.Open("core.tar.gz"); err != nil {
+			return "", err
+		} else {
+			if err := Untar(dir, reader); err != nil {
+				return "", err
+			} else {
+				return dir, nil
+			}
+		}
 	}
 
-	if !fileInfo.IsDir() {
-		return fmt.Errorf("Source path not a directory %s\n", sourcePath)
+}
+
+func Core(outputPath string, opts CoreOptions) error {
+	sourcePath, err := stageCoreTemplate()
+	if err != nil {
+		return err
 	}
 
 	fmt.Printf("Shrinkwrapping core templates=%s max=%v namespace=%s output=%v\n", sourcePath, opts.Max, opts.Namespace, outputPath)
