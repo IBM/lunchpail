@@ -10,7 +10,17 @@ import (
 	//	"github.com/go-git/go-git/v5"
 )
 
-func Core(sourcePath, outputPath string, max bool) {
+type CoreOptions struct {
+	Namespace string
+	Max bool
+	ClusterIsOpenShift bool
+	NeedsCsiH3 bool
+	NeedsCsiS3 bool
+	NeedsCsiNfs bool
+	HasGpuSupport bool
+}
+
+func Core(sourcePath, outputPath string, opts CoreOptions) {
 	fileInfo, err := os.Stat(sourcePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Source path not found %s\n", sourcePath)
@@ -24,21 +34,18 @@ func Core(sourcePath, outputPath string, max bool) {
 
 	fmt.Printf("Shrinkwrapping core %s\n", sourcePath)
 
-	mcadEnabled := max
-	hasGpuSupport := false // TODO
-	clusterName := "jaas" // TODO
+	mcadEnabled := opts.Max
+	clusterName := "lunchpail"
 
 	imageRegistry := "ghcr.io"
 	imageRepo := "lunchpail"
 
-	namespace := "jaas-system" // FIXME
+	runAsRoot := false // the core doesn't need/support this
 
-	runAsRoot := false // TODO
-	clusterType := "kubernetes" // TODO
-
-	needsCsiH3 := false // TODO
-	needsCsiS3 := false // TODO
-	needsCsiNFS := false // TODO
+	clusterType := "k8s"
+	if opts.ClusterIsOpenShift {
+		clusterType = "oc"
+	}
 
 	values := fmt.Sprintf(`
 tags:
@@ -56,7 +63,7 @@ global:
     registry: %s # imageRegistry
     repo: %s # imageRepo
   rbac:
-    serviceAccount: %s # clusterName
+    serviceaccount: %s # clusterName
     runAsRoot: %v # runAsRoot
   jaas:
     ips: xxx
@@ -77,28 +84,28 @@ dlf-chart:
 mcad-controller:
   namespace: %v # namespace
 `,
-		hasGpuSupport,
-		max,
+		opts.HasGpuSupport,
+		opts.Max,
 		mcadEnabled,
-		max,
+		opts.Max,
 		clusterType,
 		imageRegistry,
 		imageRepo,
 		clusterName,
 		runAsRoot,
-		namespace,
-		namespace,
-		needsCsiH3,
-		needsCsiS3,
-		needsCsiNFS,
-		namespace,
+		opts.Namespace,
+		opts.Namespace,
+		opts.NeedsCsiH3,
+		opts.NeedsCsiS3,
+		opts.NeedsCsiNfs,
+		opts.Namespace,
 	)
 	fmt.Fprintf(os.Stderr, "Using values=%s\n", values)
 
 	chartSpec := helmclient.ChartSpec{
 		ReleaseName: "jaas-core",
 		ChartName:   sourcePath,
-		Namespace:   namespace,
+		Namespace:   opts.Namespace,
 		UpgradeCRDs: true,
 		Wait:        true,
 		ValuesYaml: values,
