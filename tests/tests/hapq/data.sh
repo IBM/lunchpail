@@ -6,8 +6,6 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../../..
 
-. "$TOP"/hack/secrets.sh
-
 "$TOP"/tests/bin/mc.sh
 
 ENDPOINT="https://s3.us-east.cloud-object-storage.appdomain.cloud"

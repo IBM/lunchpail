@@ -10,15 +10,15 @@ if [[ -z "$NO_BUILD" ]]
 then "$TOP"/hack/build.sh -l > /dev/null &
 fi
 
-if ls "$TOP"/builds/lite/*.yml > /dev/null 2>&1
-then kubectl delete --ignore-not-found -f "$TOP"/builds/lite/*.yml &
+if ls "$TOP"/builds/core/*.yml > /dev/null 2>&1
+then kubectl delete --ignore-not-found -f "$TOP"/builds/core/*.yml &
 fi
 
-"$TOP"/hack/shrinkcore.sh "$TOP"/builds
+"$TOP"/hack/shrinkcore.sh $@
 
 wait
 
-f="$TOP"/builds/lite/02-jaas.yml
+f="$TOP"/builds/core/02-jaas.yml
 if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
 kubectl apply --server-side -f "$f" $ns
 

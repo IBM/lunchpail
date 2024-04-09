@@ -20,7 +20,7 @@ spec:
     echo "Done with $in"
 
   command: ./literal.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
 # TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
 #  inputs:
 #    - sizes:

@@ -10,5 +10,5 @@ spec:
     secret-name: testdatasets3
     secret-namespace: {{ .Values.namespace.user }}
     provision: "true" # DLF will allocate bucket on the COS if it doesn't exist [Default: false]
-    bucket: {{ .Values.global.buckets.test }}
+    bucket: internal-test-bucket
     readonly: "true" # default is false

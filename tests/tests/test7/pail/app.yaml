@@ -5,7 +5,7 @@ metadata:
   name: test7
 spec:
   api: workqueue
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Values.global.image.version }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
   repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test7/pail
   command: ./src/main.sh
   minSize: xxs

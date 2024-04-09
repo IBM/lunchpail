@@ -6,7 +6,6 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 . "$SCRIPTDIR"/../../hack/settings.sh
-. "$SCRIPTDIR"/../../hack/secrets.sh
 
 LUNCHPAIL_PREP_INIT=1 "$SCRIPTDIR"/../../hack/init.sh
 DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh $UP_FLAGS &
@@ -22,9 +21,9 @@ then
     if [[ "$docker_host_ip" != nope ]]
     then
         echo "Hacking docker_host_ip=${docker_host_ip}"
-        LP_ARGS="$LP_ARGS --docker-host=$docker_host_ip"
+        LPC_ARGS="$LPC_ARGS --docker-host=$docker_host_ip"
     fi
 fi
 
-NO_BUILD=1 "$TOP"/hack/update.sh
+NO_BUILD=1 "$TOP"/hack/update.sh $LPC_ARGS
 "$SCRIPTDIR"/s3-copyin.sh

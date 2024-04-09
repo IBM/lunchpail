@@ -11,7 +11,7 @@ export RUNNING_CODEFLARE_TESTS=1
 while getopts "c:lgui:e:noprx:" opt
 do
     case $opt in
-        l) export HELM_INSTALL_FLAGS="--set lite=true"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
+        l) export HELM_INSTALL_FLAGS="--set lite=true"; export CORE_TYPE="lite"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
         e) EXCLUDE=$OPTARG; continue;;
         i) INCLUDE=$OPTARG; continue;;
         g) DEBUG=true; continue;;

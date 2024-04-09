@@ -9,7 +9,8 @@ import (
 	"strings"
 
 	"github.com/mittwald/go-helm-client"
-	"helm.sh/helm/v3/pkg/chartutil"
+	"github.com/mittwald/go-helm-client/values"
+	// "helm.sh/helm/v3/pkg/chartutil"
 	//	"github.com/go-git/go-git/v5"
 )
 
@@ -22,27 +23,21 @@ type CoreOptions struct {
 	NeedsCsiNfs        bool
 	HasGpuSupport      bool
 	DockerHost         string
+	OverrideValues     []string
 }
 
-//go:generate tar --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  .
+//go:generate /bin/sh -c "helm dependency update ../../templates/core && tar --exclude './core' --exclude './s3' --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  ."
 //go:embed core.tar.gz
 var coreTemplate embed.FS
 
 func stageCoreTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
+	} else if err := expand(dir, coreTemplate, "core.tar.gz"); err != nil {
+		return "", err
 	} else {
-		if reader, err := coreTemplate.Open("core.tar.gz"); err != nil {
-			return "", err
-		} else {
-			if err := Untar(dir, reader); err != nil {
-				return "", err
-			} else {
-				return dir, nil
-			}
-		}
+		return dir, nil
 	}
-
 }
 
 func Core(outputPath string, opts CoreOptions) error {
@@ -50,6 +45,7 @@ func Core(outputPath string, opts CoreOptions) error {
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(sourcePath)
 
 	fmt.Printf("Shrinkwrapping core templates=%s max=%v namespace=%s output=%v\n", sourcePath, opts.Max, opts.Namespace, outputPath)
 
@@ -66,7 +62,7 @@ func Core(outputPath string, opts CoreOptions) error {
 		clusterType = "oc"
 	}
 
-	values := fmt.Sprintf(`
+	yaml := fmt.Sprintf(`
 tags:
   gpu: %v # hasGpuSupport (1)
   full: %v # max (2)
@@ -88,7 +84,7 @@ global:
     serviceaccount: %s # clusterName (10)
     runAsRoot: %v # runAsRoot (11)
   jaas:
-    ips: xxx
+    ips: lunchpail-image-pull-secret
     namespace:
       name: %v # namespace (12)
       create: true
@@ -125,26 +121,20 @@ mcad-controller:
 		opts.Max || opts.NeedsCsiNfs, // (16)
 		opts.Namespace,               // (17)
 	)
-	fmt.Fprintf(os.Stderr, "Using values=%s\n", values)
 
-	chartSpec := helmclient.ChartSpec{
-		ReleaseName: "jaas-core",
-		ChartName:   sourcePath,
-		Namespace:   opts.Namespace,
-		UpgradeCRDs: true,
-		Wait:        true,
-		ValuesYaml:  values,
+	if os.Getenv("CI") != "" {
+		fmt.Fprintf(os.Stderr, "shrinkwrap core values=%s\n", yaml)
+		fmt.Fprintf(os.Stderr, "shrinkwrap core overrides=%v\n", opts.OverrideValues)
 	}
 
-	options := &helmclient.HelmTemplateOptions{
-		KubeVersion: &chartutil.KubeVersion{
-			Version: "v1.23.10",
-			Major:   "1",
-			Minor:   "23",
-		},
-		APIVersions: []string{
-			"helm.sh/v1/Test",
-		},
+	chartSpec := helmclient.ChartSpec{
+		ReleaseName:   "lunchpail-core",
+		ChartName:     sourcePath,
+		Namespace:     opts.Namespace,
+		UpgradeCRDs:   true,
+		Wait:          true,
+		ValuesYaml:    yaml,
+		ValuesOptions: values.Options{Values: opts.OverrideValues},
 	}
 
 	helmClient, newClientErr := helmclient.New(&helmclient.Options{})
@@ -152,7 +142,7 @@ mcad-controller:
 		return newClientErr
 	}
 
-	if res, err := helmClient.TemplateChart(&chartSpec, options); err != nil {
+	if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
 		return err
 	} else if outputPath == "-" {
 		fmt.Printf("res: %v\n", string(res))

@@ -17,6 +17,7 @@ func NewCoreCmd() *cobra.Command {
 	var hasGpuSupportFlag bool = false
 	var outputFlag string
 	var dockerHostFlag string = ""
+	var overrideValuesFlag []string = []string{}
 
 	var cmd = &cobra.Command{
 		Use:   "core [flags] sourcePath",
@@ -24,7 +25,12 @@ func NewCoreCmd() *cobra.Command {
 		Long:  "Shrinkwrap the core",
 		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag})
+			overrideValues, err := cmd.Flags().GetStringSlice("set")
+			if err != nil {
+				return err
+			}
+
+			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, overrideValues})
 		},
 	}
 
@@ -34,6 +40,7 @@ func NewCoreCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&hasGpuSupportFlag, "gpu", "", false, "Include Nvidia GPU support")
 	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem (included with --max)")
 	cmd.Flags().StringVarP(&dockerHostFlag, "docker-host", "d", dockerHostFlag, "Hostname/IP address of docker host")
+	cmd.Flags().StringSliceVarP(&overrideValuesFlag, "set", "", overrideValuesFlag, "Advanced usage: override specific template values")
 
 	cmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Output file path, using - for stdout")
 	if err := cmd.MarkFlagRequired("output"); err != nil {

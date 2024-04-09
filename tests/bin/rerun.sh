@@ -10,5 +10,7 @@ if [[ -f "$TOP"/builds/test/$(basename $1)/down ]]
 then "$TOP"/builds/test/$(basename $1)/down
 fi
 
+rm -f /tmp/lunchpail
+
 "$TOP"/hack/update.sh
 "$SCRIPTDIR"/run.sh $1

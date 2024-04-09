@@ -15,6 +15,6 @@ func Execute() {
 	rootCmd.Execute()
 }
 
-//func init() {
-//	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
-//}
+func init() {
+	rootCmd.SilenceUsage = true
+}

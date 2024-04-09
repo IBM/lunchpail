@@ -4,10 +4,10 @@ go:
 - 1.22.x
 
 env:
-  - ARGS="-e 'test(7.*|8)'" LP_ARGS="--max"         # full mode, excluding test7*
-  - ARGS="-i 'test(7.*|8)'" LP_ARGS="--max"         # full mode, including only test7*
+  - ARGS="-e 'test(7.*|8)'" LPA_ARGS="--workdir-via-mount" LPC_ARGS="--max"         # full mode, excluding test7*
+  - ARGS="-i 'test(7.*|8)'" LPC_ARGS="--max"         # full mode, including only test7*
   - ARGS="-l -i 'test7.*' -e 'test7g'"              # lite, including only test7* tests, excluding test7g and test8 (as they NEEDS_CSI_S3)
-  - ARGS="-l -i 'test(7g|8)'" LP_ARGS="--s3-mounts" # lite, only test7g and test8 which need a mounted s3
+  - ARGS="-l -i 'test(7g|8)'" LPC_ARGS="--s3-mounts" # lite, only test7g and test8 which need a mounted s3
 
 before_install: ./tests/bin/travis/setup.sh
 script: bash -c "./tests/bin/${SCRIPT:-ci.sh} $ARGS"

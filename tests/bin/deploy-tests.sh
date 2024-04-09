@@ -13,7 +13,6 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 . "$TOP"/hack/settings.sh
-. "$TOP"/hack/secrets.sh
 
 if [[ -n $1 ]]; then
     APP="--set app=$1"
@@ -33,12 +32,20 @@ if [[ -n "$3" ]]
 then branch="-b $3"
 fi
 
-"$TOP"/hack/shrinkwrap.sh \
-      -a \
+"$TOP"/hack/shrinkapp.sh \
       $branch \
-      -d "$TARGET" \
-      -n "${4-$1}" \
-      -h "$APP $GPU --set nfs.enabled=$NEEDS_NFS --set global.arch=$ARCH $APP $GPU --set kubernetes.context=kind-jaas --set kubernetes.config=$($KUBECTL config view  -o json --flatten | base64 | tr -d '\n') $HELM_SECRETS $HELM_INSTALL_FLAGS $HELM_IMAGE_PULL_SECRETS" \
+      -o "$TARGET" \
+      -a "${4-$1}" \
+      $APP \
+      $GPU \
+      $LPA_ARGS \
+      --set global.arch=$ARCH \
+      --set kubernetes.context=kind-jaas \
+      --set kubernetes.config=$($KUBECTL config view  -o json --flatten | base64 | tr -d '\n') \
+      --set cosAccessKey=$COS_ACCESS_KEY \
+      --set cosSecretKey=$COS_SECRET_KEY \
+      --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
+      --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT \
       "$2"
 
 "$TARGET"/up
