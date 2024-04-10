@@ -36,7 +36,7 @@ func NewAppCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&appNameFlag, "app-name", "a", "", "Override default/inferred application name")
 	cmd.Flags().BoolVarP(&workdirViaMountFlag, "workdir-via-mount", "w", workdirViaMountFlag, "Mount working directory in filesystem")
 	cmd.Flags().BoolVarP(&clusterIsOpenShiftFlag, "openshift", "t", false, "Include support for OpenShift")
-	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@my.github.com")
+	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().StringSliceVarP(&overrideValuesFlag, "set", "", overrideValuesFlag, "Advanced usage: override specific template values")
 

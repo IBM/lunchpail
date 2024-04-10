@@ -219,8 +219,8 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 	if opts.ImagePullSecret != "" {
 		ipsPattern := regexp.MustCompile("^([^:]+):([^@]+)@(.+)$")
 
-		if match := ipsPattern.FindStringSubmatch(opts.ImagePullSecret); len(match) != 3 {
-			return fmt.Errorf("image pull secret option must be of the form <user>:<token>@github...com: %s", opts.ImagePullSecret)
+		if match := ipsPattern.FindStringSubmatch(opts.ImagePullSecret); len(match) != 4 {
+			return fmt.Errorf("image pull secret option must be of the form <user>:<token>@ghcr.io: %s", opts.ImagePullSecret)
 		} else {
 			registryUser := match[1]
 			registryToken := match[2]
@@ -228,7 +228,7 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 			userColonToken := fmt.Sprintf("%s:%s", registryUser, registryToken)
 			registryAuth := b64.StdEncoding.EncodeToString([]byte(userColonToken))
 			imagePullSecretName = "lunchpail-image-pull-secret"
-			dockerconfigjson = fmt.Sprintf(`
+			dockerconfigjson = b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`
 {       
     "auths":
     {
@@ -238,7 +238,7 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
             }
     }
 }
-`, imageRegistry, registryAuth)
+`, imageRegistry, registryAuth)))
 
 		}
 	}
