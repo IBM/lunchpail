@@ -8,6 +8,7 @@
 
 set -e
 set -o pipefail
+set -o allexport
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..

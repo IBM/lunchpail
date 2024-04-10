@@ -1,11 +1,3 @@
-#!/usr/bin/env bash
-
-set -e
-set -o pipefail
-set -o allexport
-
-SETTINGS_SCRIPTDIR="$( dirname -- "$BASH_SOURCE"; )"
-
 ###########################################################################################
 #
 # Here are the configurable settings:
@@ -14,7 +6,6 @@ LUNCHPAIL=lunchpail                                         # name of product, u
 
 IMAGE_REGISTRY=${IMAGE_REGISTRY:-ghcr.io}                   # image registry part of image url
 IMAGE_REPO=${IMAGE_REPO:-$LUNCHPAIL}                        # image repo part of image url
-VERSION=${VERSION:-$("$SETTINGS_SCRIPTDIR"/version.sh)}     # image tag part of image url
 CLUSTER_NAME=${CLUSTER_NAME:-jaas}                          # name of kubernetes cluster
 CLUSTER_TYPE=${CLUSTER_TYPE:-k8s}                           # k8s|oc -- use oc for OpenShift, which will set sccs for Datashim
 
@@ -23,54 +14,4 @@ CONTEXT_NAME=${CONTEXT_NAME:-kind-${CLUSTER_NAME}}          # i.e. kubectl --con
 NAMESPACE_SUFFIX=""                                                           # suffix to add to namespace names
 NAMESPACE_USER=${NAMESPACE_USER:-jaas-user$NAMESPACE_SUFFIX}                  # namespace to use for user resources
 NAMESPACE_SYSTEM=${NAMESPACE_SYSTEM:-${CLUSTER_NAME}-system$NAMESPACE_SUFFIX} # namespace to use for system resources
-
-NEEDS_CSI_S3=${NEEDS_CSI_S3:-false}
-NEEDS_CSI_H3=${NEEDS_CSI_H3:-false}
-NEEDS_CSI_NFS=${NEEDS_CSI_NFS:-false}
-
-WORKDIR_VIA_MOUNT=${WORKDIR_VIA_MOUNT:-true}
 ###########################################################################################
-
-if [[ -z "$NO_GETOPTS" ]]
-then
-    while getopts "x:dlk:noprs" opt
-    do
-        case $opt in
-            n) export NO_BUILD=1; continue;;
-            x) export CONTEXT_NAME=$OPTARG; continue;;
-            l) echo "Running up in lite mode"; export LITE=1; export MCAD_ENABLED=false; export JAAS_FULL=false; WORKDIR_VIA_MOUNT=false; export HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS $HELM_INSTALL_LITE_FLAGS"; continue;;
-            k) NO_KIND=true; export KUBECONFIG=${OPTARG}; continue;;
-            o) export CLUSTER_TYPE=oc; continue;;
-            p) export PROD=true; continue;;
-            r) RUN_AS_ROOT=true; continue;;
-            s) SUDO=sudo; continue;;
-        esac
-    done
-    shift $((OPTIND-1))
-fi
-
-ARCH=${ARCH-$(uname -m)}
-
-# Note: a trailing slash is required, if this is non-empty
-IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
-
-HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set jaas-core.lunchpail=$LUNCHPAIL --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set jaas-core.version=$VERSION --set dlf-chart.csi-h3-chart.enabled=$NEEDS_CSI_H3 --set dlf-chart.csi-s3-chart.enabled=$NEEDS_CSI_S3 --set dlf-chart.csi-nfs-chart.enabled=$NEEDS_CSI_NFS --set global.type=$CLUSTER_TYPE --set global.rbac.serviceaccount=${LUNCHPAIL} --set global.rbac.runAsRoot=${RUN_AS_ROOT:-false} --set jaas-core.mcad.enabled=${MCAD_ENABLED:-true} --set mcad.enabled=${MCAD_ENABLED:-true} --set mcad-controller.namespace=${NAMESPACE_SYSTEM} --set workdir_via_mount=${WORKDIR_VIA_MOUNT}"
-
-if lspci 2> /dev/null | grep -iq nvidia
-then HAS_NVIDIA=true
-else HAS_NVIDIA=false
-fi
-
-HELM_INSTALL_FLAGS="$HELM_INSTALL_FLAGS --set global.jaas.namespace.name=$NAMESPACE_SYSTEM --set global.jaas.context.name=$CONTEXT_NAME --set global.image.registry=$IMAGE_REGISTRY --set global.image.repo=$IMAGE_REPO --set global.image.version=$VERSION --set tags.gpu=$HAS_NVIDIA"
-
-# this will limit the platform to just api=workqueue
-HELM_INSTALL_LITE_FLAGS="--set global.lite=true --set tags.full=false --set tags.core=true --set tags.gpu=false"
-
-export KUBECTL="$SUDO $(which kubectl || echo /usr/local/bin/kubectl) --context $CONTEXT_NAME"
-export HELM_DEPENDENCY="$(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME dependency"
-export HELM_TEMPLATE="$(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME template"
-export HELM="$SUDO $(which helm || echo /usr/local/bin/helm) --kube-context $CONTEXT_NAME"
-export KIND="$SUDO $(which kind || echo /usr/local/bin/kind)"
-
-# deploy ray, spark, etc. support?
-export JAAS_FULL=${JAAS_FULL:-true}

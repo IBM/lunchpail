@@ -12,5 +12,5 @@ fi
 
 rm -f /tmp/lunchpail
 
-"$TOP"/hack/update.sh
+"$TOP"/hack/update.sh $LPC_ARGS
 "$SCRIPTDIR"/run.sh $1

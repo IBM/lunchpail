@@ -7,7 +7,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/..
 
 if [[ -z "$NO_BUILD" ]]
-then "$TOP"/hack/build.sh -l > /dev/null &
+then "$TOP"/hack/build.sh > /dev/null &
 fi
 
 if ls "$TOP"/builds/core/*.yml > /dev/null 2>&1

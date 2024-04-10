@@ -64,16 +64,6 @@ function check_podman {
     fi
 }
 
-function get_helm {
-    if ! which helm > /dev/null 2>&1; then
-        echo "$(tput setaf 2)Installing helm$(tput sgr0)"
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        chmod 700 get_helm.sh
-        ./get_helm.sh
-	rm get_helm.sh
-    fi
-}
-
 function get_kubectl {
     if ! which kubectl > /dev/null 2>&1; then
         echo "$(tput setaf 2)Installing kubectl$(tput sgr0)"
@@ -129,7 +119,7 @@ function get_nvidia {
 
 function create_kind_cluster {
     if [[ -z "$NO_KIND" ]]; then
-        if ! $KIND get clusters | grep -q $CLUSTER_NAME; then
+        if ! kind get clusters | grep -q $CLUSTER_NAME; then
             # allows selectively hacking kind cluster config; e.g. see ./travis/setup.sh
             if [[ -f /tmp/kindhack.yaml ]]
             then
@@ -138,30 +128,16 @@ function create_kind_cluster {
             fi
 
             echo "Creating kind cluster $(tput setaf 6)$CLUSTER_NAME $CLUSTER_CONFIG$(tput sgr0)" 1>&2
-            $KIND create cluster --name $CLUSTER_NAME --wait 10m $CLUSTER_CONFIG
+            kind create cluster --name $CLUSTER_NAME --wait 10m $CLUSTER_CONFIG
         fi
     fi
 }
 
-function update_helm_dependencies {
-    if [[ -n "$NO_BUILD" ]]
-    then return
-    fi
-
-    # i'm not sure how to manage this without hard-coding the
-    # sub-charts that pull in external dependencies
-    $HELM_DEPENDENCY update "$SCRIPTDIR"/../templates/core \
-         2> >(grep -v 'found symbolic link' >&2) \
-         2> >(grep -v 'Contents of linked' >&2)
-}
-
 get_kubectl
-get_helm
 check_podman
 
 if [[ -z "$LUNCHPAIL_PREP_INIT" ]]; then
     # allows us to do some docker builds in parallel with these expensive steps
-    update_helm_dependencies
     get_kind
     get_nvidia
     create_kind_cluster

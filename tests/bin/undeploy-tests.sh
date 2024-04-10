@@ -13,31 +13,31 @@ function report_stragglers {
     set +e
 
     echo "Checking for straggler NAMESPACES"
-    $KUBECTL get ns
+    kubectl get ns
 
     echo "Checking for straggler PODS"
-    $KUBECTL get pod -n $NAMESPACE_USER
+    kubectl get pod -n $NAMESPACE_USER
 
     echo "Checking for straggler PODS details"
-    $KUBECTL get pod -n $NAMESPACE_USER -o yaml
+    kubectl get pod -n $NAMESPACE_USER -o yaml
     
     echo "Checking for straggler APPLICATIONS"
-    $KUBECTL get application -n $NAMESPACE_USER
+    kubectl get application -n $NAMESPACE_USER
     
     echo "Checking for straggler WORKERPOOLS"
-    $KUBECTL get workerpools -n $NAMESPACE_USER
+    kubectl get workerpools -n $NAMESPACE_USER
 
     echo "Checking for straggler WORKDISPATCHERS"
-    $KUBECTL get workdispatchers -n $NAMESPACE_USER
+    kubectl get workdispatchers -n $NAMESPACE_USER
 
     echo "Checking for straggler DATASETS"
-    $KUBECTL get datasets -n $NAMESPACE_USER
+    kubectl get datasets -n $NAMESPACE_USER
 
     echo "$NAMESPACE_USER pod logs"
-    $KUBECTL logs -n $NAMESPACE_USER -l app.kubernetes.io/managed-by=lunchpail.io
+    kubectl logs -n $NAMESPACE_USER -l app.kubernetes.io/managed-by=lunchpail.io
 
     echo "$NAMESPACE_USER events"
-    $KUBECTL get events -n $NAMESPACE_USER
+    kubectl get events -n $NAMESPACE_USER
     
     echo "Run controller logs"
     TAIL=1000 "$TOP"/hack/logs/run.sh
@@ -70,7 +70,7 @@ then
     then
         while true
         do
-            $KUBECTL get ns $NAMESPACE_USER || break
+            kubectl get ns $NAMESPACE_USER || break
             echo "Waiting for namespace cleanup"
             sleep 2
         done

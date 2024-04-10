@@ -8,18 +8,12 @@ set -o pipefail
 # e.g. see 7/init.sh
 export RUNNING_CODEFLARE_TESTS=1
 
-while getopts "c:lgui:e:noprx:" opt
+while getopts "gi:e:nx:" opt
 do
     case $opt in
-        l) export HELM_INSTALL_FLAGS="--set lite=true"; export CORE_TYPE="lite"; export UP_FLAGS="$UP_FLAGS -l"; echo "$(tput setaf 3)🧪 Running in lite mode$(tput sgr0)"; continue;;
         e) EXCLUDE=$OPTARG; continue;;
         i) INCLUDE=$OPTARG; continue;;
         g) DEBUG=true; continue;;
-        c) export UP_FLAGS="$UP_FLAGS -c $OPTARG"; continue;;
-        o) export UP_FLAGS="$UP_FLAGS -o"; continue;;
-        p) export UP_FLAGS="$UP_FLAGS -p"; continue;;
-        r) export UP_FLAGS="$UP_FLAGS -r"; continue;;
-        u) BRING_UP_CLUSTER=true; continue;;
     esac
 done
 xOPTIND=$OPTIND
@@ -57,13 +51,13 @@ function waitForIt {
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
-    # ($KUBECTL -n $ns wait pod -l $selector --for=condition=Completed --timeout=-1s && pkill $$)
+    # (kubectl -n $ns wait pod -l $selector --for=condition=Completed --timeout=-1s && pkill $$)
 
     echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
     while true; do
-        $KUBECTL -n $ns wait pod -l $selector --for=condition=Ready --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+        kubectl -n $ns wait pod -l $selector --for=condition=Ready --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
 
-        $KUBECTL -n $ns wait pod -l $selector --for=condition=Ready=false --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+        kubectl -n $ns wait pod -l $selector --for=condition=Ready=false --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
         sleep 4
     done
 
@@ -71,7 +65,7 @@ function waitForIt {
     for done in "${dones[@]}"; do
         idx=0
         while true; do
-            $KUBECTL -n $ns logs $containers -l $selector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            kubectl -n $ns logs $containers -l $selector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
 
             if [[ -n $DEBUG ]] || (( $idx > 10 )); then
                 # if we can't find $done in the logs after a few
@@ -81,14 +75,14 @@ function waitForIt {
                 then TAIL=1000
                 else TAIL=10
                 fi
-                ($KUBECTL -n $ns logs $containers -l $selector --tail=$TAIL || exit 0)
+                (kubectl -n $ns logs $containers -l $selector --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4
         done
     done
 
-    $KUBECTL delete run $name -n $ns
+    kubectl delete run $name -n $ns
     echo "✅ PASS run-controller delete test=$name"
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
@@ -97,33 +91,33 @@ function waitForIt {
         local queue=${taskqueue:-defaultjaasqueue} # TODO on default?
 
         echo "$(tput setaf 2)🧪 Checking output files test=$name$(tput sgr0)" 1>&2
-        nOutputs=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+        nOutputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
                             mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+            outputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
                                mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
-                code=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                code=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
                                 mc cat s3/$queue/lunchpail/$name/outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
                 fi
 
-                stdout=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                stdout=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
                                   mc ls s3/$queue/lunchpail/$name/outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
-                stderr=$($KUBECTL exec $($KUBECTL get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                stderr=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
                                   mc ls s3/$queue/lunchpail/$name/outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
@@ -217,7 +211,7 @@ function waitForUnassignedAndOutbox {
 
     echo "✅ PASS run-controller run test $name"
 
-    $KUBECTL delete run $name -n $ns
+    kubectl delete run $name -n $ns
     echo "✅ PASS run-controller delete test $name"
 }
 
@@ -234,15 +228,15 @@ function waitForStatus {
     do
         while true
         do
-            $KUBECTL -n $ns get run.lunchpail.io $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
-            ($KUBECTL -n $ns get run.lunchpail.io $name --show-kind --no-headers | grep $name || exit 0)
+            kubectl -n $ns get run.lunchpail.io $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
+            (kubectl -n $ns get run.lunchpail.io $name --show-kind --no-headers | grep $name || exit 0)
             sleep 4
         done
     done
 
     echo "✅ PASS run-controller run test $name"
 
-    $KUBECTL delete run $name -n $ns
+    kubectl delete run $name -n $ns
     echo "✅ PASS run-controller delete test $name"
 }
 
@@ -260,10 +254,10 @@ function undeploy {
 
 function watch {
     if [[ -n "$CI" ]]; then
-        $KUBECTL get appwrapper --show-kind -n $NAMESPACE_USER -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
-        $KUBECTL get pod --show-kind -n $NAMESPACE_USER --watch &
+        kubectl get appwrapper --show-kind -n $NAMESPACE_USER -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
+        kubectl get pod --show-kind -n $NAMESPACE_USER --watch &
     fi
-    $KUBECTL get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
-    $KUBECTL get run --show-kind --all-namespaces --watch &
-    $KUBECTL get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.lunchpail\\.io/status,MESSAGE:.metadata.annotations.lunchpail\\.io/message &
+    kubectl get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
+    kubectl get run --show-kind --all-namespaces --watch &
+    kubectl get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.lunchpail\\.io/status,MESSAGE:.metadata.annotations.lunchpail\\.io/message &
 }

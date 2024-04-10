@@ -8,10 +8,10 @@ TOP="$SCRIPTDIR"/../..
 . "$SCRIPTDIR"/../../hack/settings.sh
 
 LUNCHPAIL_PREP_INIT=1 "$SCRIPTDIR"/../../hack/init.sh
-DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh $UP_FLAGS &
+DOING_UP=1 NO_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh &
 "$SCRIPTDIR"/down.sh & "$SCRIPTDIR"/../../hack/init.sh
 wait
-DOING_UP=1 ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh $UP_FLAGS
+DOING_UP=1 ONLY_IMAGE_PUSH=1 "$SCRIPTDIR"/../../hack/build.sh
 
 # in travis, we need to provide a special docker host
 # TODO: is this for linux in general? for docker on linux in general?

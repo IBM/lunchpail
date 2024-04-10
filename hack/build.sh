@@ -2,43 +2,57 @@
 
 set -e
 set -o pipefail
+set -o allexport
 
 #
-# Usage: hack/build.sh [-l] [-p] [<buildfilter>]
+# Usage: build.sh [-p] [<buildfilter>]
 #
-# -l: build only images essential for core jobs operation (no ray, torch, etc.)
 # -p: build and push production images (otherwise, images will be pushed to kind)
 # $1: buildfilter a regexp pattern to limit what is built, e.g. `workstealer` to build just the workstealer image
 #
 
-if [[ -n "$NO_BUILD" ]]
-then exit
-fi
+function init {
+    SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+    . "$SCRIPTDIR"/settings.sh
 
-SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/settings.sh
+    VERSION=$(grep appVersion "$SCRIPTDIR"/../templates/core/Chart.yaml  | awk '{gsub("\"", "", $2); print $2}')
+    LITE=true
 
-trap "pkill -P $$" SIGINT
+    # Note: a trailing slash is required
+    IMAGE_REPO_FOR_BUILD=$IMAGE_REGISTRY/$IMAGE_REPO/
 
-echo "$(tput setaf 2)Building JaaS$(tput sgr0)"
+    # for now, make building "max/full" images a bit harder, since it's
+    # not what we want to emphasize at the moment [20240410]
+    if [[ "$LPC_ARGS" =~ "max" ]]
+    then unset LITE
+    fi
 
-FILTER=$1
-if [[ -n "$FILTER" ]]
-then echo "$(tput setaf 3)Using filter=$FILTER$(tput sgr0)"
-fi
+    while getopts "x:dlk:noprs" opt
+    do
+        case $opt in
+            p) PROD=1; continue;;
+        esac
+    done
+    shift $((OPTIND-1))
 
-if [[ -n "$CI" ]] && [[ -z "$DEBUG" ]]
-then
-    QUIET="-q"
-fi
+    FILTER=$1
+    if [[ -n "$FILTER" ]]
+    then echo "$(tput setaf 3)Using filter=$FILTER$(tput sgr0)"
+    fi
 
-# podman sucks... if you have pushed a remote multi-arch manifest, it
-# inists on using the wrong platform when building a non-manifest
-# build
-if [[ $(uname -m) = arm64 ]]
-then MY_PLATFORM=linux/arm64/v8
-else MY_PLATFORM=linux/amd64
-fi
+    if [[ -n "$CI" ]] && [[ -z "$DEBUG" ]]
+    then
+        QUIET="-q"
+    fi
+
+    # podman sucks... if you have pushed a remote multi-arch manifest, it
+    # inists on using the wrong platform when building a non-manifest
+    # build
+    if [[ $(uname -m) = arm64 ]]
+    then MY_PLATFORM=linux/arm64/v8
+    else MY_PLATFORM=linux/amd64
+    fi
+}
 
 function check_podman {
     export DOCKER=docker
@@ -78,7 +92,7 @@ function build {
         (cd "$dir" && \
              ${DOCKER-docker} build $QUIET \
                               --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
-                              --platform=${PLATFORM-linux/arm64/v8,linux/amd64} \
+                              --platform=${PLATFORM:-linux/arm64/v8,linux/amd64} \
                               --manifest $image \
                               -f "$dockerfile" \
                               .
@@ -118,13 +132,13 @@ function push {
                     echo "pushing $image $curhash $newhash"
                     T=$(mktemp)
                     podman save $image -o $T
-                    $KIND -n $CLUSTER_NAME load image-archive $T
+                    kind -n $CLUSTER_NAME load image-archive $T
                     rm -f $T
                 else
                     echo "already pushed $image"
                 fi
             else
-                $KIND load docker-image -n $CLUSTER_NAME $image
+                kind load docker-image -n $CLUSTER_NAME $image
             fi
         else
             echo "!!TODO push to remote container registry"
@@ -140,7 +154,7 @@ function build_controller {
     if [[ -n "$FILTER" ]] && [[ ! $controller =~ $FILTER ]]
     then
         echo "$(tput setaf 3)Skipping excluded controller $controller$(tput sgr0)"
-        continue
+        return
     fi
 
     if [[ -z "$LITE" ]]
@@ -192,7 +206,8 @@ function build_components {
                         export VERSION
                         export CLUSTER_NAME
                         export IMAGE_REPO_FOR_BUILD
-                        xargs -I{} --max-procs $(nproc) bash -c "buildAndPush {} $provider"
+                        export MY_PLATFORM
+                        xargs -I{} --max-procs 8 bash -c "buildAndPush {} $provider"
                     ) && break || echo "Retrying build_components"
             done
         fi
@@ -209,15 +224,21 @@ function build_test_images {
     done
 }
 
-if [[ -n "$PROD" ]] && [[ -n "$DOING_UP" ]]
-then
-    echo "$(tput setaf 3)Skipping build because we are running in production mode$(tput sgr0)"
-    exit
-fi
+function main {
+    if [[ -n "$NO_BUILD" ]]
+    then exit
+    elif [[ -n "$PROD" ]] && [[ -n "$DOING_UP" ]]
+    then echo "$(tput setaf 3)Skipping build because we are running in production mode$(tput sgr0)" && exit
+    fi
 
-check_podman
-build_test_images
-build_components
-wait # ugh, too much concurrency which overloads the podman machine on macOS
-build_controller
-wait
+    echo "$(tput setaf 2)🚧 Building Lunchpail images$(tput sgr0)"
+    trap "pkill -P $$" SIGINT
+    init
+    check_podman
+    build_test_images
+    build_components
+    build_controller
+    wait
+}
+
+main

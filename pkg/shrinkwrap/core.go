@@ -26,7 +26,8 @@ type CoreOptions struct {
 	OverrideValues     []string
 }
 
-//go:generate /bin/sh -c "helm dependency update ../../templates/core && tar --exclude './core' --exclude './s3' --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  ."
+// instead we do this below: helm dependency update ../../templates/core
+//go:generate /bin/sh -c "tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  ."
 //go:embed core.tar.gz
 var coreTemplate embed.FS
 
@@ -130,6 +131,7 @@ mcad-controller:
 	chartSpec := helmclient.ChartSpec{
 		ReleaseName:   "lunchpail-core",
 		ChartName:     sourcePath,
+		DependencyUpdate: true,
 		Namespace:     opts.Namespace,
 		UpgradeCRDs:   true,
 		Wait:          true,

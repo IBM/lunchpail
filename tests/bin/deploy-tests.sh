@@ -32,6 +32,13 @@ if [[ -n "$3" ]]
 then branch="-b $3"
 fi
 
+if [[ -f "$SCRIPTDIR"/my.secrets.sh ]]
+then
+    echo "Injecting your secrets"
+    . "$SCRIPTDIR"/my.secrets.sh
+fi
+
+set -x
 "$TOP"/hack/shrinkapp.sh \
       $branch \
       -o "$TARGET" \
@@ -41,7 +48,7 @@ fi
       $LPA_ARGS \
       --set global.arch=$ARCH \
       --set kubernetes.context=kind-jaas \
-      --set kubernetes.config=$($KUBECTL config view  -o json --flatten | base64 | tr -d '\n') \
+      --set kubernetes.config=$(kubectl config view  -o json --flatten | base64 | tr -d '\n') \
       --set cosAccessKey=$COS_ACCESS_KEY \
       --set cosSecretKey=$COS_SECRET_KEY \
       --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
