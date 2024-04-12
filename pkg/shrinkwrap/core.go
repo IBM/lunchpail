@@ -27,6 +27,7 @@ type CoreOptions struct {
 }
 
 // instead we do this below: helm dependency update ../../templates/core
+//
 //go:generate /bin/sh -c "tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  ."
 //go:embed core.tar.gz
 var coreTemplate embed.FS
@@ -129,14 +130,14 @@ mcad-controller:
 	}
 
 	chartSpec := helmclient.ChartSpec{
-		ReleaseName:   "lunchpail-core",
-		ChartName:     sourcePath,
+		ReleaseName:      "lunchpail-core",
+		ChartName:        sourcePath,
 		DependencyUpdate: true,
-		Namespace:     opts.Namespace,
-		UpgradeCRDs:   true,
-		Wait:          true,
-		ValuesYaml:    yaml,
-		ValuesOptions: values.Options{Values: opts.OverrideValues},
+		Namespace:        opts.Namespace,
+		UpgradeCRDs:      true,
+		Wait:             true,
+		ValuesYaml:       yaml,
+		ValuesOptions:    values.Options{Values: opts.OverrideValues},
 	}
 
 	helmClient, newClientErr := helmclient.New(&helmclient.Options{})

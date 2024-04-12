@@ -74,6 +74,8 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string) error
 		}
 		cmd := exec.Command("git", "clone", sourcePath, branchArg, appname)
 		cmd.Dir = filepath.Dir(appdir)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 		if err := cmd.Start(); err != nil {
 			return err
 		}
@@ -85,6 +87,8 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string) error
 
 		// TODO port this to pure go?
 		cmd := exec.Command("sh", "-c", "tar --exclude '*~' -C "+sourcePath+" -cf - . | tar -C "+appdir+" -xf -")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
 			return err
 		}
@@ -139,6 +143,8 @@ func injectAutoRun(appname, templatePath string) ([]string, error) {
 
 	// TODO port this to pure go?
 	cmd := exec.Command("grep", "-qr", "^kind:[[:space:]]*Run$", appdir)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return []string{}, err
 	}
@@ -149,12 +155,16 @@ func injectAutoRun(appname, templatePath string) ([]string, error) {
 
 	// TODO port this to pure go?
 	cmd2 := exec.Command("grep", "-qr", "^kind:[[:space:]]*WorkDispatcher$", appdir)
+	cmd2.Stdout = os.Stdout
+	cmd2.Stderr = os.Stderr
 	if err := cmd2.Start(); err != nil {
 		return []string{}, err
 	}
 	if err := cmd2.Wait(); err != nil {
 		// TODO port this to pure go?
 		cmd3 := exec.Command("grep", "-qr", "^  role:[[:space:]]*dispatcher$", appdir)
+		cmd3.Stdout = os.Stdout
+		cmd3.Stderr = os.Stderr
 		if err := cmd3.Start(); err != nil {
 			return []string{}, err
 		}
@@ -324,6 +334,8 @@ func updateScripts(path, appname, userNamespace, systemNamespace string) error {
 				// TODO: ugh sed
 				sed := "cat " + path + " | sed 's#the_lunchpail_app#" + appname + "#g' | sed 's#jaas-user#" + userNamespace + "#g' | sed 's#jaas-system#" + systemNamespace + "#g' > " + path + ".tmp && mv " + path + ".tmp " + path + " && chmod +x " + path
 				cmd := exec.Command("sh", "-c", sed)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
 				if err := cmd.Run(); err != nil {
 					return err
 				}
