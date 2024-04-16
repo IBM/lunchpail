@@ -7,5 +7,5 @@ spec:
   run: test7
   workers:
     count: 2
-    size: xxs
+    size: auto
 {{- end }}

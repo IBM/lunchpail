@@ -45,7 +45,7 @@ spec:
                       default: false
                     size:
                       type: string
-                      enum: [xxs,xs,sm,md,lg,xl,xxl]
+                      enum: [xxs,xs,sm,md,lg,xl,xxl,auto]
 
                 # where to run the workers
                 target:

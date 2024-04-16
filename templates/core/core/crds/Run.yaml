@@ -61,7 +61,7 @@ spec:
                     definition: should workers give allocated a GPU?
                 size:
                   type: string
-                  enum: [xxs,xs,sm,md,lg,xl,xxl]
+                  enum: [xxs,xs,sm,md,lg,xl,xxl,auto]
                 input:
                   type: string
                   enum: [xxs,xs,sm,md,lg,xl,xxl]

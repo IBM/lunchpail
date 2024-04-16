@@ -83,8 +83,12 @@ def load_run_size_config(customApi, size: str):
     try:
         return load(customApi)[size].copy() # copy since we may modify it below!!
     except Exception as e:
-        logging.info(f"RunSizeConfiguration policy has no rule for size={size}")
-        return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
+        if size == 'auto':
+            logging.info(f"RunSizeConfiguration 'auto' policy in effect")
+            return {"cpu": "auto", "memory": "auto", "gpu": 0, "workers": 1}
+        else:
+            logging.info(f"RunSizeConfiguration policy has no rule for size={size}")
+            return {"cpu": "500m", "memory": "500Mi", "gpu": 0, "workers": 1}
 
 def run_size(customApi, name: str, spec, application):
     size = "xs" # default
@@ -100,7 +104,7 @@ def run_size(customApi, name: str, spec, application):
             size = sizeof(inp)
 
     run_size_config = load_run_size_config(customApi, size)
-    logging.info(f"Using size={size} for run={name} run_size_config(base)={run_size_config}")
+    logging.info(f"Using size={size} for run={name} run_size_config(base)={run_size_config} spec={spec}")
 
     # TODOs:
     # 1) the default-run-size-config should not include GPUs if the cluster does not support them

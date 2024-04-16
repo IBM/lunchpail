@@ -73,7 +73,7 @@ spec:
                   type: string
                 minSize:
                   type: string
-                  enum: [xxs,xs,sm,md,lg,xl,xxl]
+                  enum: [xxs,xs,sm,md,lg,xl,xxl,auto]
                 supportsGpu:
                   type: boolean
                   default: false
