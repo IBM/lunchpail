@@ -515,13 +515,14 @@ func rebalance(model Model) bool {
 
 			// then we can steal at least one Task 
 			for _, workerWithWork := range workersWithWork {
-				stealThisMany := max(0, len(workerWithWork.assignedTasks) - desiredLevel)
-				fmt.Fprintf(os.Stderr, "[workstealer] Rebalancer stealing %d tasks from worker=%s\n", stealThisMany, workerWithWork.name)
+				if stealThisMany := max(0, len(workerWithWork.assignedTasks) - desiredLevel); stealThisMany > 0 {
+					fmt.Fprintf(os.Stderr, "[workstealer] Rebalancer stealing %d tasks from worker=%s\n", stealThisMany, workerWithWork.name)
 
-				for i := range stealThisMany {
-					j := len(workerWithWork.assignedTasks) - i - 1
-					taskToSteal := workerWithWork.assignedTasks[j]
-					moveTaskBackToUnassigned(taskToSteal, workerWithWork, "inbox")
+					for i := range stealThisMany {
+						j := len(workerWithWork.assignedTasks) - i - 1
+						taskToSteal := workerWithWork.assignedTasks[j]
+						moveTaskBackToUnassigned(taskToSteal, workerWithWork, "inbox")
+					}
 				}
 			}
 
