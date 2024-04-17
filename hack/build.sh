@@ -11,6 +11,14 @@ set -o allexport
 # $1: buildfilter a regexp pattern to limit what is built, e.g. `workstealer` to build just the workstealer image
 #
 
+while getopts "p" opt
+do
+    case $opt in
+        p) PROD=1; continue;;
+    esac
+done
+shift $((OPTIND-1))
+
 function init {
     SCRIPTDIR=$(cd $(dirname "$0") && pwd)
     . "$SCRIPTDIR"/settings.sh
@@ -26,14 +34,6 @@ function init {
     if [[ "$LPC_ARGS" =~ "max" ]]
     then unset LITE
     fi
-
-    while getopts "x:dlk:noprs" opt
-    do
-        case $opt in
-            p) PROD=1; continue;;
-        esac
-    done
-    shift $((OPTIND-1))
 
     FILTER=$1
     if [[ -n "$FILTER" ]]
@@ -70,7 +70,7 @@ function build {
     local dir="$1"
     local image=$2
     local dockerfile="${3-Dockerfile}"
-    echo "Building dockerfile=$dockerfile image=$image"
+    echo "Building dockerfile=$dockerfile image=$image prod=$PROD"
 
     if [[ -n "$ONLY_IMAGE_PUSH" ]]
     then return
