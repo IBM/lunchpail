@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -271,6 +272,11 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 		}
 	}
 
+	user, err := user.Current()
+	if err != nil {
+		return err
+	}
+
 	yaml := fmt.Sprintf(`
 global:
   type: %s # clusterType (1)
@@ -286,7 +292,10 @@ global:
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 workdir_via_mount: %v # workdirViaMount (8)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount)
+branch: %s # opts.Branch (9)
+username: %s # user.Username (10)
+uid: %s # user.Uid (11)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, opts.Branch, user.Username, user.Uid)
 
 	chartSpec := helmclient.ChartSpec{
 		ReleaseName: appname,
