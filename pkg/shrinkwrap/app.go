@@ -4,6 +4,7 @@ import (
 	"embed"
 	b64 "encoding/base64"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/mittwald/go-helm-client"
 	"github.com/mittwald/go-helm-client/values"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -136,9 +137,26 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string) error
 	return nil
 }
 
+// truncate `str` to have at most `max` length
+func truncate(str string, max int) string {
+	if len(str) > max {
+		return str[:max]
+	} else {
+		return str
+	}
+}
+
 // Inject Run or WorkDispatcher resources if needed
 func injectAutoRun(appname, templatePath string) ([]string, error) {
-	sets := []string{}
+	sets := []string{} // we will assemble helm `--set` options
+	runname := appname
+
+	if id, err := uuid.NewRandom(); err != nil {
+		return []string{}, err
+	} else {
+		runname = truncate(runname + "-" + id.String(), 53)
+	}
+
 	appdir := filepath.Join(templatePath, "templates", appname)
 
 	// TODO port this to pure go?

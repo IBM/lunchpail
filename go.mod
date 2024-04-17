@@ -3,6 +3,7 @@ module lunchpail.io
 go 1.22.2
 
 require (
+	github.com/google/uuid v1.5.0
 	github.com/mittwald/go-helm-client v0.12.9
 	github.com/mum4k/termdash v0.20.0
 	github.com/spf13/cobra v1.8.0
@@ -57,7 +58,6 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.5.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/gosuri/uitable v0.0.4 // indirect
