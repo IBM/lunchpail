@@ -2,7 +2,6 @@ package shrinkwrap
 
 import (
 	"embed"
-	b64 "encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/mittwald/go-helm-client"
@@ -243,33 +242,9 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 		clusterType = "oc"
 	}
 
-	imagePullSecretName := ""
-	dockerconfigjson := ""
-	if opts.ImagePullSecret != "" {
-		ipsPattern := regexp.MustCompile("^([^:]+):([^@]+)@(.+)$")
-
-		if match := ipsPattern.FindStringSubmatch(opts.ImagePullSecret); len(match) != 4 {
-			return fmt.Errorf("image pull secret option must be of the form <user>:<token>@ghcr.io: %s", opts.ImagePullSecret)
-		} else {
-			registryUser := match[1]
-			registryToken := match[2]
-			imageRegistry := match[3]
-			userColonToken := fmt.Sprintf("%s:%s", registryUser, registryToken)
-			registryAuth := b64.StdEncoding.EncodeToString([]byte(userColonToken))
-			imagePullSecretName = "lunchpail-image-pull-secret"
-			dockerconfigjson = b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`
-{       
-    "auths":
-    {
-        "%s":
-            {
-                "auth":"%s"
-            }
-    }
-}
-`, imageRegistry, registryAuth)))
-
-		}
+	imagePullSecretName, dockerconfigjson, ipsErr := ImagePullSecret(opts.ImagePullSecret)
+	if ipsErr != nil {
+		return ipsErr
 	}
 
 	user, err := user.Current()

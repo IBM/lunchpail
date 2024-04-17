@@ -9,6 +9,7 @@ import (
 
 func NewCoreCmd() *cobra.Command {
 	var namespaceFlag string = "jaas-system"
+	var imagePullSecretFlag string
 	var maxFlag bool = false
 	var clusterIsOpenShiftFlag bool = false
 	var needsCsiH3Flag bool = false
@@ -30,11 +31,12 @@ func NewCoreCmd() *cobra.Command {
 				return err
 			}
 
-			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, overrideValues})
+			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, overrideValues, imagePullSecretFlag})
 		},
 	}
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", namespaceFlag, "Kubernetes namespace to deploy to")
+	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().BoolVarP(&maxFlag, "max", "m", false, "Include Ray, Torch, etc. support")
 	cmd.Flags().BoolVarP(&clusterIsOpenShiftFlag, "openshift", "t", false, "Include support for OpenShift")
 	cmd.Flags().BoolVarP(&hasGpuSupportFlag, "gpu", "", false, "Include Nvidia GPU support")

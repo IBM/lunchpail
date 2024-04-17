@@ -24,6 +24,7 @@ type CoreOptions struct {
 	HasGpuSupport      bool
 	DockerHost         string
 	OverrideValues     []string
+	ImagePullSecret    string
 }
 
 // instead we do this below: helm dependency update ../../templates/core
@@ -64,6 +65,11 @@ func Core(outputPath string, opts CoreOptions) error {
 		clusterType = "oc"
 	}
 
+	imagePullSecretName, dockerconfigjson, ipsErr := ImagePullSecret(opts.ImagePullSecret)
+	if ipsErr != nil {
+		return ipsErr
+	}
+
 	yaml := fmt.Sprintf(`
 tags:
   gpu: %v # hasGpuSupport (1)
@@ -86,24 +92,25 @@ global:
     serviceaccount: %s # clusterName (10)
     runAsRoot: %v # runAsRoot (11)
   jaas:
-    ips: lunchpail-image-pull-secret
+    ips: %s # imagePullSecretName (12)
+    dockerconfigjson: %s # dockerconfigjson (13)
     namespace:
-      name: %v # namespace (12)
+      name: %v # namespace (14)
       create: true
     context:
       name: ""
-  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (13)
+  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (15)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 dlf-chart:
   csi-h3-chart:
-    enabled: %v # needsCsiH3 (14)
+    enabled: %v # needsCsiH3 (16)
   csi-s3-chart:
-    enabled: %v # needsCsiS3 (15)
+    enabled: %v # needsCsiS3 (17)
   csi-nfs-chart:
-    enabled: %v # needsCsiNFS (16)
+    enabled: %v # needsCsiNFS (18)
 mcad-controller:
-  namespace: %v # namespace (17)
+  namespace: %v # namespace (19)
 `,
 		opts.HasGpuSupport,           // (1)
 		opts.Max,                     // (2)
@@ -116,12 +123,14 @@ mcad-controller:
 		imageRepo,                    // (9)
 		clusterName,                  // (10)
 		runAsRoot,                    // (11)
-		opts.Namespace,               // (12)
-		opts.Namespace,               // (13)
-		opts.Max || opts.NeedsCsiH3,  // (14)
-		opts.Max || opts.NeedsCsiS3,  // (15)
-		opts.Max || opts.NeedsCsiNfs, // (16)
-		opts.Namespace,               // (17)
+		imagePullSecretName,          // (12)
+		dockerconfigjson,             // (13)
+		opts.Namespace,               // (14)
+		opts.Namespace,               // (15)
+		opts.Max || opts.NeedsCsiH3,  // (16)
+		opts.Max || opts.NeedsCsiS3,  // (17)
+		opts.Max || opts.NeedsCsiNfs, // (18)
+		opts.Namespace,               // (19)
 	)
 
 	if os.Getenv("CI") != "" {
