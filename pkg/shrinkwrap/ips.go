@@ -1,9 +1,9 @@
 package shrinkwrap
 
 import (
+	b64 "encoding/base64"
 	"fmt"
 	"regexp"
-	b64 "encoding/base64"
 )
 
 func ImagePullSecret(imagePullSecret string) (string, string, error) {

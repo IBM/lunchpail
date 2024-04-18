@@ -12,4 +12,3 @@ var version string
 func Version() string {
 	return strings.TrimSpace(version)
 }
-

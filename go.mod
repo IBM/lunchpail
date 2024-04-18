@@ -4,9 +4,11 @@ go 1.22.2
 
 require (
 	github.com/google/uuid v1.5.0
+	github.com/hairyhenderson/go-which v0.2.0
 	github.com/mittwald/go-helm-client v0.12.9
 	github.com/mum4k/termdash v0.20.0
 	github.com/spf13/cobra v1.8.0
+	golang.org/x/sync v0.5.0
 	helm.sh/helm/v3 v3.14.3
 )
 
@@ -107,6 +109,7 @@ require (
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/spf13/afero v1.3.3 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
@@ -123,7 +126,6 @@ require (
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

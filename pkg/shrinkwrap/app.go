@@ -154,7 +154,7 @@ func injectAutoRun(appname, templatePath string) ([]string, error) {
 	if id, err := uuid.NewRandom(); err != nil {
 		return []string{}, err
 	} else {
-		runname = truncate(runname + "-" + id.String(), 53)
+		runname = truncate(runname+"-"+id.String(), 53)
 	}
 
 	appdir := filepath.Join(templatePath, "templates", appname)
