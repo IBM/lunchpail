@@ -18,8 +18,8 @@ fi
 
 msg="Integrating templates"
 if which gum > /dev/null 2>&1
-then gum spin --show-output --title "$msg" -- go generate pkg/shrinkwrap/*.go
-else echo "$msg" && go generate pkg/shrinkwrap/*.go
+then gum spin --show-output --title "$msg" -- go generate ./...
+else echo "$msg" && go generate ./...
 fi
 
 

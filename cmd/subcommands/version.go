@@ -3,6 +3,7 @@ package subcommands
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 var versionCmd = &cobra.Command{
@@ -10,7 +11,7 @@ var versionCmd = &cobra.Command{
 	Short: "version",
 	Long:  "version",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("%s\n", "v0.0.1")
+		fmt.Printf("%s\n", lunchpail.Version())
 		return nil
 	},
 }
