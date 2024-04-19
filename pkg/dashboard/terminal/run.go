@@ -7,6 +7,8 @@ import (
 	"github.com/mum4k/termdash/keyboard"
 	"github.com/mum4k/termdash/terminal/tcell"
 	"github.com/mum4k/termdash/terminal/terminalapi"
+
+	containers "lunchpail.io/pkg/dashboard/infrastructure"
 )
 
 func Run() error {
@@ -18,7 +20,7 @@ func Run() error {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	c := newContainer(t, ctx)
+	c := containers.NewContainer(t, ctx)
 
 	quitter := func(k *terminalapi.Keyboard) {
 		if k.Key == 'q' || k.Key == 'Q' || k.Key == keyboard.KeyCtrlC {
