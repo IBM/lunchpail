@@ -1,19 +1,18 @@
 package main
 
 import (
-	"os"
+	"bufio"
 	"cmp"
 	"fmt"
 	"log"
-	"slices"
-	"time"
-	"bufio"
-	"regexp"
+	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"text/tabwriter"
+	"time"
 )
 
-//
 // We want to identify four classes of changes:
 //
 // 1. Unassigned/Assigned/Finished Tasks, indicated by any new files in inbox/assigned/finished
@@ -23,14 +22,16 @@ import (
 // 5. ProcessingTaskByWorker, indicated by any new files in queues/{workerId}/processing
 // 6. SuccessfulTaskByWorker, indicated by any new files in queues/{workerId}/outbox.succeeded
 // 6. FailedTaskByWorker, indicated by any new files in queues/{workerId}/outbox.failed
-//
 type HowChanged int
+
 const (
 	Added HowChanged = iota
 	Removed
 	Unchanged
 )
+
 type WhatChanged int
+
 const (
 	UnassignedTask WhatChanged = iota
 	FinishedTask
@@ -46,43 +47,40 @@ const (
 	Nothing
 )
 
-//
 // A Task that was assigned to a given Worker
-//
 type AssignedTask struct {
 	worker string
-	task string
+	task   string
 }
 
 type Worker struct {
-	alive bool
-	nSuccess uint
-	nFail uint
-	name string
-	assignedTasks []string
+	alive           bool
+	nSuccess        uint
+	nFail           uint
+	name            string
+	assignedTasks   []string
 	processingTasks []string
 }
 
 type TaskCode string
+
 const (
 	succeeded TaskCode = "succeeded"
-	failed TaskCode = "failed"
+	failed    TaskCode = "failed"
 )
 
-//
 // The current state of the world
-//
 type Model struct {
 	UnassignedTasks []string
-	FinishedTasks []string
-	LiveWorkers []Worker
-	DeadWorkers []Worker
+	FinishedTasks   []string
+	LiveWorkers     []Worker
+	DeadWorkers     []Worker
 
-	AssignedTasks []AssignedTask
+	AssignedTasks   []AssignedTask
 	ProcessingTasks []AssignedTask
 
 	SuccessfulTasks []AssignedTask
-	FailedTasks []AssignedTask
+	FailedTasks     []AssignedTask
 }
 
 var run = os.Getenv("RUN_NAME")
@@ -102,23 +100,17 @@ var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succe
 
 var writer = tabwriter.NewWriter(os.Stderr, 0, 8, 1, '\t', tabwriter.AlignRight)
 
-//
 // Emit the path to the file we deleted
-//
 func reportMovedFile(src, dst string) {
 	fmt.Printf("%s %s move\n", src, dst)
 }
 
-//
 // Emit the path to the file we changed
-//
 func reportChangedFile(filepath string) {
 	fmt.Printf("%s\n", filepath)
 }
 
-//
 // Record the current state of Model for observability
-//
 func reportState(model Model) {
 	now := time.Now()
 
@@ -145,9 +137,7 @@ func reportState(model Model) {
 	writer.Flush()
 }
 
-//
 // Determine from a diff the `HowChanged` property
-//
 func howChanged(marker byte) HowChanged {
 	switch marker {
 	case '+':
@@ -159,10 +149,8 @@ func howChanged(marker byte) HowChanged {
 	}
 }
 
-//
 // Determine from a HowChanged (Added, Removed, Unchanged) and a
 // changed line the nature of `WhatChanged`
-//
 func whatChanged(line string) (WhatChanged, string, string) {
 	if match := unassignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return UnassignedTask, match[1], ""
@@ -187,9 +175,7 @@ func whatChanged(line string) (WhatChanged, string, string) {
 	return Nothing, "", ""
 }
 
-//
 // We will be passed a stream of diffs
-//
 func parseUpdatesFromStdin() Model {
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -215,7 +201,7 @@ func parseUpdatesFromStdin() Model {
 		case UnassignedTask:
 			unassignedTasks = append(unassignedTasks, thing)
 		case FinishedTask:
-			finishedTasks= append(finishedTasks, thing)
+			finishedTasks = append(finishedTasks, thing)
 		case LiveWorker:
 			worker := Worker{true, 0, 0, thing, []string{}, []string{}}
 			workersLookup[thing] = worker
@@ -282,16 +268,12 @@ func parseUpdatesFromStdin() Model {
 	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, successfulTasks, failedTasks}
 }
 
-//
 // Return a model of the world
-//
 func ParseUpdates() Model {
 	return parseUpdatesFromStdin()
 }
 
-//
 // A Task has been fully completed by a Worker
-//
 func MarkDone(task string) {
 	finishedMarker := filepath.Join(finished, task)
 	if err := os.MkdirAll(finished, 0700); err != nil {
@@ -303,9 +285,7 @@ func MarkDone(task string) {
 	}
 }
 
-//
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
-//
 func MoveToWorkerInbox(task string, worker Worker) {
 	unassignedFilePath := filepath.Join(inbox, task)
 	workerInboxFilePath := filepath.Join(queues, worker.name, "inbox", task)
@@ -317,9 +297,7 @@ func MoveToWorkerInbox(task string, worker Worker) {
 	}
 }
 
-//
 // As part of finishing up a Task, move it from the Worker's Outbox to the final Outbox
-//
 func MoveToFinalOutbox(task string, worker string, success TaskCode) {
 	fileInWorkerOutbox := filepath.Join(queues, worker, "outbox", task)
 	fullyDoneOutputFilePath := filepath.Join(outbox, task)
@@ -361,7 +339,7 @@ func MoveToFinalOutbox(task string, worker string, success TaskCode) {
 			log.Fatalf("[workstealer] Failed to move stderr to final outbox: %v\n", err)
 		} else {
 			reportMovedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath)
-		}			
+		}
 
 		if err := os.Rename(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil {
 			log.Fatalf("[workstealer] Failed to move success to final outbox: %v\n", err)
@@ -371,24 +349,21 @@ func MoveToFinalOutbox(task string, worker string, success TaskCode) {
 	}
 }
 
-//
 // Assign an unassigned Task to one of the given LiveWorkers
-//
 func AssignNewTaskToWorker(task string, worker Worker) {
 	fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s task=%s\n", worker.name, task)
 	MoveToWorkerInbox(task, worker)
 }
 
 type Box string
+
 const (
-	Inbox = "inbox"
+	Inbox      = "inbox"
 	Processing = "processing"
-	Outbox = "outbox"
+	Outbox     = "outbox"
 )
 
-//
 // A Worker has died. Unassign this task that it owns
-//
 func moveTaskBackToUnassigned(task string, worker Worker, box Box) {
 	inWorkerFilePath := filepath.Join(queues, worker.name, string(box), task)
 	unassignedFilePath := filepath.Join(inbox, task)
@@ -402,9 +377,7 @@ func moveTaskBackToUnassigned(task string, worker Worker, box Box) {
 	}
 }
 
-//
 // A Worker has transitioned from Live to Dead. Reassign its Tasks.
-//
 func CleanupForDeadWorker(worker Worker) {
 	for _, assignedTask := range worker.assignedTasks {
 		moveTaskBackToUnassigned(assignedTask, worker, "inbox")
@@ -414,9 +387,7 @@ func CleanupForDeadWorker(worker Worker) {
 	}
 }
 
-//
 // A Task has completed
-//
 func CleanupForCompletedTask(completedTask AssignedTask, success TaskCode) {
 	MarkDone(completedTask.task)
 	MoveToFinalOutbox(completedTask.task, completedTask.worker, success)
@@ -424,8 +395,8 @@ func CleanupForCompletedTask(completedTask AssignedTask, success TaskCode) {
 
 type Apportionment struct {
 	startIdx int
-	endIdx int
-	worker Worker
+	endIdx   int
+	worker   Worker
 }
 
 func apportion(model Model) []Apportionment {
@@ -435,11 +406,11 @@ func apportion(model Model) []Apportionment {
 		return As
 	}
 
-	desiredLevel := max(1, len(model.UnassignedTasks) / len(model.LiveWorkers))
+	desiredLevel := max(1, len(model.UnassignedTasks)/len(model.LiveWorkers))
 
 	nUnderutilizedWorkers := 0
 	for _, worker := range model.LiveWorkers {
-		assignThisMany := max(0, desiredLevel - len(worker.assignedTasks))
+		assignThisMany := max(0, desiredLevel-len(worker.assignedTasks))
 		if assignThisMany > 0 {
 			nUnderutilizedWorkers++
 		}
@@ -447,7 +418,7 @@ func apportion(model Model) []Apportionment {
 
 	if nUnderutilizedWorkers > 0 {
 		startIdx := 0
-		desiredLevel = max(1, len(model.UnassignedTasks) / nUnderutilizedWorkers)
+		desiredLevel = max(1, len(model.UnassignedTasks)/nUnderutilizedWorkers)
 		fmt.Fprintf(
 			os.Stderr,
 			"[workstealer] Apportionment desiredLevel=%d nUnassigned=%d nLiveWorkers=%d\n",
@@ -460,7 +431,7 @@ func apportion(model Model) []Apportionment {
 				break
 			}
 
-			assignThisMany := max(0, desiredLevel - len(worker.assignedTasks))
+			assignThisMany := max(0, desiredLevel-len(worker.assignedTasks))
 			endIdx := startIdx + assignThisMany
 			As = append(As, Apportionment{startIdx, endIdx, worker})
 			startIdx = endIdx
@@ -469,29 +440,25 @@ func apportion(model Model) []Apportionment {
 
 	return As
 }
-	
+
 func assignNewTasks(model Model) {
 	for _, A := range apportion(model) {
 		fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s startIdx=%d endIdx=%d\n", A.worker.name, A.startIdx, A.endIdx)
 		for idx := range A.endIdx - A.startIdx {
-			task := model.UnassignedTasks[A.startIdx + idx]
+			task := model.UnassignedTasks[A.startIdx+idx]
 			MoveToWorkerInbox(task, A.worker)
 		}
 	}
 }
 
-//
 // Handle dead Workers
-//
 func reassignDeadWorkerTasks(model Model) {
 	for _, worker := range model.DeadWorkers {
 		CleanupForDeadWorker(worker)
 	}
 }
 
-//
 // Handle completed Tasks
-//
 func cleanupCompletedTasks(model Model) {
 	for _, completedTask := range model.SuccessfulTasks {
 		CleanupForCompletedTask(completedTask, "succeeded")
@@ -501,9 +468,7 @@ func cleanupCompletedTasks(model Model) {
 	}
 }
 
-//
 // See if we need to rebalance workloads
-//
 func rebalance(model Model) bool {
 	if len(model.UnassignedTasks) == 0 {
 		// If we had some unassigned Tasks, we probably
@@ -527,12 +492,12 @@ func rebalance(model Model) bool {
 		if len(workersWithWork) > 0 && len(workersWithoutWork) > 0 {
 			// Then we can shift load from those with to
 			// those without!
-			desiredLevel := max(1, (len(model.AssignedTasks) + len(model.ProcessingTasks)) / len(model.LiveWorkers))
+			desiredLevel := max(1, (len(model.AssignedTasks)+len(model.ProcessingTasks))/len(model.LiveWorkers))
 			fmt.Fprintf(os.Stderr, "[workstealer] Rebalancing to desiredLevel=%d\n", desiredLevel)
 
-			// then we can steal at least one Task 
+			// then we can steal at least one Task
 			for _, workerWithWork := range workersWithWork {
-				if stealThisMany := max(0, len(workerWithWork.assignedTasks) - desiredLevel); stealThisMany > 0 {
+				if stealThisMany := max(0, len(workerWithWork.assignedTasks)-desiredLevel); stealThisMany > 0 {
 					fmt.Fprintf(os.Stderr, "[workstealer] Rebalancer stealing %d tasks from worker=%s\n", stealThisMany, workerWithWork.name)
 
 					for i := range stealThisMany {
@@ -552,11 +517,9 @@ func rebalance(model Model) bool {
 	return false
 }
 
-//
 // Assumed to be called every time something has changed in the
 // `queue` directory. This will emit to stdout a newline-separated
 // stream of filepaths, one per file that it has changed in some way.
-//
 func main() {
 	// fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 	model := ParseUpdates()
