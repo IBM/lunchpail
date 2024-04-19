@@ -63,6 +63,12 @@ type Worker struct {
 	processingTasks []string
 }
 
+type TaskCode string
+const (
+	succeeded TaskCode = "succeeded"
+	failed TaskCode = "failed"
+)
+
 //
 // The current state of the world
 //
@@ -314,7 +320,7 @@ func MoveToWorkerInbox(task string, worker Worker) {
 //
 // As part of finishing up a Task, move it from the Worker's Outbox to the final Outbox
 //
-func MoveToFinalOutbox(task string, worker string) {
+func MoveToFinalOutbox(task string, worker string, success TaskCode) {
 	fileInWorkerOutbox := filepath.Join(queues, worker, "outbox", task)
 	fullyDoneOutputFilePath := filepath.Join(outbox, task)
 
@@ -326,6 +332,9 @@ func MoveToFinalOutbox(task string, worker string) {
 
 	stderrFileInWorkerOutbox := fileInWorkerOutbox + ".stderr"
 	fullyDoneStderrFilePath := fullyDoneOutputFilePath + ".stderr"
+
+	successFileInWorkerOutbox := fileInWorkerOutbox + "." + string(success)
+	fullyDoneSuccessFilePath := fullyDoneOutputFilePath + "." + string(success)
 
 	if err := os.MkdirAll(outbox, 0700); err != nil {
 		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
@@ -353,6 +362,12 @@ func MoveToFinalOutbox(task string, worker string) {
 		} else {
 			reportMovedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath)
 		}			
+
+		if err := os.Rename(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil {
+			log.Fatalf("[workstealer] Failed to move success to final outbox: %v\n", err)
+		} else {
+			reportMovedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath)
+		}
 	}
 }
 
@@ -402,9 +417,9 @@ func CleanupForDeadWorker(worker Worker) {
 //
 // A Task has completed
 //
-func CleanupForCompletedTask(completedTask AssignedTask) {
+func CleanupForCompletedTask(completedTask AssignedTask, success TaskCode) {
 	MarkDone(completedTask.task)
-	MoveToFinalOutbox(completedTask.task, completedTask.worker)
+	MoveToFinalOutbox(completedTask.task, completedTask.worker, success)
 }
 
 type Apportionment struct {
@@ -479,10 +494,10 @@ func reassignDeadWorkerTasks(model Model) {
 //
 func cleanupCompletedTasks(model Model) {
 	for _, completedTask := range model.SuccessfulTasks {
-		CleanupForCompletedTask(completedTask)
+		CleanupForCompletedTask(completedTask, "succeeded")
 	}
 	for _, completedTask := range model.FailedTasks {
-		CleanupForCompletedTask(completedTask)
+		CleanupForCompletedTask(completedTask, "failed")
 	}
 }
 

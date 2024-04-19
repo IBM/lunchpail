@@ -92,13 +92,13 @@ function waitForIt {
 
         echo "$(tput setaf 2)🧪 Checking output files test=$name$(tput sgr0)" 1>&2
         nOutputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                            mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+                            mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
             outputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                               mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout)$' | grep -sv '/' | awk '{print $NF}')
+                               mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             for output in $outputs
             do
