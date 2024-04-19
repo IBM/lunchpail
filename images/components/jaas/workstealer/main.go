@@ -201,7 +201,9 @@ func parseUpdatesFromStdin() Model {
 		how := howChanged(line[0])
 		what, thing, thing2 := whatChanged(line[1:])
 
-		fmt.Fprintf(os.Stderr, "[workstealer] Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
+		if os.Getenv("DEBUG") != "" {
+			fmt.Fprintf(os.Stderr, "[workstealer] Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
+		}
 
 		switch what {
 		case UnassignedTask:
