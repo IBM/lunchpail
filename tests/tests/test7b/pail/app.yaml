@@ -5,19 +5,21 @@ metadata:
   name: test7b
 spec:
   api: workqueue
-  code: |
-    #!/usr/bin/env sh
+  code:
+  - name: literal.sh
+    source: |
+      #!/usr/bin/env sh
 
-    # $1 input filepath
-    # $2 output filepath
-    in="$1"
-    out="$2"
+      # $1 input filepath
+      # $2 output filepath
+      in="$1"
+      out="$2"
 
-    # $xxx and $yyy should come over from the env: specs in app.yaml and pool1.yaml
-    echo "Processing $xxx $yyy $in"
-    sleep 5
+      # $xxx and $yyy should come over from the env: specs in app.yaml and pool1.yaml
+      echo "Processing $xxx $yyy $in"
+      sleep 5
 
-    echo "Done with $in"
+      echo "Done with $in"
 
   command: ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}

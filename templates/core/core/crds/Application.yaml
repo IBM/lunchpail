@@ -36,9 +36,17 @@ spec:
                     - sequence
                     - workqueue
 
-                # if code is provided via literal
+                # if one or more code is provided via literal
                 code:
-                  type: string
+                  type: array
+                  items:
+                    type: object
+                    required: [name,source]
+                    properties:
+                      name:
+                        type: string
+                      source:
+                        type: string
 
                 # for api=workqueue
                 role:

@@ -7,20 +7,22 @@ metadata:
 spec:
   api: shell
   image: ubuntu
-  code: |
-    while getopts "x:" opt
-    do
-        case $opt in
-            x) X="${OPTARG}"; continue;;
-        esac
-    done
-    shift $((OPTIND-1))
+  code:
+    - name: literal.sh
+      source: |
+        while getopts "x:" opt
+        do
+            case $opt in
+                x) X="${OPTARG}"; continue;;
+            esac
+        done
+        shift $((OPTIND-1))
 
-    if [[ ! -d  /mnt/datasets/nfs ]]
-    then echo "Error: nfs not mounted"
-    fi
+        if [[ ! -d  /mnt/datasets/nfs ]]
+        then echo "Error: nfs not mounted"
+        fi
 
-    echo "PASS: Shell Application test6 idx=$JOB_COMPLETION_INDEX x=\"$X\" rest=\"$@\" xxx=$xxx yyy=$yyy"
+        echo "PASS: Shell Application test6 idx=$JOB_COMPLETION_INDEX x=\"$X\" rest=\"$@\" xxx=$xxx yyy=$yyy"
     
   command: ./literal.sh
   supportsGpu: True

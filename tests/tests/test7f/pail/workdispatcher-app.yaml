@@ -11,6 +11,8 @@ spec:
     # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2
     taskprefix: WRONG_YOU_HAVE_A_BUG_IN_WORKDISPATCHER_PY # workdispatcher.yaml should override (via run controller workdispatcher.py)
     taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
-  code: |
-{{ .Files.Get "src/main.sh" | indent 4 }}
+  code:
+    - name: src/main.sh
+      source: |
+{{ .Files.Get "src/main.sh" | indent 8 }}
 {{- end }}

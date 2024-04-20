@@ -4,18 +4,20 @@ metadata:
   name: test7e-by-role-autorun
 spec:
   api: workqueue
-  code: |
-    #!/usr/bin/env sh
+  code:
+  - name: literal.sh
+    source: |
+      #!/usr/bin/env sh
 
-    # $1 input filepath
-    # $2 output filepath
-    in="$1"
-    out="$2"
+      # $1 input filepath
+      # $2 output filepath
+      in="$1"
+      out="$2"
 
-    echo "Processing $in"
-    sleep 5
+      echo "Processing $in"
+      sleep 5
 
-    echo "Done with $in"
+      echo "Done with $in"
 
   role: worker
   command: ./literal.sh

@@ -16,5 +16,7 @@ spec:
     SWEEP_STEP: '1'
     taskprefix: tasky
     taskprefix2: "3333"
-  code: |
-{{ .Files.Get "src/main.sh" | indent 4 }}
+  code:
+    - name: src/main.sh
+      source: |
+{{ .Files.Get "src/main.sh" | indent 8 }}

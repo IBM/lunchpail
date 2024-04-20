@@ -5,18 +5,26 @@ metadata:
   name: test7e
 spec:
   api: workqueue
-  code: |
-    #!/usr/bin/env sh
+  code:
+    - name: literal.sh
+      source: |
+        #!/usr/bin/env sh
+        # test two-file code injection
+        ./literal2.sh
 
-    # $1 input filepath
-    # $2 output filepath
-    in="$1"
-    out="$2"
+    - name: literal2.sh
+      source: |
+        #!/usr/bin/env sh
 
-    echo "Processing $in"
-    sleep 5
+        # $1 input filepath
+        # $2 output filepath
+        in="$1"
+        out="$2"
 
-    echo "Done with $in"
+        echo "Processing $in"
+        sleep 5
+
+        echo "Done with $in"
 
   command: ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}

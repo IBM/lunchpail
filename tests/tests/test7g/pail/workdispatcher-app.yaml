@@ -5,26 +5,28 @@ metadata:
   name: test7g-workdispatcher
 spec:
   api: shell
-  code: |
-    #!/usr/bin/env sh
+  code:
+  - name: literal.sh
+    source: |
+      #!/usr/bin/env sh
 
-    set -e
-    set -o pipefail
+      set -e
+      set -o pipefail
 
-    echo "INBOX=$INBOX"
-    echo "OUTBOX=$OUTBOX"
+      echo "INBOX=$INBOX"
+      echo "OUTBOX=$OUTBOX"
 
-    mkdir -p "$INBOX"
-    mkdir -p "$OUTBOX"
+      mkdir -p "$INBOX"
+      mkdir -p "$OUTBOX"
 
-    for i in $(seq 1 6)
-    do
-      taskname=${taskprefix}${taskprefix2}.$i.txt
-      echo "hi" > "$INBOX"/$taskname
-      sleep 1
-    done
+      for i in $(seq 1 6)
+      do
+        taskname=${taskprefix}${taskprefix2}.$i.txt
+        echo "hi" > "$INBOX"/$taskname
+        sleep 1
+      done
 
-    sleep 10000
+      sleep 10000
 
   command: ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-s3-syncer-component:" .Chart.AppVersion }}

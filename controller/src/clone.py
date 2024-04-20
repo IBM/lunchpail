@@ -53,20 +53,21 @@ def clone_from_git(v1Api, customApi, name: str, namespace: str, workdir: str, re
 # place it in a file named by the last argument of
 # `application.spec.command`
 def pseudo_clone_from_literal(application, workdir: str):
-    code = application['spec']['code']
-    command = application['spec']['command']
-    filename = command[command.rindex(' ')+1:] if command.find(' ') > 0 else command
-    filepath = os.path.normpath(os.path.join(workdir, filename))
+    codes = application['spec']['code']
 
-    logging.info(f"Using code from literal for application={application['metadata']['name']} and storing to filepath={filepath}")
+    for codeSpec in codes:
+        code = codeSpec['source']
+        filename = codeSpec['name']
+        filepath = os.path.normpath(os.path.join(workdir, filename))
 
-    clone_out = subprocess.run(["rclone", "rcat", f"s3:{filepath}"], input=code, capture_output=True, text=True)
+        logging.info(f"Using code from literal for application={application['metadata']['name']} and storing to filepath={filepath}")
+        clone_out = subprocess.run(["rclone", "rcat", f"s3:{filepath}"], input=code, capture_output=True, text=True)
 
-    if clone_out.returncode != 0:
-        msg = clone_out.stderr if isinstance(clone_out.stderr, str) else clone_out.stderr.decode('utf-8')
-        raise PermanentError(f"Failed to clone literal code. {msg}")
+        if clone_out.returncode != 0:
+            msg = clone_out.stderr if isinstance(clone_out.stderr, str) else clone_out.stderr.decode('utf-8')
+            raise PermanentError(f"Failed to clone literal code. {msg}")
 
-    logging.info(f"clone_out={clone_out}")
+        logging.info(f"clone_out={clone_out}")
 
     # this means there is no sub-directory structure for this case of
     # using literal code provideded in the Application spec
