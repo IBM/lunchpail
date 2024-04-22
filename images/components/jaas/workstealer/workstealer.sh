@@ -60,6 +60,7 @@ B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
 
 while true
 do
+    if [[ -f $A ]]; then rm -f $A; fi
     A=$(mktemp /tmp/after.$idx.XXXXXXXXXXXX)
     idx=$((idx+1))
 
@@ -110,5 +111,7 @@ do
     fi
 
     sleep ${QUEUE_POLL_INTERVAL_SECONDS:-3}
+
+    rm -f $B
     B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
 done
