@@ -1,9 +1,0 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7") }}
-apiVersion: lunchpail.io/v1alpha1
-kind: Run
-metadata:
-  name: test7
-spec:
-  application:
-    name: test7
-{{ end }}

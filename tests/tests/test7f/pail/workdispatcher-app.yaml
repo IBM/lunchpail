@@ -5,6 +5,7 @@ metadata:
   name: test7f-workdispatcher
 spec:
   api: shell
+  role: dispatcher
   command: ./src/main.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-s3-syncer-component:" .Chart.AppVersion }}
   env:

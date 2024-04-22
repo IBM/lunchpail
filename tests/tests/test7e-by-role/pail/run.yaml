@@ -1,7 +1,0 @@
-apiVersion: lunchpail.io/v1alpha1
-kind: Run
-metadata:
-  name: test7e-by-role
-spec:
-  application:
-    fromRole: worker

@@ -5,6 +5,7 @@ metadata:
   name: test7d
 spec:
   api: workqueue
+  role: worker
   code:
     - name: literal.sh
       source: |

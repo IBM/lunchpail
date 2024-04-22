@@ -5,6 +5,7 @@ metadata:
   name: test7g-workdispatcher
 spec:
   api: shell
+  role: dispatcher
   code:
   - name: literal.sh
     source: |
