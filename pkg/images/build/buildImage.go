@@ -16,61 +16,66 @@ const (
 	Manifest                 = "manifest"
 )
 
-func exists(name string, kind ImageOrManifest, cli ContainerCli) (bool, error) {
-	cmd := exec.Command(string(cli), string(kind), "exists", name)
+func exists(image string, kind ImageOrManifest, cli ContainerCli) (bool, error) {
+	fmt.Printf("%s %s %s %s\n", string(cli), string(kind), "exists", image)
+	cmd := exec.Command(string(cli), string(kind), "exists", image)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return false, err
 	}
 	if err := cmd.Wait(); err != nil {
-		// image does not exist
+		// image/manifest does not exist
 		return false, nil
 	}
 
 	return true, nil
 }
 
-func rm(name string, kind ImageOrManifest, cli ContainerCli) error {
-	cmd := exec.Command(string(cli), string(kind), "rm", name)
+func rm(image string, kind ImageOrManifest, cli ContainerCli) error {
+	cmd := exec.Command(string(cli), string(kind), "rm", image)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 	if err := cmd.Wait(); err != nil {
-		// image does not exist
+		// failure to remove image/manifest
 		return err
 	}
 
 	return nil
 }
 
-func createManifest(name string, cli ContainerCli) error {
-	cmd := exec.Command(string(cli), "manifest", "create", name)
+func createManifest(image string, cli ContainerCli) error {
+	cmd := exec.Command(string(cli), "manifest", "create", image)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 	if err := cmd.Wait(); err != nil {
-		// image does not exist
+		// failure to create manifest
 		return err
 	}
 
 	return nil
 }
 
-func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli ContainerCli) (string, error) {
+func imageName(name, suffix string) string {
 	imageRegistry := "ghcr.io" // TODO
 	imageRepo := "lunchpail"   // TODO
 	version := lunchpail.Version()
 	provider := "jaas"
 
-	image := filepath.Join(imageRegistry, imageRepo, provider+"-"+name+suffix+":"+version)
+	return filepath.Join(imageRegistry, imageRepo, provider+"-"+name+suffix+":"+version)
+}
+
+func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli ContainerCli) (string, error) {
+	image := imageName(name, suffix)
 
 	var cmd *exec.Cmd
-	if kind == "maniefst" {
+	if kind == "manifest" {
 		cmd = exec.Command(
 			string(cli),
 			"build",
@@ -97,7 +102,7 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 		return "", err
 	}
 	if err := cmd.Wait(); err != nil {
-		// image does not exist
+		// failure to build image/manifest
 		return "", err
 	}
 
@@ -107,26 +112,28 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 }
 
 func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli) (string, error) {
-	imageExists, ierr := exists(name, "image", cli)
+	image := imageName(name, suffix)
+
+	imageExists, ierr := exists(image, "image", cli)
 	if ierr != nil {
 		return "", ierr
 	}
 
-	manifestExists, merr := exists(name, "manifest", cli)
+	manifestExists, merr := exists(image, "manifest", cli)
 	if merr != nil {
 		return "", merr
 	}
 
 	if imageExists && !manifestExists {
 		// we have a previously built image that is not a manifest
-		fmt.Fprintf(os.Stderr, "Clearing out prior non-manifest image %s\n", name)
-		if err := rm(name, "image", cli); err != nil {
+		fmt.Fprintf(os.Stderr, "Clearing out prior non-manifest image %s\n", image)
+		if err := rm(image, "image", cli); err != nil {
 			return "", err
 		}
 	}
 
 	if !manifestExists {
-		if err := createManifest(name, cli); err != nil {
+		if err := createManifest(image, cli); err != nil {
 			return "", err
 		}
 	}
@@ -135,11 +142,13 @@ func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli) (string, 
 }
 
 func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli) (string, error) {
-	if manifestExists, err := exists(name, "manifest", cli); err != nil {
+	image := imageName(name, suffix)
+
+	if manifestExists, err := exists(image, "manifest", cli); err != nil {
 		return "", err
 	} else if manifestExists {
-		fmt.Fprintf(os.Stderr, "Removing prior manifest from prod builds %s\n", name)
-		if err := rm(name, "manifest", cli); err != nil {
+		fmt.Fprintf(os.Stderr, "Removing prior manifest from prod builds %s\n", image)
+		if err := rm(image, "manifest", cli); err != nil {
 			return "", err
 		}
 	}
