@@ -25,6 +25,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 type: Opaque
 data:
+  bucket: {{ .Values.taskqueue.dataset | b64enc }}
+  endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint | b64enc }}
   accessKeyID: {{ .Values.taskqueue.accessKeyId | default .Values.global.s3AccessKey | b64enc }}
   secretAccessKey: {{ .Values.taskqueue.secretAccessKey | default .Values.global.s3SecretKey | b64enc }}
 

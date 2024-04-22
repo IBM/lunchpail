@@ -1,6 +1,10 @@
 {{- define "containers/workstealer" }}
 - name: workstealer
   image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-workstealer-component:" .Values.image.version }}
+  envFrom:
+    - secretRef:
+        name: {{ .Values.taskqueue.secret }}
+      prefix: {{ print .Values.taskqueue.dataset "_" }}
   env:
     - name: RUN_NAME
       value: {{ .Values.name }}

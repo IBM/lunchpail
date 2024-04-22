@@ -1,8 +1,7 @@
 apiVersion: lunchpail.io/v1alpha1
 kind: WorkerPool
 metadata:
-  name: test7f-pool1
-  namespace: {{ .Values.namespace.user }}
+  name: test7f-by-role-autorun-autodispatcher-pool1
 spec:
   workers:
     count: 1

@@ -82,7 +82,8 @@ function waitForIt {
         done
     done
 
-    kubectl delete run $name -n $ns
+    run_name=$(kubectl -n $ns get run.lunchpail.io -l $selector --no-headers -o custom-columns=NAME:.metadata.name)
+    kubectl delete run $run_name -n $ns
     echo "✅ PASS run-controller delete test=$name"
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
@@ -90,35 +91,35 @@ function waitForIt {
     else
         local queue=${taskqueue:-defaultjaasqueue} # TODO on default?
 
-        echo "$(tput setaf 2)🧪 Checking output files test=$name$(tput sgr0)" 1>&2
+        echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0)" 1>&2
         nOutputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                            mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+                            mc ls s3/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
             outputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                               mc ls s3/$queue/lunchpail/$name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
+                               mc ls s3/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
                 code=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                                mc cat s3/$queue/lunchpail/$name/outbox/${output}.code)
+                                mc cat s3/$queue/lunchpail/$run_name/outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
                 fi
 
                 stdout=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                                  mc ls s3/$queue/lunchpail/$name/outbox/${output}.stdout | wc -l | xargs)
+                                  mc ls s3/$queue/lunchpail/$run_name/outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
                 stderr=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
-                                  mc ls s3/$queue/lunchpail/$name/outbox/${output}.stderr | wc -l | xargs)
+                                  mc ls s3/$queue/lunchpail/$run_name/outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stderr file test=$name output=$output"
@@ -211,7 +212,9 @@ function waitForUnassignedAndOutbox {
 
     echo "✅ PASS run-controller run test $name"
 
-    kubectl delete run $name -n $ns
+    local selector=app.kubernetes.io/part-of=$name,app.kubernetes.io/component!=workdispatcher
+    run_name=$(kubectl -n $ns get run.lunchpail.io -l $selector --no-headers -o custom-columns=NAME:.metadata.name)
+    kubectl delete run $run_name -n $ns
     echo "✅ PASS run-controller delete test $name"
 }
 

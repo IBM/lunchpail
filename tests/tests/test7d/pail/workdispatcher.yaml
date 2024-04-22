@@ -8,7 +8,6 @@ metadata:
     app.kubernetes.io/part-of: lunchpail.io
   name: test7d
 spec:
-  run: test7d
   method: helm
   repo: >-
     https://github.ibm.com/cloud-computer/lunchpail-dashboard/tree/main/tests/workdispatcher1

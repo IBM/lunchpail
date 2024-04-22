@@ -39,7 +39,7 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
             logging.info(f"Handling WorkDispatcher create name={name} namespace={namespace}")
             set_status_immediately(customApi, name, namespace, 'Pending', 'workdispatchers')
 
-        run_name = spec['run']
+        run_name = spec['run'] if 'run' in spec else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
         run_namespace = namespace
         logging.info(f"WorkDispatcher creation for run={run_name} uid={uid}")
 

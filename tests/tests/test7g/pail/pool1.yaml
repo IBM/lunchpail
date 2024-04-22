@@ -4,7 +4,6 @@ kind: WorkerPool
 metadata:
   name: test7g-pool1
 spec:
-  run: test7g
   workers:
     count: 1
     size: xxs

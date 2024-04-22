@@ -3,15 +3,13 @@ apiVersion: mcad.ibm.com/v1beta1
 kind: AppWrapper
 metadata:
   name: {{ print .Release.Name "-workstealer" | trunc 53 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: workqueue
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
-  ownerReferences:
-    {{- include "owner" . | indent 4 }}
 spec:
   resources:
     Items: []

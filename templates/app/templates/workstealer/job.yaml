@@ -3,17 +3,13 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ print .Release.Name "-workstealer" | trunc 53 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: workstealer
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
-  {{- if not .Values.mcad.enabled }}
-  ownerReferences:
-    {{- include "owner" . | indent 4 }}
-  {{- end }}  
 spec:
   parallelism: 1
   completions: 1

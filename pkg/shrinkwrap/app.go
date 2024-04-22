@@ -17,6 +17,8 @@ import (
 	"regexp"
 	"strings"
 	//	"github.com/go-git/go-git/v5"
+
+	"lunchpail.io/pkg/lunchpail"
 )
 
 type AppOptions struct {
@@ -27,6 +29,9 @@ type AppOptions struct {
 	ImagePullSecret    string
 	Branch             string
 	OverrideValues     []string
+	NeedsGangs         bool
+	Verbose            bool
+	Queue              string
 }
 
 //go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ../../templates/app -zcf app.tar.gz ."
@@ -146,29 +151,38 @@ func truncate(str string, max int) string {
 	}
 }
 
-// Inject Run or WorkDispatcher resources if needed
-func injectAutoRun(appname, templatePath string) ([]string, error) {
-	sets := []string{} // we will assemble helm `--set` options
+func autorunName(appname string) (string, error) {
 	runname := appname
 
 	if id, err := uuid.NewRandom(); err != nil {
-		return []string{}, err
+		return "", err
 	} else {
 		runname = truncate(runname+"-"+id.String(), 53)
 	}
 
+	return runname, nil
+}
+
+// Inject Run or WorkDispatcher resources if needed
+func injectAutoRun(appname, templatePath string) (string, []string, error) {
+	sets := []string{} // we will assemble helm `--set` options
 	appdir := filepath.Join(templatePath, "templates", appname)
 
+	runname, err := autorunName(appname)
+	if err != nil {
+		return "", []string{}, nil
+	}
+	
 	// TODO port this to pure go?
 	cmd := exec.Command("grep", "-qr", "^kind:[[:space:]]*Run$", appdir)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
-		return []string{}, err
+		return "", []string{}, err
 	}
 	if err := cmd.Wait(); err != nil {
 		fmt.Println("Auto-Injecting WorkStealer initiation")
-		sets = append(sets, "autorun="+appname)
+		sets = append(sets, "autorun="+runname)
 	}
 
 	// TODO port this to pure go?
@@ -176,7 +190,7 @@ func injectAutoRun(appname, templatePath string) ([]string, error) {
 	cmd2.Stdout = os.Stdout
 	cmd2.Stderr = os.Stderr
 	if err := cmd2.Start(); err != nil {
-		return []string{}, err
+		return "", []string{}, err
 	}
 	if err := cmd2.Wait(); err != nil {
 		// TODO port this to pure go?
@@ -184,7 +198,7 @@ func injectAutoRun(appname, templatePath string) ([]string, error) {
 		cmd3.Stdout = os.Stdout
 		cmd3.Stderr = os.Stderr
 		if err := cmd3.Start(); err != nil {
-			return []string{}, err
+			return "", []string{}, err
 		}
 		if err := cmd3.Wait(); err == nil {
 			fmt.Println("Auto-Injecting WorkDispatcher")
@@ -193,7 +207,11 @@ func injectAutoRun(appname, templatePath string) ([]string, error) {
 		}
 	}
 
-	return sets, nil
+	if len(sets) == 0 {
+		return appname, sets, nil
+	} else {
+		return runname, sets, nil
+	}
 }
 
 func App(sourcePath, outputPath string, opts AppOptions) error {
@@ -220,7 +238,8 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 		return err
 	}
 
-	if extraValues, err := injectAutoRun(appname, templatePath); err != nil {
+	runname, extraValues, err := injectAutoRun(appname, templatePath)
+	if err != nil {
 		return err
 	} else {
 		opts.OverrideValues = append(opts.OverrideValues, extraValues...)
@@ -252,6 +271,17 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 		return err
 	}
 
+	// the app.kubernetes.io/part-of label value
+	partOf := appname
+
+	// name of taskqueue Secret
+	taskqueueName := "defaultjaasqueue" // TODO externalize string
+	taskqueueSecret := taskqueueName + "jaassecret"
+	if opts.Queue != "" {
+		taskqueueName = opts.Queue
+		taskqueueSecret = opts.Queue + "jaassecret" // FIXME
+	}
+
 	yaml := fmt.Sprintf(`
 global:
   type: %s # clusterType (1)
@@ -266,11 +296,30 @@ global:
   s3Endpoint: http://s3.%v.svc.cluster.local:9000 # systemNamespace (7)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
+lunchpail: lunchpail
 workdir_via_mount: %v # workdirViaMount (8)
 branch: %s # opts.Branch (9)
 username: %s # user.Username (10)
 uid: %s # user.Uid (11)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, opts.Branch, user.Username, user.Uid)
+mcad:
+  enabled: %v # Opts.NeedsGangs (12)
+rbac:
+  serviceaccount: %s # clusterName (13)
+image:
+  registry: %s # imageRegistry (14)
+  repo: %s # imageRepo (15)
+  version: %v # lunchpail.Version() (16)
+partOf: %s # partOf (17)
+taskqueue:
+  dataset: %s # taskqueueName (18)
+  secret: %s # taskqueueSecret (19)
+name: %s # runname (20)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, opts.Branch, user.Username, user.Uid, opts.NeedsGangs, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname)
+
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
+	}
 
 	chartSpec := helmclient.ChartSpec{
 		ReleaseName: appname,

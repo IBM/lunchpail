@@ -41,6 +41,6 @@ helm install --dry-run --debug $run_name "$SCRIPTDIR"/workqueue/ -n ${namespace}
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
-kubectl apply -f $DRY 1>&2
+#kubectl apply -f $DRY 1>&2
 # cp $DRY /tmp/yoyo-workqueue-$(basename $DRY) # debugging
 rm -f $DRY

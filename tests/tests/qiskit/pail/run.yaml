@@ -1,9 +1,0 @@
-apiVersion: lunchpail.io/v1alpha1
-kind: Run
-metadata:
-  name: qiskit # must match name in tests/tests/qiskit
-  namespace: {{ .Values.namespace.user }}
-spec:
-  workers: 0
-  application:
-    name: example-ray-qiskit

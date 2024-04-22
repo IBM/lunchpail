@@ -3,7 +3,6 @@ kind: WorkerPool
 metadata:
   name: test7e-by-role-pool1
 spec:
-  run: test7e-by-role
   workers:
     count: 1
     size: xxs

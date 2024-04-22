@@ -16,6 +16,9 @@ func NewAppCmd() *cobra.Command {
 	var branchFlag string
 	var workdirViaMountFlag bool
 	var overrideValuesFlag []string = []string{}
+	var needsGangsFlag bool
+	var verboseFlag bool
+	var queueFlag string
 
 	var cmd = &cobra.Command{
 		Use:   "app",
@@ -28,7 +31,7 @@ func NewAppCmd() *cobra.Command {
 				return err
 			}
 
-			return shrinkwrap.App(args[0], outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, branchFlag, overrideValues})
+			return shrinkwrap.App(args[0], outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, branchFlag, overrideValues, needsGangsFlag, verboseFlag, queueFlag})
 		},
 	}
 
@@ -39,6 +42,9 @@ func NewAppCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().StringSliceVarP(&overrideValuesFlag, "set", "", overrideValuesFlag, "Advanced usage: override specific template values")
+	cmd.Flags().BoolVarP(&needsGangsFlag, "gang-scheduling", "", needsGangsFlag, "Include support for gang scheduling")
+	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Include verbose output")
+	cmd.Flags().StringVarP(&queueFlag, "queue", "", queueFlag, "Use the queue specified by this named Secret (with accessKeyID, secretAccessKey, and endpoint data)")
 
 	cmd.Flags().StringVarP(&outputDirFlag, "output-directory", "o", "", "Output directory")
 	if err := cmd.MarkFlagRequired("output-directory"); err != nil {

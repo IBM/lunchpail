@@ -3,7 +3,8 @@
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 LOCAL_QUEUE_ROOT=$(mktemp -d /tmp/localqueue.XXXXXXXX)
-QUEUE_PATH=${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME
+QUEUE_BUCKET=${!TASKQUEUE_VAR}
+QUEUE_PATH=$QUEUE_BUCKET/$LUNCHPAIL/$RUN_NAME
 export QUEUE=$LOCAL_QUEUE_ROOT/$QUEUE_PATH
 
 echo "Workstealer starting QUEUE=$QUEUE"
@@ -57,6 +58,8 @@ idx=1
 
 # We will do an B/A comparison (Before/After) of the queue files
 B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
+
+rclone --config $config mkdir s3:$QUEUE_BUCKET
 
 while true
 do

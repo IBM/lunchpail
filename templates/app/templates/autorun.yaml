@@ -4,6 +4,11 @@ apiVersion: lunchpail.io/v1alpha1
 kind: Run
 metadata:
   name: {{ .Values.autorun }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/component: run
+  annotations:
+    jaas.dev/taskqueue: {{ .Values.taskqueue.dataset }}
 spec:
   application:
     fromRole: worker

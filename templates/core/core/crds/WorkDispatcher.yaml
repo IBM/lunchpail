@@ -23,10 +23,10 @@ spec:
             spec:
               type: object
               oneOf:
-                - required: [run,method,schema,rate] # method=tasksimulator
-                - required: [run,method,sweep] # method=parametersweep
-                - required: [run,method,repo] # method=helm
-                - required: [run,method,application] # method=application
+                - required: [method,schema,rate] # method=tasksimulator
+                - required: [method,sweep] # method=parametersweep
+                - required: [method,repo] # method=helm
+                - required: [method,application] # method=application
               properties:
                 # common fields: [method,run]
                 method:

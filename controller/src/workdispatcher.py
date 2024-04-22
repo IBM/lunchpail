@@ -35,7 +35,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
     sweep_step = spec['sweep']['step'] if 'sweep' in spec else ""
 
     run_name = run['metadata']['name']
-    
+
     try:
         out = subprocess.run([
             "./workdispatcher.sh",

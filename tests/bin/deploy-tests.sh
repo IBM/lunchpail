@@ -14,8 +14,12 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 . "$TOP"/hack/settings.sh
 
-if [[ -n $1 ]]; then
-    APP="--set app=$1"
+if [[ -n "$1" ]]
+then APP="--set app=$1"
+fi
+
+if [[ -n "$taskqueue" ]]
+then QUEUE="--queue $taskqueue"
 fi
 
 if which lspci && lspci | grep -iq nvidia; then
@@ -43,6 +47,7 @@ set -x
       $branch \
       -o "$TARGET" \
       -a "${4-$1}" \
+      $QUEUE \
       $APP \
       $GPU \
       $LPA_ARGS \

@@ -4,7 +4,6 @@ kind: WorkDispatcher
 metadata:
   name: test7f
 spec:
-  run: test7f
   method: application
   application:
     name: test7f-workdispatcher

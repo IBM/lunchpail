@@ -1,7 +1,7 @@
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
-  name: test7f
+  name: test7f-by-role-autorun-autodispatcher
   namespace: {{ .Values.namespace.user }}
 spec:
   api: workqueue

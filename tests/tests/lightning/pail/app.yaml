@@ -10,6 +10,8 @@ spec:
   command: python3 lightning_ddp_example.py
   supportsGpu: true
   description: >-
+  options: "--max_epochs 1"
+  minSize: xs
     PyTorch Lightning example.
 #  inputs:
 #    - useas: argv
