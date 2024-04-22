@@ -73,8 +73,15 @@ do
     if [[ $? != 0 ]]
     then
         # Then the rclone sync failed
-        echo "Error with rclone sync. Here is an rclone tree of remote=$remote"
+        echo "Error with rclone sync. Nuking local clone to start from scratch. Diagnostics follow:"
+
+        echo "------------------ cloned tree of local=$QUEUE ------------------"
+        find "$QUEUE"
+
+        echo "------------------ rclone tree of remote=$remote ------------------"
         rclone --config $config tree $remote
+
+        rm -rf "$QUEUE"
     else
         # Capture After files...
         capture $A
