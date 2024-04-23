@@ -3,6 +3,10 @@
 NS=jaas-user
 CONTAINERS="-c main"
 
+# TODO: missing part-of label in workdispatcher pod
+#APP=the_lunchpail_app
+#APP_SELECTOR=",app.kubernetes.io/part-of=the_lunchpail_app"
+
 while getopts "a:gn:" opt
 do
     case $opt in

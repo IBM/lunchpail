@@ -3,6 +3,8 @@
 NS=jaas-user
 CONTAINERS="-c app"
 FILTER="workerpool worker"
+APP=the_lunchpail_app
+APP_SELECTOR=",app.kubernetes.io/part-of=the_lunchpail_app"
 
 while getopts "a:gn:" opt
 do
@@ -29,5 +31,5 @@ EC=$?
 
 if [[ $EC = 0 ]]
 then
-    exec kubectl logs -n $NS -l $SELECTOR --tail=-1 -f $CONTAINERS $@ | grep -v "$FILTER"
+    exec kubectl logs -n $NS -l $SELECTOR --tail=-1 -f $CONTAINERS --max-log-requests=99 $@ | grep -v "$FILTER"
 fi

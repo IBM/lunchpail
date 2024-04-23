@@ -6,6 +6,14 @@
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
+while getopts "l" opt
+do
+    case $opt in
+        l) FOLLOW_LOGS=1; continue;;
+    esac
+done
+shift $((OPTIND-1))
+
 echo "$(tput setaf 2)Booting Lunchpail for app=the_lunchpail_app arch=$ARCH$(tput sgr0)"
 
 for f in "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/the_lunchpail_app.yml
@@ -31,6 +39,10 @@ do
         fi
     fi
 done
+
+if [[ -n "$FOLLOW_LOGS" ]]
+then "$SCRIPTDIR"/logs/app
+fi
 
 # Future: wait for nvidia operators, too
 #if [[ "$HAS_NVIDIA" = true ]]; then
