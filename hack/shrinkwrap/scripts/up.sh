@@ -40,7 +40,7 @@ do
     fi
 done
 
-if [[ -n "$FOLLOW_LOGS" ]]
+if [ -n "$FOLLOW_LOGS" ]
 then "$SCRIPTDIR"/logs/app
 fi
 
