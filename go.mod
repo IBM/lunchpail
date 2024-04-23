@@ -5,6 +5,7 @@ go 1.22.2
 require (
 	github.com/google/uuid v1.5.0
 	github.com/hairyhenderson/go-which v0.2.0
+	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/mittwald/go-helm-client v0.12.9
 	github.com/mum4k/termdash v0.20.0
 	github.com/spf13/cobra v1.8.0

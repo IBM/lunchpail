@@ -19,6 +19,7 @@ func NewCoreCmd() *cobra.Command {
 	var outputFlag string
 	var dockerHostFlag string = ""
 	var overrideValuesFlag []string = []string{}
+	var verboseFlag bool
 
 	var cmd = &cobra.Command{
 		Use:   "core [flags] sourcePath",
@@ -31,7 +32,7 @@ func NewCoreCmd() *cobra.Command {
 				return err
 			}
 
-			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, overrideValues, imagePullSecretFlag})
+			return shrinkwrap.Core(outputFlag, shrinkwrap.CoreOptions{namespaceFlag, maxFlag, clusterIsOpenShiftFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, overrideValues, imagePullSecretFlag, verboseFlag})
 		},
 	}
 
@@ -43,6 +44,7 @@ func NewCoreCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem (included with --max)")
 	cmd.Flags().StringVarP(&dockerHostFlag, "docker-host", "d", dockerHostFlag, "Hostname/IP address of docker host")
 	cmd.Flags().StringSliceVarP(&overrideValuesFlag, "set", "", overrideValuesFlag, "Advanced usage: override specific template values")
+	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Include verbose output")
 
 	cmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Output file path, using - for stdout")
 	if err := cmd.MarkFlagRequired("output"); err != nil {

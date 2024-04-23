@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kirsle/configdir"
 	"github.com/mittwald/go-helm-client"
 	"github.com/mittwald/go-helm-client/values"
 	// "helm.sh/helm/v3/pkg/chartutil"
@@ -25,6 +26,7 @@ type CoreOptions struct {
 	DockerHost         string
 	OverrideValues     []string
 	ImagePullSecret    string
+	Verbose            bool
 }
 
 // instead we do this below: helm dependency update ../../templates/core
@@ -149,7 +151,14 @@ mcad-controller:
 		ValuesOptions:    values.Options{Values: opts.OverrideValues},
 	}
 
-	helmClient, newClientErr := helmclient.New(&helmclient.Options{})
+	helmCacheDir := configdir.LocalCache("helm")
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
+	}
+	
+	helmClient, newClientErr := helmclient.New(&helmclient.Options{
+		RepositoryCache: helmCacheDir,
+	})
 	if newClientErr != nil {
 		return newClientErr
 	}
