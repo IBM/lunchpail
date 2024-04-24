@@ -36,6 +36,12 @@ if [[ -n "$3" ]]
 then branch="-b $3"
 fi
 
+if [[ -f "$SCRIPTDIR"/my.secrets.sh ]]
+then
+    echo "Injecting your secrets"
+    . "$SCRIPTDIR"/my.secrets.sh
+fi
+
 # in travis, we need to provide a special docker host
 # TODO: is this for linux in general? for docker on linux in general?
 if [[ -f /tmp/kindhack.yaml ]]
