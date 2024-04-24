@@ -10,8 +10,6 @@ from run_size import run_size
 from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_dataset_labels_for_workerpool
 
 from shell import create_run_shell
-from ray import create_run_ray
-from torch import create_run_torch
 from sequence import create_run_sequence
 from workqueue import create_run_workqueue
 
@@ -147,11 +145,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         if dataset_labels is not None:
             logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
 
-        if api == "ray":
-            head_pod_name = create_run_ray(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
-        elif api == "torch":
-            head_pod_name = create_run_torch(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
-        elif api == "shell":
+        if api == "shell":
             head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, component, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         elif api == "sequence":
             head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
@@ -178,29 +172,6 @@ def plural(component: str):
 
 def component(labels):
     return labels["app.kubernetes.io/component"] if "app.kubernetes.io/component" in labels else ""
-
-# Watch each AppWrapper so that we can update the status of its associated Run
-@kopf.on.field('appwrappers.mcad.ibm.com', field='status.conditions', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT})
-def on_appwrapper_status_update(name: str, namespace: str, body, labels, **kwargs):
-    try:
-        conditions = body['status']['conditions']
-        lastCondition = conditions[-1]
-        component_name = labels["app.kubernetes.io/name"]
-        phase = lastCondition['type'] if 'type' in lastCondition else 'Pending'
-        message = lastCondition['message'] if 'message' in lastCondition else lastCondition['reason'] if 'reason' in lastCondition else ""
-        reason = lastCondition['reason'] if 'reason' in lastCondition else ""
-        patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase, "lunchpail.io/message": message, "lunchpail.io/reason": reason } } }
-        logging.info(f"Handling managed AppWrapper update component_name={component_name} phase={phase}")
-
-        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural=plural(component(labels)), name=component_name, namespace=namespace, body=patch_body)
-
-    except kopf.TemporaryError as e:
-        # pass through any TemporaryErrors
-        logging.info(f"Passing through TemporaryError for AppWrapper status update name={name} namespace={namespace}")
-        raise e
-    except Exception as e:
-        logging.error(f"Error patching Run on AppWrapper update name={name} namespace={namespace}. {str(e)}")
-        traceback.print_exc()
 
 # Watch each managed Pod so that we can update the status of its associated Run
 @kopf.on.field('pods', field='status.phase', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})

@@ -1,24 +1,12 @@
 dependencies:
-- name: kuberay-operator
-  repository: https://ray-project.github.io/kuberay-helm/
-  version: 1.0.0
-- name: fluent-bit
-  repository: https://fluent.github.io/helm-charts
-  version: 0.30.4
-- name: gpu-operator
-  repository: https://nvidia.github.io/gpu-operator
-  version: v23.3.2
 - name: jaas-core
   repository: file://./core
   version: 0.0.1
-- name: mcad-controller
-  repository: file://./mcad-controller
-  version: 0.1.0
 - name: jaas-s3
   repository: file://./s3
   version: 0.0.1
 - name: dlf-chart
   repository: file://./datashim
   version: 0.1.0
-digest: sha256:4dcf85bd018bf901a7ac3ff3423e2fbcf1899d216b7b0ecaf8090afdec8054d4
-generated: "2024-04-06T17:42:48.642268-04:00"
+digest: sha256:2852bbd09c32345a11b5429ea13c063a7f8ad129c5e123864113f9838f1c980a
+generated: "2024-04-24T10:54:35.680428-04:00"

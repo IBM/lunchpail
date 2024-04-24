@@ -17,7 +17,6 @@ import (
 
 type CoreOptions struct {
 	Namespace          string
-	Max                bool
 	ClusterIsOpenShift bool
 	NeedsCsiH3         bool
 	NeedsCsiS3         bool
@@ -52,9 +51,8 @@ func Core(outputPath string, opts CoreOptions) error {
 	}
 	defer os.RemoveAll(sourcePath)
 
-	fmt.Printf("Shrinkwrapping core templates=%s max=%v namespace=%s output=%v\n", sourcePath, opts.Max, opts.Namespace, outputPath)
+	fmt.Printf("Shrinkwrapping core templates=%s namespace=%s output=%v\n", sourcePath, opts.Namespace, outputPath)
 
-	mcadEnabled := opts.Max
 	clusterName := "lunchpail"
 
 	imageRegistry := "ghcr.io"
@@ -75,67 +73,54 @@ func Core(outputPath string, opts CoreOptions) error {
 	yaml := fmt.Sprintf(`
 tags:
   gpu: %v # hasGpuSupport (1)
-  full: %v # max (2)
   core: true
-mcad:
-  enabled: %v # mcadEnabled (3)
 jaas-core:
   lunchpail: lunchpail
-  mcad:
-    enabled: %v # mcadEnabled (4)
 global:
-  lite: %v # !max (5)
-  type: %s # clusterType (6)
-  dockerHost: %s # dockerHost (7)
+  type: %s # clusterType (2)
+  dockerHost: %s # dockerHost (3)
   image:
-    registry: %s # imageRegistry (8)
-    repo: %s # imageRepo (9)
+    registry: %s # imageRegistry (4)
+    repo: %s # imageRepo (5)
   rbac:
-    serviceaccount: %s # clusterName (10)
-    runAsRoot: %v # runAsRoot (11)
+    serviceaccount: %s # clusterName (6)
+    runAsRoot: %v # runAsRoot (7)
   jaas:
-    ips: %s # imagePullSecretName (12)
-    dockerconfigjson: %s # dockerconfigjson (13)
+    ips: %s # imagePullSecretName (8)
+    dockerconfigjson: %s # dockerconfigjson (9)
     namespace:
-      name: %v # namespace (14)
+      name: %v # namespace (10)
       create: true
     context:
       name: ""
-  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (15)
+  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (11)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 dlf-chart:
   csi-h3-chart:
-    enabled: %v # needsCsiH3 (16)
+    enabled: %v # needsCsiH3 (12)
   csi-s3-chart:
-    enabled: %v # needsCsiS3 (17)
+    enabled: %v # needsCsiS3 (13)
   csi-nfs-chart:
-    enabled: %v # needsCsiNFS (18)
-mcad-controller:
-  namespace: %v # namespace (19)
+    enabled: %v # needsCsiNFS (14)
 `,
-		opts.HasGpuSupport,           // (1)
-		opts.Max,                     // (2)
-		mcadEnabled,                  // (3)
-		mcadEnabled,                  // (4)
-		!opts.Max,                    // (5)
-		clusterType,                  // (6)
-		opts.DockerHost,              // (7)
-		imageRegistry,                // (8)
-		imageRepo,                    // (9)
-		clusterName,                  // (10)
-		runAsRoot,                    // (11)
-		imagePullSecretName,          // (12)
-		dockerconfigjson,             // (13)
-		opts.Namespace,               // (14)
-		opts.Namespace,               // (15)
-		opts.Max || opts.NeedsCsiH3,  // (16)
-		opts.Max || opts.NeedsCsiS3,  // (17)
-		opts.Max || opts.NeedsCsiNfs, // (18)
-		opts.Namespace,               // (19)
+		opts.HasGpuSupport,  // (1)
+		clusterType,         // (2)
+		opts.DockerHost,     // (3)
+		imageRegistry,       // (4)
+		imageRepo,           // (5)
+		clusterName,         // (6)
+		runAsRoot,           // (7)
+		imagePullSecretName, // (8)
+		dockerconfigjson,    // (9)
+		opts.Namespace,      // (10)
+		opts.Namespace,      // (11)
+		opts.NeedsCsiH3,     // (12)
+		opts.NeedsCsiS3,     // (13)
+		opts.NeedsCsiNfs,    // (14)
 	)
 
-	if os.Getenv("CI") != "" {
+	if opts.Verbose || os.Getenv("CI") != "" {
 		fmt.Fprintf(os.Stderr, "shrinkwrap core values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap core overrides=%v\n", opts.OverrideValues)
 	}
@@ -155,7 +140,7 @@ mcad-controller:
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
 	}
-	
+
 	helmClient, newClientErr := helmclient.New(&helmclient.Options{
 		RepositoryCache: helmCacheDir,
 	})

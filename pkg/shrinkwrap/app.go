@@ -172,7 +172,7 @@ func injectAutoRun(appname, templatePath string) (string, []string, error) {
 	if err != nil {
 		return "", []string{}, nil
 	}
-	
+
 	// TODO port this to pure go?
 	cmd := exec.Command("grep", "-qr", "^kind:[[:space:]]*Run$", appdir)
 	cmd.Stdout = os.Stdout

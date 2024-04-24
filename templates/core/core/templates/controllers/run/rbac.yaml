@@ -23,10 +23,6 @@ rules:
     resources: [datasets,datasets/status]
     verbs: [list, watch, patch, get]
   
-  - apiGroups: [mcad.ibm.com]
-    resources: [appwrappers]
-    verbs: [watch]
-
   - apiGroups: [""]
     resources: [secrets]
     verbs: [get,create] # create needed by workqueue/ helm template
@@ -89,10 +85,6 @@ rules:
     resources: [applications, queues, runs, workerpools, workdispatchers]
     verbs: [create, list, watch, patch, get]
     
-  - apiGroups: [mcad.ibm.com]
-    resources: [appwrappers]
-    verbs: [create, list, get, delete, patch]
-
   # Framework: knowing which other operators are running (i.e. peering).
   - apiGroups: [kopf.dev]
     resources: [clusterkopfpeerings]
@@ -135,10 +127,6 @@ rules:
     resources: [runs, runs/status, applications]
     verbs: [list, watch, patch, get]
     
-  - apiGroups: [mcad.ibm.com]
-    resources: [appwrappers]
-    verbs: [create, list, get, delete, patch]
-
   # Framework: knowing which other operators are running (i.e. peering).
   - apiGroups: [kopf.dev]
     resources: [kopfpeerings]

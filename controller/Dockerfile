@@ -1,9 +1,9 @@
-FROM ghcr.io/lunchpail/torchx-slim:0.0.10
+FROM ghcr.io/lunchpail/kopf:0.0.4
 
 # install rclone
-RUN apt update && apt install -y rclone && apt autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache rclone
 
-RUN adduser --uid 2000 lunchpail --ingroup root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
+RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
 USER lunchpail
 ENV HOME=/home/lunchpail
 WORKDIR /home/lunchpail

@@ -7,7 +7,6 @@ import (
 )
 
 func NewBuildCmd() *cobra.Command {
-	var maxFlag bool = false
 	var productionFlag bool = false
 
 	var cmd = &cobra.Command{
@@ -15,11 +14,10 @@ func NewBuildCmd() *cobra.Command {
 		Short: "Build the base images",
 		Long:  "Build the base images",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return images.Build(build.BuildOptions{maxFlag, productionFlag})
+			return images.Build(build.BuildOptions{productionFlag})
 		},
 	}
 
-	cmd.Flags().BoolVarP(&maxFlag, "max", "m", maxFlag, "Build controller to support Ray, Torch, etc.")
 	cmd.Flags().BoolVarP(&productionFlag, "production", "p", productionFlag, "Build production images")
 
 	return cmd

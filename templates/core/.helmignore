@@ -6,7 +6,4 @@
 # these will all be pulled in from Chart.yaml as dependencies
 /core
 /datashim
-/defaults
-/examples
-/mcad-controller
 /s3
