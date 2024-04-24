@@ -163,7 +163,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
                 "app.kubernetes.io/component": "workdispatcher"
             },
             "ownerReferences": [{
-                "apiVersion": "v1",
+                "apiVersion": "lunchpail.io/v1alpha1",
                 "kind": "WorkDispatcher",
                 "controller": True,
                 "name": workdispatcher_name,

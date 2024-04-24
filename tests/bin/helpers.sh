@@ -91,34 +91,34 @@ function waitForIt {
     else
         local queue=${taskqueue:-defaultjaasqueue} # TODO on default?
 
-        echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0)" 1>&2
-        nOutputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+        echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0) namespace=$ns" 1>&2
+        nOutputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
                             mc ls s3/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+            outputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
                                mc ls s3/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
-                code=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                code=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
                                 mc cat s3/$queue/lunchpail/$run_name/outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
                 fi
 
-                stdout=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                stdout=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
                                   mc ls s3/$queue/lunchpail/$run_name/outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
-                stderr=$(kubectl exec $(kubectl get pod -n $NAMESPACE_SYSTEM -l app.kubernetes.io/component=s3 -o name) -n $NAMESPACE_SYSTEM -- \
+                stderr=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
                                   mc ls s3/$queue/lunchpail/$run_name/outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
@@ -256,11 +256,7 @@ function undeploy {
 }
 
 function watch {
-    if [[ -n "$CI" ]]; then
-        kubectl get appwrapper --show-kind -n $NAMESPACE_USER -o custom-columns=NAME:.metadata.name,CONDITIONS:.status.conditions --watch &
-        kubectl get pod --show-kind -n $NAMESPACE_USER --watch &
-    fi
-    kubectl get pod --show-kind -n $NAMESPACE_SYSTEM --watch &
+    kubectl get pod --show-kind -A --watch &
     kubectl get run --show-kind --all-namespaces --watch &
     kubectl get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.lunchpail\\.io/status,MESSAGE:.metadata.annotations.lunchpail\\.io/message &
 }

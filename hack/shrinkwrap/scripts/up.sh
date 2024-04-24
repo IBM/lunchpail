@@ -16,7 +16,7 @@ shift $((OPTIND-1))
 
 echo "$(tput setaf 2)Booting Lunchpail for app=the_lunchpail_app arch=$ARCH$(tput sgr0)"
 
-for f in "$SCRIPTDIR"/02-jaas.yml "$SCRIPTDIR"/the_lunchpail_app.yml
+for f in "$SCRIPTDIR"/00-core.yml "$SCRIPTDIR"/the_lunchpail_app.yml
 do
     if [ ! -f "$f" ]
     then continue
@@ -25,7 +25,7 @@ do
     if [ -f "${f%%.yml}.namespace" ]; then ns="-n $(cat "${f%%.yml}.namespace")"; else ns=""; fi
     kubectl apply --server-side -f $f $ns
 
-    if [ "$(basename $f)" = "02-jaas.yml" ]
+    if [ "$(basename $f)" = "00-core.yml" ]
     then
         if which gum > /dev/null 2>&1
         then

@@ -32,6 +32,12 @@ type AppOptions struct {
 	NeedsGangs         bool
 	Verbose            bool
 	Queue              string
+	NeedsCsiH3         bool
+	NeedsCsiS3         bool
+	NeedsCsiNfs        bool
+	HasGpuSupport      bool
+	DockerHost         string
+	Force              bool
 }
 
 //go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ../../templates/app -zcf app.tar.gz ."
@@ -214,14 +220,19 @@ func injectAutoRun(appname, templatePath string) (string, []string, error) {
 	}
 }
 
-func App(sourcePath, outputPath string, opts AppOptions) error {
+// return (appname, namespace, error)
+func GenerateAppYaml(sourcePath, outputPath string, opts AppOptions) (string, string, error) {
 	if _, err := os.Stat(outputPath); err == nil {
-		return fmt.Errorf("Specified output directly already exists: %v", outputPath)
+		if !opts.Force {
+			return "", "", fmt.Errorf("Specified output directly already exists: %v", outputPath)
+		} else {
+			os.RemoveAll(outputPath)
+		}
 	}
 
 	templatePath, err := stageAppTemplate()
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// TODO... how do we really want to get a good name for the app?
@@ -235,22 +246,22 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 	}
 
 	if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch); err != nil {
-		return err
+		return "", "", err
 	}
 
 	runname, extraValues, err := injectAutoRun(appname, templatePath)
 	if err != nil {
-		return err
+		return "", "", err
 	} else {
 		opts.OverrideValues = append(opts.OverrideValues, extraValues...)
 
 	}
 
-	systemNamespace := "jaas-system" // TODO
 	namespace := opts.Namespace
 	if namespace == "" {
 		namespace = appname
 	}
+	systemNamespace := namespace
 
 	clusterName := "lunchpail"
 	clusterType := "k8s"
@@ -263,12 +274,12 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 
 	imagePullSecretName, dockerconfigjson, ipsErr := ImagePullSecret(opts.ImagePullSecret)
 	if ipsErr != nil {
-		return ipsErr
+		return "", "", ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -344,18 +355,18 @@ name: %s # runname (20)
 
 	helmClient, newClientErr := helmclient.New(&helmclient.Options{})
 	if newClientErr != nil {
-		return newClientErr
+		return "", "", newClientErr
 	}
 
 	if res, err := helmClient.TemplateChart(&chartSpec, options); err != nil {
-		return err
+		return "", "", err
 	} else {
 		outputYamlPath := filepath.Join(outputPath, appname+".yml")
 
 		if err := os.MkdirAll(outputPath, 0755); err != nil {
-			return err
+			return "", "", err
 		} else if err := os.WriteFile(outputYamlPath, res, 0644); err != nil {
-			return err
+			return "", "", err
 		}
 
 		nsPath := filepath.Join(
@@ -363,25 +374,34 @@ name: %s # runname (20)
 			strings.TrimSuffix(filepath.Base(outputYamlPath), filepath.Ext(outputYamlPath))+".namespace",
 		)
 		if err := os.WriteFile(nsPath, []byte(namespace), 0644); err != nil {
-			return err
+			return "", "", err
 		}
 	}
 
 	if err := expand(outputPath, scripts, "app-scripts.tar.gz"); err != nil {
-		return err
+		return "", "", err
 	}
-	// hack:
 	updateScripts(outputPath, appname, namespace, systemNamespace)
 
 	defer os.RemoveAll(templatePath)
-	return nil
+	return appname, namespace, nil
 }
 
+func App(sourcePath, outputPath string, opts AppOptions) error {
+	_, namespace, err := GenerateAppYaml(sourcePath, outputPath, opts)
+	if err != nil {
+		return err
+	}
+
+	return GenerateCoreYaml(outputPath, CoreOptions{namespace, opts.ClusterIsOpenShift, opts.NeedsCsiH3, opts.NeedsCsiS3, opts.NeedsCsiNfs, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose})
+}
+
+// hack, we still use sed here to update the script templates
 func updateScripts(path, appname, userNamespace, systemNamespace string) error {
 	return filepath.Walk(
 		path,
 		func(path string, info fs.FileInfo, err error) error {
-			if !info.IsDir() && filepath.Ext(path) != ".namespace" && filepath.Ext(path) != "yml" {
+			if !info.IsDir() && filepath.Ext(path) != ".namespace" && filepath.Ext(path) != "yml" && filepath.Ext(path) != ".tmp" && filepath.Ext(path) != ".DS_Store" {
 				// TODO: ugh sed
 				sed := "cat " + path + " | sed 's#the_lunchpail_app#" + appname + "#g' | sed 's#jaas-user#" + userNamespace + "#g' | sed 's#jaas-system#" + systemNamespace + "#g' > " + path + ".tmp && mv " + path + ".tmp " + path + " && chmod +x " + path
 				cmd := exec.Command("sh", "-c", sed)

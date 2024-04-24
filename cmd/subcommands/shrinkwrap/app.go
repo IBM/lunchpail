@@ -19,9 +19,15 @@ func NewAppCmd() *cobra.Command {
 	var needsGangsFlag bool
 	var verboseFlag bool
 	var queueFlag string
+	var needsCsiH3Flag bool = false
+	var needsCsiS3Flag bool = false
+	var needsCsiNfsFlag bool = false
+	var hasGpuSupportFlag bool = false
+	var dockerHostFlag string = ""
+	var forceFlag bool
 
 	var cmd = &cobra.Command{
-		Use:   "app",
+		Use:   "shrinkwrap",
 		Short: "Shrinkwrap a given application",
 		Long:  "Shrinkwrap a given application",
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
@@ -31,7 +37,7 @@ func NewAppCmd() *cobra.Command {
 				return err
 			}
 
-			return shrinkwrap.App(args[0], outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, branchFlag, overrideValues, needsGangsFlag, verboseFlag, queueFlag})
+			return shrinkwrap.App(args[0], outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, branchFlag, overrideValues, needsGangsFlag, verboseFlag, queueFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, forceFlag})
 		},
 	}
 
@@ -45,6 +51,10 @@ func NewAppCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&needsGangsFlag, "gang-scheduling", "", needsGangsFlag, "Include support for gang scheduling")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Include verbose output")
 	cmd.Flags().StringVarP(&queueFlag, "queue", "", queueFlag, "Use the queue specified by this named Secret (with accessKeyID, secretAccessKey, and endpoint data)")
+	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem")
+	cmd.Flags().BoolVarP(&hasGpuSupportFlag, "gpu", "", false, "Include Nvidia GPU support")
+	cmd.Flags().StringVarP(&dockerHostFlag, "docker-host", "d", dockerHostFlag, "Hostname/IP address of docker host")
+	cmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "Force overwrite existing output directory")
 
 	cmd.Flags().StringVarP(&outputDirFlag, "output-directory", "o", "", "Output directory")
 	if err := cmd.MarkFlagRequired("output-directory"); err != nil {

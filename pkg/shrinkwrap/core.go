@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/kirsle/configdir"
 	"github.com/mittwald/go-helm-client"
@@ -44,7 +43,7 @@ func stageCoreTemplate() (string, error) {
 	}
 }
 
-func Core(outputPath string, opts CoreOptions) error {
+func GenerateCoreYaml(outputPath string, opts CoreOptions) error {
 	sourcePath, err := stageCoreTemplate()
 	if err != nil {
 		return err
@@ -150,18 +149,8 @@ dlf-chart:
 
 	if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
 		return err
-	} else if outputPath == "-" {
-		fmt.Printf("res: %v\n", string(res))
 	} else {
-		if err := os.WriteFile(outputPath, res, 0644); err != nil {
-			return err
-		}
-
-		nsPath := filepath.Join(
-			filepath.Dir(outputPath),
-			strings.TrimSuffix(filepath.Base(outputPath), filepath.Ext(outputPath))+".namespace",
-		)
-		if err := os.WriteFile(nsPath, []byte(opts.Namespace), 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(outputPath, "00-core.yml"), res, 0644); err != nil {
 			return err
 		}
 	}

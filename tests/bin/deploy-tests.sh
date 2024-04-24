@@ -36,10 +36,16 @@ if [[ -n "$3" ]]
 then branch="-b $3"
 fi
 
-if [[ -f "$SCRIPTDIR"/my.secrets.sh ]]
+# in travis, we need to provide a special docker host
+# TODO: is this for linux in general? for docker on linux in general?
+if [[ -f /tmp/kindhack.yaml ]]
 then
-    echo "Injecting your secrets"
-    . "$SCRIPTDIR"/my.secrets.sh
+    docker_host_ip=$(docker network inspect kind | grep Gateway | awk 'FNR==1{gsub("\"", "",$2); print $2}' || echo nope)
+    if [[ "$docker_host_ip" != nope ]]
+    then
+        echo "Hacking docker_host_ip=${docker_host_ip}"
+        LP_ARGS="$LP_ARGS --docker-host=$docker_host_ip"
+    fi
 fi
 
 set -x
@@ -50,7 +56,7 @@ set -x
       $QUEUE \
       $APP \
       $GPU \
-      $LPA_ARGS \
+      $LP_ARGS \
       --set global.arch=$ARCH \
       --set kubernetes.context=kind-jaas \
       --set kubernetes.config=$(kubectl config view  -o json --flatten | base64 | tr -d '\n') \

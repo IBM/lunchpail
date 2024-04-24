@@ -1,5 +1,13 @@
 {{- define "containers/controller" }}
 - name: controller
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8080
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8080
   env:
     {{- include "env" . | indent 4 }}
   volumeMounts:

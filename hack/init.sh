@@ -88,7 +88,7 @@ function get_kind {
             make
             sudo mv ./bin/kind /usr/local/bin/kind
         else
-            curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-$(kos)-$(karch)
+            curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-$(kos)-$(karch)
             chmod +x ./kind
             sudo mv ./kind /usr/local/bin/kind
         fi

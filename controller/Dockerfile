@@ -9,4 +9,4 @@ ENV HOME=/home/lunchpail
 WORKDIR /home/lunchpail
 
 COPY --chown=lunchpail:root src .
-CMD kopf run application_handlers.py run_handlers.py --verbose
+CMD kopf run application_handlers.py run_handlers.py --liveness=http://0.0.0.0:8080/healthz --namespace $(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)

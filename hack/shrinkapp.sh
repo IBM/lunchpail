@@ -7,4 +7,4 @@ if [ ! -f /tmp/lunchpail ]
 then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 fi
 
-/tmp/lunchpail shrinkwrap app $@
+/tmp/lunchpail shrinkwrap $@

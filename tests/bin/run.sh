@@ -76,6 +76,10 @@ if [[ ${#expected[@]} != 0 ]]
 then
     deploy $testname $app $branch $deployname
 
+    # if [[ $(basename $1) = test7d ]]
+    # then kubectl logs deploy/run-controller -n $(basename $1) -f &
+    # fi
+
     if [[ -e "$1"/init.sh ]]; then
         TEST_NAME=$testname "$1"/init.sh
     fi

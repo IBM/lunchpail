@@ -5,5 +5,5 @@ api=workqueue
 
 # "tasky" and 3333 come from a values override in the workdispatcher.yaml
 
-expected=(0 6 defaultjaasqueue)
+expected=(0 10 defaultjaasqueue)
 handler=waitForUnassignedAndOutbox

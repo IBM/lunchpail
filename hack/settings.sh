@@ -11,7 +11,7 @@ CLUSTER_TYPE=${CLUSTER_TYPE:-k8s}                           # k8s|oc -- use oc f
 
 CONTEXT_NAME=${CONTEXT_NAME:-kind-${CLUSTER_NAME}}          # i.e. kubectl --context $CONTEXT_NAME, defaults to kind-$CLUSTER_NAME e.g. kind-jaas
 
-NAMESPACE_SUFFIX=""                                                           # suffix to add to namespace names
-NAMESPACE_USER=${NAMESPACE_USER:-jaas-user$NAMESPACE_SUFFIX}                  # namespace to use for user resources
-NAMESPACE_SYSTEM=${NAMESPACE_SYSTEM:-${CLUSTER_NAME}-system$NAMESPACE_SUFFIX} # namespace to use for system resources
+NAMESPACE_SUFFIX=""                                          # suffix to add to namespace names
+NAMESPACE_USER=${NAMESPACE_USER:-jaas-user$NAMESPACE_SUFFIX} # namespace to use for user resources
+NAMESPACE_SYSTEM=${NAMESPACE_SYSTEM:-$NAMESPACE_USER}        # namespace to use for system resources
 ###########################################################################################
