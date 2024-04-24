@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-//go:generate /bin/sh -c "grep appVersion ../../templates/core/Chart.yaml | tr -s ' ' | cut -d' ' -f2 > version.txt"
+//go:generate /bin/sh -c "grep appVersion ../../charts/core/Chart.yaml | tr -s ' ' | cut -d' ' -f2 > version.txt"
 //go:embed version.txt
 var version string
 

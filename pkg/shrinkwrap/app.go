@@ -40,7 +40,7 @@ type AppOptions struct {
 	Force              bool
 }
 
-//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ../../templates/app -zcf app.tar.gz ."
+//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ../../charts/app -zcf app.tar.gz ."
 //go:embed app.tar.gz
 var appTemplate embed.FS
 

@@ -27,9 +27,7 @@ type CoreOptions struct {
 	Verbose            bool
 }
 
-// instead we do this below: helm dependency update ../../templates/core
-//
-//go:generate /bin/sh -c "tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../templates/core -zcf core.tar.gz  ."
+//go:generate /bin/sh -c "tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../charts/core -zcf core.tar.gz  ."
 //go:embed core.tar.gz
 var coreTemplate embed.FS
 
