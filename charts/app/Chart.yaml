@@ -7,4 +7,4 @@ type: application
 version: 0.0.1
 
 # Chart version.
-appVersion: 0.12.2
+appVersion: 0.12.3
