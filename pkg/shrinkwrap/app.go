@@ -381,7 +381,7 @@ name: %s # runname (20)
 	if err := expand(outputPath, scripts, "app-scripts.tar.gz"); err != nil {
 		return "", "", err
 	}
-	updateScripts(outputPath, appname, namespace, systemNamespace)
+	updateScripts(outputPath, appname, runname, namespace, systemNamespace)
 
 	defer os.RemoveAll(templatePath)
 	return appname, namespace, nil
@@ -397,13 +397,13 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 }
 
 // hack, we still use sed here to update the script templates
-func updateScripts(path, appname, userNamespace, systemNamespace string) error {
+func updateScripts(path, appname, runname, userNamespace, systemNamespace string) error {
 	return filepath.Walk(
 		path,
 		func(path string, info fs.FileInfo, err error) error {
 			if !info.IsDir() && filepath.Ext(path) != ".namespace" && filepath.Ext(path) != "yml" && filepath.Ext(path) != ".tmp" && filepath.Ext(path) != ".DS_Store" {
 				// TODO: ugh sed
-				sed := "cat " + path + " | sed 's#the_lunchpail_app#" + appname + "#g' | sed 's#jaas-user#" + userNamespace + "#g' | sed 's#jaas-system#" + systemNamespace + "#g' > " + path + ".tmp && mv " + path + ".tmp " + path + " && chmod +x " + path
+				sed := "cat " + path + " | sed 's#the_lunchpail_app#" + appname + "#g' | sed 's#the_lunchpail_run#" + runname + "#g' | sed 's#jaas-user#" + userNamespace + "#g' | sed 's#jaas-system#" + systemNamespace + "#g' > " + path + ".tmp && mv " + path + ".tmp " + path + " && chmod +x " + path
 				cmd := exec.Command("sh", "-c", sed)
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
