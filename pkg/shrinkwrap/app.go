@@ -44,7 +44,7 @@ type AppOptions struct {
 //go:embed app.tar.gz
 var appTemplate embed.FS
 
-//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ../../hack/shrinkwrap/scripts -zcf app-scripts.tar.gz ."
+//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ./scripts -zcf app-scripts.tar.gz ."
 //go:embed app-scripts.tar.gz
 var scripts embed.FS
 
