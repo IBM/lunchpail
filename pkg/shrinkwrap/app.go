@@ -57,14 +57,14 @@ func trimExt(fileName string) string {
 func stageAppTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := Expand(dir, appTemplate, "app.tar.gz"); err != nil {
+	} else if err := Expand(dir, appTemplate, "app.tar.gz", false); err != nil {
 		return "", err
 	} else {
 		return dir, nil
 	}
 }
 
-func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string) error {
+func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbose bool) error {
 	templatedir := filepath.Join(templatePath, "templates")
 	appdir := filepath.Join(templatedir, appname)
 
@@ -119,6 +119,9 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string) error
 		for _, entry := range entries {
 			sourcePath := filepath.Join(appSrc, entry.Name())
 			destPath := filepath.Join(templateSrc, entry.Name())
+			if verbose {
+				fmt.Fprintf(os.Stderr, "Injecting application source %s -> %s %v\n", sourcePath, destPath, entry)
+			}
 			os.Rename(sourcePath, destPath)
 		}
 		if err := os.Remove(appSrc); err != nil {
@@ -244,7 +247,7 @@ func GenerateAppYaml(sourcePath, outputPath string, opts AppOptions) (string, st
 		appname = filepath.Base(filepath.Dir(trimExt(sourcePath)))
 	}
 
-	if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch); err != nil {
+	if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
 		return "", "", err
 	}
 
@@ -377,12 +380,12 @@ name: %s # runname (19)
 		}
 	}
 
-	if err := Expand(outputPath, scripts, "app-scripts.tar.gz"); err != nil {
+	if err := Expand(outputPath, scripts, "app-scripts.tar.gz", false); err != nil {
 		return "", "", err
 	}
 	updateScripts(outputPath, appname, runname, namespace, systemNamespace)
 
-	defer os.RemoveAll(templatePath)
+	// defer os.RemoveAll(templatePath)
 	return appname, namespace, nil
 }
 

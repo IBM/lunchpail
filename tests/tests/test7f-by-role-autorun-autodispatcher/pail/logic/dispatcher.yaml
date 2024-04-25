@@ -1,14 +1,13 @@
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
-  name: test7f-by-role-autorun-autodispatcher-workdispatcher
-  namespace: {{ .Values.namespace.user }}
+  name: {{ print (.Values.partOf | default "test7f-by-role-autorun-autodispatcher") "-workdispatcher" }}
 spec:
   api: shell
   role: dispatcher
   minSize: auto
   command: ./src/main.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-s3-syncer-component:" .Chart.AppVersion }}
+  image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-s3-syncer-component:" .Chart.AppVersion }}
   env:
     METHOD: parametersweep
     SWEEP_MIN: '1'

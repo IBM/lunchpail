@@ -1,8 +1,7 @@
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
-  name: test7f-by-role-autorun-autodispatcher
-  namespace: {{ .Values.namespace.user }}
+  name: {{ .Values.partOf | default "test7f-by-role-autorun-autodispatcher" }}
 spec:
   api: workqueue
   role: worker
@@ -22,4 +21,4 @@ spec:
         echo "Done with $in"
 
   command: ./literal.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
