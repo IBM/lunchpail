@@ -61,5 +61,13 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
-kubectl apply -f $DRY 1>&2
-#rm $DRY
+retries=20
+while ! kubectl apply -f $DRY
+do
+    ((--retries)) || exit 1
+
+    echo "Retrying kubectl apply"
+    sleep 1
+done
+
+rm -f $DRY

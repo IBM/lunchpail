@@ -82,8 +82,16 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
 
 # we could pipe the helm install to kubectl apply; leaving them
 # separate now to aid with debugging
-kubectl apply -f $DRY ${kubecontext_option} ${kubeconfig_option} 1>&2
-# rm -f $DRY
+retries=20
+while ! kubectl apply -f $DRY ${kubecontext_option} ${kubeconfig_option}
+do
+    ((--retries)) || exit 1
+
+    echo "Retrying kubectl apply"
+    sleep 1
+done
+
+rm -f $DRY
 
 if [[ -f "$kubeconfig_path" ]]
 then rm -f "$kubeconfig_path"
