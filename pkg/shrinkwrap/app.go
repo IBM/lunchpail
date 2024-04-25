@@ -165,7 +165,14 @@ func autorunName(appname string) (string, error) {
 	if id, err := uuid.NewRandom(); err != nil {
 		return "", err
 	} else {
-		runname = truncate(runname+"-"+id.String(), 53)
+		// include up to the first dash of the uuid, which
+		// gives us 8 characters of randomness
+		ids := id.String()
+		if idx := strings.Index(ids, "-"); idx != -1 {
+			ids = ids[:idx]
+		}
+
+		runname = truncate(runname+"-"+ids, 53)
 	}
 
 	return runname, nil
