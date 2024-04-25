@@ -34,7 +34,7 @@ var coreTemplate embed.FS
 func stageCoreTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := expand(dir, coreTemplate, "core.tar.gz"); err != nil {
+	} else if err := Expand(dir, coreTemplate, "core.tar.gz"); err != nil {
 		return "", err
 	} else {
 		return dir, nil

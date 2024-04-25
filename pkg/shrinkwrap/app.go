@@ -29,7 +29,6 @@ type AppOptions struct {
 	ImagePullSecret    string
 	Branch             string
 	OverrideValues     []string
-	NeedsGangs         bool
 	Verbose            bool
 	Queue              string
 	NeedsCsiH3         bool
@@ -58,7 +57,7 @@ func trimExt(fileName string) string {
 func stageAppTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := expand(dir, appTemplate, "app.tar.gz"); err != nil {
+	} else if err := Expand(dir, appTemplate, "app.tar.gz"); err != nil {
 		return "", err
 	} else {
 		return dir, nil
@@ -313,19 +312,19 @@ branch: %s # opts.Branch (9)
 username: %s # user.Username (10)
 uid: %s # user.Uid (11)
 mcad:
-  enabled: %v # Opts.NeedsGangs (12)
+  enabled: false
 rbac:
-  serviceaccount: %s # clusterName (13)
+  serviceaccount: %s # clusterName (12)
 image:
-  registry: %s # imageRegistry (14)
-  repo: %s # imageRepo (15)
-  version: %v # lunchpail.Version() (16)
-partOf: %s # partOf (17)
+  registry: %s # imageRegistry (13)
+  repo: %s # imageRepo (14)
+  version: %v # lunchpail.Version() (15)
+partOf: %s # partOf (16)
 taskqueue:
-  dataset: %s # taskqueueName (18)
-  secret: %s # taskqueueSecret (19)
-name: %s # runname (20)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, opts.Branch, user.Username, user.Uid, opts.NeedsGangs, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname)
+  dataset: %s # taskqueueName (17)
+  secret: %s # taskqueueSecret (18)
+name: %s # runname (19)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, opts.Branch, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
@@ -378,7 +377,7 @@ name: %s # runname (20)
 		}
 	}
 
-	if err := expand(outputPath, scripts, "app-scripts.tar.gz"); err != nil {
+	if err := Expand(outputPath, scripts, "app-scripts.tar.gz"); err != nil {
 		return "", "", err
 	}
 	updateScripts(outputPath, appname, runname, namespace, systemNamespace)

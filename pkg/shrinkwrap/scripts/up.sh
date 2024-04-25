@@ -14,7 +14,7 @@ do
 done
 shift $((OPTIND-1))
 
-echo "$(tput setaf 2)Booting Lunchpail for app=the_lunchpail_app arch=$ARCH$(tput sgr0)"
+echo "$(tput setaf 2)Booting Lunchpail for app=the_lunchpail_app$(tput sgr0)"
 
 for f in "$SCRIPTDIR"/00-core.yml "$SCRIPTDIR"/the_lunchpail_app.yml
 do

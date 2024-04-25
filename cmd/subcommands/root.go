@@ -16,5 +16,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.SilenceUsage = true
+	// rootCmd.SilenceUsage = true
 }

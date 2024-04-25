@@ -8,7 +8,7 @@ TOP="$SCRIPTDIR"/../..
 
 cd "$TOP"
 
-DST=${1-/tmp/lunchpail}
+DST=${1-./lunchpail}
 
 msg="Downloading CLI dependencies"
 echo "$msg" && go get ./...
