@@ -179,7 +179,7 @@ func autorunName(appname string) (string, error) {
 }
 
 // Inject Run or WorkDispatcher resources if needed
-func injectAutoRun(appname, templatePath string) (string, []string, error) {
+func injectAutoRun(appname, templatePath string, opts AppOptions) (string, []string, error) {
 	sets := []string{} // we will assemble helm `--set` options
 	appdir := filepath.Join(templatePath, "templates", appname)
 
@@ -196,7 +196,9 @@ func injectAutoRun(appname, templatePath string) (string, []string, error) {
 		return "", []string{}, err
 	}
 	if err := cmd.Wait(); err != nil {
-		fmt.Println("Auto-Injecting WorkStealer initiation")
+		if opts.Verbose {
+			fmt.Println("Auto-Injecting WorkStealer initiation")
+		}
 		sets = append(sets, "autorun="+runname)
 	}
 
@@ -216,7 +218,9 @@ func injectAutoRun(appname, templatePath string) (string, []string, error) {
 			return "", []string{}, err
 		}
 		if err := cmd3.Wait(); err == nil {
-			fmt.Println("Auto-Injecting WorkDispatcher")
+			if opts.Verbose {
+				fmt.Println("Auto-Injecting WorkDispatcher")
+			}
 			sets = append(sets, "autodispatcher.name="+appname)
 			sets = append(sets, "autodispatcher.application="+appname)
 		}
@@ -258,7 +262,7 @@ func GenerateAppYaml(sourcePath, outputPath string, opts AppOptions) (string, st
 		return "", "", err
 	}
 
-	runname, extraValues, err := injectAutoRun(appname, templatePath)
+	runname, extraValues, err := injectAutoRun(appname, templatePath, opts)
 	if err != nil {
 		return "", "", err
 	} else {
@@ -402,7 +406,14 @@ func App(sourcePath, outputPath string, opts AppOptions) error {
 		return err
 	}
 
-	return GenerateCoreYaml(outputPath, CoreOptions{namespace, opts.ClusterIsOpenShift, opts.NeedsCsiH3, opts.NeedsCsiS3, opts.NeedsCsiNfs, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose})
+	if err := GenerateCoreYaml(outputPath, CoreOptions{namespace, opts.ClusterIsOpenShift, opts.NeedsCsiH3, opts.NeedsCsiS3, opts.NeedsCsiNfs, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose}); err != nil {
+		return err
+	}
+
+	fmt.Printf("App written to %s\n", outputPath)
+	fmt.Printf("Try %s/up to launch it!\n", outputPath)
+
+	return nil
 }
 
 // hack, we still use sed here to update the script templates

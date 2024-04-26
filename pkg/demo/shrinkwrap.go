@@ -41,10 +41,15 @@ func Shrinkwrap(opts Options) error {
 	hasGpuSupport := false
 	dockerHost := ""
 
+	outputDir := opts.OutputDir
+	if outputDir == "" {
+		outputDir = "./lunchpail-demo"
+	}
+
 	defer os.RemoveAll(demoPath)
 	return shrinkwrap.App(
 		demoPath,
-		opts.OutputDir,
+		outputDir,
 		shrinkwrap.AppOptions{opts.Namespace, appName, clusterIsOpenShift, workdirViaMount, imagePullSecret, branch, overrideValues, opts.Verbose, queue, needsCsiH3, needsCsiS3, needsCsiNfs, hasGpuSupport, dockerHost, opts.Force},
 	)
 }

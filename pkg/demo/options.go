@@ -1,9 +1,9 @@
 package demo
 
 type Options struct {
-	Namespace          string
+	Namespace string
 	OutputDir string
-	Branch string
-	Verbose bool
-	Force bool
+	Branch    string
+	Verbose   bool
+	Force     bool
 }

@@ -48,7 +48,9 @@ func GenerateCoreYaml(outputPath string, opts CoreOptions) error {
 	}
 	defer os.RemoveAll(sourcePath)
 
-	fmt.Printf("Shrinkwrapping core templates=%s namespace=%s output=%v\n", sourcePath, opts.Namespace, outputPath)
+	if opts.Verbose {
+		fmt.Printf("Shrinkwrapping core templates=%s namespace=%s output=%v\n", sourcePath, opts.Namespace, outputPath)
+	}
 
 	clusterName := "lunchpail"
 
@@ -138,7 +140,13 @@ dlf-chart:
 		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
 	}
 
+	outputOfHelmTemplateCmd := ioutil.Discard
+	if opts.Verbose {
+		outputOfHelmTemplateCmd = os.Stdout
+	}
+
 	helmClient, newClientErr := helmclient.New(&helmclient.Options{
+		Output:          outputOfHelmTemplateCmd,
 		RepositoryCache: helmCacheDir,
 	})
 	if newClientErr != nil {
