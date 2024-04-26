@@ -11,7 +11,11 @@ spec:
   env:
     METHOD: parametersweep
     SWEEP_MIN: '1'
+    {{- if .Values.N }}
+    SWEEP_MAX: {{ .Values.N | quote }}
+    {{- else }}
     SWEEP_MAX: '10'
+    {{- end }}
     SWEEP_STEP: '1'
     taskprefix: tasky
     taskprefix2: "3333"

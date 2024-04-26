@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"lunchpail.io/pkg/shrinkwrap"
 )
@@ -32,7 +33,7 @@ func Shrinkwrap(opts Options) error {
 	clusterIsOpenShift := false
 	workdirViaMount := false
 	branch := ""
-	overrideValues := []string{}
+	overrideValues := []string{"N=" + strconv.Itoa(opts.N)}
 	queue := ""
 	needsCsiH3 := false
 	needsCsiS3 := false
