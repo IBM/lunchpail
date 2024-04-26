@@ -31,7 +31,6 @@ func Shrinkwrap(opts Options) error {
 	appName := "demo"
 	clusterIsOpenShift := false
 	workdirViaMount := false
-	imagePullSecret := ""
 	branch := ""
 	overrideValues := []string{}
 	queue := ""
@@ -50,6 +49,6 @@ func Shrinkwrap(opts Options) error {
 	return shrinkwrap.App(
 		demoPath,
 		outputDir,
-		shrinkwrap.AppOptions{opts.Namespace, appName, clusterIsOpenShift, workdirViaMount, imagePullSecret, branch, overrideValues, opts.Verbose, queue, needsCsiH3, needsCsiS3, needsCsiNfs, hasGpuSupport, dockerHost, opts.Force},
+		shrinkwrap.AppOptions{opts.Namespace, appName, clusterIsOpenShift, workdirViaMount, opts.ImagePullSecret, branch, overrideValues, opts.Verbose, queue, needsCsiH3, needsCsiS3, needsCsiNfs, hasGpuSupport, dockerHost, opts.Force},
 	)
 }

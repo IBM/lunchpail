@@ -11,19 +11,21 @@ func newDemoCmd() *cobra.Command {
 	var branchFlag string
 	var verboseFlag bool
 	var forceFlag bool
+	var imagePullSecretFlag string
 
 	var cmd = &cobra.Command{
 		Use:   "demo",
 		Short: "Shrinkwrap a demo application",
 		Long:  "Shrinkwrap a demo application",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return demo.Shrinkwrap(demo.Options{namespaceFlag, outputDirFlag, branchFlag, verboseFlag, forceFlag})
+			return demo.Shrinkwrap(demo.Options{namespaceFlag, outputDirFlag, branchFlag, imagePullSecretFlag, verboseFlag, forceFlag})
 		},
 	}
 
 	cmd.Flags().StringVarP(&outputDirFlag, "output-directory", "o", "", "Output directory")
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", namespaceFlag, "Kubernetes namespace to deploy to")
+	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 	cmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "[Danger] Force overwrite existing output directory")
 
