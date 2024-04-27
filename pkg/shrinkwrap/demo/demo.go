@@ -9,7 +9,7 @@ import (
 	"lunchpail.io/pkg/shrinkwrap"
 )
 
-//go:generate /bin/bash -c "tar --exclude '*.md' -zcf demo.tar.gz -C ../../tests/tests/test7f-by-role-autorun-autodispatcher/pail ."
+//go:generate /bin/bash -c "tar --exclude '*.md' -zcf demo.tar.gz -C ../../../tests/tests/test7f-by-role-autorun-autodispatcher/pail ."
 //go:embed demo.tar.gz
 var demo embed.FS
 

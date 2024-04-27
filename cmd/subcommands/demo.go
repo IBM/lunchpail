@@ -2,7 +2,7 @@ package subcommands
 
 import (
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/demo"
+	"lunchpail.io/pkg/shrinkwrap/demo"
 )
 
 func newDemoCmd() *cobra.Command {
