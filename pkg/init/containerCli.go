@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	which "github.com/hairyhenderson/go-which"
 )
@@ -18,13 +19,11 @@ func getContainerCli() error {
 	return getPodman()
 }
 
-func podmanMachineExists() (bool, error) {
-	if machineCount, err := exec.Command("sh", "-c", "podman machine list --noheading | wc -l").Output(); err != nil {
-		return false, err
-	} else if string(machineCount) == "0" {
-		return false, nil
+func podmanMachineExists() bool {
+	if machineCount, err := exec.Command("sh", "-c", "podman machine list --noheading | wc -l | xargs").Output(); err != nil || strings.TrimSpace(string(machineCount)) == "0" {
+		return false
 	} else {
-		return true, nil
+		return true
 	}
 }
 
@@ -74,9 +73,7 @@ func getPodman() error {
 		fmt.Println("Container CLI: podman")
 
 		if runtime.GOOS != "linux" {
-			if machineExists, err := podmanMachineExists(); err != nil {
-				return err
-			} else if !machineExists {
+			if machineExists := podmanMachineExists(); !machineExists {
 				if err := createPodmanMachine(); err != nil {
 					return err
 				}

@@ -3,17 +3,19 @@ package init
 import (
 	"context"
 	"golang.org/x/sync/errgroup"
+	"lunchpail.io/pkg/images"
+	"lunchpail.io/pkg/images/build"
 )
 
 func Local() error {
 	errs, _ := errgroup.WithContext(context.Background())
 
-	errs.Go(func() error {
-		return getKubectl()
-	})
+	if err := getContainerCli(); err != nil {
+		return err
+	}
 
 	errs.Go(func() error {
-		return getContainerCli()
+		return getKubectl()
 	})
 
 	errs.Go(func() error {
@@ -27,5 +29,9 @@ func Local() error {
 		return getNvidia()
 	})
 
-	return errs.Wait()
+	if err := errs.Wait(); err != nil {
+		return err
+	}
+
+	return images.Build(build.BuildOptions{false})
 }

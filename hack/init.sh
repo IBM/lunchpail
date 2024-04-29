@@ -10,4 +10,3 @@ then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 fi
 
 /tmp/lunchpail init local
-/tmp/lunchpail images build $BUILD_ARGS
