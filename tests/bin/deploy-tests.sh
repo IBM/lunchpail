@@ -54,22 +54,24 @@ then
     fi
 fi
 
-set -x
-"$TOP"/hack/shrinkapp.sh \
-      $branch \
-      -o "$TARGET" \
-      -a "${4-$1}" \
-      $QUEUE \
-      $APP \
-      $GPU \
-      $LP_ARGS \
-      --set global.arch=$ARCH \
-      --set kubernetes.context=kind-jaas \
-      --set kubernetes.config=$(kubectl config view  -o json --flatten | base64 | tr -d '\n') \
-      --set cosAccessKey=$COS_ACCESS_KEY \
-      --set cosSecretKey=$COS_SECRET_KEY \
-      --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
-      --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT \
-      "$2"
+"$TOP"/hack/setup/cli.sh /tmp/lunchpail
+
+testapp=$(mktemp)
+/tmp/lunchpail assemble -v -o $testapp $branch -a "${4-$1}" $2
+
+$testapp shrinkwrap \
+         -v \
+         -o "$TARGET" \
+         $QUEUE \
+         $APP \
+         $GPU \
+         $LP_ARGS \
+         --set global.arch=$ARCH \
+         --set kubernetes.context=kind-jaas \
+         --set kubernetes.config=$(kubectl config view  -o json --flatten | base64 | tr -d '\n') \
+         --set cosAccessKey=$COS_ACCESS_KEY \
+         --set cosSecretKey=$COS_SECRET_KEY \
+         --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
+         --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT
 
 "$TARGET"/up

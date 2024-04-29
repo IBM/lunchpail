@@ -7,7 +7,6 @@ import (
 	"github.com/mittwald/go-helm-client"
 	"github.com/mittwald/go-helm-client/values"
 	"helm.sh/helm/v3/pkg/chartutil"
-	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -25,7 +24,6 @@ type AppOptions struct {
 	ClusterIsOpenShift bool
 	WorkdirViaMount    bool
 	ImagePullSecret    string
-	Branch             string
 	OverrideValues     []string
 	Verbose            bool
 	Queue              string
@@ -44,13 +42,6 @@ var appTemplate embed.FS
 //go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ./scripts -zcf app-scripts.tar.gz ."
 //go:embed app-scripts.tar.gz
 var scripts embed.FS
-
-func trimExt(fileName string) string {
-	return filepath.Join(
-		filepath.Dir(fileName),
-		strings.TrimSuffix(filepath.Base(fileName), filepath.Ext(fileName)),
-	)
-}
 
 // truncate `str` to have at most `max` length
 func truncate(str string, max int) string {
@@ -136,7 +127,7 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 }
 
 // return (appname, namespace, error)
-func GenerateAppYaml(sourcePath, outputPath string, opts AppOptions) (string, string, error) {
+func generateAppYaml(outputPath string, opts AppOptions) (string, string, error) {
 	if _, err := os.Stat(outputPath); err == nil {
 		if !opts.Force {
 			return "", "", fmt.Errorf("Specified output directly already exists: %v", outputPath)
@@ -145,10 +136,13 @@ func GenerateAppYaml(sourcePath, outputPath string, opts AppOptions) (string, st
 		}
 	}
 
-
-	appname, templatePath, err := Stage(sourcePath, StageOptions{opts.AppName, opts.Branch, opts.Verbose})
+	appname, templatePath, err := stageFromAssembled(StageOptions{"", opts.Verbose})
 	if err != nil {
 		return "", "", err
+	}
+
+	if opts.AppName != "" {
+		appname = opts.AppName
 	}
 
 	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
@@ -284,12 +278,17 @@ name: %s # runname (18)
 	}
 	updateScripts(outputPath, appname, runname, namespace, systemNamespace)
 
-	// defer os.RemoveAll(templatePath)
+	if !opts.Verbose {
+		defer os.RemoveAll(templatePath)
+	} else {
+		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
+	}
+
 	return appname, namespace, nil
 }
 
-func App(sourcePath, outputPath string, opts AppOptions) error {
-	_, namespace, err := GenerateAppYaml(sourcePath, outputPath, opts)
+func App(outputPath string, opts AppOptions) error {
+	_, namespace, err := generateAppYaml(outputPath, opts)
 	if err != nil {
 		return err
 	}
@@ -321,24 +320,4 @@ func updateScripts(path, appname, runname, userNamespace, systemNamespace string
 			}
 			return nil
 		})
-}
-
-func AppendFile(dstPath, srcPath string) error {
-	dst, err := os.OpenFile(dstPath, os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	src, err := os.Open(srcPath)
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	if _, err := io.Copy(dst, src); err != nil {
-		return err
-	}
-
-	return nil
 }

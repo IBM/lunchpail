@@ -2,8 +2,11 @@ package subcommands
 
 import (
 	"lunchpail.io/cmd/subcommands/shrinkwrap"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 func init() {
-	rootCmd.AddCommand(shrinkwrap.NewAppCmd())
+	if lunchpail.IsAssembled() {
+		rootCmd.AddCommand(shrinkwrap.NewAppCmd())
+	}
 }

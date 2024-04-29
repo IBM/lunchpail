@@ -3,15 +3,21 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/cmd/subcommands/images"
+	"lunchpail.io/pkg/lunchpail"
 )
 
-func init() {
-	var imagesCmd = &cobra.Command{
+func newImagesCommand() *cobra.Command {
+	return &cobra.Command{
 		Use:   "images",
 		Short: "Manage base images",
 		Long:  "Manage base images",
 	}
+}
 
-	rootCmd.AddCommand(imagesCmd)
-	imagesCmd.AddCommand(images.NewBuildCmd())
+func init() {
+	if !lunchpail.IsAssembled() {
+		imagesCmd := newImagesCommand()
+		rootCmd.AddCommand(imagesCmd)
+		imagesCmd.AddCommand(images.NewBuildCmd())
+	}
 }

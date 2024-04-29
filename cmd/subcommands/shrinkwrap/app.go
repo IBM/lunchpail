@@ -7,13 +7,15 @@ import (
 	"log"
 )
 
+//func addAppOptions(cmd *cobra.Command) {
+//}
+
 func NewAppCmd() *cobra.Command {
 	var appNameFlag string
 	var outputDirFlag string
 	var namespaceFlag string
 	var clusterIsOpenShiftFlag bool = false
 	var imagePullSecretFlag string
-	var branchFlag string
 	var workdirViaMountFlag bool
 	var overrideValuesFlag []string = []string{}
 	var verboseFlag bool
@@ -26,17 +28,16 @@ func NewAppCmd() *cobra.Command {
 	var forceFlag bool
 
 	var cmd = &cobra.Command{
-		Use:   "shrinkwrap path-or-git",
+		Use:   "shrinkwrap",
 		Short: "Shrinkwrap a given application",
 		Long:  "Shrinkwrap a given application",
-		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			overrideValues, err := cmd.Flags().GetStringSlice("set")
 			if err != nil {
 				return err
 			}
 
-			return shrinkwrap.App(args[0], outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, branchFlag, overrideValues, verboseFlag, queueFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, forceFlag})
+			return shrinkwrap.App(outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, overrideValues, verboseFlag, queueFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, forceFlag})
 		},
 	}
 
@@ -49,7 +50,6 @@ func NewAppCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", namespaceFlag, "Kubernetes namespace to deploy to")
 	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@ghcr.io")
-	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().StringVarP(&queueFlag, "queue", "", queueFlag, "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
 	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem")
 	cmd.Flags().BoolVarP(&clusterIsOpenShiftFlag, "openshift", "t", false, "Include support for OpenShift")

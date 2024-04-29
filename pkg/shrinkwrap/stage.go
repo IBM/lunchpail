@@ -9,12 +9,14 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"lunchpail.io/pkg/lunchpail"
 )
 
 func stageAppTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := Expand(dir, appTemplate, "app.tar.gz", false); err != nil {
+	} else if err := Expand(dir, appTemplate, "app.tar.gz", true); err != nil {
 		return "", err
 	} else {
 		return dir, nil
@@ -36,11 +38,17 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 			)
 		}
 
+		quietArg := "-q"
+		if verbose {
+			quietArg = ""
+		}
+
 		branchArg := ""
 		if branch != "" {
 			branchArg = "--branch=" + branch
 		}
-		cmd := exec.Command("/bin/sh", "-c", "git clone " + sourcePath + " " + branchArg + " " + appname)
+		fmt.Fprintf(os.Stderr, "Cloning application repository...")
+		cmd := exec.Command("/bin/sh", "-c", "git clone "+sourcePath+" "+branchArg+" "+quietArg+" "+appname)
 		cmd.Dir = filepath.Dir(appdir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -50,6 +58,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		if err := cmd.Wait(); err != nil {
 			return err
 		}
+		fmt.Fprintln(os.Stderr, " done")
 	} else {
 		os.MkdirAll(appdir, 0755)
 
@@ -67,11 +76,11 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 	if _, err := os.Stat(appHelmignore); err == nil {
 		fmt.Fprintf(os.Stderr, "Including application helmignore\n")
 		templateHelmignore := filepath.Join(templatePath, ".helmignore")
-		if err := AppendFile(templateHelmignore, appHelmignore); err != nil {
+		if err := appendFile(templateHelmignore, appHelmignore); err != nil {
 			return err
 		}
 	}
-	
+
 	appSrc := filepath.Join(appdir, "src")
 	if _, err := os.Stat(appSrc); err == nil {
 		// then there is a src directory that we need to move
@@ -118,32 +127,30 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 }
 
 type StageOptions struct {
-	AppName string
-	Branch string
+	Branch  string
 	Verbose bool
 }
 
-// return (appname, templatePath, error)
-func Stage(sourcePath string, opts StageOptions) (string, string, error) {
+// return (templatePath, error)
+func Stage(appname, sourcePath string, opts StageOptions) (string, error) {
 	templatePath, err := stageAppTemplate()
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	// TODO... how do we really want to get a good name for the app?
-	appname := opts.AppName
-	if appname == "" {
-		// try to infer appname
-		appname = filepath.Base(trimExt(sourcePath))
-	}
-	if appname == "pail" {
-		appname = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+	if sourcePath != "" {
+		if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
+			return "", err
+		}
 	}
 
-	if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
-		return "", "", err
-	}
+	return templatePath, nil
+}
 
+// return (appname, templatePath, error)
+func stageFromAssembled(opts StageOptions) (string, string, error) {
+	appname := lunchpail.AssembledAppName()
+	templateDir, err := Stage(appname, "", opts)
 
-	return appname, templatePath, nil
+	return appname, templateDir, err
 }
