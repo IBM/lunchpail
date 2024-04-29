@@ -211,23 +211,22 @@ global:
   s3SecretKey: lunchpail
 lunchpail: lunchpail
 workdir_via_mount: %v # workdirViaMount (8)
-branch: %s # opts.Branch (9)
-username: %s # user.Username (10)
-uid: %s # user.Uid (11)
+username: %s # user.Username (9)
+uid: %s # user.Uid (10)
 mcad:
   enabled: false
 rbac:
-  serviceaccount: %s # clusterName (12)
+  serviceaccount: %s # clusterName (11)
 image:
-  registry: %s # imageRegistry (13)
-  repo: %s # imageRepo (14)
-  version: %v # lunchpail.Version() (15)
-partOf: %s # partOf (16)
+  registry: %s # imageRegistry (12)
+  repo: %s # imageRepo (13)
+  version: %v # lunchpail.Version() (14)
+partOf: %s # partOf (15)
 taskqueue:
-  dataset: %s # taskqueueName (17)
-  secret: %s # taskqueueSecret (18)
-name: %s # runname (19)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, opts.Branch, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname)
+  dataset: %s # taskqueueName (16)
+  secret: %s # taskqueueSecret (17)
+name: %s # runname (18)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
