@@ -9,12 +9,10 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"regexp"
 	"strings"
 	//	"github.com/go-git/go-git/v5"
 
@@ -39,7 +37,7 @@ type AppOptions struct {
 	Force              bool
 }
 
-//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ../../charts/app -zcf app.tar.gz ."
+//go:generate /bin/sh -c "[ -d ../../charts/app ] && tar --exclude '*~' --exclude '*README.md' -C ../../charts/app -zcf app.tar.gz . || exit 0"
 //go:embed app.tar.gz
 var appTemplate embed.FS
 
@@ -52,112 +50,6 @@ func trimExt(fileName string) string {
 		filepath.Dir(fileName),
 		strings.TrimSuffix(filepath.Base(fileName), filepath.Ext(fileName)),
 	)
-}
-
-func stageAppTemplate() (string, error) {
-	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
-		return "", err
-	} else if err := Expand(dir, appTemplate, "app.tar.gz", false); err != nil {
-		return "", err
-	} else {
-		return dir, nil
-	}
-}
-
-func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbose bool) error {
-	templatedir := filepath.Join(templatePath, "templates")
-	appdir := filepath.Join(templatedir, appname)
-
-	if strings.HasPrefix(sourcePath, "git@") {
-		if os.Getenv("CI") != "" && os.Getenv("AI_FOUNDATION_GITHUB_USER") != "" {
-			// git@github.ibm.com:user/repo.git -> https://patuser:pat@github.ibm.com/user/repo.git
-			pattern := regexp.MustCompile("^git@([^:]+):([^/]+)/([^.]+)[.]git$")
-			// apphttps := $(echo $appgit | sed -E "s#^git\@([^:]+):([^/]+)/([^.]+)[.]git\$#https://${AI_FOUNDATION_GITHUB_USER}:${AI_FOUNDATION_GITHUB_PAT}@\1/\2/\3.git#")
-			sourcePath = pattern.ReplaceAllString(
-				sourcePath,
-				"https://"+os.Getenv("AI_FOUNDATION_GITHUB_USER")+":"+os.Getenv("AI_FOUNDATION_GITHUB_PAT")+"@$1/$2/$3.git",
-			)
-		}
-
-		branchArg := ""
-		if branch != "" {
-			branchArg = "--branch=" + branch
-		}
-		cmd := exec.Command("git", "clone", sourcePath, branchArg, appname)
-		cmd.Dir = filepath.Dir(appdir)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Start(); err != nil {
-			return err
-		}
-		if err := cmd.Wait(); err != nil {
-			return err
-		}
-	} else {
-		os.MkdirAll(appdir, 0755)
-
-		// TODO port this to pure go?
-		cmd := exec.Command("sh", "-c", "tar --exclude '*~' -C "+sourcePath+" -cf - . | tar -C "+appdir+" -xf -")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-	}
-
-	// if the app has a .helmignore file, append it to the one in the template
-	appHelmignore := filepath.Join(appdir, ".helmignore")
-	if _, err := os.Stat(appHelmignore); err == nil {
-		fmt.Fprintf(os.Stderr, "Including application helmignore\n")
-		templateHelmignore := filepath.Join(templatePath, ".helmignore")
-		if err := AppendFile(templateHelmignore, appHelmignore); err != nil {
-			return err
-		}
-	}
-	
-	appSrc := filepath.Join(appdir, "src")
-	if _, err := os.Stat(appSrc); err == nil {
-		// then there is a src directory that we need to move
-		// out of the template/ directory (this is a helm
-		// thing)
-		templateSrc := filepath.Join(templatePath, "src")
-		os.MkdirAll(templateSrc, 0755)
-		entries, err := os.ReadDir(appSrc)
-		if err != nil {
-			return err
-		}
-		for _, entry := range entries {
-			sourcePath := filepath.Join(appSrc, entry.Name())
-			destPath := filepath.Join(templateSrc, entry.Name())
-			if verbose {
-				fmt.Fprintf(os.Stderr, "Injecting application source %s -> %s %v\n", sourcePath, destPath, entry)
-			}
-			os.Rename(sourcePath, destPath)
-		}
-		if err := os.Remove(appSrc); err != nil {
-			return err
-		}
-	}
-
-	appValues := filepath.Join(appdir, "values.yaml")
-	if _, err := os.Stat(appValues); err == nil {
-		// then there is a values.yaml that we need to
-		// consolidate
-		if reader, err := os.Open(appValues); err != nil {
-			return err
-		} else {
-			defer reader.Close()
-			templateValues := filepath.Join(templatePath, "values.yaml")
-			if writer, err := os.OpenFile(templateValues, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
-				return err
-			} else {
-				io.Copy(writer, reader)
-				defer writer.Close()
-			}
-		}
-	}
-
-	return nil
 }
 
 // truncate `str` to have at most `max` length
@@ -189,7 +81,7 @@ func autorunName(appname string) (string, error) {
 }
 
 // Inject Run or WorkDispatcher resources if needed
-func injectAutoRun(appname, templatePath string, opts AppOptions) (string, []string, error) {
+func injectAutoRun(appname, templatePath string, verbose bool) (string, []string, error) {
 	sets := []string{} // we will assemble helm `--set` options
 	appdir := filepath.Join(templatePath, "templates", appname)
 
@@ -206,7 +98,7 @@ func injectAutoRun(appname, templatePath string, opts AppOptions) (string, []str
 		return "", []string{}, err
 	}
 	if err := cmd.Wait(); err != nil {
-		if opts.Verbose {
+		if verbose {
 			fmt.Println("Auto-Injecting WorkStealer initiation")
 		}
 		sets = append(sets, "autorun="+runname)
@@ -228,7 +120,7 @@ func injectAutoRun(appname, templatePath string, opts AppOptions) (string, []str
 			return "", []string{}, err
 		}
 		if err := cmd3.Wait(); err == nil {
-			if opts.Verbose {
+			if verbose {
 				fmt.Println("Auto-Injecting WorkDispatcher")
 			}
 			sets = append(sets, "autodispatcher.name="+appname)
@@ -253,26 +145,13 @@ func GenerateAppYaml(sourcePath, outputPath string, opts AppOptions) (string, st
 		}
 	}
 
-	templatePath, err := stageAppTemplate()
+
+	appname, templatePath, err := Stage(sourcePath, StageOptions{opts.AppName, opts.Branch, opts.Verbose})
 	if err != nil {
 		return "", "", err
 	}
 
-	// TODO... how do we really want to get a good name for the app?
-	appname := opts.AppName
-	if appname == "" {
-		// try to infer appname
-		appname = filepath.Base(trimExt(sourcePath))
-	}
-	if appname == "pail" {
-		appname = filepath.Base(filepath.Dir(trimExt(sourcePath)))
-	}
-
-	if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
-		return "", "", err
-	}
-
-	runname, extraValues, err := injectAutoRun(appname, templatePath, opts)
+	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
 	if err != nil {
 		return "", "", err
 	} else {

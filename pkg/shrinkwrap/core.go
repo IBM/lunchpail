@@ -27,7 +27,7 @@ type CoreOptions struct {
 	Verbose            bool
 }
 
-//go:generate /bin/sh -c "tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../charts/core -zcf core.tar.gz  ."
+//go:generate /bin/sh -c "[ -d ../../charts/core ] && tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../charts/core -zcf core.tar.gz . || exit 0"
 //go:embed core.tar.gz
 var coreTemplate embed.FS
 
