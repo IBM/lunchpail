@@ -105,6 +105,16 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		}
 	}
 
+	// if the app has a .helmignore file, append it to the one in the template
+	appHelmignore := filepath.Join(appdir, ".helmignore")
+	if _, err := os.Stat(appHelmignore); err == nil {
+		fmt.Fprintf(os.Stderr, "Including application helmignore\n")
+		templateHelmignore := filepath.Join(templatePath, ".helmignore")
+		if err := AppendFile(templateHelmignore, appHelmignore); err != nil {
+			return err
+		}
+	}
+	
 	appSrc := filepath.Join(appdir, "src")
 	if _, err := os.Stat(appSrc); err == nil {
 		// then there is a src directory that we need to move
@@ -433,4 +443,24 @@ func updateScripts(path, appname, runname, userNamespace, systemNamespace string
 			}
 			return nil
 		})
+}
+
+func AppendFile(dstPath, srcPath string) error {
+	dst, err := os.OpenFile(dstPath, os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	if _, err := io.Copy(dst, src); err != nil {
+		return err
+	}
+
+	return nil
 }
