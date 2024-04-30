@@ -17,7 +17,6 @@ const (
 )
 
 func exists(image string, kind ImageOrManifest, cli ContainerCli) (bool, error) {
-	fmt.Printf("%s %s %s %s\n", string(cli), string(kind), "exists", image)
 	cmd := exec.Command(string(cli), string(kind), "exists", image)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -7,7 +7,11 @@ import (
 	"lunchpail.io/pkg/images/build"
 )
 
-func Local() error {
+type InitLocalOptions struct {
+	Verbose bool
+}
+
+func Local(opts InitLocalOptions) error {
 	errs, _ := errgroup.WithContext(context.Background())
 
 	if err := getContainerCli(); err != nil {
@@ -33,5 +37,5 @@ func Local() error {
 		return err
 	}
 
-	return images.Build(build.BuildOptions{false})
+	return images.Build(build.BuildOptions{false, opts.Verbose})
 }
