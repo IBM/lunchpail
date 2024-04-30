@@ -7,37 +7,45 @@ import (
 	"log"
 )
 
-//func addAppOptions(cmd *cobra.Command) {
-//}
+type AppOptions struct {
+	Namespace          string
+	ClusterIsOpenShift bool
+	ImagePullSecret    string
+	WorkdirViaMount    bool
+	OverrideValues     []string
+	Queue              string
+	HasGpuSupport      bool
+	DockerHost         string
+}
+
+func AddAppOptions(cmd *cobra.Command) *AppOptions {
+	var appOptions AppOptions
+
+	cmd.Flags().StringVarP(&appOptions.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
+	cmd.Flags().StringVarP(&appOptions.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")
+	cmd.Flags().StringVarP(&appOptions.Queue, "queue", "", "", "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
+	cmd.Flags().BoolVarP(&appOptions.ClusterIsOpenShift, "openshift", "t", false, "Include support for OpenShift")
+	cmd.Flags().BoolVarP(&appOptions.HasGpuSupport, "gpu", "", false, "Include Nvidia GPU support")
+
+	cmd.Flags().StringSliceVarP(&appOptions.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
+	cmd.Flags().BoolVarP(&appOptions.WorkdirViaMount, "workdir-via-mount", "w", false, "[Advanced] Mount working directory in filesystem")
+	cmd.Flags().StringVarP(&appOptions.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")
+
+	return &appOptions
+}
 
 func NewAppCmd() *cobra.Command {
 	var outputDirFlag string
-	var namespaceFlag string
-	var clusterIsOpenShiftFlag bool = false
-	var imagePullSecretFlag string
-	var workdirViaMountFlag bool
-	var overrideValuesFlag []string = []string{}
 	var verboseFlag bool
-	var queueFlag string
 	var needsCsiH3Flag bool = false
 	var needsCsiS3Flag bool = false
 	var needsCsiNfsFlag bool = false
-	var hasGpuSupportFlag bool = false
-	var dockerHostFlag string = ""
 	var forceFlag bool
 
 	var cmd = &cobra.Command{
 		Use:   "shrinkwrap",
 		Short: "Shrinkwrap a given application",
 		Long:  "Shrinkwrap a given application",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			overrideValues, err := cmd.Flags().GetStringSlice("set")
-			if err != nil {
-				return err
-			}
-
-			return shrinkwrap.App(outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, overrideValues, verboseFlag, queueFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, forceFlag})
-		},
 	}
 
 	cmd.Flags().SortFlags = false
@@ -47,18 +55,19 @@ func NewAppCmd() *cobra.Command {
 		log.Fatalf("Required option -o/--output-directory <outputDirectoryPath>")
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", namespaceFlag, "Kubernetes namespace to deploy to")
-	cmd.Flags().StringVarP(&imagePullSecretFlag, "image-pull-secret", "s", imagePullSecretFlag, "Of the form <user>:<token>@ghcr.io")
-	cmd.Flags().StringVarP(&queueFlag, "queue", "", queueFlag, "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
+	appOpts := AddAppOptions(cmd)
 	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem")
-	cmd.Flags().BoolVarP(&clusterIsOpenShiftFlag, "openshift", "t", false, "Include support for OpenShift")
-	cmd.Flags().BoolVarP(&hasGpuSupportFlag, "gpu", "", false, "Include Nvidia GPU support")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 	cmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "[Danger  ] Force overwrite existing output directory")
 
-	cmd.Flags().StringSliceVarP(&overrideValuesFlag, "set", "", overrideValuesFlag, "[Advanced] override specific template values")
-	cmd.Flags().BoolVarP(&workdirViaMountFlag, "workdir-via-mount", "w", workdirViaMountFlag, "[Advanced] Mount working directory in filesystem")
-	cmd.Flags().StringVarP(&dockerHostFlag, "docker-host", "d", dockerHostFlag, "[Advanced] Hostname/IP address of docker host")
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		overrideValues, err := cmd.Flags().GetStringSlice("set")
+		if err != nil {
+			return err
+		}
+
+		return shrinkwrap.App(outputDirFlag, shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.WorkdirViaMount, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, appOpts.HasGpuSupport, appOpts.DockerHost, forceFlag})
+	}
 
 	return cmd
 }
