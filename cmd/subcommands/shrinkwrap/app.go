@@ -11,7 +11,6 @@ import (
 //}
 
 func NewAppCmd() *cobra.Command {
-	var appNameFlag string
 	var outputDirFlag string
 	var namespaceFlag string
 	var clusterIsOpenShiftFlag bool = false
@@ -37,7 +36,7 @@ func NewAppCmd() *cobra.Command {
 				return err
 			}
 
-			return shrinkwrap.App(outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, appNameFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, overrideValues, verboseFlag, queueFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, forceFlag})
+			return shrinkwrap.App(outputDirFlag, shrinkwrap.AppOptions{namespaceFlag, clusterIsOpenShiftFlag, workdirViaMountFlag, imagePullSecretFlag, overrideValues, verboseFlag, queueFlag, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, hasGpuSupportFlag, dockerHostFlag, forceFlag})
 		},
 	}
 
@@ -58,7 +57,6 @@ func NewAppCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "[Danger  ] Force overwrite existing output directory")
 
 	cmd.Flags().StringSliceVarP(&overrideValuesFlag, "set", "", overrideValuesFlag, "[Advanced] override specific template values")
-	cmd.Flags().StringVarP(&appNameFlag, "app-name", "a", "", "[Advanced] Override default/inferred application name")
 	cmd.Flags().BoolVarP(&workdirViaMountFlag, "workdir-via-mount", "w", workdirViaMountFlag, "[Advanced] Mount working directory in filesystem")
 	cmd.Flags().StringVarP(&dockerHostFlag, "docker-host", "d", dockerHostFlag, "[Advanced] Hostname/IP address of docker host")
 

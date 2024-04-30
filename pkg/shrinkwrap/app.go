@@ -20,7 +20,6 @@ import (
 
 type AppOptions struct {
 	Namespace          string
-	AppName            string
 	ClusterIsOpenShift bool
 	WorkdirViaMount    bool
 	ImagePullSecret    string
@@ -139,10 +138,6 @@ func generateAppYaml(outputPath string, opts AppOptions) (string, string, error)
 	appname, templatePath, err := stageFromAssembled(StageOptions{"", opts.Verbose})
 	if err != nil {
 		return "", "", err
-	}
-
-	if opts.AppName != "" {
-		appname = opts.AppName
 	}
 
 	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
