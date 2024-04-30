@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"lunchpail.io/pkg/assembler"
-	"lunchpail.io/cmd/subcommands/shrinkwrap"
 )
 
 func newAssembleCmd() *cobra.Command {
@@ -27,7 +26,7 @@ func newAssembleCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&appNameFlag, "app-name", "a", "", "[Advanced] Override default/inferred application name")
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
-	appOpts := shrinkwrap.AddAppOptions(cmd)
+	appOpts := addAppOptions(cmd)
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
