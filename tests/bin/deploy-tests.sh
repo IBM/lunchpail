@@ -57,7 +57,17 @@ fi
 "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 
 testapp=$(mktemp)
-/tmp/lunchpail assemble -v -o $testapp $branch -a "${4-$1}" $2
+
+# intentionally setting some critical values at assemble time to the
+# final value, and some critical values to bogus values that are then
+# overridden by final values at shrinkwrap time
+/tmp/lunchpail assemble -v \
+               -a "${4-$1}" \
+               -o $testapp \
+               $branch \
+               --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
+               --set github_ibm_com.secret.pat=BOGUSBOGUSBOGUS \
+               $2
 
 $testapp shrinkwrap \
          -v \
@@ -71,7 +81,6 @@ $testapp shrinkwrap \
          --set kubernetes.config=$(kubectl config view  -o json --flatten | base64 | tr -d '\n') \
          --set cosAccessKey=$COS_ACCESS_KEY \
          --set cosSecretKey=$COS_SECRET_KEY \
-         --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
          --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT
 
 "$TARGET"/up

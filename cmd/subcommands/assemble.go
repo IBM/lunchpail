@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"lunchpail.io/pkg/assembler"
+	"lunchpail.io/cmd/subcommands/shrinkwrap"
 )
 
 func newAssembleCmd() *cobra.Command {
@@ -17,9 +18,6 @@ func newAssembleCmd() *cobra.Command {
 		Short: "Generate a binary specialized to a given application",
 		Long:  "Generate a binary specialized to a given application",
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return assembler.Assemble(args[0], assembler.Options{outputFlag, appNameFlag, branchFlag, verboseFlag})
-		},
 	}
 
 	cmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path to store output binary")
@@ -29,7 +27,12 @@ func newAssembleCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&appNameFlag, "app-name", "a", "", "[Advanced] Override default/inferred application name")
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
+	appOpts := shrinkwrap.AddAppOptions(cmd)
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
+
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return assembler.Assemble(args[0], assembler.Options{outputFlag, appNameFlag, branchFlag, verboseFlag, *appOpts})
+	}
 
 	return cmd
 }

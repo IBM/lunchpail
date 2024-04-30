@@ -1,25 +1,15 @@
 package shrinkwrap
 
 import (
+	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/shrinkwrap"
 
 	"github.com/spf13/cobra"
 	"log"
 )
 
-type AppOptions struct {
-	Namespace          string
-	ClusterIsOpenShift bool
-	ImagePullSecret    string
-	WorkdirViaMount    bool
-	OverrideValues     []string
-	Queue              string
-	HasGpuSupport      bool
-	DockerHost         string
-}
-
-func AddAppOptions(cmd *cobra.Command) *AppOptions {
-	var appOptions AppOptions
+func AddAppOptions(cmd *cobra.Command) *lunchpail.AppOptions {
+	var appOptions lunchpail.AppOptions
 
 	cmd.Flags().StringVarP(&appOptions.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
 	cmd.Flags().StringVarP(&appOptions.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")

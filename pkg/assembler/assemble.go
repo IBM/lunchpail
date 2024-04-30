@@ -63,6 +63,8 @@ func Assemble(sourcePath string, opts Options) error {
 
 	if appTemplatePath, err := shrinkwrap.Stage(appname, sourcePath, shrinkwrap.StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
+	} else if err := lunchpail.SaveAppOptions(appTemplatePath, opts.AppOptions); err != nil {
+		return err
 	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath); err != nil {
 		return err
 	} else if err := lunchpail.DropAppBreadcrumb(appname, lunchpailStageDir); err != nil {
