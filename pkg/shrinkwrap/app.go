@@ -151,7 +151,7 @@ func generateAppYaml(outputPath string, opts AppOptions) (string, string, error)
 		if opts.ImagePullSecret == "" {
 			opts.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
 		}
-		
+
 		// careful: `--set x=3 --set x=4` results in x having
 		// value 4, so we need to place the shrinkwrapped
 		// options first in the list
@@ -164,7 +164,7 @@ func generateAppYaml(outputPath string, opts AppOptions) (string, string, error)
 			opts.DockerHost = shrinkwrappedOptions.DockerHost
 		}
 	}
-	
+
 	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
 	if err != nil {
 		return "", "", err
