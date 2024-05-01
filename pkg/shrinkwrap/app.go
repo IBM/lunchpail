@@ -1,6 +1,7 @@
 package shrinkwrap
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"github.com/google/uuid"
@@ -13,6 +14,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+	"time"
 	//	"github.com/go-git/go-git/v5"
 
 	"lunchpail.io/pkg/lunchpail"
@@ -31,14 +33,15 @@ type AppOptions struct {
 	NeedsCsiNfs        bool
 	HasGpuSupport      bool
 	DockerHost         string
-	Force              bool
+	DryRun             bool
+	Scripts            string
 }
 
 //go:generate /bin/sh -c "[ -d ../../charts/app ] && tar --exclude '*~' --exclude '*README.md' -C ../../charts/app -zcf app.tar.gz . || exit 0"
 //go:embed app.tar.gz
 var appTemplate embed.FS
 
-//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*README.md' -C ./scripts -zcf app-scripts.tar.gz ."
+//go:generate /bin/sh -c "tar --exclude '*DS_Store*' --exclude '*~' --exclude '*README.md' -C ./scripts -zcf app-scripts.tar.gz ."
 //go:embed app-scripts.tar.gz
 var scripts embed.FS
 
@@ -126,23 +129,10 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 }
 
 // return (appname, namespace, error)
-func generateAppYaml(outputPath string, opts AppOptions) (string, string, error) {
-	if _, err := os.Stat(outputPath); err == nil {
-		if !opts.Force {
-			return "", "", fmt.Errorf("Specified output directly already exists: %v", outputPath)
-		} else {
-			os.RemoveAll(outputPath)
-		}
-	}
-
-	appname, templatePath, err := stageFromAssembled(StageOptions{"", opts.Verbose})
-	if err != nil {
-		return "", "", err
-	}
-
+func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) error {
 	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
 	if err != nil {
-		return "", "", err
+		return err
 	} else {
 		// TODO here... how do we determine that boolean values were unset?
 		if opts.Namespace == "" {
@@ -167,16 +157,12 @@ func generateAppYaml(outputPath string, opts AppOptions) (string, string, error)
 
 	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
 	if err != nil {
-		return "", "", err
+		return err
 	} else {
 		opts.OverrideValues = append(opts.OverrideValues, extraValues...)
 
 	}
 
-	namespace := opts.Namespace
-	if namespace == "" {
-		namespace = appname
-	}
 	systemNamespace := namespace
 
 	clusterName := "lunchpail"
@@ -190,12 +176,12 @@ func generateAppYaml(outputPath string, opts AppOptions) (string, string, error)
 
 	imagePullSecretName, dockerconfigjson, ipsErr := ImagePullSecret(opts.ImagePullSecret)
 	if ipsErr != nil {
-		return "", "", ipsErr
+		return ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", "", err
+		return err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -240,7 +226,9 @@ taskqueue:
   dataset: %s # taskqueueName (16)
   secret: %s # taskqueueSecret (17)
 name: %s # runname (18)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname)
+namespace:
+  user: %s # namespace (19)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname, namespace)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
@@ -248,9 +236,11 @@ name: %s # runname (18)
 	}
 
 	chartSpec := helmclient.ChartSpec{
-		ReleaseName: appname,
+		ReleaseName: "lunchpail-app",
 		ChartName:   templatePath,
 		Namespace:   namespace,
+		Wait:        true,
+		Timeout:     240 * time.Second,
 		ValuesYaml:  yaml,
 		ValuesOptions: values.Options{
 			Values: opts.OverrideValues,
@@ -268,35 +258,28 @@ name: %s # runname (18)
 		},
 	}
 
-	helmClient, newClientErr := helmclient.New(&helmclient.Options{})
+	helmClient, newClientErr := helmclient.New(&helmclient.Options{Namespace: namespace})
 	if newClientErr != nil {
-		return "", "", newClientErr
+		return newClientErr
 	}
 
-	if res, err := helmClient.TemplateChart(&chartSpec, options); err != nil {
-		return "", "", err
-	} else {
-		outputYamlPath := filepath.Join(outputPath, appname+".yml")
-
-		if err := os.MkdirAll(outputPath, 0755); err != nil {
-			return "", "", err
-		} else if err := os.WriteFile(outputYamlPath, res, 0644); err != nil {
-			return "", "", err
+	if opts.DryRun {
+		if res, err := helmClient.TemplateChart(&chartSpec, options); err != nil {
+			return err
+		} else {
+			fmt.Println(res)
 		}
+	} else if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
+		return err
+	}
 
-		nsPath := filepath.Join(
-			filepath.Dir(outputYamlPath),
-			strings.TrimSuffix(filepath.Base(outputYamlPath), filepath.Ext(outputYamlPath))+".namespace",
-		)
-		if err := os.WriteFile(nsPath, []byte(namespace), 0644); err != nil {
-			return "", "", err
+	if opts.Scripts != "" {
+		if err := Expand(opts.Scripts, scripts, "app-scripts.tar.gz", false); err != nil {
+			return err
+		} else if err := updateScripts(opts.Scripts, appname, runname, namespace, systemNamespace, opts.Verbose); err != nil {
+			return err
 		}
 	}
-
-	if err := Expand(outputPath, scripts, "app-scripts.tar.gz", false); err != nil {
-		return "", "", err
-	}
-	updateScripts(outputPath, appname, runname, namespace, systemNamespace)
 
 	if !opts.Verbose {
 		defer os.RemoveAll(templatePath)
@@ -304,27 +287,33 @@ name: %s # runname (18)
 		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
 	}
 
-	return appname, namespace, nil
+	return nil
 }
 
-func App(outputPath string, opts AppOptions) error {
-	_, namespace, err := generateAppYaml(outputPath, opts)
+func app(opts AppOptions) error {
+	appname, templatePath, err := stageFromAssembled(StageOptions{"", opts.Verbose})
 	if err != nil {
 		return err
 	}
 
-	if err := GenerateCoreYaml(outputPath, CoreOptions{namespace, opts.ClusterIsOpenShift, opts.NeedsCsiH3, opts.NeedsCsiS3, opts.NeedsCsiNfs, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose}); err != nil {
+	namespace := opts.Namespace
+	if namespace == "" {
+		namespace = appname
+	}
+
+	if err := generateCoreYaml(CoreOptions{namespace, opts.ClusterIsOpenShift, opts.NeedsCsiH3, opts.NeedsCsiS3, opts.NeedsCsiNfs, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose, opts.DryRun}); err != nil {
 		return err
 	}
 
-	fmt.Printf("App written to %s\n", outputPath)
-	fmt.Printf("Try %s/up to launch it!\n", outputPath)
+	if err := generateAppYaml(appname, namespace, templatePath, opts); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 // hack, we still use sed here to update the script templates
-func updateScripts(path, appname, runname, userNamespace, systemNamespace string) error {
+func updateScripts(path, appname, runname, userNamespace, systemNamespace string, verbose bool) error {
 	return filepath.Walk(
 		path,
 		func(path string, info fs.FileInfo, err error) error {
@@ -332,7 +321,9 @@ func updateScripts(path, appname, runname, userNamespace, systemNamespace string
 				// TODO: ugh sed
 				sed := "cat " + path + " | sed 's#the_lunchpail_app#" + appname + "#g' | sed 's#the_lunchpail_run#" + runname + "#g' | sed 's#jaas-user#" + userNamespace + "#g' | sed 's#jaas-system#" + systemNamespace + "#g' > " + path + ".tmp && mv " + path + ".tmp " + path + " && chmod +x " + path
 				cmd := exec.Command("sh", "-c", sed)
-				cmd.Stdout = os.Stdout
+				if verbose {
+					cmd.Stdout = os.Stdout
+				}
 				cmd.Stderr = os.Stderr
 				if err := cmd.Run(); err != nil {
 					return err

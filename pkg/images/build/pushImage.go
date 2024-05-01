@@ -129,12 +129,14 @@ func pushImage(image string, cli ContainerCli, opts BuildOptions) error {
 		} else if err2 != nil {
 			return err2
 		} else if !bytes.Equal(curhash, newhash) {
-			fmt.Printf("pushing %s %s %s\n", imageName, curhash, newhash)
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "pushing %s %s %s\n", imageName, curhash, newhash)
+			}
 			if err := loadIntoKindForPodman(image); err != nil {
 				return err
 			}
-		} else {
-			fmt.Printf("already pushed %s\n", imageName)
+		} else if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "already pushed %s\n", imageName)
 		}
 
 		return nil

@@ -84,7 +84,7 @@ then
         TEST_NAME=$testname "$1"/init.sh
     fi
 
-    namespace=$(cat "$TOP"/builds/test/$testname/*.namespace || echo $NAMESPACE_USER)
+    namespace=${deployname-$testname}
 
     ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
     EC=$?

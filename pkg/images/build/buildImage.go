@@ -16,9 +16,11 @@ const (
 	Manifest                 = "manifest"
 )
 
-func exists(image string, kind ImageOrManifest, cli ContainerCli) (bool, error) {
+func exists(image string, kind ImageOrManifest, cli ContainerCli, verbose bool) (bool, error) {
 	cmd := exec.Command(string(cli), string(kind), "exists", image)
-	cmd.Stdout = os.Stdout
+	if verbose {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return false, err
@@ -31,9 +33,11 @@ func exists(image string, kind ImageOrManifest, cli ContainerCli) (bool, error) 
 	return true, nil
 }
 
-func rm(image string, kind ImageOrManifest, cli ContainerCli) error {
+func rm(image string, kind ImageOrManifest, cli ContainerCli, verbose bool) error {
 	cmd := exec.Command(string(cli), string(kind), "rm", image)
-	cmd.Stdout = os.Stdout
+	if verbose {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return err
@@ -46,9 +50,11 @@ func rm(image string, kind ImageOrManifest, cli ContainerCli) error {
 	return nil
 }
 
-func createManifest(image string, cli ContainerCli) error {
+func createManifest(image string, cli ContainerCli, verbose bool) error {
 	cmd := exec.Command(string(cli), "manifest", "create", image)
-	cmd.Stdout = os.Stdout
+	if verbose {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return err
@@ -70,7 +76,7 @@ func imageName(name, suffix string) string {
 	return filepath.Join(imageRegistry, imageRepo, provider+"-"+name+suffix+":"+version)
 }
 
-func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli ContainerCli) (string, error) {
+func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli ContainerCli, verbose bool) (string, error) {
 	image := imageName(name, suffix)
 
 	var cmd *exec.Cmd
@@ -92,10 +98,15 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 			".",
 		)
 	}
-	fmt.Printf("Building %s %s in %s %v\n", string(kind), name, dir, cmd)
+
+	if verbose {
+		fmt.Printf("Building %s %s in %s %v\n", string(kind), name, dir, cmd)
+	}
 
 	cmd.Dir = dir
-	cmd.Stdout = os.Stdout
+	if verbose {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return "", err
@@ -110,15 +121,15 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 	// TODO --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
 }
 
-func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli) (string, error) {
+func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bool) (string, error) {
 	image := imageName(name, suffix)
 
-	imageExists, ierr := exists(image, "image", cli)
+	imageExists, ierr := exists(image, "image", cli, verbose)
 	if ierr != nil {
 		return "", ierr
 	}
 
-	manifestExists, merr := exists(image, "manifest", cli)
+	manifestExists, merr := exists(image, "manifest", cli, verbose)
 	if merr != nil {
 		return "", merr
 	}
@@ -126,40 +137,40 @@ func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli) (string, 
 	if imageExists && !manifestExists {
 		// we have a previously built image that is not a manifest
 		fmt.Fprintf(os.Stderr, "Clearing out prior non-manifest image %s\n", image)
-		if err := rm(image, "image", cli); err != nil {
+		if err := rm(image, "image", cli, verbose); err != nil {
 			return "", err
 		}
 	}
 
 	if !manifestExists {
-		if err := createManifest(image, cli); err != nil {
+		if err := createManifest(image, cli, verbose); err != nil {
 			return "", err
 		}
 	}
 
-	return buildIt(dir, name, suffix, dockerfile, "manifest", cli)
+	return buildIt(dir, name, suffix, dockerfile, "manifest", cli, verbose)
 }
 
-func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli) (string, error) {
+func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bool) (string, error) {
 	image := imageName(name, suffix)
 
-	if manifestExists, err := exists(image, "manifest", cli); err != nil {
+	if manifestExists, err := exists(image, "manifest", cli, verbose); err != nil {
 		return "", err
 	} else if manifestExists {
 		fmt.Fprintf(os.Stderr, "Removing prior manifest from prod builds %s\n", image)
-		if err := rm(image, "manifest", cli); err != nil {
+		if err := rm(image, "manifest", cli, verbose); err != nil {
 			return "", err
 		}
 	}
 
-	return buildIt(dir, name, suffix, dockerfile, "image", cli)
+	return buildIt(dir, name, suffix, dockerfile, "image", cli, verbose)
 }
 
 func buildImage(dir, name, suffix, dockerfile string, cli ContainerCli, opts BuildOptions) (string, error) {
 	if opts.Production {
-		return buildProd(dir, name, suffix, dockerfile, cli)
+		return buildProd(dir, name, suffix, dockerfile, cli, opts.Verbose)
 	} else {
-		return buildDev(dir, name, suffix, dockerfile, cli)
+		return buildDev(dir, name, suffix, dockerfile, cli, opts.Verbose)
 	}
 }
 

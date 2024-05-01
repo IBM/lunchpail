@@ -56,22 +56,25 @@ fi
 
 "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 
-testapp=$(mktemp)
+appname="${4-$1}"
+mkdir -p "$TARGET"
+testapp="$TARGET"/test
 
 # intentionally setting some critical values at assemble time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
 /tmp/lunchpail assemble -v \
-               -a "${4-$1}" \
+               -a "$appname" \
                -o $testapp \
                $branch \
                --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
                --set github_ibm_com.secret.pat=BOGUSBOGUSBOGUS \
                $2
 
-$testapp shrinkwrap \
+mkdir -p "$TARGET"/scripts
+$testapp up \
          -v \
-         -o "$TARGET" \
+         --scripts "$TARGET"/scripts \
          $QUEUE \
          $APP \
          $GPU \
@@ -82,5 +85,3 @@ $testapp shrinkwrap \
          --set cosAccessKey=$COS_ACCESS_KEY \
          --set cosSecretKey=$COS_SECRET_KEY \
          --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT
-
-"$TARGET"/up

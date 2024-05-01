@@ -16,10 +16,10 @@ echo "$(tput setaf 2)Uninstalling test Runs for $1$(tput sgr0)"
 if [[ -d "$TOP"/builds/test ]]
 then
     if [[ -n "$1" ]]
-    then "$TOP"/builds/test/"$1"/down
+    then "$TOP"/builds/test/"$1"/test down -v
     else
         for dir in $(ls -t "$TOP"/builds/test)
-        do "$TOP"/builds/test/"$dir"/down &
+        do "$TOP"/builds/test/"$dir"/test down -v &
         done
 
         wait

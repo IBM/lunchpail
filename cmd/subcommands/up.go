@@ -5,7 +5,6 @@ import (
 	"lunchpail.io/pkg/shrinkwrap"
 
 	"github.com/spf13/cobra"
-	"log"
 )
 
 func addAppOptions(cmd *cobra.Command) *lunchpail.AppOptions {
@@ -24,31 +23,26 @@ func addAppOptions(cmd *cobra.Command) *lunchpail.AppOptions {
 	return &appOptions
 }
 
-func newShrinkwrapCmd() *cobra.Command {
-	var outputDirFlag string
+func newUpCmd() *cobra.Command {
 	var verboseFlag bool
-	var needsCsiH3Flag bool = false
-	var needsCsiS3Flag bool = false
-	var needsCsiNfsFlag bool = false
-	var forceFlag bool
+	var needsCsiH3Flag bool
+	var needsCsiS3Flag bool
+	var needsCsiNfsFlag bool
+	var dryrunFlag bool
+	var scriptsFlag string
 
 	var cmd = &cobra.Command{
-		Use:   "shrinkwrap",
-		Short: "Shrinkwrap a given application",
-		Long:  "Shrinkwrap a given application",
+		Use:   "up",
+		Short: "Deploy the application",
+		Long:  "Deploy the application",
 	}
 
 	cmd.Flags().SortFlags = false
-
-	cmd.Flags().StringVarP(&outputDirFlag, "output-directory", "o", "", "Output directory")
-	if err := cmd.MarkFlagRequired("output-directory"); err != nil {
-		log.Fatalf("Required option -o/--output-directory <outputDirectoryPath>")
-	}
-
 	appOpts := addAppOptions(cmd)
 	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem")
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
-	cmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "[Danger  ] Force overwrite existing output directory")
+	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
+	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
+	cmd.Flags().StringVarP(&scriptsFlag, "scripts", "", "", "Output helper scripts to this directory")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
@@ -56,7 +50,7 @@ func newShrinkwrapCmd() *cobra.Command {
 			return err
 		}
 
-		return shrinkwrap.App(outputDirFlag, shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.WorkdirViaMount, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, appOpts.HasGpuSupport, appOpts.DockerHost, forceFlag})
+		return shrinkwrap.Up(shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.WorkdirViaMount, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag, scriptsFlag})
 	}
 
 	return cmd
@@ -64,6 +58,6 @@ func newShrinkwrapCmd() *cobra.Command {
 
 func init() {
 	if lunchpail.IsAssembled() {
-		rootCmd.AddCommand(newShrinkwrapCmd())
+		rootCmd.AddCommand(newUpCmd())
 	}
 }

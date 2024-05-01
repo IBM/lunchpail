@@ -1,11 +1,12 @@
 package shrinkwrap
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
+	"time"
 
 	"github.com/kirsle/configdir"
 	"github.com/mittwald/go-helm-client"
@@ -25,6 +26,7 @@ type CoreOptions struct {
 	OverrideValues     []string
 	ImagePullSecret    string
 	Verbose            bool
+	DryRun             bool
 }
 
 //go:generate /bin/sh -c "[ -d ../../charts/core ] && tar --exclude './charts/*.tgz' --exclude '*~' --exclude '*README.md' -C ../../charts/core -zcf core.tar.gz . || exit 0"
@@ -41,7 +43,7 @@ func stageCoreTemplate() (string, error) {
 	}
 }
 
-func GenerateCoreYaml(outputPath string, opts CoreOptions) error {
+func generateCoreYaml(opts CoreOptions) error {
 	sourcePath, err := stageCoreTemplate()
 	if err != nil {
 		return err
@@ -49,7 +51,7 @@ func GenerateCoreYaml(outputPath string, opts CoreOptions) error {
 	defer os.RemoveAll(sourcePath)
 
 	if opts.Verbose {
-		fmt.Printf("Shrinkwrapping core templates=%s namespace=%s output=%v\n", sourcePath, opts.Namespace, outputPath)
+		fmt.Printf("Shrinkwrapping core templates=%s namespace=%s\n", sourcePath, opts.Namespace)
 	}
 
 	clusterName := "lunchpail"
@@ -89,19 +91,19 @@ global:
     dockerconfigjson: %s # dockerconfigjson (9)
     namespace:
       name: %v # namespace (10)
-      create: true
+      create: %v # !opts.DryRun (11)
     context:
       name: ""
-  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (11)
+  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (12)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 dlf-chart:
   csi-h3-chart:
-    enabled: %v # needsCsiH3 (12)
+    enabled: %v # needsCsiH3 (13)
   csi-s3-chart:
-    enabled: %v # needsCsiS3 (13)
+    enabled: %v # needsCsiS3 (14)
   csi-nfs-chart:
-    enabled: %v # needsCsiNFS (14)
+    enabled: %v # needsCsiNFS (15)
 `,
 		opts.HasGpuSupport,  // (1)
 		clusterType,         // (2)
@@ -113,10 +115,11 @@ dlf-chart:
 		imagePullSecretName, // (8)
 		dockerconfigjson,    // (9)
 		opts.Namespace,      // (10)
-		opts.Namespace,      // (11)
-		opts.NeedsCsiH3,     // (12)
-		opts.NeedsCsiS3,     // (13)
-		opts.NeedsCsiNfs,    // (14)
+		opts.DryRun,         // (11)
+		opts.Namespace,      // (12)
+		opts.NeedsCsiH3,     // (13)
+		opts.NeedsCsiS3,     // (14)
+		opts.NeedsCsiNfs,    // (15)
 	)
 
 	if opts.Verbose || os.Getenv("CI") != "" {
@@ -129,8 +132,10 @@ dlf-chart:
 		ChartName:        sourcePath,
 		DependencyUpdate: true,
 		Namespace:        opts.Namespace,
+		CreateNamespace:  !opts.DryRun,
 		UpgradeCRDs:      true,
 		Wait:             true,
+		Timeout:          60 * time.Second,
 		ValuesYaml:       yaml,
 		ValuesOptions:    values.Options{Values: opts.OverrideValues},
 	}
@@ -140,25 +145,30 @@ dlf-chart:
 		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
 	}
 
-	outputOfHelmTemplateCmd := ioutil.Discard
+	outputOfHelmCmd := ioutil.Discard
 	if opts.Verbose {
-		outputOfHelmTemplateCmd = os.Stdout
+		outputOfHelmCmd = os.Stdout
 	}
 
 	helmClient, newClientErr := helmclient.New(&helmclient.Options{
-		Output:          outputOfHelmTemplateCmd,
+		Namespace:       opts.Namespace,
+		Output:          outputOfHelmCmd,
 		RepositoryCache: helmCacheDir,
 	})
 	if newClientErr != nil {
 		return newClientErr
 	}
 
-	if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
-		return err
-	} else {
-		if err := os.WriteFile(filepath.Join(outputPath, "00-core.yml"), res, 0644); err != nil {
+	if opts.DryRun {
+		if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
 			return err
+		} else {
+			fmt.Println(res)
 		}
+	} else if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
+		return err
+	} else if err := addDatashimNamespaceLabel(opts.Namespace); err != nil {
+		return err
 	}
 
 	return nil

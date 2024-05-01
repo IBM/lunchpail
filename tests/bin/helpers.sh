@@ -154,7 +154,7 @@ function waitForUnassignedAndOutbox {
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
         # here we use jq to sum up all of the unassigned annotations
-        actualUnassignedTasks=$("$SCRIPTDIR"/../../builds/test/$name/qlast unassigned)
+        actualUnassignedTasks=$("$SCRIPTDIR"/../../builds/test/$name/scripts/qlast unassigned)
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
 
@@ -175,8 +175,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$("$SCRIPTDIR"/../../builds/test/$name/qlast liveworkers)
-        actualNumInOutbox=$("$SCRIPTDIR"/../../builds/test/$name/qlast done)
+        numQueues=$("$SCRIPTDIR"/../../builds/test/$name/scripts/qlast liveworkers)
+        actualNumInOutbox=$("$SCRIPTDIR"/../../builds/test/$name/scripts/qlast done)
 
         if [[ -z "$waitForMix" ]]
         then
@@ -187,7 +187,7 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
-            gotMix=$("$SCRIPTDIR"/../../builds/test/$name/qlast liveworker 4)
+            gotMix=$("$SCRIPTDIR"/../../builds/test/$name/scripts/qlast liveworker 4)
             gotMixFrom=0
             gotMixTotal=0
             for actual in $gotMix

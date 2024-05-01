@@ -9,9 +9,10 @@ func Expand(destPath string, fs embed.FS, file string, nostrip bool) error {
 		return err
 	}
 	defer reader.Close()
+
 	if err := Untar(destPath, reader, nostrip); err != nil {
 		return err
-	} else {
-		return nil
 	}
+
+	return nil
 }
