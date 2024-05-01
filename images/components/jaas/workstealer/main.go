@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strings"
 	"text/tabwriter"
 	"time"
 )
@@ -99,6 +100,11 @@ var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
 
 var writer = tabwriter.NewWriter(os.Stderr, 0, 8, 1, '\t', tabwriter.AlignRight)
+
+// Emit the path to the file we linked
+func reportLinkedFile(src, dst string) {
+	fmt.Printf("%s %s link\n", src, dst)
+}
 
 // Emit the path to the file we deleted
 func reportMovedFile(src, dst string) {
@@ -299,8 +305,8 @@ func MoveToWorkerInbox(task string, worker Worker) {
 	}
 }
 
-// As part of finishing up a Task, move it from the Worker's Outbox to the final Outbox
-func MoveToFinalOutbox(task string, worker string, success TaskCode) {
+// As part of finishing up a Task, copy it from the Worker's Outbox to the final Outbox
+func CopyToFinalOutbox(task string, worker string, success TaskCode) {
 	fileInWorkerOutbox := filepath.Join(queues, worker, "outbox", task)
 	fullyDoneOutputFilePath := filepath.Join(outbox, task)
 
@@ -319,34 +325,34 @@ func MoveToFinalOutbox(task string, worker string, success TaskCode) {
 	if err := os.MkdirAll(outbox, 0700); err != nil {
 		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
 	} else {
-		if err := os.Rename(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
-			log.Fatalf("[workstealer] Failed to move output to final outbox: %v\n", err)
+		if err := os.Link(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
+			log.Fatalf("[workstealer] Failed to link output to final outbox: %v\n", err)
 		} else {
-			reportMovedFile(fileInWorkerOutbox, fullyDoneOutputFilePath)
+			reportLinkedFile(fileInWorkerOutbox, fullyDoneOutputFilePath)
 		}
 
-		if err := os.Rename(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil {
-			log.Fatalf("[workstealer] Failed to move code to final outbox: %v\n", err)
+		if err := os.Link(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
+			log.Fatalf("[workstealer] Failed to link code to final outbox: %v\n", err)
 		} else {
-			reportMovedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath)
+			reportLinkedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath)
 		}
 
-		if err := os.Rename(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil {
-			log.Fatalf("[workstealer] Failed to move stdout to final outbox: %v\n", err)
+		if err := os.Link(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
+			log.Fatalf("[workstealer] Failed to link stdout to final outbox: %v\n", err)
 		} else {
-			reportMovedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath)
+			reportLinkedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath)
 		}
 
-		if err := os.Rename(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil {
-			log.Fatalf("[workstealer] Failed to move stderr to final outbox: %v\n", err)
+		if err := os.Link(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
+			log.Fatalf("[workstealer] Failed to link stderr to final outbox: %v\n", err)
 		} else {
-			reportMovedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath)
+			reportLinkedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath)
 		}
 
-		if err := os.Rename(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil {
-			log.Fatalf("[workstealer] Failed to move success to final outbox: %v\n", err)
+		if err := os.Link(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
+			log.Fatalf("[workstealer] Failed to link success to final outbox: %v\n", err)
 		} else {
-			reportMovedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath)
+			reportLinkedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath)
 		}
 	}
 }
@@ -392,7 +398,7 @@ func CleanupForDeadWorker(worker Worker) {
 // A Task has completed
 func CleanupForCompletedTask(completedTask AssignedTask, success TaskCode) {
 	MarkDone(completedTask.task)
-	MoveToFinalOutbox(completedTask.task, completedTask.worker, success)
+	CopyToFinalOutbox(completedTask.task, completedTask.worker, success)
 }
 
 type Apportionment struct {

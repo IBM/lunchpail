@@ -15,7 +15,7 @@
 # watcher script from configmap: volumeMount
 {{- define "watcher/volumeMount" }}
 - name: watcher
-  mountPath: "/usr/local/bin"
+  mountPath: "/opt/lunchpail/bin"
 {{- if .Values.DISABLED }}
 - name: sysctl
   mountPath: "/etc/sysctl.d/lunchpail.conf"

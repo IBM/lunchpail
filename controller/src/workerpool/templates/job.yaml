@@ -44,7 +44,7 @@ spec:
         {{ .Values.securityContext | b64dec | indent 8 }}
       {{- end }}
       
-      terminationGracePeriodSeconds: 20 # give time for the preStop in the syncer container
+      terminationGracePeriodSeconds: 0
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
       volumes:
         {{- if .Values.volumes }}
@@ -58,5 +58,4 @@ spec:
         {{- include "containers/workdir" . | indent 8 }}
       containers:
         {{- include "containers/app" . | indent 8 }}
-        {{- include "containers/syncer" . | indent 8 }}
 {{- end }}

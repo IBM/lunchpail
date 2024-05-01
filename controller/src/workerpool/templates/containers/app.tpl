@@ -1,9 +1,16 @@
 {{- define "containers/app" }}
 - name: app
   image: {{ .Values.image.app }}
-  command: ["/bin/bash", "-c", {{ print "/usr/local/bin/watcher.sh " .Values.command  }}]
+  command: ["/bin/bash", "-c", {{ print "/opt/lunchpail/bin/watcher.sh " .Values.command  }}]
   env:
+    - name: LUNCHPAIL_STARTUP_DELAY
+      value: {{ .Values.startupDelay | default 0 | quote }}
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     {{- include "queue/env" . | indent 4 }}
+    {{- include "queue/env/dataset" . | indent 4 }}
 
   {{- if .Values.env }}
   envFrom:
@@ -41,6 +48,11 @@
       nvidia.com/gpu: {{ .Values.workers.gpu }}
       {{- end }}
 
+  lifecycle:
+      preStop:
+          exec:
+            command: ["/bin/sh", "-c", "/opt/lunchpail/bin/prestop.sh >& /tmp/prestop.out"]
+            
   {{- if .Values.rbac.runAsRoot }}
   securityContext:
     privileged: true

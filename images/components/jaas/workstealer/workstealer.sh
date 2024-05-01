@@ -114,7 +114,10 @@ do
             do
                 if [[ "$change" = move ]]
                 then move $file $file2
-                else upload $file
+                elif [[ "$change" = link ]]
+                then upload $file2
+                else
+                  upload $file
                 fi
             done
         fi

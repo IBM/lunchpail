@@ -7,7 +7,7 @@ spec:
   role: dispatcher
   minSize: auto
   command: ./src/main.sh
-  image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-s3-syncer-component:" .Chart.AppVersion }}
+  image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
   env:
     METHOD: parametersweep
     SWEEP_MIN: '1'
