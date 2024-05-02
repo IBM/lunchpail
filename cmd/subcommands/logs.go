@@ -11,7 +11,7 @@ func newLogsCommand() *cobra.Command {
 	var namespaceFlag string
 	var componentsFlag []string
 	var verboseFlag bool
-	
+
 	var cmd = &cobra.Command{
 		Use:   "logs",
 		Short: "Print or stream logs from the application",

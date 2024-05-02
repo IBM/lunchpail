@@ -135,7 +135,7 @@ dlf-chart:
 		CreateNamespace:  !opts.DryRun,
 		UpgradeCRDs:      true,
 		Wait:             true,
-		Timeout:          60 * time.Second,
+		Timeout:          240 * time.Second,
 		ValuesYaml:       yaml,
 		ValuesOptions:    values.Options{Values: opts.OverrideValues},
 	}

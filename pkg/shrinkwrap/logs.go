@@ -3,23 +3,24 @@ package shrinkwrap
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/exec"
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
+	"os"
+	"os/exec"
 )
 
 type Component string
+
 const (
-	WorkersComponent Component = "workerpool"
-	DispatcherComponent Component = "workdispatcher"
+	WorkersComponent     Component = "workerpool"
+	DispatcherComponent  Component = "workdispatcher"
 	WorkStealerComponent Component = "workstealer"
-	LunchpailComponent Component = "controller"
+	LunchpailComponent   Component = "controller"
 )
 
 type LogsOptions struct {
-	Namespace string
-	Verbose bool
+	Namespace  string
+	Verbose    bool
 	Components []Component
 }
 

@@ -1,0 +1,42 @@
+package subcommands
+
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/shrinkwrap"
+)
+
+func newQlastCommand() *cobra.Command {
+	var namespaceFlag string
+
+	var cmd = &cobra.Command{
+		Use:   "qlast",
+		Short: "Stream queue statistics to console",
+		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			marker := args[0]
+			extra := ""
+			if len(args) > 1 {
+				extra = args[1]
+			}
+			val, err := shrinkwrap.Qlast(marker, extra, shrinkwrap.QlastOptions{namespaceFlag})
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(val)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
+
+	return cmd
+}
+
+func init() {
+	if lunchpail.IsAssembled() {
+		rootCmd.AddCommand(newQlastCommand())
+	}
+}
