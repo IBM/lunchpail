@@ -1,4 +1,4 @@
-package shrinkwrap
+package qstat
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type QlastOptions struct {
 }
 
 func Qlast(marker, opt string, opts QlastOptions) (string, error) {
-	c, _, err := QstatStreamer(QstatOptions{opts.Namespace, false, int64(1000), false})
+	c, _, err := QstatStreamer(Options{opts.Namespace, false, int64(1000), false})
 	if err != nil {
 		return strconv.Itoa(0), err
 	}

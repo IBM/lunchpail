@@ -1,49 +1,18 @@
-package shrinkwrap
+package qstat
 
 import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
-	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"lunchpail.io/pkg/lunchpail"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
-
-type QstatOptions struct {
-	Namespace string
-	Follow    bool
-	Tail      int64
-	Verbose   bool
-}
-
-type Worker struct {
-	Name       string
-	Inbox      int
-	Processing int
-	Outbox     int
-	Errorbox   int
-}
-
-type QstatModel struct {
-	Valid       bool
-	Timestamp   string
-	Unassigned  int
-	Assigned    int
-	Processing  int
-	Success     int
-	Failure     int
-	LiveWorkers []Worker
-	DeadWorkers []Worker
-}
 
 func stream(namespace string, follow bool, tail int64, c chan QstatModel) error {
 	opts := v1.PodLogOptions{Follow: follow}
@@ -146,74 +115,4 @@ func stream(namespace string, follow bool, tail int64, c chan QstatModel) error 
 	}
 
 	return nil
-}
-
-func QstatStreamer(opts QstatOptions) (chan QstatModel, *errgroup.Group, error) {
-	namespace := lunchpail.AssembledAppName()
-	if opts.Namespace != "" {
-		namespace = opts.Namespace
-	}
-
-	c := make(chan QstatModel)
-
-	errs, _ := errgroup.WithContext(context.Background())
-	errs.Go(func() error {
-		err := stream(namespace, opts.Follow, opts.Tail, c)
-		close(c)
-		return err
-	})
-
-	return c, errs, nil
-}
-
-func Qstat(opts QstatOptions) error {
-	c, errs, err := QstatStreamer(opts)
-	if err != nil {
-		return err
-	}
-
-	purple := lipgloss.Color("99")
-	re := lipgloss.NewRenderer(os.Stdout)
-	headerStyle := re.NewStyle().Foreground(purple).Bold(true).Align(lipgloss.Center)
-
-	first := true
-	for model := range c {
-		if !first {
-			fmt.Println()
-		} else {
-			first = false
-		}
-
-		t := table.New().
-			Border(lipgloss.NormalBorder()).
-			BorderStyle(lipgloss.NewStyle().Foreground(purple)).
-			Width(80).
-			Headers("", "IDLE", "WORKING", "SUCCESS", "FAILURE").
-			StyleFunc(func(row, col int) lipgloss.Style {
-				var style lipgloss.Style
-
-				switch {
-				case row == 0:
-					return headerStyle
-				}
-				return style
-			})
-
-		t.Row("unassigned", strconv.Itoa(model.Unassigned), "", "", "")
-		t.Row("assigned", strconv.Itoa(model.Assigned), "", "", "")
-		t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
-		t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
-
-		for _, worker := range model.LiveWorkers {
-			t.Row(worker.Name, strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
-		}
-		for _, worker := range model.DeadWorkers {
-			t.Row(worker.Name+"☠", strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
-		}
-
-		fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, len(model.LiveWorkers))
-		fmt.Println(t.Render())
-	}
-
-	return errs.Wait()
 }

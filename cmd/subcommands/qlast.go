@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap"
+	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
 
 func newQlastCommand() *cobra.Command {
@@ -20,7 +20,7 @@ func newQlastCommand() *cobra.Command {
 			if len(args) > 1 {
 				extra = args[1]
 			}
-			val, err := shrinkwrap.Qlast(marker, extra, shrinkwrap.QlastOptions{namespaceFlag})
+			val, err := qstat.Qlast(marker, extra, qstat.QlastOptions{namespaceFlag})
 			if err != nil {
 				return err
 			}

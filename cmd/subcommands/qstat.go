@@ -3,7 +3,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap"
+	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
 
 func newQstatCommand() *cobra.Command {
@@ -16,7 +16,7 @@ func newQstatCommand() *cobra.Command {
 		Use:   "qstat",
 		Short: "Stream queue statistics to console",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return shrinkwrap.Qstat(shrinkwrap.QstatOptions{namespaceFlag, followFlag, tailFlag, verboseFlag})
+			return qstat.UI(qstat.Options{namespaceFlag, followFlag, tailFlag, verboseFlag})
 		},
 	}
 
