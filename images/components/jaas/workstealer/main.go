@@ -133,6 +133,8 @@ func reportState(model Model) {
 			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run,
 		)
 	}
+	fmt.Fprintf(writer, "lunchpail.io\t---\n")
+
 
 	writer.Flush()
 }

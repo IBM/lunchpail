@@ -59,18 +59,22 @@ func stream(namespace string, follow bool, tail int64, c chan QstatModel) error 
 		}
 
 		fields := strings.Fields(line)
-		if len(fields) >= 3 {
-			marker := fields[1]
+		if len(fields) == 0 {
+			continue
+		}
+
+		marker := fields[1]
+		if marker == "---" && model.Valid {
+			c <- model
+			model = QstatModel{true, "", 0, 0, 0, 0, 0, []Worker{}, []Worker{}}
+			continue
+		} else if len(fields) >= 3 {
 			count, err := strconv.Atoi(fields[2])
 			if err != nil {
 				continue
 			}
 
 			if marker == "unassigned" {
-				if model.Valid {
-					c <- model
-					model = QstatModel{true, "", 0, 0, 0, 0, 0, []Worker{}, []Worker{}}
-				}
 				model.Valid = true
 				model.Unassigned = count
 				model.Timestamp = strings.Join(fields[4:], " ")
