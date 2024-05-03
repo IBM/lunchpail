@@ -7,6 +7,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -50,7 +51,12 @@ func Down(opts DownOptions) error {
 	}); err != nil {
 		return err
 	} else if err := uninstall(helmClient, "lunchpail-app", namespace); err != nil {
-		return err
+		if !strings.Contains(err.Error(), "not found") {
+			return err
+		} else {
+			// TODO: do we need an --ignore-not-found behavior?
+			fmt.Fprintf(os.Stderr, "Warning: application not installed\n")
+		}
 	} else if err := waitForDatashimDeletion(namespace, opts.Verbose); err != nil {
 		return err
 	} else if err := uninstall(helmClient, "lunchpail-core", namespace); err != nil {
