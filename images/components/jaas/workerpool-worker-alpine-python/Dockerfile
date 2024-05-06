@@ -1,10 +1,10 @@
-ARG registry=ghcr.io
-ARG repo=lunchpail
-ARG version=0.0.1
-FROM $registry/$repo/jaas-workerpool-worker-alpine-component:$version
+FROM docker.io/alpine:3
 
 # Note: watcher.sh depends on some bash-isms at the moment
-USER root
 RUN apk update && \
-        apk add --no-cache python3 make
+        apk add --no-cache rclone bash python3 make
+
+RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
 USER lunchpail
+ENV HOME=/home/lunchpail
+WORKDIR /home/lunchpail
