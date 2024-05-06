@@ -19,7 +19,7 @@ sweepMin="${10}"
 sweepMax="${11}"
 sweepStep="${12}"
 queue_dataset="${13}"
-datasets="${14}"
+envFroms="${14}"
 path_to_chart="${15:-$SCRIPTDIR/workdispatcher}" # :- so that we use the default if $15 is an empty string
 values="${16}"
 run_name="${17}"
@@ -47,7 +47,7 @@ helm install --dry-run --debug ${name}-${method} "$path_to_chart" -n ${namespace
      --set queue.dataset=$queue_dataset \
      --set injectedTasksPerInterval=$injectedTasksPerInterval \
      --set intervalSeconds=$intervalSeconds \
-     --set datasets=$datasets \
+     --set envFroms=$envFroms \
      --set format=$format \
      --set columns="$columns" \
      --set columnTypes="$columnTypes" \

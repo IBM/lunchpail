@@ -28,9 +28,6 @@ type AppOptions struct {
 	OverrideValues     []string
 	Verbose            bool
 	Queue              string
-	NeedsCsiH3         bool
-	NeedsCsiS3         bool
-	NeedsCsiNfs        bool
 	HasGpuSupport      bool
 	DockerHost         string
 	DryRun             bool
@@ -128,7 +125,6 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 	}
 }
 
-// return (appname, namespace, error)
 func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) error {
 	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
 	if err != nil {
@@ -189,10 +185,10 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 
 	// name of taskqueue Secret
 	taskqueueName := "defaultjaasqueue" // TODO externalize string
-	taskqueueSecret := taskqueueName + "jaassecret"
+	taskqueueAuto := true // create a queue (rather than use one supplied by the app)
 	if opts.Queue != "" {
 		taskqueueName = opts.Queue
-		taskqueueSecret = opts.Queue + "jaassecret" // FIXME
+		taskqueueAuto = false
 	}
 
 	yaml := fmt.Sprintf(`
@@ -223,12 +219,12 @@ image:
   version: %v # lunchpail.Version() (14)
 partOf: %s # partOf (15)
 taskqueue:
-  dataset: %s # taskqueueName (16)
-  secret: %s # taskqueueSecret (17)
+  auto: %v # taskqueueAuto (16)
+  dataset: %s # taskqueueName (17)
 name: %s # runname (18)
 namespace:
   user: %s # namespace (19)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueName, taskqueueSecret, runname, namespace)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueAuto, taskqueueName, runname, namespace)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
@@ -240,7 +236,7 @@ namespace:
 		ChartName:   templatePath,
 		Namespace:   namespace,
 		Wait:        true,
-		Timeout:     240 * time.Second,
+		Timeout:     360 * time.Second,
 		ValuesYaml:  yaml,
 		ValuesOptions: values.Options{
 			Values: opts.OverrideValues,

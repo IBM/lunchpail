@@ -18,9 +18,6 @@ import (
 type CoreOptions struct {
 	Namespace          string
 	ClusterIsOpenShift bool
-	NeedsCsiH3         bool
-	NeedsCsiS3         bool
-	NeedsCsiNfs        bool
 	HasGpuSupport      bool
 	DockerHost         string
 	OverrideValues     []string
@@ -97,13 +94,6 @@ global:
   s3Endpoint: http://s3.%v.svc.cluster.local:9000 # namespace (12)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
-dlf-chart:
-  csi-h3-chart:
-    enabled: %v # needsCsiH3 (13)
-  csi-s3-chart:
-    enabled: %v # needsCsiS3 (14)
-  csi-nfs-chart:
-    enabled: %v # needsCsiNFS (15)
 `,
 		opts.HasGpuSupport,  // (1)
 		clusterType,         // (2)
@@ -117,9 +107,6 @@ dlf-chart:
 		opts.Namespace,      // (10)
 		opts.DryRun,         // (11)
 		opts.Namespace,      // (12)
-		opts.NeedsCsiH3,     // (13)
-		opts.NeedsCsiS3,     // (14)
-		opts.NeedsCsiNfs,    // (15)
 	)
 
 	if opts.Verbose || os.Getenv("CI") != "" {
@@ -135,7 +122,7 @@ dlf-chart:
 		CreateNamespace:  !opts.DryRun,
 		UpgradeCRDs:      true,
 		Wait:             true,
-		Timeout:          240 * time.Second,
+		Timeout:          360 * time.Second,
 		ValuesYaml:       yaml,
 		ValuesOptions:    values.Options{Values: opts.OverrideValues},
 	}
@@ -166,8 +153,6 @@ dlf-chart:
 			fmt.Println(string(res))
 		}
 	} else if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
-		return err
-	} else if err := addDatashimNamespaceLabel(opts.Namespace); err != nil {
 		return err
 	}
 

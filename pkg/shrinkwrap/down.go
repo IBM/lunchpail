@@ -62,10 +62,6 @@ func Down(opts DownOptions) error {
 		}
 	}
 
-	if err := waitForDatashimDeletion(namespace, opts.Verbose); err != nil {
-		return err
-	}
-
 	if err := uninstall(helmClient, "lunchpail-core", namespace); err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			return err

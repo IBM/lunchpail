@@ -94,14 +94,6 @@ def run_size(customApi, name: str, spec, application):
     size = "xs" # default
     if 'size' in spec:
         size = spec['size']
-    elif 'input' in spec:
-        size = spec['input']
-    elif 'inputs' in application['spec']:
-        inputs = application["spec"]["inputs"]
-        logging.info(f"Scanning inputs for a run size run={name} inputs={inputs}")
-        for inp in inputs:
-            # TODO this isn't right; what do we do for multi-input applications?
-            size = sizeof(inp)
 
     run_size_config = load_run_size_config(customApi, size)
     logging.info(f"Using size={size} for run={name} run_size_config(base)={run_size_config} spec={spec}")

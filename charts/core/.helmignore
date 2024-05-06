@@ -5,5 +5,4 @@
 
 # these will all be pulled in from Chart.yaml as dependencies
 /core
-/datashim
 /s3

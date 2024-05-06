@@ -9,8 +9,9 @@ metadata:
   name: test7c
 spec:
   method: helm
+#    https://github.ibm.com/cloud-computer/lunchpail-dashboard/tree/main/tests/workdispatcher1
   repo: >-
-    https://github.ibm.com/cloud-computer/lunchpail-dashboard/tree/main/tests/workdispatcher1
+    https://github.ibm.com/nickm/lunchpail-dashboard/tree/envfroms/tests/workdispatcher1
   values: >-
     {"taskprefix":{"a":"tasky","b":3333}}
 {{- end }}

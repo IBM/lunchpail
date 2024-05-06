@@ -62,9 +62,6 @@ spec:
                 size:
                   type: string
                   enum: [xxs,xs,sm,md,lg,xl,xxl,auto]
-                input:
-                  type: string
-                  enum: [xxs,xs,sm,md,lg,xl,xxl]
                 inbox:
                   type: string
 
@@ -87,14 +84,6 @@ spec:
                           type: string
                           description: |
                             The name of the Dataset resource that defines the task queue.
-                        useas:
-                          type: string
-                          enum: [configmap, mount]
-                          description: |
-                            Whether to manifest the dataset to the
-                            workers as environment variables
-                            (configmap) or as a mounted filesystem
-                          
 
       # subresources for the custom resource
       subresources:

@@ -1,9 +1,6 @@
 namespace:
   user: jaas-user
 
-datashim:
-  apiVersion: com.ie.ibm.hpsys/v1alpha1
-
 taskqueue:
   # WARNING: no dashes, as Datashim currently passes useas:configmap
   # variables as shell variables with this prefix, and dashes are

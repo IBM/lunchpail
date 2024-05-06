@@ -20,13 +20,13 @@ count="${11}"
 cpu="${12}"
 memory="${13}"
 gpu="${14}"
-datasets="${15}"
-kubecontext="${16}"
-kubeconfig="${17}"
-env="${18}"
-startupDelay="${19}"
-volumes="${20}"
-volumeMounts="${21}"
+kubecontext="${15}"
+kubeconfig="${16}"
+env="${17}"
+startupDelay="${18}"
+volumes="${19}"
+volumeMounts="${20}"
+envFroms="${21}"
 securityContext="${22}"
 
 # Helm's dry-run output will go to this temporary file
@@ -68,9 +68,9 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set s3SecretKey=$INTERNAL_S3_SECRETKEY \
      --set lunchpail=$LUNCHPAIL \
      --set queue.dataset=$queue_dataset \
-     --set datasets=$datasets \
      --set volumes=$volumes \
      --set volumeMounts=$volumeMounts \
+     --set envFroms=$envFroms \
      --set env="$env" \
      --set startupDelay=$startupDelay \
      --set mcad.enabled=${MCAD_ENABLED:-false} \

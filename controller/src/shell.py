@@ -7,9 +7,9 @@ from kopf import PermanentError
 
 from clone import clone
 from run_id import alloc_run_id
-from datasets import add_dataset, to_string
+from datasets import add_dataset
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, component: str, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch):
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, component: str, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch):
     logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
 
     image = application['spec']['image']
@@ -32,13 +32,8 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     # are we to be associated with a task queue?
     if 'queue' in spec:
         queue_spec = spec['queue']['dataset']
-        queue_useas = queue_spec['useas'] if 'useas' in queue_spec else 'mount'
         queue_dataset = queue_spec['name']
-        dataset_labels = add_dataset(queue_dataset, queue_useas, dataset_labels_arr)
-    elif dataset_labels_arr is not None and len(dataset_labels_arr) > 0:
-        dataset_labels = to_string(dataset_labels_arr)
-    else:
-        dataset_labels = None
+        envFroms = add_dataset(queue_dataset, envFroms)
 
     try:
         shell_out = subprocess.run([
@@ -57,9 +52,9 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             str(memory),
             str(gpu),
             base64.b64encode(json.dumps(env).encode('ascii')),
-            base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
             base64.b64encode(json.dumps(volumes).encode('ascii')) if volumes is not None and len(volumes) > 0 else "",
             base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None and len(volumeMounts) > 0 else "",
+            base64.b64encode(json.dumps(envFroms).encode('ascii')) if envFroms is not None and len(envFroms) > 0 else "",
             ("{" + ",".join(map(str, application["spec"]["expose"]))+ "}") if "expose" in application["spec"] and len(application["spec"]["expose"]) > 0 else "",
             base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
             component if component is not None else "shell",

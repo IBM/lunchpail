@@ -7,5 +7,4 @@ metadata:
     app.kubernetes.io/name: {{ .Values.global.jaas.namespace.name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/part-of: jaas
-    monitor-pods-datasets: enabled # datashim support for "dataset.0.id" pod labels -> volume/volumeMunt
 {{- end }}

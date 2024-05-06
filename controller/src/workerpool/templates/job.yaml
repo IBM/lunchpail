@@ -28,9 +28,6 @@ spec:
         app.kubernetes.io/name: {{ .Values.name }}
         app.kubernetes.io/instance: {{ .Values.runName }}
         app.kubernetes.io/managed-by: lunchpail.io
-        {{ if .Values.datasets }}
-{{ .Values.datasets | b64dec | indent 8 }}
-        {{ end }}
     spec:
       # see
       # https://stackoverflow.com/questions/54091659/kubernetes-pods-disappear-after-failed-jobs#comment133585091_54165455

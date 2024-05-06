@@ -11,7 +11,7 @@ func Up(opts AppOptions) error {
 		namespace = appname
 	}
 
-	if err := generateCoreYaml(CoreOptions{namespace, opts.ClusterIsOpenShift, opts.NeedsCsiH3, opts.NeedsCsiS3, opts.NeedsCsiNfs, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose, opts.DryRun}); err != nil {
+	if err := generateCoreYaml(CoreOptions{namespace, opts.ClusterIsOpenShift, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose, opts.DryRun}); err != nil {
 		return err
 	}
 

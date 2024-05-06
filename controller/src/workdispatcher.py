@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 import base64
 import logging
@@ -16,7 +17,7 @@ from status import set_status, add_error_condition, set_status_after_clone_failu
 #
 # Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep or method=helm
 #
-def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, dataset_labels, patch, path_to_chart = "", values = ""):
+def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, envFroms, patch, path_to_chart = "", values = ""):
     method = spec['method']
     injectedTasksPerInterval = spec['rate']['tasks'] if "rate" in spec else 1
     intervalSeconds = spec['rate']['intervalSeconds'] if "rate" in spec and "intervalSeconds" in spec['rate'] else 10
@@ -36,6 +37,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
 
     run_name = run['metadata']['name']
 
+    logging.info(f"About to call out to WorkerDispatcher launcher envFroms={envFroms}")
     try:
         out = subprocess.run([
             "./workdispatcher.sh",
@@ -52,7 +54,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
             str(sweep_max),
             str(sweep_step),
             queue_dataset,
-            base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
+            base64.b64encode(json.dumps(envFroms).encode('ascii')) if envFroms is not None and len(envFroms) > 0 else "",
             path_to_chart,
             values,
             run_name,
@@ -77,7 +79,7 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
 #
 # Handle WorkDispatcher creation for method=helm
 #
-def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, dataset_labels, patch):
+def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid: str, spec, run, queue_dataset: str, envFroms, patch):
     logging.info(f"Creating WorkDispatcher from helm name={name} namespace={namespace}")
     run_id = alloc_run_id("helm", name)
     workdir = tempfile.mkdtemp()
@@ -91,7 +93,7 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
         # successful clone
         path_to_chart = os.path.join(workdir, cloned_subPath)
         values = spec['values'] if 'values' in spec else ""
-        create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch, path_to_chart, values)
+        create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch, path_to_chart, values)
 #    finally:
         # in either case, remove our `tempfile.mkdtemp()` temporary directory
 #        shutil.rmtree(workdir)
@@ -99,7 +101,7 @@ def create_workdispatcher_helm(v1Api, customApi, name: str, namespace: str, uid:
 #
 # Handle WorkDispatcher creation for method=application
 #
-def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str, workdispatcher_namespace: str, workdispatcher_uid: str, spec, run, queue_dataset: str, dataset_labels, patch):
+def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str, workdispatcher_namespace: str, workdispatcher_uid: str, spec, run, queue_dataset: str, envFroms, patch):
     logging.info(f"Creating WorkDispatcher from application name={workdispatcher_name} namespace={workdispatcher_namespace} queue_dataset={queue_dataset}")
 
     workdispatcher_app_namespace = workdispatcher_namespace
@@ -142,14 +144,6 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     group = "lunchpail.io"
     version = "v1alpha1"
     plural = "runs"
-    queue_useas = 'configmap'
-
-    if 'queue' in spec['application'] and 'useas' in spec['application']['queue']:
-        queue_useas = spec['application']['queue']['useas']
-        env.update({
-            "INBOX": f"/mnt/datasets/{queue_dataset}/{lunchpail}/{run_name}/inbox",
-            "OUTBOX": f"/mnt/datasets/{queue_dataset}/{lunchpail}/{run_name}/outbox",
-        })
 
     body = {
         "apiVersion": f"{group}/{version}",
@@ -178,8 +172,7 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
             "env": env,
             "queue": {
                 "dataset": {
-                    "name": queue_dataset,
-                    "useas": queue_useas,
+                    "name": queue_dataset
                 }
             }
         }

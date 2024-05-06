@@ -40,16 +40,16 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         run_namespace = namespace
         logging.info(f"WorkDispatcher creation for run={run_name} uid={uid}")
 
-        run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(customApi, run_name, run_namespace)
-        dataset_labels = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, [], [])
+        run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(v1Api, customApi, run_name, run_namespace)
+        envFroms = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, [])
 
         # we will then set the status below in the pod status watcher (look for 'component(labels) == "workdispatcher"')
         if spec['method'] == "tasksimulator" or spec['method'] == "parametersweep":
-            create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch)
+            create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch)
         elif spec['method'] == "helm":
-            create_workdispatcher_helm(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch)
+            create_workdispatcher_helm(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch)
         elif spec['method'] == "application":
-            create_workdispatcher_application(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, dataset_labels, patch)
+            create_workdispatcher_application(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch)
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
         logging.info(f"Passing through TemporaryError for WorkDispatcher creation name={name} namespace={namespace}")
@@ -84,7 +84,7 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         run_namespace = namespace
         logging.info(f"WorkerPool creation for run={run_name} uid={uid}")
 
-        run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(customApi, run_name, run_namespace)
+        run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(v1Api, customApi, run_name, run_namespace)
 
         # we need to take the union of application datasets, possibly
         # overridden by workerpool datasets e.g. an application may
@@ -93,13 +93,10 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         # pool's preference to take priority here; but any datasets
         # the application needs that the pool has no opinions on, we
         # will use the config from the application
-        datasets, dataset_labels, volumes, volumeMounts = prepare_dataset_labels2(customApi, name, namespace, spec, application)
-        dataset_labels = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, datasets, dataset_labels)
+        volumes, volumeMounts, envFroms = prepare_dataset_labels2(customApi, name, namespace, spec, application)
+        envFroms = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, envFroms)
 
-        if dataset_labels is not None:
-            logging.info(f"Attaching datasets WorkerPool={name} datasets={dataset_labels}")
-
-        create_workerpool(v1Api, customApi, application, run, namespace, uid, name, spec, queue_dataset, dataset_labels, volumes, volumeMounts, patch)
+        create_workerpool(v1Api, customApi, application, run, namespace, uid, name, spec, queue_dataset, volumes, volumeMounts, envFroms, patch)
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
         set_status(name, namespace, 'Failed', patch)
@@ -140,14 +137,14 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         else:
             command_line_options = ""
 
-        datasets, dataset_labels, dataset_labels_arr, volumes, volumeMounts = prepare_dataset_labels(customApi, name, namespace, spec, application)
-        if dataset_labels is not None:
-            logging.info(f"Attaching datasets run={name} datasets={dataset_labels}")
+        volumes, volumeMounts, envFroms = prepare_dataset_labels(customApi, name, namespace, spec, application)
 
         if api == "shell":
-            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, component, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, component, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
         elif api == "sequence":
-            head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
+            head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
+        elif api == "workqueue":
+            pass
         else:
             raise kopf.PermanentError(f"Invalid api={api} for application={application['metadata']['name']}")
 
@@ -169,53 +166,6 @@ def plural(component: str):
 
 def component(labels):
     return labels["app.kubernetes.io/component"] if "app.kubernetes.io/component" in labels else ""
-
-# Watch each managed Pod so that we can update the status of its associated Run
-@kopf.on.field('pods', field='status.phase', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
-def on_pod_status_update(name: str, namespace: str, body, labels, **kwargs):
-    try:
-        phase = body['status']['phase']
-
-        if component(labels) == "workdispatcher":
-            workdispatcher_name = labels['app.kubernetes.io/name']
-            set_status_immediately(customApi, workdispatcher_name, namespace, phase, 'workdispatchers')
-            
-        elif component(labels) == "workerpool":
-            # this isn't quite right. we will need to incr and decr as pods come and go...
-            try:
-                if phase == "Running":
-                    pool_name = labels["app.kubernetes.io/name"]
-                    try:
-                        pool = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace)
-                    except ApiException as e:
-                        logging.error(f"Error patching WorkerPool on pod event name={name} phase={phase}. {str(e)}")
-                        return
-
-                    ready = int(pool['metadata']['annotations']["lunchpail.io/ready"]) if "lunchpail.io/ready" in pool['metadata']['annotations'] else 0
-                    patch_body = { "metadata": { "annotations": { "lunchpail.io/ready": str(ready + 1) } } }
-
-                    logging.info(f"Handling managed pod update for workerpool pool_name={pool_name} phase={phase} prior_ready={ready}")
-                    try:
-                        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="workerpools", name=pool_name, namespace=namespace, body=patch_body)
-                    except ApiException as e:
-                        logging.error(f"Error patching WorkerPool (1) on pod status update pool_name={pool_name} phase={phase}. {str(e)}")
-                        return
-            except Exception as e:
-                logging.error(f"Error patching WorkerPool (2) on pod status update name={name} phase={phase}. {str(e)}")
-                return
-
-        run_name = labels["app.kubernetes.io/part-of"]
-        logging.info(f"Handling managed Pod update run_name={run_name} phase={phase}")
-        patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase, "lunchpail.io/message": "", "lunchpail.io/reason": "" } } }
-        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
-
-    except kopf.TemporaryError as e:
-        # pass through any TemporaryErrors
-        logging.info(f"Passing through TemporaryError for Pod status update name={name} namespace={namespace}")
-        raise e
-    except Exception as e:
-        logging.error(f"Error patching Run on Pod status update name={name} namespace={namespace}. {str(e)}")
-        traceback.print_exc()
 
 # Watch each managed WorkerPool Pod for creation
 @kopf.on.create('pods', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/component": "workerpool", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})

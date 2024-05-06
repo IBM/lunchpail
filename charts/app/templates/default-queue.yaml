@@ -1,25 +1,9 @@
-apiVersion: {{ .Values.datashim.apiVersion }}
-kind: Dataset
-metadata:
-  name: {{ .Values.taskqueue.dataset }}
-  annotations:
-    jaas.dev/priority: "0"
-  labels:
-    app.kubernetes.io/component: taskqueue
-    app.kubernetes.io/instance: {{ .Release.Name }}
-spec:
-  local:
-    type: "COS"
-    bucket: {{ .Values.taskqueue.dataset }}
-    endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint }}
-    secret-name: {{ print .Values.taskqueue.dataset "jaassecret" }}
-    secret-namespace: {{ .Values.namespace.user }}
-    provision: "true"
----
+{{- if .Values.taskqueue.auto }}
+# the taskqueue to use, if none is provided by the application/command line
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ print .Values.taskqueue.dataset "jaassecret" }}
+  name: {{ .Values.taskqueue.dataset }}
   labels:
     app.kubernetes.io/component: taskqueue
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -29,5 +13,4 @@ data:
   endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint | b64enc }}
   accessKeyID: {{ .Values.taskqueue.accessKeyId | default .Values.global.s3AccessKey | b64enc }}
   secretAccessKey: {{ .Values.taskqueue.secretAccessKey | default .Values.global.s3SecretKey | b64enc }}
-
-  
+{{- end }}

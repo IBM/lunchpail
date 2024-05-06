@@ -5,6 +5,7 @@ import logging
 import subprocess
 
 from kopf import PermanentError, TemporaryError
+from kubernetes.client.rest import ApiException
 
 from clone import clone
 from status import set_status, add_error_condition, set_status_after_clone_failure
@@ -57,7 +58,7 @@ def run_size(customApi, spec, application):
 # We use `./workerpool.sh` to invoke the `./workerpool/` helm chart
 # which in turn creates the pod/job resources for the pool.
 #
-def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: str, name: str, spec, queue_dataset: str, dataset_labels, volumes, volumeMounts, patch):
+def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: str, name: str, spec, queue_dataset: str, volumes, volumeMounts, envFroms, patch):
     try:
         api = application['spec']['api']
         if api != "workqueue":
@@ -92,7 +93,7 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         count, cpu, memory, gpu = run_size(customApi, spec, application)
         logging.info(f"Sizeof WorkerPool name={name} namespace={namespace} count={count} cpu={cpu} memory={memory} gpu={gpu}")
 
-        logging.info(f"About to call out to WorkerPool launcher")
+        logging.info(f"About to call out to WorkerPool launcher envFroms={envFroms}")
         try:
             out = subprocess.run([
                 "./workerpool.sh",
@@ -110,13 +111,13 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
                 str(cpu),
                 str(memory),
                 str(gpu),
-                base64.b64encode(dataset_labels.encode('ascii')) if dataset_labels is not None else "",
                 kubecontext,
                 kubeconfig,
                 base64.b64encode(json.dumps(env).encode('ascii')),
                 str(startup_delay_from_spec(spec["startupDelay"] if "startupDelay" in spec else "0")),
                 base64.b64encode(json.dumps(volumes).encode('ascii')) if volumes is not None and len(volumes) > 0 else "",
                 base64.b64encode(json.dumps(volumeMounts).encode('ascii')) if volumeMounts is not None and len(volumeMounts) > 0 else "",
+                base64.b64encode(json.dumps(envFroms).encode('ascii')) if envFroms is not None and len(envFroms) > 0 else "",
                 base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
@@ -149,7 +150,7 @@ def on_worker_pod_create(v1Api, customApi, pod_name: str, namespace: str, pod_ui
 
     run_name = pool['spec']['run'] if 'run' in pool['spec'] else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
 
-    queue_dataset = find_queue_for_run_by_name(customApi, run_name, namespace)
+    queue_dataset = find_queue_for_run_by_name(v1Api, customApi, run_name, namespace)
     if queue_dataset is None:
         # TODO report this somehow via some resource status
         logging.error(f"Missing queue dataset for worker run_name={run_name} pod_name={pod_name} namespace={namespace}")
@@ -205,7 +206,7 @@ def look_for_queue_updates(line: str):
         return patch_body
 
 # look for the Dataset instance that represents the queue for the given named Run
-def find_queue_for_run(customApi, run):
+def find_queue_for_run(v1, run):
     run_name = run['metadata']['name']
     run_namespace = run['metadata']['namespace']
 
@@ -214,30 +215,26 @@ def find_queue_for_run(customApi, run):
 
     queue_dataset = run['metadata']['annotations']['jaas.dev/taskqueue']
 
-    matching_dataset = customApi.get_namespaced_custom_object(
-        group="com.ie.ibm.hpsys",
-        version="v1alpha1",
-        plural="datasets",
-        name=queue_dataset,
-        namespace=run_namespace,
-    )
-
-    if matching_dataset is None:
-        raise TemporaryError(f"Run does yet have an assigned task, but it does not yet exist queue_dataset={queue_dataset} run={run_name} namespace={run_namespace}", delay=5)
-    else:
+    try:
+        matching_dataset = v1.read_namespaced_secret(
+            name=queue_dataset,
+            namespace=run_namespace,
+        )
         logging.info(f"Run does have an assigned task queue_dataset={queue_dataset} run={run_name} namespace={run_namespace}")
         return queue_dataset
+    except ApiException as e:
+        if e.status != 404:
+            raise e
+        else:
+            raise TemporaryError(f"Run does have an assigned task queue, but it does not yet exist queue_dataset={queue_dataset} run={run_name} namespace={run_namespace}", delay=5)
 
-def find_queue_for_run_by_name(customApi, run_name: str, run_namespace: str):
+def find_queue_for_run_by_name(v1Api, customApi, run_name: str, run_namespace: str):
     run = customApi.get_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=run_namespace)
-    return find_queue_for_run(customApi, run)
+    return find_queue_for_run(v1Api, run)
     
 # look for a default Dataset instance in the given namespace
-def find_default_queue_for_namespace(customApi, namespace: str):
-    available_queues = customApi.list_namespaced_custom_object(
-        group="com.ie.ibm.hpsys",
-        version="v1alpha1",
-        plural="datasets",
+def find_default_queue_for_namespace(v1Api, namespace: str):
+    available_queues = v1Api.list_namespaced_secret(
         namespace=namespace,
         label_selector=f"app.kubernetes.io/component=taskqueue"
     )["items"]

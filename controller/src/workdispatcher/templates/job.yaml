@@ -16,9 +16,6 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }} # name of WorkDispatcher
     app.kubernetes.io/instance: {{ .Release.Name }} # name of this WorkDispatcher impl, i.e. the job/pod
     app.kubernetes.io/managed-by: lunchpail.io
-    {{- if .Values.datasets }}
-{{ .Values.datasets | b64dec | indent 4 }}
-    {{- end }}
 spec:
   restartPolicy: OnFailure
   terminationGracePeriodSeconds: 5

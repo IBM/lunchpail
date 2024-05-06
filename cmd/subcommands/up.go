@@ -25,9 +25,6 @@ func addAppOptions(cmd *cobra.Command) *lunchpail.AppOptions {
 
 func newUpCmd() *cobra.Command {
 	var verboseFlag bool
-	var needsCsiH3Flag bool
-	var needsCsiS3Flag bool
-	var needsCsiNfsFlag bool
 	var dryrunFlag bool
 	var scriptsFlag string
 
@@ -39,7 +36,6 @@ func newUpCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	appOpts := addAppOptions(cmd)
-	cmd.Flags().BoolVarP(&needsCsiS3Flag, "s3-mounts", "", needsCsiS3Flag, "Enable mounting S3 as a filesystem")
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().StringVarP(&scriptsFlag, "scripts", "", "", "Output helper scripts to this directory")
@@ -50,7 +46,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return shrinkwrap.Up(shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.WorkdirViaMount, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, needsCsiH3Flag, needsCsiS3Flag, needsCsiNfsFlag, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag, scriptsFlag})
+		return shrinkwrap.Up(shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.WorkdirViaMount, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag, scriptsFlag})
 	}
 
 	return cmd

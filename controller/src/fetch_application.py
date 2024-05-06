@@ -54,9 +54,9 @@ def fetch_run_and_application(customApi, run_name: str, run_namespace: str):
 # Find the Run and Application and TaskQueue (Dataset) resources for
 # the given named Run
 #
-def fetch_run_and_application_and_queue_dataset(customApi, run_name: str, run_namespace: str):
+def fetch_run_and_application_and_queue_dataset(v1Api, customApi, run_name: str, run_namespace: str):
     run, application = fetch_run_and_application(customApi, run_name, run_namespace)
-    queue_dataset = find_queue_for_run(customApi, run)
+    queue_dataset = find_queue_for_run(v1Api, run)
     if queue_dataset is None:
         raise TemporaryError(f"WorkerPool creation failed due to missing queue dataset run_name={run_name} run_namespace={run_namespace}", delay=4)
 

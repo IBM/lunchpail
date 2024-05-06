@@ -28,6 +28,11 @@
       value: {{ quote .Values.sweep.step }}
     {{- include "queue/env/dataset" . | indent 4 }}
 
+  {{- if .Values.envFroms }}
+  envFrom:
+  {{ .Values.envFroms | b64dec | fromJsonArray | toYaml | nindent 2 }}
+  {{- end }}
+    
   {{- if .Values.rbac.runAsRoot }}
   securityContext:
     privileged: true

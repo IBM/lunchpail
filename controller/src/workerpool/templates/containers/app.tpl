@@ -12,10 +12,15 @@
     {{- include "queue/env" . | indent 4 }}
     {{- include "queue/env/dataset" . | indent 4 }}
 
-  {{- if .Values.env }}
+  {{- if or .Values.env .Values.envFroms }}
   envFrom:
+  {{- if or .Values.env }}
   - configMapRef:
       name: {{ print .Release.Name "-env" | trunc 53 }}
+  {{- end }}
+  {{- if .Values.envFroms }}
+  {{ .Values.envFroms | b64dec | fromJsonArray | toYaml | nindent 2 }}
+  {{- end }}
   {{- end }}
 
   {{- include "workdir/path" . | indent 2 }}

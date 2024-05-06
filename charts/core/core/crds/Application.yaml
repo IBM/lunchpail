@@ -109,12 +109,22 @@ spec:
                   type: array
                   items:
                     type: object
-                    required: [name,nfs]
+                    oneOf:
+                      - required: [name,nfs]
+                      - required: [name,s3]
                     properties:
                       name:
                         type: string
                       mountPath:
                         type: string
+                      s3:
+                        type: object
+                        required: [secret,prefix]
+                        properties:
+                          secret:
+                            type: string
+                          envPrefix:
+                            type: string
                       nfs:
                         type: object
                         required: [server,path]
@@ -122,38 +132,6 @@ spec:
                           server:
                             type: string
                           path:
-                            type: string
-
-                inputs:
-                  type: array
-                  items:
-                    type: object
-                    required: [sizes]
-                    properties:
-                      useas:
-                        type: string
-                        enum: [mount,configmap]
-                      namespace:
-                        type: string
-                      defaultSize:
-                        type: string
-                        enum: [xxs,xs,sm,md,lg,xl,xxl]
-                      sizes:
-                        type: object
-                        properties:
-                          xxs:
-                            type: string
-                          xs:
-                            type: string
-                          sm:
-                            type: string
-                          md:
-                            type: string
-                          lg:
-                            type: string
-                          xl:
-                            type: string
-                          xxl:
                             type: string
 
             status:
