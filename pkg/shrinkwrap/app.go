@@ -23,7 +23,6 @@ import (
 type AppOptions struct {
 	Namespace          string
 	ClusterIsOpenShift bool
-	WorkdirViaMount    bool
 	ImagePullSecret    string
 	OverrideValues     []string
 	Verbose            bool
@@ -206,25 +205,24 @@ global:
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 lunchpail: lunchpail
-workdir_via_mount: %v # workdirViaMount (8)
-username: %s # user.Username (9)
-uid: %s # user.Uid (10)
+username: %s # user.Username (8)
+uid: %s # user.Uid (9)
 mcad:
   enabled: false
 rbac:
-  serviceaccount: %s # clusterName (11)
+  serviceaccount: %s # clusterName (10)
 image:
-  registry: %s # imageRegistry (12)
-  repo: %s # imageRepo (13)
-  version: %v # lunchpail.Version() (14)
-partOf: %s # partOf (15)
+  registry: %s # imageRegistry (11)
+  repo: %s # imageRepo (12)
+  version: %v # lunchpail.Version() (13)
+partOf: %s # partOf (14)
 taskqueue:
-  auto: %v # taskqueueAuto (16)
-  dataset: %s # taskqueueName (17)
-name: %s # runname (18)
+  auto: %v # taskqueueAuto (15)
+  dataset: %s # taskqueueName (16)
+name: %s # runname (17)
 namespace:
-  user: %s # namespace (19)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, opts.WorkdirViaMount, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueAuto, taskqueueName, runname, namespace)
+  user: %s # namespace (18)
+`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueAuto, taskqueueName, runname, namespace)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)

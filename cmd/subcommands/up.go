@@ -17,7 +17,6 @@ func addAppOptions(cmd *cobra.Command) *lunchpail.AppOptions {
 	cmd.Flags().BoolVarP(&appOptions.HasGpuSupport, "gpu", "", false, "Include Nvidia GPU support")
 
 	cmd.Flags().StringSliceVarP(&appOptions.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
-	cmd.Flags().BoolVarP(&appOptions.WorkdirViaMount, "workdir-via-mount", "w", false, "[Advanced] Mount working directory in filesystem")
 	cmd.Flags().StringVarP(&appOptions.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")
 
 	return &appOptions
@@ -46,7 +45,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return shrinkwrap.Up(shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.WorkdirViaMount, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag, scriptsFlag})
+		return shrinkwrap.Up(shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag, scriptsFlag})
 	}
 
 	return cmd
