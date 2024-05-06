@@ -1,6 +1,15 @@
 package shrinkwrap
 
-func Up(opts AppOptions) error {
+import (
+	"lunchpail.io/pkg/shrinkwrap/qstat"
+)
+
+type UpOptions struct {
+	AppOptions
+	Watch bool
+}
+
+func Up(opts UpOptions) error {
 	appname, templatePath, err := stageFromAssembled(StageOptions{"", opts.Verbose})
 	if err != nil {
 		return err
@@ -15,8 +24,12 @@ func Up(opts AppOptions) error {
 		return err
 	}
 
-	if err := generateAppYaml(appname, namespace, templatePath, opts); err != nil {
+	if err := generateAppYaml(appname, namespace, templatePath, opts.AppOptions); err != nil {
 		return err
+	}
+
+	if opts.Watch {
+		return qstat.UI(qstat.Options{namespace, true, -1, opts.Verbose})
 	}
 
 	return nil

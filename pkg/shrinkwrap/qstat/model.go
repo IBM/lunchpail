@@ -43,7 +43,7 @@ func QstatStreamer(opts Options) (chan QstatModel, *errgroup.Group, error) {
 
 	errs, _ := errgroup.WithContext(context.Background())
 	errs.Go(func() error {
-		err := stream(namespace, opts.Follow, opts.Tail, c)
+		err := streamModel(namespace, opts.Follow, opts.Tail, c)
 		close(c)
 		return err
 	})

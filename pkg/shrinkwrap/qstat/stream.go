@@ -12,9 +12,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func stream(namespace string, follow bool, tail int64, c chan QstatModel) error {
+func streamModel(namespace string, follow bool, tail int64, c chan QstatModel) error {
 	opts := v1.PodLogOptions{Follow: follow}
 	if tail != -1 {
 		opts.TailLines = &tail
@@ -43,7 +44,14 @@ func stream(namespace string, follow bool, tail int64, c chan QstatModel) error 
 	podLogs := clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &opts)
 	stream, err := podLogs.Stream(context.TODO())
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), "waiting to start") {
+			fmt.Fprintf(os.Stderr, "Waiting for app to start...\n")
+			time.Sleep(2 * time.Second)
+			// TODO update this to use the kubernetes watch api?
+			return streamModel(namespace, follow, tail, c)
+		} else {
+			return err
+		}
 	}
 	buffer := bufio.NewReader(stream)
 
