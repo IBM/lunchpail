@@ -101,6 +101,8 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 
 	if verbose {
 		fmt.Printf("Building %s %s in %s %v\n", string(kind), name, dir, cmd)
+	} else {
+		fmt.Printf("Building %s\n", name)
 	}
 
 	cmd.Dir = dir
