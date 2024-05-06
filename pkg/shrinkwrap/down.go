@@ -45,23 +45,32 @@ func Down(opts DownOptions) error {
 
 	fmt.Fprintf(os.Stderr, "Uninstalling application in namespace=%s\n", namespace)
 
-	if helmClient, err := helmclient.New(&helmclient.Options{
+	helmClient, err := helmclient.New(&helmclient.Options{
 		Output:    outputOfHelmCmd,
 		Namespace: namespace,
-	}); err != nil {
+	})
+	if err != nil {
 		return err
-	} else if err := uninstall(helmClient, "lunchpail-app", namespace); err != nil {
+	}
+
+	if err := uninstall(helmClient, "lunchpail-app", namespace); err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			return err
 		} else {
 			// TODO: do we need an --ignore-not-found behavior?
 			fmt.Fprintf(os.Stderr, "Warning: application not installed\n")
 		}
-	} else if err := waitForDatashimDeletion(namespace, opts.Verbose); err != nil {
+	}
+
+	if err := waitForDatashimDeletion(namespace, opts.Verbose); err != nil {
 		return err
-	} else if err := uninstall(helmClient, "lunchpail-core", namespace); err != nil {
+	}
+
+	if err := uninstall(helmClient, "lunchpail-core", namespace); err != nil {
 		return err
-	} else if err := deleteNamespace(namespace); err != nil {
+	}
+
+	if err := deleteNamespace(namespace); err != nil {
 		return err
 	}
 
