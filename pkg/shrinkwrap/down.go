@@ -67,7 +67,12 @@ func Down(opts DownOptions) error {
 	}
 
 	if err := uninstall(helmClient, "lunchpail-core", namespace); err != nil {
-		return err
+		if !strings.Contains(err.Error(), "not found") {
+			return err
+		} else {
+			// TODO: do we need an --ignore-not-found behavior?
+			fmt.Fprintf(os.Stderr, "Warning: core not installed\n")
+		}
 	}
 
 	if err := deleteNamespace(namespace); err != nil {

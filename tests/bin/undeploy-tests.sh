@@ -15,7 +15,7 @@ echo "$(tput setaf 2)Uninstalling test Runs for $1$(tput sgr0)"
 # shrinkwraps first
 if [[ -d "$TOP"/builds/test ]]
 then
-    if [[ -n "$1" ]]
+    if [[ -n "$1" ]] && [[ -f "$TOP"/builds/test/"$1"/test ]]
     then "$TOP"/builds/test/"$1"/test down -v
     else
         for dir in $(ls -t "$TOP"/builds/test)
