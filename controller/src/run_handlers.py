@@ -11,7 +11,6 @@ from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_da
 
 from shell import create_run_shell
 from sequence import create_run_sequence
-from workqueue import create_run_workqueue
 
 from workerpool import create_workerpool, on_worker_pod_create
 from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
@@ -149,8 +148,6 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
             head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, component, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         elif api == "sequence":
             head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels, volumes, volumeMounts, patch)
-        elif api == "workqueue":
-            head_pod_name = create_run_workqueue(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, dataset_labels_arr, volumes, volumeMounts, patch)
         else:
             raise kopf.PermanentError(f"Invalid api={api} for application={application['metadata']['name']}")
 
