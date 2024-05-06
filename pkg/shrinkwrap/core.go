@@ -163,7 +163,7 @@ dlf-chart:
 		if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
 			return err
 		} else {
-			fmt.Println(res)
+			fmt.Println(string(res))
 		}
 	} else if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
 		return err
