@@ -1,12 +1,9 @@
 dependencies:
-- name: jaas-core
+- name: core
   repository: file://./core
   version: 0.0.1
-- name: jaas-s3
+- name: s3
   repository: file://./s3
   version: 0.0.1
-- name: dlf-chart
-  repository: file://./datashim
-  version: 0.1.0
-digest: sha256:2852bbd09c32345a11b5429ea13c063a7f8ad129c5e123864113f9838f1c980a
-generated: "2024-04-24T10:54:35.680428-04:00"
+digest: sha256:a36cada22ecdc526f46de24042fee95d5ea800737c17a77443f953f3757a32de
+generated: "2024-05-06T16:25:23.870287-04:00"

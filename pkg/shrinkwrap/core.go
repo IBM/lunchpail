@@ -72,7 +72,7 @@ func generateCoreYaml(opts CoreOptions) error {
 tags:
   gpu: %v # hasGpuSupport (1)
   core: true
-jaas-core:
+core:
   lunchpail: lunchpail
 global:
   type: %s # clusterType (2)
