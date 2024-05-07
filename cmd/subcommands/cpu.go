@@ -9,18 +9,20 @@ import (
 func Newcmd() *cobra.Command {
 	var namespaceFlag string
 	var watchFlag bool
+	var verboseFlag bool
 
 	var cmd = &cobra.Command{
 		Use:   "cpu",
 		Short: "Displays CPU utilization",
 		Long:  "Displays CPU utilization",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cpu.UI(cpu.CpuOptions{Namespace: namespaceFlag, Watch: false})
+			return cpu.UI(cpu.CpuOptions{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag})
 		},
 	}
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watches for changes in list of runs")
+	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 
 	return cmd
 }
