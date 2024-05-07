@@ -17,7 +17,7 @@ func BuildComponents(cli ContainerCli, opts BuildOptions) error {
 	}
 
 	errs, _ := errgroup.WithContext(context.Background())
-	errs.SetLimit(4) // podman doesn't like lots of concurrent pushes
+	errs.SetLimit(2) // podman doesn't like lots of concurrent pushes
 
 	for _, f := range files {
 		if !f.IsDir() {
