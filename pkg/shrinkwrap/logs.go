@@ -3,10 +3,11 @@ package shrinkwrap
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/lunchpail"
 	"os"
 	"os/exec"
+
+	"golang.org/x/sync/errgroup"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 type Component string
@@ -35,6 +36,8 @@ func streamLogs(appname, namespace string, component Component, verbose bool) er
 		containers = "workstealer"
 	} else if component == LunchpailComponent {
 		containers = "controller"
+		appSelector = ""
+	} else if component == WorkersComponent {
 		appSelector = ""
 	}
 
