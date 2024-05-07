@@ -114,6 +114,8 @@ then
         rm -rf $RCLONE.zip
     elif [ "$os" = "alpine" ]
     then apk update && apk --no-cache add rclone
+    elif [ "$os" = "rhel" ]
+    then yum update && yum install rclone
     fi
 fi
 
