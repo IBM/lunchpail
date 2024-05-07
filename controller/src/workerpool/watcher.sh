@@ -113,7 +113,7 @@ then
         unzip -o $RCLONE.zip -d ${HOME}
         rm -rf $RCLONE.zip
     elif [ "$os" = "alpine" ]
-    then apk update && apk --no-cache install rclone
+    then apk update && apk --no-cache add rclone
     fi
 fi
 
