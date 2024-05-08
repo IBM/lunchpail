@@ -141,7 +141,6 @@ func reportState(model Model) {
 	}
 	fmt.Fprintf(writer, "lunchpail.io\t---\n")
 
-
 	writer.Flush()
 }
 
@@ -418,7 +417,8 @@ func apportion(model Model) []Apportionment {
 
 	nUnderutilizedWorkers := 0
 	for _, worker := range model.LiveWorkers {
-		assignThisMany := max(0, desiredLevel-len(worker.assignedTasks))
+		assignThisMany := max(0, desiredLevel-len(worker.assignedTasks)-len(worker.processingTasks))
+
 		if assignThisMany > 0 {
 			nUnderutilizedWorkers++
 		}
@@ -490,7 +490,7 @@ func rebalance(model Model) bool {
 		workersWithWork := []Worker{}
 		workersWithoutWork := []Worker{}
 		for _, worker := range model.LiveWorkers {
-			if len(worker.assignedTasks) == 0 {
+			if len(worker.assignedTasks) == 0 && len(worker.processingTasks) == 0 {
 				workersWithoutWork = append(workersWithoutWork, worker)
 			} else {
 				workersWithWork = append(workersWithWork, worker)
