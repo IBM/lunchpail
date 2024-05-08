@@ -16,6 +16,7 @@ type Run struct {
 	Name string
 }
 
+// return all Runs in the given namespace for the given app
 func List(appName, namespace string) ([]Run, error) {
 	clientset, err := kubeApiServerClient()
 	if err != nil {
@@ -38,6 +39,8 @@ func List(appName, namespace string) ([]Run, error) {
 	return allRuns, nil
 }
 
+// return a Run if there is one in the given namespace for the given
+// app, otherwise error
 func Singleton(appName, namespace string) (Run, error) {
 	runs, err := List(appName, namespace)
 	if err != nil {
@@ -78,7 +81,6 @@ func ListJobs(appName, namespace string, client kubernetes.Interface) (*batchv1.
 
 	jobs, err := client.BatchV1().Jobs(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: label})
 	if err != nil {
-		err = fmt.Errorf("error getting jobs: %v", err)
 		return nil, err
 	}
 	return jobs, nil

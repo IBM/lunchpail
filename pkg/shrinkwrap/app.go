@@ -237,6 +237,7 @@ tags:
   gpu: %v # hasGpuSupport (22)
 core:
   lunchpail: lunchpail
+  name: %s # runname (23)
 `,
 		clusterType,         // (1)
 		opts.DockerHost,     // (2)
@@ -261,6 +262,7 @@ core:
 		runname,             // (20)
 		namespace,           // (21)
 		opts.HasGpuSupport,  // (22)
+		runname,             // (23)
 	)
 
 	if opts.Verbose {
