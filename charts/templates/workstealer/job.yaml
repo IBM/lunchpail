@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ print .Release.Name "-workstealer" | trunc 53 }}
+  name: {{ print .Release.Name "-workstealer" | trunc 53 | trimSuffix "-" }}
   namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: workstealer

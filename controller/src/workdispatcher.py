@@ -145,11 +145,13 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
     version = "v1alpha1"
     plural = "runs"
 
+    application_name = application["metadata"]["name"]
+
     body = {
         "apiVersion": f"{group}/{version}",
         "kind": "Run",
         "metadata": {
-            "name": workdispatcher_name + "-dispatcher",
+            "name": f"{run_name}-{workdispatcher_name.replace(application_name + '-', '')}"[:53].rstrip("-"),
             "labels": {
                 "app.kubernetes.io/name": workdispatcher_name,
                 # TODO, this currently results in the pod status tracker updating run_name "app.kubernetes.io/part-of": run_name,

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ print .Values.name "-s3" }}
+  name: {{ print (.Values.name | trunc 50) "-s3" }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
@@ -31,7 +31,7 @@ spec:
         imagePullPolicy: IfNotPresent
         envFrom:
           - secretRef:
-              name: {{ print .Values.name "-s3" }}
+              name: {{ print (.Values.name | trunc 50) "-s3" }}
         command:
           - /bin/bash
           - -c

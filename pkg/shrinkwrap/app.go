@@ -165,7 +165,6 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 
 	systemNamespace := namespace
 
-	clusterName := "lunchpail"
 	clusterType := "k8s"
 	imageRegistry := "ghcr.io"
 	imageRepo := "lunchpail"
@@ -187,8 +186,9 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 	// the app.kubernetes.io/part-of label value
 	partOf := appname
 
-	// name of taskqueue Secret
-	taskqueueName := "defaultjaasqueue" // TODO externalize string
+	// name of taskqueue Secret; dashes are not valid in bash
+	// variable names, so we avoid those here
+	taskqueueName := strings.Replace(runname, "-", "", -1) + "queue"
 	taskqueueAuto := true               // create a queue (rather than use one supplied by the app)
 	if opts.Queue != "" {
 		taskqueueName = opts.Queue
@@ -206,7 +206,7 @@ global:
   type: %s # clusterType (1)
   dockerHost: %s # dockerHost (2)
   rbac:
-    serviceaccount: %s # clusterName (3)
+    serviceaccount: %s # runname (3)
     runAsRoot: false
   image:
     registry: %s # imageRegistry (4)
@@ -228,7 +228,7 @@ uid: %s # user.Uid (14)
 mcad:
   enabled: false
 rbac:
-  serviceaccount: %s # clusterName (15)
+  serviceaccount: %s # runname (15)
 image:
   registry: %s # imageRegistry (16)
   repo: %s # imageRepo (17)
@@ -253,7 +253,7 @@ s3:
 `,
 		clusterType,         // (1)
 		opts.DockerHost,     // (2)
-		clusterName,         // (3)
+		runname,             // (3)
 		imageRegistry,       // (4)
 		imageRepo,           // (5)
 		imagePullSecretName, // (6)
@@ -266,7 +266,7 @@ s3:
 		internalS3Port,      // (12)
 		user.Username,       // (13)
 		user.Uid,            // (14)
-		clusterName,         // (15)
+		runname,             // (15)
 		imageRegistry,       // (16)
 		imageRepo,           // (17)
 		lunchpail.Version(), // (18)

@@ -82,14 +82,14 @@ function waitForIt {
         done
     done
 
-    run_name=$(kubectl -n $ns get run.lunchpail.io -l $selector --no-headers -o custom-columns=NAME:.metadata.name)
+    local run_name=$(kubectl -n $ns get run.lunchpail.io -l $selector --no-headers -o custom-columns=NAME:.metadata.name)
     kubectl delete run $run_name -n $ns
     echo "✅ PASS run-controller delete test=$name"
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
     else
-        local queue=${taskqueue:-defaultjaasqueue} # TODO on default?
+        local queue=${taskqueue-$(kubectl -n $ns get secret -l app.kubernetes.io/component=taskqueue,app.kubernetes.io/instance=$run_name --no-headers -o custom-columns=NAME:.metadata.name)}
 
         echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0) namespace=$ns" 1>&2
         nOutputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \

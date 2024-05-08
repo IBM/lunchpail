@@ -93,19 +93,22 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         count, cpu, memory, gpu = run_size(customApi, spec, application)
         logging.info(f"Sizeof WorkerPool name={name} namespace={namespace} count={count} cpu={cpu} memory={memory} gpu={gpu}")
 
-        logging.info(f"About to call out to WorkerPool launcher envFroms={envFroms}")
+        run_name = run["metadata"]["name"]
+        application_name = application["metadata"]["name"]
+
+        logging.info(f"About to call out to WorkerPool launcher for run={run_name} envFroms={envFroms}")
         try:
             out = subprocess.run([
                 "./workerpool.sh",
                 uid,
                 name,
                 namespace,
-                f"{name}-workers", # name of worker pods/deployment
+                f"{run_name}-{name.replace(application_name + '-', '')}"[:53].rstrip("-"), # name of worker pods/deployment = run_name-pool_name
                 image,
                 command,
                 subPath,
-                application["metadata"]["name"],
-                run["metadata"]["name"],
+                application_name,
+                run_name,
                 queue_dataset,
                 str(count),
                 str(cpu),

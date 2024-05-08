@@ -16,7 +16,7 @@
   envFrom:
   {{- if or .Values.env }}
   - configMapRef:
-      name: {{ print .Release.Name "-env" | trunc 53 }}
+      name: {{ print .Release.Name "-env" | trunc 53 | trimSuffix "-" }}
   {{- end }}
   {{- if .Values.envFroms }}
   {{ .Values.envFroms | b64dec | fromJsonArray | toYaml | nindent 2 }}

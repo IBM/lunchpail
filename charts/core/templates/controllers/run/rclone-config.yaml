@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: rclone-config
+  name: {{ print .Values.name "-rclone-config" | trunc 53 | trimSuffix "-" }}
   namespace: {{ .Release.Namespace }}
 type: Opaque
 stringData:
@@ -18,7 +18,7 @@ stringData:
 {{- define "rclone.volume" }}
 - name: rclone-config
   secret:
-    secretName: rclone-config
+    secretName: {{ print .Values.name "-rclone-config" | trunc 53 | trimSuffix "-" }}
 {{- end }}
 
 {{- define "rclone.volumeMount" }}

@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ print (.Release.Name | trunc 45) "-watcher" }}
+  name: {{ print (.Release.Name | trunc 45) "-watcher" | trunc 53 | trimSuffix "-" }}
   namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/component: workerpool
