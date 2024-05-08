@@ -116,6 +116,7 @@ func podmanNewHash(image, tag string) ([]byte, error) {
 func pushImage(image string, cli ContainerCli, opts BuildOptions) error {
 	if opts.Production {
 		// for production builds, push built manifest
+		fmt.Fprintf(os.Stderr, "Pushing %s\n", image)
 		return pushIt(image, "manifest", cli)
 	} else if cli == "podman" {
 		parts := strings.Split(image, ":")
@@ -130,13 +131,15 @@ func pushImage(image string, cli ContainerCli, opts BuildOptions) error {
 			return err2
 		} else if !bytes.Equal(curhash, newhash) {
 			if opts.Verbose {
-				fmt.Fprintf(os.Stderr, "pushing %s %s %s\n", imageName, curhash, newhash)
+				fmt.Fprintf(os.Stderr, "Using podman to inject %s %s %s\n", imageName, curhash, newhash)
+			} else {
+				fmt.Fprintf(os.Stderr, "Using podman to inject %s \n", imageName)
 			}
 			if err := loadIntoKindForPodman(image); err != nil {
 				return err
 			}
-		} else if opts.Verbose {
-			fmt.Fprintf(os.Stderr, "already pushed %s\n", imageName)
+		} else {
+			fmt.Fprintf(os.Stderr, "Local cluster already has latest %s\n", imageName)
 		}
 
 		return nil
