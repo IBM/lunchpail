@@ -16,7 +16,11 @@ func newDownCmd() *cobra.Command {
 		Short: "Undeploy the application",
 		Long:  "Undeploy the application",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return shrinkwrap.Down(shrinkwrap.DownOptions{namespaceFlag, verboseFlag})
+			maybeRun := ""
+			if len(args) > 0 {
+				maybeRun = args[0]
+			}
+			return shrinkwrap.Down(maybeRun, shrinkwrap.DownOptions{namespaceFlag, verboseFlag})
 		},
 	}
 

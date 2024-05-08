@@ -2,13 +2,15 @@ package shrinkwrap
 
 import (
 	"fmt"
-	"github.com/mittwald/go-helm-client"
 	"io/ioutil"
-	"lunchpail.io/pkg/lunchpail"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/mittwald/go-helm-client"
+	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/runs"
 )
 
 type DownOptions struct {
@@ -32,8 +34,9 @@ func uninstall(client helmclient.Client, releaseName, namespace string) error {
 	return client.UninstallRelease(&helmclient.ChartSpec{ReleaseName: releaseName, Namespace: namespace, Wait: true, KeepHistory: false, Timeout: 240 * time.Second})
 }
 
-func Down(opts DownOptions) error {
-	namespace := lunchpail.AssembledAppName()
+func Down(runname string, opts DownOptions) error {
+	appname := lunchpail.AssembledAppName()
+	namespace := appname
 	if opts.Namespace != "" {
 		namespace = opts.Namespace
 	}
@@ -53,7 +56,18 @@ func Down(opts DownOptions) error {
 		return err
 	}
 
-	if err := uninstall(helmClient, "lunchpail-app", namespace); err != nil {
+	alsoDeleteNamespace := false
+
+	if runname == "" {
+		singletonRun, err := runs.Singleton(appname, namespace)
+		if err != nil {
+			return err
+		}
+		runname = singletonRun.Name
+		alsoDeleteNamespace = true
+	}
+
+	if err := uninstall(helmClient, runname, namespace); err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			return err
 		} else {
@@ -62,17 +76,10 @@ func Down(opts DownOptions) error {
 		}
 	}
 
-	if err := uninstall(helmClient, "lunchpail-core", namespace); err != nil {
-		if !strings.Contains(err.Error(), "not found") {
+	if alsoDeleteNamespace {
+		if err := deleteNamespace(namespace); err != nil {
 			return err
-		} else {
-			// TODO: do we need an --ignore-not-found behavior?
-			fmt.Fprintf(os.Stderr, "Warning: core not installed\n")
 		}
-	}
-
-	if err := deleteNamespace(namespace); err != nil {
-		return err
 	}
 
 	return nil

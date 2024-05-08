@@ -17,7 +17,6 @@ import (
 	"github.com/kirsle/configdir"
 	"github.com/mittwald/go-helm-client"
 	"github.com/mittwald/go-helm-client/values"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -270,7 +269,7 @@ core:
 	}
 
 	chartSpec := helmclient.ChartSpec{
-		ReleaseName:      "lunchpail-app",
+		ReleaseName:      runname,
 		ChartName:        templatePath,
 		Namespace:        namespace,
 		Wait:             true,
@@ -281,17 +280,6 @@ core:
 		ValuesYaml:       yaml,
 		ValuesOptions: values.Options{
 			Values: opts.OverrideValues,
-		},
-	}
-
-	options := &helmclient.HelmTemplateOptions{
-		KubeVersion: &chartutil.KubeVersion{
-			Version: "v1.23.10",
-			Major:   "1",
-			Minor:   "23",
-		},
-		APIVersions: []string{
-			"helm.sh/v1/Test",
 		},
 	}
 
@@ -314,7 +302,7 @@ core:
 	}
 
 	if opts.DryRun {
-		if res, err := helmClient.TemplateChart(&chartSpec, options); err != nil {
+		if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
 			return err
 		} else {
 			fmt.Println(string(res))
