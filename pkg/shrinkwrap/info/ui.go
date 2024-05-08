@@ -12,11 +12,11 @@ func UI(opts Options) error {
 	}
 	defer close(c)
 
-	bold := lipgloss.NewStyle().Bold(true).Faint(true)	
+	bold := lipgloss.NewStyle().Bold(true).Faint(true)
 	for info := range c {
-		fmt.Printf("%-24s %s\n", bold.Render("Name"),info.Name)
-		fmt.Printf("%-24s %s\n", bold.Render("Namespace"),info.Namespace)
-		fmt.Printf("%-24s %s\n", bold.Render("Assembly Date"),info.AssemblyDate)
+		fmt.Printf("%-24s %s\n", bold.Render("Name"), info.Name)
+		fmt.Printf("%-24s %s\n", bold.Render("Namespace"), info.Namespace)
+		fmt.Printf("%-24s %s\n", bold.Render("Assembly Date"), info.AssemblyDate)
 
 		if !opts.Follow {
 			break

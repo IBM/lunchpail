@@ -1,0 +1,11 @@
+*.md
+*~
+.git
+.gitignore
+.helmignore
+.DS_Store
+.cache
+
+# these will all be pulled in from Chart.yaml as dependencies
+/core
+/s3

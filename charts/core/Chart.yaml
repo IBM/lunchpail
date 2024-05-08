@@ -1,6 +1,6 @@
 apiVersion: v1
-name: lunchpail-core
-description: The core components of a Lunchpail application
+name: core
+description: Deploys Lunchpail server-side operators and types
 type: application
 
 # Chart version.
@@ -8,25 +8,3 @@ version: 0.0.1
 
 # Platform version.
 appVersion: 0.15.3
-
-dependencies:
-# - name: gpu-operator
-#   version: 23.3.2
-#   repository: https://nvidia.github.io/gpu-operator
-#   condition: nvidia.enabled
-#   tags:
-#     - gpu
-
-- name: core
-  version: 0.0.1
-  repository: file://./core
-  condition: core.enabled
-  tags:
-    - core
-
-- name: s3
-  version: 0.0.1
-  repository: file://./s3
-  condition: core.enabled
-  tags:
-    - core

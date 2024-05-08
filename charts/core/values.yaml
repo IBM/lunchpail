@@ -1,11 +1,1 @@
-gpu-operator:
-  driver:
-    enabled: false
-#  toolkit:
-#    enabled: false
-
-# these values may be overriden by hack/up.sh
-image:
-  registry: ghcr.io
-  repo: lunchpail
-  version: 0.0.1
+terminationGracePeriodSeconds: 0

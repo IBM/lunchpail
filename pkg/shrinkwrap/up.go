@@ -20,10 +20,6 @@ func Up(opts UpOptions) error {
 		namespace = appname
 	}
 
-	if err := generateCoreYaml(CoreOptions{namespace, opts.ClusterIsOpenShift, opts.HasGpuSupport, opts.DockerHost, opts.OverrideValues, opts.ImagePullSecret, opts.Verbose, opts.DryRun}); err != nil {
-		return err
-	}
-
 	if err := generateAppYaml(appname, namespace, templatePath, opts.AppOptions); err != nil {
 		return err
 	}

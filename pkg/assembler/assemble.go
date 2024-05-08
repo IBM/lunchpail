@@ -26,7 +26,7 @@ func stageLunchpail() (string, error) {
 }
 
 func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string) error {
-	cmd := exec.Command("tar", "zcf", filepath.Join(lunchpailStageDir, "pkg", "shrinkwrap", "app.tar.gz"), "-C", appTemplatePath, ".")
+	cmd := exec.Command("tar", "zcf", filepath.Join(lunchpailStageDir, "pkg", "shrinkwrap", "charts.tar.gz"), "-C", appTemplatePath, ".")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

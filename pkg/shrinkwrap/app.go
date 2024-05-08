@@ -4,19 +4,20 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/mittwald/go-helm-client"
-	"github.com/mittwald/go-helm-client/values"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"io/fs"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
 	"time"
-	//	"github.com/go-git/go-git/v5"
 
+	"github.com/google/uuid"
+	"github.com/kirsle/configdir"
+	"github.com/mittwald/go-helm-client"
+	"github.com/mittwald/go-helm-client/values"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -33,8 +34,8 @@ type AppOptions struct {
 	Scripts            string
 }
 
-//go:generate /bin/sh -c "[ -d ../../charts/app ] && tar --exclude '*~' --exclude '*README.md' -C ../../charts/app -zcf app.tar.gz . || exit 0"
-//go:embed app.tar.gz
+//go:generate /bin/sh -c "[ -d ../../charts ] && tar --exclude '*~' --exclude '*README.md' -C ../../charts -zcf charts.tar.gz . || exit 0"
+//go:embed charts.tar.gz
 var appTemplate embed.FS
 
 //go:generate /bin/sh -c "tar --exclude '*DS_Store*' --exclude '*~' --exclude '*README.md' -C ./scripts -zcf app-scripts.tar.gz ."
@@ -125,6 +126,10 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 }
 
 func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) error {
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
+	}
+
 	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
 	if err != nil {
 		return err
@@ -184,7 +189,7 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 
 	// name of taskqueue Secret
 	taskqueueName := "defaultjaasqueue" // TODO externalize string
-	taskqueueAuto := true // create a queue (rather than use one supplied by the app)
+	taskqueueAuto := true               // create a queue (rather than use one supplied by the app)
 	if opts.Queue != "" {
 		taskqueueName = opts.Queue
 		taskqueueAuto = false
@@ -193,36 +198,71 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 	yaml := fmt.Sprintf(`
 global:
   type: %s # clusterType (1)
+  dockerHost: %s # dockerHost (2)
   rbac:
-    serviceaccount: %s # clusterName (2)
+    serviceaccount: %s # clusterName (3)
+    runAsRoot: false
   image:
-    registry: %s # imageRegistry (3)
-    repo: %s # imageRepo (4)
+    registry: %s # imageRegistry (4)
+    repo: %s # imageRepo (5)
   jaas:
-    ips: %s # imagePullSecretName (5)
-    dockerconfigjson: %s # dockerconfigjson (6)
-  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # systemNamespace (7)
+    ips: %s # imagePullSecretName (6)
+    dockerconfigjson: %s # dockerconfigjson (7)
+    namespace:
+      name: %v # systemNamespace (8)
+      create: %v # false (9)
+    context:
+      name: ""
+  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # systemNamespace (10)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 lunchpail: lunchpail
-username: %s # user.Username (8)
-uid: %s # user.Uid (9)
+username: %s # user.Username (11)
+uid: %s # user.Uid (12)
 mcad:
   enabled: false
 rbac:
-  serviceaccount: %s # clusterName (10)
+  serviceaccount: %s # clusterName (13)
 image:
-  registry: %s # imageRegistry (11)
-  repo: %s # imageRepo (12)
-  version: %v # lunchpail.Version() (13)
-partOf: %s # partOf (14)
+  registry: %s # imageRegistry (14)
+  repo: %s # imageRepo (15)
+  version: %v # lunchpail.Version() (16)
+partOf: %s # partOf (17)
 taskqueue:
-  auto: %v # taskqueueAuto (15)
-  dataset: %s # taskqueueName (16)
-name: %s # runname (17)
+  auto: %v # taskqueueAuto (18)
+  dataset: %s # taskqueueName (19)
+name: %s # runname (20)
 namespace:
-  user: %s # namespace (18)
-`, clusterType, clusterName, imageRegistry, imageRepo, imagePullSecretName, dockerconfigjson, systemNamespace, user.Username, user.Uid, clusterName, imageRegistry, imageRepo, lunchpail.Version(), partOf, taskqueueAuto, taskqueueName, runname, namespace)
+  user: %s # namespace (21)
+tags:
+  gpu: %v # hasGpuSupport (22)
+core:
+  lunchpail: lunchpail
+`,
+		clusterType,         // (1)
+		opts.DockerHost,     // (2)
+		clusterName,         // (3)
+		imageRegistry,       // (4)
+		imageRepo,           // (5)
+		imagePullSecretName, // (6)
+		dockerconfigjson,    // (7)
+		systemNamespace,     // (8)
+		false,               // (9)
+
+		systemNamespace,     // (10)
+		user.Username,       // (11)
+		user.Uid,            // (12)
+		clusterName,         // (13)
+		imageRegistry,       // (14)
+		imageRepo,           // (15)
+		lunchpail.Version(), // (16)
+		partOf,              // (17)
+		taskqueueAuto,       // (18)
+		taskqueueName,       // (19)
+		runname,             // (20)
+		namespace,           // (21)
+		opts.HasGpuSupport,  // (22)
+	)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
@@ -230,12 +270,15 @@ namespace:
 	}
 
 	chartSpec := helmclient.ChartSpec{
-		ReleaseName: "lunchpail-app",
-		ChartName:   templatePath,
-		Namespace:   namespace,
-		Wait:        true,
-		Timeout:     360 * time.Second,
-		ValuesYaml:  yaml,
+		ReleaseName:      "lunchpail-app",
+		ChartName:        templatePath,
+		Namespace:        namespace,
+		Wait:             true,
+		UpgradeCRDs:      true,
+		CreateNamespace:  !opts.DryRun,
+		DependencyUpdate: true,
+		Timeout:          360 * time.Second,
+		ValuesYaml:       yaml,
 		ValuesOptions: values.Options{
 			Values: opts.OverrideValues,
 		},
@@ -252,7 +295,20 @@ namespace:
 		},
 	}
 
-	helmClient, newClientErr := helmclient.New(&helmclient.Options{Namespace: namespace})
+	helmCacheDir := configdir.LocalCache("helm")
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
+	}
+
+	outputOfHelmCmd := ioutil.Discard
+	if opts.Verbose {
+		outputOfHelmCmd = os.Stdout
+	}
+
+	helmClient, newClientErr := helmclient.New(&helmclient.Options{Namespace: namespace,
+		Output:          outputOfHelmCmd,
+		RepositoryCache: helmCacheDir,
+	})
 	if newClientErr != nil {
 		return newClientErr
 	}
