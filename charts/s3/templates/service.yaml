@@ -1,23 +1,23 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.name }}
+  name: {{ print .Values.name "-s3" }}
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/part-of: lunchpail.io
-    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Values.name }}
     app.kubernetes.io/component: s3
 spec:
   ports:
   - name: api
     protocol: TCP
-    port: 9000
+    port: {{ .Values.port }}
     targetPort: 9000
-  - name: console
-    protocol: TCP
-    port: 9090
-    targetPort: 9090
+  # - name: console
+  #   protocol: TCP
+  #   port: 9090
+  #   targetPort: 9090
   selector:
     app.kubernetes.io/part-of: lunchpail.io
-    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Values.name }}
     app.kubernetes.io/component: s3

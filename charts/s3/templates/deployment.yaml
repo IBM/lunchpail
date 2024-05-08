@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.name }}
+  name: {{ print .Values.name "-s3" }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/part-of: lunchpail.io
-      app.kubernetes.io/name: {{ .Values.name }}
+      app.kubernetes.io/instance: {{ .Values.name }}
       app.kubernetes.io/component: s3
   strategy:
     type: Recreate
@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/part-of: lunchpail.io
-        app.kubernetes.io/name: {{ .Values.name }}
+        app.kubernetes.io/instance: {{ .Values.name }}
         app.kubernetes.io/component: s3
     spec:
       terminationGracePeriodSeconds: 0

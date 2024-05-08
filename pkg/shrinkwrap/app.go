@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/user"
@@ -194,6 +195,12 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 		taskqueueAuto = false
 	}
 
+	// rand.Seed(runname)
+	internalS3Port := rand.Intn(65536) + 1
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
+	}
+
 	yaml := fmt.Sprintf(`
 global:
   type: %s # clusterType (1)
@@ -212,32 +219,35 @@ global:
       create: %v # false (9)
     context:
       name: ""
-  s3Endpoint: http://s3.%v.svc.cluster.local:9000 # systemNamespace (10)
+  s3Endpoint: http://%s-s3.%s.svc.cluster.local:%d # runname (10) systemNamespace (11) internalS3Port (12)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 lunchpail: lunchpail
-username: %s # user.Username (11)
-uid: %s # user.Uid (12)
+username: %s # user.Username (13)
+uid: %s # user.Uid (14)
 mcad:
   enabled: false
 rbac:
-  serviceaccount: %s # clusterName (13)
+  serviceaccount: %s # clusterName (15)
 image:
-  registry: %s # imageRegistry (14)
-  repo: %s # imageRepo (15)
-  version: %v # lunchpail.Version() (16)
-partOf: %s # partOf (17)
+  registry: %s # imageRegistry (16)
+  repo: %s # imageRepo (17)
+  version: %v # lunchpail.Version() (18)
+partOf: %s # partOf (19)
 taskqueue:
-  auto: %v # taskqueueAuto (18)
-  dataset: %s # taskqueueName (19)
-name: %s # runname (20)
+  auto: %v # taskqueueAuto (20)
+  dataset: %s # taskqueueName (21)
+name: %s # runname (22)
 namespace:
-  user: %s # namespace (21)
+  user: %s # namespace (23)
 tags:
-  gpu: %v # hasGpuSupport (22)
+  gpu: %v # hasGpuSupport (24)
 core:
   lunchpail: lunchpail
-  name: %s # runname (23)
+  name: %s # runname (25)
+s3:
+  name: %s # runname (26)
+  port: %d # internalS3Port (27)
 `,
 		clusterType,         // (1)
 		opts.DockerHost,     // (2)
@@ -249,20 +259,24 @@ core:
 		systemNamespace,     // (8)
 		false,               // (9)
 
-		systemNamespace,     // (10)
-		user.Username,       // (11)
-		user.Uid,            // (12)
-		clusterName,         // (13)
-		imageRegistry,       // (14)
-		imageRepo,           // (15)
-		lunchpail.Version(), // (16)
-		partOf,              // (17)
-		taskqueueAuto,       // (18)
-		taskqueueName,       // (19)
-		runname,             // (20)
-		namespace,           // (21)
-		opts.HasGpuSupport,  // (22)
-		runname,             // (23)
+		runname,             // (10)
+		systemNamespace,     // (11)
+		internalS3Port,      // (12)
+		user.Username,       // (13)
+		user.Uid,            // (14)
+		clusterName,         // (15)
+		imageRegistry,       // (16)
+		imageRepo,           // (17)
+		lunchpail.Version(), // (18)
+		partOf,              // (19)
+		taskqueueAuto,       // (20)
+		taskqueueName,       // (21)
+		runname,             // (22)
+		namespace,           // (23)
+		opts.HasGpuSupport,  // (24)
+		runname,             // (25)
+		runname,             // (26)
+		internalS3Port,      // (27)
 	)
 
 	if opts.Verbose {
