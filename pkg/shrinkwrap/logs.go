@@ -16,7 +16,7 @@ const (
 	WorkersComponent     Component = "workerpool"
 	DispatcherComponent  Component = "workdispatcher"
 	WorkStealerComponent Component = "workstealer"
-	LunchpailComponent   Component = "controller"
+	LunchpailComponent   Component = "lunchpail-controller"
 )
 
 type LogsOptions struct {
