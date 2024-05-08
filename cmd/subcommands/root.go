@@ -19,5 +19,13 @@ func Execute() {
 }
 
 func init() {
-	// rootCmd.SilenceUsage = true
+	// We still want usage errors for legitimate usage errors
+	// (e.g. passing an unsupported dash option). We don't want it
+	// for random errors emitted by RunE handlers. This trick
+	// seems to accomplish that: register `SilenceUsage` only just
+	// before (PreRun) the RunE is about to be invoked.
+	// https://github.com/spf13/cobra/issues/340#issuecomment-378726225
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		rootCmd.SilenceUsage = true
+	}
 }
