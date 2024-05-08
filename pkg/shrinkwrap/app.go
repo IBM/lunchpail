@@ -245,9 +245,11 @@ tags:
 core:
   lunchpail: lunchpail
   name: %s # runname (25)
+  appname: %s # appname (26)
 s3:
-  name: %s # runname (26)
-  port: %d # internalS3Port (27)
+  name: %s # runname (27)
+  port: %d # internalS3Port (28)
+  appname: %s # appname (29)
 `,
 		clusterType,         // (1)
 		opts.DockerHost,     // (2)
@@ -275,8 +277,10 @@ s3:
 		namespace,           // (23)
 		opts.HasGpuSupport,  // (24)
 		runname,             // (25)
-		runname,             // (26)
-		internalS3Port,      // (27)
+		appname,             // (26)
+		runname,             // (27)
+		internalS3Port,      // (28)
+		appname,             // (29)
 	)
 
 	if opts.Verbose {

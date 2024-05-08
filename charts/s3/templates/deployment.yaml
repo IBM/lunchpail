@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/part-of: lunchpail.io
+      app.kubernetes.io/part-of: {{ .Values.appname }}
       app.kubernetes.io/instance: {{ .Values.name }}
       app.kubernetes.io/component: s3
   strategy:
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/part-of: lunchpail.io
+        app.kubernetes.io/part-of: {{ .Values.appname }}
         app.kubernetes.io/instance: {{ .Values.name }}
         app.kubernetes.io/component: s3
     spec:
@@ -31,7 +31,7 @@ spec:
         imagePullPolicy: IfNotPresent
         envFrom:
           - secretRef:
-              name: {{ .Values.name }}
+              name: {{ print .Values.name "-s3" }}
         command:
           - /bin/bash
           - -c

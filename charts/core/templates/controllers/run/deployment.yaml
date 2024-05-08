@@ -5,8 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/instance: {{ .Values.name }}
-    app.kubernetes.io/part-of: lunchpail.io
-    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: {{ .Values.appname }}
+    app.kubernetes.io/component: lunchpail-controller
 spec:
   replicas: 1
   strategy:
@@ -14,14 +14,14 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/instance: {{ .Values.name }}
-      app.kubernetes.io/part-of: lunchpail.io
-      app.kubernetes.io/component: controller
+      app.kubernetes.io/part-of: {{ .Values.appname }}
+      app.kubernetes.io/component: lunchpail-controller
   template:
     metadata:
       labels:
         app.kubernetes.io/instance: {{ .Values.name }}
-        app.kubernetes.io/part-of: lunchpail.io
-        app.kubernetes.io/component: controller
+        app.kubernetes.io/part-of: {{ .Values.appname }}
+        app.kubernetes.io/component: lunchpail-controller
     spec:
       serviceAccountName: {{ print .Values.name "-lunchpail-runtime" }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
