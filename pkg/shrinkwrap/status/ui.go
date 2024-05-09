@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/runs"
+	v1 "k8s.io/api/core/v1"
 )
 
 type Options struct {
@@ -44,7 +45,7 @@ func WaitForRun(runname, namespace string, wait bool) (string, string, error) {
 		}
 
 		if alreadySaidWeAreWaiting {
-			fmt.Fprintf(os.Stderr, "\n")
+			clearLine()
 		}
 
 		break
@@ -77,9 +78,46 @@ func present(status Status) []string {
 
 		fmt.Sprintf("%s %s",
 			bold.Render("Workers"),
-			cyan.Render(strconv.Itoa(status.numWorkers())),
+			workerCells(status),
 		),
 	}
+}
+
+func workerCells(status Status) string {
+	cyan := lipgloss.NewStyle().Foreground(lipgloss.Color("6"))
+	res := cyan.Render(strconv.Itoa(status.numWorkers())) + " "
+	for _, worker := range status.workers() {
+		res += workerCell(worker)
+	}
+	return res
+}
+
+func workerCell(worker Worker) string {
+	// dim := lipgloss.NewStyle().Faint(true)
+	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("3"))
+	blue := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+	red := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+	// gray := dim
+	cyan := lipgloss.NewStyle().Foreground(lipgloss.Color("6"))
+
+	style := blue
+	switch worker.Status {
+	case v1.PodPending:
+		style = yellow
+		//	case v1.PodPhase.Terminating:
+		//		style = gray
+	case v1.PodFailed:
+		style = red
+	case v1.PodSucceeded:
+		style = cyan
+	}
+
+	cell := "█"
+	return style.Render(cell)
+}
+
+func clearLine() {
+	fmt.Printf("\033[1A\033[K")
 }
 
 func UI(runnameIn string, opts Options) error {
@@ -96,11 +134,11 @@ func UI(runnameIn string, opts Options) error {
 
 	var val []string
 	for status := range c {
-		//if opts.Watch && len(val) > 0 {
-		//for range len(val) + 1 {
-		//fmt.Printf("\033[1A\033[K")
-		//}
-		//}
+		if opts.Watch && len(val) > 0 {
+			for range len(val) {
+				clearLine()
+			}
+		}
 
 		val = present(status)
 		for _, line := range val {

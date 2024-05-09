@@ -35,6 +35,14 @@ func (status *Status) numPools() int {
 	return len(status.Pools)
 }
 
+func (status *Status) workers() []Worker {
+	workers := []Worker{}
+	for _, pool := range status.Pools {
+		workers = slices.Concat(workers, pool.Workers)
+	}
+	return workers
+}
+
 func (status *Status) numWorkers() int {
 	N := 0
 	for _, pool := range status.Pools {
@@ -116,8 +124,13 @@ func updateWorker(app, run string, pod *v1.Pod, status Status, what watch.EventT
 	if widx >= 0 {
 		// known Pool and known Worker
 		if what == watch.Deleted {
-			// Remove record of Deleted Worker in known Pool
+			// Remove record of Deleted Worker in known
+			// Pool by splicing it out of the Workers slice
 			pool.Workers = append(pool.Workers[:widx], pool.Workers[widx+1:]...)
+		} else {
+			worker := pool.Workers[widx]
+			worker.Status = workerStatus
+			pool.Workers = slices.Concat(pool.Workers[:idx], []Worker{worker}, pool.Workers[widx+1:])
 		}
 	} else {
 		// known Pool but unknown Worker
