@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -45,7 +46,8 @@ func WaitForRun(runname, namespace string, wait bool) (string, string, error) {
 		}
 
 		if alreadySaidWeAreWaiting {
-			clearLine()
+			fmt.Fprintf(os.Stderr, "\n")
+			clearLine(os.Stderr)
 		}
 
 		break
@@ -95,12 +97,12 @@ func workerCells(status Status) string {
 func workerCell(worker Worker) string {
 	// dim := lipgloss.NewStyle().Faint(true)
 	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("3"))
-	blue := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+	green := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
 	red := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
 	// gray := dim
 	cyan := lipgloss.NewStyle().Foreground(lipgloss.Color("6"))
 
-	style := blue
+	style := green
 	switch worker.Status {
 	case v1.PodPending:
 		style = yellow
@@ -116,8 +118,8 @@ func workerCell(worker Worker) string {
 	return style.Render(cell)
 }
 
-func clearLine() {
-	fmt.Printf("\033[1A\033[K")
+func clearLine(writer io.Writer) {
+	fmt.Fprintf(writer, "\033[1A\033[K")
 }
 
 func UI(runnameIn string, opts Options) error {
@@ -136,7 +138,7 @@ func UI(runnameIn string, opts Options) error {
 	for status := range c {
 		if opts.Watch && len(val) > 0 {
 			for range len(val) {
-				clearLine()
+				clearLine(os.Stdout)
 			}
 		}
 
