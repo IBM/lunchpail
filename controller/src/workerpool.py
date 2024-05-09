@@ -107,7 +107,7 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
                 image,
                 command,
                 subPath,
-                application_name,
+                application_name, # part-of label
                 run_name,
                 queue_dataset,
                 str(count),
