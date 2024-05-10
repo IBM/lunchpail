@@ -189,7 +189,7 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 	// name of taskqueue Secret; dashes are not valid in bash
 	// variable names, so we avoid those here
 	taskqueueName := strings.Replace(runname, "-", "", -1) + "queue"
-	taskqueueAuto := true               // create a queue (rather than use one supplied by the app)
+	taskqueueAuto := true // create a queue (rather than use one supplied by the app)
 	if opts.Queue != "" {
 		taskqueueName = opts.Queue
 		taskqueueAuto = false
