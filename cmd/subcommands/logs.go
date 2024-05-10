@@ -10,6 +10,7 @@ import (
 func newLogsCommand() *cobra.Command {
 	var namespaceFlag string
 	var componentsFlag []string
+	var followFlag bool
 	var verboseFlag bool
 
 	var cmd = &cobra.Command{
@@ -37,12 +38,13 @@ func newLogsCommand() *cobra.Command {
 				}
 			}
 
-			return shrinkwrap.Logs(shrinkwrap.LogsOptions{namespaceFlag, verboseFlag, comps})
+			return shrinkwrap.Logs(shrinkwrap.LogsOptions{namespaceFlag, followFlag, verboseFlag, comps})
 		},
 	}
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer)")
+	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 
 	return cmd

@@ -12,11 +12,12 @@ import (
 
 type LogsOptions struct {
 	Namespace  string
+	Follow     bool
 	Verbose    bool
 	Components []lunchpail.Component
 }
 
-func streamLogs(appname, namespace string, component lunchpail.Component, verbose bool) error {
+func streamLogs(appname, namespace string, component lunchpail.Component, follow bool, verbose bool) error {
 	containers := "app"
 	appSelector := ",app.kubernetes.io/part-of=" + appname
 	if component == lunchpail.DispatcherComponent {
@@ -32,8 +33,13 @@ func streamLogs(appname, namespace string, component lunchpail.Component, verbos
 		appSelector = ""
 	}
 
+	followFlag := ""
+	if follow {
+		followFlag = "-f"
+	}
+
 	selector := "app.kubernetes.io/component=" + string(component) + appSelector
-	cmdline := "kubectl logs -n " + namespace + " -l " + selector + " --tail=-1 -f -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
+	cmdline := "kubectl logs -n " + namespace + " -l " + selector + " --tail=-1 " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Tracking logs of component=%s\n", component)
@@ -61,7 +67,7 @@ func Logs(opts LogsOptions) error {
 
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			return streamLogs(appname, namespace, component, opts.Verbose)
+			return streamLogs(appname, namespace, component, opts.Follow, opts.Verbose)
 		})
 	}
 
