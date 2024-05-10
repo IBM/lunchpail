@@ -27,6 +27,8 @@ func Qlast(marker, opt string, opts QlastOptions) (string, error) {
 			return strconv.Itoa(lastmodel.Unassigned), nil
 		case "liveworkers":
 			return strconv.Itoa(len(lastmodel.LiveWorkers)), nil
+		case "processing":
+			return strconv.Itoa(lastmodel.Processing), nil
 		case "success":
 			return strconv.Itoa(lastmodel.Success), nil
 		case "failure":
