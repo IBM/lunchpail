@@ -15,9 +15,18 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+type WorkerStatus string
+const (
+	Pending WorkerStatus = "Pending"
+	Running = "Running"
+	Succeeded = "Succeeded"
+	Failed = "Failed"
+	Terminating = "Terminating"
+)
+
 type Worker struct {
 	Name string
-	Status v1.PodPhase
+	Status WorkerStatus
 }
 
 type Pool struct {
@@ -99,7 +108,22 @@ func updateWorker(app, run string, pod *v1.Pod, status Status, what watch.EventT
 		return status, nil
 	}
 
-	workerStatus := pod.Status.Phase
+	workerStatus := Pending
+	if pod.DeletionTimestamp != nil {
+		workerStatus = Terminating
+	} else {
+		switch pod.Status.Phase {
+		case v1.PodPending:
+			workerStatus = Pending
+		case v1.PodRunning:
+			workerStatus = Running
+		case v1.PodSucceeded:
+			workerStatus = Succeeded
+		case v1.PodFailed:
+			workerStatus = Failed
+		}
+	}
+
 	idx := slices.IndexFunc(status.Pools, func(pool Pool) bool { return pool.Name == poolName })
 
 	if idx < 0 {

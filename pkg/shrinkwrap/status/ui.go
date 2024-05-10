@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/runs"
-	v1 "k8s.io/api/core/v1"
 )
 
 type Options struct {
@@ -95,22 +94,22 @@ func workerCells(status Status) string {
 }
 
 func workerCell(worker Worker) string {
-	// dim := lipgloss.NewStyle().Faint(true)
+	dim := lipgloss.NewStyle().Faint(true)
 	yellow := lipgloss.NewStyle().Foreground(lipgloss.Color("3"))
 	green := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
 	red := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
-	// gray := dim
+	gray := dim
 	cyan := lipgloss.NewStyle().Foreground(lipgloss.Color("6"))
 
 	style := green
 	switch worker.Status {
-	case v1.PodPending:
+	case Pending:
 		style = yellow
-		//	case v1.PodPhase.Terminating:
-		//		style = gray
-	case v1.PodFailed:
+	case Terminating:
+		style = gray
+	case Failed:
 		style = red
-	case v1.PodSucceeded:
+	case Succeeded:
 		style = cyan
 	}
 
