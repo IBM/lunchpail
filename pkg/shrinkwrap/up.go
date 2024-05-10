@@ -1,7 +1,7 @@
 package shrinkwrap
 
 import (
-	"lunchpail.io/pkg/shrinkwrap/qstat"
+	"lunchpail.io/pkg/shrinkwrap/status"
 )
 
 type UpOptions struct {
@@ -20,12 +20,18 @@ func Up(opts UpOptions) error {
 		namespace = appname
 	}
 
-	if err := generateAppYaml(appname, namespace, templatePath, opts.AppOptions); err != nil {
+	// If we were asked to watch, then the status.UI will do the
+	// waiting for us. Otherwise, ask the helm client to wait for
+	// readiness.
+	wait := !opts.Watch
+
+	runname, err := generateAppYaml(appname, namespace, templatePath, wait, opts.AppOptions)
+	if err != nil {
 		return err
 	}
 
 	if opts.Watch {
-		return qstat.UI(qstat.Options{namespace, true, -1, opts.Verbose})
+		return status.UI(runname, status.Options{namespace, true, opts.Verbose})
 	}
 
 	return nil

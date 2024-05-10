@@ -125,14 +125,14 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 	}
 }
 
-func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) error {
+func generateAppYaml(appname, namespace, templatePath string, wait bool, opts AppOptions) (string, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
 	if err != nil {
-		return err
+		return "", err
 	} else {
 		// TODO here... how do we determine that boolean values were unset?
 		if opts.Namespace == "" {
@@ -157,7 +157,7 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 
 	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
 	if err != nil {
-		return err
+		return "", err
 	} else {
 		opts.OverrideValues = append(opts.OverrideValues, extraValues...)
 
@@ -175,12 +175,12 @@ func generateAppYaml(appname, namespace, templatePath string, opts AppOptions) e
 
 	imagePullSecretName, dockerconfigjson, ipsErr := ImagePullSecret(opts.ImagePullSecret)
 	if ipsErr != nil {
-		return ipsErr
+		return "", ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -292,7 +292,7 @@ s3:
 		ReleaseName:      runname,
 		ChartName:        templatePath,
 		Namespace:        namespace,
-		Wait:             true,
+		Wait:             wait,
 		UpgradeCRDs:      true,
 		CreateNamespace:  !opts.DryRun,
 		DependencyUpdate: true,
@@ -318,24 +318,24 @@ s3:
 		RepositoryCache: helmCacheDir,
 	})
 	if newClientErr != nil {
-		return newClientErr
+		return "", newClientErr
 	}
 
 	if opts.DryRun {
 		if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
-			return err
+			return "", err
 		} else {
 			fmt.Println(string(res))
 		}
 	} else if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
-		return err
+		return "", err
 	}
 
 	if opts.Scripts != "" {
 		if err := Expand(opts.Scripts, scripts, "app-scripts.tar.gz", false); err != nil {
-			return err
+			return "", err
 		} else if err := updateScripts(opts.Scripts, appname, runname, namespace, systemNamespace, opts.Verbose); err != nil {
-			return err
+			return "", err
 		}
 	}
 
@@ -345,7 +345,7 @@ s3:
 		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
 	}
 
-	return nil
+	return runname, nil
 }
 
 // hack, we still use sed here to update the script templates
