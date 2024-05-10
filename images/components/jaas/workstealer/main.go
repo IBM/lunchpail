@@ -198,6 +198,13 @@ func parseUpdatesFromStdin() Model {
 	for scanner.Scan() {
 		line := scanner.Text()
 		how := howChanged(line[0])
+
+		if how == Removed {
+			// nice to know, but we only need to
+			// incorporate extant files, not removed files
+			continue
+		}
+
 		what, thing, thing2 := whatChanged(line[1:])
 
 		if os.Getenv("DEBUG") != "" {
