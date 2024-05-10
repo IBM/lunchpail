@@ -144,6 +144,10 @@ func cell(status WorkerStatus) string {
 	return style.Render(cell)
 }
 
+func clearScreen(writer io.Writer) {
+	fmt.Fprintf(writer, "\x1b[2J\x1b[H")
+}
+
 func clearLine(writer io.Writer) {
 	fmt.Fprintf(writer, "\033[1A\033[K")
 }
@@ -160,12 +164,12 @@ func UI(runnameIn string, opts Options) error {
 	}
 	defer close(c)
 
+	clearScreen(os.Stdout)
+
 	var val []string
 	for status := range c {
 		if !opts.Verbose && len(val) > 0 {
-			for range len(val) {
-				clearLine(os.Stdout)
-			}
+			clearScreen(os.Stdout)
 		}
 
 		val = view(status)
