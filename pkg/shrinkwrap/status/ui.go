@@ -67,34 +67,36 @@ func view(status Status) []string {
 	runningRuntime, totalRuntime := status.split(status.Runtime)
 	runningInternalS3, totalInternalS3 := status.split(status.InternalS3)
 
+	timestamp := status.LastEvent.Timestamp.Time
+	if timestamp.IsZero() {
+		timestamp = time.Now()
+	}
+
 	return []string{
-		fmt.Sprintf("%s %s %s %s %s %s\t\t\t%s",
-			bold.Render("App"),
-			cyan.Render(status.AppName),
-			bold.Render("Run"),
-			cyan.Render(status.RunName),
-			bold.Render("Pools"),
-			cyan.Render(strconv.Itoa(status.numPools())),
-			dim.Render(time.Now().Format(time.RFC850)),
-		),
+		dim.Render(timestamp.Format(time.RFC850)),
+		fmt.Sprintf("%-16s ▏%s", bold.Render("App"), cyan.Render(status.AppName)),
+		fmt.Sprintf("%-16s ▏%s", bold.Render("Run"), cyan.Render(status.RunName)),
+		fmt.Sprintf("%-16s ▏%s", bold.Render("Pools"), cyan.Render(strconv.Itoa(status.numPools()))),
 
-		fmt.Sprintf("%18s %15s %s",
-			bold.Render("Runtime"),
-			cyan.Render(fmt.Sprintf("%d/%d", runningRuntime, totalRuntime)),
-			cell(status.Runtime),
-		),
-
-		fmt.Sprintf("%18s %15s %s",
-			bold.Render("Queue"),
-			cyan.Render(fmt.Sprintf("%d/%d", runningInternalS3, totalInternalS3)),
-			cell(status.Runtime),
-		),
-
-		fmt.Sprintf("%18s %15s %s",
+		fmt.Sprintf("%-16s ▏%d/%d %s",
 			bold.Render("Workers"),
-			cyan.Render(fmt.Sprintf("%d/%d", runningWorkers, totalWorkers)),
+			runningWorkers, totalWorkers,
 			workerCells(status.workers()),
 		),
+
+		fmt.Sprintf("%-16s ▏%d/%d %s",
+			bold.Render("Queue"),
+			runningInternalS3, totalInternalS3,
+			cell(status.Runtime),
+		),
+
+		fmt.Sprintf("%-16s ▏%d/%d %s",
+			bold.Render("Runtime"),
+			runningRuntime, totalRuntime,
+			cell(status.Runtime),
+		),
+
+		dim.Render(status.LastEvent.Message),
 	}
 }
 

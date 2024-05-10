@@ -16,110 +16,58 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-type WorkerStatus string
-
-const (
-	Pending     WorkerStatus = "Pending"
-	Running                  = "Running"
-	Succeeded                = "Succeeded"
-	Failed                   = "Failed"
-	Terminating              = "Terminating"
-)
-
-type Worker struct {
-	Name   string
-	Status WorkerStatus
-}
-
-type Pool struct {
-	Name    string
-	Workers []Worker
-}
-
-type Status struct {
-	AppName    string
-	RunName    string
-	Pools      []Pool
-	Runtime    WorkerStatus
-	InternalS3 WorkerStatus
-}
-
-func (status *Status) numPools() int {
-	return len(status.Pools)
-}
-
-func (status *Status) workers() []Worker {
-	workers := []Worker{}
-	for _, pool := range status.Pools {
-		workers = slices.Concat(workers, pool.Workers)
-	}
-	return workers
-}
-
-// return the pair (numRunning, numTotal) of Runtime pods
-func (status *Status) split(ws WorkerStatus) (int, int) {
-	if ws == Running {
-		return 1, 1
-	} else {
-		return 0, 1
-	}
-}
-
-// return the pair (numRunning, numTotal) of Workers across all Pools
-func (status *Status) workersSplit() (int, int) {
-	running := 0
-	total := 0
-	for _, pool := range status.Pools {
-		total += len(pool.Workers)
-		for _, worker := range pool.Workers {
-			if worker.Status == Running {
-				running++
-			}
-		}
-	}
-
-	return running, total
-}
-
-func startWatching(app, run, namespace string) (watch.Interface, error) {
+func startWatching(app, run, namespace string) (watch.Interface, watch.Interface, error) {
 	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	timeoutSeconds := int64(7 * 24 * time.Hour / time.Second)
-	return clientset.CoreV1().Pods(namespace).Watch(context.Background(), metav1.ListOptions{
+
+	podWatcher, err := clientset.CoreV1().Pods(namespace).Watch(context.Background(), metav1.ListOptions{
 		TimeoutSeconds: &timeoutSeconds,
 		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/part-of=" + app + ",app.kubernetes.io/instance=" + run,
 	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventWatcher, err := clientset.CoreV1().Events(namespace).Watch(context.Background(), metav1.ListOptions{
+		TimeoutSeconds: &timeoutSeconds,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return podWatcher, eventWatcher, nil
 }
 
-func update(app, run string, pod *v1.Pod, status Status, what watch.EventType) (Status, error) {
+func updateFromPod(pod *v1.Pod, status *Status, what watch.EventType) error {
 	component, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
-		return status, fmt.Errorf("Worker without component label %s\n", pod.Name)
+		return fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
 	switch component {
 	case string(lunchpail.RuntimeComponent):
-		return Status{app, run, status.Pools, statusFromPod(pod), status.InternalS3}, nil
+		status.Runtime = statusFromPod(pod)
 	case string(lunchpail.InternalS3Component):
-		return Status{app, run, status.Pools, status.Runtime, statusFromPod(pod)}, nil
+		status.InternalS3 = statusFromPod(pod)
 	case string(lunchpail.WorkersComponent):
 		if pools, err := updateWorker(pod, status.Pools, what); err != nil {
-			return status, err
+			return err
 		} else {
-			return Status{app, run, pools, status.Runtime, status.InternalS3}, nil
+			status.Pools = pools
 		}
 	}
 
-	return status, nil
+	return nil
 }
 
 func statusFromPod(pod *v1.Pod) WorkerStatus {
@@ -194,19 +142,28 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, erro
 	}
 }
 
-func streamUpdates(app, run string, watcher watch.Interface, c chan Status) error {
-	status := Status{}
-
+func streamPodUpdates(status *Status, watcher watch.Interface, c chan Status) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			newStatus, err := update(app, run, pod, status, event.Type)
-			if err != nil {
+			if err := updateFromPod(pod, status, event.Type); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 			} else {
-				status = newStatus
-				c <- status
+				c <- *status
 			}
+		}
+	}
+
+	return nil
+}
+
+func streamEventUpdates(status *Status, watcher watch.Interface, c chan Status) error {
+	for watchEvent := range watcher.ResultChan() {
+		event := watchEvent.Object.(*v1.Event)
+
+		if status.LastEvent.Timestamp.IsZero() || event.LastTimestamp.After(status.LastEvent.Timestamp.Time) {
+			status.LastEvent = Event{event.Message, event.LastTimestamp}
+			c <- *status
 		}
 	}
 
@@ -216,12 +173,17 @@ func streamUpdates(app, run string, watcher watch.Interface, c chan Status) erro
 func StreamStatus(app, run, namespace string) (chan Status, error) {
 	c := make(chan Status)
 
-	watcher, err := startWatching(app, run, namespace)
+	podWatcher, eventWatcher, err := startWatching(app, run, namespace)
 	if err != nil {
 		return c, err
 	}
 
-	go streamUpdates(app, run, watcher, c)
+	status := Status{}
+	status.AppName = app
+	status.RunName = run
+
+	go streamPodUpdates(&status, podWatcher, c)
+	go streamEventUpdates(&status, eventWatcher, c)
 
 	return c, nil
 }
