@@ -22,16 +22,16 @@ func newLogsCommand() *cobra.Command {
 				return err
 			}
 
-			comps := []shrinkwrap.Component{}
+			comps := []lunchpail.Component{}
 			for _, component := range components {
 				if component == "workers" {
-					comps = append(comps, shrinkwrap.WorkersComponent)
+					comps = append(comps, lunchpail.WorkersComponent)
 				} else if component == "dispatcher" {
-					comps = append(comps, shrinkwrap.DispatcherComponent)
+					comps = append(comps, lunchpail.DispatcherComponent)
 				} else if component == "workstealer" {
-					comps = append(comps, shrinkwrap.WorkStealerComponent)
+					comps = append(comps, lunchpail.WorkStealerComponent)
 				} else if component == "lunchpail" {
-					comps = append(comps, shrinkwrap.LunchpailComponent)
+					comps = append(comps, lunchpail.RuntimeComponent)
 				} else {
 					return fmt.Errorf("Unsupported component %s", component)
 				}

@@ -9,6 +9,7 @@ import (
 func newStatusCommand() *cobra.Command {
 	var namespaceFlag string
 	var watchFlag bool
+	var verboseFlag bool
 
 	var cmd = &cobra.Command{
 		Use:   "status",
@@ -18,12 +19,13 @@ func newStatusCommand() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag})
+			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag, verboseFlag})
 		},
 	}
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Track updates to run status")
+	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Stream more verbose updates to console")
 
 	return cmd
 }

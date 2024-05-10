@@ -10,34 +10,25 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-type Component string
-
-const (
-	WorkersComponent     Component = "workerpool"
-	DispatcherComponent  Component = "workdispatcher"
-	WorkStealerComponent Component = "workstealer"
-	LunchpailComponent   Component = "lunchpail-controller"
-)
-
 type LogsOptions struct {
 	Namespace  string
 	Verbose    bool
-	Components []Component
+	Components []lunchpail.Component
 }
 
-func streamLogs(appname, namespace string, component Component, verbose bool) error {
+func streamLogs(appname, namespace string, component lunchpail.Component, verbose bool) error {
 	containers := "app"
 	appSelector := ",app.kubernetes.io/part-of=" + appname
-	if component == DispatcherComponent {
+	if component == lunchpail.DispatcherComponent {
 		containers = "main"
 		// FIXME: the workdispatcher has an invalid part-of
 		appSelector = ""
-	} else if component == WorkStealerComponent {
+	} else if component == lunchpail.WorkStealerComponent {
 		containers = "workstealer"
-	} else if component == LunchpailComponent {
+	} else if component == lunchpail.RuntimeComponent {
 		containers = "controller"
 		appSelector = ""
-	} else if component == WorkersComponent {
+	} else if component == lunchpail.WorkersComponent {
 		appSelector = ""
 	}
 
