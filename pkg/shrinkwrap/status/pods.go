@@ -12,14 +12,24 @@ import (
 
 func statusFromPod(pod *v1.Pod) WorkerStatus {
 	workerStatus := Pending
+
 	if pod.DeletionTimestamp != nil {
 		workerStatus = Terminating
 	} else {
 		switch pod.Status.Phase {
-		case v1.PodPending:
-			workerStatus = Pending
 		case v1.PodRunning:
-			workerStatus = Running
+			ready := true
+			for _, cs := range pod.Status.ContainerStatuses {
+				if !cs.Ready {
+					ready = false
+					break
+				}
+			}
+			if ready {
+				workerStatus = Running
+			} else {
+				workerStatus = Booting
+			}
 		case v1.PodSucceeded:
 			workerStatus = Succeeded
 		case v1.PodFailed:

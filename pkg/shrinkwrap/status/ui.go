@@ -46,7 +46,6 @@ func WaitForRun(runname, namespace string, wait bool, verbose bool) (string, str
 		}
 
 		if alreadySaidWeAreWaiting {
-			fmt.Fprintf(os.Stderr, "\n")
 			if !verbose {
 				clearLine(os.Stderr)
 			}
@@ -73,7 +72,7 @@ func view(status Status) []string {
 		timestamp = time.Now()
 	}
 
-	return []string{
+	msgs := []string{
 		dim.Render(timestamp.Format(time.RFC850)),
 		fmt.Sprintf("%-20s ▏%s", bold.Render("App"), cyan.Render(status.AppName)),
 		fmt.Sprintf("%-20s ▏%s", bold.Render("Run"), cyan.Render(status.RunName)),
@@ -88,7 +87,7 @@ func view(status Status) []string {
 		fmt.Sprintf("%-20s ▏%d/%d %s",
 			bold.Render("Queue"),
 			runningInternalS3, totalInternalS3,
-			cell(status.Runtime),
+			cell(status.InternalS3),
 		),
 
 		fmt.Sprintf("%-20s ▏%d/%d %s",
@@ -102,9 +101,13 @@ func view(status Status) []string {
 			runningWorkStealer, totalWorkStealer,
 			cell(status.Runtime),
 		),
-
-		dim.Render(status.LastEvent.Message),
 	}
+
+	if status.LastEvent.Message != "" {
+		msgs = append(msgs, dim.Render(status.LastEvent.Message))
+	}
+
+	return msgs
 }
 
 func workerCells(workers []Worker) string {
@@ -125,6 +128,7 @@ func cell(status WorkerStatus) string {
 	style := green
 	switch status {
 	case Pending:
+	case Booting:
 		style = yellow
 	case Terminating:
 		style = gray
@@ -158,7 +162,7 @@ func UI(runnameIn string, opts Options) error {
 
 	var val []string
 	for status := range c {
-		if !opts.Verbose && opts.Watch && len(val) > 0 {
+		if !opts.Verbose && len(val) > 0 {
 			for range len(val) {
 				clearLine(os.Stdout)
 			}

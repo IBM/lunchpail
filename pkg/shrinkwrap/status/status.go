@@ -1,14 +1,15 @@
 package status
 
 import (
-	"slices"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"slices"
 )
 
 type WorkerStatus string
 
 const (
 	Pending     WorkerStatus = "Pending"
+	Booting                  = "Booting"
 	Running                  = "Running"
 	Succeeded                = "Succeeded"
 	Failed                   = "Failed"
@@ -26,18 +27,18 @@ type Pool struct {
 }
 
 type Event struct {
-	Message string
+	Message   string
 	Timestamp metav1.Time
 }
 
 type Status struct {
-	AppName    string
-	RunName    string
-	Pools      []Pool
-	Runtime    WorkerStatus
-	InternalS3 WorkerStatus
+	AppName     string
+	RunName     string
+	Pools       []Pool
+	Runtime     WorkerStatus
+	InternalS3  WorkerStatus
 	WorkStealer WorkerStatus
-	LastEvent  Event
+	LastEvent   Event
 }
 
 func (status *Status) numPools() int {
