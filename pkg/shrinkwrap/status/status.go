@@ -36,6 +36,7 @@ type Status struct {
 	Pools      []Pool
 	Runtime    WorkerStatus
 	InternalS3 WorkerStatus
+	WorkStealer WorkerStatus
 	LastEvent  Event
 }
 
