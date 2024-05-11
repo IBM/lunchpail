@@ -36,9 +36,9 @@ func streamModel(namespace string, follow bool, tail int64, c chan QstatModel) e
 	if err != nil {
 		return err
 	} else if len(pods.Items) == 0 {
-		return fmt.Errorf("Workstealer not found in namespace=%s\n", namespace)
+		return fmt.Errorf("Cannot find run in namespace=%s\n", namespace)
 	} else if len(pods.Items) > 1 {
-		return fmt.Errorf("Multiple Workstealers found in namespace=%s\n", namespace)
+		return fmt.Errorf("Multiple matching runs found in namespace=%s\n", namespace)
 	}
 
 	podLogs := clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &opts)
