@@ -14,6 +14,6 @@ spec:
     # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
     METHOD: parametersweep
     SWEEP_MIN: '1'
-    SWEEP_MAX: '10'
+    SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
     SWEEP_STEP: '1'
 {{- end }}
