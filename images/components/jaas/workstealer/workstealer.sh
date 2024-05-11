@@ -29,7 +29,7 @@ EOF
 function upload {
     local file=$1
     remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
-    echo "Uploading changed file: $file -> $remotefile"
+    if [[ -n "$DEBUG" ]]; then echo "Uploading changed file: $file -> $remotefile"; fi
     rclone --config $config copyto --retries 20 --retries-sleep=1s $file $remotefile &
 }
 
@@ -39,7 +39,7 @@ function move {
     local dst=$2
     remoteSrc=s3:$(echo $src | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
     remoteDst=s3:$(echo $dst | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
-    echo "Moving file: $remoteSrc $remoteDst"
+    if [[ -n "$DEBUG" ]]; then echo "Moving file: $remoteSrc $remoteDst"; fi
     rclone --config $config moveto --retries 20 --retries-sleep=1s $remoteSrc $remoteDst &
 }
 
