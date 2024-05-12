@@ -3,7 +3,6 @@ package qstat
 import (
 	"context"
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/lunchpail"
 )
 
 type Options struct {
@@ -33,17 +32,12 @@ type QstatModel struct {
 	DeadWorkers []Worker
 }
 
-func QstatStreamer(opts Options) (chan QstatModel, *errgroup.Group, error) {
-	namespace := lunchpail.AssembledAppName()
-	if opts.Namespace != "" {
-		namespace = opts.Namespace
-	}
-
+func QstatStreamer(runname, namespace string, opts Options) (chan QstatModel, *errgroup.Group, error) {
 	c := make(chan QstatModel)
 
 	errs, _ := errgroup.WithContext(context.Background())
 	errs.Go(func() error {
-		err := streamModel(namespace, opts.Follow, opts.Tail, c)
+		err := streamModel(runname, namespace, opts.Follow, opts.Tail, c)
 		close(c)
 		return err
 	})

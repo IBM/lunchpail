@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"io"
-	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/runs"
 	"os"
 	"strconv"
@@ -16,45 +15,6 @@ type Options struct {
 	Namespace string
 	Watch     bool
 	Verbose   bool
-}
-
-func WaitForRun(runname, namespace string, wait bool, verbose bool) (string, string, error) {
-	appname := lunchpail.AssembledAppName()
-	if namespace == "" {
-		namespace = appname
-	}
-
-	waiting := true
-	alreadySaidWeAreWaiting := false
-
-	for waiting {
-		if runname == "" {
-			if singletonRun, err := runs.Singleton(appname, namespace); err != nil {
-				if wait && strings.Contains(err.Error(), "No runs") {
-					if !alreadySaidWeAreWaiting {
-						fmt.Fprintf(os.Stderr, "Waiting for runs...")
-						alreadySaidWeAreWaiting = true
-					}
-					time.Sleep(2 * time.Second)
-					continue
-				} else {
-					return "", "", err
-				}
-			} else {
-				runname = singletonRun.Name
-			}
-		}
-
-		if alreadySaidWeAreWaiting {
-			if !verbose {
-				clearLine(os.Stderr)
-			}
-		}
-
-		break
-	}
-
-	return appname, runname, nil
 }
 
 func max(nums ...int) int {
@@ -69,7 +29,7 @@ func max(nums ...int) int {
 
 func rspacex(str string, actualSpace, availableSpace int) string {
 	// - 2 as availableSpace includes one space character on either side
-	return str + strings.Repeat(" ", max(0, availableSpace - actualSpace - 2))
+	return str + strings.Repeat(" ", max(0, availableSpace-actualSpace-2))
 }
 
 func rspace(str string, availableSpace int) string {
@@ -84,13 +44,13 @@ func rspacef(num, denom int, str string, availableSpace int) string {
 func rspacef1(num, denom int, status WorkerStatus, availableSpace int) string {
 	frac := fmt.Sprintf("%d/%d", num, denom)
 	fullstr := fmt.Sprintf("%s %s", frac, cell(status))
-	return rspacex(fullstr, len(frac) + 2, availableSpace) // +1 for cell, +1 for space
+	return rspacex(fullstr, len(frac)+2, availableSpace) // +1 for cell, +1 for space
 }
 
 func rspacefw(num, denom int, workers []Worker, availableSpace int) string {
 	frac := fmt.Sprintf("%d/%d", num, denom)
 	fullstr := fmt.Sprintf("%s %s", frac, workerCells(workers))
-	return rspacex(fullstr, len(frac) + 2, availableSpace)
+	return rspacex(fullstr, len(frac)+2, availableSpace)
 }
 
 func view(status Status) {
@@ -106,11 +66,11 @@ func view(status Status) {
 	// 2 = 1 for left pad, 1 for right pad
 	// 4 = 1 for left pad, 1 for right pad, 1 for space between fraction and cells, 1 for fraction slash,
 	nrightbars := max(
-			8,
-			2 + len(status.AppName),
-			2 + len(status.RunName),
-			4 + totalWorkers + len(strconv.Itoa(runningWorkers)) + len(strconv.Itoa(totalWorkers)),
-		)
+		8,
+		2+len(status.AppName),
+		2+len(status.RunName),
+		4+totalWorkers+len(strconv.Itoa(runningWorkers))+len(strconv.Itoa(totalWorkers)),
+	)
 	rightbars := strings.Repeat(
 		"─",
 		nrightbars,
@@ -119,7 +79,7 @@ func view(status Status) {
 	topdiv := "┌" + leftbars + "┬" + rightbars + "┐"
 	middiv := "│" + leftbars + "┼" + rightbars + "│"
 	botdiv := "└" + leftbars + "┴" + rightbars + "┘"
-	
+
 	timestamp := status.LastEvent.Timestamp
 	if timestamp.IsZero() {
 		timestamp = time.Now()
@@ -131,18 +91,18 @@ func view(status Status) {
 	fmt.Printf("│ %-20s │ %s │\n", bold.Render("Run"), cyan.Render(rspace(status.RunName, nrightbars)))
 	fmt.Println(middiv)
 	fmt.Printf("│ %-20s │ %s │\n",
-		bold.Render("Queue"),
-		rspacef1(runningInternalS3, totalInternalS3, status.InternalS3, nrightbars),
+		bold.Render("Runtime"),
+		rspacef1(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, status.Runtime, nrightbars),
 	)
 	fmt.Printf("│ %-20s │ %s │\n",
-		bold.Render("Runtime"),
-		rspacef1(runningRuntime + runningWorkStealer, totalRuntime + totalWorkStealer, status.Runtime, nrightbars),
+		bold.Render("Queue"),
+		rspacef1(runningInternalS3, totalInternalS3, status.InternalS3, nrightbars),
 	)
 	fmt.Println(middiv)
 	fmt.Printf("│ %-20s │ %s │\n", bold.Render("Pools"), cyan.Render(rspace(strconv.Itoa(status.numPools()), nrightbars)))
 	for poolIdx, pool := range status.Pools {
 		fmt.Printf("│ %-20s │ %s │\n",
-			bold.Render("Pool " + strconv.Itoa(poolIdx + 1)), // TODO pool.Name
+			bold.Render("Pool "+strconv.Itoa(poolIdx+1)), // TODO pool.Name
 			rspacefw(runningWorkers, totalWorkers, pool.Workers, nrightbars),
 		)
 	}
@@ -194,12 +154,12 @@ func clearLine(writer io.Writer) {
 }
 
 func UI(runnameIn string, opts Options) error {
-	appname, runname, err := WaitForRun(runnameIn, opts.Namespace, opts.Watch, opts.Verbose)
+	appname, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, opts.Watch)
 	if err != nil {
 		return err
 	}
 
-	c, err := StreamStatus(appname, runname, opts.Namespace)
+	c, err := StreamStatus(appname, runname, namespace)
 	if err != nil {
 		return err
 	}

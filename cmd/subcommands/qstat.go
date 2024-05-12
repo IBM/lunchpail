@@ -16,7 +16,11 @@ func newQstatCommand() *cobra.Command {
 		Use:   "qstat",
 		Short: "Stream queue statistics to console",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return qstat.UI(qstat.Options{namespaceFlag, followFlag, tailFlag, verboseFlag})
+			maybeRun := ""
+			if len(args) > 0 {
+				maybeRun = args[0]
+			}
+			return qstat.UI(maybeRun, qstat.Options{namespaceFlag, followFlag, tailFlag, verboseFlag})
 		},
 	}
 

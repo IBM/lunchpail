@@ -5,12 +5,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"golang.org/x/term"
+	"lunchpail.io/pkg/runs"
 	"os"
 	"strconv"
 )
 
-func UI(opts Options) error {
-	c, errs, err := QstatStreamer(opts)
+func UI(runnameIn string, opts Options) error {
+	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
+	if err != nil {
+		return err
+	}
+
+	c, errs, err := QstatStreamer(runname, namespace, opts)
 	if err != nil {
 		return err
 	}

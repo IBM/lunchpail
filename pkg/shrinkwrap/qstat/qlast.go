@@ -2,6 +2,7 @@ package qstat
 
 import (
 	"fmt"
+	"lunchpail.io/pkg/runs"
 	"strconv"
 	"strings"
 )
@@ -11,7 +12,12 @@ type QlastOptions struct {
 }
 
 func Qlast(marker, opt string, opts QlastOptions) (string, error) {
-	c, _, err := QstatStreamer(Options{opts.Namespace, false, int64(1000), false})
+	_, runname, namespace, err := runs.WaitForRun("", opts.Namespace, true)
+	if err != nil {
+		return "", err
+	}
+
+	c, _, err := QstatStreamer(runname, namespace, Options{namespace, false, int64(1000), false})
 	if err != nil {
 		return strconv.Itoa(0), err
 	}

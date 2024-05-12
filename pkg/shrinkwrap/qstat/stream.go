@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func streamModel(namespace string, follow bool, tail int64, c chan QstatModel) error {
+func streamModel(runname, namespace string, follow bool, tail int64, c chan QstatModel) error {
 	opts := v1.PodLogOptions{Follow: follow}
 	if tail != -1 {
 		opts.TailLines = &tail
@@ -32,7 +32,7 @@ func streamModel(namespace string, follow bool, tail int64, c chan QstatModel) e
 		return err
 	}
 
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer"})
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + runname})
 	if err != nil {
 		return err
 	} else if len(pods.Items) == 0 {
@@ -48,7 +48,7 @@ func streamModel(namespace string, follow bool, tail int64, c chan QstatModel) e
 			fmt.Fprintf(os.Stderr, "Waiting for app to start...\n")
 			time.Sleep(2 * time.Second)
 			// TODO update this to use the kubernetes watch api?
-			return streamModel(namespace, follow, tail, c)
+			return streamModel(runname, namespace, follow, tail, c)
 		} else {
 			return err
 		}
