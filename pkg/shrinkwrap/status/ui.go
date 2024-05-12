@@ -81,13 +81,13 @@ func rspacef(num, denom int, str string, availableSpace int) string {
 	return rspace(fullstr, availableSpace)
 }
 
-func rspacef1(num int, status WorkerStatus, availableSpace int) string {
-	frac := fmt.Sprintf("%d/1", num)
+func rspacef1(num, denom int, status WorkerStatus, availableSpace int) string {
+	frac := fmt.Sprintf("%d/%d", num, denom)
 	fullstr := fmt.Sprintf("%s %s", frac, cell(status))
 	return rspacex(fullstr, len(frac) + 2, availableSpace) // +1 for cell, +1 for space
 }
 
-func rspacefw(num int, denom int, workers []Worker, availableSpace int) string {
+func rspacefw(num, denom int, workers []Worker, availableSpace int) string {
 	frac := fmt.Sprintf("%d/%d", num, denom)
 	fullstr := fmt.Sprintf("%s %s", frac, workerCells(workers))
 	return rspacex(fullstr, len(frac) + 2, availableSpace)
@@ -99,9 +99,9 @@ func view(status Status) {
 	cyan := lipgloss.NewStyle().Foreground(lipgloss.Color("6"))
 
 	runningWorkers, totalWorkers := status.workersSplit()
-	runningRuntime, _ := status.split(status.Runtime)
-	runningInternalS3, _ := status.split(status.InternalS3)
-	runningWorkStealer, _ := status.split(status.WorkStealer)
+	runningRuntime, totalRuntime := status.split(status.Runtime)
+	runningInternalS3, totalInternalS3 := status.split(status.InternalS3)
+	runningWorkStealer, totalWorkStealer := status.split(status.WorkStealer)
 
 	// 2 = 1 for left pad, 1 for right pad
 	// 4 = 1 for left pad, 1 for right pad, 1 for space between fraction and cells, 1 for fraction slash,
@@ -132,15 +132,11 @@ func view(status Status) {
 	fmt.Println(middiv)
 	fmt.Printf("│ %-20s │ %s │\n",
 		bold.Render("Queue"),
-		rspacef1(runningInternalS3, status.InternalS3, nrightbars),
+		rspacef1(runningInternalS3, totalInternalS3, status.InternalS3, nrightbars),
 	)
 	fmt.Printf("│ %-20s │ %s │\n",
 		bold.Render("Runtime"),
-		rspacef1(runningRuntime, status.Runtime, nrightbars),
-	)
-	fmt.Printf("│ %-20s │ %s │\n",
-		bold.Render("WorkStealer"),
-		rspacef1(runningWorkStealer, status.Runtime, nrightbars),
+		rspacef1(runningRuntime + runningWorkStealer, totalRuntime + totalWorkStealer, status.Runtime, nrightbars),
 	)
 	fmt.Println(middiv)
 	fmt.Printf("│ %-20s │ %s │\n", bold.Render("Pools"), cyan.Render(rspace(strconv.Itoa(status.numPools()), nrightbars)))
