@@ -120,7 +120,7 @@ func view(status Status) {
 	middiv := "│" + leftbars + "┼" + rightbars + "│"
 	botdiv := "└" + leftbars + "┴" + rightbars + "┘"
 	
-	timestamp := status.LastEvent.Timestamp.Time
+	timestamp := status.LastEvent.Timestamp
 	if timestamp.IsZero() {
 		timestamp = time.Now()
 	}

@@ -1,8 +1,8 @@
 package status
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"slices"
+	"time"
 )
 
 type WorkerStatus string
@@ -28,7 +28,7 @@ type Pool struct {
 
 type Event struct {
 	Message   string
-	Timestamp metav1.Time
+	Timestamp time.Time
 }
 
 type Status struct {

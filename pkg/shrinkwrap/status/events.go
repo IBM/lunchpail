@@ -9,8 +9,8 @@ func streamEventUpdates(status *Status, watcher watch.Interface, c chan Status) 
 	for watchEvent := range watcher.ResultChan() {
 		event := watchEvent.Object.(*v1.Event)
 
-		if status.LastEvent.Timestamp.IsZero() || event.LastTimestamp.After(status.LastEvent.Timestamp.Time) {
-			status.LastEvent = Event{event.Message, event.LastTimestamp}
+		if status.LastEvent.Timestamp.IsZero() || event.LastTimestamp.After(status.LastEvent.Timestamp) {
+			status.LastEvent = Event{event.Message, event.LastTimestamp.Time}
 			c <- *status
 		}
 	}

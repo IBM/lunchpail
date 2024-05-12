@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -40,33 +42,35 @@ func statusFromPod(pod *v1.Pod) WorkerStatus {
 	return workerStatus
 }
 
-func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, error) {
+func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int, WorkerStatus, error) {
+	workerStatus := statusFromPod(pod)
 	poolName, exists := pod.Labels["app.kubernetes.io/name"]
 	if !exists {
-		return pools, fmt.Errorf("Worker without pool label %s\n", pod.Name)
+		return pools, -1, workerStatus, fmt.Errorf("Worker without pool label %s\n", pod.Name)
 	}
 
-	workerStatus := statusFromPod(pod)
-	idx := slices.IndexFunc(pools, func(pool Pool) bool { return pool.Name == poolName })
+	// index of pool in `pools`
+	pidx := slices.IndexFunc(pools, func(pool Pool) bool { return pool.Name == poolName })
 
-	if idx < 0 {
+	if pidx < 0 {
 		// couldn't find the Pool
 		if what == watch.Deleted {
 			// Deleted a Worker that in a Pool we haven't
 			// yet seen; safe to ignore for now
-			return pools, nil
+			return pools, -1, workerStatus, nil
 		} else {
 			// Added or Modified a Worker in a Pool we
 			// haven't seen yet; create a record of both
 			// the Pool and the Worker
 			pool := Pool{poolName, []Worker{Worker{pod.Name, workerStatus}}}
-			return append(pools, pool), nil
+			return append(pools, pool), len(pools), workerStatus, nil
 		}
 	}
 
 	// otherwise, we have seen the pool before
-	pool := pools[idx]
+	pool := pools[pidx]
 
+	// worker index in `pool.Workers`
 	widx := slices.IndexFunc(pool.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
 	if widx >= 0 {
 		// known Pool and known Worker
@@ -77,7 +81,7 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, erro
 		} else {
 			worker := pool.Workers[widx]
 			worker.Status = workerStatus
-			pool.Workers = slices.Concat(pool.Workers[:idx], []Worker{worker}, pool.Workers[widx+1:])
+			pool.Workers = slices.Concat(pool.Workers[:widx], []Worker{worker}, pool.Workers[widx+1:])
 		}
 	} else {
 		// known Pool but unknown Worker
@@ -86,9 +90,9 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, erro
 
 	if len(pool.Workers) == 0 {
 		// Pool with no Workers; remove record of it
-		return append(pools[:idx], pools[idx+1:]...), nil
+		return append(pools[:pidx], pools[pidx+1:]...), pidx, workerStatus, nil
 	} else {
-		return slices.Concat(pools[:idx], []Pool{pool}, pools[idx+1:]), nil
+		return slices.Concat(pools[:pidx], []Pool{pool}, pools[pidx+1:]), pidx, workerStatus, nil
 	}
 }
 
@@ -98,21 +102,36 @@ func updateFromPod(pod *v1.Pod, status *Status, what watch.EventType) error {
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
+	name := pod.Name
+	var workerStatus WorkerStatus
+
 	switch component {
 	case string(lunchpail.RuntimeComponent):
-		status.Runtime = statusFromPod(pod)
+		name = "Runtime"
+		workerStatus = statusFromPod(pod)
+		status.Runtime = workerStatus
 	case string(lunchpail.InternalS3Component):
-		status.InternalS3 = statusFromPod(pod)
+		name = "Queue"
+		workerStatus = statusFromPod(pod)
+		status.InternalS3 = workerStatus
 	case string(lunchpail.WorkStealerComponent):
-		status.WorkStealer = statusFromPod(pod)
+		name = "Workstealer"
+		workerStatus = statusFromPod(pod)
+		status.WorkStealer = workerStatus
 	case string(lunchpail.WorkersComponent):
-		if pools, err := updateWorker(pod, status.Pools, what); err != nil {
+		if pools, poolIdx, theWorkerStatus, err := updateWorker(pod, status.Pools, what); err != nil {
 			return err
 		} else {
 			status.Pools = pools
+			workerStatus = theWorkerStatus
+
+			if workerIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]; exists {
+				name = fmt.Sprintf("Worker %s Pool %d", workerIdx, poolIdx)
+			}
 		}
 	}
 
+	status.LastEvent = Event{name + " " + strings.ToLower(string(workerStatus)), time.Now()}
 	return nil
 }
 
