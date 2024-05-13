@@ -26,7 +26,7 @@ func rspacet(N, largestN, maxcells int, box Box, availableSpace int) string {
 	Nstr := strconv.Itoa(N)
 	Nstrp := rspace(Nstr, len(strconv.Itoa(largestN))+2) // padded
 	Ncells := min(N, maxcells)
-	return purple.Render(rspacex(Nstrp+" "+taskCells(Ncells, box), len(Nstrp)+1+Ncells, availableSpace))
+	return brown.Render(rspacex(Nstrp+" "+taskCells(Ncells, box), len(Nstrp)+1+Ncells, availableSpace))
 }
 
 func rspacef(num, denom int, str string, availableSpace int) string {
