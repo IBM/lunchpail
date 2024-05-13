@@ -21,10 +21,12 @@ func rspacei(N int, availableSpace int) string {
 	return rspace(strconv.Itoa(N), availableSpace)
 }
 
-func rspacet(N int, box Box, availableSpace int) string {
+func rspacet(N, largestN, maxcells int, box Box, availableSpace int) string {
 	// for some reason, len(taskCells(N)) != N; probably unicode issues
 	Nstr := strconv.Itoa(N)
-	return purple.Render(rspacex(Nstr+" "+taskCells(N, box), len(Nstr)+1+N, availableSpace))
+	Nstrp := rspace(Nstr, len(strconv.Itoa(largestN))+2) // padded
+	Ncells := min(N, maxcells)
+	return purple.Render(rspacex(Nstrp+" "+taskCells(Ncells, box), len(Nstrp)+1+Ncells, availableSpace))
 }
 
 func rspacef(num, denom int, str string, availableSpace int) string {
@@ -53,31 +55,30 @@ func clearLine(writer io.Writer) {
 }
 
 func row(col1, col2 string) {
-	fmt.Printf("│ %-22s │ %s │\n", bold.Render(col1), col2)
+	fmt.Printf("│ %-21s │ %s │\n", bold.Render(col1), col2)
 }
 
-func view(model Model, summary bool) {
+func view(model Model, maxwidth int, summary bool) {
 	runningWorkers, totalWorkers := model.workersSplit()
 	runningRuntime, totalRuntime := model.split(model.Runtime)
 	runningInternalS3, totalInternalS3 := model.split(model.InternalS3)
 	runningWorkStealer, totalWorkStealer := model.split(model.WorkStealer)
 
-	maxbox := model.maxbox()
+	barsandpadding := 9
+	nleftbars := 15 // TODO
+	maxbox := min(model.maxbox(), maxwidth-nleftbars-barsandpadding)
 
 	// 2 = 1 for left pad, 1 for right pad
 	// 4 = 1 for left pad, 1 for right pad, 1 for space between fraction and cells, 1 for fraction slash,
 	nrightbars := max(
-		8,
+		barsandpadding,
 		2+len(model.AppName),
 		2+len(model.RunName),
 		4+totalWorkers+len(strconv.Itoa(runningWorkers))+len(strconv.Itoa(totalWorkers)),
-		3+len(strconv.Itoa(maxbox))+maxbox,
+		4+len(strconv.Itoa(maxbox))+maxbox,
 	)
-	rightbars := strings.Repeat(
-		"─",
-		nrightbars,
-	)
-	leftbars := "────────────────"
+	rightbars := strings.Repeat("─", nrightbars)
+	leftbars := strings.Repeat("─", nleftbars)
 	topdiv := "┌" + leftbars + "┬" + rightbars + "┐"
 	middiv := "│" + leftbars + "┼" + rightbars + "│"
 	botdiv := "└" + leftbars + "┴" + rightbars + "┘"
@@ -96,17 +97,24 @@ func view(model Model, summary bool) {
 
 	row("Queue", rspacef1(runningInternalS3, totalInternalS3, model.InternalS3, nrightbars))
 	if !summary && runningInternalS3 > 0 {
-		pre := "  ├ "
+		pre := " ├ "
 		if len(model.Pools) <= 1 {
-			pre = "  └ "
+			pre = " └ "
 		}
-		row(pre+"Unassigned", rspacet(model.Qstat.Unassigned, boxIn, nrightbars))
+
+		unassigned := model.Qstat.Unassigned
+		inbox := model.allInbox()
+		processing := model.Qstat.Processing
+		success := model.Qstat.Success
+		failures := model.Qstat.Failure
+		largest := max(unassigned, inbox, processing, success, failures)
+		row(pre+"Unassigned", rspacet(unassigned, largest, maxbox, boxIn, nrightbars))
 
 		if len(model.Pools) > 1 {
-			row("  ├ Assigned", rspacet(model.allInbox(), boxIn, nrightbars))
-			row("  ├ Processing", rspacet(model.Qstat.Processing, boxPr, nrightbars))
-			row("  ├ Success", rspacet(model.Qstat.Success, boxSu, nrightbars))
-			row("  └ Failures", rspacet(model.Qstat.Failure, boxFa, nrightbars))
+			row(" ├ Assigned", rspacet(inbox, largest, maxbox, boxIn, nrightbars))
+			row(" ├ Processing", rspacet(processing, largest, maxbox, boxPr, nrightbars))
+			row(" ├ Success", rspacet(success, largest, maxbox, boxSu, nrightbars))
+			row(" └ Failures", rspacet(failures, largest, maxbox, boxFa, nrightbars))
 		}
 	}
 
@@ -123,10 +131,12 @@ func view(model Model, summary bool) {
 
 		if !summary {
 			inbox, processing, success, failure := pool.qsummary()
-			row("  ├ Inbox", rspacet(inbox, boxIn, nrightbars))
-			row("  ├ Processing", rspacet(processing, boxPr, nrightbars))
-			row("  ├ Success", rspacet(success, boxSu, nrightbars))
-			row("  └ Failures", rspacet(failure, boxFa, nrightbars))
+			largest := max(inbox, processing, success, failure)
+
+			row(" ├ Inbox", rspacet(inbox, largest, maxbox, boxIn, nrightbars))
+			row(" ├ Processing", rspacet(processing, largest, maxbox, boxPr, nrightbars))
+			row(" ├ Success", rspacet(success, largest, maxbox, boxSu, nrightbars))
+			row(" └ Failures", rspacet(failure, largest, maxbox, boxFa, nrightbars))
 		}
 	}
 	fmt.Println(botdiv)

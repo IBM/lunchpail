@@ -1,6 +1,7 @@
 package status
 
 import (
+	"golang.org/x/term"
 	"lunchpail.io/pkg/runs"
 	"os"
 )
@@ -27,10 +28,16 @@ func UI(runnameIn string, opts Options) error {
 	clearScreen(os.Stdout)
 
 	for model := range c {
+		width, _, err := term.GetSize(1)
+		if err != nil {
+			return err
+		}
+
 		if !opts.Verbose {
 			clearScreen(os.Stdout)
 		}
-		view(model, opts.Summary)
+
+		view(model, width, opts.Summary)
 	}
 
 	return errgroup.Wait()
