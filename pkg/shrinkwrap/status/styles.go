@@ -2,10 +2,13 @@ package status
 
 import "github.com/charmbracelet/lipgloss"
 
-var purple = lipgloss.NewStyle().Foreground(lipgloss.Color("5"))
 var dim = lipgloss.NewStyle().Faint(true)
 var bold = lipgloss.NewStyle().Bold(true)
 
+// dark: https://colorbrewer2.org/#type=qualitative&scheme=Set2&n=8
+var brown = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#e5c494"})
+var blue = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#8da0cb"})
+var purple = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#e78ac3"})
 var yellow = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#ffd92f"})
 var green = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#a6d854"})
 var red = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#fc8d62"})
