@@ -54,6 +54,7 @@ spec:
         {{- include "watcher/volume" . | indent 8 }}
       initContainers:
         {{- include "containers/workdir" . | indent 8 }}
+        {{- include "containers/watcher" . | indent 8 }}
       containers:
         {{- include "containers/app" . | indent 8 }}
 {{- end }}

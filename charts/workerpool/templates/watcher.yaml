@@ -11,10 +11,6 @@ metadata:
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/managed-by: lunchpail.io
 data:
-  watcher.sh: |
-{{ .Files.Get "watcher.sh" | indent 4 }}
-  poststart.sh: |
-{{ .Files.Get "poststart.sh" | indent 4 }}
   prestop.sh: |
 {{ .Files.Get "prestop.sh" | indent 4 }}
   settings.sh: |

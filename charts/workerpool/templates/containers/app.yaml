@@ -1,7 +1,7 @@
 {{- define "containers/app" }}
 - name: app
   image: {{ .Values.image }}
-  command: ["/bin/bash", "-c", {{ print "/opt/lunchpail/bin/watcher.sh " .Values.command  }}]
+  command: ["/bin/bash", "-c", {{ print "/workdir/watcher " .Values.command }}]
   env:
     - name: LUNCHPAIL_STARTUP_DELAY
       value: {{ .Values.startupDelay | default 0 | quote }}

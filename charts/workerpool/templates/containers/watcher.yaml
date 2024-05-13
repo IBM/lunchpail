@@ -1,0 +1,11 @@
+{{- define "containers/watcher" }}
+- name: watcher
+  image: {{ print .Values.watcher.image.registry "/" .Values.lunchpail "/jaas-workerpool-watcher-component:" .Values.watcher.image.version }}
+  volumeMounts:
+    {{ include "workdir/volumeMount" . | indent 4 }}
+  command:
+    - /bin/sh
+    - -c
+    - |
+      cp /init/watcher /workdir
+{{- end }}
