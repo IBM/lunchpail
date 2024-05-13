@@ -74,6 +74,10 @@ fi
 #
 if [[ ${#expected[@]} != 0 ]]
 then
+    if [[ -e "$1"/preinit.sh ]]; then
+        TEST_NAME=$testname "$1"/preinit.sh
+    fi
+
     deploy $testname $app $branch $deployname
 
     # if [[ $(basename $1) = test7d ]]

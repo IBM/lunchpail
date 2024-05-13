@@ -1,5 +1,8 @@
 api=workqueue
 
+# see init.sh for "rcloneremotetest"
+taskqueue=rclone://rcloneremotetest/test7f
+
 # /queue/0,1 <-- 2 workers
 # task.1,task.3,task.5 <-- 3 tasks per iter
 
