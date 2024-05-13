@@ -1,4 +1,3 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7f") }}
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
@@ -17,10 +16,13 @@ spec:
         out="$2"
 
         echo "Processing $in"
-        sleep 5
+        t=${WORK_TIME-5}
+        duration=$(shuf -n 1 -i $((t-3))-$((t+3)))
+        sleep $duration
 
         echo "Done with $in"
 
   command: ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
-{{- end }}
+  env:
+    WORK_TIME: {{ .Values.duration | default 5 | quote }}

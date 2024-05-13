@@ -1,4 +1,3 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7f") }}
 apiVersion: lunchpail.io/v1alpha1
 kind: WorkDispatcher
 metadata:
@@ -16,4 +15,4 @@ spec:
     SWEEP_MIN: '1'
     SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
     SWEEP_STEP: '1'
-{{- end }}
+    INTERVAL: {{ .Values.every | default 5 | quote }}

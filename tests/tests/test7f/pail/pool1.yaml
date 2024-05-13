@@ -1,10 +1,11 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7f") }}
+{{- range until (.Values.pools | default 1 | int) }}
+---
 apiVersion: lunchpail.io/v1alpha1
 kind: WorkerPool
 metadata:
-  name: test7f-pool1
+  name: {{ print "test7f-pool" (add 1 .) }}
 spec:
   workers:
-    count: 1
-    size: xxs
+    count: {{ $.Values.workers | default 1 }}
+    size: {{ $.Values.size | default "xxs" }}
 {{- end }}
