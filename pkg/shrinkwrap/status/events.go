@@ -5,13 +5,13 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 )
 
-func streamEventUpdates(status *Status, watcher watch.Interface, c chan Status) error {
+func streamEventUpdates(model *Model, watcher watch.Interface, c chan Model) error {
 	for watchEvent := range watcher.ResultChan() {
 		event := watchEvent.Object.(*v1.Event)
 
-		if status.LastEvent.Timestamp.IsZero() || event.LastTimestamp.After(status.LastEvent.Timestamp) {
-			status.LastEvent = Event{event.Message, event.LastTimestamp.Time}
-			c <- *status
+		if model.LastEvent.Timestamp.IsZero() || event.LastTimestamp.After(model.LastEvent.Timestamp) {
+			model.LastEvent = Event{event.Message, event.LastTimestamp.Time}
+			c <- *model
 		}
 	}
 

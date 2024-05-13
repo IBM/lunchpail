@@ -10,6 +10,13 @@ import (
 	"strconv"
 )
 
+type Options struct {
+	Namespace string
+	Follow    bool
+	Tail      int64
+	Verbose   bool
+}
+
 func UI(runnameIn string, opts Options) error {
 	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
 	if err != nil {
@@ -58,14 +65,16 @@ func UI(runnameIn string, opts Options) error {
 		t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
 		t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
 
-		for _, worker := range model.LiveWorkers {
-			t.Row(worker.Name, strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
-		}
-		for _, worker := range model.DeadWorkers {
-			t.Row(worker.Name+"☠", strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
+		for _, pool := range model.Pools {
+			for _, worker := range pool.LiveWorkers {
+				t.Row(worker.Name, strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
+			}
+			for _, worker := range pool.DeadWorkers {
+				t.Row(worker.Name+"☠", strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
+			}
 		}
 
-		fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, len(model.LiveWorkers))
+		fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.liveWorkers())
 		fmt.Println(t)
 	}
 

@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
 
 func statusFromPod(pod *v1.Pod) WorkerStatus {
@@ -42,11 +43,11 @@ func statusFromPod(pod *v1.Pod) WorkerStatus {
 	return workerStatus
 }
 
-func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int, WorkerStatus, error) {
+func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int, WorkerStatus, error) {
 	workerStatus := statusFromPod(pod)
 	poolName, exists := pod.Labels["app.kubernetes.io/name"]
 	if !exists {
-		return pools, -1, workerStatus, fmt.Errorf("Worker without pool label %s\n", pod.Name)
+		return pools, -1, workerStatus, fmt.Errorf("Worker without pool label %s\n", name)
 	}
 
 	// index of pool in `pools`
@@ -62,7 +63,7 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int,
 			// Added or Modified a Worker in a Pool we
 			// haven't seen yet; create a record of both
 			// the Pool and the Worker
-			pool := Pool{poolName, []Worker{Worker{pod.Name, workerStatus}}}
+			pool := Pool{poolName, []Worker{Worker{name, workerStatus, qstat.Worker{}}}}
 			return append(pools, pool), len(pools), workerStatus, nil
 		}
 	}
@@ -71,7 +72,7 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int,
 	pool := pools[pidx]
 
 	// worker index in `pool.Workers`
-	widx := slices.IndexFunc(pool.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
+	widx := slices.IndexFunc(pool.Workers, func(worker Worker) bool { return worker.Name == name })
 	if widx >= 0 {
 		// known Pool and known Worker
 		if what == watch.Deleted {
@@ -85,7 +86,7 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int,
 		}
 	} else {
 		// known Pool but unknown Worker
-		pool.Workers = append(pool.Workers, Worker{pod.Name, workerStatus})
+		pool.Workers = append(pool.Workers, Worker{name, workerStatus, qstat.Worker{}})
 	}
 
 	if len(pool.Workers) == 0 {
@@ -96,33 +97,49 @@ func updateWorker(pod *v1.Pod, pools []Pool, what watch.EventType) ([]Pool, int,
 	}
 }
 
-func updateFromPod(pod *v1.Pod, status *Status, what watch.EventType) error {
+func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
 	component, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
 	name := pod.Name
-	var workerStatus WorkerStatus
 
+	if component == string(lunchpail.WorkersComponent) {
+		poolname, exists := pod.Labels["app.kubernetes.io/name"]
+		if !exists {
+			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
+		}
+		completionIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]
+		if !exists {
+			return fmt.Errorf("Worker without completion index annotation %s\n", pod.Name)
+		}
+
+		// see watcher.sh remote=... TODO avoid these disparate hacks
+		lastDashIdx := strings.LastIndex(pod.Name, "-")
+		suffix := pod.Name[lastDashIdx+1:]
+		name = fmt.Sprintf("%s.w%s.%s", poolname, completionIdx, suffix)
+	}
+
+	var workerStatus WorkerStatus
 	switch component {
 	case string(lunchpail.RuntimeComponent):
 		name = "Runtime"
 		workerStatus = statusFromPod(pod)
-		status.Runtime = workerStatus
+		model.Runtime = workerStatus
 	case string(lunchpail.InternalS3Component):
 		name = "Queue"
 		workerStatus = statusFromPod(pod)
-		status.InternalS3 = workerStatus
+		model.InternalS3 = workerStatus
 	case string(lunchpail.WorkStealerComponent):
 		name = "Workstealer"
 		workerStatus = statusFromPod(pod)
-		status.WorkStealer = workerStatus
+		model.WorkStealer = workerStatus
 	case string(lunchpail.WorkersComponent):
-		if pools, poolIdx, theWorkerStatus, err := updateWorker(pod, status.Pools, what); err != nil {
+		if pools, poolIdx, theWorkerStatus, err := updateWorker(name, pod, model.Pools, what); err != nil {
 			return err
 		} else {
-			status.Pools = pools
+			model.Pools = pools
 			workerStatus = theWorkerStatus
 
 			if workerIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]; exists {
@@ -131,18 +148,18 @@ func updateFromPod(pod *v1.Pod, status *Status, what watch.EventType) error {
 		}
 	}
 
-	status.LastEvent = Event{name + " " + strings.ToLower(string(workerStatus)), time.Now()}
+	model.LastEvent = Event{name + " " + strings.ToLower(string(workerStatus)), time.Now()}
 	return nil
 }
 
-func streamPodUpdates(status *Status, watcher watch.Interface, c chan Status) error {
+func streamPodUpdates(model *Model, watcher watch.Interface, c chan Model) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if err := updateFromPod(pod, status, event.Type); err != nil {
+			if err := updateFromPod(pod, model, event.Type); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 			} else {
-				c <- *status
+				c <- *model
 			}
 		}
 	}

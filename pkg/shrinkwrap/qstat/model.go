@@ -1,17 +1,5 @@
 package qstat
 
-import (
-	"context"
-	"golang.org/x/sync/errgroup"
-)
-
-type Options struct {
-	Namespace string
-	Follow    bool
-	Tail      int64
-	Verbose   bool
-}
-
 type Worker struct {
 	Name       string
 	Inbox      int
@@ -20,27 +8,27 @@ type Worker struct {
 	Errorbox   int
 }
 
-type QstatModel struct {
-	Valid       bool
-	Timestamp   string
-	Unassigned  int
-	Assigned    int
-	Processing  int
-	Success     int
-	Failure     int
+type Pool struct {
+	Name        string
 	LiveWorkers []Worker
 	DeadWorkers []Worker
 }
 
-func QstatStreamer(runname, namespace string, opts Options) (chan QstatModel, *errgroup.Group, error) {
-	c := make(chan QstatModel)
+type Model struct {
+	Valid      bool
+	Timestamp  string
+	Unassigned int
+	Assigned   int
+	Processing int
+	Success    int
+	Failure    int
+	Pools      []Pool
+}
 
-	errs, _ := errgroup.WithContext(context.Background())
-	errs.Go(func() error {
-		err := streamModel(runname, namespace, opts.Follow, opts.Tail, c)
-		close(c)
-		return err
-	})
-
-	return c, errs, nil
+func (model *Model) liveWorkers() int {
+	N := 0
+	for _, pool := range model.Pools {
+		N += len(pool.LiveWorkers)
+	}
+	return N
 }
