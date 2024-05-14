@@ -16,7 +16,11 @@ func Newcmd() *cobra.Command {
 		Short: "Displays CPU utilization",
 		Long:  "Displays CPU utilization",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cpu.UI(cpu.CpuOptions{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag})
+			maybeRun := ""
+			if len(args) > 0 {
+				maybeRun = args[0]
+			}
+			return cpu.UI(maybeRun, cpu.CpuOptions{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag})
 		},
 	}
 

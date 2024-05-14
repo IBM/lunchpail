@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/runs"
 )
 
 type LogsOptions struct {
@@ -17,9 +18,9 @@ type LogsOptions struct {
 	Components []lunchpail.Component
 }
 
-func streamLogs(appname, namespace string, component lunchpail.Component, follow bool, verbose bool) error {
+func streamLogs(runname, namespace string, component lunchpail.Component, follow bool, verbose bool) error {
 	containers := "app"
-	appSelector := ",app.kubernetes.io/part-of=" + appname
+	appSelector := ",app.kubernetes.io/instance=" + runname
 	if component == lunchpail.DispatcherComponent {
 		containers = "main"
 		// FIXME: the workdispatcher has an invalid part-of
@@ -56,18 +57,17 @@ func streamLogs(appname, namespace string, component lunchpail.Component, follow
 	return nil
 }
 
-func Logs(opts LogsOptions) error {
-	appname := lunchpail.AssembledAppName()
-	namespace := appname
-	if opts.Namespace != "" {
-		namespace = opts.Namespace
+func Logs(runnameIn string, opts LogsOptions) error {
+	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
+	if err != nil {
+		return err
 	}
 
 	group, _ := errgroup.WithContext(context.Background())
 
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			return streamLogs(appname, namespace, component, opts.Follow, opts.Verbose)
+			return streamLogs(runname, namespace, component, opts.Follow, opts.Verbose)
 		})
 	}
 

@@ -28,7 +28,7 @@ func startWatching(app, run, namespace string) (watch.Interface, watch.Interface
 
 	podWatcher, err := clientset.CoreV1().Pods(namespace).Watch(context.Background(), metav1.ListOptions{
 		TimeoutSeconds: &timeoutSeconds,
-		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/part-of=" + app + ",app.kubernetes.io/instance=" + run,
+		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + run,
 	})
 	if err != nil {
 		return nil, nil, err

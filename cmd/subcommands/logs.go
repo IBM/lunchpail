@@ -18,6 +18,11 @@ func newLogsCommand() *cobra.Command {
 		Short: "Print or stream logs from the application",
 		Long:  "Print or stream logs from the application",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			maybeRun := ""
+			if len(args) > 0 {
+				maybeRun = args[0]
+			}
+
 			components, err := cmd.Flags().GetStringSlice("component")
 			if err != nil {
 				return err
@@ -38,7 +43,7 @@ func newLogsCommand() *cobra.Command {
 				}
 			}
 
-			return shrinkwrap.Logs(shrinkwrap.LogsOptions{namespaceFlag, followFlag, verboseFlag, comps})
+			return shrinkwrap.Logs(maybeRun, shrinkwrap.LogsOptions{namespaceFlag, followFlag, verboseFlag, comps})
 		},
 	}
 
