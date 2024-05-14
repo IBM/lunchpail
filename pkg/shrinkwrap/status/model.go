@@ -1,8 +1,10 @@
 package status
 
 import (
+	"container/ring"
 	"lunchpail.io/pkg/shrinkwrap/qstat"
 	"slices"
+	"sort"
 	"time"
 )
 
@@ -40,7 +42,7 @@ type Model struct {
 	Runtime     WorkerStatus
 	InternalS3  WorkerStatus
 	WorkStealer WorkerStatus
-	LastEvent   Event
+	LastNEvents *ring.Ring
 	Qstat       qstat.Model
 }
 
@@ -134,4 +136,20 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 	}
 
 	return inbox, processing, success, failure
+}
+
+// return list of most recent events, sorted by increasing timestamp
+func (model *Model) events() []Event {
+	events := []Event{}
+	model.LastNEvents.Do(func(value any) {
+		if event, ok := value.(Event); ok {
+			events = append(events, event)
+		}
+	})
+
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Timestamp.Before(events[j].Timestamp)
+	})
+
+	return events
 }

@@ -1,6 +1,7 @@
 package status
 
 import (
+	"container/ring"
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
@@ -16,6 +17,7 @@ func StatusStreamer(app, run, namespace string, verbose bool) (chan Model, *errg
 	model := Model{}
 	model.AppName = app
 	model.RunName = run
+	model.LastNEvents = ring.New(5)
 
 	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose})
 	if err != nil {
@@ -23,15 +25,15 @@ func StatusStreamer(app, run, namespace string, verbose bool) (chan Model, *errg
 	}
 
 	errgroup.Go(func() error {
-		return streamPodUpdates(&model, podWatcher, c)
+		return model.streamPodUpdates(podWatcher, c)
 	})
 
 	errgroup.Go(func() error {
-		return streamEventUpdates(&model, eventWatcher, c)
+		return model.streamEventUpdates(eventWatcher, c)
 	})
 
 	errgroup.Go(func() error {
-		return streamQstatUpdates(&model, qc, c)
+		return model.streamQstatUpdates(qc, c)
 	})
 
 	return c, errgroup, nil

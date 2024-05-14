@@ -148,11 +148,13 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
 		}
 	}
 
-	model.LastEvent = Event{name + " " + strings.ToLower(string(workerStatus)), time.Now()}
+	model.LastNEvents = model.LastNEvents.Next()
+	model.LastNEvents.Value = Event{name + " " + strings.ToLower(string(workerStatus)), time.Now()}
+
 	return nil
 }
 
-func streamPodUpdates(model *Model, watcher watch.Interface, c chan Model) error {
+func (model *Model) streamPodUpdates(watcher watch.Interface, c chan Model) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)

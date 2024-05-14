@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-func streamQstatUpdates(model *Model, qc chan qstat.Model, c chan Model) error {
+func (model *Model) streamQstatUpdates(qc chan qstat.Model, c chan Model) error {
 	for qm := range qc {
 		model.Qstat = qm
 

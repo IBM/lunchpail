@@ -83,9 +83,12 @@ func view(model Model, maxwidth int, summary bool) {
 	middiv := "│" + leftbars + "┼" + rightbars + "│"
 	botdiv := "└" + leftbars + "┴" + rightbars + "┘"
 
-	timestamp := model.LastEvent.Timestamp
-	if timestamp.IsZero() {
-		timestamp = time.Now()
+	timestamp := time.Now()
+	if event, ok := model.LastNEvents.Value.(Event); ok {
+		lastEventTimestamp := event.Timestamp
+		if !timestamp.IsZero() {
+			timestamp = lastEventTimestamp
+		}
 	}
 
 	fmt.Printf(" %s\n", dim.Render(timestamp.Format(time.RFC850)))
@@ -141,7 +144,10 @@ func view(model Model, maxwidth int, summary bool) {
 	}
 	fmt.Println(botdiv)
 
-	if model.LastEvent.Message != "" {
-		fmt.Println(dim.Render(model.LastEvent.Message))
+	// display in reverse order, so that they are presented
+	// temporally top to bottom
+	events := model.events()
+	for i := range events {
+		fmt.Println(dim.Render(events[len(events)-i-1].Message))
 	}
 }
