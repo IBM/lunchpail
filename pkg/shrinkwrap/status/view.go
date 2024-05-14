@@ -49,31 +49,14 @@ func row(col1, col2 string) table.Row {
 	return table.Row{col1, col2}
 }
 
-func rows(model Model, maxwidth int, summary bool) ([]table.Row, []string) {
-	runningWorkers, totalWorkers := model.workersSplit()
+func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) {
 	runningRuntime, totalRuntime := model.split(model.Runtime)
 	runningInternalS3, totalInternalS3 := model.split(model.InternalS3)
 	runningWorkStealer, totalWorkStealer := model.split(model.WorkStealer)
 
-	barsandpadding := 9
-	nleftbars := 15 // TODO
+	barsandpadding := 4
+	nleftbars := 22 // TODO
 	maxbox := min(model.maxbox(), maxwidth-nleftbars-barsandpadding)
-
-	// 2 = 1 for left pad, 1 for right pad
-	// 4 = 1 for left pad, 1 for right pad, 1 for space between fraction and cells, 1 for fraction slash,
-	nrightbars := max(
-		barsandpadding,
-		2+len(model.AppName),
-		2+len(model.RunName),
-		4+totalWorkers+len(strconv.Itoa(runningWorkers))+len(strconv.Itoa(totalWorkers)),
-		4+len(strconv.Itoa(maxbox))+maxbox,
-	)
-	rightbars := strings.Repeat("─", nrightbars)
-	leftbars := strings.Repeat("─", nleftbars)
-	// topdiv := "┌" + leftbars + "┬" + rightbars + "┐"
-	// middiv := "│" + leftbars + "┼" + rightbars + "│"
-	// botdiv := "└" + leftbars + "┴" + rightbars + "┘"
-	// topdiv := table.Row{"┌" + leftbars + "┬", rightbars + "┐"}
 
 	timestamp := time.Now()
 	if event, ok := model.LastNEvents.Value.(Event); ok {
@@ -88,14 +71,16 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, []string) {
 	// rows = append(rows, topdiv)
 	rows = append(rows, row("App", cyan.Render(model.AppName)))
 	rows = append(rows, row("Run", cyan.Render(model.RunName)))
-	rows = append(rows, row(leftbars, rightbars))
-	rows = append(rows, row("Runtime", cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)))
+	// rows = append(rows, row(leftbars, rightbars))
+	rows = append(rows, row("├─ " + bold.Render("Runtime"), cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)))
 
-	rows = append(rows, row("Queue", cellf(runningInternalS3, totalInternalS3, model.InternalS3)))
+	rows = append(rows, row("├─ " + bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)))
 	if !summary && runningInternalS3 > 0 {
-		pre := " ├ "
+		prefix := "  ├─ "
+		prefix2 := "│"
 		if len(model.Pools) <= 1 {
-			pre = " └ "
+			prefix = "  └─"
+			prefix2 = " "
 		}
 
 		unassigned := model.Qstat.Unassigned
@@ -104,24 +89,28 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, []string) {
 		success := model.Qstat.Success
 		failures := model.Qstat.Failure
 		largest := max(unassigned, inbox, processing, success, failures)
-		rows = append(rows, row(pre+"Unassigned", cellt(unassigned, largest, maxbox, boxIn)))
+		rows = append(rows, row(prefix2+prefix+"Unassigned", cellt(unassigned, largest, maxbox, boxIn)))
 
 		if len(model.Pools) > 1 {
-			rows = append(rows, row(" ├ Assigned", cellt(inbox, largest, maxbox, boxIn)))
-			rows = append(rows, row(" ├ Processing", cellt(processing, largest, maxbox, boxPr)))
-			rows = append(rows, row(" ├ Success", cellt(success, largest, maxbox, boxSu)))
-			rows = append(rows, row(" └ Failures", cellt(failures, largest, maxbox, boxFa)))
+			rows = append(rows, row(prefix2 + "  ├─ Assigned", cellt(inbox, largest, maxbox, boxIn)))
+			rows = append(rows, row(prefix2 + "  ├─ Processing", cellt(processing, largest, maxbox, boxPr)))
+			rows = append(rows, row(prefix2 + "  ├─ Success", cellt(success, largest, maxbox, boxSu)))
+			rows = append(rows, row(prefix2 + "  └─ Failures", cellt(failures, largest, maxbox, boxFa)))
 		}
 	}
 
-	rows = append(rows, row(leftbars, rightbars))
-
-	rows = append(rows, row("Pools", cyan.Render(celli(model.numPools()))))
+	rows = append(rows, row(bold.Render("└─ Pools"), cyan.Render(celli(model.numPools()))))
 
 	for poolIdx, pool := range model.Pools {
 		runningWorkers, totalWorkers := pool.workersSplit()
+		prefix := "├─ "
+		prefix2 := "   │  "
+		if poolIdx == len(model.Pools)-1 {
+			prefix = "└─ "
+			prefix2 = "      "
+		}
 		rows = append(rows, row(
-			"Pool "+strconv.Itoa(poolIdx+1), // TODO pool.Name
+			"   " + prefix + "Pool "+strconv.Itoa(poolIdx+1), // TODO pool.Name
 			cellfw(runningWorkers, totalWorkers, pool.Workers),
 		))
 
@@ -129,10 +118,10 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, []string) {
 			inbox, processing, success, failure := pool.qsummary()
 			largest := max(inbox, processing, success, failure)
 
-			rows = append(rows, row(" ├ Inbox", cellt(inbox, largest, maxbox, boxIn)))
-			rows = append(rows, row(" ├ Processing", cellt(processing, largest, maxbox, boxPr)))
-			rows = append(rows, row(" ├ Success", cellt(success, largest, maxbox, boxSu)))
-			rows = append(rows, row(" └ Failures", cellt(failure, largest, maxbox, boxFa)))
+			rows = append(rows, row(prefix2 + "├─ Inbox", cellt(inbox, largest, maxbox, boxIn)))
+			rows = append(rows, row(prefix2 + "├─ Processing", cellt(processing, largest, maxbox, boxPr)))
+			rows = append(rows, row(prefix2 + "├─ Success", cellt(success, largest, maxbox, boxSu)))
+			rows = append(rows, row(prefix2 + "└─ Failures", cellt(failure, largest, maxbox, boxFa)))
 		}
 	}
 	// fmt.Println(botdiv)
@@ -145,5 +134,5 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, []string) {
 		footer = append(footer, dim.Render(events[len(events)-i-1].Message))
 	}
 
-	return rows, footer
+	return rows, nleftbars, footer
 }

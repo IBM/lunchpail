@@ -44,12 +44,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case channelMsg:
 		if width, height, err := term.GetSize(1); err == nil {
-			r, footer := rows(msg.model, width, m.opts.Summary)
+			r, col1Width, footer := rows(msg.model, width, m.opts.Summary)
 			m.footer = footer
 			m.table.SetWidth(width)
 			m.table.SetHeight(height - len(footer))
 			m.table.SetColumns([]table.Column{
-				{Title: "", Width: 15},
+				{Title: "", Width: col1Width},
 				{Title: "", Width: width},
 			})
 			m.table.SetRows(r)
