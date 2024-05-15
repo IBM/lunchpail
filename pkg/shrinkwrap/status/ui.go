@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/runs"
 )
 
+// Options to our status UI component
 type Options struct {
 	Namespace string
 	Watch     bool
@@ -16,6 +17,7 @@ type Options struct {
 	Summary   bool
 }
 
+// Our model for BubbleTea
 type model struct {
 	c      chan Model
 	table  table.Model
@@ -23,26 +25,35 @@ type model struct {
 	footer []string
 }
 
+// Some necessary plumbing for BubbleTea: we need to cast our channel
+// that produces Model structs into a BubbleTea "Msg". This type is
+// our Msg model, which just wraps our status Model.
 type channelMsg struct {
 	model Model
 }
 
+// Another part of adapting our channels to the BubbleTea Cmd/Msg
+// model. It just waits for an event on our channel, and then wraps it
+// in a Msg (channelMsg), which will then be passed (by BubbleTea) to
+// our func Update()
 func waitForActivity(c chan Model) tea.Cmd {
 	return func() tea.Msg {
 		// Consume one channel message and pass it on. Next
-		// stop: Update()
+		// stop: func Update() case channelMsg
 		return channelMsg{<-c}
 	}
 }
 
+// The BubbleTea init lifecycle handler
 func (m model) Init() tea.Cmd {
 	return waitForActivity(m.c)
 }
 
+// The BubbleTea update lifecycle handler. Called when a Msg is
+// received.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
 	case channelMsg:
 		if width, height, err := term.GetSize(1); err == nil {
 			r, col1Width, footer := rows(msg.model, width, m.opts.Summary)
@@ -55,6 +66,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 			m.table.SetRows(r)
 		}
+
+		// We have now finished processing one event received
+		// on our channel. We respond to BubbleTea that our
+		// next Cmd is to wait for the next message on the
+		// channel.
 		return m, waitForActivity(m.c)
 
 	case tea.KeyMsg:
@@ -73,6 +89,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// The BubbleTea view lifecycle handler
 func (m model) View() string {
 	return m.table.View() + "\n" + strings.Join(m.footer, "\n")
 }
