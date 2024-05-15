@@ -3,20 +3,25 @@ package status
 import "strings"
 
 func statusCell(status WorkerStatus) string {
-	style := green
+	style := yellow
+	cell := "◔"
+
 	switch status {
-	case Pending:
-	case Booting:
-		style = yellow
+	case Running:
+		style = green
+		cell = "●"
 	case Terminating:
 		style = gray
+		cell = "◌"
 	case Failed:
 		style = red
+		cell = "◉"
 	case Succeeded:
 		style = cyan
+		cell = "○"
 	}
 
-	return style.Render("●")
+	return style.Render(cell)
 }
 
 type Box string
