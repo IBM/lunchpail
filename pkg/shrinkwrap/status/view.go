@@ -28,7 +28,7 @@ func cellt(N, largestN, maxcells int, box Box) string {
 	Nstr := strconv.Itoa(N)
 	Nstrp := rspace(Nstr, len(strconv.Itoa(largestN))+2) // padded
 	Ncells := min(N, maxcells)
-	return brown.Render(Nstrp+" "+taskCells(Ncells, box))
+	return brown.Render(Nstrp + " " + taskCells(Ncells, box))
 }
 
 func cellf(num, denom int, status WorkerStatus) string {
@@ -55,8 +55,8 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 	runningWorkStealer, totalWorkStealer := model.split(model.WorkStealer)
 
 	barsandpadding := 4
-	nleftbars := 22 // TODO
-	maxbox := min(model.maxbox(), maxwidth-nleftbars-barsandpadding)
+	col1Width := 22 // TODO
+	maxbox := min(model.maxbox(), maxwidth-col1Width-barsandpadding)
 
 	timestamp := time.Now()
 	if event, ok := model.LastNEvents.Value.(Event); ok {
@@ -66,15 +66,13 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 		}
 	}
 
-	rows := []table.Row{}
-	header := timestamp.Format(time.RFC850)
-	// rows = append(rows, topdiv)
-	rows = append(rows, row("App", cyan.Render(model.AppName)))
-	rows = append(rows, row("Run", cyan.Render(model.RunName)))
-	// rows = append(rows, row(leftbars, rightbars))
-	rows = append(rows, row("├─ " + bold.Render("Runtime"), cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)))
+	rows := []table.Row{
+		row("App", cyan.Render(model.AppName)),
+		row("Run", cyan.Render(model.RunName)),
+		row("├─ "+bold.Render("Runtime"), cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)),
+		row("├─ "+bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)),
+	}
 
-	rows = append(rows, row("├─ " + bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)))
 	if !summary && runningInternalS3 > 0 {
 		prefix := "  ├─ "
 		prefix2 := "│"
@@ -92,10 +90,10 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 		rows = append(rows, row(prefix2+prefix+"Unassigned", cellt(unassigned, largest, maxbox, boxIn)))
 
 		if len(model.Pools) > 1 {
-			rows = append(rows, row(prefix2 + "  ├─ Assigned", cellt(inbox, largest, maxbox, boxIn)))
-			rows = append(rows, row(prefix2 + "  ├─ Processing", cellt(processing, largest, maxbox, boxPr)))
-			rows = append(rows, row(prefix2 + "  ├─ Success", cellt(success, largest, maxbox, boxSu)))
-			rows = append(rows, row(prefix2 + "  └─ Failures", cellt(failures, largest, maxbox, boxFa)))
+			rows = append(rows, row(prefix2+"  ├─ Assigned", cellt(inbox, largest, maxbox, boxIn)))
+			rows = append(rows, row(prefix2+"  ├─ Processing", cellt(processing, largest, maxbox, boxPr)))
+			rows = append(rows, row(prefix2+"  ├─ Success", cellt(success, largest, maxbox, boxSu)))
+			rows = append(rows, row(prefix2+"  └─ Failures", cellt(failures, largest, maxbox, boxFa)))
 		}
 	}
 
@@ -110,7 +108,7 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 			prefix2 = "      "
 		}
 		rows = append(rows, row(
-			"   " + prefix + "Pool "+strconv.Itoa(poolIdx+1), // TODO pool.Name
+			"   "+prefix+"Pool "+strconv.Itoa(poolIdx+1), // TODO pool.Name
 			cellfw(runningWorkers, totalWorkers, pool.Workers),
 		))
 
@@ -118,21 +116,20 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 			inbox, processing, success, failure := pool.qsummary()
 			largest := max(inbox, processing, success, failure)
 
-			rows = append(rows, row(prefix2 + "├─ Inbox", cellt(inbox, largest, maxbox, boxIn)))
-			rows = append(rows, row(prefix2 + "├─ Processing", cellt(processing, largest, maxbox, boxPr)))
-			rows = append(rows, row(prefix2 + "├─ Success", cellt(success, largest, maxbox, boxSu)))
-			rows = append(rows, row(prefix2 + "└─ Failures", cellt(failure, largest, maxbox, boxFa)))
+			rows = append(rows, row(prefix2+"├─ Inbox", cellt(inbox, largest, maxbox, boxIn)))
+			rows = append(rows, row(prefix2+"├─ Processing", cellt(processing, largest, maxbox, boxPr)))
+			rows = append(rows, row(prefix2+"├─ Success", cellt(success, largest, maxbox, boxSu)))
+			rows = append(rows, row(prefix2+"└─ Failures", cellt(failure, largest, maxbox, boxFa)))
 		}
 	}
-	// fmt.Println(botdiv)
 
 	// display in reverse order, so that they are presented
 	// temporally top to bottom
-	footer := []string{header}
+	footer := []string{timestamp.Format(time.RFC850)}
 	events := model.events()
 	for i := range events {
 		footer = append(footer, dim.Render(events[len(events)-i-1].Message))
 	}
 
-	return rows, nleftbars, footer
+	return rows, col1Width, footer
 }

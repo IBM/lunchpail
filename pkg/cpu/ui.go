@@ -2,10 +2,10 @@ package cpu
 
 import (
 	"fmt"
+	"lunchpail.io/pkg/runs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"lunchpail.io/pkg/runs"
 )
 
 type CpuOptions struct {

@@ -4,7 +4,8 @@ import "github.com/charmbracelet/lipgloss"
 
 var dim = lipgloss.NewStyle().Faint(true)
 var bold = lipgloss.NewStyle().Bold(true)
-var normalText = lipgloss.NoColor{}
+var selectedForeground = lipgloss.NoColor{}
+var selectedBackground = lipgloss.AdaptiveColor{Light: "#bbb", Dark: "#444"}
 
 // dark: https://colorbrewer2.org/#type=qualitative&scheme=Set2&n=8
 var brown = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#e5c494"})

@@ -3,10 +3,10 @@ package status
 import (
 	"strings"
 
-	"golang.org/x/term"
-	"lunchpail.io/pkg/runs"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	"golang.org/x/term"
+	"lunchpail.io/pkg/runs"
 )
 
 type Options struct {
@@ -17,9 +17,9 @@ type Options struct {
 }
 
 type model struct {
-	c chan Model
-	table table.Model
-	opts Options
+	c      chan Model
+	table  table.Model
+	opts   Options
 	footer []string
 }
 
@@ -42,11 +42,12 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
 	case channelMsg:
 		if width, height, err := term.GetSize(1); err == nil {
 			r, col1Width, footer := rows(msg.model, width, m.opts.Summary)
 			m.footer = footer
-			m.table.SetWidth(width)
+			// m.table.SetWidth(width)
 			m.table.SetHeight(height - len(footer))
 			m.table.SetColumns([]table.Column{
 				{Title: "", Width: col1Width},
@@ -90,7 +91,8 @@ func UI(runnameIn string, opts Options) error {
 
 	s := table.DefaultStyles()
 	s.Selected = s.Selected.
-		Foreground(normalText).
+		Foreground(selectedForeground).
+		Background(selectedBackground).
 		Bold(false)
 	s.Cell = s.Cell.
 		Padding(0, 0)
@@ -103,6 +105,6 @@ func UI(runnameIn string, opts Options) error {
 	if _, err := p.Run(); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
