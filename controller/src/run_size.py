@@ -27,37 +27,37 @@ default_config = {
             "xxs": {
                 "workers": 1,
                 "cpu": "500m",
-                "memory": "1.5Gi",
+                "memory": "500Mi",
                 "gpu": 0,
             },
             "xs": {
                 "workers": 1,
                 "cpu": 1,
-                "memory": "4Gi",
+                "memory": "2Gi",
                 "gpu": 1,
             },
             "sm": {
                 "workers": 2,
                 "cpu": 1,
-                "memory": "8Gi",
+                "memory": "4Gi",
                 "gpu": 1,
             },
             "md": {
                 "workers": 4,
                 "cpu": 2,
-                "memory": "16Gi",
+                "memory": "8Gi",
                 "gpu": 1,
             },
             "lg": {
                 "workers": 8,
                 "cpu": 4,
-                "memory": "32Gi",
+                "memory": "16Gi",
                 "gpu": 1,
             },
             "xl": {
                 "workers": 20,
                 "cpu": 4,
-                "memory": "48Gi",
+                "memory": "32Gi",
                 "gpu": 1,
             },
             "xxl": {
