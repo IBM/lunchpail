@@ -25,7 +25,7 @@ spec:
   # running in parallel cannot exceed the number of remaining completions")
   completions: 999999999
   completionMode: Indexed
-  ttlSecondsAfterFinished: 10000
+  # ttlSecondsAfterFinished: 10000
   backoffLimit: 6
   template:
     metadata:
