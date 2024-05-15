@@ -17,4 +17,3 @@ func Singleton(appName, namespace string) (Run, error) {
 		return Run{}, fmt.Errorf("No runs found in namespace %s", namespace)
 	}
 }
-
