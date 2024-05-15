@@ -47,9 +47,6 @@ expected=()
 testname="${testname-$(basename $1)}"
 echo "$(tput setaf 2)🧪 Commencing test $testname$(tput sgr0)"
 
-# Undeploy any prior test runs in progress
-undeploy $testname
-
 #
 # If the settings.sh hasn't defined the path to the app, we
 # default to looking in tests/tests/<testname>/pail.
@@ -74,6 +71,9 @@ fi
 #
 if [[ ${#expected[@]} != 0 ]]
 then
+    # Undeploy any prior test runs in progress
+    undeploy $testname $deployname
+
     if [[ -e "$1"/preinit.sh ]]; then
         TEST_NAME=$testname "$1"/preinit.sh
     fi
@@ -92,7 +92,7 @@ then
 
     ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
     EC=$?
-    undeploy $testname
+    undeploy $testname $deployname
 
     if [[ $EC != 0 ]]
     then exit $EC

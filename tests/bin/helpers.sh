@@ -41,7 +41,7 @@ function waitForIt {
     # combination of Ready and Complete (i.e. not-Ready) pods. This is
     # important because pthe kubectl waits below expect the pods
     # either to be all-Ready or all-not-Ready.
-    local selector=app.kubernetes.io/part-of=$name,app.kubernetes.io/component!=workdispatcher
+    local selector=app.kubernetes.io/component!=workdispatcher
 
     if [[ "$api" = ray ]]; then
         local containers="-c job-logs"
@@ -248,11 +248,7 @@ function deploy {
 }
 
 function undeploy {
-    if [[ -n "$2" ]]
-    then kill $2 || true
-    fi
-
-    ("$SCRIPTDIR"/undeploy-tests.sh $1 || exit 0)
+    ("$SCRIPTDIR"/undeploy-tests.sh $@ || exit 0)
 }
 
 function watch {

@@ -27,7 +27,8 @@ if which lspci && lspci | grep -iq nvidia; then
     GPU="--set supportsGpu=true"
 fi
 
-TARGET="$TOP"/builds/test/$1
+appname="${4-$1}"
+TARGET="$TOP"/builds/test/$appname
 rm -rf "$TARGET"
 
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) target=$TARGET $HELM_INSTALL_FLAGS"
@@ -56,7 +57,6 @@ fi
 
 "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 
-appname="${4-$1}"
 mkdir -p "$TARGET"
 testapp="$TARGET"/test
 
@@ -64,7 +64,6 @@ testapp="$TARGET"/test
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
 /tmp/lunchpail assemble -v \
-               -a "$appname" \
                -o $testapp \
                $branch \
                --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \

@@ -52,13 +52,13 @@ func Assemble(sourcePath string, opts Options) error {
 	}
 
 	// TODO... how do we really want to get a good name for the app?
-	appname := opts.AppName
-	if appname == "" && opts.Name != "" {
-		// try to infer appname
-		appname = filepath.Base(trimExt(opts.Name))
-	}
+	appname := filepath.Base(trimExt(sourcePath))
 	if appname == "pail" {
 		appname = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+	}
+
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Using appname=%s\n", appname)
 	}
 
 	if appTemplatePath, err := shrinkwrap.Stage(appname, sourcePath, shrinkwrap.StageOptions{opts.Branch, opts.Verbose}); err != nil {

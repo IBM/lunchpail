@@ -7,7 +7,6 @@ import (
 )
 
 func newAssembleCmd() *cobra.Command {
-	var appNameFlag string
 	var outputFlag string
 	var branchFlag string
 	var verboseFlag bool
@@ -24,13 +23,12 @@ func newAssembleCmd() *cobra.Command {
 		log.Fatalf("Required option -o/--output <outputPath>")
 	}
 
-	cmd.Flags().StringVarP(&appNameFlag, "app-name", "a", "", "[Advanced] Override default/inferred application name")
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	appOpts := addAppOptions(cmd)
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return assembler.Assemble(args[0], assembler.Options{outputFlag, appNameFlag, branchFlag, verboseFlag, *appOpts})
+		return assembler.Assemble(args[0], assembler.Options{outputFlag, branchFlag, verboseFlag, *appOpts})
 	}
 
 	return cmd

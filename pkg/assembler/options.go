@@ -6,7 +6,6 @@ import (
 
 type Options struct {
 	Name       string
-	AppName    string
 	Branch     string
 	Verbose    bool
 	AppOptions lunchpail.AppOptions
