@@ -7,7 +7,7 @@ metadata:
   labels:
     app.kubernetes.io/component: workerpool
     app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/name: {{ print .Release.Name | trunc 53 }}
     app.kubernetes.io/instance: {{ .Values.runName }}
     app.kubernetes.io/managed-by: lunchpail.io
   {{- if not .Values.mcad.enabled }}
@@ -32,7 +32,7 @@ spec:
       labels:
         app.kubernetes.io/component: workerpool
         app.kubernetes.io/part-of: {{ .Values.partOf }}
-        app.kubernetes.io/name: {{ .Values.name }}
+        app.kubernetes.io/name: {{ print .Release.Name | trunc 53 }}
         app.kubernetes.io/instance: {{ .Values.runName }}
         app.kubernetes.io/managed-by: lunchpail.io
     spec:
