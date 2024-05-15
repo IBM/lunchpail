@@ -17,6 +17,7 @@ func StatusStreamer(app, run, namespace string, verbose bool) (chan Model, *errg
 	model := Model{}
 	model.AppName = app
 	model.RunName = run
+	model.Namespace = namespace
 	model.LastNEvents = ring.New(5)
 
 	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose})

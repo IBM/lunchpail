@@ -1,6 +1,8 @@
 package status
 
 import (
+	"log"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -23,6 +25,8 @@ type model struct {
 	table  table.Model
 	opts   Options
 	footer []string
+	selectedRowIdx int
+	rows []statusRow
 }
 
 // Some necessary plumbing for BubbleTea: we need to cast our channel
@@ -64,7 +68,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				{Title: "", Width: col1Width},
 				{Title: "", Width: width},
 			})
-			m.table.SetRows(r)
+
+			// ugh, we need to copy over to tea's
+			// table.Row structs
+			// https://github.com/charmbracelet/bubbles/discussions/392
+			teaRows := []table.Row{}
+			for _, row := range r {
+				teaRows = append(teaRows, row.row)
+			}
+
+			m.rows = r
+			m.table.SetRows(teaRows)
 		}
 
 		// We have now finished processing one event received
@@ -75,11 +89,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
-			if m.table.Focused() {
-				m.table.Blur()
-			} else {
-				m.table.Focus()
+		case "up":
+			m.selectedRowIdx = max(0, m.selectedRowIdx - 1)
+		case "down":
+			m.selectedRowIdx = min(len(m.rows)-1, m.selectedRowIdx + 1)
+		case "+", "-":
+			row := m.rows[m.selectedRowIdx]
+			if row.pool != nil {
+				delta := 1
+				if msg.String() == "-" {
+					delta = -1
+				}
+				log.Printf("Updating pool parallelism pool=%s currentParallelism=%d delta=%d\n", row.pool.Name, row.pool.Parallelism, delta)
+				if err := row.pool.changeWorkers(delta); err != nil {
+					log.Printf("Error updating pool parallelism pool=%s delta=%d: %v\n", row.pool.Name, delta, err)
+				}
 			}
 		case "ctrl+c":
 			return m, tea.Quit
@@ -100,6 +124,14 @@ func UI(runnameIn string, opts Options) error {
 		return err
 	}
 
+	if len(os.Getenv("DEBUG")) > 0 {
+		f, err := tea.LogToFile("debug.log", "debug")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	}
+
 	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose)
 	if err != nil {
 		return err
@@ -118,7 +150,7 @@ func UI(runnameIn string, opts Options) error {
 		table.WithFocused(true),
 	)
 
-	p := tea.NewProgram(model{c, t, opts, []string{}}, tea.WithAltScreen())
+	p := tea.NewProgram(model{c, t, opts, []string{}, 0, []statusRow{}}, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		return err
 	}

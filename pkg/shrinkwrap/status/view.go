@@ -45,11 +45,20 @@ func clearLine(writer io.Writer) {
 	fmt.Fprintf(writer, "\033[1A\033[K")
 }
 
-func row(col1, col2 string) table.Row {
-	return table.Row{col1, col2}
+func row(col1, col2 string) statusRow {
+	return statusRow{table.Row{col1, col2}, nil}
 }
 
-func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) {
+func rowp(col1, col2 string, pool *Pool) statusRow {
+	return statusRow{table.Row{col1, col2}, pool}
+}
+
+type statusRow struct {
+	row table.Row
+	pool *Pool
+}
+
+func rows(model Model, maxwidth int, summary bool) ([]statusRow, int, []string) {
 	runningRuntime, totalRuntime := model.split(model.Runtime)
 	runningInternalS3, totalInternalS3 := model.split(model.InternalS3)
 	runningWorkStealer, totalWorkStealer := model.split(model.WorkStealer)
@@ -66,7 +75,7 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 		}
 	}
 
-	rows := []table.Row{
+	rows := []statusRow{
 		row("App", cyan.Render(model.AppName)),
 		row("Run", cyan.Render(model.RunName)),
 		row("├─ "+bold.Render("Runtime"), cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)),
@@ -77,7 +86,7 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 		prefix := "  ├─ "
 		prefix2 := "│"
 		if len(model.Pools) <= 1 {
-			prefix = "  └─"
+			prefix = "  └─ "
 		}
 
 		unassigned := model.Qstat.Unassigned
@@ -106,9 +115,10 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 			prefix = "└─ "
 			prefix2 = "      "
 		}
-		rows = append(rows, row(
+		rows = append(rows, rowp(
 			"   "+prefix+"Pool "+strconv.Itoa(poolIdx+1), // TODO pool.Name
 			cellfw(runningWorkers, totalWorkers, pool.Workers),
+			&pool,
 		))
 
 		if !summary {

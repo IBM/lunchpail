@@ -6,6 +6,15 @@ import (
 	"slices"
 	"sort"
 	"time"
+
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/apimachinery/pkg/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type WorkerStatus string
@@ -27,6 +36,8 @@ type Worker struct {
 
 type Pool struct {
 	Name    string
+	Namespace string
+	Parallelism int
 	Workers []Worker
 }
 
@@ -38,6 +49,7 @@ type Event struct {
 type Model struct {
 	AppName     string
 	RunName     string
+	Namespace   string
 	Pools       []Pool
 	Runtime     WorkerStatus
 	InternalS3  WorkerStatus
@@ -152,4 +164,39 @@ func (model *Model) events() []Event {
 	})
 
 	return events
+}
+
+func client() (*kubernetes.Clientset, error) {
+	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return clientset, nil
+}
+
+func (pool *Pool) changeWorkers(delta int) error {
+	clientset, err := client()
+	if err != nil {
+		return err
+	}
+
+	jobsClient := clientset.BatchV1().Jobs(pool.Namespace)
+	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, pool.Parallelism + delta))
+
+	if _, err := jobsClient.Patch(context.Background(), pool.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pool *Pool) removeWorker() error {
+	return nil
 }

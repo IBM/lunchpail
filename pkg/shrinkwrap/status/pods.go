@@ -63,7 +63,7 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 			// Added or Modified a Worker in a Pool we
 			// haven't seen yet; create a record of both
 			// the Pool and the Worker
-			pool := Pool{poolName, []Worker{Worker{name, workerStatus, qstat.Worker{}}}}
+			pool := Pool{poolName, pod.Namespace, 1, []Worker{Worker{name, workerStatus, qstat.Worker{}}}}
 			return append(pools, pool), len(pools), workerStatus, nil
 		}
 	}
@@ -79,22 +79,24 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 			// Remove record of Deleted Worker in known
 			// Pool by splicing it out of the Workers slice
 			pool.Workers = append(pool.Workers[:widx], pool.Workers[widx+1:]...)
+			pool.Parallelism = len(pool.Workers)
 		} else {
 			worker := pool.Workers[widx]
 			worker.Status = workerStatus
 			pool.Workers = slices.Concat(pool.Workers[:widx], []Worker{worker}, pool.Workers[widx+1:])
+			pool.Parallelism = len(pool.Workers)
 		}
 	} else {
 		// known Pool but unknown Worker
 		pool.Workers = append(pool.Workers, Worker{name, workerStatus, qstat.Worker{}})
 	}
 
-	if len(pool.Workers) == 0 {
-		// Pool with no Workers; remove record of it
-		return append(pools[:pidx], pools[pidx+1:]...), pidx, workerStatus, nil
-	} else {
+	//if len(pool.Workers) == 0 {
+	//		// Pool with no Workers; remove record of it
+	//		return append(pools[:pidx], pools[pidx+1:]...), pidx, workerStatus, nil
+	//	} else {
 		return slices.Concat(pools[:pidx], []Pool{pool}, pools[pidx+1:]), pidx, workerStatus, nil
-	}
+	// }
 }
 
 func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
