@@ -29,6 +29,11 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     if 'env' in spec:
         env.update(spec['env'])
 
+    if 'RUN_NAME' in spec['env']:
+        enclosing_run = spec['env']['RUN_NAME']
+    else:
+        enclosing_run = name
+
     # are we to be associated with a task queue?
     if 'queue' in spec:
         queue_spec = spec['queue']['dataset']
@@ -58,6 +63,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             ("{" + ",".join(map(str, application["spec"]["expose"]))+ "}") if "expose" in application["spec"] and len(application["spec"]["expose"]) > 0 else "",
             base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
             component if component is not None else "shell",
+            enclosing_run,
         ], capture_output=True)
 
         logging.info(f"Shell callout done for name={name} with returncode={shell_out.returncode}")

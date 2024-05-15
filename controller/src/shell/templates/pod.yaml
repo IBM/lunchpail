@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
     app.kubernetes.io/name: {{ .Values.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Values.enclosingRun }}
     app.kubernetes.io/managed-by: lunchpail.io
   {{- if not .Values.mcad.enabled }}
   ownerReferences:

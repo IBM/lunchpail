@@ -26,6 +26,7 @@ envFroms="${17}"
 expose="${18}"
 securityContext="${19}"
 component="${20}"
+enclosing_run="${21}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -37,6 +38,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set name=$name \
      --set partOf=$part_of \
      --set component=$component \
+     --set enclosingRun=$enclosing_run \
      --set enclosingStep=$step \
      --set image=$image \
      --set namespace=$namespace \
