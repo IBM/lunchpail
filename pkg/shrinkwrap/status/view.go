@@ -78,7 +78,6 @@ func rows(model Model, maxwidth int, summary bool) ([]table.Row, int, []string) 
 		prefix2 := "│"
 		if len(model.Pools) <= 1 {
 			prefix = "  └─"
-			prefix2 = " "
 		}
 
 		unassigned := model.Qstat.Unassigned
