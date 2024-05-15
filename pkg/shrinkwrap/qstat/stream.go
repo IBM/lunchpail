@@ -137,6 +137,8 @@ func streamModel(runname, namespace string, follow bool, tail int64, c chan Mode
 
 				if pidx < 0 {
 					model.Pools = append(model.Pools, pool)
+				} else {
+					model.Pools = slices.Concat(model.Pools[:pidx], []Pool{pool}, model.Pools[pidx+1:])
 				}
 			}
 		}
