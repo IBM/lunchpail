@@ -43,6 +43,17 @@ def prepare_dataset_labels2(customApi, run_name: str, run_namespace: str, run_sp
                     "name": name,
                     "mountPath": dataset["mountPath"] if "mountPath" in dataset else f"/mnt/datasets/{name}",
                 })
+            elif "pvc" in dataset:
+                volumes.append({
+                    "name": name,
+                    "persistentVolumeClaim": {
+                        "claimName": dataset["pvc"]["claimName"],
+                    }
+                })
+                volumeMounts.append({
+                    "name": name,
+                    "mountPath": dataset["mountPath"] if "mountPath" in dataset else f"/mnt/datasets/{name}",
+                })
             elif "s3" in dataset:
                 envFroms.append({
                     "secretRef": {

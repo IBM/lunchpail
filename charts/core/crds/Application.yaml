@@ -110,8 +110,9 @@ spec:
                   items:
                     type: object
                     oneOf:
-                      - required: [name,nfs]
                       - required: [name,s3]
+                      - required: [name,nfs]
+                      - required: [name,pvc]
                     properties:
                       name:
                         type: string
@@ -132,6 +133,12 @@ spec:
                           server:
                             type: string
                           path:
+                            type: string
+                      pvc:
+                        type: object
+                        required: [claimName]
+                        properties:
+                          claimName:
                             type: string
 
             status:
