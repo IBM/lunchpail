@@ -9,12 +9,12 @@ import (
 
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/apimachinery/pkg/types"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
+	"path/filepath"
 )
 
 type WorkerStatus string
@@ -35,10 +35,10 @@ type Worker struct {
 }
 
 type Pool struct {
-	Name    string
-	Namespace string
+	Name        string
+	Namespace   string
 	Parallelism int
-	Workers []Worker
+	Workers     []Worker
 }
 
 type Event struct {
@@ -52,6 +52,7 @@ type Model struct {
 	Namespace   string
 	Pools       []Pool
 	Runtime     WorkerStatus
+	Dispatcher  WorkerStatus
 	InternalS3  WorkerStatus
 	WorkStealer WorkerStatus
 	LastNEvents *ring.Ring
@@ -188,7 +189,7 @@ func (pool *Pool) changeWorkers(delta int) error {
 	}
 
 	jobsClient := clientset.BatchV1().Jobs(pool.Namespace)
-	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, pool.Parallelism + delta))
+	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, pool.Parallelism+delta))
 
 	if _, err := jobsClient.Patch(context.Background(), pool.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
 		return err

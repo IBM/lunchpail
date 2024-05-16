@@ -1,7 +1,6 @@
 package status
 
 import (
-	"log"
 	"os"
 	"strings"
 
@@ -21,12 +20,12 @@ type Options struct {
 
 // Our model for BubbleTea
 type model struct {
-	c      chan Model
-	table  table.Model
-	opts   Options
-	footer []string
+	c              chan Model
+	table          table.Model
+	opts           Options
+	footer         []string
 	selectedRowIdx int
-	rows []statusRow
+	rows           []statusRow
 }
 
 // Some necessary plumbing for BubbleTea: we need to cast our channel
@@ -90,9 +89,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up":
-			m.selectedRowIdx = max(0, m.selectedRowIdx - 1)
+			m.selectedRowIdx = max(0, m.selectedRowIdx-1)
 		case "down":
-			m.selectedRowIdx = min(len(m.rows)-1, m.selectedRowIdx + 1)
+			m.selectedRowIdx = min(len(m.rows)-1, m.selectedRowIdx+1)
 		case "+", "-":
 			row := m.rows[m.selectedRowIdx]
 			if row.pool != nil {
@@ -100,9 +99,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if msg.String() == "-" {
 					delta = -1
 				}
-				log.Printf("Updating pool parallelism pool=%s currentParallelism=%d delta=%d\n", row.pool.Name, row.pool.Parallelism, delta)
+				// log.Printf("Updating pool parallelism pool=%s currentParallelism=%d delta=%d\n", row.pool.Name, row.pool.Parallelism, delta)
 				if err := row.pool.changeWorkers(delta); err != nil {
-					log.Printf("Error updating pool parallelism pool=%s delta=%d: %v\n", row.pool.Name, delta, err)
+					// log.Printf("Error updating pool parallelism pool=%s delta=%d: %v\n", row.pool.Name, delta, err)
 				}
 			}
 		case "ctrl+c":

@@ -54,13 +54,14 @@ func rowp(col1, col2 string, pool *Pool) statusRow {
 }
 
 type statusRow struct {
-	row table.Row
+	row  table.Row
 	pool *Pool
 }
 
 func rows(model Model, maxwidth int, summary bool) ([]statusRow, int, []string) {
 	runningRuntime, totalRuntime := model.split(model.Runtime)
 	runningInternalS3, totalInternalS3 := model.split(model.InternalS3)
+	runningDispatcher, totalDispatcher := model.split(model.Dispatcher)
 	runningWorkStealer, totalWorkStealer := model.split(model.WorkStealer)
 
 	barsandpadding := 4
@@ -79,6 +80,7 @@ func rows(model Model, maxwidth int, summary bool) ([]statusRow, int, []string) 
 		row("App", cyan.Render(model.AppName)),
 		row("Run", cyan.Render(model.RunName)),
 		row("├─ "+bold.Render("Runtime"), cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)),
+		row("├─ "+bold.Render("Dispatcher"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
 		row("├─ "+bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)),
 	}
 

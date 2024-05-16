@@ -95,7 +95,7 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 	//		// Pool with no Workers; remove record of it
 	//		return append(pools[:pidx], pools[pidx+1:]...), pidx, workerStatus, nil
 	//	} else {
-		return slices.Concat(pools[:pidx], []Pool{pool}, pools[pidx+1:]), pidx, workerStatus, nil
+	return slices.Concat(pools[:pidx], []Pool{pool}, pools[pidx+1:]), pidx, workerStatus, nil
 	// }
 }
 
@@ -137,6 +137,10 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
 		name = "Workstealer"
 		workerStatus = statusFromPod(pod)
 		model.WorkStealer = workerStatus
+	case string(lunchpail.DispatcherComponent):
+		name = "Dispatcher"
+		workerStatus = statusFromPod(pod)
+		model.Dispatcher = workerStatus
 	case string(lunchpail.WorkersComponent):
 		if pools, poolIdx, theWorkerStatus, err := updateWorker(name, pod, model.Pools, what); err != nil {
 			return err
