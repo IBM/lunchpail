@@ -149,7 +149,7 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 			workerStatus = theWorkerStatus
 
 			if workerIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]; exists {
-				name = fmt.Sprintf("Worker %s Pool %d", workerIdx, poolIdx)
+				name = fmt.Sprintf("Worker %s Pool %d", workerIdx, poolIdx+1)
 			}
 		}
 	}
