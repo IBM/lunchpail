@@ -2,10 +2,9 @@ package status
 
 import (
 	"container/ring"
-	"lunchpail.io/pkg/shrinkwrap/qstat"
 	"slices"
-	"sort"
-	"time"
+
+	"lunchpail.io/pkg/shrinkwrap/qstat"
 
 	"context"
 	"fmt"
@@ -41,22 +40,17 @@ type Pool struct {
 	Workers     []Worker
 }
 
-type Event struct {
-	Message   string
-	Timestamp time.Time
-}
-
 type Model struct {
-	AppName     string
-	RunName     string
-	Namespace   string
-	Pools       []Pool
-	Runtime     WorkerStatus
-	Dispatcher  WorkerStatus
-	InternalS3  WorkerStatus
-	WorkStealer WorkerStatus
-	LastNEvents *ring.Ring
-	Qstat       qstat.Model
+	AppName       string
+	RunName       string
+	Namespace     string
+	Pools         []Pool
+	Runtime       WorkerStatus
+	Dispatcher    WorkerStatus
+	InternalS3    WorkerStatus
+	WorkStealer   WorkerStatus
+	LastNMessages *ring.Ring // ring of type Message
+	Qstat         qstat.Model
 }
 
 func (model *Model) numPools() int {
@@ -149,22 +143,6 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 	}
 
 	return inbox, processing, success, failure
-}
-
-// return list of most recent events, sorted by increasing timestamp
-func (model *Model) events() []Event {
-	events := []Event{}
-	model.LastNEvents.Do(func(value any) {
-		if event, ok := value.(Event); ok {
-			events = append(events, event)
-		}
-	})
-
-	sort.Slice(events, func(i, j int) bool {
-		return events[i].Timestamp.Before(events[j].Timestamp)
-	})
-
-	return events
 }
 
 func client() (*kubernetes.Clientset, error) {

@@ -16,6 +16,7 @@ type Options struct {
 	Watch     bool
 	Verbose   bool
 	Summary   bool
+	Nloglines int
 }
 
 // Our model for BubbleTea
@@ -59,7 +60,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case channelMsg:
 		if width, height, err := term.GetSize(1); err == nil {
-			r, col1Width, footer := rows(msg.model, width, m.opts.Summary)
+			r, col1Width, footer := rows(msg.model, width, height, m.opts.Summary)
 			m.footer = footer
 			// m.table.SetWidth(width)
 			m.table.SetHeight(height - len(footer))
@@ -131,7 +132,7 @@ func UI(runnameIn string, opts Options) error {
 		defer f.Close()
 	}
 
-	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose)
+	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose, opts.Nloglines)
 	if err != nil {
 		return err
 	}

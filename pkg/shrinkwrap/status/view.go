@@ -58,7 +58,7 @@ type statusRow struct {
 	pool *Pool
 }
 
-func rows(model Model, maxwidth int, summary bool) ([]statusRow, int, []string) {
+func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, int, []string) {
 	runningRuntime, totalRuntime := model.split(model.Runtime)
 	runningInternalS3, totalInternalS3 := model.split(model.InternalS3)
 	runningDispatcher, totalDispatcher := model.split(model.Dispatcher)
@@ -67,14 +67,7 @@ func rows(model Model, maxwidth int, summary bool) ([]statusRow, int, []string) 
 	barsandpadding := 4
 	col1Width := 22 // TODO
 	maxbox := min(model.maxbox(), maxwidth-col1Width-barsandpadding)
-
-	timestamp := time.Now()
-	if event, ok := model.LastNEvents.Value.(Event); ok {
-		lastEventTimestamp := event.Timestamp
-		if !timestamp.IsZero() {
-			timestamp = lastEventTimestamp
-		}
-	}
+	timestamp := model.last()
 
 	rows := []statusRow{
 		row("App", cyan.Render(model.AppName)),
@@ -137,10 +130,15 @@ func rows(model Model, maxwidth int, summary bool) ([]statusRow, int, []string) 
 	// display in reverse order, so that they are presented
 	// temporally top to bottom
 	footer := []string{timestamp.Format(time.RFC850)}
-	events := model.events()
-	for i := range events {
-		footer = append(footer, dim.Render(events[len(events)-i-1].Message))
+	// -2: normal -1, and -1 to leave at least one line of
+	// whitespace between main `rows` and footer lines
+	for _, msg := range model.messages(max(0, maxheight-len(rows)-2)) {
+		footer = append(footer, message(msg.who, msg.message))
 	}
 
 	return rows, col1Width, footer
+}
+
+func message(who, message string) string {
+	return fmt.Sprintf("%s %s", dim.Render(yellow.Render(who)), dim.Render(message))
 }

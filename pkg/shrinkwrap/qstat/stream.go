@@ -7,10 +7,8 @@ import (
 	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"lunchpail.io/pkg/kubernetes"
 	"os"
-	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -23,13 +21,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, c chan Mode
 		opts.TailLines = &tail
 	}
 
-	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		return err
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.Client()
 	if err != nil {
 		return err
 	}

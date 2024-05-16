@@ -11,6 +11,7 @@ func newStatusCommand() *cobra.Command {
 	var watchFlag bool
 	var verboseFlag bool
 	var summaryFlag bool
+	var loglinesFlag int
 
 	var cmd = &cobra.Command{
 		Use:   "status",
@@ -20,7 +21,7 @@ func newStatusCommand() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag, verboseFlag, summaryFlag})
+			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag, verboseFlag, summaryFlag, loglinesFlag})
 		},
 	}
 
@@ -28,6 +29,7 @@ func newStatusCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Track updates to run status")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Stream more verbose updates to console")
 	cmd.Flags().BoolVarP(&summaryFlag, "summary", "s", false, "Show only summary information, do not break out queue stats")
+	cmd.Flags().IntVarP(&loglinesFlag, "log-lines", "l", 5, "Number of log lines to display")
 
 	return cmd
 }

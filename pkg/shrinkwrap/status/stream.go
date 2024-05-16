@@ -3,10 +3,11 @@ package status
 import (
 	"container/ring"
 	"golang.org/x/sync/errgroup"
+	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
 
-func StatusStreamer(app, run, namespace string, verbose bool) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(app, run, namespace string, verbose bool, nLoglines int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
 
 	podWatcher, eventWatcher, err := startWatching(app, run, namespace)
@@ -18,7 +19,7 @@ func StatusStreamer(app, run, namespace string, verbose bool) (chan Model, *errg
 	model.AppName = app
 	model.RunName = run
 	model.Namespace = namespace
-	model.LastNEvents = ring.New(5)
+	model.LastNMessages = ring.New(nLoglines)
 
 	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose})
 	if err != nil {
@@ -31,6 +32,10 @@ func StatusStreamer(app, run, namespace string, verbose bool) (chan Model, *errg
 
 	errgroup.Go(func() error {
 		return model.streamEventUpdates(eventWatcher, c)
+	})
+
+	errgroup.Go(func() error {
+		return model.streamLogUpdates(run, namespace, lunchpail.DispatcherComponent, c)
 	})
 
 	errgroup.Go(func() error {

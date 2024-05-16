@@ -4,34 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	k8s "lunchpail.io/pkg/kubernetes"
 )
-
-// Set up kubernetes API server
-func kubeApiServerClient() (*kubernetes.Clientset, error) {
-	// TODO $KUBECONFIG...
-	kubeConfigPath := filepath.Join(
-		os.Getenv("HOME"), ".kube", "config",
-	)
-	// fmt.Printf("Using kubeconfig: %s\n", kubeConfigPath)
-
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
-	if err != nil {
-		return nil, err
-	}
-
-	clientset, err := kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return clientset, nil
-}
 
 // Return all lunchpail controller pods for the given appname in the given namespace
 func ListControllers(appName, namespace string, client kubernetes.Interface) (*v1.PodList, error) {
@@ -46,7 +24,7 @@ func ListControllers(appName, namespace string, client kubernetes.Interface) (*v
 
 // Return all Runs in the given namespace for the given app
 func List(appName, namespace string) ([]Run, error) {
-	clientset, err := kubeApiServerClient()
+	clientset, err := k8s.Client()
 	if err != nil {
 		return []Run{}, err
 	}

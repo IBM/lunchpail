@@ -99,10 +99,10 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 	// }
 }
 
-func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
+func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error) {
 	component, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
-		return fmt.Errorf("Worker without component label %s\n", pod.Name)
+		return false, fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
 	name := pod.Name
@@ -110,11 +110,11 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
 	if component == string(lunchpail.WorkersComponent) {
 		poolname, exists := pod.Labels["app.kubernetes.io/name"]
 		if !exists {
-			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
+			return false, fmt.Errorf("Worker without pool name label %s\n", pod.Name)
 		}
 		completionIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]
 		if !exists {
-			return fmt.Errorf("Worker without completion index annotation %s\n", pod.Name)
+			return false, fmt.Errorf("Worker without completion index annotation %s\n", pod.Name)
 		}
 
 		// see watcher.sh remote=... TODO avoid these disparate hacks
@@ -126,24 +126,24 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
 	var workerStatus WorkerStatus
 	switch component {
 	case string(lunchpail.RuntimeComponent):
-		name = "Runtime"
+		name = lunchpail.ComponentShortName(lunchpail.RuntimeComponent)
 		workerStatus = statusFromPod(pod)
 		model.Runtime = workerStatus
 	case string(lunchpail.InternalS3Component):
-		name = "Queue"
+		name = lunchpail.ComponentShortName(lunchpail.InternalS3Component)
 		workerStatus = statusFromPod(pod)
 		model.InternalS3 = workerStatus
 	case string(lunchpail.WorkStealerComponent):
-		name = "Workstealer"
+		name = lunchpail.ComponentShortName(lunchpail.WorkStealerComponent)
 		workerStatus = statusFromPod(pod)
 		model.WorkStealer = workerStatus
 	case string(lunchpail.DispatcherComponent):
-		name = "Dispatcher"
+		name = lunchpail.ComponentShortName(lunchpail.DispatcherComponent)
 		workerStatus = statusFromPod(pod)
 		model.Dispatcher = workerStatus
 	case string(lunchpail.WorkersComponent):
 		if pools, poolIdx, theWorkerStatus, err := updateWorker(name, pod, model.Pools, what); err != nil {
-			return err
+			return false, err
 		} else {
 			model.Pools = pools
 			workerStatus = theWorkerStatus
@@ -154,19 +154,32 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) error {
 		}
 	}
 
-	model.LastNEvents = model.LastNEvents.Next()
-	model.LastNEvents.Value = Event{name + " " + strings.ToLower(string(workerStatus)), time.Now()}
+	if model.addMessage(Message{timeOf(pod), "Resource", name + " " + strings.ToLower(string(workerStatus))}) {
+		return true, nil
+	}
 
-	return nil
+	return false, nil
+}
+
+func timeOf(pod *v1.Pod) time.Time {
+	last := time.Now()
+	for _, condition := range pod.Status.Conditions {
+		t := condition.LastTransitionTime
+		if !t.IsZero() && last.Before(t.Time) {
+			last = t.Time
+		}
+	}
+
+	return last
 }
 
 func (model *Model) streamPodUpdates(watcher watch.Interface, c chan Model) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if err := updateFromPod(pod, model, event.Type); err != nil {
+			if updated, err := updateFromPod(pod, model, event.Type); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
-			} else {
+			} else if updated {
 				c <- *model
 			}
 		}

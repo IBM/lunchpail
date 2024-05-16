@@ -31,7 +31,7 @@ func Up(opts UpOptions) error {
 	}
 
 	if opts.Watch {
-		return status.UI(runname, status.Options{namespace, true, opts.Verbose, false})
+		return status.UI(runname, status.Options{namespace, true, opts.Verbose, false, 5})
 	}
 
 	return nil

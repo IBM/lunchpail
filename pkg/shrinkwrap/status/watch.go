@@ -2,24 +2,15 @@ package status
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"lunchpail.io/pkg/kubernetes"
 )
 
 func startWatching(app, run, namespace string) (watch.Interface, watch.Interface, error) {
-	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.Client()
 	if err != nil {
 		return nil, nil, err
 	}
