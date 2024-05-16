@@ -104,6 +104,13 @@ spec:
                       type: integer
                     fsGroup:
                       type: integer
+                    seLinuxOptions:
+                      type: object
+                      propertes:
+                        type:
+                          type: string
+                        level:
+                          type: string
 
                 datasets:
                   type: array
