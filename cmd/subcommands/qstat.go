@@ -11,6 +11,7 @@ func newQstatCommand() *cobra.Command {
 	var tailFlag int64
 	var followFlag bool
 	var verboseFlag bool
+	var quietFlag bool
 
 	var cmd = &cobra.Command{
 		Use:   "qstat",
@@ -20,7 +21,7 @@ func newQstatCommand() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return qstat.UI(maybeRun, qstat.Options{namespaceFlag, followFlag, tailFlag, verboseFlag})
+			return qstat.UI(maybeRun, qstat.Options{namespaceFlag, followFlag, tailFlag, verboseFlag, quietFlag})
 		},
 	}
 
@@ -28,6 +29,7 @@ func newQstatCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Track updates (rather than printing once)")
 	cmd.Flags().Int64VarP(&tailFlag, "tail", "t", -1, "Number of lines to tail")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
+	cmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Silence extraneous output")
 
 	return cmd
 }

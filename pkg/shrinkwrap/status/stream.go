@@ -21,7 +21,7 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglines int) (ch
 	model.Namespace = namespace
 	model.LastNMessages = ring.New(nLoglines)
 
-	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose})
+	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose, true})
 	if err != nil {
 		return c, nil, err
 	}

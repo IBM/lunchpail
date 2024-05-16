@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func streamModel(runname, namespace string, follow bool, tail int64, c chan Model) error {
+func streamModel(runname, namespace string, follow bool, tail int64, quiet bool, c chan Model) error {
 	opts := v1.PodLogOptions{Follow: follow}
 	if tail != -1 {
 		opts.TailLines = &tail
@@ -39,10 +39,12 @@ func streamModel(runname, namespace string, follow bool, tail int64, c chan Mode
 	stream, err := podLogs.Stream(context.TODO())
 	if err != nil {
 		if strings.Contains(err.Error(), "waiting to start") {
-			fmt.Fprintf(os.Stderr, "Waiting for app to start...\n")
+			if !quiet {
+				fmt.Fprintf(os.Stderr, "Waiting for app to start...\n")
+			}
 			time.Sleep(2 * time.Second)
 			// TODO update this to use the kubernetes watch api?
-			return streamModel(runname, namespace, follow, tail, c)
+			return streamModel(runname, namespace, follow, tail, quiet, c)
 		} else {
 			return err
 		}
@@ -154,7 +156,7 @@ func QstatStreamer(runname, namespace string, opts Options) (chan Model, *errgro
 
 	errs, _ := errgroup.WithContext(context.Background())
 	errs.Go(func() error {
-		err := streamModel(runname, namespace, opts.Follow, opts.Tail, c)
+		err := streamModel(runname, namespace, opts.Follow, opts.Tail, opts.Quiet, c)
 		close(c)
 		return err
 	})

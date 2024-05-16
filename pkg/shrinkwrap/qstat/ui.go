@@ -15,6 +15,7 @@ type Options struct {
 	Follow    bool
 	Tail      int64
 	Verbose   bool
+	Quiet     bool
 }
 
 func UI(runnameIn string, opts Options) error {

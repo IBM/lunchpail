@@ -17,7 +17,7 @@ func Qlast(marker, opt string, opts QlastOptions) (string, error) {
 		return "", err
 	}
 
-	c, _, err := QstatStreamer(runname, namespace, Options{namespace, false, int64(1000), false})
+	c, _, err := QstatStreamer(runname, namespace, Options{namespace, false, int64(1000), false, false})
 	if err != nil {
 		return strconv.Itoa(0), err
 	}
