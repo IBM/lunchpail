@@ -104,6 +104,13 @@ spec:
                       type: integer
                     fsGroup:
                       type: integer
+                containerSecurityContext:
+                  type: object
+                  properties:
+                    runAsUser:
+                      type: integer
+                    runAsGroup:
+                      type: integer
                     seLinuxOptions:
                       type: object
                       propertes:

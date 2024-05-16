@@ -23,6 +23,11 @@
   {{- end }}
   {{- end }}
 
+  {{- if .Values.containerSecurityContext }}
+  securityContext:
+    {{ .Values.containerSecurityContext | b64dec | indent 4 }}
+  {{- end }}
+
   {{- include "workdir/path" . | indent 2 }}
   volumeMounts:
     {{- if .Values.volumeMounts }}

@@ -25,8 +25,9 @@ volumeMounts="${16}"
 envFroms="${17}"
 expose="${18}"
 securityContext="${19}"
-component="${20}"
-enclosing_run="${21}"
+containerSecurityContext="${20}"
+component="${21}"
+enclosing_run="${22}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -60,6 +61,7 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
      --set securityContext=$securityContext \
+     --set containerSecurityContext=$containerSecurityContext \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 

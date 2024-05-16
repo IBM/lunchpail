@@ -12,6 +12,11 @@
     - name: ENCLOSING_RUN_NAME
       value: {{ .Values.name }}
 
+  {{- if .Values.containerSecurityContext }}
+  securityContext:
+    {{ .Values.containerSecurityContext | b64dec | indent 4 }}
+  {{- end }}
+      
   {{- if or .Values.env .Values.envFroms }}
   envFrom:
   {{- if .Values.env }}

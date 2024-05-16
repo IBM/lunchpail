@@ -62,6 +62,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             base64.b64encode(json.dumps(envFroms).encode('ascii')) if envFroms is not None and len(envFroms) > 0 else "",
             ("{" + ",".join(map(str, application["spec"]["expose"]))+ "}") if "expose" in application["spec"] and len(application["spec"]["expose"]) > 0 else "",
             base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
+            base64.b64encode(json.dumps(application['spec']['containerSecurityContext']).encode('ascii')) if 'containerSecurityContext' in application['spec'] else "",
             component if component is not None else "shell",
             enclosing_run,
         ], capture_output=True)
