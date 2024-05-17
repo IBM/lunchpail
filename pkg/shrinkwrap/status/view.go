@@ -4,29 +4,19 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/table"
 )
 
-func rspacex(str string, actualSpace, availableSpace int) string {
-	// - 2 as availableSpace includes one space character on either side
-	return str + strings.Repeat(" ", max(0, availableSpace-actualSpace-2))
-}
-
-func rspace(str string, availableSpace int) string {
-	return rspacex(str, len(str), availableSpace)
-}
-
-func celli(N int) string {
-	return strconv.Itoa(N)
+func padRight(str string, availableSpace int) string {
+	return fmt.Sprintf("%-*s", max(0, availableSpace-(len(str)-1)), str)
 }
 
 func cellt(N, largestN, maxcells int, box Box) string {
 	// for some reason, len(taskCells(N)) != N; probably unicode issues
 	Nstr := strconv.Itoa(N)
-	Nstrp := rspace(Nstr, len(strconv.Itoa(largestN))+2) // padded
+	Nstrp := padRight(Nstr, len(strconv.Itoa(largestN))) // padded
 	Ncells := min(N, maxcells)
 	return brown.Render(Nstrp + " " + taskCells(Ncells, box))
 }
@@ -70,9 +60,9 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 	timestamp := model.last()
 
 	rows := []statusRow{
-		row("App", cyan.Render(model.AppName)),
-		row("Run", cyan.Render(model.RunName)),
-		row("├─ "+bold.Render("Runtime"), cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)),
+		row("App", blue.Render(model.AppName)),
+		row("Run", blue.Render(model.RunName)),
+		row("├─ Runtime", cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)),
 		row("├─ "+bold.Render("Dispatcher"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
 		row("├─ "+bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)),
 	}
@@ -100,7 +90,7 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 		}
 	}
 
-	rows = append(rows, row(bold.Render("└─ Pools"), cyan.Render(celli(model.numPools()))))
+	rows = append(rows, row(bold.Render("└─ Pools"), blue.Render(strconv.Itoa(model.numPools()))))
 
 	for poolIdx, pool := range model.Pools {
 		runningWorkers, totalWorkers := pool.workersSplit()
