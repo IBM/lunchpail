@@ -24,7 +24,7 @@ func ListControllers(appName, namespace string, client kubernetes.Interface) (*v
 
 // Return all Runs in the given namespace for the given app
 func List(appName, namespace string) ([]Run, error) {
-	clientset, err := k8s.Client()
+	clientset, _, err := k8s.Client()
 	if err != nil {
 		return []Run{}, err
 	}

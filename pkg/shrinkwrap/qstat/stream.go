@@ -21,7 +21,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 		opts.TailLines = &tail
 	}
 
-	clientset, err := kubernetes.Client()
+	clientset, _, err := kubernetes.Client()
 	if err != nil {
 		return err
 	}

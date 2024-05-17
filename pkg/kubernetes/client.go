@@ -2,28 +2,23 @@ package kubernetes
 
 import (
 	k8s "k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
-	"path/filepath"
 )
 
 // Set up kubernetes API server
-func Client() (*k8s.Clientset, error) {
-	// TODO $KUBECONFIG...
-	kubeConfigPath := filepath.Join(
-		os.Getenv("HOME"), ".kube", "config",
-	)
-	// fmt.Printf("Using kubeconfig: %s\n", kubeConfigPath)
-
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+func Client() (*k8s.Clientset, *restclient.Config, error) {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	configOverrides := &clientcmd.ConfigOverrides{}
+	kubeConfig, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	clientset, err := k8s.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return clientset, nil
+	return clientset, kubeConfig, nil
 }

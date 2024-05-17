@@ -20,7 +20,7 @@ type LogLine struct {
 }
 
 func (model *Model) streamLogUpdates(run, namespace string, component lunchpail.Component, c chan Model) error {
-	clientset, err := k8s.Client()
+	clientset, _, err := k8s.Client()
 	if err != nil {
 		return err
 	}
