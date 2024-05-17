@@ -13,9 +13,9 @@ spec:
     port: {{ $port }}
     protocol: TCP
   selector:
-    app.kubernetes.io/component: {{ .Values.component }}
-    app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/component: {{ $.Values.component }}
+    app.kubernetes.io/part-of: {{ $.Values.partOf }}
+    app.kubernetes.io/name: {{ $.Values.name }}
     app.kubernetes.io/instance: {{ $.Values.enclosingRun }}
   {{- end }}
 {{- end }}
