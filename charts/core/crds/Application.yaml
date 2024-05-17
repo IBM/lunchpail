@@ -113,7 +113,7 @@ spec:
                       type: integer
                     seLinuxOptions:
                       type: object
-                      propertes:
+                      properties:
                         type:
                           type: string
                         level:
