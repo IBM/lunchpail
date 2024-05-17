@@ -75,7 +75,10 @@ function start_watch {
                 # remove sigterm/sigkill handlers
                 trap "" KILL
                 trap "" TERM
-            
+
+                # sync to any remote mounted filesystems
+                sync
+                
                 rclone --config $config moveto $localec $ec
                 rclone --config $config moveto $localstdout $stdout
                 rclone --config $config moveto $localstderr $stderr
