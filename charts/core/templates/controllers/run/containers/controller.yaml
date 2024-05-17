@@ -1,10 +1,14 @@
 {{- define "containers/controller" }}
 - name: controller
   livenessProbe:
+    periodSeconds: 60
+    timeoutSeconds: 10
     httpGet:
       path: /healthz
       port: 8080
   readinessProbe:
+    periodSeconds: 60
+    timeoutSeconds: 10
     httpGet:
       path: /healthz
       port: 8080
