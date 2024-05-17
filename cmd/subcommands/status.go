@@ -29,7 +29,9 @@ func newStatusCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Track updates to run status")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Stream more verbose updates to console")
 	cmd.Flags().BoolVarP(&summaryFlag, "summary", "s", false, "Show only summary information, do not break out queue stats")
-	cmd.Flags().IntVarP(&loglinesFlag, "log-lines", "l", 5, "Number of log lines to display")
+
+	// max num tracked... we still limit num shown in status/view.go
+	cmd.Flags().IntVarP(&loglinesFlag, "log-lines", "l", 500, "Maximum number of log lines to track")
 
 	return cmd
 }
