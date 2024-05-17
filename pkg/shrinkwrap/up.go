@@ -31,7 +31,7 @@ func Up(opts UpOptions) error {
 	}
 
 	if opts.Watch && !opts.AppOptions.DryRun {
-		return status.UI(runname, status.Options{namespace, true, opts.Verbose, false, 5})
+		return status.UI(runname, status.Options{namespace, true, opts.Verbose, false, 500})
 	}
 
 	return nil
