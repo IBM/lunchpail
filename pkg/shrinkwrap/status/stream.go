@@ -4,6 +4,7 @@ import (
 	"container/ring"
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/shrinkwrap/cpu"
 	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
 
@@ -26,6 +27,11 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglines int) (ch
 		return c, nil, err
 	}
 
+	cpuc, err := cpu.CpuStreamer(run, namespace, 5)
+	if err != nil {
+		return c, nil, err
+	}
+
 	errgroup.Go(func() error {
 		return model.streamPodUpdates(podWatcher, c)
 	})
@@ -40,6 +46,10 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglines int) (ch
 
 	errgroup.Go(func() error {
 		return model.streamQstatUpdates(qc, c)
+	})
+
+	errgroup.Go(func() error {
+		return model.streamCpuUpdates(cpuc, c)
 	})
 
 	return c, errgroup, nil

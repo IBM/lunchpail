@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"time"
 
 	"github.com/charmbracelet/bubbles/table"
 	"lunchpail.io/pkg/views"
@@ -118,18 +117,6 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 		}
 	}
 
-	// display in reverse order, so that they are presented
-	// temporally top to bottom
-	footer := []string{timestamp.Format(time.RFC850)}
-	// -2: normal -1, and -1 to leave at least one line of
-	// whitespace between main `rows` and footer lines
-	for _, msg := range model.messages(max(0, maxheight-len(rows)-2)) {
-		footer = append(footer, message(msg.who, msg.message))
-	}
-
-	return rows, col1Width, footer
-}
-
-func message(who, message string) string {
-	return fmt.Sprintf("%s %s", views.DispatcherComponentStyle.Render(who), views.Dim.Render(message))
+	linesOfPaddingAboveFooter := 1
+	return rows, col1Width, footer(model, timestamp, max(0, maxheight-len(rows)-linesOfPaddingAboveFooter))
 }

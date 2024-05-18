@@ -4,6 +4,7 @@ import (
 	"container/ring"
 	"slices"
 
+	"lunchpail.io/pkg/shrinkwrap/cpu"
 	"lunchpail.io/pkg/shrinkwrap/qstat"
 
 	"context"
@@ -51,6 +52,7 @@ type Model struct {
 	WorkStealer   WorkerStatus
 	LastNMessages *ring.Ring // ring of type Message
 	Qstat         qstat.Model
+	Cpu           cpu.Model
 }
 
 func (model *Model) numPools() int {

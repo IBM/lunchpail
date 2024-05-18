@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"lunchpail.io/pkg/runs"
 	"lunchpail.io/pkg/views"
-	"sort"
 )
 
 type CpuOptions struct {
@@ -19,7 +18,7 @@ func UI(runnameIn string, opts CpuOptions) error {
 		return err
 	}
 
-	c, err := StreamCpu(runname, namespace, opts.IntervalSeconds)
+	c, err := CpuStreamer(runname, namespace, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}
@@ -29,16 +28,7 @@ func UI(runnameIn string, opts CpuOptions) error {
 			fmt.Print("\033[H\033[2J")
 		}
 
-		// TODO: is this copy step necessary? can we just sort
-		// the given model.Workers? do we already have a copy?
-		w := []Worker{}
-		for _, worker := range model.Workers {
-			w = append(w, worker)
-		}
-
-		sort.Slice(w, func(i, j int) bool { return w[i].CpuUtil > w[j].CpuUtil })
-
-		for _, worker := range w {
+		for _, worker := range model.Sorted() {
 			util := fmt.Sprintf("%8.2f%%", worker.CpuUtil)
 			fmt.Printf("%s %s %s\n", views.Component(worker.Component), views.Bold.Render(util), worker.Name)
 		}

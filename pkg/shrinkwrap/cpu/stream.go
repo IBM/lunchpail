@@ -1,6 +1,6 @@
 package cpu
 
-func StreamCpu(run, namespace string, intervalSeconds int) (chan Model, error) {
+func CpuStreamer(run, namespace string, intervalSeconds int) (chan Model, error) {
 	c := make(chan Model)
 	model := Model{}
 

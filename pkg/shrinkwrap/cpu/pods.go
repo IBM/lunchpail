@@ -18,7 +18,11 @@ import (
 )
 
 func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, intervalSeconds int, c chan Model) error {
-	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=1000000000;b=$(cat $f);sleep 1;e=$(cat $f);else f=cpu.stat;s=1000000;b=$(cat $f|head -1|cut -d" " -f2);sleep 1;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f\n" $(echo "($e-$b)/($s)*100"|bc -l); sleep ` + strconv.Itoa(intervalSeconds) + `; done`}
+	sleep := strconv.Itoa(intervalSeconds)
+	sleepNanos := sleep + "000000000"
+	sleepMicros := sleep + "000000"
+
+	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=` + sleepNanos + `;b=$(cat $f);sleep ` + sleep + `;e=$(cat $f);else f=cpu.stat;s=` + sleepMicros + `;b=$(cat $f|head -1|cut -d" " -f2);sleep ` + sleep + `;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f\n" $(echo "($e-$b)/($s)*100"|bc -l); done`}
 
 	clientset, kubeConfig, err := kubernetes.Client()
 	if err != nil {
