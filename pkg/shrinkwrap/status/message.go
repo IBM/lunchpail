@@ -42,18 +42,20 @@ func (model *Model) addMessage(msg Message) bool {
 func (model *Model) messages(max int) []Message {
 	msgs := []Message{}
 
-	model.LastNMessages.Do(func(value any) {
-		if msg, ok := value.(Message); ok {
-			msgs = append(msgs, msg)
+	if model.LastNMessages != nil {
+		model.LastNMessages.Do(func(value any) {
+			if msg, ok := value.(Message); ok {
+				msgs = append(msgs, msg)
+			}
+		})
+
+		sort.Slice(msgs, func(i, j int) bool {
+			return msgs[i].timestamp.Before(msgs[j].timestamp)
+		})
+
+		if len(msgs) > max {
+			return msgs[(len(msgs) - max):]
 		}
-	})
-
-	sort.Slice(msgs, func(i, j int) bool {
-		return msgs[i].timestamp.Before(msgs[j].timestamp)
-	})
-
-	if len(msgs) > max {
-		return msgs[(len(msgs) - max):]
 	}
 
 	return msgs
