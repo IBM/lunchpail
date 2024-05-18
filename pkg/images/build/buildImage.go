@@ -123,7 +123,7 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 	// TODO --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
 }
 
-func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bool) (string, error) {
+func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bool, force bool) (string, error) {
 	image := imageName(name, suffix)
 
 	imageExists, ierr := exists(image, "image", cli, verbose)
@@ -136,7 +136,7 @@ func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli, verbose b
 		return "", merr
 	}
 
-	if imageExists && !manifestExists {
+	if force || (imageExists && !manifestExists) {
 		// we have a previously built image that is not a manifest
 		fmt.Fprintf(os.Stderr, "Clearing out prior non-manifest image %s\n", image)
 		if err := rm(image, "image", cli, verbose); err != nil {
@@ -170,7 +170,7 @@ func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bo
 
 func buildImage(dir, name, suffix, dockerfile string, cli ContainerCli, opts BuildOptions) (string, error) {
 	if opts.Production {
-		return buildProd(dir, name, suffix, dockerfile, cli, opts.Verbose)
+		return buildProd(dir, name, suffix, dockerfile, cli, opts.Verbose, opts.Force)
 	} else {
 		return buildDev(dir, name, suffix, dockerfile, cli, opts.Verbose)
 	}
