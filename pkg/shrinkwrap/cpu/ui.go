@@ -2,14 +2,14 @@ package cpu
 
 import (
 	"fmt"
-	"sort"
 	"lunchpail.io/pkg/runs"
 	"lunchpail.io/pkg/views"
+	"sort"
 )
 
 type CpuOptions struct {
-	Namespace string
-	Verbose   bool
+	Namespace       string
+	Verbose         bool
 	IntervalSeconds int
 }
 
@@ -39,8 +39,8 @@ func UI(runnameIn string, opts CpuOptions) error {
 		sort.Slice(w, func(i, j int) bool { return w[i].CpuUtil > w[j].CpuUtil })
 
 		for _, worker := range w {
-			util := fmt.Sprintf("%6.2f%%", worker.CpuUtil)
-			fmt.Printf("%-8v %s %s\n", views.Component(worker.Component), views.Bold.Render(util), worker.Name)
+			util := fmt.Sprintf("%8.2f%%", worker.CpuUtil)
+			fmt.Printf("%s %s %s\n", views.Component(worker.Component), views.Bold.Render(util), worker.Name)
 		}
 	}
 

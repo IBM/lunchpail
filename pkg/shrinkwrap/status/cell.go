@@ -1,8 +1,8 @@
 package status
 
 import (
-	"strings"
 	"lunchpail.io/pkg/views"
+	"strings"
 )
 
 func statusCell(status WorkerStatus) string {

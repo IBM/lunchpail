@@ -25,7 +25,7 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return err
 	}
-	
+
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod.Name).
 		Namespace(pod.Namespace).SubResource("exec")
 
@@ -33,14 +33,14 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 	if component == lunchpail.DispatcherComponent {
 		container = "main"
 	}
-	
+
 	option := &v1.PodExecOptions{
 		Container: container,
-		Command: cmd,
-		Stdin:   false,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     false,
+		Command:   cmd,
+		Stdin:     false,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
 	}
 
 	req.VersionedParams(
@@ -57,7 +57,7 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 	reader, writer := io.Pipe()
 
 	model.Workers = append(model.Workers, Worker{pod.Name, component, 0.0})
-	
+
 	go func() {
 		buffer := bufio.NewReader(reader)
 		for {
@@ -69,7 +69,6 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 			util, err := strconv.ParseFloat(strings.TrimSpace(line), 32)
 			if err == nil {
 				workerIdx := slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
-				fmt.Printf("!!!!!!!!!!!! %d %.2f '%s'\n", workerIdx, util, strings.TrimSpace(line))
 				if workerIdx >= 0 {
 					worker := model.Workers[workerIdx]
 					worker.CpuUtil = util
@@ -106,7 +105,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, model *Model, intervalSeco
 	case string(lunchpail.WorkersComponent):
 		component = lunchpail.WorkersComponent
 	}
-	
+
 	if component != "" && pod.Status.Phase == "Running" && !model.alreadyExecdIntoPod(pod) {
 		go execIntoPod(pod, component, model, intervalSeconds, c)
 	}

@@ -131,5 +131,5 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 }
 
 func message(who, message string) string {
-	return fmt.Sprintf("%s %s", views.ComponentStyle.Render(who), views.Dim.Render(message))
+	return fmt.Sprintf("%s %s", views.DispatcherComponentStyle.Render(who), views.Dim.Render(message))
 }
