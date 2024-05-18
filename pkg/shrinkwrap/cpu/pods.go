@@ -7,6 +7,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -16,18 +17,25 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, intervalSeconds int, c chan *Model) error {
+func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, intervalSeconds int, c chan Model) error {
 	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=1000000000;b=$(cat $f);sleep 1;e=$(cat $f);else f=cpu.stat;s=1000000;b=$(cat $f|head -1|cut -d" " -f2);sleep 1;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f\n" $(echo "($e-$b)/($s)*100"|bc -l); sleep ` + strconv.Itoa(intervalSeconds) + `; done`}
 
 	clientset, kubeConfig, err := kubernetes.Client()
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return err
 	}
 	
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod.Name).
 		Namespace(pod.Namespace).SubResource("exec")
 
+	container := "app"
+	if component == lunchpail.DispatcherComponent {
+		container = "main"
+	}
+	
 	option := &v1.PodExecOptions{
+		Container: container,
 		Command: cmd,
 		Stdin:   false,
 		Stdout:  true,
@@ -42,11 +50,14 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 
 	exec, err := remotecommand.NewSPDYExecutor(kubeConfig, "POST", req.URL())
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return err
 	}
 
 	reader, writer := io.Pipe()
 
+	model.Workers = append(model.Workers, Worker{pod.Name, component, 0.0})
+	
 	go func() {
 		buffer := bufio.NewReader(reader)
 		for {
@@ -55,16 +66,17 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 				break
 			}
 
-			util, err := strconv.ParseFloat(line, 32)
-			if err != nil {
+			util, err := strconv.ParseFloat(strings.TrimSpace(line), 32)
+			if err == nil {
 				workerIdx := slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
-				if workerIdx < 0 {
-					model.Workers = append(model.Workers, Worker{pod.Name, component, util})
-				} else {
-					model.Workers[workerIdx].CpuUtil = util
-				}
+				fmt.Printf("!!!!!!!!!!!! %d %.2f '%s'\n", workerIdx, util, strings.TrimSpace(line))
+				if workerIdx >= 0 {
+					worker := model.Workers[workerIdx]
+					worker.CpuUtil = util
+					model.Workers = slices.Concat(model.Workers[:workerIdx], []Worker{worker}, model.Workers[workerIdx+1:])
 
-				c <- model
+					c <- *model
+				}
 			}
 		}
 	}()
@@ -74,13 +86,14 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 		Stdout: writer,
 		Stderr: os.Stderr,
 	}); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return err
 	}
 
 	return nil
 }
 
-func updateFromPod(pod *v1.Pod, what watch.EventType, model *Model, intervalSeconds int, c chan *Model) error {
+func updateFromPod(pod *v1.Pod, what watch.EventType, model *Model, intervalSeconds int, c chan Model) error {
 	componentName, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
@@ -94,14 +107,18 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, model *Model, intervalSeco
 		component = lunchpail.WorkersComponent
 	}
 	
-	if component != "" && pod.Status.Phase == "Running" {
+	if component != "" && pod.Status.Phase == "Running" && !model.alreadyExecdIntoPod(pod) {
 		go execIntoPod(pod, component, model, intervalSeconds, c)
 	}
 
 	return nil
 }
 
-func (model *Model) streamPodUpdates(watcher watch.Interface, intervalSeconds int, c chan *Model) error {
+func (model *Model) alreadyExecdIntoPod(pod *v1.Pod) bool {
+	return slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name }) >= 0
+}
+
+func (model *Model) streamPodUpdates(watcher watch.Interface, intervalSeconds int, c chan Model) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)

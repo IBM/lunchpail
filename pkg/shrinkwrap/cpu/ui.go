@@ -2,19 +2,19 @@ package cpu
 
 import (
 	"fmt"
+	"sort"
 	"lunchpail.io/pkg/runs"
 	"lunchpail.io/pkg/lunchpail"
 )
 
 type CpuOptions struct {
 	Namespace string
-	Watch     bool
 	Verbose   bool
 	IntervalSeconds int
 }
 
 func UI(runnameIn string, opts CpuOptions) error {
-	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, opts.Watch)
+	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
 	if err != nil {
 		return err
 	}
@@ -25,12 +25,21 @@ func UI(runnameIn string, opts CpuOptions) error {
 	}
 
 	for model := range c {
-		for _, worker := range model.Workers {
-			fmt.Printf("%v %s %.2f%%\n", lunchpail.ComponentShortName(worker.Component), worker.Name, worker.CpuUtil)
+		if !opts.Verbose {
+			fmt.Print("\033[H\033[2J")
 		}
 
-		if !opts.Watch {
-			break
+		// TODO: is this copy step necessary? can we just sort
+		// the given model.Workers? do we already have a copy?
+		w := []Worker{}
+		for _, worker := range model.Workers {
+			w = append(w, worker)
+		}
+
+		sort.Slice(w, func(i, j int) bool { return w[i].CpuUtil > w[j].CpuUtil })
+
+		for _, worker := range w {
+			fmt.Printf("%-8v %6.2f%% %s\n", lunchpail.ComponentShortName(worker.Component), worker.CpuUtil, worker.Name)
 		}
 	}
 

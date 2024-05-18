@@ -1,7 +1,7 @@
 package cpu
 
-func StreamCpu(run, namespace string, intervalSeconds int) (chan *Model, error) {
-	c := make(chan *Model)
+func StreamCpu(run, namespace string, intervalSeconds int) (chan Model, error) {
+	c := make(chan Model)
 	model := Model{}
 
 	podWatcher, err := startWatching(run, namespace)
