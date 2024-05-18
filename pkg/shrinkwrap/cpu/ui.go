@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"lunchpail.io/pkg/runs"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/views"
 )
 
 type CpuOptions struct {
@@ -39,7 +39,8 @@ func UI(runnameIn string, opts CpuOptions) error {
 		sort.Slice(w, func(i, j int) bool { return w[i].CpuUtil > w[j].CpuUtil })
 
 		for _, worker := range w {
-			fmt.Printf("%-8v %6.2f%% %s\n", lunchpail.ComponentShortName(worker.Component), worker.CpuUtil, worker.Name)
+			util := fmt.Sprintf("%6.2f%%", worker.CpuUtil)
+			fmt.Printf("%-8v %s %s\n", views.Component(worker.Component), views.Bold.Render(util), worker.Name)
 		}
 	}
 
