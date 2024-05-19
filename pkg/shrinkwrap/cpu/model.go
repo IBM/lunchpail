@@ -19,7 +19,7 @@ func (model *Model) HasData() bool {
 	return len(model.Workers) > 0
 }
 
-func (model * Model) Sorted() []Worker {
+func (model *Model) Sorted() []Worker {
 	w := []Worker{}
 	for _, worker := range model.Workers {
 		w = append(w, worker)

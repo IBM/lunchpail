@@ -21,6 +21,7 @@ func cpuline(model Model) string {
 	prevPrefix := ""
 	for _, worker := range model.Cpu.Sorted() {
 		prefix := ""
+		paddingLeft := 1
 		switch worker.Component {
 		case lunchpail.DispatcherComponent:
 			prefix = "D "
@@ -30,11 +31,12 @@ func cpuline(model Model) string {
 
 		if prefix == prevPrefix {
 			prefix = ""
+			paddingLeft = 0
 		} else {
 			prevPrefix = prefix
 		}
 
-		cpuinfo := views.ComponentStyle(worker.Component).Render(fmt.Sprintf("%s%.2f%%", prefix, worker.CpuUtil))
+		cpuinfo := views.ComponentStyle(worker.Component).PaddingLeft(paddingLeft).Render(fmt.Sprintf("%s%.2f%%", prefix, worker.CpuUtil))
 		line = append(line, cpuinfo)
 	}
 
