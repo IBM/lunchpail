@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/shrinkwrap/qstat"
 )
 
-func StatusStreamer(app, run, namespace string, verbose bool, nLoglines int) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, interval int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
 
 	podWatcher, eventWatcher, err := startWatching(app, run, namespace)
@@ -20,14 +20,14 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglines int) (ch
 	model.AppName = app
 	model.RunName = run
 	model.Namespace = namespace
-	model.LastNMessages = ring.New(nLoglines)
+	model.LastNMessages = ring.New(nLoglinesMax)
 
 	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose, true})
 	if err != nil {
 		return c, nil, err
 	}
 
-	cpuc, err := cpu.CpuStreamer(run, namespace, 5)
+	cpuc, err := cpu.CpuStreamer(run, namespace, interval)
 	if err != nil {
 		return c, nil, err
 	}

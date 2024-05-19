@@ -18,6 +18,7 @@ type Options struct {
 	Verbose   bool
 	Summary   bool
 	Nloglines int
+	Interval  int
 }
 
 // Our model for BubbleTea
@@ -133,7 +134,7 @@ func UI(runnameIn string, opts Options) error {
 		defer f.Close()
 	}
 
-	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose, opts.Nloglines)
+	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose, opts.Nloglines, opts.Interval)
 	if err != nil {
 		return err
 	}

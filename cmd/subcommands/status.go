@@ -12,6 +12,7 @@ func newStatusCommand() *cobra.Command {
 	var verboseFlag bool
 	var summaryFlag bool
 	var loglinesFlag int
+	var intervalFlag int
 
 	var cmd = &cobra.Command{
 		Use:   "status",
@@ -21,7 +22,7 @@ func newStatusCommand() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag, verboseFlag, summaryFlag, loglinesFlag})
+			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag, verboseFlag, summaryFlag, loglinesFlag, intervalFlag})
 		},
 	}
 
@@ -32,6 +33,9 @@ func newStatusCommand() *cobra.Command {
 
 	// max num tracked... we still limit num shown in status/view.go
 	cmd.Flags().IntVarP(&loglinesFlag, "log-lines", "l", 500, "Maximum number of log lines to track")
+
+	// interval for polling cpu etc.
+	cmd.Flags().IntVarP(&intervalFlag, "interval", "i", 5, "Polling interval in seconds for resource utilization stats")
 
 	return cmd
 }
