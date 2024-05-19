@@ -22,7 +22,9 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 	sleepNanos := sleep + "000000000"
 	sleepMicros := sleep + "000000"
 
-	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=` + sleepNanos + `;b=$(cat $f);sleep ` + sleep + `;e=$(cat $f);else f=cpu.stat;s=` + sleepMicros + `;b=$(cat $f|head -1|cut -d" " -f2);sleep ` + sleep + `;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f\n" $(echo "($e-$b)/($s)*100"|bc -l); done`}
+	mem := `$(cat /sys/fs/cgroup/memory/memory.usage_in_bytes 2> /dev/null || cat /sys/fs/cgroup/memory.current) $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes 2> /dev/null || cat /sys/fs/cgroup/memory.max)`
+
+	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=` + sleepNanos + `;b=$(cat $f);sleep ` + sleep + `;e=$(cat $f);else f=cpu.stat;s=` + sleepMicros + `;b=$(cat $f|head -1|cut -d" " -f2);sleep ` + sleep + `;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f %d %s\n" $(echo "($e-$b)/($s)*100"|bc -l) ` + mem + `; done`}
 
 	clientset, kubeConfig, err := kubernetes.Client()
 	if err != nil {
@@ -60,7 +62,7 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 
 	reader, writer := io.Pipe()
 
-	model.Workers = append(model.Workers, Worker{pod.Name, component, 0.0})
+	model.Workers = append(model.Workers, Worker{pod.Name, component, 0.0, 0})
 
 	go func() {
 		buffer := bufio.NewReader(reader)
@@ -70,14 +72,26 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 				break
 			}
 
-			util, err := strconv.ParseFloat(strings.TrimSpace(line), 32)
-			if err == nil {
-				workerIdx := slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
-				if workerIdx >= 0 {
-					worker := model.Workers[workerIdx]
-					worker.CpuUtil = util
-					model.Workers = slices.Concat(model.Workers[:workerIdx], []Worker{worker}, model.Workers[workerIdx+1:])
+			workerIdx := slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
+			if workerIdx >= 0 {
+				changed := false
+				worker := model.Workers[workerIdx]
+				fields := strings.Fields(line)
 
+				if len(fields) >= 2 {
+					if util, err := strconv.ParseFloat(fields[0], 32); err == nil {
+						changed = true
+						worker.CpuUtil = util
+					}
+
+					if util, err := strconv.ParseInt(fields[1], 10, 64); err == nil {
+						changed = true
+						worker.MemoryBytes = uint64(util)
+					}
+				}
+
+				if changed {
+					model.Workers = slices.Concat(model.Workers[:workerIdx], []Worker{worker}, model.Workers[workerIdx+1:])
 					c <- *model
 				}
 			}

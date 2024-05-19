@@ -6,9 +6,10 @@ import (
 )
 
 type Worker struct {
-	Name      string
-	Component lunchpail.Component
-	CpuUtil   float64
+	Name        string
+	Component   lunchpail.Component
+	CpuUtil     float64
+	MemoryBytes uint64
 }
 
 type Model struct {

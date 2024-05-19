@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/dustin/go-humanize"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/shrinkwrap/cpu"
 	"lunchpail.io/pkg/views"
 )
 
@@ -15,11 +17,17 @@ func message(who, message string, style lipgloss.Style) string {
 	return fmt.Sprintf("%s %s", style.Render(fmt.Sprintf("%8s", who)), views.Dim.Render(message))
 }
 
-func cpuline(model Model) string {
+type Resource string
+const (
+	Cpu Resource = "CPU"
+	Mem = "Memory"
+)
+
+func cpuline(workers []cpu.Worker, resource Resource) string {
 	line := []string{}
 
 	prevPrefix := ""
-	for _, worker := range model.Cpu.Sorted() {
+	for _, worker := range workers {
 		prefix := ""
 		paddingLeft := 1
 		switch worker.Component {
@@ -36,11 +44,26 @@ func cpuline(model Model) string {
 			prevPrefix = prefix
 		}
 
-		cpuinfo := views.ComponentStyle(worker.Component).PaddingLeft(paddingLeft).Render(fmt.Sprintf("%s%.2f%%", prefix, worker.CpuUtil))
-		line = append(line, cpuinfo)
+		// compute the length of both cpu and mem, so we can align them across rows
+		cpuVal := fmt.Sprintf("%s%s%%", prefix, humanize.FtoaWithDigits(worker.CpuUtil, 1))
+		memVal := fmt.Sprintf("%s%s", prefix, humanize.Bytes(worker.MemoryBytes))
+		maxlen := max(len(cpuVal), len(memVal))
+
+		var val string
+		switch resource {
+		case Cpu:
+			val = fmt.Sprintf("%-*s", maxlen, cpuVal)
+		case Mem:
+			val = fmt.Sprintf("%-*s", maxlen, memVal)
+		}
+
+		if val != "" {
+			info := views.ComponentStyle(worker.Component).PaddingLeft(paddingLeft).Render(val)
+			line = append(line, info)
+		}
 	}
 
-	return message("CPU", strings.Join(line, ""), views.OtherComponentStyle)
+	return message(string(resource), strings.Join(line, ""), views.OtherComponentStyle)
 }
 
 func footer(model Model, timestamp time.Time, maxheight int) []string {
@@ -48,8 +71,10 @@ func footer(model Model, timestamp time.Time, maxheight int) []string {
 	footer := []string{views.Dim.Render(timestamp.Format(time.RFC850))}
 
 	if model.Cpu.HasData() {
-		maxheight-- // minus one for the cpu line
-		footer = append(footer, cpuline(model))
+		maxheight -= 2 // minus one for the cpu and memory line
+		workers := model.Cpu.Sorted()
+		footer = append(footer, cpuline(workers, Cpu))
+		footer = append(footer, cpuline(workers, Mem))
 	}
 
 	// then use the rest of maxheight for messages
