@@ -31,10 +31,11 @@ func (model *Model) streamLogUpdates(run, namespace string, component lunchpail.
 	}
 
 	for {
+		tail := int64(500)
 		logsStreamer, err := clientset.
 			CoreV1().
 			Pods(namespace).
-			GetLogs(podName, &corev1.PodLogOptions{Follow: true}).
+			GetLogs(podName, &corev1.PodLogOptions{Follow: true, TailLines: &tail}).
 			Stream(context.Background())
 		if err != nil {
 			if !strings.Contains(err.Error(), "waiting to start") {
