@@ -8,7 +8,6 @@ workingDir: /workdir
 {{- if .Values.workdir.cm.data }}
 - name: workdir-configmap
   mountPath: {{ print "/workdir/" .Values.workdir.cm.mount_path }}
-  readOnly: true
 {{- end }}
 {{- end }}
 

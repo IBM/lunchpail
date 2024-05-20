@@ -13,7 +13,7 @@ from shell import create_run_shell
 from sequence import create_run_sequence
 
 from workerpool import create_workerpool
-from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
+from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_application
 
 from find_run import find_run
 from fetch_application import fetch_application_for_run, fetch_run_and_application_and_queue_dataset
@@ -40,8 +40,6 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         # we will then set the status below in the pod status watcher (look for 'component(labels) == "workdispatcher"')
         if spec['method'] == "tasksimulator" or spec['method'] == "parametersweep":
             create_workdispatcher_ts_ps(customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch)
-        elif spec['method'] == "helm":
-            create_workdispatcher_helm(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch)
         elif spec['method'] == "application":
             create_workdispatcher_application(v1Api, customApi, name, namespace, uid, spec, run, queue_dataset, envFroms, patch)
     except kopf.TemporaryError as e:

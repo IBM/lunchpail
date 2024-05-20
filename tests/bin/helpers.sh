@@ -41,7 +41,7 @@ function waitForIt {
     # combination of Ready and Complete (i.e. not-Ready) pods. This is
     # important because pthe kubectl waits below expect the pods
     # either to be all-Ready or all-not-Ready.
-    local selector=app.kubernetes.io/component!=workdispatcher
+    local selector=app.kubernetes.io/component!=workdispatcher,app.kubernetes.io/component!=lunchpail-controller
 
     if [[ "$api" = ray ]]; then
         local containers="-c job-logs"

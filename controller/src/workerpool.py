@@ -92,7 +92,7 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         run_name = run["metadata"]["name"]
         application_name = application["metadata"]["name"]
 
-        logging.info(f"About to call out to WorkerPool launcher for run={run_name} envFroms={envFroms} repo={repo} cm_data={cm_data}")
+        logging.info(f"About to call out to WorkerPool launcher for run={run_name} envFroms={envFroms} repo={repo}")
         try:
             out = subprocess.run([
                 "./workerpool.sh",

@@ -1,0 +1,14 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: test7d-workdispatcher
+spec:
+  api: shell
+  role: dispatcher
+  command: ./src/main.sh
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  env:
+    # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2
+    taskprefix: WRONG_YOU_HAVE_A_BUG_IN_WORKDISPATCHER_PY # workdispatcher.yaml should override (via run controller workdispatcher.py)
+    taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
+  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test7f-repo/pail

@@ -1,17 +1,18 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7d") }}
 apiVersion: lunchpail.io/v1alpha1
 kind: WorkDispatcher
 metadata:
-  labels:
-    app.kubernetes.io/component: workdispatcher
-    app.kubernetes.io/name: test7d
-    app.kubernetes.io/part-of: lunchpail.io
   name: test7d
 spec:
-  method: helm
-#    https://github.ibm.com/cloud-computer/lunchpail-dashboard/tree/main/tests/workdispatcher1
-  repo: >-
-    https://github.ibm.com/nickm/lunchpail-dashboard/tree/envfroms/tests/workdispatcher1
-  values: >-
-    {"taskprefix":{"a":"tasky","b":3333}}
-{{- end }}
+  method: application
+  application:
+    name: test7d-workdispatcher
+  env:
+    # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2; this overrides an env var from ./workdispatcher-app.yaml
+    taskprefix: tasky
+
+    # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
+    METHOD: parametersweep
+    SWEEP_MIN: '1'
+    SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
+    SWEEP_STEP: '1'
+    INTERVAL: {{ .Values.every | default 5 | quote }}
