@@ -69,9 +69,6 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set workers.cpu=$cpu \
      --set workers.memory=$memory \
      --set workers.gpu=$gpu \
-     --set s3Endpoint=$INTERNAL_S3_ENDPOINT \
-     --set s3AccessKey=$INTERNAL_S3_ACCESSKEY \
-     --set s3SecretKey=$INTERNAL_S3_SECRETKEY \
      --set lunchpail=$LUNCHPAIL \
      --set queue.dataset=$queue_dataset \
      --set volumes=$volumes \

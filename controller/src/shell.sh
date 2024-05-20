@@ -58,9 +58,6 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set volumeMounts=$volumeMounts \
      --set envFroms=$envFroms \
      --set env="$env" \
-     --set s3Endpoint=$INTERNAL_S3_ENDPOINT \
-     --set s3AccessKey=$INTERNAL_S3_ACCESSKEY \
-     --set s3SecretKey=$INTERNAL_S3_SECRETKEY \
      --set expose=$expose \
      --set mcad.enabled=${MCAD_ENABLED:-false } \
      --set rbac.runAsRoot=$RUN_AS_ROOT \
