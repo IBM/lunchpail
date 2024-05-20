@@ -8,7 +8,7 @@ from kopf import PermanentError, TemporaryError
 from kubernetes.client.rest import ApiException
 
 from clone import clonev2
-from status import set_status, add_error_condition, set_status_after_clone_failure
+from status import set_status, add_error_condition
 from run_id import alloc_run_id
 from find_run import find_run
 from run_size import load_run_size_config

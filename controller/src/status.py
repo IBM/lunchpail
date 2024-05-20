@@ -35,18 +35,3 @@ def add_error_condition(customApi, name: str, namespace: str, message: str, patc
 #        patch.metadata.annotations["lunchpail.io/message"] = message
 #    except Exception as e:
 #        raise PermanentError(f"Error patching error condition name={name} namespace={namespace} message={message}. {str(e)}.")
-
-
-# Update the status of the given named resource after a git clone failure
-def set_status_after_clone_failure(customApi, name: str, namespace: str, e: Exception, patch):
-    msg = str(e)
-    logging.info(f"Error while cloning name={name} namespace={namespace}. {msg.strip()}")
-
-    if "Authentication failed" in msg or "access denied" in msg or "returned error: 403" in msg:
-        set_status(name, namespace, 'AccessDenied', patch, "reason")
-        set_status(name, namespace, 'CloneFailed', patch)
-        set_status(name, namespace, "0", patch, "ready")
-        add_error_condition(customApi, name, namespace, msg.strip(), patch)
-        raise TemporaryError(f"Failed clone due to missing credentials name={name} namespace={namespace}. {msg.strip()}", delay=10)
-    else:
-        raise e

@@ -11,7 +11,7 @@ from kubernetes.client.rest import ApiException
 from run_id import alloc_run_id
 from fetch_application import fetch_application_for_appref
 
-from status import set_status, add_error_condition, set_status_after_clone_failure
+from status import set_status, add_error_condition
 
 #
 # Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep
