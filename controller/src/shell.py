@@ -5,7 +5,7 @@ import logging
 import subprocess
 from kopf import PermanentError
 
-from clone import clone
+from clone import clonev2
 from run_id import alloc_run_id
 from datasets import add_dataset
 
@@ -16,8 +16,10 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     command = f"{application['spec']['command']} {command_line_options}"
 
     run_id, workdir = alloc_run_id("shell", name)
-    cloned_subPath = clone(v1Api, customApi, application, name, namespace, workdir)
-    subPath = os.path.join(run_id, cloned_subPath)
+
+    repo, workdir_pat_user_b64, workdir_pat_secret_b64, cm_data, cm_mount_path = clonev2(v1Api, customApi, application, namespace)
+    # logging.info(f"clone info for name={name}: repo={repo} cm_data={cm_data}")
+    subPath = "" # unused
 
     gpu = run_size_config['gpu']
     cpu = run_size_config['cpu']
@@ -65,6 +67,11 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             base64.b64encode(json.dumps(application['spec']['containerSecurityContext']).encode('ascii')) if 'containerSecurityContext' in application['spec'] else "",
             component if component is not None else "shell",
             enclosing_run,
+            repo,
+            workdir_pat_user_b64,
+            workdir_pat_secret_b64,
+            base64.b64encode(json.dumps(cm_data).encode('ascii')) if cm_data is not None else "",
+            cm_mount_path if cm_mount_path is not None else "",
         ], capture_output=True)
 
         logging.info(f"Shell callout done for name={name} with returncode={shell_out.returncode}")
@@ -77,5 +84,3 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
         head_pod_name = shell_out.stdout.decode('utf-8')
         logging.info(f"Shell run head_pod_name={head_pod_name}")
         return head_pod_name
-        
-        

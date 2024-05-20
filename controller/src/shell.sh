@@ -28,6 +28,11 @@ securityContext="${19}"
 containerSecurityContext="${20}"
 component="${21}"
 enclosing_run="${22}"
+workdir_repo="${23}"
+workdir_pat_user="${24}"
+workdir_pat_secret="${25}"
+workdir_cm_data="${26}"
+workdir_cm_mount_path="${27}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -62,6 +67,14 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/shell/ -n ${namespace} \
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
      --set securityContext=$securityContext \
      --set containerSecurityContext=$containerSecurityContext \
+     --set workdir.repo=$workdir_repo \
+     --set workdir.pat.user=$workdir_pat_user \
+     --set workdir.pat.secret=$workdir_pat_secret \
+     --set workdir.cm.data=$workdir_cm_data \
+     --set workdir.cm.mount_path=$workdir_cm_mount_path \
+     --set lunchpail.image.registry=$IMAGE_REGISTRY \
+     --set lunchpail.image.repo=$IMAGE_REPO \
+     --set lunchpail.image.version=$IMAGE_VERSION \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
