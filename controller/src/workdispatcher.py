@@ -11,8 +11,6 @@ from kubernetes.client.rest import ApiException
 from run_id import alloc_run_id
 from fetch_application import fetch_application_for_appref
 
-from status import set_status, add_error_condition
-
 #
 # Handle WorkDispatcher creation for method=tasksimulator or method=parametersweep
 #
@@ -60,14 +58,14 @@ def create_workdispatcher_ts_ps(customApi, name: str, namespace: str, uid: str, 
         ], capture_output=True)
         logging.info(f"WorkDispatcher callout done for name={name} with returncode={out.returncode}")
     except Exception as e:
-        set_status(name, namespace, 'Failed', patch)
-        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+        # set_status(name, namespace, 'Failed', patch)
+        # add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         raise PermanentError(f"Failed to launch WorkDispatcher. {e}")
 
     if out is not None and out.returncode != 0:
         message = out.stderr.decode('utf-8')
-        set_status(name, namespace, 'Failed', patch)
-        add_error_condition(customApi, name, namespace, message, patch)
+        # set_status(name, namespace, 'Failed', patch)
+        # add_error_condition(customApi, name, namespace, message, patch)
         raise PermanentError(f"Failed to launch WorkDispatcher. {message}")
     else:
         #head_pod_name = out.stdout.decode('utf-8')
@@ -95,8 +93,8 @@ def create_workdispatcher_application(v1Api, customApi, workdispatcher_name: str
 
     except ApiException as e:
         message = f"Application {workdispatcher_app_name} not found. {str(e)}"
-        set_status(workdispatcher_name, workdispatcher_namespace, 'Failed', patch)
-        add_error_condition(customApi, workdispatcher_name, workdispatcher_namespace, message, patch)
+        # set_status(workdispatcher_name, workdispatcher_namespace, 'Failed', patch)
+        # add_error_condition(customApi, workdispatcher_name, workdispatcher_namespace, message, patch)
         raise TemporaryError(message)
     
     run_name = run['metadata']['name']

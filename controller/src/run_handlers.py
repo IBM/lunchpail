@@ -5,7 +5,6 @@ import traceback
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
-from status import set_status, set_status_immediately, add_error_condition
 from run_size import run_size
 from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_dataset_labels_for_workerpool
 
@@ -27,7 +26,7 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
     try:
         if not "lunchpail.io/status" in annotations or annotations["lunchpail.io/status"] != "CloneFailed":
             logging.info(f"Handling WorkDispatcher create name={name} namespace={namespace}")
-            set_status_immediately(customApi, name, namespace, 'Pending', 'workdispatchers')
+            # set_status_immediately(customApi, name, namespace, 'Pending', 'workdispatchers')
 
         run_name = spec['run'] if 'run' in spec else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
         run_namespace = namespace
@@ -46,8 +45,8 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         logging.info(f"Passing through TemporaryError for WorkDispatcher creation name={name} namespace={namespace}")
         raise e
     except Exception as e:
-        set_status(name, namespace, 'Failed', patch)
-        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+        # set_status(name, namespace, 'Failed', patch)
+        # add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         traceback.print_exc()
         raise kopf.PermanentError(f"Error handling WorkDispatcher creation. {str(e)}")
 
@@ -55,9 +54,9 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
 @kopf.on.create('workerpools.lunchpail.io')
 def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, labels, spec, patch, **kwargs):
     try:
-        if not "lunchpail.io/status" in annotations or annotations["lunchpail.io/status"] != "CloneFailed":
-            set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
-            set_status(name, namespace, "0", patch, "ready")
+        #if not "lunchpail.io/status" in annotations or annotations["lunchpail.io/status"] != "CloneFailed":
+        #    set_status_immediately(customApi, name, namespace, 'Pending', 'workerpools')
+        #    set_status(name, namespace, "0", patch, "ready")
 
         run_name = spec['run'] if 'run' in spec else find_run(customApi, namespace)["metadata"]["name"] # todo we'll re-fetch the run a few lines down :(
         run_namespace = namespace
@@ -78,11 +77,11 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         create_workerpool(v1Api, customApi, application, run, namespace, uid, name, spec, queue_dataset, volumes, volumeMounts, envFroms, patch)
     except kopf.TemporaryError as e:
         # pass through any TemporaryErrors
-        set_status(name, namespace, 'Failed', patch)
+        # set_status(name, namespace, 'Failed', patch)
         logging.info(f"Passing through TemporaryError for WorkerPool creation name={name} namespace={namespace}")
         raise e
     except Exception as e:
-        set_status(name, namespace, 'Failed', patch)
+        # set_status(name, namespace, 'Failed', patch)
         # add_error_condition_to_run(customApi, name, namespace, str(e).strip(), patch)
         traceback.print_exc()
         raise kopf.PermanentError(f"Error handling WorkerPool creation name={name}. {str(e)}")
@@ -101,7 +100,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
             api = application['spec']['api']
             logging.info(f"Run for application={application['metadata']['name']} application_namespace={application['metadata']['namespace']} api={api} run_uid={uid}")
         except ApiException as e:
-            set_status(name, namespace, 'Failed', patch)
+            # set_status(name, namespace, 'Failed', patch)
             raise e
 
         run_size_config = run_size(customApi, name, spec, application)
@@ -128,7 +127,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         logging.info(f"Passing through TemporaryError for Run creation name={name} namespace={namespace}")
         raise e
     except Exception as e:
-        set_status(name, namespace, 'Failed', patch)
-        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+        # set_status(name, namespace, 'Failed', patch)
+        # add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         traceback.print_exc()
         raise kopf.PermanentError(f"Error handling Run creation. {str(e)}")

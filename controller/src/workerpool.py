@@ -8,7 +8,6 @@ from kopf import PermanentError, TemporaryError
 from kubernetes.client.rest import ApiException
 
 from clone import clonev2
-from status import set_status, add_error_condition
 from run_id import alloc_run_id
 from find_run import find_run
 from run_size import load_run_size_config
@@ -141,9 +140,9 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         # pass through any TemporaryErrors
         raise te
     except Exception as e:
-        set_status(name, namespace, 'Failed', patch)
-        set_status(name, namespace, "0", patch, "ready")
-        add_error_condition(customApi, name, namespace, str(e).strip(), patch)
+        # set_status(name, namespace, 'Failed', patch)
+        # set_status(name, namespace, "0", patch, "ready")
+        # add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         raise PermanentError(f"Failed to create WorkerPool name={name} namespace={namespace}. {str(e).strip()}")
 
 # look for the Dataset instance that represents the queue for the given named Run
