@@ -9,8 +9,8 @@ from clone import clonev2
 from run_id import alloc_run_id
 from datasets import add_dataset
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, step: str, component: str, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch):
-    logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name} part_of={part_of} step={step}")
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, component: str, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch):
+    logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name} part_of={part_of}")
 
     image = application['spec']['image']
     command = f"{application['spec']['command']} {command_line_options}"
@@ -49,7 +49,6 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             name,
             namespace,
             part_of,
-            step,
             run_id,
             image,
             command,

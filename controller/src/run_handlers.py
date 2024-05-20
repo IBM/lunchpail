@@ -10,7 +10,6 @@ from run_size import run_size
 from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_dataset_labels_for_workerpool
 
 from shell import create_run_shell
-from sequence import create_run_sequence
 
 from workerpool import create_workerpool
 from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_application
@@ -94,9 +93,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
     try:
         # what top-level run is this part of? this could be this very run,
         # if it is a top-level run...
-        # also, if part of a sequence, which step are we?
         part_of = labels['app.kubernetes.io/part-of'] if 'app.kubernetes.io/part-of' in labels else name
-        step = labels['app.kubernetes.io/step'] if 'app.kubernetes.io/step' in labels else '0'
         component = labels['app.kubernetes.io/component'] if 'app.kubernetes.io/component' in labels else None
 
         try:
@@ -120,9 +117,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         volumes, volumeMounts, envFroms = prepare_dataset_labels(customApi, name, namespace, spec, application)
 
         if api == "shell":
-            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, step, component, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
-        elif api == "sequence":
-            head_pod_name = create_run_sequence(v1Api, customApi, application, namespace, uid, name, part_of, step, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, component, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
         elif api == "workqueue":
             pass
         else:

@@ -7,7 +7,6 @@ metadata:
   labels:
     app.kubernetes.io/component: {{ .Values.component }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/step: {{ .Values.enclosingStep | quote }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Values.enclosingRun }}
     app.kubernetes.io/managed-by: lunchpail.io

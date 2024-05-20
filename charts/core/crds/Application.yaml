@@ -25,7 +25,6 @@ spec:
               oneOf:
                 - required: [api,image,command,repo] # code via github
                 - required: [api,image,command,code] # code via lieral
-                - required: [api,steps] # as steps in a sequence
               properties:
                 api:
                   type: string
@@ -33,7 +32,6 @@ spec:
                     - shell
                     - ray
                     - torch
-                    - sequence
                     - workqueue
 
                 # if one or more code is provided via literal
@@ -60,10 +58,6 @@ spec:
                 description:
                   type: string
                 tags:
-                  type: array
-                  items:
-                    type: string
-                steps:
                   type: array
                   items:
                     type: string
