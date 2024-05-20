@@ -12,7 +12,7 @@ from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_da
 from shell import create_run_shell
 from sequence import create_run_sequence
 
-from workerpool import create_workerpool, on_worker_pod_create
+from workerpool import create_workerpool
 from workdispatcher import create_workdispatcher_ts_ps, create_workdispatcher_helm, create_workdispatcher_application
 
 from find_run import find_run
@@ -21,12 +21,6 @@ from fetch_application import fetch_application_for_run, fetch_run_and_applicati
 config.load_incluster_config()
 v1Api = client.CoreV1Api()
 customApi = client.CustomObjectsApi(client.ApiClient())
-
-# A WorkDispatcher has been deleted
-# @kopf.on.delete('workdispatchers.lunchpail.io')
-# def delete_workdispatcher_kopf(name: str, namespace: str, patch, **kwargs):
-#     logging.info(f"Handling WorkDispatcher delete name={name} namespace={namespace}")
-#     set_status_immediately(customApi, name, namespace, "Terminating", "workdispatchers")
 
 # A WorkDispatcher has been created
 @kopf.on.create('workdispatchers.lunchpail.io')
@@ -59,18 +53,6 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         traceback.print_exc()
         raise kopf.PermanentError(f"Error handling WorkDispatcher creation. {str(e)}")
-
-# A WorkerPool has been deleted.
-# @kopf.on.delete('workerpools.lunchpail.io')
-# def delete_workerpool_kopf(name: str, namespace: str, patch, **kwargs):
-#     logging.info(f"Handling WorkerPool delete name={name} namespace={namespace}")
-#     set_status_immediately(customApi, name, namespace, "Terminating", "workerpools")
-
-# A Run has been deleted.
-# @kopf.on.delete('runs.lunchpail.io')
-# def delete_run_kopf(name: str, namespace: str, patch, **kwargs):
-#     logging.info(f"Handling Run delete name={name} namespace={namespace}")
-#     set_status_immediately(customApi, name, namespace, "Terminating", "runs")
 
 # A WorkerPool has been created.
 @kopf.on.create('workerpools.lunchpail.io')
@@ -157,91 +139,3 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         add_error_condition(customApi, name, namespace, str(e).strip(), patch)
         traceback.print_exc()
         raise kopf.PermanentError(f"Error handling Run creation. {str(e)}")
-
-def plural(component: str):
-    if component == "workerpool":
-        return "workerpools"
-    else:
-        return "runs"
-
-def component(labels):
-    return labels["app.kubernetes.io/component"] if "app.kubernetes.io/component" in labels else ""
-
-# Watch each managed WorkerPool Pod for creation
-@kopf.on.create('pods', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/component": "workerpool", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
-def on_pod_create(name: str, namespace: str, body, annotations, labels, spec, uid, patch, **kwargs):
-    try:
-        on_worker_pod_create(v1Api, customApi, name, namespace, uid, annotations, labels, spec, patch)
-    except kopf.TemporaryError as e:
-        # pass through any TemporaryErrors
-        logging.info(f"Passing through TemporaryError for Pod creation name={name} namespace={namespace}")
-        raise e
-    except Exception as e:
-        logging.error(f"Error with WorkerPool Pod creation name={name} namespace={namespace}. {str(e)}")
-        traceback.print_exc()
-
-# Watch each managed Pod for deletion
-# @kopf.on.delete('pods', labels={"app.kubernetes.io/managed-by": "lunchpail.io", "app.kubernetes.io/name": kopf.PRESENT, "app.kubernetes.io/part-of": kopf.PRESENT})
-# def on_pod_delete(name: str, namespace: str, body, labels, **kwargs):
-#     try:
-#         raw_phase = body['status']['phase']
-#         phase = "Offline" if raw_phase == "Running" else raw_phase
-
-#         run_name = labels["app.kubernetes.io/part-of"]
-#         patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase } } }
-#         logging.info(f"Handling managed Pod delete run_name={run_name} phase={phase}")
-
-#         resp = customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural="runs", name=run_name, namespace=namespace, body=patch_body)
-#     except ApiException as e:
-#         if e.status != 404:
-#             logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
-#     except kopf.TemporaryError as e:
-#         # pass through any TemporaryErrors
-#         logging.info(f"Passing through TemporaryError for Pod deletion name={name} namespace={namespace}")
-#         raise e
-#     except Exception as e:
-#         logging.error(f"Error patching Run on Pod delete name={name} namespace={namespace}. {str(e)}")
-#         traceback.print_exc()
-
-# Watch pod events so we can capture pod scheduling, image pull, etc. status updates and associate them with a Run
-@kopf.on.create('events', field="involvedObject.kind", value="Pod")
-@kopf.on.update('events', field="involvedObject.kind", value="Pod")
-def on_pod_event(name: str, namespace: str, body, **kwargs):
-    try:
-        if "reason" in body and "component" in body["source"] and body["source"]["component"] != "kopf" and "involvedObject" in body:
-            pod_name = body["involvedObject"]["name"]
-            logging.info(f"Pod event for pod_name={pod_name}")
-            pod = v1Api.read_namespaced_pod(pod_name, namespace)
-            pod_labels = pod.metadata.labels
-            if "app.kubernetes.io/managed-by" in pod_labels and pod_labels["app.kubernetes.io/managed-by"] == "lunchpail.io" and "app.kubernetes.io/part-of" in pod_labels:
-                phase = body["reason"]
-                if "app.kubernetes.io/part-of" in pod_labels:
-                    plural = "runs"
-                    run_name = pod_labels["app.kubernetes.io/part-of"]
-                    patch_body = { "metadata": { "annotations": { "lunchpail.io/status": phase } } }
-
-                    if "message" in body:
-                        patch_body["metadata"]["annotations"]["lunchpail.io/message"] = body["message"]
-                    else:
-                        patch_body["metadata"]["annotations"]["lunchpail.io/reason"] = ""
-                        patch_body["metadata"]["annotations"]["lunchpail.io/message"] = ""
-
-                    logging.info(f"Patching from pod event run_name={run_name} plural={plural} phase={phase}")
-                    try:
-                        customApi.patch_namespaced_custom_object(group="lunchpail.io", version="v1alpha1", plural=plural, name=run_name, namespace=namespace, body=patch_body)
-                    except ApiException as e:
-                        logging.error(f"Error patching Run on pod event run_name={run_name} phase={phase}. {str(e)}")
-        else:
-            logging.info(f"Dropping event {body}")
-
-    except kopf.TemporaryError as e:
-        # pass through any TemporaryErrors
-        logging.info(f"Passing through TemporaryError for Pod event name={name} namespace={namespace}")
-        raise e
-    except ApiException as e:
-        # squash 404 errors that arise from patching event info related to now-deleted resources
-        if e.status != 404:
-            raise e
-    except Exception as e:
-        logging.error(f"Error handling Pod event name={name} namespace={namespace}. {str(e)}")
-        traceback.print_exc()
