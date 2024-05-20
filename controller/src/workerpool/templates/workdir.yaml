@@ -5,9 +5,40 @@ workingDir: /workdir
 {{- define "workdir/volumeMount" }}
 - name: workdir
   mountPath: /workdir
+{{- if .Values.workdir.cm.data }}
+- name: workdir-configmap
+  mountPath: {{ print "/workdir/" .Values.workdir.cm.mount_path }}
+  readOnly: true
+{{- end }}
 {{- end }}
 
 {{- define "workdir/volume" }}
 - name: workdir
   emptyDir: {}
+{{- if .Values.workdir.cm.data }}
+- name: workdir-configmap
+  projected:
+    defaultMode: 0777
+    sources:
+      - configMap:
+          name: {{ print (.Release.Name | trunc 41) "-wp-workdir" }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.workdir.cm.data }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ print (.Release.Name | trunc 41) "-wp-workdir" }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: shell
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/managed-by: lunchpail.io
+  ownerReferences:
+    {{ include "owner" . | indent 4 }}
+data:
+{{- .Values.workdir.cm.data | b64dec | fromJson | toYaml | nindent 2 }}
 {{- end }}

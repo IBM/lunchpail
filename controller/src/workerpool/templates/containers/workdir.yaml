@@ -1,16 +1,15 @@
 {{- define "containers/workdir" }}
+{{- if and .Values.workdir.repo .Values.workdir.pat.user .Values.workdir.pat.secret }}
 - name: workdir
-  image: rclone/rclone:1
+  image: {{ print .Values.lunchpail.image.registry "/" .Values.lunchpail.image.repo "/jaas-workdir-component:" .Values.lunchpail.image.version }}
   volumeMounts:
-    {{ include "rclone/volumeMount" . | indent 4 }}
     {{ include "workdir/volumeMount" . | indent 4 }}
   env:
-    - name: REMOTE_WORKDIR
-      value: {{ print "s3:workdir/" (.Values.subPath | replace "/." "") }}
-  command:
-    - /bin/sh
-    - -c
-    - |
-      rclone --config /tmp/rclone.conf sync $REMOTE_WORKDIR /workdir
-      find /workdir -exec chmod +x {} \;
+    {{ include "workdir/env" . | indent 4 }}
+    - name: REPO
+      value: {{ .Values.workdir.repo }}
+  envFrom:
+    - secretRef:
+        name: {{ print .Release.Name "-workdir" }}
+{{- end }}
 {{- end }}

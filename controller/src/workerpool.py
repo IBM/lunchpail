@@ -7,7 +7,7 @@ import subprocess
 from kopf import PermanentError, TemporaryError
 from kubernetes.client.rest import ApiException
 
-from clone import clone
+from clone import clonev2
 from status import set_status, add_error_condition, set_status_after_clone_failure
 from run_id import alloc_run_id
 from find_run import find_run
@@ -83,12 +83,8 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         
         run_id, workdir = alloc_run_id("workerpool", name)
 
-        try:
-            cloned_subPath = clone(v1Api, customApi, application, name, namespace, workdir)
-        except Exception as e:
-            set_status_after_clone_failure(customApi, name, namespace, e, patch)
-
-        subPath = os.path.join(run_id, cloned_subPath)
+        repo, workdir_pat_user_b64, workdir_pat_secret_b64, cm_data, cm_mount_path = clonev2(v1Api, customApi, application, namespace)
+        subPath = ""
 
         count, cpu, memory, gpu = run_size(customApi, spec, application)
         logging.info(f"Sizeof WorkerPool name={name} namespace={namespace} count={count} cpu={cpu} memory={memory} gpu={gpu}")
@@ -96,7 +92,7 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         run_name = run["metadata"]["name"]
         application_name = application["metadata"]["name"]
 
-        logging.info(f"About to call out to WorkerPool launcher for run={run_name} envFroms={envFroms}")
+        logging.info(f"About to call out to WorkerPool launcher for run={run_name} envFroms={envFroms} repo={repo} cm_data={cm_data}")
         try:
             out = subprocess.run([
                 "./workerpool.sh",
@@ -123,6 +119,11 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
                 base64.b64encode(json.dumps(envFroms).encode('ascii')) if envFroms is not None and len(envFroms) > 0 else "",
                 base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
                 base64.b64encode(json.dumps(application['spec']['containerSecurityContext']).encode('ascii')) if 'containerSecurityContext' in application['spec'] else "",
+                repo,
+                workdir_pat_user_b64,
+                workdir_pat_secret_b64,
+                base64.b64encode(json.dumps(cm_data).encode('ascii')) if cm_data is not None else "",
+                cm_mount_path if cm_mount_path is not None else "",
             ], capture_output=True)
             logging.info(f"WorkerPool callout done for name={name} with returncode={out.returncode}")
         except Exception as e:

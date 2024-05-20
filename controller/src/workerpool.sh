@@ -29,6 +29,11 @@ volumeMounts="${20}"
 envFroms="${21}"
 securityContext="${22}"
 containerSecurityContext="${23}"
+workdir_repo="${24}"
+workdir_pat_user="${25}"
+workdir_pat_secret="${26}"
+workdir_cm_data="${27}"
+workdir_cm_mount_path="${28}"
 
 # Helm's dry-run output will go to this temporary file
 DRY=$(mktemp)
@@ -79,6 +84,11 @@ helm install --dry-run --debug $run_id "$SCRIPTDIR"/workerpool/ -n ${namespace} 
      --set rbac.serviceaccount="$USER_SERVICE_ACCOUNT" \
      --set securityContext=$securityContext \
      --set containerSecurityContext=$containerSecurityContext \
+     --set workdir.repo=$workdir_repo \
+     --set workdir.pat.user=$workdir_pat_user \
+     --set workdir.pat.secret=$workdir_pat_secret \
+     --set workdir.cm.data=$workdir_cm_data \
+     --set workdir.cm.mount_path=$workdir_cm_mount_path \
     | awk '$0~"Source: " {on=1} on==2 { print $0 } on==1{on=2}' \
           > $DRY
 
