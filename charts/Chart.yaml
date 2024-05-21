@@ -7,7 +7,7 @@ type: application
 version: 0.0.1
 
 # Platform version.
-appVersion: 0.18.0
+appVersion: 0.18.1
 
 dependencies:
 # - name: gpu-operator
