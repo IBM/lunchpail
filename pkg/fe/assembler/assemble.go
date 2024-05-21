@@ -70,6 +70,6 @@ func Assemble(sourcePath string, opts Options) error {
 	} else if err := lunchpail.DropAppBreadcrumb(appname, lunchpailStageDir); err != nil {
 		return err
 	} else {
-		return compile(lunchpailStageDir, opts.Name)
+		return emit(lunchpailStageDir, opts.Name)
 	}
 }

@@ -54,7 +54,7 @@ func gobuild(dir, name string) error {
 	return nil
 }
 
-func compile(dir, name string) error {
+func emit(dir, name string) error {
 	fmt.Fprint(os.Stderr, "Generating application binary...")
 	if err := goget(dir); err != nil {
 		return err
