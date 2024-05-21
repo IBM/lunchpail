@@ -8,7 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/term"
 	"lunchpail.io/pkg/shrinkwrap/runs"
-	"lunchpail.io/pkg/views"
+	"lunchpail.io/pkg/ui/colors"
 )
 
 // Options to our status UI component
@@ -142,8 +142,8 @@ func UI(runnameIn string, opts Options) error {
 
 	s := table.DefaultStyles()
 	s.Selected = s.Selected.
-		Foreground(views.SelectedForeground).
-		Background(views.SelectedBackground).
+		Foreground(colors.SelectedForeground).
+		Background(colors.SelectedBackground).
 		Bold(false)
 	s.Cell = s.Cell.
 		Padding(0, 0)

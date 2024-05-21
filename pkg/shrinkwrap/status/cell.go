@@ -1,26 +1,26 @@
 package status
 
 import (
-	"lunchpail.io/pkg/views"
+	"lunchpail.io/pkg/ui/colors"
 	"strings"
 )
 
 func statusCell(status WorkerStatus) string {
-	style := views.Yellow
+	style := colors.Yellow
 	cell := "◔"
 
 	switch status {
 	case Running:
-		style = views.Green
+		style = colors.Green
 		cell = "●"
 	case Terminating:
-		style = views.Gray
+		style = colors.Gray
 		cell = "◌"
 	case Failed:
-		style = views.Red
+		style = colors.Red
 		cell = "◉"
 	case Succeeded:
-		style = views.Cyan
+		style = colors.Cyan
 		cell = "○"
 	}
 

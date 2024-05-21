@@ -3,7 +3,7 @@ package cpu
 import (
 	"fmt"
 	"lunchpail.io/pkg/shrinkwrap/runs"
-	"lunchpail.io/pkg/views"
+	"lunchpail.io/pkg/ui/colors"
 )
 
 type CpuOptions struct {
@@ -30,7 +30,7 @@ func UI(runnameIn string, opts CpuOptions) error {
 
 		for _, worker := range model.Sorted() {
 			util := fmt.Sprintf("%8.2f%%", worker.CpuUtil)
-			fmt.Printf("%s %s %s\n", views.Component(worker.Component), views.Bold.Render(util), worker.Name)
+			fmt.Printf("%s %s %s\n", colors.Component(worker.Component), colors.Bold.Render(util), worker.Name)
 		}
 	}
 

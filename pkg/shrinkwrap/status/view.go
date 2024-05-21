@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/table"
-	"lunchpail.io/pkg/views"
+	"lunchpail.io/pkg/ui/colors"
 )
 
 func padRight(str string, availableSpace int) string {
@@ -18,7 +18,7 @@ func cellt(N, largestN, maxcells int, box Box) string {
 	Nstr := strconv.Itoa(N)
 	Nstrp := padRight(Nstr, len(strconv.Itoa(largestN))) // padded
 	Ncells := min(N, maxcells)
-	return views.Brown.Render(Nstrp + " " + taskCells(Ncells, box))
+	return colors.Brown.Render(Nstrp + " " + taskCells(Ncells, box))
 }
 
 func cellf(num, denom int, status WorkerStatus) string {
@@ -60,11 +60,11 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 	timestamp := model.last()
 
 	rows := []statusRow{
-		row("App", views.Blue.Render(model.AppName)),
-		row("Run", views.Blue.Render(model.RunName)),
+		row("App", colors.Blue.Render(model.AppName)),
+		row("Run", colors.Blue.Render(model.RunName)),
 		row("├─ Runtime", cellf(runningRuntime+runningWorkStealer, totalRuntime+totalWorkStealer, model.Runtime)),
-		row("├─ "+views.Bold.Render("Dispatcher"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
-		row("├─ "+views.Bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)),
+		row("├─ "+colors.Bold.Render("Dispatcher"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
+		row("├─ "+colors.Bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)),
 	}
 
 	if !summary && runningInternalS3 > 0 {
@@ -90,7 +90,7 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 		}
 	}
 
-	rows = append(rows, row(views.Bold.Render("└─ Pools"), views.Blue.Render(strconv.Itoa(model.numPools()))))
+	rows = append(rows, row(colors.Bold.Render("└─ Pools"), colors.Blue.Render(strconv.Itoa(model.numPools()))))
 
 	for poolIdx, pool := range model.Pools {
 		runningWorkers, totalWorkers := pool.workersSplit()
