@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	k8s "lunchpail.io/pkg/kubernetes"
+	k8s "lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/lunchpail"
 	"strings"
 	"time"

@@ -6,7 +6,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
-	"lunchpail.io/pkg/kubernetes"
+	"lunchpail.io/pkg/be/kubernetes"
 )
 
 func startWatching(app, run, namespace string) (watch.Interface, watch.Interface, error) {

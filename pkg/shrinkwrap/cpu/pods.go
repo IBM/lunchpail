@@ -13,7 +13,7 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
-	"lunchpail.io/pkg/kubernetes"
+	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/lunchpail"
 )
 
