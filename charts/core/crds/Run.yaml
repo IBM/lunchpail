@@ -34,8 +34,6 @@ spec:
                     fromRole:
                       type: string
                       enum: [worker,dispatcher]
-                options:
-                  type: string
                 env:
                   type: object
                   description: |

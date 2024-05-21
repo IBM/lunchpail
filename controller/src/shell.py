@@ -9,11 +9,11 @@ from clone import clonev2
 from run_id import alloc_run_id
 from datasets import add_dataset
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch):
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, run_size_config, volumes, volumeMounts, envFroms, patch):
     logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name}")
 
     image = application['spec']['image']
-    command = f"{application['spec']['command']} {command_line_options}"
+    command = application['spec']['command']
 
     run_id, workdir = alloc_run_id("shell", name)
 

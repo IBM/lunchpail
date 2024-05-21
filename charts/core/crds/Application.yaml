@@ -71,8 +71,6 @@ spec:
                     type: string
                 command:
                   type: string
-                options:
-                  type: string
                 minSize:
                   type: string
                   enum: [xxs,xs,sm,md,lg,xl,xxl,auto]
