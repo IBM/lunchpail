@@ -3,7 +3,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"log"
-	"lunchpail.io/pkg/assembler"
+	"lunchpail.io/pkg/fe/assembler"
 )
 
 func newAssembleCmd() *cobra.Command {
