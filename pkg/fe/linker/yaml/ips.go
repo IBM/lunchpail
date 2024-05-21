@@ -1,4 +1,4 @@
-package shrinkwrap
+package yaml
 
 import (
 	b64 "encoding/base64"
@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func ImagePullSecret(imagePullSecret string) (string, string, error) {
+func imagePullSecret(imagePullSecret string) (string, string, error) {
 	imagePullSecretName := ""
 	dockerconfigjson := ""
 	if imagePullSecret != "" {

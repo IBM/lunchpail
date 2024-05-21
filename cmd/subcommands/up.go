@@ -3,6 +3,7 @@ package subcommands
 import (
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/shrinkwrap"
+	"lunchpail.io/pkg/fe/linker/yaml"
 
 	"github.com/spf13/cobra"
 )
@@ -45,7 +46,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return shrinkwrap.Up(shrinkwrap.UpOptions{shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag}, watchFlag})
+		return shrinkwrap.Up(shrinkwrap.UpOptions{yaml.GenerateOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag}, watchFlag})
 	}
 
 	return cmd

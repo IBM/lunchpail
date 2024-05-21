@@ -1,4 +1,4 @@
-package shrinkwrap
+package util
 
 import (
 	"archive/tar"

@@ -1,4 +1,4 @@
-package shrinkwrap
+package app
 
 import (
 	"fmt"
@@ -11,12 +11,13 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/util"
 )
 
 func stageAppTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := Expand(dir, appTemplate, "charts.tar.gz", true); err != nil {
+	} else if err := util.Expand(dir, appTemplate, "charts.tar.gz", true); err != nil {
 		return "", err
 	} else {
 		return dir, nil
@@ -76,7 +77,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 	if _, err := os.Stat(appHelmignore); err == nil {
 		fmt.Fprintf(os.Stderr, "Including application helmignore\n")
 		templateHelmignore := filepath.Join(templatePath, ".helmignore")
-		if err := appendFile(templateHelmignore, appHelmignore); err != nil {
+		if err := util.AppendFile(templateHelmignore, appHelmignore); err != nil {
 			return err
 		}
 	}
@@ -132,7 +133,7 @@ type StageOptions struct {
 }
 
 // return (templatePath, error)
-func Stage(appname, sourcePath string, opts StageOptions) (string, error) {
+func StagePath(appname, sourcePath string, opts StageOptions) (string, error) {
 	templatePath, err := stageAppTemplate()
 	if err != nil {
 		return "", err
@@ -148,9 +149,9 @@ func Stage(appname, sourcePath string, opts StageOptions) (string, error) {
 }
 
 // return (appname, templatePath, error)
-func stageFromAssembled(opts StageOptions) (string, string, error) {
+func Stage(opts StageOptions) (string, string, error) {
 	appname := lunchpail.AssembledAppName()
-	templateDir, err := Stage(appname, "", opts)
+	templateDir, err := StagePath(appname, "", opts)
 
 	return appname, templateDir, err
 }

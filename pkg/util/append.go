@@ -1,11 +1,11 @@
-package shrinkwrap
+package util
 
 import (
 	"io"
 	"os"
 )
 
-func appendFile(dstPath, srcPath string) error {
+func AppendFile(dstPath, srcPath string) error {
 	dst, err := os.OpenFile(dstPath, os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return err

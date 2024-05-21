@@ -1,27 +1,20 @@
-package shrinkwrap
+package yaml
 
 import (
-	"context"
-	"embed"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/kirsle/configdir"
-	"github.com/mittwald/go-helm-client"
-	"github.com/mittwald/go-helm-client/values"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/shrinkwrap/queue"
 )
 
-type AppOptions struct {
+type GenerateOptions struct {
 	Namespace          string
 	ClusterIsOpenShift bool
 	ImagePullSecret    string
@@ -32,10 +25,6 @@ type AppOptions struct {
 	DockerHost         string
 	DryRun             bool
 }
-
-//go:generate /bin/sh -c "[ -d ../../charts ] && tar --exclude '*~' --exclude '*README.md' -C ../../charts -zcf charts.tar.gz . || exit 0"
-//go:embed charts.tar.gz
-var appTemplate embed.FS
 
 // truncate `str` to have at most `max` length
 func truncate(str string, max int) string {
@@ -84,7 +73,7 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 	}
 	if err := cmd.Wait(); err != nil {
 		if verbose {
-			fmt.Println("Auto-Injecting WorkStealer initiation")
+			fmt.Fprintln(os.Stderr, "Auto-Injecting WorkStealer initiation")
 		}
 		sets = append(sets, "autorun="+runname)
 	}
@@ -120,14 +109,14 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 	}
 }
 
-func generateAppYaml(appname, namespace, templatePath string, wait bool, opts AppOptions) (string, error) {
+func Generate(appname, namespace, templatePath string, opts GenerateOptions) (string, string, []string, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
 	if err != nil {
-		return "", err
+		return "", "", []string{}, err
 	} else {
 		// TODO here... how do we determine that boolean values were unset?
 		if opts.Namespace == "" {
@@ -152,7 +141,7 @@ func generateAppYaml(appname, namespace, templatePath string, wait bool, opts Ap
 
 	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
 	if err != nil {
-		return "", err
+		return "", "", []string{}, err
 	} else {
 		opts.OverrideValues = append(opts.OverrideValues, extraValues...)
 
@@ -168,14 +157,14 @@ func generateAppYaml(appname, namespace, templatePath string, wait bool, opts Ap
 		clusterType = "oc"
 	}
 
-	imagePullSecretName, dockerconfigjson, ipsErr := ImagePullSecret(opts.ImagePullSecret)
+	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.ImagePullSecret)
 	if ipsErr != nil {
-		return "", ipsErr
+		return "", "", []string{}, ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", err
+		return "", "", []string{}, err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -189,7 +178,7 @@ func generateAppYaml(appname, namespace, templatePath string, wait bool, opts Ap
 
 	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
 	if err != nil {
-		return "", err
+		return "", "", []string{}, err
 	}
 
 	yaml := fmt.Sprintf(`
@@ -287,54 +276,5 @@ s3:
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
 	}
 
-	chartSpec := helmclient.ChartSpec{
-		ReleaseName:      runname,
-		ChartName:        templatePath,
-		Namespace:        namespace,
-		Wait:             wait,
-		UpgradeCRDs:      true,
-		CreateNamespace:  !opts.DryRun,
-		DependencyUpdate: true,
-		Timeout:          360 * time.Second,
-		ValuesYaml:       yaml,
-		ValuesOptions: values.Options{
-			Values: opts.OverrideValues,
-		},
-	}
-
-	helmCacheDir := configdir.LocalCache("helm")
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
-	}
-
-	outputOfHelmCmd := ioutil.Discard
-	if opts.Verbose {
-		outputOfHelmCmd = os.Stdout
-	}
-
-	helmClient, newClientErr := helmclient.New(&helmclient.Options{Namespace: namespace,
-		Output:          outputOfHelmCmd,
-		RepositoryCache: helmCacheDir,
-	})
-	if newClientErr != nil {
-		return "", newClientErr
-	}
-
-	if opts.DryRun {
-		if res, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{}); err != nil {
-			return "", err
-		} else {
-			fmt.Println(string(res))
-		}
-	} else if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
-		return "", err
-	}
-
-	if !opts.Verbose {
-		defer os.RemoveAll(templatePath)
-	} else {
-		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
-	}
-
-	return runname, nil
+	return runname, yaml, opts.OverrideValues, nil
 }

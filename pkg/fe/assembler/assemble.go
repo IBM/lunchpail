@@ -4,8 +4,9 @@ import (
 	"embed"
 	"fmt"
 	"io/ioutil"
+	"lunchpail.io/pkg/fe/app"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap"
+	"lunchpail.io/pkg/util"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,7 +19,7 @@ var lunchpailSource embed.FS
 func stageLunchpail() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := shrinkwrap.Expand(dir, lunchpailSource, "lunchpail-source.tar.gz", false); err != nil {
+	} else if err := util.Expand(dir, lunchpailSource, "lunchpail-source.tar.gz", false); err != nil {
 		return "", err
 	} else {
 		return dir, nil
@@ -26,7 +27,7 @@ func stageLunchpail() (string, error) {
 }
 
 func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string) error {
-	cmd := exec.Command("tar", "zcf", filepath.Join(lunchpailStageDir, "pkg", "shrinkwrap", "charts.tar.gz"), "-C", appTemplatePath, ".")
+	cmd := exec.Command("tar", "zcf", filepath.Join(lunchpailStageDir, "pkg/fe/app", "charts.tar.gz"), "-C", appTemplatePath, ".")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -61,7 +62,7 @@ func Assemble(sourcePath string, opts Options) error {
 		fmt.Fprintf(os.Stderr, "Using appname=%s\n", appname)
 	}
 
-	if appTemplatePath, err := shrinkwrap.Stage(appname, sourcePath, shrinkwrap.StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, err := app.StagePath(appname, sourcePath, app.StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
 	} else if err := lunchpail.SaveAppOptions(appTemplatePath, opts.AppOptions); err != nil {
 		return err
