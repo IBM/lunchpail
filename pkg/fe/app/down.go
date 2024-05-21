@@ -1,4 +1,4 @@
-package shrinkwrap
+package app
 
 import (
 	"fmt"

@@ -11,7 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/queue"
+	"lunchpail.io/pkg/fe/linker/yaml/queue"
 )
 
 type GenerateOptions struct {

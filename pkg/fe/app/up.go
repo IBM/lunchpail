@@ -1,7 +1,6 @@
-package shrinkwrap
+package app
 
 import (
-	"lunchpail.io/pkg/fe/app"
 	"lunchpail.io/pkg/fe/linker/yaml"
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/shrinkwrap/status"
@@ -13,7 +12,7 @@ type UpOptions struct {
 }
 
 func Up(opts UpOptions) error {
-	appname, templatePath, err := app.Stage(app.StageOptions{"", opts.Verbose})
+	appname, templatePath, err := Stage(StageOptions{"", opts.Verbose})
 	if err != nil {
 		return err
 	}

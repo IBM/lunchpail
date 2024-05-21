@@ -2,7 +2,7 @@ package subcommands
 
 import (
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap"
+	"lunchpail.io/pkg/fe/app"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ func newDownCmd() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return shrinkwrap.Down(maybeRun, shrinkwrap.DownOptions{namespaceFlag, verboseFlag})
+			return app.Down(maybeRun, app.DownOptions{namespaceFlag, verboseFlag})
 		},
 	}
 
