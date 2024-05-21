@@ -7,7 +7,7 @@ workingDir: /workdir
   mountPath: /workdir
 {{- if .Values.workdir.cm.data }}
 - name: workdir-configmap
-  mountPath: {{ print "/workdir/" .Values.workdir.cm.mount_path }}
+  mountPath: /workdir-code
 {{- end }}
 {{- end }}
 
