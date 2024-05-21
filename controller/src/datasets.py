@@ -1,10 +1,3 @@
-import re
-import logging
-from typing import List, Optional
-from kopf import PermanentError
-
-from run_size import sizeof
-
 # add the given `dataset` to `envFroms` and return it
 def add_dataset(dataset: str, envFroms):
     if envFroms is None:
@@ -19,10 +12,7 @@ def add_dataset(dataset: str, envFroms):
 
     return envFroms
 
-def prepare_dataset_labels_for_workerpool(customApi, queue_dataset: str, namespace: str, envFroms):
-    return add_dataset(queue_dataset, envFroms)
-
-def prepare_dataset_labels2(customApi, run_name: str, run_namespace: str, run_spec, application):
+def prepare_dataset_labels(application):
     envFroms = []
     volumes = []
     volumeMounts = []
@@ -66,6 +56,3 @@ def prepare_dataset_labels2(customApi, run_name: str, run_namespace: str, run_sp
         return None, None, None
     else:
         return volumes, volumeMounts, envFroms
-
-def prepare_dataset_labels(customApi, run_name: str, run_namespace: str, run_spec, application):
-    return prepare_dataset_labels2(customApi, run_name, run_namespace, run_spec, application)

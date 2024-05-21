@@ -6,7 +6,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 from run_size import run_size
-from datasets import prepare_dataset_labels, prepare_dataset_labels2, prepare_dataset_labels_for_workerpool
+from datasets import prepare_dataset_labels, add_dataset
 
 from shell import create_run_shell
 
@@ -33,7 +33,7 @@ def create_workdispatcher_kopf(name: str, namespace: str, uid: str, annotations,
         logging.info(f"WorkDispatcher creation for run={run_name} uid={uid}")
 
         run, application, queue_dataset = fetch_run_and_application_and_queue_dataset(v1Api, customApi, run_name, run_namespace)
-        envFroms = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, [])
+        envFroms = add_dataset(queue_dataset, [])
 
         # we will then set the status below in the pod status watcher (look for 'component(labels) == "workdispatcher"')
         if spec['method'] == "tasksimulator" or spec['method'] == "parametersweep":
@@ -71,8 +71,8 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
         # pool's preference to take priority here; but any datasets
         # the application needs that the pool has no opinions on, we
         # will use the config from the application
-        volumes, volumeMounts, envFroms = prepare_dataset_labels2(customApi, name, namespace, spec, application)
-        envFroms = prepare_dataset_labels_for_workerpool(customApi, queue_dataset, namespace, envFroms)
+        volumes, volumeMounts, envFroms = prepare_dataset_labels(application)
+        envFroms = add_dataset(queue_dataset, envFroms)
 
         create_workerpool(v1Api, customApi, application, run, namespace, uid, name, spec, queue_dataset, volumes, volumeMounts, envFroms, patch)
     except kopf.TemporaryError as e:
@@ -113,7 +113,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         else:
             command_line_options = ""
 
-        volumes, volumeMounts, envFroms = prepare_dataset_labels(customApi, name, namespace, spec, application)
+        volumes, volumeMounts, envFroms = prepare_dataset_labels(application)
 
         if api == "shell":
             head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, component, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
