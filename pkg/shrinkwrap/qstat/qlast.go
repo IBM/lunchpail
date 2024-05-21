@@ -2,7 +2,7 @@ package qstat
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/runs"
+	"lunchpail.io/pkg/shrinkwrap/runs"
 	"strconv"
 	"strings"
 )

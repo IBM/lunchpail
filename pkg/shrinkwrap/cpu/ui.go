@@ -2,7 +2,7 @@ package cpu
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/runs"
+	"lunchpail.io/pkg/shrinkwrap/runs"
 	"lunchpail.io/pkg/views"
 )
 

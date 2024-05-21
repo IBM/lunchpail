@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"golang.org/x/term"
-	"lunchpail.io/pkg/runs"
+	"lunchpail.io/pkg/shrinkwrap/runs"
 	"os"
 	"strconv"
 )
