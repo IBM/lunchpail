@@ -83,7 +83,6 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
         run_id, workdir = alloc_run_id("workerpool", name)
 
         repo, workdir_pat_user_b64, workdir_pat_secret_b64, cm_data, cm_mount_path = clonev2(v1Api, customApi, application, namespace)
-        subPath = ""
 
         count, cpu, memory, gpu = run_size(customApi, spec, application)
         logging.info(f"Sizeof WorkerPool name={name} namespace={namespace} count={count} cpu={cpu} memory={memory} gpu={gpu}")
@@ -101,7 +100,6 @@ def create_workerpool(v1Api, customApi, application, run, namespace: str, uid: s
                 f"{run_name}-{name.replace(application_name + '-', '')}"[:53].rstrip("-"), # name of worker pods/deployment = run_name-pool_name
                 image,
                 command,
-                subPath,
                 application_name, # part-of label
                 run_name,
                 queue_dataset,

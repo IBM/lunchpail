@@ -9,8 +9,8 @@ from clone import clonev2
 from run_id import alloc_run_id
 from datasets import add_dataset
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, part_of: str, component: str, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch):
-    logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name} part_of={part_of}")
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch):
+    logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name}")
 
     image = application['spec']['image']
     command = f"{application['spec']['command']} {command_line_options}"
@@ -18,8 +18,6 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
     run_id, workdir = alloc_run_id("shell", name)
 
     repo, workdir_pat_user_b64, workdir_pat_secret_b64, cm_data, cm_mount_path = clonev2(v1Api, customApi, application, namespace)
-    # logging.info(f"clone info for name={name}: repo={repo} cm_data={cm_data}")
-    subPath = "" # unused
 
     gpu = run_size_config['gpu']
     cpu = run_size_config['cpu']
@@ -42,6 +40,9 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
         queue_dataset = queue_spec['name']
         envFroms = add_dataset(queue_dataset, envFroms)
 
+    part_of = application['metadata']['name']
+    component = "shell"
+
     try:
         shell_out = subprocess.run([
             "./shell.sh",
@@ -52,7 +53,6 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             run_id,
             image,
             command,
-            subPath,
             str(nWorkers),
             str(cpu),
             str(memory),
@@ -64,7 +64,7 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
             ("{" + ",".join(map(str, application["spec"]["expose"]))+ "}") if "expose" in application["spec"] and len(application["spec"]["expose"]) > 0 else "",
             base64.b64encode(json.dumps(application['spec']['securityContext']).encode('ascii')) if 'securityContext' in application['spec'] else "",
             base64.b64encode(json.dumps(application['spec']['containerSecurityContext']).encode('ascii')) if 'containerSecurityContext' in application['spec'] else "",
-            component if component is not None else "shell",
+            component,
             enclosing_run,
             repo,
             workdir_pat_user_b64,

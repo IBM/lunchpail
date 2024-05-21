@@ -90,11 +90,6 @@ def create_workerpool_kopf(name: str, namespace: str, uid: str, annotations, lab
 @kopf.on.create('runs.lunchpail.io')
 def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, **kwargs):
     try:
-        # what top-level run is this part of? this could be this very run,
-        # if it is a top-level run...
-        part_of = labels['app.kubernetes.io/part-of'] if 'app.kubernetes.io/part-of' in labels else name
-        component = labels['app.kubernetes.io/component'] if 'app.kubernetes.io/component' in labels else None
-
         try:
             application = fetch_application_for_run(customApi, body)
             api = application['spec']['api']
@@ -116,7 +111,7 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         volumes, volumeMounts, envFroms = prepare_dataset_labels(application)
 
         if api == "shell":
-            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, part_of, component, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
+            head_pod_name = create_run_shell(v1Api, customApi, application, namespace, uid, name, spec, command_line_options, run_size_config, volumes, volumeMounts, envFroms, patch)
         elif api == "workqueue":
             pass
         else:
