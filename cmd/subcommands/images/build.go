@@ -2,8 +2,8 @@ package images
 
 import (
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/images"
-	"lunchpail.io/pkg/images/build"
+	"lunchpail.io/pkg/lunchpail/images"
+	"lunchpail.io/pkg/lunchpail/images/build"
 )
 
 func NewBuildCmd() *cobra.Command {

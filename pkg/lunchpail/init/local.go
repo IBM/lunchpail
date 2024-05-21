@@ -3,8 +3,8 @@ package init
 import (
 	"context"
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/images"
-	"lunchpail.io/pkg/images/build"
+	"lunchpail.io/pkg/lunchpail/images"
+	"lunchpail.io/pkg/lunchpail/images/build"
 )
 
 type InitLocalOptions struct {

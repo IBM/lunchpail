@@ -2,7 +2,7 @@ package init
 
 import (
 	"github.com/spf13/cobra"
-	initialize "lunchpail.io/pkg/init"
+	initialize "lunchpail.io/pkg/lunchpail/init"
 )
 
 func NewInitLocalCmd() *cobra.Command {

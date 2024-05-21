@@ -3,7 +3,7 @@ package images
 import (
 	"context"
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/images/build"
+	"lunchpail.io/pkg/lunchpail/images/build"
 )
 
 func Build(opts build.BuildOptions) error {
