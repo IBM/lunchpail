@@ -3,7 +3,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/info"
+	"lunchpail.io/pkg/observe/info"
 )
 
 func newInfoCommand() *cobra.Command {

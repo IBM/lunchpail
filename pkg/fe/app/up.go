@@ -3,7 +3,7 @@ package app
 import (
 	"lunchpail.io/pkg/fe/linker/yaml"
 	"lunchpail.io/pkg/fe/linker/helm"
-	"lunchpail.io/pkg/shrinkwrap/status"
+	"lunchpail.io/pkg/observe/status"
 )
 
 type UpOptions struct {

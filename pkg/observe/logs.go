@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/runs"
+	"lunchpail.io/pkg/observe/runs"
 )
 
 type LogsOptions struct {

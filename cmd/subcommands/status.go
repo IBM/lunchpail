@@ -3,7 +3,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/status"
+	"lunchpail.io/pkg/observe/status"
 )
 
 func newStatusCommand() *cobra.Command {

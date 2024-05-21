@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/qstat"
+	"lunchpail.io/pkg/observe/qstat"
 )
 
 func newQlastCommand() *cobra.Command {

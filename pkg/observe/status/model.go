@@ -4,8 +4,8 @@ import (
 	"container/ring"
 	"slices"
 
-	"lunchpail.io/pkg/shrinkwrap/cpu"
-	"lunchpail.io/pkg/shrinkwrap/qstat"
+	"lunchpail.io/pkg/observe/cpu"
+	"lunchpail.io/pkg/observe/qstat"
 
 	"context"
 	"fmt"

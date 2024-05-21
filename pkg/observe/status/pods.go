@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/qstat"
+	"lunchpail.io/pkg/observe/qstat"
 )
 
 func statusFromPod(pod *v1.Pod) WorkerStatus {

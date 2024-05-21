@@ -4,8 +4,8 @@ import (
 	"container/ring"
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/cpu"
-	"lunchpail.io/pkg/shrinkwrap/qstat"
+	"lunchpail.io/pkg/observe/cpu"
+	"lunchpail.io/pkg/observe/qstat"
 )
 
 func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, interval int) (chan Model, *errgroup.Group, error) {

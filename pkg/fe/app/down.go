@@ -10,7 +10,7 @@ import (
 
 	"github.com/mittwald/go-helm-client"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/runs"
+	"lunchpail.io/pkg/observe/runs"
 )
 
 type DownOptions struct {

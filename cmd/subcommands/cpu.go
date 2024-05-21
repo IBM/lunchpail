@@ -1,7 +1,7 @@
 package subcommands
 
 import (
-	"lunchpail.io/pkg/shrinkwrap/cpu"
+	"lunchpail.io/pkg/observe/cpu"
 
 	"github.com/spf13/cobra"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap"
+	"lunchpail.io/pkg/observe"
 )
 
 func newLogsCommand() *cobra.Command {

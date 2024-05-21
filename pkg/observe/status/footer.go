@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/dustin/go-humanize"
 	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/shrinkwrap/cpu"
+	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/ui/colors"
 )
 
