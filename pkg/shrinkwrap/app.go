@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -32,16 +31,11 @@ type AppOptions struct {
 	HasGpuSupport      bool
 	DockerHost         string
 	DryRun             bool
-	Scripts            string
 }
 
 //go:generate /bin/sh -c "[ -d ../../charts ] && tar --exclude '*~' --exclude '*README.md' -C ../../charts -zcf charts.tar.gz . || exit 0"
 //go:embed charts.tar.gz
 var appTemplate embed.FS
-
-//go:generate /bin/sh -c "tar --exclude '*DS_Store*' --exclude '*~' --exclude '*README.md' -C ./scripts -zcf app-scripts.tar.gz ."
-//go:embed app-scripts.tar.gz
-var scripts embed.FS
 
 // truncate `str` to have at most `max` length
 func truncate(str string, max int) string {
@@ -336,14 +330,6 @@ s3:
 		return "", err
 	}
 
-	if opts.Scripts != "" {
-		if err := Expand(opts.Scripts, scripts, "app-scripts.tar.gz", false); err != nil {
-			return "", err
-		} else if err := updateScripts(opts.Scripts, appname, runname, namespace, systemNamespace, opts.Verbose); err != nil {
-			return "", err
-		}
-	}
-
 	if !opts.Verbose {
 		defer os.RemoveAll(templatePath)
 	} else {
@@ -351,25 +337,4 @@ s3:
 	}
 
 	return runname, nil
-}
-
-// hack, we still use sed here to update the script templates
-func updateScripts(path, appname, runname, userNamespace, systemNamespace string, verbose bool) error {
-	return filepath.Walk(
-		path,
-		func(path string, info fs.FileInfo, err error) error {
-			if !info.IsDir() && filepath.Ext(path) != ".namespace" && filepath.Ext(path) != "yml" && filepath.Ext(path) != ".tmp" && filepath.Ext(path) != ".DS_Store" {
-				// TODO: ugh sed
-				sed := "cat " + path + " | sed 's#the_lunchpail_app#" + appname + "#g' | sed 's#the_lunchpail_run#" + runname + "#g' | sed 's#jaas-user#" + userNamespace + "#g' | sed 's#jaas-system#" + systemNamespace + "#g' > " + path + ".tmp && mv " + path + ".tmp " + path + " && chmod +x " + path
-				cmd := exec.Command("sh", "-c", sed)
-				if verbose {
-					cmd.Stdout = os.Stdout
-				}
-				cmd.Stderr = os.Stderr
-				if err := cmd.Run(); err != nil {
-					return err
-				}
-			}
-			return nil
-		})
 }

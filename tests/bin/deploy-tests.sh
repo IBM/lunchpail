@@ -70,10 +70,8 @@ testapp="$TARGET"/test
                --set github_ibm_com.secret.pat=BOGUSBOGUSBOGUS \
                $2
 
-mkdir -p "$TARGET"/scripts
 $testapp up \
          -v \
-         --scripts "$TARGET"/scripts \
          $QUEUE \
          $APP \
          $GPU \

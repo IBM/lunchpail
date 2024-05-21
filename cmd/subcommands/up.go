@@ -26,7 +26,6 @@ func newUpCmd() *cobra.Command {
 	var verboseFlag bool
 	var dryrunFlag bool
 	var watchFlag bool
-	var scriptsFlag string
 
 	var cmd = &cobra.Command{
 		Use:   "up",
@@ -39,7 +38,6 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "After deployment, watch for status updates")
-	cmd.Flags().StringVarP(&scriptsFlag, "scripts", "", "", "Output helper scripts to this directory")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
@@ -47,7 +45,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return shrinkwrap.Up(shrinkwrap.UpOptions{shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag, scriptsFlag}, watchFlag})
+		return shrinkwrap.Up(shrinkwrap.UpOptions{shrinkwrap.AppOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, dryrunFlag}, watchFlag})
 	}
 
 	return cmd
