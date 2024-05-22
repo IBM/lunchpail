@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/table"
-	"lunchpail.io/pkg/ui/colors"
+	"lunchpail.io/pkg/observe/colors"
 )
 
 func padRight(str string, availableSpace int) string {

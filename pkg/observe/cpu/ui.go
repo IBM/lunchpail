@@ -2,8 +2,8 @@ package cpu
 
 import (
 	"fmt"
+	"lunchpail.io/pkg/observe/colors"
 	"lunchpail.io/pkg/observe/runs"
-	"lunchpail.io/pkg/ui/colors"
 )
 
 type CpuOptions struct {

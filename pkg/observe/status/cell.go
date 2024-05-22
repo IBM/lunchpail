@@ -1,7 +1,7 @@
 package status
 
 import (
-	"lunchpail.io/pkg/ui/colors"
+	"lunchpail.io/pkg/observe/colors"
 	"strings"
 )
 

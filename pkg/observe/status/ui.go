@@ -7,8 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/term"
+	"lunchpail.io/pkg/observe/colors"
 	"lunchpail.io/pkg/observe/runs"
-	"lunchpail.io/pkg/ui/colors"
 )
 
 // Options to our status UI component
