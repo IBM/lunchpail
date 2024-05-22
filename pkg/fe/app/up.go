@@ -1,43 +1,25 @@
 package app
 
 import (
-	"lunchpail.io/pkg/fe/linker/yaml"
-	"lunchpail.io/pkg/fe/linker/helm"
+	"fmt"
+	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/observe/status"
 )
 
-type UpOptions struct {
-	yaml.GenerateOptions
-	Watch bool
-}
+type UpOptions = linker.LinkOptions
 
 func Up(opts UpOptions) error {
-	appname, templatePath, err := Stage(StageOptions{"", opts.Verbose})
-	if err != nil {
+	if linked, err := linker.Link(opts); err != nil {
 		return err
-	}
-
-	namespace := opts.Namespace
-	if namespace == "" {
-		namespace = appname
-	}
-
-	// If we were asked to watch, then the status.UI will do the
-	// waiting for us. Otherwise, ask the helm client to wait for
-	// readiness.
-	wait := !opts.Watch
-
-	runname, yaml, overrideValues, err := yaml.Generate(appname, namespace, templatePath, opts.GenerateOptions)
-	if err != nil {
-		return err
-	}
-
-	if err := helm.Install(runname, namespace, templatePath, yaml, helm.InstallOptions{overrideValues, wait, opts.DryRun, opts.Verbose}); err != nil {
-		return err
-	}
-
-	if opts.Watch && !opts.GenerateOptions.DryRun {
-		return status.UI(runname, status.Options{namespace, true, opts.Verbose, false, 500, 5})
+	} else if opts.DryRun {
+		fmt.Printf(linked.Yaml)
+	} else {
+		if err := kubernetes.Apply(linked.Yaml, linked.Namespace); err != nil {
+			return err
+		} else if opts.Watch {
+			return status.UI(linked.Runname, status.Options{linked.Namespace, true, opts.Verbose, false, 500, 5})
+		}
 	}
 
 	return nil

@@ -1,8 +1,8 @@
 package subcommands
 
 import (
-	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/fe/app"
+	"lunchpail.io/pkg/lunchpail"
 
 	"github.com/spf13/cobra"
 )

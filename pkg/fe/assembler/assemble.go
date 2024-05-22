@@ -4,7 +4,6 @@ import (
 	"embed"
 	"fmt"
 	"io/ioutil"
-	"lunchpail.io/pkg/fe/app"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 	"os"
@@ -26,8 +25,15 @@ func stageLunchpail() (string, error) {
 	}
 }
 
-func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string) error {
-	cmd := exec.Command("tar", "zcf", filepath.Join(lunchpailStageDir, "pkg/fe/app", "charts.tar.gz"), "-C", appTemplatePath, ".")
+func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string, verbose bool) error {
+	tarball := filepath.Join(lunchpailStageDir, "pkg/fe/assembler", "charts.tar.gz")
+	verboseFlag := ""
+	if verbose {
+		verboseFlag = "-v"
+		fmt.Fprintf(os.Stderr, "Transferring staged app template to final stage %s\n", tarball)
+	}
+
+	cmd := exec.Command("tar", verboseFlag, "-zcf", tarball, "-C", appTemplatePath, ".")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -62,11 +68,11 @@ func Assemble(sourcePath string, opts Options) error {
 		fmt.Fprintf(os.Stderr, "Using appname=%s\n", appname)
 	}
 
-	if appTemplatePath, err := app.StagePath(appname, sourcePath, app.StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, err := StagePath(appname, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
 	} else if err := lunchpail.SaveAppOptions(appTemplatePath, opts.AppOptions); err != nil {
 		return err
-	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath); err != nil {
+	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
 	} else if err := lunchpail.DropAppBreadcrumb(appname, lunchpailStageDir); err != nil {
 		return err

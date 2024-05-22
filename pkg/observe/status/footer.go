@@ -18,9 +18,10 @@ func message(who, message string, style lipgloss.Style) string {
 }
 
 type Resource string
+
 const (
 	Cpu Resource = "CPU"
-	Mem = "Memory"
+	Mem          = "Memory"
 )
 
 func cpuline(workers []cpu.Worker, resource Resource) string {

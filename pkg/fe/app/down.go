@@ -2,13 +2,13 @@ package app
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"strings"
-	"time"
 
-	"github.com/mittwald/go-helm-client"
+	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/fe/assembler"
+	"lunchpail.io/pkg/fe/linker/helm"
+	"lunchpail.io/pkg/fe/linker/yaml"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/runs"
 )
@@ -30,10 +30,6 @@ func deleteNamespace(namespace string) error {
 	return nil
 }
 
-func uninstall(client helmclient.Client, releaseName, namespace string) error {
-	return client.UninstallRelease(&helmclient.ChartSpec{ReleaseName: releaseName, Namespace: namespace, Wait: true, KeepHistory: false, Timeout: 240 * time.Second})
-}
-
 func Down(runname string, opts DownOptions) error {
 	appname := lunchpail.AssembledAppName()
 	namespace := appname
@@ -41,17 +37,7 @@ func Down(runname string, opts DownOptions) error {
 		namespace = opts.Namespace
 	}
 
-	outputOfHelmCmd := ioutil.Discard
-	if opts.Verbose {
-		outputOfHelmCmd = os.Stdout
-	}
-
-	fmt.Fprintf(os.Stderr, "Uninstalling application in namespace=%s\n", namespace)
-
-	helmClient, err := helmclient.New(&helmclient.Options{
-		Output:    outputOfHelmCmd,
-		Namespace: namespace,
-	})
+	_, templatePath, err := assembler.Stage(assembler.StageOptions{"", opts.Verbose})
 	if err != nil {
 		return err
 	}
@@ -67,13 +53,20 @@ func Down(runname string, opts DownOptions) error {
 		alsoDeleteNamespace = true
 	}
 
-	if err := uninstall(helmClient, runname, namespace); err != nil {
-		if !strings.Contains(err.Error(), "not found") {
-			return err
-		} else {
-			// TODO: do we need an --ignore-not-found behavior?
-			fmt.Fprintf(os.Stderr, "Warning: application not installed\n")
-		}
+	gopts := yaml.GenerateOptions{}
+	gopts.CreateNamespace = false
+
+	runname, yaml, overrideValues, err := yaml.Generate(appname, namespace, templatePath, gopts)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, "Uninstalling application in namespace=%s\n", namespace)
+
+	if yaml, err := helm.Template(runname, namespace, templatePath, yaml, helm.TemplateOptions{overrideValues, true, opts.Verbose, true, true}); err != nil {
+		return err
+	} else if err := kubernetes.Delete(yaml, namespace); err != nil {
+		return err
 	}
 
 	if alsoDeleteNamespace {

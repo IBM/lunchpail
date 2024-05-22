@@ -6,12 +6,12 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
-	"path/filepath"
 	"strings"
 
 	"github.com/google/uuid"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/fe/assembler"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 type GenerateOptions struct {
@@ -23,7 +23,7 @@ type GenerateOptions struct {
 	Queue              string
 	HasGpuSupport      bool
 	DockerHost         string
-	DryRun             bool
+	CreateNamespace    bool
 }
 
 // truncate `str` to have at most `max` length
@@ -57,7 +57,7 @@ func autorunName(appname string) (string, error) {
 // Inject Run or WorkDispatcher resources if needed
 func injectAutoRun(appname, templatePath string, verbose bool) (string, []string, error) {
 	sets := []string{} // we will assemble helm `--set` options
-	appdir := filepath.Join(templatePath, "templates", appname)
+	appdir := assembler.Appdir(templatePath)
 
 	runname, err := autorunName(appname)
 	if err != nil {
@@ -196,7 +196,7 @@ global:
     dockerconfigjson: %s # dockerconfigjson (7)
     namespace:
       name: %v # systemNamespace (8)
-      create: %v # false (9)
+      create: %v # opts.CreateNamespace (9)
     context:
       name: ""
   s3Endpoint: http://%s-s3.%s.svc.cluster.local:%d # runname (10) systemNamespace (11) internalS3Port (12)
@@ -235,15 +235,15 @@ s3:
   port: %d # internalS3Port (32)
   appname: %s # appname (33)
 `,
-		clusterType,         // (1)
-		opts.DockerHost,     // (2)
-		runname,             // (3)
-		imageRegistry,       // (4)
-		imageRepo,           // (5)
-		imagePullSecretName, // (6)
-		dockerconfigjson,    // (7)
-		systemNamespace,     // (8)
-		false,               // (9)
+		clusterType,          // (1)
+		opts.DockerHost,      // (2)
+		runname,              // (3)
+		imageRegistry,        // (4)
+		imageRepo,            // (5)
+		imagePullSecretName,  // (6)
+		dockerconfigjson,     // (7)
+		systemNamespace,      // (8)
+		opts.CreateNamespace, // (9)
 
 		runname,             // (10)
 		systemNamespace,     // (11)

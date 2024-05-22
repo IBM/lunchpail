@@ -1,4 +1,4 @@
-package app
+package assembler
 
 import (
 	"fmt"
@@ -24,9 +24,15 @@ func stageAppTemplate() (string, error) {
 	}
 }
 
+func Appdir(templatePath string) string {
+	return filepath.Join(templatePath, "templates/__embededapp__")
+}
+
 func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbose bool) error {
-	templatedir := filepath.Join(templatePath, "templates")
-	appdir := filepath.Join(templatedir, appname)
+	appdir := Appdir(templatePath)
+	if verbose {
+		fmt.Fprintf(os.Stderr, "Copying app templates into %s\n", appdir)
+	}
 
 	if strings.HasPrefix(sourcePath, "git@") {
 		if os.Getenv("CI") != "" && os.Getenv("AI_FOUNDATION_GITHUB_USER") != "" {
@@ -49,7 +55,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 			branchArg = "--branch=" + branch
 		}
 		fmt.Fprintf(os.Stderr, "Cloning application repository...")
-		cmd := exec.Command("/bin/sh", "-c", "git clone "+sourcePath+" "+branchArg+" "+quietArg+" "+appname)
+		cmd := exec.Command("/bin/sh", "-c", "git clone "+sourcePath+" "+branchArg+" "+quietArg+" "+filepath.Base(appdir))
 		cmd.Dir = filepath.Dir(appdir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -64,7 +70,16 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		os.MkdirAll(appdir, 0755)
 
 		// TODO port this to pure go?
-		cmd := exec.Command("sh", "-c", "tar --exclude '*~' -C "+sourcePath+" -cf - . | tar -C "+appdir+" -xf -")
+		verboseFlag := ""
+		if verbose {
+			verboseFlag = " -v "
+		}
+		cmdline := "tar --exclude '*~' -C " + sourcePath + verboseFlag + " -cf - . | tar -C " + appdir + verboseFlag + " -xf -"
+		if verbose {
+			fmt.Fprintf(os.Stderr, "Using tar to inject source: %s\n", cmdline)
+		}
+
+		cmd := exec.Command("sh", "-c", "tar --exclude '*~' -C "+sourcePath+verboseFlag+" -cf - . | tar -C "+appdir+verboseFlag+" -xf -")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -145,13 +160,17 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, error) {
 		}
 	}
 
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Finished staging to %s\n", templatePath)
+	}
+
 	return templatePath, nil
 }
 
 // return (appname, templatePath, error)
 func Stage(opts StageOptions) (string, string, error) {
 	appname := lunchpail.AssembledAppName()
-	templateDir, err := StagePath(appname, "", opts)
+	templatePath, err := StagePath(appname, "", opts)
 
-	return appname, templateDir, err
+	return appname, templatePath, err
 }
