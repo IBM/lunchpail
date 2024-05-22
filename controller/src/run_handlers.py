@@ -74,9 +74,10 @@ def create_run(name: str, namespace: str, uid: str, labels, spec, body, patch, *
         api = application['spec']['api']
         run_size_config = run_size(customApi, name, spec, application)
         volumes, volumeMounts, envFroms = prepare_dataset_labels(application)
+        component = labels['app.kubernetes.io/component'] if 'app.kubernetes.io/component' in labels else api
 
         if api == "shell":
-            create_run_shell(v1Api, customApi, application, namespace, uid, name, spec, run_size_config, volumes, volumeMounts, envFroms, patch)
+            create_run_shell(v1Api, customApi, application, namespace, uid, name, component, spec, run_size_config, volumes, volumeMounts, envFroms, patch)
         elif api == "workqueue":
             pass
         else:

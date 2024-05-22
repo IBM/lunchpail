@@ -9,7 +9,7 @@ from clone import clonev2
 from run_id import alloc_run_id
 from datasets import add_dataset
 
-def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, spec, run_size_config, volumes, volumeMounts, envFroms, patch):
+def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, name: str, component: str, spec, run_size_config, volumes, volumeMounts, envFroms, patch):
     logging.info(f"Handling Shell Run: app={application['metadata']['name']} run={name}")
 
     image = application['spec']['image']
@@ -41,7 +41,6 @@ def create_run_shell(v1Api, customApi, application, namespace: str, uid: str, na
         envFroms = add_dataset(queue_dataset, envFroms)
 
     part_of = application['metadata']['name']
-    component = "shell"
 
     try:
         shell_out = subprocess.run([
