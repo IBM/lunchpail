@@ -1,9 +1,11 @@
 package linker
 
 import (
+	"fmt"
 	"lunchpail.io/pkg/fe/assembler"
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml"
+	"os"
 )
 
 type LinkOptions struct {
@@ -41,11 +43,19 @@ func Link(opts LinkOptions) (Linked, error) {
 
 	if yaml, err := helm.Template(runname, namespace, templatePath, yaml, helm.TemplateOptions{overrideValues, wait, opts.Verbose, !opts.DryRun, !opts.DryRun}); err != nil {
 		return Linked{}, err
+	} else if appModel, err := parse(yaml); err != nil {
+		return Linked{}, err
+	} else if linkedYaml, err := transform(runname, namespace, appModel); err != nil {
+		return Linked{}, err
 	} else {
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "appModel=%v\n", appModel)
+		}
+
 		return Linked{
 			runname,
 			namespace,
-			yaml,
+			linkedYaml,
 		}, nil
 	}
 }

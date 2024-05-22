@@ -1,14 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 
-	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/fe/assembler"
-	"lunchpail.io/pkg/fe/linker/helm"
-	"lunchpail.io/pkg/fe/linker/yaml"
+	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/runs"
 )
@@ -30,16 +28,39 @@ func deleteNamespace(namespace string) error {
 	return nil
 }
 
+func deleteNormalStuff(runname, namespace string) error {
+	return deleteStuff(runname, namespace, "all")
+}
+
+func deleteStuff(runname, namespace, kind string) error {
+	cmd := exec.Command("/bin/sh", "-c", "kubectl get "+kind+" -o name -n "+namespace+" -l app.kubernetes.io/instance="+runname+" | xargs kubectl delete --ignore-not-found -n "+namespace)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func deleteAllStuff(runname, namespace string) error {
+	group, _ := errgroup.WithContext(context.Background())
+
+	group.Go(func() error { return deleteStuff(runname, namespace, "workdispatchers.lunchpail.io") })
+	group.Go(func() error { return deleteStuff(runname, namespace, "workerpools.lunchpail.io") })
+	group.Go(func() error { return deleteStuff(runname, namespace, "runs.lunchpail.io") })
+	group.Go(func() error { return deleteStuff(runname, namespace, "applications.lunchpail.io") })
+
+	if err := group.Wait(); err != nil {
+		return err
+	}
+
+	return deleteNormalStuff(runname, namespace)
+}
+
 func Down(runname string, opts DownOptions) error {
 	appname := lunchpail.AssembledAppName()
 	namespace := appname
 	if opts.Namespace != "" {
 		namespace = opts.Namespace
-	}
-
-	_, templatePath, err := assembler.Stage(assembler.StageOptions{"", opts.Verbose})
-	if err != nil {
-		return err
 	}
 
 	alsoDeleteNamespace := false
@@ -53,19 +74,7 @@ func Down(runname string, opts DownOptions) error {
 		alsoDeleteNamespace = true
 	}
 
-	gopts := yaml.GenerateOptions{}
-	gopts.CreateNamespace = false
-
-	runname, yaml, overrideValues, err := yaml.Generate(appname, namespace, templatePath, gopts)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprintf(os.Stderr, "Uninstalling application in namespace=%s\n", namespace)
-
-	if yaml, err := helm.Template(runname, namespace, templatePath, yaml, helm.TemplateOptions{overrideValues, true, opts.Verbose, true, true}); err != nil {
-		return err
-	} else if err := kubernetes.Delete(yaml, namespace); err != nil {
+	if err := deleteAllStuff(runname, namespace); err != nil {
 		return err
 	}
 

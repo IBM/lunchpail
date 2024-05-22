@@ -55,7 +55,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 			branchArg = "--branch=" + branch
 		}
 		fmt.Fprintf(os.Stderr, "Cloning application repository...")
-		cmd := exec.Command("/bin/sh", "-c", "git clone "+sourcePath+" "+branchArg+" "+quietArg+" "+filepath.Base(appdir))
+		cmd := exec.Command("/bin/sh", "-c", "git clone --depth=1 "+sourcePath+" "+branchArg+" "+quietArg+" "+filepath.Base(appdir))
 		cmd.Dir = filepath.Dir(appdir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
