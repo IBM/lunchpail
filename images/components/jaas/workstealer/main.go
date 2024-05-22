@@ -422,31 +422,23 @@ func apportion(model Model) []Apportionment {
 
 	desiredLevel := max(1, len(model.UnassignedTasks)/len(model.LiveWorkers))
 
-	nUnderutilizedWorkers := 0
+	fmt.Fprintf(
+		os.Stderr,
+		"[workstealer] Apportionment desiredLevel=%d nUnassigned=%d nLiveWorkers=%d\n",
+		desiredLevel,
+		len(model.UnassignedTasks),
+		len(model.LiveWorkers),
+	)
+
+	startIdx := 0
 	for _, worker := range model.LiveWorkers {
+		if startIdx >= len(model.UnassignedTasks) {
+			break
+		}
+
 		assignThisMany := max(0, desiredLevel-len(worker.assignedTasks)-len(worker.processingTasks))
 
 		if assignThisMany > 0 {
-			nUnderutilizedWorkers++
-		}
-	}
-
-	if nUnderutilizedWorkers > 0 {
-		startIdx := 0
-		desiredLevel = max(1, len(model.UnassignedTasks)/nUnderutilizedWorkers)
-		fmt.Fprintf(
-			os.Stderr,
-			"[workstealer] Apportionment desiredLevel=%d nUnassigned=%d nLiveWorkers=%d\n",
-			desiredLevel,
-			len(model.UnassignedTasks),
-			len(model.LiveWorkers),
-		)
-		for _, worker := range model.LiveWorkers {
-			if startIdx >= len(model.UnassignedTasks) {
-				break
-			}
-
-			assignThisMany := max(0, desiredLevel-len(worker.assignedTasks)-len(worker.processingTasks))
 			endIdx := startIdx + assignThisMany
 			As = append(As, Apportionment{startIdx, endIdx, worker})
 			startIdx = endIdx
