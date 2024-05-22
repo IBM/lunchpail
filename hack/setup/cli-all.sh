@@ -16,7 +16,7 @@ do
     for arch in amd64 arm64
     do
         echo "Building CLI os=$os arch=$arch"
-        GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-s -w" -o "$DST" cmd/main.go &
+        GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-s -w" -o lunchpail-$os-$arch cmd/main.go &
     done
 done
 
