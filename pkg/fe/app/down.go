@@ -46,7 +46,6 @@ func deleteStuff(runname, namespace, kind string) error {
 func deleteAllStuff(runname, namespace string) error {
 	group, _ := errgroup.WithContext(context.Background())
 
-	group.Go(func() error { return deleteStuff(runname, namespace, "workdispatchers.lunchpail.io") })
 	group.Go(func() error { return deleteStuff(runname, namespace, "workerpools.lunchpail.io") })
 	group.Go(func() error { return deleteStuff(runname, namespace, "runs.lunchpail.io") })
 	group.Go(func() error { return deleteStuff(runname, namespace, "applications.lunchpail.io") })

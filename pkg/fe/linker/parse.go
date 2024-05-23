@@ -120,23 +120,6 @@ type DispatcherSchema struct {
 	ColumnTypes []any
 }
 
-type WorkDispatcher struct {
-	ApiVersion string `yaml:"apiVersion"`
-	Kind       string
-	Metadata   Metadata
-	Spec       struct {
-		Method      DispatchMethod
-		Application struct {
-			Name     string `yaml:"name,omitempty"`
-			FromRole string `yaml:"fromRole,omitempty"`
-		} `yaml:"application,omitempty"`
-		Env    Env              `yaml:"env,omitempty"`
-		Sweep  DispatcherSweep  `yaml:"sweep,omitempty"`
-		Schema DispatcherSchema `yaml:"schema,omitempty"`
-		Run    string           `yaml:"run,omitempty"`
-	}
-}
-
 type TShirtSize string
 
 const (
@@ -175,7 +158,6 @@ type UnknownResource map[string]interface{}
 
 type AppModel struct {
 	Applications    []Application
-	WorkDispatchers []WorkDispatcher
 	WorkerPools     []WorkerPool
 	RepoSecrets     []RepoSecret
 	Others          []string
@@ -222,15 +204,6 @@ func parse(yamls string) (AppModel, error) {
 				continue
 			} else {
 				model.RepoSecrets = append(model.RepoSecrets, r)
-			}
-
-		case "WorkDispatcher":
-			var r WorkDispatcher
-			if err := yaml.Unmarshal(bytes, &r); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: skipping yaml with invalid WorkDispatcher resource %v", err)
-				continue
-			} else {
-				model.WorkDispatchers = append(model.WorkDispatchers, r)
 			}
 
 		case "WorkerPool":

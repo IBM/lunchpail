@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-echo -n "Started TaskDispatcher method=$METHOD "
+METHOD=${METHOD:-parametersweep}
+
+echo -n "Starting TaskDispatcher method=$METHOD "
 if [[ $METHOD = tasksimulator ]]
 then echo "injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
 elif [[ $METHOD = parametersweep ]]

@@ -23,7 +23,7 @@ type GenerateOptions struct {
 	CreateNamespace    bool
 }
 
-// Inject Run or WorkDispatcher resources if needed
+// Inject Run resource if needed
 func injectAutoRun(appname, runname, templatePath string, verbose bool) (string, []string, error) {
 	sets := []string{} // we will assemble helm `--set` options
 	appdir := assembler.Appdir(templatePath)
@@ -40,30 +40,6 @@ func injectAutoRun(appname, runname, templatePath string, verbose bool) (string,
 			fmt.Fprintln(os.Stderr, "Auto-Injecting WorkStealer initiation")
 		}
 		sets = append(sets, "autorun="+runname)
-	}
-
-	// TODO port this to pure go?
-	cmd2 := exec.Command("grep", "-qr", "^kind:[[:space:]]*WorkDispatcher$", appdir)
-	cmd2.Stdout = os.Stdout
-	cmd2.Stderr = os.Stderr
-	if err := cmd2.Start(); err != nil {
-		return "", []string{}, err
-	}
-	if err := cmd2.Wait(); err != nil {
-		// TODO port this to pure go?
-		cmd3 := exec.Command("grep", "-qr", "^  role:[[:space:]]*dispatcher$", appdir)
-		cmd3.Stdout = os.Stdout
-		cmd3.Stderr = os.Stderr
-		if err := cmd3.Start(); err != nil {
-			return "", []string{}, err
-		}
-		if err := cmd3.Wait(); err == nil {
-			if verbose {
-				fmt.Println("Auto-Injecting WorkDispatcher")
-			}
-			sets = append(sets, "autodispatcher.name="+appname)
-			sets = append(sets, "autodispatcher.application="+appname)
-		}
 	}
 
 	if len(sets) == 0 {

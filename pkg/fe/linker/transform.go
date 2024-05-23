@@ -37,20 +37,6 @@ func transformApplications(appname, runname, namespace string, model AppModel, q
 	return yamls, nil
 }
 
-func transformWorkDispatchers(dispatchers []WorkDispatcher) ([]string, error) {
-	yamls := []string{}
-
-	for _, r := range dispatchers {
-		if bytes, err := yaml.Marshal(r); err != nil {
-			return yamls, err
-		} else {
-			yamls = append(yamls, string(bytes))
-		}
-	}
-
-	return yamls, nil
-}
-
 func transformWorkerPools(pools []WorkerPool) ([]string, error) {
 	yamls := []string{}
 
@@ -72,18 +58,13 @@ func transform(appname, runname, namespace string, model AppModel, queueSpec que
 		return "", err
 	}
 
-	disps, err := transformWorkDispatchers(model.WorkDispatchers)
-	if err != nil {
-		return "", err
-	}
-
 	pools, err := transformWorkerPools(model.WorkerPools)
 	if err != nil {
 		return "", err
 	}
 
 	return strings.Join(
-		slices.Concat(apps, disps, pools, model.Others),
+		slices.Concat(apps, pools, model.Others),
 		"\n---\n",
 	), nil
 }

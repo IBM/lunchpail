@@ -1,8 +1,0 @@
-apiVersion: lunchpail.io/v1alpha1
-kind: WorkDispatcher
-metadata:
-  name: test7f
-spec:
-  method: application
-  application:
-    name: test7f-workdispatcher

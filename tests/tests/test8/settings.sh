@@ -1,6 +1,8 @@
 api=workqueue
 app=git@github.ibm.com:mceda/lunchpail-openroad-max-utilization.git
 branch=v0.0.10
+app=git@github.ibm.com:nickm/lunchpail-openroad-max-utilization.git
+branch=wd
 deployname=lunchpail-openroad-max-utilization
 
 # we kill the process before it is finishes

@@ -1,5 +1,0 @@
-{{- if eq .Values.method "application" }}
-{{ include "run" . }}
-{{- else }}
-{{ include "job" . }}
-{{- end }}

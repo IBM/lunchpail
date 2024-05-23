@@ -52,8 +52,10 @@ func code(application Application, namespace string, repoSecrets []RepoSecret) (
 		// a github `spec.repo`
 		repo, secretName := codeFromGit(namespace, application.Spec.Repo, repoSecrets)
 		return repo, secretName, data{}, "", nil
-	} else {
+	} else if application.Spec.Command == "" {
 		return "", "", data{}, "", fmt.Errorf("Application spec is missing either `code` or `repo` field")
+	} else {
+		return "", "", data{}, "", nil
 	}
 }
 

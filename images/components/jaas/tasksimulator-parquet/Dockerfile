@@ -27,7 +27,11 @@ RUN apk update && apk add --no-cache bash cargo build-base python3 py-pandas pyt
     rm -rf /usr/lib/python3.11/site-packages/pandas/tests && \
     rm -rf /usr/lib/python3.11/site-packages/numpy/core/tests
 
+COPY --chmod=755 main.sh /opt/lunchpail/bin/main.sh
+
 RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
 USER lunchpail
 ENV HOME=/home/lunchpail
 WORKDIR /home/lunchpail
+
+CMD ["/opt/lunchpail/bin/main.sh"]
