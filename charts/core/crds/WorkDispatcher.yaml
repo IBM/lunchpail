@@ -50,10 +50,10 @@ spec:
                       type: string
                       enum: [xxs,xs,sm,md,lg,xl,xxl]
 
-                env:
-                  type: object
-                  additionalProperties:
-                    type: string
+                # env:
+                #   type: object
+                #   additionalProperties:
+                #     type: string
 
                 # method=parametersweep fields: [sweep]
                 sweep:

@@ -6,13 +6,4 @@ spec:
   method: application
   application:
     name: test7f-repo-workdispatcher
-  env:
-    # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2; this overrides an env var from ./workdispatcher-app.yaml
-    taskprefix: tasky
 
-    # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
-    METHOD: parametersweep
-    SWEEP_MIN: '1'
-    SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
-    SWEEP_STEP: '1'
-    INTERVAL: {{ .Values.every | default 5 | quote }}

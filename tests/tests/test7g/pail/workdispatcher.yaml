@@ -9,13 +9,4 @@ spec:
     name: test7g-workdispatcher
     queue:
       useas: mount
-  env:
-    # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2; this overrides an env var from ./workdispatcher-app.yaml
-    taskprefix: tasky
-
-    # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
-    METHOD: parametersweep
-    SWEEP_MIN: '1'
-    SWEEP_MAX: '10'
-    SWEEP_STEP: '1'
 {{- end }}

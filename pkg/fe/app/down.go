@@ -34,6 +34,8 @@ func deleteNormalStuff(runname, namespace string) error {
 
 func deleteStuff(runname, namespace, kind string) error {
 	cmd := exec.Command("/bin/sh", "-c", "kubectl get "+kind+" -o name -n "+namespace+" -l app.kubernetes.io/instance="+runname+" | xargs kubectl delete --ignore-not-found -n "+namespace)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return err
 	}

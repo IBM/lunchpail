@@ -2,13 +2,10 @@ package yaml
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"os/exec"
 	"os/user"
-	"strings"
 
-	"github.com/google/uuid"
 	"lunchpail.io/pkg/fe/assembler"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
 	"lunchpail.io/pkg/lunchpail"
@@ -26,43 +23,10 @@ type GenerateOptions struct {
 	CreateNamespace    bool
 }
 
-// truncate `str` to have at most `max` length
-func truncate(str string, max int) string {
-	if len(str) > max {
-		return str[:max]
-	} else {
-		return str
-	}
-}
-
-func autorunName(appname string) (string, error) {
-	runname := appname
-
-	if id, err := uuid.NewRandom(); err != nil {
-		return "", err
-	} else {
-		// include up to the first dash of the uuid, which
-		// gives us 8 characters of randomness
-		ids := id.String()
-		if idx := strings.Index(ids, "-"); idx != -1 {
-			ids = ids[:idx]
-		}
-
-		runname = truncate(runname+"-"+ids, 53)
-	}
-
-	return runname, nil
-}
-
 // Inject Run or WorkDispatcher resources if needed
-func injectAutoRun(appname, templatePath string, verbose bool) (string, []string, error) {
+func injectAutoRun(appname, runname, templatePath string, verbose bool) (string, []string, error) {
 	sets := []string{} // we will assemble helm `--set` options
 	appdir := assembler.Appdir(templatePath)
-
-	runname, err := autorunName(appname)
-	if err != nil {
-		return "", []string{}, nil
-	}
 
 	// TODO port this to pure go?
 	cmd := exec.Command("grep", "-qr", "^kind:[[:space:]]*Run$", appdir)
@@ -109,7 +73,7 @@ func injectAutoRun(appname, templatePath string, verbose bool) (string, []string
 	}
 }
 
-func Generate(appname, namespace, templatePath string, opts GenerateOptions) (string, string, []string, error) {
+func Generate(appname, runname, namespace, templatePath string, internalS3Port int, queueSpec queue.Spec, opts GenerateOptions) (string, string, []string, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
@@ -139,7 +103,7 @@ func Generate(appname, namespace, templatePath string, opts GenerateOptions) (st
 		}
 	}
 
-	runname, extraValues, err := injectAutoRun(appname, templatePath, opts.Verbose)
+	runname, extraValues, err := injectAutoRun(appname, runname, templatePath, opts.Verbose)
 	if err != nil {
 		return "", "", []string{}, err
 	} else {
@@ -169,17 +133,6 @@ func Generate(appname, namespace, templatePath string, opts GenerateOptions) (st
 
 	// the app.kubernetes.io/part-of label value
 	partOf := appname
-
-	// rand.Seed(runname)
-	internalS3Port := rand.Intn(65536) + 1
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
-	}
-
-	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
-	if err != nil {
-		return "", "", []string{}, err
-	}
 
 	yaml := fmt.Sprintf(`
 global:

@@ -41,8 +41,6 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/managed-by: lunchpail.io
-  ownerReferences:
-    {{ include "owner" . | indent 4 }}
 data:
 {{- .Values.workdir.cm.data | b64dec | fromJson | toYaml | nindent 2 }}
 {{- end }}

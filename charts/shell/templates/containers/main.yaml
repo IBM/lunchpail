@@ -11,10 +11,22 @@
       value: {{ .Values.uid }}
     - name: ENCLOSING_RUN_NAME
       value: {{ .Values.name }}
-
+    - name: RUN_NAME
+      value: {{ .Values.name }}
+    - name: WORKQUEUE
+      value: /queue
+    - name: S3_ENDPOINT_VAR
+      value: {{ print .Values.queue.dataset "_endpoint" }}
+    - name: AWS_ACCESS_KEY_ID_VAR
+      value: {{ print .Values.queue.dataset "_accessKeyID" }}
+    - name: AWS_SECRET_ACCESS_KEY_VAR
+      value: {{ print .Values.queue.dataset "_secretAccessKey" }}
+    - name: TASKQUEUE_VAR
+      value: {{ print .Values.queue.dataset "_bucket" }}
+    - name: LUNCHPAIL
+      value: lunchpail
   {{- if .Values.containerSecurityContext }}
-  securityContext:
-    {{ .Values.containerSecurityContext | b64dec | indent 4 }}
+  securityContext: {{ .Values.containerSecurityContext | b64dec | fromYaml | toJson }}
   {{- end }}
       
   {{- if or .Values.env .Values.envFroms }}

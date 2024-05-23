@@ -62,6 +62,11 @@ func Untar(dst string, r io.Reader, nostrip bool) error {
 
 		// if it's a file create it
 		case tar.TypeReg:
+			if strings.HasPrefix(filepath.Base(target), "._") {
+				// skip over macos nonsense
+				// https://stackoverflow.com/questions/8766730/tar-command-in-mac-os-x-adding-hidden-files-why
+				continue
+			}
 			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				return err

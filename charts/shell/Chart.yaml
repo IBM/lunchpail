@@ -1,6 +1,6 @@
 apiVersion: v1
-name: jaas-shell
-description: Deploys CodeFlare shell job
+name: lunchpail-shell-template
+description: Template for Application api=shell
 type: application
 
 # Chart version.

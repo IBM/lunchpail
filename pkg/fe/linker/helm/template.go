@@ -36,9 +36,9 @@ func Client(namespace string, verbose bool) (helmclient.Client, error) {
 	})
 }
 
-func Template(runname, namespace, templatePath, yaml string, opts TemplateOptions) (string, error) {
+func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOptions) (string, error) {
 	chartSpec := helmclient.ChartSpec{
-		ReleaseName:      runname,
+		ReleaseName:      releaseName,
 		ChartName:        templatePath,
 		Namespace:        namespace,
 		Wait:             opts.Wait,

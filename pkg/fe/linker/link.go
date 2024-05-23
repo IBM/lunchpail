@@ -5,6 +5,8 @@ import (
 	"lunchpail.io/pkg/fe/assembler"
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml"
+	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"math/rand"
 	"os"
 )
 
@@ -36,7 +38,22 @@ func Link(opts LinkOptions) (Linked, error) {
 	// readiness.
 	wait := !opts.Watch
 
-	runname, yaml, overrideValues, err := yaml.Generate(appname, namespace, templatePath, opts.GenerateOptions)
+	runname, err := autorunName(appname)
+	if err != nil {
+		return Linked{}, err
+	}
+
+	internalS3Port := rand.Intn(65536) + 1
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
+	}
+
+	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
+	if err != nil {
+		return Linked{}, err
+	}
+
+	runname, yaml, overrideValues, err := yaml.Generate(appname, runname, namespace, templatePath, internalS3Port, queueSpec, opts.GenerateOptions)
 	if err != nil {
 		return Linked{}, err
 	}
@@ -45,13 +62,9 @@ func Link(opts LinkOptions) (Linked, error) {
 		return Linked{}, err
 	} else if appModel, err := parse(yaml); err != nil {
 		return Linked{}, err
-	} else if linkedYaml, err := transform(runname, namespace, appModel); err != nil {
+	} else if linkedYaml, err := transform(appname, runname, namespace, appModel, queueSpec, opts.Verbose); err != nil {
 		return Linked{}, err
 	} else {
-		if opts.Verbose {
-			fmt.Fprintf(os.Stderr, "appModel=%v\n", appModel)
-		}
-
 		return Linked{
 			runname,
 			namespace,

@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-//go:generate /bin/sh -c "tar --exclude '*~' --exclude '*.git*' --exclude '*README.md' --exclude '*gitignore' --exclude '*DS_Store' --exclude '*lunchpail-source.tar.gz*' -C ../../.. -zcf lunchpail-source.tar.gz cmd pkg go.mod go.sum"
+//go:generate /bin/sh -c "tar --exclude '*lunchpail-source.tar.gz' --exclude '*~' --exclude '*.git*' --exclude '*README.md' --exclude '*gitignore' --exclude '*DS_Store' --exclude '*lunchpail-source.tar.gz*' -C ../../.. -zcf lunchpail-source.tar.gz cmd pkg go.mod go.sum"
 //go:embed lunchpail-source.tar.gz
 var lunchpailSource embed.FS
 
@@ -62,6 +62,10 @@ func Assemble(sourcePath string, opts Options) error {
 	appname := filepath.Base(trimExt(sourcePath))
 	if appname == "pail" {
 		appname = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+		if appname == "pail" {
+			// probably a trailing slash
+			appname = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
+		}
 	}
 
 	if opts.Verbose {

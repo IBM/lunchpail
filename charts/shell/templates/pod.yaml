@@ -10,17 +10,12 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Values.enclosingRun }}
     app.kubernetes.io/managed-by: lunchpail.io
-  {{- if not .Values.mcad.enabled }}
-  ownerReferences:
-    {{ include "owner" . | indent 4 }}
-  {{- end }}
 spec:
   restartPolicy: OnFailure
   serviceAccountName: {{ .Values.rbac.serviceaccount }}
 
   {{- if .Values.securityContext }}
-  securityContext:
-    {{ .Values.securityContext | b64dec | indent 4 }}
+  securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
   {{- end }}
 
   volumes:

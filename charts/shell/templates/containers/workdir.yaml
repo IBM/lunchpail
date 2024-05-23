@@ -1,5 +1,5 @@
 {{- define "containers/workdir" }}
-{{- if and .Values.workdir.repo .Values.workdir.pat.user .Values.workdir.pat.secret }}
+{{- if and .Values.workdir.repo }}
 - name: workdir
   image: {{ print .Values.lunchpail.image.registry "/" .Values.lunchpail.image.repo "/jaas-workdir-component:" .Values.lunchpail.image.version }}
   volumeMounts:
@@ -8,9 +8,11 @@
     {{ include "workdir/env" . | indent 4 }}
     - name: REPO
       value: {{ .Values.workdir.repo }}
+  {{- if .Values.workdir.secretName }}
   envFrom:
     - secretRef:
-        name: {{ print .Release.Name "-workdir" }}
+        name: {{ print .Values.workdir.secretName }}
+  {{- end }}
 {{- end }}
 
 {{- if .Values.workdir.cm.data }}
