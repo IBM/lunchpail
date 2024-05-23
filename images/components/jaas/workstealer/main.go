@@ -436,7 +436,7 @@ func apportion(model Model) []Apportionment {
 			break
 		}
 
-		assignThisMany := max(0, desiredLevel-len(worker.assignedTasks)-len(worker.processingTasks))
+		assignThisMany := max(0, desiredLevel-len(worker.assignedTasks))
 
 		if assignThisMany > 0 {
 			endIdx := startIdx + assignThisMany
