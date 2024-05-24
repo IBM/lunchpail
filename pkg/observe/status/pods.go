@@ -125,10 +125,6 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 
 	var workerStatus WorkerStatus
 	switch component {
-	case string(lunchpail.RuntimeComponent):
-		name = lunchpail.ComponentShortName(lunchpail.RuntimeComponent)
-		workerStatus = statusFromPod(pod)
-		model.Runtime = workerStatus
 	case string(lunchpail.InternalS3Component):
 		name = lunchpail.ComponentShortName(lunchpail.InternalS3Component)
 		workerStatus = statusFromPod(pod)

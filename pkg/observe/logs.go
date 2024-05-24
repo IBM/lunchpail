@@ -27,9 +27,6 @@ func streamLogs(runname, namespace string, component lunchpail.Component, follow
 		appSelector = ""
 	} else if component == lunchpail.WorkStealerComponent {
 		containers = "workstealer"
-	} else if component == lunchpail.RuntimeComponent {
-		containers = "controller"
-		appSelector = ""
 	} else if component == lunchpail.WorkersComponent {
 		appSelector = ""
 	}

@@ -3,10 +3,8 @@ package yaml
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 
-	"lunchpail.io/pkg/fe/assembler"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -21,32 +19,6 @@ type GenerateOptions struct {
 	HasGpuSupport      bool
 	DockerHost         string
 	CreateNamespace    bool
-}
-
-// Inject Run resource if needed
-func injectAutoRun(appname, runname, templatePath string, verbose bool) (string, []string, error) {
-	sets := []string{} // we will assemble helm `--set` options
-	appdir := assembler.Appdir(templatePath)
-
-	// TODO port this to pure go?
-	cmd := exec.Command("grep", "-qr", "^kind:[[:space:]]*Run$", appdir)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return "", []string{}, err
-	}
-	if err := cmd.Wait(); err != nil {
-		if verbose {
-			fmt.Fprintln(os.Stderr, "Auto-Injecting WorkStealer initiation")
-		}
-		sets = append(sets, "autorun="+runname)
-	}
-
-	if len(sets) == 0 {
-		return appname, sets, nil
-	} else {
-		return runname, sets, nil
-	}
 }
 
 func Generate(appname, runname, namespace, templatePath string, internalS3Port int, queueSpec queue.Spec, opts GenerateOptions) (string, string, []string, error) {
@@ -77,14 +49,6 @@ func Generate(appname, runname, namespace, templatePath string, internalS3Port i
 		if opts.DockerHost == "" {
 			opts.DockerHost = shrinkwrappedOptions.DockerHost
 		}
-	}
-
-	runname, extraValues, err := injectAutoRun(appname, runname, templatePath, opts.Verbose)
-	if err != nil {
-		return "", "", []string{}, err
-	} else {
-		opts.OverrideValues = append(opts.OverrideValues, extraValues...)
-
 	}
 
 	systemNamespace := namespace
@@ -155,14 +119,10 @@ namespace:
   user: %s # namespace (27)
 tags:
   gpu: %v # hasGpuSupport (28)
-core:
-  lunchpail: lunchpail
-  name: %s # runname (29)
-  appname: %s # appname (30)
 s3:
-  name: %s # runname (31)
-  port: %d # internalS3Port (32)
-  appname: %s # appname (33)
+  name: %s # runname (29)
+  port: %d # internalS3Port (30)
+  appname: %s # appname (31)
 `,
 		clusterType,          // (1)
 		opts.DockerHost,      // (2)
@@ -194,10 +154,8 @@ s3:
 		namespace,           // (27)
 		opts.HasGpuSupport,  // (28)
 		runname,             // (29)
-		appname,             // (30)
-		runname,             // (31)
-		internalS3Port,      // (32)
-		appname,             // (33)
+		internalS3Port,      // (30)
+		appname,             // (31)
 	)
 
 	if opts.Verbose {

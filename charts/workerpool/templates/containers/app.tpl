@@ -1,6 +1,6 @@
 {{- define "containers/app" }}
 - name: app
-  image: {{ .Values.image.app }}
+  image: {{ .Values.image }}
   command: ["/bin/bash", "-c", {{ print "/opt/lunchpail/bin/watcher.sh " .Values.command  }}]
   env:
     - name: LUNCHPAIL_STARTUP_DELAY
@@ -24,8 +24,7 @@
   {{- end }}
 
   {{- if .Values.containerSecurityContext }}
-  securityContext:
-    {{ .Values.containerSecurityContext | b64dec | indent 4 }}
+  securityContext: {{ .Values.containerSecurityContext | b64dec | fromYaml | toJson }}
   {{- end }}
 
   {{- include "workdir/path" . | indent 2 }}

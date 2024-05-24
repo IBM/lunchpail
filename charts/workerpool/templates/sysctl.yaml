@@ -11,8 +11,6 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
-  ownerReferences:
-    {{ include "owner" . | indent 4 }}
 data:
   sysctl.conf: |
 {{ .Files.Get "sysctl.conf" | indent 4 }}

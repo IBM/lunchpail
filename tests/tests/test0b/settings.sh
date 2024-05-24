@@ -1,3 +1,3 @@
 # test clone failure (bad repo in app spec)
-expected=('Failed to clone')
-handler=waitForStatus
+expected=('No Application with role Worker found')
+expectCompilationFailure=1

@@ -18,7 +18,7 @@ var lunchpailSource embed.FS
 func stageLunchpail() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := util.Expand(dir, lunchpailSource, "lunchpail-source.tar.gz", false); err != nil {
+	} else if err := util.Expand(dir, lunchpailSource, "lunchpail-source.tar.gz"); err != nil {
 		return "", err
 	} else {
 		return dir, nil

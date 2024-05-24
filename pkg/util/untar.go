@@ -11,7 +11,7 @@ import (
 
 // Untar takes a destination path and a reader; a tar reader loops over the tarfile
 // creating the file structure at 'dst' along the way, and writing any files
-func Untar(dst string, r io.Reader, nostrip bool) error {
+func Untar(dst string, r io.Reader) error {
 	gzr, err := gzip.NewReader(r)
 	if err != nil {
 		return err
@@ -40,9 +40,6 @@ func Untar(dst string, r io.Reader, nostrip bool) error {
 
 		// the target location where the dir/file should be created
 		dstName := header.Name
-		if !nostrip && filepath.Ext(header.Name) == ".sh" {
-			dstName = filepath.Join(filepath.Dir(dstName), strings.TrimSuffix(filepath.Base(dstName), filepath.Ext(dstName)))
-		}
 		target := filepath.Join(dst, dstName)
 
 		// the following switch could also be done using fi.Mode(), not sure if there

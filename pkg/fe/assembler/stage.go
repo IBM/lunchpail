@@ -17,7 +17,7 @@ import (
 func stageAppTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
-	} else if err := util.Expand(dir, appTemplate, "charts.tar.gz", true); err != nil {
+	} else if err := util.Expand(dir, appTemplate, "charts.tar.gz"); err != nil {
 		return "", err
 	} else {
 		return dir, nil

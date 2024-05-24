@@ -10,8 +10,6 @@ metadata:
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
-  ownerReferences:
-    {{ include "owner" . | indent 4 }}
 data:
   watcher.sh: |
 {{ .Files.Get "watcher.sh" | indent 4 }}

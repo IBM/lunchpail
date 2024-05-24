@@ -5,36 +5,62 @@ import (
 	"fmt"
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/util"
 	"os"
 	"strconv"
 	"strings"
 )
 
-//go:generate /bin/sh -c "[ -d ../../../charts/shell ] && tar --exclude '*~' --exclude '*README.md' -C ../../../charts/shell -zcf shell.tar.gz . || exit 0"
-//go:embed shell.tar.gz
-var shellTemplate embed.FS
+//go:generate /bin/sh -c "[ -d ../../../charts/workerpool ] && tar --exclude '*~' --exclude '*README.md' -C ../../../charts/workerpool -zcf workerpool.tar.gz . || exit 0"
+//go:embed workerpool.tar.gz
+var workerpoolTemplate embed.FS
 
-func TransformShell(runname, namespace string, app Application, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
-	component := ""
-	switch app.Spec.Role {
-	case "dispatcher":
-		component = "workdispatcher"
-	case "worker":
-		component = "workerpool"
-	default:
-		component = "shell"
+// parse 6s/6m/6d/6w into units of seconds
+func parseHumanTime(delayString string) (int, error) {
+	if delayString == "" {
+		return 0, nil
 	}
 
-	sizing := app.sizing()
+	seconds_per_unit := map[byte]int{'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
+	unit, hasUnit := seconds_per_unit[delayString[len(delayString)-1]]
+	quantity := delayString
+
+	if !hasUnit {
+		// then we were given just a number, which we will interpret as
+		// seconds
+		unit = 1
+	} else {
+		quantity = delayString[:len(delayString)-1]
+	}
+
+	val, err := strconv.Atoi(quantity)
+	if err != nil {
+		return 0, err
+	}
+		
+	return val * unit, nil
+}
+
+func TransformWorkerPool(runname, namespace string, app Application, pool WorkerPool, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
+	// name of worker pods/deployment = run_name-pool_name
+	releaseName := strings.TrimSuffix(
+		util.Truncate(
+			fmt.Sprintf(
+				"%s-%s",
+				runname,
+				strings.Replace(pool.Metadata.Name, app.Metadata.Name + "-", "", -1),
+			),
+			53,
+		),
+		"-",
+	)
+		
+	sizing := pool.sizing(app)
 	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
 	env, enverr := helm.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := helm.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := helm.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
-	imageRegistry := "ghcr.io"
-	imageRepo := "lunchpail"
-	imageVersion := lunchpail.Version()
 
 	if codeerr != nil {
 		return []string{}, codeerr
@@ -48,21 +74,27 @@ func TransformShell(runname, namespace string, app Application, queueSpec queue.
 		return []string{}, errcsc
 	}
 
-	templatePath, err := stage(shellTemplate, "shell.tar.gz")
+	templatePath, err := stage(workerpoolTemplate, "workerpool.tar.gz")
 	if err != nil {
 		return []string{}, err
 	}
 
 	if verbose {
-		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
+		fmt.Fprintf(os.Stderr, "Workerpool stage %s\n", templatePath)
 	} else {
 		defer os.RemoveAll(templatePath)
 	}
 
+	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
+	if err != nil {
+		return []string{}, err
+	}
+
 	values := []string{
-		"name=" + runname,
+		"name=" + app.Metadata.Name,
+		"runName=" + runname,
 		"partOf=" + app.Metadata.Name,
-		"component=" + component,
+		"component=workerpool",
 		"enclosingRun=" + runname,
 		"image=" + app.Spec.Image,
 		"namespace=" + namespace,
@@ -71,11 +103,13 @@ func TransformShell(runname, namespace string, app Application, queueSpec queue.
 		"workers.cpu=" + sizing.Cpu,
 		"workers.memory=" + sizing.Memory,
 		"workers.gpu=" + strconv.Itoa(sizing.Gpu),
+		"lunchpail=lunchpail",
+		"queue.dataset=" + queueSpec.Name,
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
 		"envFroms=" + envFroms,
 		"env=" + env,
-		"queue.dataset=" + queueSpec.Name,
+		"startupDelay=" + strconv.Itoa(startupDelay),
 		"mcad.enabled=false",
 		"rbac.runAsRoot=false",
 		"rbac.serviceaccount=" + runname,
@@ -85,9 +119,6 @@ func TransformShell(runname, namespace string, app Application, queueSpec queue.
 		"workdir.secretName=" + workdirSecretName,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
-		"lunchpail.image.registry=" + imageRegistry,
-		"lunchpail.image.repo=" + imageRepo,
-		"lunchpail.image.version=" + imageVersion,
 	}
 
 	if len(app.Spec.Expose) > 0 {
@@ -95,12 +126,13 @@ func TransformShell(runname, namespace string, app Application, queueSpec queue.
 	}
 
 	if verbose {
-		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
+		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
 	opts := helm.TemplateOptions{}
 	opts.OverrideValues = values
-	yaml, err := helm.Template(runname, namespace, templatePath, "", opts)
+	opts.Verbose = verbose
+	yaml, err := helm.Template(releaseName, namespace, templatePath, "", opts)
 	if err != nil {
 		return []string{}, err
 	}

@@ -46,7 +46,6 @@ type Model struct {
 	RunName       string
 	Namespace     string
 	Pools         []Pool
-	Runtime       WorkerStatus
 	Dispatcher    WorkerStatus
 	InternalS3    WorkerStatus
 	WorkStealer   WorkerStatus

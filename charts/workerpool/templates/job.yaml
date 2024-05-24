@@ -10,10 +10,6 @@ metadata:
     app.kubernetes.io/name: {{ print .Release.Name | trunc 53 }}
     app.kubernetes.io/instance: {{ .Values.runName }}
     app.kubernetes.io/managed-by: lunchpail.io
-  {{- if not .Values.mcad.enabled }}
-  ownerReferences:
-    {{ include "owner" . | indent 4 }}
-  {{- end }}
 spec:
   parallelism: {{ .Values.workers.count }}
   # see 
@@ -44,8 +40,7 @@ spec:
       restartPolicy: Never
 
       {{- if .Values.securityContext }}
-      securityContext:
-        {{ .Values.securityContext | b64dec | indent 8 }}
+      securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
       {{- end }}
       
       terminationGracePeriodSeconds: 5 # give time for the preStop in the container

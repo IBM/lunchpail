@@ -1,12 +1,10 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
 
-	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/runs"
 )
@@ -44,16 +42,6 @@ func deleteStuff(runname, namespace, kind string) error {
 }
 
 func deleteAllStuff(runname, namespace string) error {
-	group, _ := errgroup.WithContext(context.Background())
-
-	group.Go(func() error { return deleteStuff(runname, namespace, "workerpools.lunchpail.io") })
-	group.Go(func() error { return deleteStuff(runname, namespace, "runs.lunchpail.io") })
-	group.Go(func() error { return deleteStuff(runname, namespace, "applications.lunchpail.io") })
-
-	if err := group.Wait(); err != nil {
-		return err
-	}
-
 	return deleteNormalStuff(runname, namespace)
 }
 

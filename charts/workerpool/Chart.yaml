@@ -1,6 +1,6 @@
 apiVersion: v1
-name: jaas-workerpool
-description: Deploys a WorkerPool
+name: lunchpail-workerpool-template
+description: Template for WorkerPool deployment
 type: application
 
 # Chart version.

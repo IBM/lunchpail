@@ -82,9 +82,8 @@ function waitForIt {
         done
     done
 
-    local run_name=$(kubectl -n $ns get run.lunchpail.io -l $selector --no-headers -o custom-columns=NAME:.metadata.name)
-    kubectl delete run $run_name -n $ns
-    echo "✅ PASS run-controller delete test=$name"
+    local run_name=$(kubectl -n $ns get pod -o custom-columns=N:'.metadata.labels.app\.kubernetes\.io/instance' --no-headers | head -1)
+    echo "✅ PASS run-controller found run test=$name"
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
@@ -209,13 +208,10 @@ function waitForUnassignedAndOutbox {
 
         runIter=$((runIter+1))
     done
-
     echo "✅ PASS run-controller run test $name"
 
-    local selector=app.kubernetes.io/part-of=$name,app.kubernetes.io/component!=workdispatcher
-    run_name=$(kubectl -n $ns get run.lunchpail.io -l $selector --no-headers -o custom-columns=NAME:.metadata.name)
-    kubectl delete run $run_name -n $ns
-    echo "✅ PASS run-controller delete test $name"
+    local run_name=$(kubectl -n $ns get pod -o custom-columns=N:'.metadata.labels.app\.kubernetes\.io/instance' --no-headers | head -1)
+    echo "✅ PASS run-controller found run test=$name"
 }
 
 function waitForStatus {

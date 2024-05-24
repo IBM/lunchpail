@@ -1,5 +1,5 @@
 {{- define "containers/workdir" }}
-{{- if and .Values.workdir.repo }}
+{{- if .Values.workdir.repo }}
 - name: workdir
   image: {{ print .Values.lunchpail.image.registry "/" .Values.lunchpail.image.repo "/jaas-workdir-component:" .Values.lunchpail.image.version }}
   volumeMounts:

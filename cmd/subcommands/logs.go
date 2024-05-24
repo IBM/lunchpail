@@ -36,8 +36,6 @@ func newLogsCommand() *cobra.Command {
 					comps = append(comps, lunchpail.DispatcherComponent)
 				} else if component == "workstealer" {
 					comps = append(comps, lunchpail.WorkStealerComponent)
-				} else if component == "lunchpail" {
-					comps = append(comps, lunchpail.RuntimeComponent)
 				} else {
 					return fmt.Errorf("Unsupported component %s", component)
 				}

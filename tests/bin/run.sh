@@ -78,7 +78,25 @@ then
         TEST_NAME=$testname "$1"/preinit.sh
     fi
 
-    deploy $testname $app $branch $deployname
+    if [[ -n "$expectCompilationFailure" ]]
+    then
+        set +e
+        out=$(deploy $testname $app $branch $deployname 2>&1)
+        if [[ $? = 0 ]]
+        then echo "Expected compilation failure, but compilation succeeded" 1>&2 && exit 1
+        else
+            echo "Got expected compilation failure"
+            for e in "${expected[@]}"; do
+                if [[ ! "$out" =~ $e ]]
+                then echo "Missing expected compilation failure output from out=$out" && exit 1
+                fi
+            done
+            echo "Got all expected compilation failure outputs"
+            exit 0
+        fi
+    else
+        deploy $testname $app $branch $deployname
+    fi
 
     # if [[ $(basename $1) = test7d ]]
     # then kubectl logs deploy/run-controller -n $(basename $1) -f &

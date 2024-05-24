@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io"
 	"os"
+	"slices"	
 	"strings"
 )
 
@@ -76,7 +77,7 @@ type Application struct {
 		Description              string                   `yaml:"description,omitempty"`
 		SupportsGpu              bool                     `yaml:"supportsGpu,omitempty"`
 		Expose                   []int                    `yaml:"expose,omitempty"`
-		MinSize                  RunSize                  `yaml:"minSize,omitempty"`
+		MinSize                  TShirtSize               `yaml:"minSize,omitempty"`
 		Tags                     []string                 `yaml:"tags,omitempty"`
 		Repo                     string                   `yaml:"repo,omitempty"`
 		Command                  string                   `yaml:"command,omitempty"`
@@ -235,4 +236,22 @@ func stringVal(key string, m UnknownResource) (string, error) {
 	}
 
 	return val, nil
+}
+
+func (model *AppModel) getApplicationByName(appname string) (Application, bool) {
+	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Metadata.Name == appname })
+	if idx < 0 {
+		return Application{}, false
+	}
+
+	return model.Applications[idx], true
+}
+
+func (model *AppModel) getApplicationByRole(role Role) (Application, bool) {
+	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Spec.Role == role })
+	if idx < 0 {
+		return Application{}, false
+	}
+
+	return model.Applications[idx], true
 }

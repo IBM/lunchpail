@@ -1,32 +1,25 @@
 package linker
 
 import (
-	"gopkg.in/yaml.v3"
+	"fmt"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
 	"slices"
 	"strings"
 )
 
-func transformApplications(appname, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
+func transformApplications(runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
 	yamls := []string{}
 
 	for _, r := range model.Applications {
-		// until we fully dismantle the controller, we will *also* need to pass through the Application resources
-		if bytes, err := yaml.Marshal(r); err != nil {
-			return yamls, err
-		} else {
-			yamls = append(yamls, string(bytes))
-		}
-
 		switch r.Spec.Api {
 		case WorkqueueApi:
-			// currently, we implicitly handle this in the
-			// core charts/template/workstealer. perhaps
-			// we can move that to be parallel to the
-			// other api handlers
+			// TODO: We implicitly handle this in
+			// charts/template/workstealer. Perhaps we can
+			// move that to be parallel to the other api
+			// handlers.
 			continue
 		case ShellApi:
-			if tyamls, err := TransformShell(appname, runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
+			if tyamls, err := TransformShell(runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
 				return yamls, err
 			} else {
 				yamls = slices.Concat(yamls, tyamls)
@@ -37,14 +30,19 @@ func transformApplications(appname, runname, namespace string, model AppModel, q
 	return yamls, nil
 }
 
-func transformWorkerPools(pools []WorkerPool) ([]string, error) {
+func transformWorkerPools(runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
 	yamls := []string{}
 
-	for _, r := range pools {
-		if bytes, err := yaml.Marshal(r); err != nil {
+	app, found := model.getApplicationByRole(WorkerRole)
+	if !found {
+		return []string{}, fmt.Errorf("No Application with role Worker found")
+	}
+	
+	for _, pool := range model.WorkerPools {
+		if tyamls, err := TransformWorkerPool(runname, namespace, app, pool, queueSpec, model.RepoSecrets, verbose); err != nil {
 			return yamls, err
 		} else {
-			yamls = append(yamls, string(bytes))
+			yamls = slices.Concat(yamls, tyamls)
 		}
 	}
 
@@ -53,12 +51,12 @@ func transformWorkerPools(pools []WorkerPool) ([]string, error) {
 
 // AppModel -> multi-document yaml string
 func transform(appname, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) (string, error) {
-	apps, err := transformApplications(appname, runname, namespace, model, queueSpec, verbose)
+	apps, err := transformApplications(runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return "", err
 	}
 
-	pools, err := transformWorkerPools(model.WorkerPools)
+	pools, err := transformWorkerPools(runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return "", err
 	}

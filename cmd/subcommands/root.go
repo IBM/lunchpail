@@ -1,6 +1,7 @@
 package subcommands
 
 import (
+	"os"
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -10,12 +11,16 @@ var rootCmd = &cobra.Command{
 	Use: "lunchpail",
 }
 
-func Execute() {
+func Execute() error {
 	if lunchpail.IsAssembled() {
 		rootCmd.Use = lunchpail.AssembledAppName()
 	}
 
-	rootCmd.Execute()
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+
+	return nil
 }
 
 func init() {

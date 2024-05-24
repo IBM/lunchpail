@@ -24,20 +24,22 @@ func apply(yaml, namespace string, operation Operation) error {
 		return err
 	}
 
-	extra := ""
-	n := 2
+	n := 1
+	args := []string{string(operation), "-f", file.Name(), "-n", namespace}
 	switch operation {
 	case applyOp:
-		extra = "--server-side"
+		// args = append(args, "--server-side")
+		n = 2 // see the comment below re: n=2
 	case deleteOp:
-		extra = "--ignore-not-found"
-		n = 1
+		args = append(args, "--ignore-not-found")
 	}
 
-	// temporarily... while we still have CRDs, we may need to apply twice to get the crds in place
+	// The yaml may be self-referential, e.g. it may include a
+	// namespace spec and also use that namespace spec; same for
+	// service accounts. Thus, we may need to apply twice (n=2)
 	var applyerr error
 	for range n {
-		cmd := exec.Command("kubectl", string(operation), extra, "-f", file.Name(), "-n", namespace)
+		cmd := exec.Command("kubectl", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		applyerr = cmd.Run()
