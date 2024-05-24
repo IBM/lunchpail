@@ -41,7 +41,7 @@ func parseHumanTime(delayString string) (int, error) {
 	return val * unit, nil
 }
 
-func TransformWorkerPool(runname, namespace string, app Application, pool WorkerPool, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
+func TransformWorkerPool(assemblyName, runname, namespace string, app Application, pool WorkerPool, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -93,7 +93,7 @@ func TransformWorkerPool(runname, namespace string, app Application, pool Worker
 	values := []string{
 		"name=" + app.Metadata.Name,
 		"runName=" + runname,
-		"partOf=" + app.Metadata.Name,
+		"partOf=" + assemblyName,
 		"component=workerpool",
 		"enclosingRun=" + runname,
 		"image=" + app.Spec.Image,

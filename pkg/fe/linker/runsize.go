@@ -9,13 +9,14 @@ type RunSizeConfig struct {
 
 func ordinal(size TShirtSize) uint {
 	switch size {
-	case XxsSize: return 0
-	case XsSize: return 1
-	case SmSize: return 2
-	case MdSize: return 3
-	case LgSize: return 4
-	case XlSize: return 5
-	case XxlSize: return 6
+	case AutoSize: return 0
+	case XxsSize: return 1
+	case XsSize: return 2
+	case SmSize: return 3
+	case MdSize: return 4
+	case LgSize: return 5
+	case XlSize: return 6
+	case XxlSize: return 7
 	}
 
 	return 0
@@ -24,6 +25,7 @@ func ordinal(size TShirtSize) uint {
 type RunConfigs map[TShirtSize]RunSizeConfig
 
 var defaultConfig = RunConfigs{
+	AutoSize: {1, "auto", "auto", 0},
 	XxsSize: {1, "500m", "500Mi", 0},
 	XsSize: {1, "1", "2Gi", 1},
 	SmSize: {2, "1", "4Gi", 1},

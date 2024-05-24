@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 
 	"github.com/kirsle/configdir"
 	"github.com/mittwald/go-helm-client"
@@ -13,10 +12,7 @@ import (
 
 type TemplateOptions struct {
 	OverrideValues  []string
-	Wait            bool
 	Verbose         bool
-	CreateNamespace bool
-	SkipCRDs        bool
 }
 
 func Client(namespace string, verbose bool) (helmclient.Client, error) {
@@ -41,12 +37,7 @@ func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOp
 		ReleaseName:      releaseName,
 		ChartName:        templatePath,
 		Namespace:        namespace,
-		Wait:             opts.Wait,
-		SkipCRDs:         opts.SkipCRDs,
-		UpgradeCRDs:      true,
-		CreateNamespace:  opts.CreateNamespace,
 		DependencyUpdate: true,
-		Timeout:          360 * time.Second,
 		ValuesYaml:       yaml,
 		ValuesOptions: values.Options{
 			Values: opts.OverrideValues,

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func transformApplications(runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
+func transformApplications(assemblyName, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
 	yamls := []string{}
 
 	for _, r := range model.Applications {
@@ -19,7 +19,7 @@ func transformApplications(runname, namespace string, model AppModel, queueSpec 
 			// handlers.
 			continue
 		case ShellApi:
-			if tyamls, err := TransformShell(runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
+			if tyamls, err := TransformShell(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
 				return yamls, err
 			} else {
 				yamls = slices.Concat(yamls, tyamls)
@@ -30,7 +30,7 @@ func transformApplications(runname, namespace string, model AppModel, queueSpec 
 	return yamls, nil
 }
 
-func transformWorkerPools(runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
+func transformWorkerPools(assemblyName, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
 	yamls := []string{}
 
 	app, found := model.getApplicationByRole(WorkerRole)
@@ -39,7 +39,7 @@ func transformWorkerPools(runname, namespace string, model AppModel, queueSpec q
 	}
 	
 	for _, pool := range model.WorkerPools {
-		if tyamls, err := TransformWorkerPool(runname, namespace, app, pool, queueSpec, model.RepoSecrets, verbose); err != nil {
+		if tyamls, err := TransformWorkerPool(assemblyName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, verbose); err != nil {
 			return yamls, err
 		} else {
 			yamls = slices.Concat(yamls, tyamls)
@@ -50,13 +50,13 @@ func transformWorkerPools(runname, namespace string, model AppModel, queueSpec q
 }
 
 // AppModel -> multi-document yaml string
-func transform(appname, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) (string, error) {
-	apps, err := transformApplications(runname, namespace, model, queueSpec, verbose)
+func transform(assemblyName, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) (string, error) {
+	apps, err := transformApplications(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return "", err
 	}
 
-	pools, err := transformWorkerPools(runname, namespace, model, queueSpec, verbose)
+	pools, err := transformWorkerPools(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return "", err
 	}

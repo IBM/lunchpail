@@ -23,22 +23,17 @@ type Linked struct {
 }
 
 func Link(opts LinkOptions) (Linked, error) {
-	appname, templatePath, err := assembler.Stage(assembler.StageOptions{"", opts.Verbose})
+	assemblyName, templatePath, err := assembler.Stage(assembler.StageOptions{"", opts.Verbose})
 	if err != nil {
 		return Linked{}, err
 	}
 
 	namespace := opts.Namespace
 	if namespace == "" {
-		namespace = appname
+		namespace = assemblyName
 	}
 
-	// If we were asked to watch, then the status.UI will do the
-	// waiting for us. Otherwise, ask the helm client to wait for
-	// readiness.
-	wait := !opts.Watch
-
-	runname, err := autorunName(appname)
+	runname, err := autorunName(assemblyName)
 	if err != nil {
 		return Linked{}, err
 	}
@@ -53,16 +48,16 @@ func Link(opts LinkOptions) (Linked, error) {
 		return Linked{}, err
 	}
 
-	runname, yaml, overrideValues, err := yaml.Generate(appname, runname, namespace, templatePath, internalS3Port, queueSpec, opts.GenerateOptions)
+	runname, yaml, overrideValues, err := yaml.Generate(assemblyName, runname, namespace, templatePath, internalS3Port, queueSpec, opts.GenerateOptions)
 	if err != nil {
 		return Linked{}, err
 	}
 
-	if yaml, err := helm.Template(runname, namespace, templatePath, yaml, helm.TemplateOptions{overrideValues, wait, opts.Verbose, !opts.DryRun, !opts.DryRun}); err != nil {
+	if yaml, err := helm.Template(runname, namespace, templatePath, yaml, helm.TemplateOptions{overrideValues, opts.Verbose}); err != nil {
 		return Linked{}, err
 	} else if appModel, err := parse(yaml); err != nil {
 		return Linked{}, err
-	} else if linkedYaml, err := transform(appname, runname, namespace, appModel, queueSpec, opts.Verbose); err != nil {
+	} else if linkedYaml, err := transform(assemblyName, runname, namespace, appModel, queueSpec, opts.Verbose); err != nil {
 		return Linked{}, err
 	} else {
 		return Linked{

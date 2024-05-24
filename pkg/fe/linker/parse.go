@@ -131,6 +131,7 @@ const (
 	LgSize             = "lg"
 	XlSize             = "xl"
 	XxlSize            = "xxl"
+	AutoSize           = "auto"
 )
 
 type WorkerPool struct {

@@ -15,7 +15,7 @@ import (
 //go:embed shell.tar.gz
 var shellTemplate embed.FS
 
-func TransformShell(runname, namespace string, app Application, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
+func TransformShell(assemblyName, runname, namespace string, app Application, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -61,7 +61,7 @@ func TransformShell(runname, namespace string, app Application, queueSpec queue.
 
 	values := []string{
 		"name=" + runname,
-		"partOf=" + app.Metadata.Name,
+		"partOf=" + assemblyName,
 		"component=" + component,
 		"enclosingRun=" + runname,
 		"image=" + app.Spec.Image,
