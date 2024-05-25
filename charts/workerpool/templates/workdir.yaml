@@ -31,7 +31,7 @@ metadata:
   name: {{ print (.Release.Name | trunc 41) "-wp-workdir" }}
   namespace: {{ .Values.namespace }}
   labels:
-    app.kubernetes.io/component: shell
+    app.kubernetes.io/component: workerpool
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
