@@ -32,8 +32,8 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/component: workerpool
-    app.kubernetes.io/name: {{ .Values.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ print .Release.Name | trunc 53 }}
+    app.kubernetes.io/instance: {{ .Values.runName }}
     app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/managed-by: lunchpail.io
 data:
