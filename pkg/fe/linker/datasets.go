@@ -17,8 +17,8 @@ type pvc struct {
 
 type volume struct {
 	Name                  string `json:"name"`
-	Nfs                   *nfs `json:"nfs,omitempty"`
-	PersistentVolumeClaim *pvc `json:"persistentVolumeClaim,omitempty"`
+	Nfs                   *nfs   `json:"nfs,omitempty"`
+	PersistentVolumeClaim *pvc   `json:"persistentVolumeClaim,omitempty"`
 }
 
 type volumeMount struct {
@@ -32,7 +32,7 @@ type secretRef struct {
 
 type envFrom struct {
 	SecretRef secretRef `json:"secretRef"`
-	Prefix    string `json:"prefix,omitempty"`
+	Prefix    string    `json:"prefix,omitempty"`
 }
 
 func envForQueue(queueSpec queue.Spec) envFrom {

@@ -3,10 +3,10 @@ package hlir
 import "slices"
 
 type AppModel struct {
-	Applications    []Application
-	WorkerPools     []WorkerPool
-	RepoSecrets     []RepoSecret
-	Others          []string
+	Applications []Application
+	WorkerPools  []WorkerPool
+	RepoSecrets  []RepoSecret
+	Others       []string
 }
 
 func (model *AppModel) GetApplicationByName(appname string) (Application, bool) {

@@ -38,7 +38,7 @@ func transformWorkerPools(assemblyName, runname, namespace string, model hlir.Ap
 	if !found {
 		return []string{}, fmt.Errorf("No Application with role Worker found")
 	}
-	
+
 	for _, pool := range model.WorkerPools {
 		if tyamls, err := TransformWorkerPool(assemblyName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, verbose); err != nil {
 			return yamls, err

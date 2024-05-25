@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
-	"lunchpail.io/pkg/util"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/util"
 	"os"
 	"strconv"
 	"strings"
@@ -38,7 +38,7 @@ func parseHumanTime(delayString string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-		
+
 	return val * unit, nil
 }
 
@@ -49,13 +49,13 @@ func TransformWorkerPool(assemblyName, runname, namespace string, app hlir.Appli
 			fmt.Sprintf(
 				"%s-%s",
 				runname,
-				strings.Replace(pool.Metadata.Name, app.Metadata.Name + "-", "", -1),
+				strings.Replace(pool.Metadata.Name, app.Metadata.Name+"-", "", -1),
 			),
 			53,
 		),
 		"-",
 	)
-		
+
 	sizing := workerpoolSizing(pool, app)
 	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
 	env, enverr := helm.ToJsonB64(app.Spec.Env)

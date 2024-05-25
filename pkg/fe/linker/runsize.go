@@ -4,22 +4,22 @@ import "lunchpail.io/pkg/ir/hlir"
 
 type RunSizeConfig struct {
 	Workers int
-	Cpu string
-	Memory string
-	Gpu int
+	Cpu     string
+	Memory  string
+	Gpu     int
 }
 
 type RunConfigs map[hlir.TShirtSize]RunSizeConfig
 
 var defaultConfig = RunConfigs{
 	hlir.AutoSize: {1, "auto", "auto", 0},
-	hlir.XxsSize: {1, "500m", "500Mi", 0},
-	hlir.XsSize: {1, "1", "2Gi", 1},
-	hlir.SmSize: {2, "1", "4Gi", 1},
-	hlir.MdSize: {4, "2", "8Gi", 1},
-	hlir.LgSize: {8, "4", "16Gi", 1},
-	hlir.XlSize: {20, "4", "32Gi", 1},
-	hlir.XxlSize: {40, "8", "64Gi", 1},
+	hlir.XxsSize:  {1, "500m", "500Mi", 0},
+	hlir.XsSize:   {1, "1", "2Gi", 1},
+	hlir.SmSize:   {2, "1", "4Gi", 1},
+	hlir.MdSize:   {4, "2", "8Gi", 1},
+	hlir.LgSize:   {8, "4", "16Gi", 1},
+	hlir.XlSize:   {20, "4", "32Gi", 1},
+	hlir.XxlSize:  {40, "8", "64Gi", 1},
 }
 
 func applicationSizing(app hlir.Application) RunSizeConfig {

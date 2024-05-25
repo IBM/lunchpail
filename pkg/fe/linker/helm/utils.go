@@ -19,7 +19,7 @@ func ToArray(A []int) string {
 }
 
 func toB64(b []byte) string {
-	if len(b) == 0 || bytes.Compare(b, []byte{'{','}'}) == 0 || bytes.Compare(b, []byte{'[',']'}) == 0  || bytes.Compare(b, []byte{'{','}','\n'}) == 0 || bytes.Compare(b, []byte{'[','{','}',']'}) == 0 || bytes.Compare(b, []byte{'[','{','}',']','\n'}) == 0 {
+	if len(b) == 0 || bytes.Compare(b, []byte{'{', '}'}) == 0 || bytes.Compare(b, []byte{'[', ']'}) == 0 || bytes.Compare(b, []byte{'{', '}', '\n'}) == 0 || bytes.Compare(b, []byte{'[', '{', '}', ']'}) == 0 || bytes.Compare(b, []byte{'[', '{', '}', ']', '\n'}) == 0 {
 		return ""
 	}
 	return b64.StdEncoding.EncodeToString(b)

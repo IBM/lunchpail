@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"io"
+	"lunchpail.io/pkg/ir/hlir"
 	"os"
 	"strings"
-	"lunchpail.io/pkg/ir/hlir"
 )
 
 func parse(yamls string) (hlir.AppModel, error) {

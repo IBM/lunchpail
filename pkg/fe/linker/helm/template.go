@@ -11,8 +11,8 @@ import (
 )
 
 type TemplateOptions struct {
-	OverrideValues  []string
-	Verbose         bool
+	OverrideValues []string
+	Verbose        bool
 }
 
 func Client(namespace string, verbose bool) (helmclient.Client, error) {

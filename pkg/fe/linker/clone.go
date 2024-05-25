@@ -3,10 +3,10 @@ package linker
 import (
 	"fmt"
 	"lunchpail.io/pkg/fe/linker/helm"
+	"lunchpail.io/pkg/ir/hlir"
 	"path/filepath"
 	"slices"
 	"strings"
-	"lunchpail.io/pkg/ir/hlir"
 )
 
 type data map[string]string

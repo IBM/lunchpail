@@ -1,9 +1,9 @@
 package subcommands
 
 import (
-	"os"
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/lunchpail"
+	"os"
 )
 
 // RootCmd represents the base command when called without any subcommands

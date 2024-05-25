@@ -2,9 +2,9 @@ package kubernetes
 
 import (
 	"io/ioutil"
+	"lunchpail.io/pkg/ir"
 	"os"
 	"os/exec"
-	"lunchpail.io/pkg/ir"
 )
 
 type Operation string

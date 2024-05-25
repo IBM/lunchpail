@@ -7,7 +7,7 @@ import (
 
 type LLIR struct {
 	CoreYaml []string
-	AppYaml []string
+	AppYaml  []string
 }
 
 func marshal(set []string) string {
