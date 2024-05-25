@@ -34,6 +34,12 @@ func deleteNormalStuff(runname, namespace string) error {
 		return deleteStuff(runname, namespace, "jobs.batch")
 	})
 	group.Go(func() error {
+		return deleteStuff(runname, namespace, "persistentvolume")
+	})
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "persistentvolumeclaim")
+	})
+	group.Go(func() error {
 		return deleteStuff(runname, namespace, "deployments.app")
 	})
 	group.Go(func() error {
