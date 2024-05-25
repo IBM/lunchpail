@@ -6,6 +6,7 @@ import (
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/ir/hlir"
 	"os"
 	"strconv"
 	"strings"
@@ -15,7 +16,7 @@ import (
 //go:embed shell.tar.gz
 var shellTemplate embed.FS
 
-func TransformShell(assemblyName, runname, namespace string, app Application, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
+func TransformShell(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -26,7 +27,7 @@ func TransformShell(assemblyName, runname, namespace string, app Application, qu
 		component = "shell"
 	}
 
-	sizing := app.sizing()
+	sizing := applicationSizing(app)
 	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
 	env, enverr := helm.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := helm.ToYamlB64(app.Spec.SecurityContext)

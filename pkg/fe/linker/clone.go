@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"lunchpail.io/pkg/ir/hlir"
 )
 
 type data map[string]string
@@ -18,9 +19,9 @@ func fetch_secret(name, namespace string) (string, error) {
 	return "", nil
 }
 
-func codeFromGit(namespace, repo string, repoSecrets []RepoSecret) (string, string) {
-	// see if we have a matching PlatformRepoSecret
-	repoSecretIdx := slices.IndexFunc(repoSecrets, func(rs RepoSecret) bool { return strings.Contains(repo, rs.Spec.Repo) })
+func codeFromGit(namespace, repo string, repoSecrets []hlir.RepoSecret) (string, string) {
+	// see if we have a matching RepoSecret
+	repoSecretIdx := slices.IndexFunc(repoSecrets, func(rs hlir.RepoSecret) bool { return strings.Contains(repo, rs.Spec.Repo) })
 	if repoSecretIdx >= 0 {
 		return repo, repoSecrets[repoSecretIdx].Spec.Secret.Name
 	}
@@ -28,7 +29,7 @@ func codeFromGit(namespace, repo string, repoSecrets []RepoSecret) (string, stri
 	return repo, ""
 }
 
-func codeFromLiteral(codeSpecs []Code) (data, string) {
+func codeFromLiteral(codeSpecs []hlir.Code) (data, string) {
 	cm_data := data{}
 	cm_mount_path := ""
 
@@ -41,7 +42,7 @@ func codeFromLiteral(codeSpecs []Code) (data, string) {
 	return cm_data, cm_mount_path
 }
 
-func code(application Application, namespace string, repoSecrets []RepoSecret) (string, string, data, string, error) {
+func code(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, data, string, error) {
 	if len(application.Spec.Code) > 0 {
 		// then the Application specifies a `spec.code` literal
 		// (i.e. inlined code directly in the Application yaml)
@@ -59,7 +60,7 @@ func code(application Application, namespace string, repoSecrets []RepoSecret) (
 	}
 }
 
-func codeB64(application Application, namespace string, repoSecrets []RepoSecret) (string, string, string, string, error) {
+func codeB64(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, string, string, error) {
 	a, b, d, e, err := code(application, namespace, repoSecrets)
 	if err != nil {
 		return a, b, "", e, err

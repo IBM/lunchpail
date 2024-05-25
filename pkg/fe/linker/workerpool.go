@@ -6,6 +6,7 @@ import (
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
 	"lunchpail.io/pkg/util"
+	"lunchpail.io/pkg/ir/hlir"
 	"os"
 	"strconv"
 	"strings"
@@ -41,7 +42,7 @@ func parseHumanTime(delayString string) (int, error) {
 	return val * unit, nil
 }
 
-func TransformWorkerPool(assemblyName, runname, namespace string, app Application, pool WorkerPool, queueSpec queue.Spec, repoSecrets []RepoSecret, verbose bool) ([]string, error) {
+func TransformWorkerPool(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -55,7 +56,7 @@ func TransformWorkerPool(assemblyName, runname, namespace string, app Applicatio
 		"-",
 	)
 		
-	sizing := pool.sizing(app)
+	sizing := workerpoolSizing(pool, app)
 	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
 	env, enverr := helm.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := helm.ToYamlB64(app.Spec.SecurityContext)

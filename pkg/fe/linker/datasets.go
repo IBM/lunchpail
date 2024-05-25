@@ -3,6 +3,7 @@ package linker
 import (
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/ir/hlir"
 )
 
 type nfs struct {
@@ -38,7 +39,7 @@ func envForQueue(queueSpec queue.Spec) envFrom {
 	return envFrom{secretRef{queueSpec.Name}, queueSpec.Name + "_"}
 }
 
-func datasets(app Application, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, error) {
+func datasets(app hlir.Application, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, error) {
 	volumes := []volume{}
 	volumeMounts := []volumeMount{}
 	envFroms := []envFrom{envForQueue(queueSpec)}
@@ -68,7 +69,7 @@ func datasets(app Application, queueSpec queue.Spec) ([]volume, []volumeMount, [
 	return volumes, volumeMounts, envFroms, nil
 }
 
-func datasetsB64(app Application, queueSpec queue.Spec) (string, string, string, error) {
+func datasetsB64(app hlir.Application, queueSpec queue.Spec) (string, string, string, error) {
 	volumes, volumeMounts, envFroms, err := datasets(app, queueSpec)
 	if err != nil {
 		return "", "", "", err
