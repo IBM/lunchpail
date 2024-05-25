@@ -3,8 +3,8 @@ package linker
 import (
 	"fmt"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/ir"
 	"slices"
-	"strings"
 )
 
 func transformApplications(assemblyName, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
@@ -50,19 +50,19 @@ func transformWorkerPools(assemblyName, runname, namespace string, model AppMode
 }
 
 // AppModel -> multi-document yaml string
-func transform(assemblyName, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) (string, error) {
+func transform(assemblyName, runname, namespace string, model AppModel, queueSpec queue.Spec, verbose bool) (ir.LLIR, error) {
 	apps, err := transformApplications(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
-		return "", err
+		return ir.LLIR{}, err
 	}
 
 	pools, err := transformWorkerPools(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
-		return "", err
+		return ir.LLIR{}, err
 	}
 
-	return strings.Join(
-		slices.Concat(apps, pools, model.Others),
-		"\n---\n",
-	), nil
+	return ir.LLIR{
+		model.Others,
+		slices.Concat(apps, pools),
+	}, nil
 }

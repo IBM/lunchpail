@@ -6,6 +6,7 @@ import (
 	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/fe/linker/yaml"
 	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/ir"
 	"math/rand"
 	"os"
 )
@@ -19,7 +20,7 @@ type LinkOptions struct {
 type Linked struct {
 	Runname   string
 	Namespace string
-	Yaml      string
+	Ir        ir.LLIR
 }
 
 func Link(opts LinkOptions) (Linked, error) {

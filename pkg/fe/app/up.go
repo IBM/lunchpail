@@ -13,9 +13,9 @@ func Up(opts UpOptions) error {
 	if linked, err := linker.Link(opts); err != nil {
 		return err
 	} else if opts.DryRun {
-		fmt.Printf(linked.Yaml)
+		fmt.Printf(linked.Ir.Yaml())
 	} else {
-		if err := kubernetes.Apply(linked.Yaml, linked.Namespace); err != nil {
+		if err := kubernetes.Apply(linked.Ir, linked.Namespace); err != nil {
 			return err
 		} else if opts.Watch {
 			return status.UI(linked.Runname, status.Options{linked.Namespace, true, opts.Verbose, false, 500, 5})

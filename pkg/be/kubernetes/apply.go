@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"lunchpail.io/pkg/ir"
 )
 
 type Operation string
@@ -24,12 +25,10 @@ func apply(yaml, namespace string, operation Operation) error {
 		return err
 	}
 
-	n := 1
 	args := []string{string(operation), "-f", file.Name(), "-n", namespace}
 	switch operation {
 	case applyOp:
 		// args = append(args, "--server-side")
-		n = 2 // see the comment below re: n=2
 	case deleteOp:
 		args = append(args, "--ignore-not-found")
 	}
@@ -37,22 +36,19 @@ func apply(yaml, namespace string, operation Operation) error {
 	// The yaml may be self-referential, e.g. it may include a
 	// namespace spec and also use that namespace spec; same for
 	// service accounts. Thus, we may need to apply twice (n=2)
-	var applyerr error
-	for range n {
-		cmd := exec.Command("kubectl", args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		applyerr = cmd.Run()
-		if applyerr == nil {
-			break
-		}
-	}
-
-	return applyerr
+	cmd := exec.Command("kubectl", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
-func Apply(yaml, namespace string) error {
-	return apply(yaml, namespace, applyOp)
+func Apply(ir ir.LLIR, namespace string) error {
+	for _, yaml := range ir.Yamlset() {
+		if err := apply(yaml, namespace, applyOp); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func Delete(yaml, namespace string) error {
