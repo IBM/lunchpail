@@ -63,7 +63,7 @@ func parse(yamls string) (hlir.AppModel, error) {
 			}
 
 		default:
-			model.Others = append(model.Others, string(bytes))
+			model.Others = append(model.Others, m)
 		}
 	}
 

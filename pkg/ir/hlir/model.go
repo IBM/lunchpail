@@ -6,7 +6,7 @@ type AppModel struct {
 	Applications []Application
 	WorkerPools  []WorkerPool
 	RepoSecrets  []RepoSecret
-	Others       []string
+	Others       []UnknownResource
 }
 
 func (model *AppModel) GetApplicationByName(appname string) (Application, bool) {

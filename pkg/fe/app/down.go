@@ -1,12 +1,13 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"os/exec"
-
+	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/runs"
+	"os"
+	"os/exec"
 )
 
 type DownOptions struct {
@@ -27,7 +28,30 @@ func deleteNamespace(namespace string) error {
 }
 
 func deleteNormalStuff(runname, namespace string) error {
-	return deleteStuff(runname, namespace, "all")
+	group, _ := errgroup.WithContext(context.Background())
+
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "jobs.batch")
+	})
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "deployments.app")
+	})
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "secret")
+	})
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "configmap")
+	})
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "serviceaccount")
+	})
+
+	// we have some non-deployment pods
+	group.Go(func() error {
+		return deleteStuff(runname, namespace, "pods")
+	})
+
+	return group.Wait()
 }
 
 func deleteStuff(runname, namespace, kind string) error {
@@ -52,7 +76,7 @@ func Down(runname string, opts DownOptions) error {
 		namespace = opts.Namespace
 	}
 
-	alsoDeleteNamespace := false
+	//	alsoDeleteNamespace := false
 
 	if runname == "" {
 		singletonRun, err := runs.Singleton(appname, namespace)
@@ -60,18 +84,18 @@ func Down(runname string, opts DownOptions) error {
 			return err
 		}
 		runname = singletonRun.Name
-		alsoDeleteNamespace = true
+		//		alsoDeleteNamespace = true
 	}
 
 	if err := deleteAllStuff(runname, namespace); err != nil {
 		return err
 	}
 
-	if alsoDeleteNamespace {
-		if err := deleteNamespace(namespace); err != nil {
-			return err
-		}
-	}
+	//	if alsoDeleteNamespace {
+	//		if err := deleteNamespace(namespace); err != nil {
+	//			return err
+	//		}
+	//	}
 
 	return nil
 }
