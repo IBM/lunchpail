@@ -1,4 +1,4 @@
-package linker
+package parser
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func parse(yamls string) (hlir.AppModel, error) {
+func Parse(yamls string) (hlir.AppModel, error) {
 	model := hlir.AppModel{}
 	d := yaml.NewDecoder(strings.NewReader(yamls))
 

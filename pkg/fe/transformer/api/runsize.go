@@ -1,4 +1,4 @@
-package linker
+package api
 
 import "lunchpail.io/pkg/ir/hlir"
 

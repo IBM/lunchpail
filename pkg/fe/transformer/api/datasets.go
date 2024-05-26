@@ -1,9 +1,9 @@
-package linker
+package api
 
 import (
-	"lunchpail.io/pkg/fe/linker/helm"
-	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/util"
 )
 
 type nfs struct {
@@ -75,17 +75,17 @@ func datasetsB64(app hlir.Application, queueSpec queue.Spec) (string, string, st
 		return "", "", "", err
 	}
 
-	volumesB64, err := helm.ToJsonB64(volumes)
+	volumesB64, err := util.ToJsonB64(volumes)
 	if err != nil {
 		return "", "", "", err
 	}
 
-	volumeMountsB64, err := helm.ToJsonB64(volumeMounts)
+	volumeMountsB64, err := util.ToJsonB64(volumeMounts)
 	if err != nil {
 		return "", "", "", err
 	}
 
-	envFromsB64, err := helm.ToJsonB64(envFroms)
+	envFromsB64, err := util.ToJsonB64(envFroms)
 	if err != nil {
 		return "", "", "", err
 	}

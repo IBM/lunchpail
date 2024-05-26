@@ -1,10 +1,10 @@
-package linker
+package api
 
 import (
 	"embed"
 	"fmt"
-	"lunchpail.io/pkg/fe/linker/helm"
-	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/fe/linker"
+	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/util"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-//go:generate /bin/sh -c "[ -d ../../../charts/workerpool ] && tar --exclude '*~' --exclude '*README.md' -C ../../../charts/workerpool -zcf workerpool.tar.gz . || exit 0"
+//go:generate /bin/sh -c "[ -d ../../../../charts/workerpool ] && tar --exclude '*~' --exclude '*README.md' -C ../../../../charts/workerpool -zcf workerpool.tar.gz . || exit 0"
 //go:embed workerpool.tar.gz
 var workerpoolTemplate embed.FS
 
@@ -42,7 +42,7 @@ func parseHumanTime(delayString string) (int, error) {
 	return val * unit, nil
 }
 
-func TransformWorkerPool(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
+func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -58,9 +58,9 @@ func TransformWorkerPool(assemblyName, runname, namespace string, app hlir.Appli
 
 	sizing := workerpoolSizing(pool, app)
 	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
-	env, enverr := helm.ToJsonB64(app.Spec.Env)
-	securityContext, errsc := helm.ToYamlB64(app.Spec.SecurityContext)
-	containerSecurityContext, errcsc := helm.ToYamlB64(app.Spec.ContainerSecurityContext)
+	env, enverr := util.ToJsonB64(app.Spec.Env)
+	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
+	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
 
 	if codeerr != nil {
@@ -123,17 +123,17 @@ func TransformWorkerPool(assemblyName, runname, namespace string, app hlir.Appli
 	}
 
 	if len(app.Spec.Expose) > 0 {
-		values = append(values, "expose="+helm.ToArray(app.Spec.Expose))
+		values = append(values, "expose="+util.ToArray(app.Spec.Expose))
 	}
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	opts := helm.TemplateOptions{}
+	opts := linker.TemplateOptions{}
 	opts.OverrideValues = values
 	opts.Verbose = verbose
-	yaml, err := helm.Template(releaseName, namespace, templatePath, "", opts)
+	yaml, err := linker.Template(releaseName, namespace, templatePath, "", opts)
 	if err != nil {
 		return []string{}, err
 	}

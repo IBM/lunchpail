@@ -1,4 +1,4 @@
-package helm
+package linker
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ type TemplateOptions struct {
 	Verbose        bool
 }
 
-func Client(namespace string, verbose bool) (helmclient.Client, error) {
+func client(namespace string, verbose bool) (helmclient.Client, error) {
 	helmCacheDir := configdir.LocalCache("helm")
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Using Helm repository cache=%s\n", helmCacheDir)
@@ -44,7 +44,7 @@ func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOp
 		},
 	}
 
-	helmClient, err := Client(namespace, opts.Verbose)
+	helmClient, err := client(namespace, opts.Verbose)
 	if err != nil {
 		return "", err
 	}

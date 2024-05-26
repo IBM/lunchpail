@@ -1,9 +1,10 @@
-package linker
+package transformer
 
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir"
 	"lunchpail.io/pkg/ir/hlir"
 	"slices"
@@ -21,7 +22,7 @@ func transformApplications(assemblyName, runname, namespace string, model hlir.A
 			// handlers.
 			continue
 		case hlir.ShellApi:
-			if tyamls, err := TransformShell(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
+			if tyamls, err := api.LowerShell(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
 				return yamls, err
 			} else {
 				yamls = slices.Concat(yamls, tyamls)
@@ -41,7 +42,7 @@ func transformWorkerPools(assemblyName, runname, namespace string, model hlir.Ap
 	}
 
 	for _, pool := range model.WorkerPools {
-		if tyamls, err := TransformWorkerPool(assemblyName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, verbose); err != nil {
+		if tyamls, err := api.LowerWorkerPool(assemblyName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, verbose); err != nil {
 			return yamls, err
 		} else {
 			yamls = slices.Concat(yamls, tyamls)
@@ -87,8 +88,8 @@ func transformOthers(assemblyName, runname string, model hlir.AppModel) ([]strin
 	return yamls, nil
 }
 
-// AppModel -> multi-document yaml string
-func transform(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) (ir.LLIR, error) {
+// HLIR -> LLIR
+func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) (ir.LLIR, error) {
 	apps, err := transformApplications(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return ir.LLIR{}, err

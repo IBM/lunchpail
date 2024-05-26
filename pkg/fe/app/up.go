@@ -3,14 +3,14 @@ package app
 import (
 	"fmt"
 	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/fe/linker"
+	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
 )
 
-type UpOptions = linker.LinkOptions
+type UpOptions = fe.CompileOptions
 
 func Up(opts UpOptions) error {
-	if linked, err := linker.Link(opts); err != nil {
+	if linked, err := fe.Compile(opts); err != nil {
 		return err
 	} else if opts.DryRun {
 		fmt.Printf(linked.Ir.Yaml())

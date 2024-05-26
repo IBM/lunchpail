@@ -1,23 +1,15 @@
-package linker
+package api
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/fe/linker/helm"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/util"
 	"path/filepath"
 	"slices"
 	"strings"
 )
 
 type data map[string]string
-
-func fetch_secret(name, namespace string) (string, error) {
-	// repo_secret = v1Api.read_namespaced_secret(name, namespace)
-	// user_b64 = repo_secret.data['user']
-	// pat_b64 = repo_secret.data['pat']
-	// return user_b64, pat_b64
-	return "", nil
-}
 
 func codeFromGit(namespace, repo string, repoSecrets []hlir.RepoSecret) (string, string) {
 	// see if we have a matching RepoSecret
@@ -66,6 +58,6 @@ func codeB64(application hlir.Application, namespace string, repoSecrets []hlir.
 		return a, b, "", e, err
 	}
 
-	ds, err := helm.ToJsonB64(d)
+	ds, err := util.ToJsonB64(d)
 	return a, b, ds, e, err
 }

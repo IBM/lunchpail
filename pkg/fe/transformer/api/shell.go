@@ -1,22 +1,23 @@
-package linker
+package api
 
 import (
 	"embed"
 	"fmt"
-	"lunchpail.io/pkg/fe/linker/helm"
-	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/fe/linker"
+	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/util"
 	"os"
 	"strconv"
 	"strings"
 )
 
-//go:generate /bin/sh -c "[ -d ../../../charts/shell ] && tar --exclude '*~' --exclude '*README.md' -C ../../../charts/shell -zcf shell.tar.gz . || exit 0"
+//go:generate /bin/sh -c "[ -d ../../../../charts/shell ] && tar --exclude '*~' --exclude '*README.md' -C ../../../../charts/shell -zcf shell.tar.gz . || exit 0"
 //go:embed shell.tar.gz
 var shellTemplate embed.FS
 
-func TransformShell(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
+func LowerShell(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -29,9 +30,9 @@ func TransformShell(assemblyName, runname, namespace string, app hlir.Applicatio
 
 	sizing := applicationSizing(app)
 	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
-	env, enverr := helm.ToJsonB64(app.Spec.Env)
-	securityContext, errsc := helm.ToYamlB64(app.Spec.SecurityContext)
-	containerSecurityContext, errcsc := helm.ToYamlB64(app.Spec.ContainerSecurityContext)
+	env, enverr := util.ToJsonB64(app.Spec.Env)
+	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
+	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
 	imageRegistry := "ghcr.io"
 	imageRepo := "lunchpail"
@@ -92,16 +93,16 @@ func TransformShell(assemblyName, runname, namespace string, app hlir.Applicatio
 	}
 
 	if len(app.Spec.Expose) > 0 {
-		values = append(values, "expose="+helm.ToArray(app.Spec.Expose))
+		values = append(values, "expose="+util.ToArray(app.Spec.Expose))
 	}
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	opts := helm.TemplateOptions{}
+	opts := linker.TemplateOptions{}
 	opts.OverrideValues = values
-	yaml, err := helm.Template(runname, namespace, templatePath, "", opts)
+	yaml, err := linker.Template(runname, namespace, templatePath, "", opts)
 	if err != nil {
 		return []string{}, err
 	}

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func autorunName(appname string) (string, error) {
+func GenerateRunName(appname string) (string, error) {
 	runname := appname
 
 	if id, err := uuid.NewRandom(); err != nil {

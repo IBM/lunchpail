@@ -1,0 +1,65 @@
+package fe
+
+import (
+	"fmt"
+	"lunchpail.io/pkg/fe/assembler"
+	"lunchpail.io/pkg/fe/linker"
+	"lunchpail.io/pkg/fe/parser"
+	"lunchpail.io/pkg/fe/transformer"
+	"lunchpail.io/pkg/ir"
+	"math/rand"
+	"os"
+)
+
+type CompileOptions struct {
+	linker.ConfigureOptions
+	DryRun bool
+	Watch  bool
+}
+
+type Linked struct {
+	Runname   string
+	Namespace string
+	Ir        ir.LLIR
+}
+
+func Compile(opts CompileOptions) (Linked, error) {
+	assemblyName, templatePath, err := assembler.Stage(assembler.StageOptions{"", opts.Verbose})
+	if err != nil {
+		return Linked{}, err
+	}
+
+	namespace := opts.Namespace
+	if namespace == "" {
+		namespace = assemblyName
+	}
+
+	runname, err := linker.GenerateRunName(assemblyName)
+	if err != nil {
+		return Linked{}, err
+	}
+
+	internalS3Port := rand.Intn(65536) + 1
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
+	}
+
+	yamlValues, dashdashSetValues, queueSpec, err := linker.Configure(assemblyName, runname, namespace, templatePath, internalS3Port, opts.ConfigureOptions)
+	if err != nil {
+		return Linked{}, err
+	}
+
+	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{dashdashSetValues, opts.Verbose}); err != nil {
+		return Linked{}, err
+	} else if hlir, err := parser.Parse(yaml); err != nil {
+		return Linked{}, err
+	} else if llir, err := transformer.Lower(assemblyName, runname, namespace, hlir, queueSpec, opts.Verbose); err != nil {
+		return Linked{}, err
+	} else {
+		return Linked{
+			runname,
+			namespace,
+			llir,
+		}, nil
+	}
+}

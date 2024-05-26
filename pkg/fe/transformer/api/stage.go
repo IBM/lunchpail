@@ -1,4 +1,4 @@
-package linker
+package api
 
 import (
 	"embed"

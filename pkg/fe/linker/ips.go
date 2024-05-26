@@ -1,4 +1,4 @@
-package yaml
+package linker
 
 import (
 	b64 "encoding/base64"

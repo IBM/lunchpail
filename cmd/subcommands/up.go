@@ -2,7 +2,7 @@ package subcommands
 
 import (
 	"lunchpail.io/pkg/fe/app"
-	"lunchpail.io/pkg/fe/linker/yaml"
+	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/lunchpail"
 
 	"github.com/spf13/cobra"
@@ -46,7 +46,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return app.Up(app.UpOptions{yaml.GenerateOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, !dryrunFlag}, dryrunFlag, watchFlag})
+		return app.Up(app.UpOptions{linker.ConfigureOptions{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, verboseFlag, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost, !dryrunFlag}, dryrunFlag, watchFlag})
 	}
 
 	return cmd

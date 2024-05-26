@@ -1,15 +1,15 @@
-package yaml
+package linker
 
 import (
 	"fmt"
 	"os"
 	"os/user"
 
-	"lunchpail.io/pkg/fe/linker/yaml/queue"
+	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
-type GenerateOptions struct {
+type ConfigureOptions struct {
 	Namespace          string
 	ClusterIsOpenShift bool
 	ImagePullSecret    string
@@ -21,14 +21,14 @@ type GenerateOptions struct {
 	CreateNamespace    bool
 }
 
-func Generate(appname, runname, namespace, templatePath string, internalS3Port int, queueSpec queue.Spec, opts GenerateOptions) (string, string, []string, error) {
+func Configure(appname, runname, namespace, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, queue.Spec, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
 	if err != nil {
-		return "", "", []string{}, err
+		return "", []string{}, queue.Spec{}, err
 	} else {
 		// TODO here... how do we determine that boolean values were unset?
 		if opts.Namespace == "" {
@@ -61,14 +61,19 @@ func Generate(appname, runname, namespace, templatePath string, internalS3Port i
 		clusterType = "oc"
 	}
 
+	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
+	if err != nil {
+		return "", []string{}, queue.Spec{}, err
+	}
+
 	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.ImagePullSecret)
 	if ipsErr != nil {
-		return "", "", []string{}, ipsErr
+		return "", []string{}, queue.Spec{}, ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", "", []string{}, err
+		return "", []string{}, queue.Spec{}, err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -163,5 +168,5 @@ s3:
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
 	}
 
-	return runname, yaml, opts.OverrideValues, nil
+	return yaml, opts.OverrideValues, queueSpec, nil
 }
