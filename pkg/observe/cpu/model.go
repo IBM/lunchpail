@@ -1,13 +1,13 @@
 package cpu
 
 import (
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 	"sort"
 )
 
 type Worker struct {
 	Name        string
-	Component   lunchpail.Component
+	Component   observe.Component
 	CpuUtil     float64
 	MemoryBytes uint64
 }

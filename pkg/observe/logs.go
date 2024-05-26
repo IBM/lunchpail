@@ -1,4 +1,4 @@
-package shrinkwrap
+package observe
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"os/exec"
 
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/runs"
 )
 
@@ -15,19 +14,19 @@ type LogsOptions struct {
 	Namespace  string
 	Follow     bool
 	Verbose    bool
-	Components []lunchpail.Component
+	Components []Component
 }
 
-func streamLogs(runname, namespace string, component lunchpail.Component, follow bool, verbose bool) error {
+func streamLogs(runname, namespace string, component Component, follow bool, verbose bool) error {
 	containers := "app"
 	appSelector := ",app.kubernetes.io/instance=" + runname
-	if component == lunchpail.DispatcherComponent {
+	if component == DispatcherComponent {
 		containers = "main"
 		// FIXME: the workdispatcher has an invalid part-of
 		appSelector = ""
-	} else if component == lunchpail.WorkStealerComponent {
+	} else if component == WorkStealerComponent {
 		containers = "workstealer"
-	} else if component == lunchpail.WorkersComponent {
+	} else if component == WorkersComponent {
 		appSelector = ""
 	}
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 )
 
 var Dim = lipgloss.NewStyle().Faint(true)
@@ -27,19 +27,19 @@ var DispatcherComponentStyle = lipgloss.NewStyle().Background(lipgloss.Color("#1
 var WorkersComponentStyle = lipgloss.NewStyle().Background(lipgloss.Color("#a6cee3")).Foreground(blackColor).Padding(0, 1)
 var OtherComponentStyle = lipgloss.NewStyle().Padding(0, 1)
 
-func ComponentStyle(c lunchpail.Component) lipgloss.Style {
+func ComponentStyle(c observe.Component) lipgloss.Style {
 	switch c {
-	case lunchpail.DispatcherComponent:
+	case observe.DispatcherComponent:
 		return DispatcherComponentStyle
-	case lunchpail.WorkersComponent:
+	case observe.WorkersComponent:
 		return WorkersComponentStyle
 	}
 
 	return OtherComponentStyle
 }
 
-func Component(c lunchpail.Component) string {
-	short := fmt.Sprintf("%-8s", lunchpail.ComponentShortName(c))
+func Component(c observe.Component) string {
+	short := fmt.Sprintf("%-8s", observe.ComponentShortName(c))
 
 	return ComponentStyle(c).Render(short)
 }

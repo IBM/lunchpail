@@ -9,7 +9,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 	"lunchpail.io/pkg/observe/qstat"
 )
 
@@ -107,7 +107,7 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 
 	name := pod.Name
 
-	if component == string(lunchpail.WorkersComponent) {
+	if component == string(observe.WorkersComponent) {
 		poolname, exists := pod.Labels["app.kubernetes.io/name"]
 		if !exists {
 			return false, fmt.Errorf("Worker without pool name label %s\n", pod.Name)
@@ -125,19 +125,19 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 
 	var workerStatus WorkerStatus
 	switch component {
-	case string(lunchpail.InternalS3Component):
-		name = lunchpail.ComponentShortName(lunchpail.InternalS3Component)
+	case string(observe.InternalS3Component):
+		name = observe.ComponentShortName(observe.InternalS3Component)
 		workerStatus = statusFromPod(pod)
 		model.InternalS3 = workerStatus
-	case string(lunchpail.WorkStealerComponent):
-		name = lunchpail.ComponentShortName(lunchpail.WorkStealerComponent)
+	case string(observe.WorkStealerComponent):
+		name = observe.ComponentShortName(observe.WorkStealerComponent)
 		workerStatus = statusFromPod(pod)
 		model.WorkStealer = workerStatus
-	case string(lunchpail.DispatcherComponent):
-		name = lunchpail.ComponentShortName(lunchpail.DispatcherComponent)
+	case string(observe.DispatcherComponent):
+		name = observe.ComponentShortName(observe.DispatcherComponent)
 		workerStatus = statusFromPod(pod)
 		model.Dispatcher = workerStatus
-	case string(lunchpail.WorkersComponent):
+	case string(observe.WorkersComponent):
 		if pools, poolIdx, theWorkerStatus, err := updateWorker(name, pod, model.Pools, what); err != nil {
 			return false, err
 		} else {

@@ -3,7 +3,7 @@ package status
 import (
 	"container/ring"
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/observe/qstat"
 )
@@ -41,7 +41,7 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 	})
 
 	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, lunchpail.DispatcherComponent, c)
+		return model.streamLogUpdates(run, namespace, observe.DispatcherComponent, c)
 	})
 
 	errgroup.Go(func() error {

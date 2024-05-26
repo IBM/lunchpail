@@ -1,4 +1,4 @@
-package lunchpail
+package observe
 
 type Component string
 

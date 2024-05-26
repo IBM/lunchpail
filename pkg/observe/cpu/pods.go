@@ -14,10 +14,10 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
 	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 )
 
-func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, intervalSeconds int, c chan Model) error {
+func execIntoPod(pod *v1.Pod, component observe.Component, model *Model, intervalSeconds int, c chan Model) error {
 	sleep := strconv.Itoa(intervalSeconds)
 	sleepNanos := sleep + "000000000"
 	sleepMicros := sleep + "000000"
@@ -36,7 +36,7 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *Model, inter
 		Namespace(pod.Namespace).SubResource("exec")
 
 	container := "app"
-	if component == lunchpail.DispatcherComponent {
+	if component == observe.DispatcherComponent {
 		container = "main"
 	}
 
@@ -116,12 +116,12 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, model *Model, intervalSeco
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
-	var component lunchpail.Component
+	var component observe.Component
 	switch componentName {
-	case string(lunchpail.DispatcherComponent):
-		component = lunchpail.DispatcherComponent
-	case string(lunchpail.WorkersComponent):
-		component = lunchpail.WorkersComponent
+	case string(observe.DispatcherComponent):
+		component = observe.DispatcherComponent
+	case string(observe.WorkersComponent):
+		component = observe.WorkersComponent
 	}
 
 	if component != "" && pod.Status.Phase == "Running" && !model.alreadyExecdIntoPod(pod) {

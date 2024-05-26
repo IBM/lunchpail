@@ -8,18 +8,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	k8s "lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 	"strings"
 	"time"
 )
 
 type LogLine struct {
 	Timestamp time.Time
-	Component lunchpail.Component
+	Component observe.Component
 	Message   string
 }
 
-func (model *Model) streamLogUpdates(run, namespace string, component lunchpail.Component, c chan Model) error {
+func (model *Model) streamLogUpdates(run, namespace string, component observe.Component, c chan Model) error {
 	clientset, _, err := k8s.Client()
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (model *Model) streamLogUpdates(run, namespace string, component lunchpail.
 		sc := bufio.NewScanner(logsStreamer)
 		for sc.Scan() {
 			// TODO on time.Now() we could parse out the timestamps from the logs
-			if model.addMessage(Message{time.Now(), lunchpail.ComponentShortName(component), sc.Text()}) {
+			if model.addMessage(Message{time.Now(), observe.ComponentShortName(component), sc.Text()}) {
 				c <- *model
 			}
 		}
@@ -63,7 +63,7 @@ func (model *Model) streamLogUpdates(run, namespace string, component lunchpail.
 	return nil
 }
 
-func findPodName(run, namespace string, component lunchpail.Component, clientset *kubernetes.Clientset) (string, error) {
+func findPodName(run, namespace string, component observe.Component, clientset *kubernetes.Clientset) (string, error) {
 	for {
 		listOptions := metav1.ListOptions{
 			LabelSelector: "app.kubernetes.io/component=" + string(component) + ",app.kubernetes.io/instance=" + run,

@@ -7,7 +7,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/dustin/go-humanize"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 	"lunchpail.io/pkg/observe/colors"
 	"lunchpail.io/pkg/observe/cpu"
 )
@@ -32,9 +32,9 @@ func cpuline(workers []cpu.Worker, resource Resource) string {
 		prefix := ""
 		paddingLeft := 1
 		switch worker.Component {
-		case lunchpail.DispatcherComponent:
+		case observe.DispatcherComponent:
 			prefix = "D "
-		case lunchpail.WorkersComponent:
+		case observe.WorkersComponent:
 			prefix = "W "
 		}
 
