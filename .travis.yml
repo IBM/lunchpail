@@ -4,8 +4,9 @@ go:
 - 1.22.x
 
 env:
-  - ARGS="-e 'test(7.*|8)'" # baseline tests
-  - ARGS="-i 'test(7.*|8)'" # including only test7* tests (main workqueue tests)
+  - ARGS="-e 'test(7.*|8.*)'" # baseline tests
+  - ARGS="-i 'test7.*' -e 'test8.*'" # including only test7* tests (simpler tests)
+  - ARGS="-i 'test8.*' -e 'test7.*'" # including only test8* tests (application tests)
   - SCRIPT=go.sh            # runs all go tests
 
 before_install: ./tests/bin/travis/setup.sh
