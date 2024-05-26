@@ -1,4 +1,4 @@
-package lunchpail
+package assembly
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-type AppOptions struct {
+type Options struct {
 	Namespace          string
 	ClusterIsOpenShift bool
 	ImagePullSecret    string
@@ -19,10 +19,10 @@ type AppOptions struct {
 }
 
 func optionsPath(appTemplatePath string) string {
-	return filepath.Join(appTemplatePath, "appOptions.json")
+	return filepath.Join(appTemplatePath, "assemblyOptions.json")
 }
 
-func SaveAppOptions(appTemplatePath string, opts AppOptions) error {
+func SaveOptions(appTemplatePath string, opts Options) error {
 	if serialized, err := json.Marshal(opts); err != nil {
 		return err
 	} else {
@@ -30,29 +30,29 @@ func SaveAppOptions(appTemplatePath string, opts AppOptions) error {
 	}
 }
 
-func RestoreAppOptions(appTemplatePath string) (AppOptions, error) {
-	var appOptions AppOptions
+func RestoreOptions(appTemplatePath string) (Options, error) {
+	var assemblyOptions Options
 
 	if _, err := os.Stat(optionsPath(appTemplatePath)); err != nil {
 		// no shrinkwrapped options
-		return appOptions, nil
+		return assemblyOptions, nil
 	}
 
 	jsonFile, err := os.Open(optionsPath(appTemplatePath))
 	if err != nil {
-		return appOptions, err
+		return assemblyOptions, err
 	} else {
 		defer jsonFile.Close()
 	}
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		return appOptions, err
+		return assemblyOptions, err
 	}
 
-	if err := json.Unmarshal(byteValue, &appOptions); err != nil {
-		return appOptions, err
+	if err := json.Unmarshal(byteValue, &assemblyOptions); err != nil {
+		return assemblyOptions, err
 	}
 
-	return appOptions, nil
+	return assemblyOptions, nil
 }

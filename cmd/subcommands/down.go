@@ -1,10 +1,9 @@
 package subcommands
 
 import (
-	"lunchpail.io/pkg/fe/app"
-	"lunchpail.io/pkg/lunchpail"
-
 	"github.com/spf13/cobra"
+	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/boot"
 )
 
 func newDownCmd() *cobra.Command {
@@ -20,7 +19,7 @@ func newDownCmd() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return app.Down(maybeRun, app.DownOptions{namespaceFlag, verboseFlag})
+			return boot.Down(maybeRun, boot.DownOptions{namespaceFlag, verboseFlag})
 		},
 	}
 
@@ -31,7 +30,7 @@ func newDownCmd() *cobra.Command {
 }
 
 func init() {
-	if lunchpail.IsAssembled() {
+	if assembly.IsAssembled() {
 		rootCmd.AddCommand(newDownCmd())
 	}
 }

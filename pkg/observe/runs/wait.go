@@ -2,14 +2,14 @@ package runs
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 	"os"
 	"strings"
 	"time"
 )
 
 func WaitForRun(runname, namespace string, wait bool) (string, string, string, error) {
-	appname := lunchpail.AssembledAppName()
+	appname := assembly.Name()
 	if namespace == "" {
 		namespace = appname
 	}

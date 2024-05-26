@@ -1,7 +1,7 @@
 package info
 
 import (
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 )
 
 type Options struct {
@@ -17,13 +17,13 @@ type Info struct {
 
 func Model(opts Options) (chan Info, error) {
 	c := make(chan Info)
-	appname := lunchpail.AssembledAppName()
+	appname := assembly.Name()
 	namespace := appname
 	if opts.Namespace != "" {
 		namespace = opts.Namespace
 	}
 
-	var model Info = Info{appname, namespace, lunchpail.AssemblyDate()}
+	var model Info = Info{appname, namespace, assembly.Date()}
 	go func() {
 		c <- model
 	}()

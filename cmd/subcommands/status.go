@@ -2,7 +2,7 @@ package subcommands
 
 import (
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/observe/status"
 )
 
@@ -41,7 +41,7 @@ func newStatusCommand() *cobra.Command {
 }
 
 func init() {
-	if lunchpail.IsAssembled() {
+	if assembly.IsAssembled() {
 		rootCmd.AddCommand(newStatusCommand())
 	}
 }

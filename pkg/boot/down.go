@@ -1,10 +1,10 @@
-package app
+package boot
 
 import (
 	"context"
 	"fmt"
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/observe/runs"
 	"os"
 	"os/exec"
@@ -76,8 +76,8 @@ func deleteAllStuff(runname, namespace string) error {
 }
 
 func Down(runname string, opts DownOptions) error {
-	appname := lunchpail.AssembledAppName()
-	namespace := appname
+	assemblyName := assembly.Name()
+	namespace := assemblyName
 	if opts.Namespace != "" {
 		namespace = opts.Namespace
 	}
@@ -85,7 +85,7 @@ func Down(runname string, opts DownOptions) error {
 	//	alsoDeleteNamespace := false
 
 	if runname == "" {
-		singletonRun, err := runs.Singleton(appname, namespace)
+		singletonRun, err := runs.Singleton(assemblyName, namespace)
 		if err != nil {
 			return err
 		}

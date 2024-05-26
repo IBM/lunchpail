@@ -3,7 +3,7 @@ package subcommands
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/observe"
 )
 
@@ -54,7 +54,7 @@ func newLogsCommand() *cobra.Command {
 }
 
 func init() {
-	if lunchpail.IsAssembled() {
+	if assembly.IsAssembled() {
 		rootCmd.AddCommand(newLogsCommand())
 	}
 }

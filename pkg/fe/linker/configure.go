@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -26,7 +27,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
-	shrinkwrappedOptions, err := lunchpail.RestoreAppOptions(templatePath)
+	shrinkwrappedOptions, err := assembly.RestoreOptions(templatePath)
 	if err != nil {
 		return "", []string{}, queue.Spec{}, err
 	} else {

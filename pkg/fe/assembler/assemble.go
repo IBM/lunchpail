@@ -4,7 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/ioutil"
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/util"
 	"os"
 	"os/exec"
@@ -59,26 +59,26 @@ func Assemble(sourcePath string, opts Options) error {
 	}
 
 	// TODO... how do we really want to get a good name for the app?
-	appname := filepath.Base(trimExt(sourcePath))
-	if appname == "pail" {
-		appname = filepath.Base(filepath.Dir(trimExt(sourcePath)))
-		if appname == "pail" {
+	assemblyName := filepath.Base(trimExt(sourcePath))
+	if assemblyName == "pail" {
+		assemblyName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+		if assemblyName == "pail" {
 			// probably a trailing slash
-			appname = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
+			assemblyName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
 		}
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Using appname=%s\n", appname)
+		fmt.Fprintf(os.Stderr, "Using assemblyName=%s\n", assemblyName)
 	}
 
-	if appTemplatePath, err := StagePath(appname, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, err := StagePath(assemblyName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
-	} else if err := lunchpail.SaveAppOptions(appTemplatePath, opts.AppOptions); err != nil {
+	} else if err := assembly.SaveOptions(appTemplatePath, opts.AssemblyOptions); err != nil {
 		return err
 	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
-	} else if err := lunchpail.DropAppBreadcrumb(appname, lunchpailStageDir); err != nil {
+	} else if err := assembly.DropBreadcrumb(assemblyName, lunchpailStageDir); err != nil {
 		return err
 	} else {
 		return emit(lunchpailStageDir, opts.Name)

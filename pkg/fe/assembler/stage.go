@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/util"
 )
 
@@ -169,7 +169,7 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, error) {
 
 // return (appname, templatePath, error)
 func Stage(opts StageOptions) (string, string, error) {
-	appname := lunchpail.AssembledAppName()
+	appname := assembly.Name()
 	templatePath, err := StagePath(appname, "", opts)
 
 	return appname, templatePath, err

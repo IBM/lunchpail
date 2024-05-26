@@ -24,11 +24,11 @@ func newAssembleCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
-	appOpts := addAppOptions(cmd)
+	assemblyOptions := addAssemblyOptions(cmd)
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return assembler.Assemble(args[0], assembler.Options{outputFlag, branchFlag, verboseFlag, *appOpts})
+		return assembler.Assemble(args[0], assembler.Options{outputFlag, branchFlag, verboseFlag, *assemblyOptions})
 	}
 
 	return cmd

@@ -1,1 +1,0 @@
-pkg/lunchpail/assemblyDate.txt <none>
