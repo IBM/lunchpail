@@ -11,7 +11,6 @@ type Options struct {
 	Namespace          string
 	ClusterIsOpenShift bool
 	ImagePullSecret    string
-	WorkdirViaMount    bool
 	OverrideValues     []string
 	Queue              string
 	HasGpuSupport      bool

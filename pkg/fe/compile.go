@@ -29,7 +29,7 @@ func Compile(opts CompileOptions) (Linked, error) {
 		return Linked{}, err
 	}
 
-	namespace := opts.Namespace
+	namespace := opts.AssemblyOptions.Namespace
 	if namespace == "" {
 		namespace = assemblyName
 	}

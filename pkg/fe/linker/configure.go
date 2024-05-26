@@ -11,15 +11,9 @@ import (
 )
 
 type ConfigureOptions struct {
-	Namespace          string
-	ClusterIsOpenShift bool
-	ImagePullSecret    string
-	OverrideValues     []string
-	Verbose            bool
-	Queue              string
-	HasGpuSupport      bool
-	DockerHost         string
-	CreateNamespace    bool
+	AssemblyOptions assembly.Options
+	CreateNamespace bool
+	Verbose         bool
 }
 
 func Configure(appname, runname, namespace, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, queue.Spec, error) {
@@ -31,24 +25,31 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	if err != nil {
 		return "", []string{}, queue.Spec{}, err
 	} else {
-		// TODO here... how do we determine that boolean values were unset?
-		if opts.Namespace == "" {
-			opts.Namespace = shrinkwrappedOptions.Namespace
+		if opts.AssemblyOptions.Namespace == "" {
+			opts.AssemblyOptions.Namespace = shrinkwrappedOptions.Namespace
 		}
-		if opts.ImagePullSecret == "" {
-			opts.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
+		// TODO here... how do we determine that boolean values were unset?
+		if opts.AssemblyOptions.ClusterIsOpenShift == false {
+			opts.AssemblyOptions.ClusterIsOpenShift = shrinkwrappedOptions.ClusterIsOpenShift
+		}
+		if opts.AssemblyOptions.ImagePullSecret == "" {
+			opts.AssemblyOptions.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
 		}
 
 		// careful: `--set x=3 --set x=4` results in x having
 		// value 4, so we need to place the shrinkwrapped
 		// options first in the list
-		opts.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.OverrideValues...)
+		opts.AssemblyOptions.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.AssemblyOptions.OverrideValues...)
 
-		if opts.Queue == "" {
-			opts.Queue = shrinkwrappedOptions.Queue
+		if opts.AssemblyOptions.Queue == "" {
+			opts.AssemblyOptions.Queue = shrinkwrappedOptions.Queue
 		}
-		if opts.DockerHost == "" {
-			opts.DockerHost = shrinkwrappedOptions.DockerHost
+		// TODO here... how do we determine that boolean values were unset?
+		if opts.AssemblyOptions.HasGpuSupport == false {
+			opts.AssemblyOptions.HasGpuSupport = shrinkwrappedOptions.HasGpuSupport
+		}
+		if opts.AssemblyOptions.DockerHost == "" {
+			opts.AssemblyOptions.DockerHost = shrinkwrappedOptions.DockerHost
 		}
 	}
 
@@ -58,16 +59,16 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	imageRegistry := "ghcr.io"
 	imageRepo := "lunchpail"
 
-	if opts.ClusterIsOpenShift {
+	if opts.AssemblyOptions.ClusterIsOpenShift {
 		clusterType = "oc"
 	}
 
-	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
+	queueSpec, err := queue.ParseFlag(opts.AssemblyOptions.Queue, runname, internalS3Port)
 	if err != nil {
 		return "", []string{}, queue.Spec{}, err
 	}
 
-	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.ImagePullSecret)
+	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.AssemblyOptions.ImagePullSecret)
 	if ipsErr != nil {
 		return "", []string{}, queue.Spec{}, ipsErr
 	}
@@ -130,44 +131,44 @@ s3:
   port: %d # internalS3Port (30)
   appname: %s # appname (31)
 `,
-		clusterType,          // (1)
-		opts.DockerHost,      // (2)
-		runname,              // (3)
-		imageRegistry,        // (4)
-		imageRepo,            // (5)
-		imagePullSecretName,  // (6)
-		dockerconfigjson,     // (7)
-		systemNamespace,      // (8)
-		opts.CreateNamespace, // (9)
+		clusterType,                     // (1)
+		opts.AssemblyOptions.DockerHost, // (2)
+		runname,                         // (3)
+		imageRegistry,                   // (4)
+		imageRepo,                       // (5)
+		imagePullSecretName,             // (6)
+		dockerconfigjson,                // (7)
+		systemNamespace,                 // (8)
+		opts.CreateNamespace,            // (9)
 
-		runname,             // (10)
-		systemNamespace,     // (11)
-		internalS3Port,      // (12)
-		user.Username,       // (13)
-		user.Uid,            // (14)
-		runname,             // (15)
-		imageRegistry,       // (16)
-		imageRepo,           // (17)
-		lunchpail.Version(), // (18)
-		partOf,              // (19)
-		queueSpec.Auto,      // (20)
-		queueSpec.Name,      // (21)
-		queueSpec.Endpoint,  // (22)
-		queueSpec.Bucket,    // (23)
-		queueSpec.AccessKey, // (24)
-		queueSpec.SecretKey, // (25)
-		runname,             // (26)
-		namespace,           // (27)
-		opts.HasGpuSupport,  // (28)
-		runname,             // (29)
-		internalS3Port,      // (30)
-		appname,             // (31)
+		runname,                            // (10)
+		systemNamespace,                    // (11)
+		internalS3Port,                     // (12)
+		user.Username,                      // (13)
+		user.Uid,                           // (14)
+		runname,                            // (15)
+		imageRegistry,                      // (16)
+		imageRepo,                          // (17)
+		lunchpail.Version(),                // (18)
+		partOf,                             // (19)
+		queueSpec.Auto,                     // (20)
+		queueSpec.Name,                     // (21)
+		queueSpec.Endpoint,                 // (22)
+		queueSpec.Bucket,                   // (23)
+		queueSpec.AccessKey,                // (24)
+		queueSpec.SecretKey,                // (25)
+		runname,                            // (26)
+		namespace,                          // (27)
+		opts.AssemblyOptions.HasGpuSupport, // (28)
+		runname,                            // (29)
+		internalS3Port,                     // (30)
+		appname,                            // (31)
 	)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.AssemblyOptions.OverrideValues)
 	}
 
-	return yaml, opts.OverrideValues, queueSpec, nil
+	return yaml, opts.AssemblyOptions.OverrideValues, queueSpec, nil
 }
