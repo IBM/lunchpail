@@ -27,7 +27,7 @@ func deleteNamespace(namespace string) error {
 	return nil
 }
 
-func deleteNormalStuff(runname, namespace string) error {
+func deleteAllStuff(runname, namespace string) error {
 	group, _ := errgroup.WithContext(context.Background())
 
 	group.Go(func() error {
@@ -61,7 +61,13 @@ func deleteNormalStuff(runname, namespace string) error {
 }
 
 func deleteStuff(runname, namespace, kind string) error {
-	cmd := exec.Command("/bin/sh", "-c", "kubectl get "+kind+" -o name -n "+namespace+" -l app.kubernetes.io/instance="+runname+" | xargs kubectl delete --ignore-not-found -n "+namespace)
+	nsflag := ""
+	if kind != "persistentvolume" {
+		nsflag = "-n "+namespace
+	}
+
+	cmdline := "kubectl get "+kind+" -o name " + nsflag+" -l app.kubernetes.io/instance="+runname+" | xargs kubectl delete --ignore-not-found " + nsflag
+	cmd := exec.Command("/bin/sh", "-c", cmdline)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -69,10 +75,6 @@ func deleteStuff(runname, namespace, kind string) error {
 	}
 
 	return nil
-}
-
-func deleteAllStuff(runname, namespace string) error {
-	return deleteNormalStuff(runname, namespace)
 }
 
 func Down(runname string, opts DownOptions) error {
