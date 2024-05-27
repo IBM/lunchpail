@@ -63,14 +63,15 @@ func deleteAllStuff(runname, namespace string) error {
 func deleteStuff(runname, namespace, kind string) error {
 	nsflag := ""
 	if kind != "persistentvolume" {
-		nsflag = "-n "+namespace
+		nsflag = "-n " + namespace
 	}
 
-	cmdline := "kubectl get "+kind+" -o name " + nsflag+" -l app.kubernetes.io/instance="+runname+" | xargs kubectl delete --ignore-not-found " + nsflag
+	cmdline := "kubectl get " + kind + " -o name " + nsflag + " -l app.kubernetes.io/instance=" + runname + " | xargs --no-run-if-empty kubectl delete --ignore-not-found " + nsflag
 	cmd := exec.Command("/bin/sh", "-c", cmdline)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Delete failed for kind=%s\n", kind)
 		return err
 	}
 
