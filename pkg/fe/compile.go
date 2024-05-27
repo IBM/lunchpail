@@ -13,8 +13,9 @@ import (
 
 type CompileOptions struct {
 	linker.ConfigureOptions
-	DryRun bool
-	Watch  bool
+	DryRun         bool
+	Watch          bool
+	UseThisRunName string
 }
 
 type Linked struct {
@@ -36,9 +37,13 @@ func Compile(opts CompileOptions) (Linked, error) {
 		namespace = assemblyName
 	}
 
-	runname, err := linker.GenerateRunName(assemblyName)
-	if err != nil {
-		return Linked{}, err
+	runname := opts.UseThisRunName
+	if runname == "" {
+		if generatedRunname, err := linker.GenerateRunName(assemblyName); err != nil {
+			return Linked{}, err
+		} else {
+			runname = generatedRunname
+		}
 	}
 
 	internalS3Port := rand.Intn(65536) + 1

@@ -3,11 +3,11 @@ package boot
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/observe/runs"
-	"os"
-	"os/exec"
 )
 
 type DownOptions struct {
@@ -16,65 +16,16 @@ type DownOptions struct {
 }
 
 func deleteNamespace(namespace string) error {
-	fmt.Fprintf(os.Stderr, "Removing namespace=%s...", namespace)
-
-	cmd := exec.Command("kubectl", "delete", "ns", namespace)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	fmt.Fprintln(os.Stderr, "done")
-
-	return nil
-}
-
-func deleteAllStuff(runname, namespace string) error {
-	group, _ := errgroup.WithContext(context.Background())
-
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "jobs.batch")
-	})
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "persistentvolume")
-	})
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "persistentvolumeclaim")
-	})
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "deployments.app")
-	})
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "secret")
-	})
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "configmap")
-	})
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "serviceaccount")
-	})
-
-	// we have some non-deployment pods
-	group.Go(func() error {
-		return deleteStuff(runname, namespace, "pods")
-	})
-
-	return group.Wait()
-}
-
-func deleteStuff(runname, namespace, kind string) error {
-	nsflag := ""
-	if kind != "persistentvolume" {
-		nsflag = "-n " + namespace
-	}
-
-	cmdline := "kubectl get " + kind + " -o name " + nsflag + " -l app.kubernetes.io/instance=" + runname + " | xargs --no-run-if-empty kubectl delete --ignore-not-found " + nsflag
-	cmd := exec.Command("/bin/sh", "-c", cmdline)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Delete failed for kind=%s\n", kind)
+	clientset, _, err := kubernetes.Client()
+	if err != nil {
 		return err
 	}
 
+	api := clientset.CoreV1().Namespaces()
+	if err := api.Delete(context.Background(), namespace, metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+	fmt.Printf("namespace \"%s\" deleted\n", namespace)
 	return nil
 }
 
@@ -85,26 +36,31 @@ func Down(runname string, opts DownOptions) error {
 		namespace = opts.Namespace
 	}
 
-	//	alsoDeleteNamespace := false
-
 	if runname == "" {
 		singletonRun, err := runs.Singleton(assemblyName, namespace)
 		if err != nil {
 			return err
 		}
 		runname = singletonRun.Name
-		//		alsoDeleteNamespace = true
+		//              alsoDeleteNamespace = true
 	}
 
-	if err := deleteAllStuff(runname, namespace); err != nil {
-		return err
-	}
+	assemblyOptions := assembly.Options{}
+	assemblyOptions.Namespace = opts.Namespace
+
+	configureOptions := linker.ConfigureOptions{}
+	configureOptions.AssemblyOptions = assemblyOptions
+	configureOptions.Verbose = opts.Verbose
+
+	upOptions := UpOptions{}
+	upOptions.ConfigureOptions = configureOptions
+	upOptions.UseThisRunName = runname
+
+	return upDown(upOptions, kubernetes.DeleteIt)
 
 	//	if alsoDeleteNamespace {
 	//		if err := deleteNamespace(namespace); err != nil {
 	//			return err
 	//		}
 	//	}
-
-	return nil
 }

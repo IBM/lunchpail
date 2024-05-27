@@ -10,8 +10,8 @@ import (
 type Operation string
 
 const (
-	applyOp  Operation = "apply"
-	deleteOp           = "delete"
+	ApplyIt  Operation = "apply"
+	DeleteIt           = "delete"
 )
 
 func apply(yaml, namespace string, operation Operation) error {
@@ -27,9 +27,9 @@ func apply(yaml, namespace string, operation Operation) error {
 
 	args := []string{string(operation), "-f", file.Name(), "-n", namespace}
 	switch operation {
-	case applyOp:
+	case ApplyIt:
 		// args = append(args, "--server-side")
-	case deleteOp:
+	case DeleteIt:
 		args = append(args, "--ignore-not-found")
 	}
 
@@ -42,15 +42,19 @@ func apply(yaml, namespace string, operation Operation) error {
 	return cmd.Run()
 }
 
-func Apply(ir ir.LLIR, namespace string) error {
+func ApplyOperation(ir ir.LLIR, namespace string, operation Operation) error {
 	for _, yaml := range ir.Yamlset() {
-		if err := apply(yaml, namespace, applyOp); err != nil {
+		if err := apply(yaml, namespace, operation); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
+func Apply(ir ir.LLIR, namespace string) error {
+	return ApplyOperation(ir, namespace, ApplyIt)
+}
+
 func Delete(yaml, namespace string) error {
-	return apply(yaml, namespace, deleteOp)
+	return apply(yaml, namespace, DeleteIt)
 }
