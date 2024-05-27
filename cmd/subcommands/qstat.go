@@ -21,7 +21,7 @@ func newQstatCommand() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return qstat.UI(maybeRun, qstat.Options{namespaceFlag, followFlag, tailFlag, verboseFlag, quietFlag})
+			return qstat.UI(maybeRun, qstat.Options{Namespace: namespaceFlag, Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
 		},
 	}
 

@@ -41,7 +41,7 @@ func newLogsCommand() *cobra.Command {
 				}
 			}
 
-			return observe.Logs(maybeRun, observe.LogsOptions{namespaceFlag, followFlag, verboseFlag, comps})
+			return observe.Logs(maybeRun, observe.LogsOptions{Namespace: namespaceFlag, Follow: followFlag, Verbose: verboseFlag, Components: comps})
 		},
 	}
 

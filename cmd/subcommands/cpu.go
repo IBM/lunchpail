@@ -20,7 +20,7 @@ func Newcmd() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return cpu.UI(maybeRun, cpu.CpuOptions{namespaceFlag, verboseFlag, intervalSecondsFlag})
+			return cpu.UI(maybeRun, cpu.CpuOptions{Namespace: namespaceFlag, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
 		},
 	}
 

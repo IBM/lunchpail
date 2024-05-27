@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/observe/qstat"
 )
 
-func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, interval int) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
 
 	podWatcher, eventWatcher, err := startWatching(app, run, namespace)
@@ -22,12 +22,12 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 	model.Namespace = namespace
 	model.LastNMessages = ring.New(nLoglinesMax)
 
-	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{namespace, true, int64(-1), verbose, true})
+	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{Namespace: namespace, Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
 	if err != nil {
 		return c, nil, err
 	}
 
-	cpuc, err := cpu.CpuStreamer(run, namespace, interval)
+	cpuc, err := cpu.CpuStreamer(run, namespace, intervalSeconds)
 	if err != nil {
 		return c, nil, err
 	}

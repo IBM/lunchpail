@@ -24,7 +24,9 @@ type Linked struct {
 }
 
 func Compile(opts CompileOptions) (Linked, error) {
-	assemblyName, templatePath, err := assembler.Stage(assembler.StageOptions{"", opts.Verbose})
+	stageOpts := assembler.StageOptions{}
+	stageOpts.Verbose = opts.Verbose
+	assemblyName, templatePath, err := assembler.Stage(stageOpts)
 	if err != nil {
 		return Linked{}, err
 	}
@@ -49,7 +51,7 @@ func Compile(opts CompileOptions) (Linked, error) {
 		return Linked{}, err
 	}
 
-	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{dashdashSetValues, opts.Verbose}); err != nil {
+	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{OverrideValues: dashdashSetValues, Verbose: opts.Verbose}); err != nil {
 		return Linked{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return Linked{}, err

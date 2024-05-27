@@ -22,7 +22,7 @@ func newStatusCommand() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return status.UI(maybeRun, status.Options{namespaceFlag, watchFlag, verboseFlag, summaryFlag, loglinesFlag, intervalFlag})
+			return status.UI(maybeRun, status.Options{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
 		},
 	}
 

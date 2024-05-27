@@ -28,7 +28,7 @@ func newAssembleCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return assembler.Assemble(args[0], assembler.Options{outputFlag, branchFlag, verboseFlag, *assemblyOptions})
+		return assembler.Assemble(args[0], assembler.Options{Name: outputFlag, Branch: branchFlag, Verbose: verboseFlag, AssemblyOptions: *assemblyOptions})
 	}
 
 	return cmd

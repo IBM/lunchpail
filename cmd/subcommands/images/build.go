@@ -16,7 +16,7 @@ func NewBuildCmd() *cobra.Command {
 		Short: "Build the base images",
 		Long:  "Build the base images",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return images.Build(build.BuildOptions{productionFlag, verboseFlag, forceFlag})
+			return images.Build(build.BuildOptions{Production: productionFlag, Verbose: verboseFlag, Force: forceFlag})
 		},
 	}
 

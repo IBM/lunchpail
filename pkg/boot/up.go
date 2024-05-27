@@ -18,7 +18,7 @@ func Up(opts UpOptions) error {
 		if err := kubernetes.Apply(linked.Ir, linked.Namespace); err != nil {
 			return err
 		} else if opts.Watch {
-			return status.UI(linked.Runname, status.Options{linked.Namespace, true, opts.Verbose, false, 500, 5})
+			return status.UI(linked.Runname, status.Options{Namespace: linked.Namespace, Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}
 	}
 

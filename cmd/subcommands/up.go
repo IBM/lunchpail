@@ -47,7 +47,11 @@ func newUpCmd() *cobra.Command {
 		}
 
 		createNamespace := !dryrunFlag
-		return boot.Up(boot.UpOptions{linker.ConfigureOptions{assembly.Options{appOpts.Namespace, appOpts.ClusterIsOpenShift, appOpts.ImagePullSecret, overrideValues, appOpts.Queue, appOpts.HasGpuSupport, appOpts.DockerHost}, createNamespace, verboseFlag}, dryrunFlag, watchFlag})
+
+		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue, HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost}
+		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, CreateNamespace: createNamespace, Verbose: verboseFlag}
+
+		return boot.Up(boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
 	}
 
 	return cmd

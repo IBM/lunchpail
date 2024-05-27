@@ -37,5 +37,7 @@ func Local(opts InitLocalOptions) error {
 		return err
 	}
 
-	return images.Build(build.BuildOptions{false, opts.Verbose, false})
+	bopts := build.BuildOptions{}
+	bopts.Verbose = opts.Verbose
+	return images.Build(bopts)
 }

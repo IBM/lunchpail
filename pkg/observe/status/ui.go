@@ -13,12 +13,12 @@ import (
 
 // Options to our status UI component
 type Options struct {
-	Namespace string
-	Watch     bool
-	Verbose   bool
-	Summary   bool
-	Nloglines int
-	Interval  int
+	Namespace       string
+	Watch           bool
+	Verbose         bool
+	Summary         bool
+	Nloglines       int
+	IntervalSeconds int
 }
 
 // Our model for BubbleTea
@@ -134,7 +134,7 @@ func UI(runnameIn string, opts Options) error {
 		defer f.Close()
 	}
 
-	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose, opts.Nloglines, opts.Interval)
+	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}

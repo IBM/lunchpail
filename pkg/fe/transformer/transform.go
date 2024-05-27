@@ -106,7 +106,7 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 	}
 
 	return ir.LLIR{
-		others,
-		slices.Concat(apps, pools),
+		CoreYaml: others,
+		AppYaml:  slices.Concat(apps, pools),
 	}, nil
 }

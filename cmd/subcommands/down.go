@@ -19,7 +19,7 @@ func newDownCmd() *cobra.Command {
 			if len(args) > 0 {
 				maybeRun = args[0]
 			}
-			return boot.Down(maybeRun, boot.DownOptions{namespaceFlag, verboseFlag})
+			return boot.Down(maybeRun, boot.DownOptions{Namespace: namespaceFlag, Verbose: verboseFlag})
 		},
 	}
 

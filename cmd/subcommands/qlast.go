@@ -20,7 +20,7 @@ func newQlastCommand() *cobra.Command {
 			if len(args) > 1 {
 				extra = args[1]
 			}
-			val, err := qstat.Qlast(marker, extra, qstat.QlastOptions{namespaceFlag})
+			val, err := qstat.Qlast(marker, extra, qstat.QlastOptions{Namespace: namespaceFlag})
 			if err != nil {
 				return err
 			}

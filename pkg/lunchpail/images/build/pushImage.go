@@ -74,14 +74,13 @@ func saveImageToImageArchive(image string) (string, error) {
 }
 
 func loadIntoKindForPodman(image string) error {
-	if archiveFile, err := saveImageToImageArchive(image); err != nil {
+	archiveFile, err := saveImageToImageArchive(image)
+	if err != nil {
 		return err
-	} else {
-		defer os.Remove(archiveFile)
-		return loadIntoKindForImageArchive(archiveFile)
 	}
 
-	return nil
+	defer os.Remove(archiveFile)
+	return loadIntoKindForImageArchive(archiveFile)
 }
 
 func imageWithoutTag(image string) string {
