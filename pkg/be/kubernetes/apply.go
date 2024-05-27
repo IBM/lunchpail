@@ -43,8 +43,13 @@ func apply(yaml, namespace string, operation Operation) error {
 }
 
 func ApplyOperation(ir ir.LLIR, namespace string, operation Operation) error {
-	for _, yaml := range ir.Yamlset() {
-		if err := apply(yaml, namespace, operation); err != nil {
+	yamls := ir.Yamlset()
+	for idx := range yamls {
+		if operation == DeleteIt {
+			// delete in reverse order of apply
+			idx = len(yamls) - 1 - idx
+		}
+		if err := apply(yamls[idx], namespace, operation); err != nil {
 			return err
 		}
 	}
