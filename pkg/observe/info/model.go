@@ -2,31 +2,27 @@ package info
 
 import (
 	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/fe/assembler"
 )
 
-type Options struct {
-	Namespace string
-	Follow    bool
-}
-
 type Info struct {
-	Name         string
-	Namespace    string
-	AssemblyDate string
+	Name                 string
+	Date                 string
+	By                   string
+	On                   string
+	ShrinkwrappedOptions assembly.Options
 }
 
-func Model(opts Options) (chan Info, error) {
-	c := make(chan Info)
-	appname := assembly.Name()
-	namespace := appname
-	if opts.Namespace != "" {
-		namespace = opts.Namespace
+func Model() (Info, error) {
+	templatePath, err := assembler.StageTemplate()
+	if err != nil {
+		return Info{}, err
 	}
 
-	var model Info = Info{appname, namespace, assembly.Date()}
-	go func() {
-		c <- model
-	}()
+	shrinkwrappedOptions, err := assembly.RestoreOptions(templatePath)
+	if err != nil {
+		return Info{}, err
+	}
 
-	return c, nil
+	return Info{assembly.Name(), assembly.Date(), assembly.By(), assembly.On(), shrinkwrappedOptions}, nil
 }

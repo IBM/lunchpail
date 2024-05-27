@@ -8,13 +8,13 @@ import (
 )
 
 type Options struct {
-	Namespace          string
-	ClusterIsOpenShift bool
-	ImagePullSecret    string
-	OverrideValues     []string
-	Queue              string
-	HasGpuSupport      bool
-	DockerHost         string
+	Namespace          string   `yaml:",omitempty"`
+	ClusterIsOpenShift bool     `yaml:"clusterIsOpenShift,omitempty"`
+	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
+	OverrideValues     []string `yaml:"overrideValues,omitempty"`
+	Queue              string   `yaml:",omitempty"`
+	HasGpuSupport      bool     `yaml:"hasGpuSupport,omitempty"`
+	DockerHost         string   `yaml:"dockerHost,omitempty"`
 }
 
 func optionsPath(appTemplatePath string) string {

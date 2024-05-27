@@ -2,26 +2,35 @@ package info
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
+	"gopkg.in/yaml.v3"
+	"lunchpail.io/pkg/observe/colors"
+	"strings"
 )
 
-func UI(opts Options) error {
-	c, err := Model(opts)
+func UI() error {
+	info, err := Model()
 	if err != nil {
 		return err
 	}
-	defer close(c)
 
-	bold := lipgloss.NewStyle().Bold(true).Faint(true)
-	for info := range c {
-		fmt.Printf("%-24s %s\n", bold.Render("Name"), info.Name)
-		fmt.Printf("%-24s %s\n", bold.Render("Namespace"), info.Namespace)
-		fmt.Printf("%-24s %s\n", bold.Render("Assembly Date"), info.AssemblyDate)
+	bold := colors.Bold.Faint(true)
 
-		if !opts.Follow {
-			break
-		}
+	fmt.Printf("%-24s %s\n", bold.Render("Name"), colors.Cyan.Render(info.Name))
+	fmt.Printf("%-24s %s\n", bold.Render("Created By"), info.By)
+	fmt.Printf("%-24s %s\n", bold.Render("Created On"), info.On)
+	fmt.Printf("%-24s %s\n", bold.Render("Creation Date"), info.Date)
+
+	optsBytes, err := yaml.Marshal(info.ShrinkwrappedOptions)
+	if err != nil {
+		return err
 	}
+
+	optsString := strings.TrimSpace(string(optsBytes))
+	fmt.Printf("\n%s\n", bold.Render("Shrinkwrapped Values"))
+	if optsString == "{}" {
+		optsString = "none"
+	}
+	fmt.Println(colors.Yellow.Render(optsString))
 
 	return nil
 }

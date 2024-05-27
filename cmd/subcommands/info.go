@@ -7,19 +7,13 @@ import (
 )
 
 func newInfoCommand() *cobra.Command {
-	var namespaceFlag string
-	var followFlag bool
-
 	var cmd = &cobra.Command{
 		Use:   "info",
 		Short: "Summary information of the application",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return info.UI(info.Options{Namespace: namespaceFlag, Follow: followFlag})
+			return info.UI()
 		},
 	}
-
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
-	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Track updates to the application state")
 
 	return cmd
 }

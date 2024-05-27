@@ -14,7 +14,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func stageAppTemplate() (string, error) {
+func StageTemplate() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
 	} else if err := util.Expand(dir, appTemplate, "charts.tar.gz"); err != nil {
@@ -149,7 +149,7 @@ type StageOptions struct {
 
 // return (templatePath, error)
 func StagePath(appname, sourcePath string, opts StageOptions) (string, error) {
-	templatePath, err := stageAppTemplate()
+	templatePath, err := StageTemplate()
 	if err != nil {
 		return "", err
 	}
