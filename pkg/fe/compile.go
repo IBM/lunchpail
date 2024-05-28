@@ -6,7 +6,7 @@ import (
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/parser"
 	"lunchpail.io/pkg/fe/transformer"
-	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/ir/llir"
 	"math/rand"
 	"os"
 )
@@ -21,7 +21,7 @@ type CompileOptions struct {
 type Linked struct {
 	Runname   string
 	Namespace string
-	Ir        ir.LLIR
+	Ir        llir.LLIR
 }
 
 func Compile(opts CompileOptions) (Linked, error) {

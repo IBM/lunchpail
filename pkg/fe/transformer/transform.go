@@ -5,8 +5,8 @@ import (
 	"gopkg.in/yaml.v3"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
-	"lunchpail.io/pkg/ir"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 	"slices"
 )
 
@@ -33,12 +33,12 @@ func transformApplications(assemblyName, runname, namespace string, model hlir.A
 	return yamls, nil
 }
 
-func transformWorkerPools(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
-	yamls := []string{}
+func transformWorkerPools(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) ([]llir.Yaml, error) {
+	yamls := []llir.Yaml{}
 
 	app, found := model.GetApplicationByRole(hlir.WorkerRole)
 	if !found {
-		return []string{}, fmt.Errorf("No Application with role Worker found")
+		return yamls, fmt.Errorf("No Application with role Worker found")
 	}
 
 	for _, pool := range model.WorkerPools {
@@ -89,24 +89,27 @@ func transformOthers(assemblyName, runname string, model hlir.AppModel) ([]strin
 }
 
 // HLIR -> LLIR
-func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) (ir.LLIR, error) {
+func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) (llir.LLIR, error) {
 	apps, err := transformApplications(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
-		return ir.LLIR{}, err
+		return llir.LLIR{}, err
 	}
 
 	pools, err := transformWorkerPools(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
-		return ir.LLIR{}, err
+		return llir.LLIR{}, err
 	}
 
 	others, err := transformOthers(assemblyName, runname, model)
 	if err != nil {
-		return ir.LLIR{}, err
+		return llir.LLIR{}, err
 	}
 
-	return ir.LLIR{
-		CoreYaml: others,
-		AppYaml:  slices.Concat(apps, pools),
+	return llir.LLIR{
+		CoreYaml: llir.Yaml{Yamls: others, Context: ""},
+		AppYaml: slices.Concat(
+			[]llir.Yaml{llir.Yaml{Yamls: apps, Context: ""}},
+			pools,
+		),
 	}, nil
 }

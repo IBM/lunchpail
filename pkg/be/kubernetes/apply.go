@@ -2,7 +2,7 @@ package kubernetes
 
 import (
 	"io/ioutil"
-	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/ir/llir"
 	"os"
 	"os/exec"
 )
@@ -14,7 +14,7 @@ const (
 	DeleteIt           = "delete"
 )
 
-func apply(yaml, namespace string, operation Operation) error {
+func apply(yaml, namespace, context string, operation Operation) error {
 	file, err := ioutil.TempFile("", "lunchpail")
 	if err != nil {
 		return err
@@ -26,6 +26,14 @@ func apply(yaml, namespace string, operation Operation) error {
 	}
 
 	args := []string{string(operation), "-f", file.Name(), "-n", namespace}
+
+	if namespace != "" {
+		args = append(args, "-n="+namespace)
+	}
+	if context != "" {
+		args = append(args, "--context="+context)
+	}
+
 	switch operation {
 	case ApplyIt:
 		// args = append(args, "--server-side")
@@ -42,24 +50,24 @@ func apply(yaml, namespace string, operation Operation) error {
 	return cmd.Run()
 }
 
-func ApplyOperation(ir ir.LLIR, namespace string, operation Operation) error {
+func ApplyOperation(ir llir.LLIR, namespace, context string, operation Operation) error {
 	yamls := ir.Yamlset()
 	for idx := range yamls {
 		if operation == DeleteIt {
 			// delete in reverse order of apply
 			idx = len(yamls) - 1 - idx
 		}
-		if err := apply(yamls[idx], namespace, operation); err != nil {
+		if err := apply(yamls[idx].Yaml, namespace, yamls[idx].Context, operation); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func Apply(ir ir.LLIR, namespace string) error {
-	return ApplyOperation(ir, namespace, ApplyIt)
+func Apply(ir llir.LLIR, namespace, context string) error {
+	return ApplyOperation(ir, namespace, context, ApplyIt)
 }
 
-func Delete(yaml, namespace string) error {
-	return apply(yaml, namespace, DeleteIt)
+func Delete(yaml, namespace, context string) error {
+	return apply(yaml, namespace, context, DeleteIt)
 }

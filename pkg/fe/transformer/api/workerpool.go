@@ -6,6 +6,7 @@ import (
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 	"os"
 	"strconv"
@@ -42,7 +43,7 @@ func parseHumanTime(delayString string) (int, error) {
 	return val * unit, nil
 }
 
-func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
+func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]llir.Yaml, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -63,21 +64,23 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
 
+	yamls := []llir.Yaml{}
+
 	if codeerr != nil {
-		return []string{}, codeerr
+		return yamls, codeerr
 	} else if dataseterr != nil {
-		return []string{}, dataseterr
+		return yamls, dataseterr
 	} else if enverr != nil {
-		return []string{}, enverr
+		return yamls, enverr
 	} else if errsc != nil {
-		return []string{}, errsc
+		return yamls, errsc
 	} else if errcsc != nil {
-		return []string{}, errcsc
+		return yamls, errcsc
 	}
 
 	templatePath, err := stage(workerpoolTemplate, "workerpool.tar.gz")
 	if err != nil {
-		return []string{}, err
+		return yamls, err
 	}
 
 	if verbose {
@@ -88,7 +91,7 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
 	if err != nil {
-		return []string{}, err
+		return yamls, err
 	}
 
 	values := []string{
@@ -135,8 +138,10 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 	opts.Verbose = verbose
 	yaml, err := linker.Template(releaseName, namespace, templatePath, "", opts)
 	if err != nil {
-		return []string{}, err
+		return yamls, err
 	}
 
-	return []string{yaml}, nil
+	context := pool.Spec.Target.Kubernetes.Context
+
+	return append(yamls, llir.Yaml{Yamls: []string{yaml}, Context: context}), nil
 }

@@ -8,4 +8,7 @@ spec:
   workers:
     count: {{ $.Values.workers | default 1 }}
     size: {{ $.Values.size | default "xxs" }}
+  target:
+    kubernetes:
+      context: kind-jaas
 {{- end }}
