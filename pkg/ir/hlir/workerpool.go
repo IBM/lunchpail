@@ -14,9 +14,6 @@ type WorkerPool struct {
 		Target struct {
 			Kubernetes struct {
 				Context string
-				Config  struct {
-					Value string
-				}
 			}
 		}
 	}

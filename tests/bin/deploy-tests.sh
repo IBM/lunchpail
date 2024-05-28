@@ -78,7 +78,6 @@ $testapp up \
          $LP_ARGS \
          --set global.arch=$ARCH \
          --set kubernetes.context=kind-jaas \
-         --set kubernetes.config=$(kubectl config view  -o json --flatten | base64 | tr -d '\n') \
          --set cosAccessKey=$COS_ACCESS_KEY \
          --set cosSecretKey=$COS_SECRET_KEY \
          --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT
