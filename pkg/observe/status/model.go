@@ -2,16 +2,10 @@ package status
 
 import (
 	"container/ring"
-	"slices"
-
-	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/observe/qstat"
-
-	"context"
-	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"slices"
 )
 
 type WorkerStatus string
@@ -144,25 +138,6 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 }
 
 func (pool *Pool) changeWorkers(delta int) error {
-	clientset, _, err := kubernetes.Client()
-	if err != nil {
-		return err
-	}
-
-	jobsClient := clientset.BatchV1().Jobs(pool.Namespace)
-	job, err := jobsClient.Get(context.Background(), pool.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, *job.Spec.Parallelism+int32(delta)))
-	if _, err := jobsClient.Patch(context.Background(), pool.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (pool *Pool) removeWorker() error {
-	return nil
+	context := "" // TODO
+	return be.ChangeWorkers(pool.Name, pool.Namespace, context, delta)
 }
