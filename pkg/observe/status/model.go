@@ -4,6 +4,7 @@ import (
 	"container/ring"
 	"slices"
 
+	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/observe/qstat"
 
@@ -11,10 +12,6 @@ import (
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"os"
-	"path/filepath"
 )
 
 type WorkerStatus string
@@ -146,30 +143,19 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 	return inbox, processing, success, failure
 }
 
-func client() (*kubernetes.Clientset, error) {
-	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return clientset, nil
-}
-
 func (pool *Pool) changeWorkers(delta int) error {
-	clientset, err := client()
+	clientset, _, err := kubernetes.Client()
 	if err != nil {
 		return err
 	}
 
 	jobsClient := clientset.BatchV1().Jobs(pool.Namespace)
-	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, pool.Parallelism+delta))
+	job, err := jobsClient.Get(context.Background(), pool.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 
+	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, *job.Spec.Parallelism+int32(delta)))
 	if _, err := jobsClient.Patch(context.Background(), pool.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
 		return err
 	}
