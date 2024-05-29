@@ -11,15 +11,11 @@ func newDownCmd() *cobra.Command {
 	var verboseFlag bool
 
 	var cmd = &cobra.Command{
-		Use:   "down",
+		Use:   "down [run1] [run2] ...",
 		Short: "Undeploy the application",
 		Long:  "Undeploy the application",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			maybeRun := ""
-			if len(args) > 0 {
-				maybeRun = args[0]
-			}
-			return boot.Down(maybeRun, boot.DownOptions{Namespace: namespaceFlag, Verbose: verboseFlag})
+			return boot.DownList(args, boot.DownOptions{Namespace: namespaceFlag, Verbose: verboseFlag})
 		},
 	}
 

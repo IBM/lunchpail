@@ -3,6 +3,7 @@ package boot
 import (
 	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be/kubernetes"
@@ -27,6 +28,22 @@ func deleteNamespace(namespace string) error {
 	}
 	fmt.Printf("namespace \"%s\" deleted\n", namespace)
 	return nil
+}
+
+func DownList(runnames []string, opts DownOptions) error {
+	if len(runnames) == 0 {
+		// then the user didn't specify a run. pass "" which
+		// will activate the logic that looks for a singleton
+		// run in the given namespace
+		return Down("", opts)
+	}
+
+	// otherwise, Down all of the runs in the given list
+	group, _ := errgroup.WithContext(context.Background())
+	for _, runname := range runnames {
+		group.Go(func() error { return Down(runname, opts) })
+	}
+	return group.Wait()
 }
 
 func Down(runname string, opts DownOptions) error {
