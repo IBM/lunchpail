@@ -5,5 +5,5 @@ import (
 )
 
 func ChangeWorkers(poolName, poolNamespace, context string, delta int) error {
-	return kubernetes.ChangeWorkers(poolName, poolName, context, delta)
+	return kubernetes.ChangeWorkers(poolName, poolNamespace, context, delta)
 }
