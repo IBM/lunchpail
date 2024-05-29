@@ -9,3 +9,5 @@ var cyanColor = lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#66c2a5"}
 var grayColor = lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#a3a3a3"}
 var yellowColor = lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#ffd92f"}
 var redColor = lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#fc8d62"}
+var purpleColor = lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#e78ac3"}
+var lightpurpleColor = lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#cab2d6"}

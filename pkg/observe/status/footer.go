@@ -80,7 +80,7 @@ func footer(model Model, timestamp time.Time, maxheight int) []string {
 
 	// then use the rest of maxheight for messages
 	for _, msg := range model.messages(maxheight) {
-		style := colors.OtherComponentStyle
+		style := colors.ResourceComponentStyle
 		switch msg.who {
 		case "Dispatch":
 			style = colors.DispatcherComponentStyle
