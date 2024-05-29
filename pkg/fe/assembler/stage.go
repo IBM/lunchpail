@@ -134,6 +134,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 				return err
 			} else {
 				io.Copy(writer, reader)
+				os.Remove(appValues) // otherwise fe/parser/parse will think this is an invalid resource yaml
 				defer writer.Close()
 			}
 		}

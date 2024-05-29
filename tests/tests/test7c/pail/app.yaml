@@ -16,13 +16,16 @@ spec:
         in="$1"
         out="$2"
 
-        echo "Processing $in"
+        # We expect $MESSAGE to flow in via values.yaml not the default value in the env.MESSAGE below
+        echo "$MESSAGE $in"
         sleep 5
 
         echo "Done with $in"
 
   command: ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  env:
+    MESSAGE: {{ .Values.message | default "BUG" }}
 # TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
 #  inputs:
 #    - sizes:
