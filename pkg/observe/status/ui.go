@@ -24,6 +24,7 @@ type Options struct {
 // Our model for BubbleTea
 type model struct {
 	c              chan Model
+	current        Model
 	table          table.Model
 	opts           Options
 	footer         []string
@@ -80,6 +81,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.rows = r
+			m.current = msg.model
 			m.table.SetRows(teaRows)
 		}
 
@@ -105,6 +107,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// log.Printf("Updating pool parallelism pool=%s currentParallelism=%d delta=%d\n", row.pool.Name, row.pool.Parallelism, delta)
 				if err := row.pool.changeWorkers(delta); err != nil {
 					// log.Printf("Error updating pool parallelism pool=%s delta=%d: %v\n", row.pool.Name, delta, err)
+					m.c <- *m.current.addErrorMessage("Updating pool size", err)
 				}
 			}
 		case "ctrl+c":
@@ -152,7 +155,7 @@ func UI(runnameIn string, opts Options) error {
 		table.WithFocused(true),
 	)
 
-	p := tea.NewProgram(model{c, t, opts, []string{}, 0, []statusRow{}}, tea.WithAltScreen())
+	p := tea.NewProgram(model{c, Model{}, t, opts, []string{}, 0, []statusRow{}}, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		return err
 	}

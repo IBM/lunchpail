@@ -80,7 +80,14 @@ func footer(model Model, timestamp time.Time, maxheight int) []string {
 
 	// then use the rest of maxheight for messages
 	for _, msg := range model.messages(maxheight) {
-		footer = append(footer, message(msg.who, msg.message, colors.DispatcherComponentStyle))
+		style := colors.OtherComponentStyle
+		switch msg.who {
+		case "Dispatch":
+			style = colors.DispatcherComponentStyle
+		case "Error":
+			style = colors.ErrorComponentStyle
+		}
+		footer = append(footer, message(msg.who, msg.message, style))
 	}
 
 	return footer

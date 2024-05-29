@@ -39,6 +39,11 @@ func (model *Model) addMessage(msg Message) bool {
 	return false
 }
 
+func (model *Model) addErrorMessage(msg string, err error) *Model {
+	model.addMessage(Message{time.Now(), "Error", msg + ": " + err.Error()})
+	return model
+}
+
 func (model *Model) messages(max int) []Message {
 	msgs := []Message{}
 
