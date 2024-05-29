@@ -159,6 +159,7 @@ func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bo
 	if manifestExists, err := exists(image, "manifest", cli, verbose); err != nil {
 		return "", err
 	} else if manifestExists {
+		// we have a previously built manifest that is not an image
 		fmt.Fprintf(os.Stderr, "Removing prior manifest from prod builds %s\n", image)
 		if err := rm(image, "manifest", cli, verbose); err != nil {
 			return "", err
