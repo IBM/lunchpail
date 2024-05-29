@@ -41,6 +41,10 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 	})
 
 	errgroup.Go(func() error {
+		return model.streamLogUpdates(run, namespace, observe.WorkersComponent, c)
+	})
+
+	errgroup.Go(func() error {
 		return model.streamLogUpdates(run, namespace, observe.DispatcherComponent, c)
 	})
 

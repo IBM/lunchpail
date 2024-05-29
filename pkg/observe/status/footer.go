@@ -84,6 +84,8 @@ func footer(model Model, timestamp time.Time, maxheight int) []string {
 		switch msg.who {
 		case "Dispatch":
 			style = colors.DispatcherComponentStyle
+		case "Worker":
+			style = colors.WorkersComponentStyle
 		case "Error":
 			style = colors.ErrorComponentStyle
 		}

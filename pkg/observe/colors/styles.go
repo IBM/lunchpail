@@ -25,7 +25,7 @@ var Cyan = lipgloss.NewStyle().Foreground(cyanColor)
 // https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
 var DispatcherComponentStyle = lipgloss.NewStyle().Background(lipgloss.Color("#1f78b4")).Foreground(blackColor).Padding(0, 1)
 var WorkersComponentStyle = lipgloss.NewStyle().Background(lipgloss.Color("#a6cee3")).Foreground(blackColor).Padding(0, 1)
-var ResourceComponentStyle = lipgloss.NewStyle().Background(lightpurpleColor).Foreground(blackColor).Padding(0, 1)
+var ResourceComponentStyle = lipgloss.NewStyle().Background(lightyellowColor).Foreground(blackColor).Padding(0, 1)
 var OtherComponentStyle = lipgloss.NewStyle().Background(grayColor).Foreground(blackColor).Padding(0, 1)
 var ErrorComponentStyle = lipgloss.NewStyle().Background(redColor).Foreground(blackColor).Padding(0, 1)
 

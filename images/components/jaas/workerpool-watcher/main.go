@@ -32,21 +32,24 @@ func main() {
 
 	err := createRcloneConfigFile(config, os.Getenv("S3_ENDPOINT_VAR"), os.Getenv("AWS_ACCESS_KEY_ID_VAR"), os.Getenv("AWS_SECRET_ACCESS_KEY_VAR"))
 	if err != nil {
-		fmt.Println("[workerpool worker "+jobIndex+"] Error creating rclone config file:", err)
+		fmt.Println("Internal Error creating rclone config file:", err)
 		return
 	}
 
-	fmt.Println("[workerpool worker " + jobIndex + "] Delaying startup by " + os.Getenv("LUNCHPAIL_STARTUP_DELAY") + " seconds")
-	delay, err := time.ParseDuration(os.Getenv("LUNCHPAIL_STARTUP_DELAY") + "s")
+	startupDelayStr := os.Getenv("LUNCHPAIL_STARTUP_DELAY")
+	delay, err := time.ParseDuration(startupDelayStr + "s")
 	if err != nil {
-		fmt.Println("[workerpool worker "+jobIndex+"] Error parsing startup delay:", err)
+		fmt.Println("Internal Error parsing startup delay:", err)
 		return
 	}
-	time.Sleep(delay)
+	if delay > 0 {
+		fmt.Println("Delaying startup by " + startupDelayStr + " seconds")
+		time.Sleep(delay)
+	}
 
 	err = rcloneTouch(config, alive)
 	if err != nil {
-		fmt.Println("[workerpool worker "+jobIndex+"] Error creating alive marker:", err)
+		fmt.Println("Internal Error creating alive marker:", err)
 		return
 	}
 
@@ -54,12 +57,10 @@ func main() {
 }
 
 func startWatch(handler []string, config, remote, inbox, processing, outbox, local string) {
-	jobIndex := os.Getenv("JOB_COMPLETION_INDEX")
-
 	for {
 		tasks, err := rcloneLsf(config, remote, inbox)
 		if err != nil {
-			fmt.Println("[workerpool worker "+jobIndex+"] Error listing tasks:", err)
+			fmt.Println("Internal Error listing tasks:", err)
 		}
 
 		for _, task := range tasks {
@@ -85,31 +86,31 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 
 				err := os.MkdirAll(localinbox, os.ModePerm)
 				if err != nil {
-					fmt.Println("[workerpool worker "+jobIndex+"] Error creating local inbox:", err)
+					fmt.Println("Internal Error creating local inbox:", err)
 				}
 				err = os.MkdirAll(localprocessing, os.ModePerm)
 				if err != nil {
-					fmt.Println("[workerpool worker "+jobIndex+"] Error creating local processing:", err)
+					fmt.Println("Internal Error creating local processing:", err)
 				}
 				err = os.MkdirAll(localoutbox, os.ModePerm)
 				if err != nil {
-					fmt.Println("[workerpool worker "+jobIndex+"] Error creating local outbox:", err)
+					fmt.Println("Internal Error creating local outbox:", err)
 				}
 
 				err = rcloneCopy(config, in, localprocessing)
 				if err != nil {
-					fmt.Println("[workerpool worker "+jobIndex+"] Error copying task to worker processing:", err)
+					fmt.Println("Internal Error copying task to worker processing:", err)
 				}
 
-				fmt.Println("[workerpool worker " + jobIndex + "] sending file to handler: " + in)
+				// fmt.Println("sending file to handler: " + in)
 				err = os.Remove(localoutbox + "/" + task)
 				if err != nil && !os.IsNotExist(err) {
-					fmt.Println("[workerpool worker "+jobIndex+"] Error removing task from local outbox:", err)
+					fmt.Println("Internal Error removing task from local outbox:", err)
 				}
 
 				err = rcloneMoveto(config, in, inprogress)
 				if err != nil {
-					fmt.Println("Error moving task to global processing:", err)
+					fmt.Println("Internal Error moving task to global processing:", err)
 				}
 
 				// signify that the process is still going... or prematurely terminated
@@ -120,13 +121,13 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 				// open stdout/err files for writing
 				stdoutfile, err := os.Create(localstdout)
 				if err != nil {
-					fmt.Println("Error creating stdout file:", err)
+					fmt.Println("Internal Error creating stdout file:", err)
 				}
 				defer stdoutfile.Close()
 
 				stderrfile, err := os.Create(localstderr)
 				if err != nil {
-					fmt.Println("Error creating stderr file:", err)
+					fmt.Println("Internal Error creating stderr file:", err)
 				}
 				defer stderrfile.Close()
 
@@ -136,7 +137,7 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 				handlercmd.Stderr = multierr
 				err = handlercmd.Run()
 				if err != nil {
-					fmt.Println("Error running the handler:", err)
+					fmt.Println("Internal Error running the handler:", err)
 				}
 				EC := handlercmd.ProcessState.ExitCode()
 
@@ -144,36 +145,36 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 
 				err = rcloneMoveto(config, localec, ec)
 				if err != nil {
-					fmt.Println("Error moving exitcode to remote:", err)
+					fmt.Println("Internal Error moving exitcode to remote:", err)
 				}
 
 				err = rcloneMoveto(config, localstdout, stdout)
 				if err != nil {
-					fmt.Println("Error moving stdout to remote:", err)
+					fmt.Println("Internal Error moving stdout to remote:", err)
 				}
 
 				err = rcloneMoveto(config, localstderr, stderr)
 				if err != nil {
-					fmt.Println("Error moving stderr to remote:", err)
+					fmt.Println("Internal Error moving stderr to remote:", err)
 				}
 
 				if EC == 0 {
 					err = rcloneTouch(config, succeeded)
 					if err != nil {
-						fmt.Println("[workerpool worker "+jobIndex+"] Error creating succeeded marker:", err)
+						fmt.Println("Internal Error creating succeeded marker:", err)
 					}
-					fmt.Println("[workerpool worker " + jobIndex + "] handler success: " + in)
+					// fmt.Println("handler success: " + in)
 				} else {
 					err = rcloneTouch(config, failed)
 					if err != nil {
-						fmt.Println("[workerpool worker "+jobIndex+"] Error creating failed marker:", err)
+						fmt.Println("Internal Error creating failed marker:", err)
 					}
-					fmt.Println("[workerpool worker " + jobIndex + "] handler error with exit code " + strconv.Itoa(EC) + ": " + in)
+					fmt.Println("Worker error exit code " + strconv.Itoa(EC) + ": " + in)
 				}
 
 				err = rcloneMoveto(config, inprogress, out)
 				if err != nil {
-					fmt.Println("Error moving task to global outbox:", err)
+					fmt.Println("Internal Error moving task to global outbox:", err)
 				}
 			}
 		}
