@@ -42,6 +42,10 @@ if [[ $METHOD = parametersweep ]]
 then
   for parameter_value in $(seq $SWEEP_MIN $SWEEP_STEP $SWEEP_MAX)
   do
+    if [[ $parameter_value != $SWEEP_MIN ]]
+    then sleep ${INTERVAL-5}
+    fi
+
     task=/tmp/${taskprefix}.${idx}.txt
     idx=$((idx + 1))
 
@@ -60,10 +64,12 @@ if [[ -n "$COLUMNS" ]] && [[ -n "$COLUMN_TYPES" ]]
 then echo "Using schema columns=\"$COLUMNS\" columnTypes=\"$COLUMN_TYPES\""
 fi
 
-while true
+for i in $(seq 1 $TASKS)
 do
-  for i in $(seq 1 $TASKS)
-  do
+    if [[ $i > 1 ]]
+    then sleep ${INTERVAL-5}
+    fi
+
     task=/tmp/${taskprefix}-$(cat /proc/sys/kernel/random/uuid).txt
     echo "Injecting task=$task format=${FORMAT-generic}"
 
@@ -111,9 +117,6 @@ do
 
     rclone --config $config sync $PROGRESS $task $remote
     rm -f "$task"
-  done
-
-  sleep ${INTERVAL-5}
 done
 
 echo "Exiting"
