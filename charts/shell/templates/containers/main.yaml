@@ -1,7 +1,8 @@
 {{- define "containers/main" }}
 - name: main
   image: {{ .Values.image }}
-  command: ["/bin/bash", "-c", {{ print "touch /tmp/alive && " .Values.command }}]
+  command:
+    {{- include "prestop/command" . | indent 4 }}
   env:
     - name: NAME
       value: {{ .Release.Name }}
@@ -46,6 +47,7 @@
     {{- .Values.volumeMounts | b64dec | fromJsonArray | toYaml | nindent 4 }}
     {{- end }}
     {{- include "workdir/volumeMount" . | indent 4 }}
+    {{- include "prestop/volumeMount" . | indent 4 }}
   resources:
     limits:
       {{- if ne (.Values.workers.cpu | quote) "\"auto\"" }}
@@ -80,4 +82,6 @@
       - /tmp/alive
     initialDelaySeconds: 1
     periodSeconds: 1
+
+  {{- include "prestop/spec/container" . | indent 2 }}
 {{- end }}

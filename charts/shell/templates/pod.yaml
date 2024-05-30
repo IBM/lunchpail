@@ -13,6 +13,7 @@ metadata:
 spec:
   restartPolicy: OnFailure
   serviceAccountName: {{ .Values.rbac.serviceaccount }}
+  {{- include "prestop/spec/pod" . | indent 2 }}
 
   {{- if .Values.securityContext }}
   securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
@@ -23,6 +24,7 @@ spec:
     {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 4 }}
     {{- end }}
     {{- include "workdir/volume" . | indent 4 }}
+    {{- include "prestop/volume" . | indent 4 }}
   initContainers:
     {{- include "containers/workdir" . | indent 4 }}
   containers:

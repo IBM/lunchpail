@@ -94,6 +94,14 @@ function waitForIt {
         nOutputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
                             mc ls s3/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
+        echo "Checking for done file (from dispatcher)"
+        donefilecount=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=s3 -o name) -n $ns -- \
+                                mc ls s3/$queue/lunchpail/$run_name/done | wc -l | xargs)
+        if [[ $donefilecount == 1 ]]
+        then echo "✅ PASS run-controller test=$name donefile exists"
+        else echo "❌ FAIL run-controller donefile missing" && return 1
+        fi
+        
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
