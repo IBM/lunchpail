@@ -35,11 +35,13 @@ type WhatChanged int
 
 const (
 	UnassignedTask WhatChanged = iota
+	DispatcherDone
 	FinishedTask
 
 	LiveWorker
 	DeadWorker
 
+	KillFileForWorker
 	AssignedTaskByWorker
 	ProcessingTaskByWorker
 	SuccessfulTaskByWorker
@@ -61,6 +63,7 @@ type Worker struct {
 	name            string
 	assignedTasks   []string
 	processingTasks []string
+	killfilePresent bool
 }
 
 type TaskCode string
@@ -72,6 +75,10 @@ const (
 
 // The current state of the world
 type Model struct {
+	// has dispatcher dropped its donefile, indicating no more
+	// work is forthcoming?
+	DispatcherDone bool
+
 	UnassignedTasks []string
 	FinishedTasks   []string
 	LiveWorkers     []Worker
@@ -84,6 +91,20 @@ type Model struct {
 	FailedTasks     []AssignedTask
 }
 
+func (model *Model) nUnassignedTasks() int {
+	return len(model.UnassignedTasks)
+}
+
+func (model *Model) nAssignedTasks() int {
+	return len(model.AssignedTasks)
+}
+
+// How many outstanding tasks do we have, i.e. either Unassigned, or
+// Assigned.
+func (model *Model) nTasksRemaining() int {
+	return model.nUnassignedTasks() + model.nAssignedTasks()
+}
+
 var run = os.Getenv("RUN_NAME")
 var queue = os.Getenv("QUEUE")
 var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
@@ -92,9 +113,11 @@ var outbox = filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
 var queues = filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 
 var unassignedTaskPattern = regexp.MustCompile("^inbox/(.+)$")
+var dispatcherDonePattern = regexp.MustCompile("^done$")
 var finishedTaskPattern = regexp.MustCompile("^finished/(.+)$")
 var liveWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]alive$")
 var deadWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]dead$")
+var killfilePattern = regexp.MustCompile("^queues/(.+)/kill$")
 var assignedTaskPattern = regexp.MustCompile("^queues/(.+)/inbox/(.+)$")
 var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
@@ -116,11 +139,17 @@ func reportChangedFile(filepath string) {
 	fmt.Printf("%s\n", filepath)
 }
 
+// Emit that we are ready to terminate
+func bye() {
+	fmt.Println("bye")
+}
+
 // Record the current state of Model for observability
 func reportState(model Model) {
 	now := time.Now()
 
 	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%s\n", len(model.UnassignedTasks), run, now.Format(time.UnixDate))
+	fmt.Fprintf(writer, "lunchpail.io\tdispatcherDone\t%v\t\t\t\t\t%s\n", model.DispatcherDone, run)
 	fmt.Fprintf(writer, "lunchpail.io\tassigned\t%d\t\t\t\t\t%s\n", len(model.AssignedTasks), run)
 	fmt.Fprintf(writer, "lunchpail.io\tprocessing\t\t%d\t\t\t\t%s\n", len(model.ProcessingTasks), run)
 	fmt.Fprintf(writer, "lunchpail.io\tdone\t\t\t%d\t%d\t\t%s\n", len(model.SuccessfulTasks), len(model.FailedTasks), run)
@@ -129,8 +158,8 @@ func reportState(model Model) {
 
 	for _, worker := range model.LiveWorkers {
 		fmt.Fprintf(
-			writer, "lunchpail.io\tliveworker\t%d\t%d\t%d\t%d\t%s\t%s\n",
-			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run,
+			writer, "lunchpail.io\tliveworker\t%d\t%d\t%d\t%d\t%s\t%s\t%v\n",
+			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, run, worker.killfilePresent,
 		)
 	}
 	for _, worker := range model.DeadWorkers {
@@ -161,12 +190,16 @@ func howChanged(marker byte) HowChanged {
 func whatChanged(line string) (WhatChanged, string, string) {
 	if match := unassignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return UnassignedTask, match[1], ""
+	} else if match := dispatcherDonePattern.FindStringSubmatch(line); len(match) == 1 {
+		return DispatcherDone, "", ""
 	} else if match := finishedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return FinishedTask, match[1], ""
 	} else if match := liveWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
 		return LiveWorker, match[1], ""
 	} else if match := deadWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
 		return DeadWorker, match[1], ""
+	} else if match := killfilePattern.FindStringSubmatch(line); len(match) == 2 {
+		return KillFileForWorker, match[1], ""
 	} else if match := assignedTaskPattern.FindStringSubmatch(line); len(match) == 3 {
 		return AssignedTaskByWorker, match[1], match[2]
 	} else if match := processingTaskPattern.FindStringSubmatch(line); len(match) == 3 {
@@ -187,6 +220,7 @@ func parseUpdatesFromStdin() Model {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	unassignedTasks := []string{}
+	dispatcherDone := false
 	finishedTasks := []string{}
 	assignedTasks := []AssignedTask{}
 	processingTasks := []AssignedTask{}
@@ -214,19 +248,28 @@ func parseUpdatesFromStdin() Model {
 		switch what {
 		case UnassignedTask:
 			unassignedTasks = append(unassignedTasks, thing)
+		case DispatcherDone:
+			dispatcherDone = true
 		case FinishedTask:
 			finishedTasks = append(finishedTasks, thing)
 		case LiveWorker:
-			worker := Worker{true, 0, 0, thing, []string{}, []string{}}
+			worker := Worker{true, 0, 0, thing, []string{}, []string{}, false}
 			workersLookup[thing] = worker
 		case DeadWorker:
-			worker := Worker{false, 0, 0, thing, []string{}, []string{}}
+			worker := Worker{false, 0, 0, thing, []string{}, []string{}, false}
 			workersLookup[thing] = worker
+		case KillFileForWorker:
+			// thing is worker name
+			if worker, ok := workersLookup[thing]; ok {
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, worker.assignedTasks, worker.processingTasks, true}
+			} else {
+				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+			}
 		case AssignedTaskByWorker:
 			// thing is worker name, thing2 is task name
 			assignedTasks = append(assignedTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, append(worker.assignedTasks, thing2), worker.processingTasks}
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, append(worker.assignedTasks, thing2), worker.processingTasks, worker.killfilePresent}
 			} else {
 				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
@@ -234,7 +277,7 @@ func parseUpdatesFromStdin() Model {
 			// thing is worker name, thing2 is task name
 			processingTasks = append(processingTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, worker.assignedTasks, append(worker.processingTasks, thing2)}
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, worker.assignedTasks, append(worker.processingTasks, thing2), worker.killfilePresent}
 			} else {
 				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
@@ -242,7 +285,7 @@ func parseUpdatesFromStdin() Model {
 			// thing is worker name, thing2 is task name
 			successfulTasks = append(successfulTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				workersLookup[thing] = Worker{worker.alive, worker.nSuccess + 1, worker.nFail, worker.name, worker.assignedTasks, worker.processingTasks}
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess + 1, worker.nFail, worker.name, worker.assignedTasks, worker.processingTasks, worker.killfilePresent}
 			} else {
 				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
@@ -251,7 +294,7 @@ func parseUpdatesFromStdin() Model {
 			// thing is worker name, thing2 is task name
 			failedTasks = append(failedTasks, AssignedTask{thing, thing2})
 			if worker, ok := workersLookup[thing]; ok {
-				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail + 1, worker.name, worker.assignedTasks, worker.processingTasks}
+				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail + 1, worker.name, worker.assignedTasks, worker.processingTasks, worker.killfilePresent}
 			} else {
 				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
 			}
@@ -279,7 +322,7 @@ func parseUpdatesFromStdin() Model {
 		return cmp.Compare(a.name, b.name)
 	})
 
-	return Model{unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, successfulTasks, failedTasks}
+	return Model{dispatcherDone, unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, successfulTasks, failedTasks}
 }
 
 // Return a model of the world
@@ -296,6 +339,16 @@ func MarkDone(task string) {
 		log.Fatalf("[workstealer] Failed to touch finished marker: %v\n", err)
 	} else {
 		reportChangedFile(finishedMarker)
+	}
+}
+
+// Touch killfile for the given Worker
+func TouchKillFile(worker Worker) {
+	workerKillFileFilePath := filepath.Join(queues, worker.name, "kill")
+	if err := os.WriteFile(workerKillFileFilePath, []byte{}, 0644); err != nil {
+		log.Fatalf("[workstealer] Failed to touch killfile: %v\n", err)
+	} else {
+		reportChangedFile(workerKillFileFilePath)
 	}
 }
 
@@ -524,6 +577,22 @@ func rebalance(model Model) bool {
 	return false
 }
 
+// If the dispatcher is done and there are no more outstanding tasks,
+// then touch kill files in the worker inboxes.
+func touchKillFiles(model Model) {
+	if model.DispatcherDone && model.nTasksRemaining() == 0 {
+		for _, worker := range model.LiveWorkers {
+			if !worker.killfilePresent {
+				TouchKillFile(worker)
+			}
+		}
+	}
+}
+
+func readyToBye(model Model) bool {
+	return model.DispatcherDone && model.nTasksRemaining() == 0 && len(model.LiveWorkers) == 0
+}
+
 // Assumed to be called every time something has changed in the
 // `queue` directory. This will emit to stdout a newline-separated
 // stream of filepaths, one per file that it has changed in some way.
@@ -532,8 +601,12 @@ func main() {
 	model := ParseUpdates()
 	reportState(model)
 
-	if !rebalance(model) {
+	if readyToBye(model) {
+		fmt.Fprintln(os.Stderr, "All work has been completed, all workers have terminated")
+		bye()
+	} else if !rebalance(model) {
 		assignNewTasks(model)
+		touchKillFiles(model)
 		reassignDeadWorkerTasks(model)
 		cleanupCompletedTasks(model)
 	}

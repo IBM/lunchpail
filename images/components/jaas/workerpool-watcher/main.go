@@ -54,8 +54,17 @@ func main() {
 	startWatch(handler, config, remote, inbox, processing, outbox, local)
 }
 
+func killfileExists(config, remote string) bool {
+	exists, err := rcloneExists(config, remote, "kill")
+	if err != nil {
+		fmt.Printf("Internal error looking for kill file:", err)
+		return false
+	}
+	return exists
+}
+
 func startWatch(handler []string, config, remote, inbox, processing, outbox, local string) {
-	for {
+	for !killfileExists(config, remote) {
 		tasks, err := rcloneLsf(config, remote, inbox)
 		if err != nil {
 			fmt.Println("Internal Error listing tasks:", err)
@@ -179,6 +188,8 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 
 		time.Sleep(3 * time.Second)
 	}
+
+	fmt.Println("Worker exiting normally")
 }
 
 func getPodNameSuffix(podName string) string {
@@ -218,8 +229,30 @@ func rcloneLsf(config, remote, inbox string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	tasks := strings.Split(string(output), "\n")
+
+	if len(output) == 0 {
+		// otherwise, strings.Split will return [""]
+		return []string{}, nil
+	}
+
+	tasks := strings.Split(strings.TrimSpace(string(output)), "\n")
 	return tasks, nil
+}
+
+func rcloneExists(config, remote, file string) (bool, error) {
+	cmd := exec.Command("rclone", "--config", config, "lsf", remote+"/"+file, "--files-only")
+	output, err := cmd.Output()
+	if err != nil {
+		return false, err
+	}
+
+	if len(output) == 0 {
+		// otherwise, strings.Split will return [""]
+		return false, nil
+	}
+
+	tasks := strings.Split(strings.TrimSpace(string(output)), "\n")
+	return len(tasks) == 1, nil
 }
 
 func rcloneCopy(config, source, destination string) error {

@@ -61,7 +61,10 @@ B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
 
 rclone --config $config mkdir s3:$QUEUE_BUCKET
 
-while true
+# to future porters of this to e.g. go... this /tmp/done is only to
+# work around bash's inability for the whle read line below to cleanly
+# signal that this outer loop should also exit
+while [[ ! -e /tmp/lunchpail-bye ]]
 do
     if [[ -f $A ]]; then rm -f $A; fi
     A=$(mktemp /tmp/after.$idx.XXXXXXXXXXXX)
@@ -112,7 +115,11 @@ do
             # And also stream the diff to stdin of the go code
             diff --new-line-format='+%L' --old-line-format='-%L' --unchanged-line-format=' %L' $B $A | "$SCRIPTDIR"/workstealer | while read file file2 change
             do
-                if [[ "$change" = move ]]
+                if [[ "$file" = bye ]]
+                then
+                    touch /tmp/lunchpail-bye
+                    exit
+                elif [[ "$change" = move ]]
                 then move $file $file2
                 elif [[ "$change" = link ]]
                 then upload $file2
@@ -123,8 +130,14 @@ do
         fi
     fi
 
+    if [[ -n "$done" ]]
+    then break
+    fi
+
     sleep ${QUEUE_POLL_INTERVAL_SECONDS:-3}
 
     rm -f $B
     B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
 done
+
+echo "Bye!"

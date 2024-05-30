@@ -1,7 +1,12 @@
 {{- define "containers/app" }}
 - name: app
   image: {{ .Values.image }}
-  command: ["/bin/bash", "-c", {{ print "/workdir/watcher " .Values.command }}]
+  command:
+    - /bin/bash
+    - "-c"
+    - |
+      {{ print "/workdir/watcher " .Values.command }}
+      /opt/lunchpail/bin/prestop.sh
   env:
     - name: LUNCHPAIL_STARTUP_DELAY
       value: {{ .Values.startupDelay | default 0 | quote }}
@@ -56,11 +61,6 @@
       {{- if and (.Values.workers.gpu) (gt .Values.workers.gpu 0) }}
       nvidia.com/gpu: {{ .Values.workers.gpu }}
       {{- end }}
-
-  lifecycle:
-      preStop:
-          exec:
-            command: ["/bin/sh", "-c", "/opt/lunchpail/bin/prestop.sh >& /tmp/prestop.out"]
             
   {{- if .Values.rbac.runAsRoot }}
   securityContext:

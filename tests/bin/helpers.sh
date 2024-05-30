@@ -101,6 +101,36 @@ function waitForIt {
         then echo "✅ PASS run-controller test=$name donefile exists"
         else echo "❌ FAIL run-controller donefile missing" && return 1
         fi
+
+        echo "Checking that no workerdispatchers remain running"
+        while true
+        do
+            nRunningWorkDispatchers=$(kubectl get --ignore-not-found pod -l app.kubernetes.io/component=workdispatcher,app.kubernetes.io/instance=$run_name -n $ns --field-selector status.phase=Running --no-headers | wc -l | xargs)
+            if [[ $nRunningWorkDispatchers == 0 ]]
+            then echo "✅ PASS run-controller test=$name no workdispatchers remain running" && break
+            else echo "$nRunningWorkDispatchers workdispatcher(s) remaining running" && sleep 2
+            fi
+        done
+
+        echo "Checking that no workers remain running"
+        while true
+        do
+            nRunningWorkers=$(kubectl get --ignore-not-found pod -l app.kubernetes.io/component=workerpool,app.kubernetes.io/instance=$run_name -n $ns --field-selector status.phase=Running --no-headers | wc -l | xargs)
+            if [[ $nRunningWorkers == 0 ]]
+            then echo "✅ PASS run-controller test=$name no workers remain running" && break
+            else echo "$nRunningWorkers worker(s) remaining running" && sleep 2
+            fi
+        done
+        
+        echo "Checking that no workerstealers remain running"
+        while true
+        do
+            nRunningWorkstealers=$(kubectl get pod --ignore-not-found -l app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=$run_name -n $ns --field-selector status.phase=Running --no-headers | wc -l | xargs)
+            if [[ $nRunningWorkstealers == 0 ]]
+            then echo "✅ PASS run-controller test=$name no workstealers remain running" && break
+            else echo "$nRunningWorkstealers workstealer(s) remaining running" && sleep 2
+            fi
+        done
         
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then

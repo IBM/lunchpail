@@ -5,16 +5,10 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 PATH="${HOME}/rclone-v1.66.0-linux-$(uname -m)/":$PATH
 
-function cleanup {
-    echo "[workerpool app $(basename $local)] Terminating..."
+echo "[Lunchpail] Marker worker as done..."
 
-    # deregister ourselves as a live worker
-    rclone --config $config delete $alive
+# deregister ourselves as a live worker
+rclone --config $config delete $alive
 
-    # register ourselves as a dead worker
-    rclone --config $config touch $dead
-}
-
-echo "[workerpool prestop $(basename $local)] begin"
-cleanup
-echo "[workerpool prestop $(basename $local)] end"
+# register ourselves as a dead worker
+rclone --config $config touch $dead
