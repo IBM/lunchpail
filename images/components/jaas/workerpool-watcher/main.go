@@ -16,17 +16,15 @@ import (
 func main() {
 	// this is the handler that will be called for each task
 	handler := os.Args[1:]
-	jobIndex := os.Getenv("JOB_COMPLETION_INDEX")
 
 	config := "/tmp/rclone.conf"
 	remote := "s3:/" + os.Getenv(os.Getenv("TASKQUEUE_VAR")) + "/" + os.Getenv("LUNCHPAIL") +
-		"/" + os.Getenv("RUN_NAME") + "/queues/" + os.Getenv("POOL") + ".w" +
-		jobIndex + "." + getPodNameSuffix(os.Getenv("POD_NAME"))
+		"/" + os.Getenv("RUN_NAME") + "/queues/" + os.Getenv("POOL") + "." + getPodNameSuffix(os.Getenv("POD_NAME"))
 	inbox := "inbox"
 	processing := "processing"
 	outbox := "outbox"
 	alive := remote + "/" + inbox + "/.alive"
-	local := os.Getenv("WORKQUEUE") + "/" + jobIndex
+	local := os.Getenv("WORKQUEUE")
 
 	// TODO: Check for rclone installation and install, if doesn't exist
 

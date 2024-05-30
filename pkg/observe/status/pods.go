@@ -112,15 +112,11 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 		if !exists {
 			return false, fmt.Errorf("Worker without pool name label %s\n", pod.Name)
 		}
-		completionIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]
-		if !exists {
-			return false, fmt.Errorf("Worker without completion index annotation %s\n", pod.Name)
-		}
 
 		// see watcher.sh remote=... TODO avoid these disparate hacks
 		lastDashIdx := strings.LastIndex(pod.Name, "-")
 		suffix := pod.Name[lastDashIdx+1:]
-		name = fmt.Sprintf("%s.w%s.%s", poolname, completionIdx, suffix)
+		name = fmt.Sprintf("%s.%s", poolname, suffix)
 	}
 
 	var workerStatus WorkerStatus

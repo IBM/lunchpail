@@ -24,17 +24,12 @@ if [[ -z "$RUN_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$JOB_COMPLETION_INDEX" ]]; then
-    echo "Error: JOB_COMPLETION_INDEX not defined"
-    exit 1
-fi
-
 # use pod name suffix hash from batch.v1/Job controller
 suffix=$(sed -E 's/^.+-([^-]+)$/\1/' <<< $POD_NAME)
 
 config=/tmp/rclone.conf
-remote=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/queues/$POOL.w$JOB_COMPLETION_INDEX.$suffix
-local=$WORKQUEUE/$JOB_COMPLETION_INDEX
+remote=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/queues/$POOL.$suffix
+local=$WORKQUEUE
 inbox=inbox
 alive=$remote/$inbox/.alive
 dead=$remote/$inbox/.dead

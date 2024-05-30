@@ -12,15 +12,6 @@ metadata:
     app.kubernetes.io/managed-by: lunchpail.io
 spec:
   parallelism: {{ .Values.workers.count }}
-  # see 
-  # https://kubernetes.io/docs/concepts/workloads/controllers/job/#controlling-parallelism
-  # completions field needs to be set since we are running an indexed job
-  # and depend on JOB_COMPLETION_INDEX.
-  # Also, set to a high non-negative integer so that we can increase
-  # parallelism of workers to process more tasks from the queue ("pods 
-  # running in parallel cannot exceed the number of remaining completions")
-  completions: 999999999
-  completionMode: Indexed
   # ttlSecondsAfterFinished: 10000
   backoffLimit: 6
   template:
