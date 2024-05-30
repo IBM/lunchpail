@@ -12,12 +12,12 @@ var Bold = lipgloss.NewStyle().Bold(true)
 var SelectedForeground = lipgloss.NoColor{}
 var SelectedBackground = lipgloss.AdaptiveColor{Light: "#bbb", Dark: "#444"}
 
-// dark: https://colorbrewer2.org/#type=qualitative&scheme=Set2&n=8
 var Brown = lipgloss.NewStyle().Foreground(brownColor)
 var Blue = lipgloss.NewStyle().Foreground(blueColor)
+var LightPurple = lipgloss.NewStyle().Foreground(lightpurpleColor)
 var Purple = lipgloss.NewStyle().Foreground(purpleColor)
 var Yellow = lipgloss.NewStyle().Foreground(yellowColor)
-var Green = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#33a02c", Dark: "#a6d854"})
+var Green = lipgloss.NewStyle().Foreground(greenColor)
 var Red = lipgloss.NewStyle().Foreground(redColor)
 var Gray = lipgloss.NewStyle().Foreground(grayColor)
 var Cyan = lipgloss.NewStyle().Foreground(cyanColor)
