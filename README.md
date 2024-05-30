@@ -2,7 +2,7 @@
 
 # Lunchpail
 
-[![Build Status](https://v3.travis.ibm.com/cloud-computer/jaas.svg?token=Xarp6oK5BSTVsrSknEPZ&branch=main)](https://v3.travis.ibm.com/cloud-computer/jaas)
+[![Build Status](https://v3.travis.ibm.com/cloud-computer/lunchpail.svg?token=Xarp6oK5BSTVsrSknEPZ&branch=main)](https://v3.travis.ibm.com/cloud-computer/lunchpail)
 
 Lunchpail is a lightweight way to package and execute highly scalable
 jobs.
@@ -23,7 +23,7 @@ secrets that cannot be shared. After this, the job just runs.
 
 ## Getting Started
 
-- [Download](https://github.ibm.com/cloud-computer/jaas/releases/latest) the latest `lunchpail` CLI.
+- [Download](https://github.ibm.com/cloud-computer/lunchpail/releases/latest) the latest `lunchpail` CLI.
 - Try out `lunchpail demo`. This will generate a shrinkwrap of a demo
   app in `./lunchpail-demo`.
 - Run `./lunchpail-demo/up` to launch the app.
