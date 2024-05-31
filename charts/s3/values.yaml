@@ -1,13 +1,3 @@
-name: s3
-
-emptyDir:
-  sizeLimit: 1Gi
-
 global:
   s3AccessKey: xxx
   s3SecretKey: yyy
-  buckets:
-    test: zzz
-
-images:
-  server: bitnami/minio:2024.5.10

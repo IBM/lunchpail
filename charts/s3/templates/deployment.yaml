@@ -13,12 +13,11 @@ spec:
   volumes:
     - name: data
       hostPath:
-      emptyDir:
-        sizeLimit: {{ .Values.emptyDir.sizeLimit }}
+      emptyDir: {}
 
   containers:
   - name: minio
-    image: {{ .Values.images.server }}
+    image: {{ .Values.minioimage | default "bitnami/minio:2024.5.10" }}
     imagePullPolicy: IfNotPresent
     envFrom:
       - secretRef:
@@ -28,12 +27,6 @@ spec:
       - -c
     args: 
       - "echo 'Cleaning /data' && find /data | wc -l && rm -rf /data/* && rm -rf /data/.minio.sys && find /data && find /data | wc -l && echo 'Starting minio' && MINIO_ROOT_USER=$AWS_ACCESS_KEY_ID MINIO_ROOT_PASSWORD=$AWS_SECRET_ACCESS_KEY minio server /data --console-address :9090"
-    # securityContext:
-    #   runAsUser: 0
-    #   privileged: true
-    resources:
-      requests:
-        memory: 1Gi
     ports:
     - containerPort: 9000
 #          hostPort: 9000
@@ -49,11 +42,11 @@ spec:
         path: /minio/health/ready
         port: 9000
         scheme: HTTP
-      initialDelaySeconds: 2
-      periodSeconds: 15
+      initialDelaySeconds: 1
+      periodSeconds: 5
       timeoutSeconds: 10
       successThreshold: 1
-      failureThreshold: 3
+      failureThreshold: 5
 
     livenessProbe:
       httpGet:

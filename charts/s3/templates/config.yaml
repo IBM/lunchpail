@@ -9,6 +9,5 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
 data:
-  TEST_BUCKET: {{ .Values.global.buckets.test }}
   S3_ENDPOINT: {{ print "http://" .Values.name ":9000" }}
   USE_MINIO_EXTENSIONS: "true"
