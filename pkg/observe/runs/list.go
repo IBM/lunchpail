@@ -2,6 +2,7 @@ package runs
 
 import (
 	"context"
+	"sort"
 
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,7 +15,7 @@ func groupByRun(jobs *batchv1.JobList) []Run {
 	for _, job := range jobs.Items {
 		if runname, exists := job.Labels["app.kubernetes.io/instance"]; exists {
 			if _, alreadySeen := runsLookup[runname]; !alreadySeen {
-				runsLookup[runname] = Run{Name: runname}
+				runsLookup[runname] = Run{Name: runname, CreationTimestamp: job.CreationTimestamp.Time}
 			}
 		}
 	}
@@ -23,6 +24,8 @@ func groupByRun(jobs *batchv1.JobList) []Run {
 	for _, run := range runsLookup {
 		runs = append(runs, run)
 	}
+
+	sort.Slice(runs, func(i, j int) bool { return runs[i].CreationTimestamp.Before(runs[j].CreationTimestamp) })
 
 	return runs
 }

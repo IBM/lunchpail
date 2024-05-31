@@ -2,7 +2,10 @@ package runs
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/dustin/go-humanize"
 	"strings"
+	"time"
 )
 
 // Return a Run if there is one in the given namespace for the given
@@ -16,8 +19,10 @@ func Singleton(appName, namespace string) (Run, error) {
 		return runs[0], nil
 	} else if len(runs) > 1 {
 		names := []string{}
+		now := time.Now()
+		dim := lipgloss.NewStyle().Faint(true)
 		for _, run := range runs {
-			names = append(names, run.Name)
+			names = append(names, fmt.Sprintf("%s %s", run.Name, dim.Render(humanize.RelTime(run.CreationTimestamp, now, "ago", "from now"))))
 		}
 		return Run{}, fmt.Errorf("More than one run found in namespace %s:\n%s", namespace, strings.Join(names, "\n"))
 	} else {

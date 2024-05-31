@@ -1,5 +1,8 @@
 package runs
 
+import "time"
+
 type Run struct {
-	Name string
+	Name              string
+	CreationTimestamp time.Time
 }
