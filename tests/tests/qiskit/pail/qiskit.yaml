@@ -5,7 +5,7 @@ metadata:
 spec:
   api: ray
   image: ghcr.io/lunchpail/ray22:0.3.0
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/qiskit/pail/src
+  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/qiskit/pail/src
   command: python3 main.py
   supportsGpu: false
   requirements:

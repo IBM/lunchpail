@@ -18,4 +18,4 @@ spec:
     SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
     SWEEP_STEP: '1'
     INTERVAL: {{ .Values.every | default 5 | quote }}
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test7f-repo/pail
+  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7f-repo/pail

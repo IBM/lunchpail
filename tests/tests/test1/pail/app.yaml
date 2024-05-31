@@ -5,7 +5,7 @@ metadata:
 spec:
   api: torch
   image: ghcr.io/lunchpail/lightning:0.0.7
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test1/pail
+  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test1/pail
   command: python3 src/main.py
   inputs:
     - sizes:

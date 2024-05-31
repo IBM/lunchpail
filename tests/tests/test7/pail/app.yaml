@@ -7,7 +7,7 @@ spec:
   api: workqueue
   role: worker
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
-  repo: https://github.ibm.com/cloud-computer/codeflare-platform/tree/main/tests/tests/test7/pail
+  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7/pail
   command: ./src/main.sh
   minSize: auto
   securityContext:
