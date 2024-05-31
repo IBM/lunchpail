@@ -19,13 +19,16 @@ func ParseFlag(flag, runname string, internalS3Port int) (Spec, error) {
 		return Spec{}, err
 	}
 
+	if spec.Endpoint == "" {
+		spec.Auto = true
+	}
+
 	if spec.Name == "" {
 		// create a queue resource (since one was not
 		// supplied). re: name of taskqueue Secret; dashes are
 		// not valid in bash variable names, so we avoid those
 		// here
 		spec.Name = strings.Replace(runname, "-", "", -1) + "queue"
-		spec.Auto = true
 	}
 
 	if strings.Contains(spec.Endpoint, "$TEST_RUN") {

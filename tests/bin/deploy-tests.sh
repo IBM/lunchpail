@@ -60,6 +60,9 @@ fi
 mkdir -p "$TARGET"
 testapp="$TARGET"/test
 
+# Allows us to capture workstealer info before it auto-terminates
+export LP_SLEEP_BEFORE_EXIT=10
+
 # intentionally setting some critical values at assemble time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time

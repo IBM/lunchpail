@@ -127,9 +127,11 @@ namespace:
 tags:
   gpu: %v # hasGpuSupport (28)
 s3:
-  name: %s # runname (29)
+  enabled: %v # queueSpec.Auto (29)
   port: %d # internalS3Port (30)
-  appname: %s # appname (31)
+lunchpail_internal:
+  workstealer:
+    sleep_before_exit: %s # sleepBeforeExit (31)
 `,
 		clusterType,                     // (1)
 		opts.AssemblyOptions.DockerHost, // (2)
@@ -160,9 +162,9 @@ s3:
 		runname,                            // (26)
 		namespace,                          // (27)
 		opts.AssemblyOptions.HasGpuSupport, // (28)
-		runname,                            // (29)
+		queueSpec.Auto,                     // (29)
 		internalS3Port,                     // (30)
-		appname,                            // (31)
+		os.Getenv("LP_SLEEP_BEFORE_EXIT"),  // (31)
 	)
 
 	if opts.Verbose {

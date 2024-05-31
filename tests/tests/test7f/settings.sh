@@ -1,6 +1,6 @@
 api=workqueue
 
-# see init.sh for "rcloneremotetest"
+# see preinit.sh for "rcloneremotetest"
 taskqueue=rclone://rcloneremotetest/test7f
 
 # /queue/0,1 <-- 2 workers

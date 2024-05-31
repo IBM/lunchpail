@@ -1,3 +1,4 @@
+{{- if .Values.s3.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -5,6 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: s3
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
     app.kubernetes.io/name: {{ .Values.name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
@@ -12,13 +14,16 @@ spec:
   ports:
   - name: api
     protocol: TCP
-    port: {{ .Values.port }}
+    port: {{ .Values.s3.port }}
     targetPort: 9000
   # - name: console
   #   protocol: TCP
   #   port: 9090
   #   targetPort: 9090
   selector:
-    app.kubernetes.io/part-of: {{ .Values.appname }}
-    app.kubernetes.io/instance: {{ .Values.name }}
-    app.kubernetes.io/component: s3
+    app.kubernetes.io/component: workstealer
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: lunchpail.io
+{{- end }}

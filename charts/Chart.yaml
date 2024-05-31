@@ -16,7 +16,3 @@ dependencies:
 #   condition: nvidia.enabled
 #   tags:
 #     - gpu
-
-- name: s3
-  version: 0.0.1
-  repository: file://./s3

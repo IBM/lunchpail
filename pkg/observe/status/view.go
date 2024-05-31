@@ -49,7 +49,6 @@ type statusRow struct {
 }
 
 func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, int, []string) {
-	runningInternalS3, totalInternalS3 := model.split(model.InternalS3)
 	runningDispatcher, totalDispatcher := model.split(model.Dispatcher)
 	runningWorkStealer, totalWorkStealer := model.split(model.WorkStealer)
 
@@ -63,10 +62,9 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 		row("Run", colors.Blue.Render(model.RunName)),
 		row("├─ Runtime", cellf(runningWorkStealer, totalWorkStealer, model.WorkStealer)),
 		row("├─ "+colors.Bold.Render("Dispatcher"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
-		row("├─ "+colors.Bold.Render("Queue"), cellf(runningInternalS3, totalInternalS3, model.InternalS3)),
 	}
 
-	if !summary && runningInternalS3 > 0 {
+	if !summary {
 		prefix := "  ├─ "
 		prefix2 := "│"
 		if len(model.Pools) <= 1 {

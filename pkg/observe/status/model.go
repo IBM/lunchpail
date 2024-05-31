@@ -38,7 +38,6 @@ type Model struct {
 	Namespace     string
 	Pools         []Pool
 	Dispatcher    WorkerStatus
-	InternalS3    WorkerStatus
 	WorkStealer   WorkerStatus
 	LastNMessages *ring.Ring // ring of type Message
 	Qstat         qstat.Model

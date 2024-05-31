@@ -1,3 +1,4 @@
+{{- if .Values.s3.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,3 +12,4 @@ metadata:
 data:
   S3_ENDPOINT: {{ print "http://" .Values.name ":9000" }}
   USE_MINIO_EXTENSIONS: "true"
+{{- end }}

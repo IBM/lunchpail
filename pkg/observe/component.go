@@ -6,7 +6,6 @@ const (
 	WorkersComponent     Component = "workerpool"
 	DispatcherComponent            = "workdispatcher"
 	WorkStealerComponent           = "workstealer"
-	InternalS3Component            = "s3"
 )
 
 func ComponentShortName(c Component) string {
@@ -17,8 +16,6 @@ func ComponentShortName(c Component) string {
 		return "Dispatch"
 	case WorkStealerComponent:
 		return "Balancer"
-	case InternalS3Component:
-		return "Queue"
 	default:
 		return string(c)
 	}
