@@ -36,16 +36,23 @@ func clearLine(writer io.Writer) {
 }
 
 func row(col1, col2 string) statusRow {
-	return statusRow{table.Row{col1, col2}, nil}
+	return statusRow{table.Row{col1, col2}, nil, false}
 }
 
 func rowp(col1, col2 string, pool *Pool) statusRow {
-	return statusRow{table.Row{col1, col2}, pool}
+	return statusRow{table.Row{col1, col2}, pool, false}
+}
+
+func rowPools(numPools int) statusRow {
+	col1 := colors.Bold.Render("└─ Pools")
+	col2 := colors.Blue.Render(strconv.Itoa(numPools))
+	return statusRow{table.Row{col1, col2}, nil, true}
 }
 
 type statusRow struct {
-	row  table.Row
-	pool *Pool
+	row        table.Row
+	pool       *Pool
+	isPoolsRow bool
 }
 
 func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, int, []string) {
@@ -83,11 +90,13 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 			rows = append(rows, row(prefix2+"  ├─ Assigned", cellt(inbox, largest, maxbox, boxIn)))
 			rows = append(rows, row(prefix2+"  ├─ Processing", cellt(processing, largest, maxbox, boxPr)))
 			rows = append(rows, row(prefix2+"  ├─ Success", cellt(success, largest, maxbox, boxSu)))
-			rows = append(rows, row(prefix2+"  └─ Failures", cellt(failures, largest, maxbox, boxFa)))
+			if failures > 0 {
+				rows = append(rows, row(prefix2+"  └─ Failures", cellt(failures, largest, maxbox, boxFa)))
+			}
 		}
 	}
 
-	rows = append(rows, row(colors.Bold.Render("└─ Pools"), colors.Blue.Render(strconv.Itoa(model.numPools()))))
+	rows = append(rows, rowPools(model.numPools()))
 
 	for poolIdx, pool := range model.Pools {
 		runningWorkers, totalWorkers := pool.workersSplit()
@@ -109,8 +118,16 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 
 			rows = append(rows, row(prefix2+"├─ Inbox", cellt(inbox, largest, maxbox, boxIn)))
 			rows = append(rows, row(prefix2+"├─ Processing", cellt(processing, largest, maxbox, boxPr)))
-			rows = append(rows, row(prefix2+"├─ Success", cellt(success, largest, maxbox, boxSu)))
-			rows = append(rows, row(prefix2+"└─ Failures", cellt(failure, largest, maxbox, boxFa)))
+
+			successTree := "└─"
+			if failure > 0 {
+				successTree = "├─"
+			}
+
+			rows = append(rows, row(prefix2+successTree+" Success", cellt(success, largest, maxbox, boxSu)))
+			if failure > 0 {
+				rows = append(rows, row(prefix2+"└─ Failures", cellt(failure, largest, maxbox, boxFa)))
+			}
 		}
 	}
 
