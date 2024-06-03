@@ -32,47 +32,30 @@ func Qlast(marker, opt string, opts QlastOptions) (string, error) {
 		case "unassigned":
 			return strconv.Itoa(lastmodel.Unassigned), nil
 		case "liveworkers":
-			if len(lastmodel.Pools) == 0 {
-				return "0", nil
-			} else {
-				N := 0
-				for _, pool := range lastmodel.Pools {
-					N += len(pool.LiveWorkers)
-				}
-				return strconv.Itoa(N), nil
-			}
+			return strconv.Itoa(lastmodel.liveWorkers()), nil
+		case "workers":
+			return strconv.Itoa(lastmodel.workers()), nil
 		case "processing":
 			return strconv.Itoa(lastmodel.Processing), nil
 		case "success":
 			return strconv.Itoa(lastmodel.Success), nil
 		case "failure":
 			return strconv.Itoa(lastmodel.Failure), nil
-		case "liveworker.success":
-			if opt != "" {
-				// the request was for a particular worker index
-				workeridx, err := strconv.Atoi(opt)
-				if err != nil {
-					return strconv.Itoa(0), err
-				} else if workeridx < 0 || workeridx > len(lastmodel.Pools[0].LiveWorkers)-1 {
-					// no such worker, yet
-					return strconv.Itoa(0), nil
-				} else {
-					return strconv.Itoa(lastmodel.Pools[0].LiveWorkers[workeridx].Outbox), nil
+		case "worker.success":
+			vals := []int{}
+			for _, pool := range lastmodel.Pools {
+				for _, worker := range pool.LiveWorkers {
+					vals = append(vals, worker.Outbox)
 				}
-			} else {
-				// otherwise, the request was for all workers
-				vals := []int{}
-				for _, pool := range lastmodel.Pools {
-					for _, worker := range pool.LiveWorkers {
-						vals = append(vals, worker.Outbox)
-					}
+				for _, worker := range pool.DeadWorkers {
+					vals = append(vals, worker.Outbox)
 				}
-
-				// turns an array [1,2,3] into a string "1 2 3", i.e. the delimeter is " "
-				// and we trim off the surrounding brackets
-				delim := " "
-				return strings.Trim(strings.Join(strings.Fields(fmt.Sprint(vals)), delim), "[]"), nil
 			}
+
+			// turns an array [1,2,3] into a string "1 2 3", i.e. the delimeter is " "
+			// and we trim off the surrounding brackets
+			delim := " "
+			return strings.Trim(strings.Join(strings.Fields(fmt.Sprint(vals)), delim), "[]"), nil
 		}
 	}
 

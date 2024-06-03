@@ -215,7 +215,7 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$("$SCRIPTDIR"/../../builds/test/$name/test qlast liveworkers)
+        numQueues=$("$SCRIPTDIR"/../../builds/test/$name/test qlast workers)
         actualNumInOutbox=$("$SCRIPTDIR"/../../builds/test/$name/test qlast success)
 
         if [[ -z "$waitForMix" ]]
@@ -227,7 +227,7 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
-            gotMix=$("$SCRIPTDIR"/../../builds/test/$name/test qlast liveworker.success)
+            gotMix=$("$SCRIPTDIR"/../../builds/test/$name/test qlast worker.success)
             gotMixFrom=0
             gotMixTotal=0
             for actual in $gotMix
