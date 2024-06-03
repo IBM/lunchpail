@@ -443,6 +443,18 @@ func moveTaskBackToUnassigned(task string, worker Worker, box Box) {
 
 // A Worker has transitioned from Live to Dead. Reassign its Tasks.
 func CleanupForDeadWorker(worker Worker) {
+	nAssigned := len(worker.assignedTasks)
+	nProcessing := len(worker.processingTasks)
+
+	if nAssigned + nProcessing > 0 {
+		fmt.Fprintf(
+			os.Stderr,
+			"INFO Reassigning dead worker tasks (it had %s assigned and was processing %s)\n",
+			english.Plural(nAssigned, "task", ""),
+			english.Plural(nProcessing, "task", ""),
+		)
+	}
+
 	for _, assignedTask := range worker.assignedTasks {
 		moveTaskBackToUnassigned(assignedTask, worker, "inbox")
 	}
