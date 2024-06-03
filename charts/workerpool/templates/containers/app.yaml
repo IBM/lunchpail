@@ -5,8 +5,8 @@
     - /bin/bash
     - "-c"
     - |
+      trap /opt/lunchpail/bin/prestop.sh EXIT
       {{ print "/workdir/watcher " .Values.command }}
-      /opt/lunchpail/bin/prestop.sh
   env:
     - name: LUNCHPAIL_STARTUP_DELAY
       value: {{ .Values.startupDelay | default 0 | quote }}
