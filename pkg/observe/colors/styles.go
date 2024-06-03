@@ -23,10 +23,10 @@ var Gray = lipgloss.NewStyle().Foreground(grayColor)
 var Cyan = lipgloss.NewStyle().Foreground(cyanColor)
 
 // https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
-var DispatcherMessageStyle = lipgloss.NewStyle().Foreground(blueColor).Faint(true)
+var DispatcherMessageStyle = lipgloss.NewStyle().Foreground(blueColor)
 var DispatcherComponentStyle = lipgloss.NewStyle().Background(blueColor).Foreground(blackColor).Padding(0, 1)
 
-var WorkersMessageStyle = lipgloss.NewStyle().Foreground(lightblueColor).Faint(true)
+var WorkersMessageStyle = lipgloss.NewStyle().Foreground(lightblueColor)
 var WorkersComponentStyle = lipgloss.NewStyle().Background(lightblueColor).Foreground(blackColor).Padding(0, 1)
 
 var WorkStealerMessageStyle = lipgloss.NewStyle().Foreground(lightbrownColor).Faint(true)
