@@ -19,3 +19,5 @@ EOF
 echo "DEBUG prestop touching donefile"
 rclone --config $config touch $donefile
 echo "DEBUG prestop touching donefile: done"
+
+echo "INFO Bye!"

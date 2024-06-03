@@ -12,3 +12,5 @@ rclone --config $config delete $alive
 
 # register ourselves as a dead worker
 rclone --config $config touch $dead
+
+echo "INFO Bye from $(echo $POD_NAME | sed -E "s#^${RUN_NAME}-##")!"
