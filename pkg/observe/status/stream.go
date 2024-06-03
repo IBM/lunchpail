@@ -37,19 +37,19 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 	})
 
 	errgroup.Go(func() error {
-		return model.streamEventUpdates(eventWatcher, c)
+		return model.streamEventUpdates(run, eventWatcher, c)
 	})
 
 	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, observe.WorkersComponent, "DEBUG", true, c)
+		return model.streamLogUpdates(run, namespace, observe.WorkersComponent, false, c)
 	})
 
 	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, observe.WorkStealerComponent, "INFO", false, c)
+		return model.streamLogUpdates(run, namespace, observe.WorkStealerComponent, true, c)
 	})
 
 	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, observe.DispatcherComponent, "DEBUG", true, c)
+		return model.streamLogUpdates(run, namespace, observe.DispatcherComponent, false, c)
 	})
 
 	errgroup.Go(func() error {

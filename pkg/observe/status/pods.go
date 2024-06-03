@@ -119,22 +119,22 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 		name = fmt.Sprintf("%s.%s", poolname, suffix)
 	}
 
-	var workerStatus WorkerStatus
+	// var workerStatus WorkerStatus
 	switch component {
 	case string(observe.WorkStealerComponent):
 		name = observe.ComponentShortName(observe.WorkStealerComponent)
-		workerStatus = statusFromPod(pod)
+		workerStatus := statusFromPod(pod)
 		model.WorkStealer = workerStatus
 	case string(observe.DispatcherComponent):
 		name = observe.ComponentShortName(observe.DispatcherComponent)
-		workerStatus = statusFromPod(pod)
+		workerStatus := statusFromPod(pod)
 		model.Dispatcher = workerStatus
 	case string(observe.WorkersComponent):
-		if pools, poolIdx, theWorkerStatus, err := updateWorker(name, pod, model.Pools, what); err != nil {
+		if pools, poolIdx, _, err := updateWorker(name, pod, model.Pools, what); err != nil {
 			return false, err
 		} else {
 			model.Pools = pools
-			workerStatus = theWorkerStatus
+			// workerStatus = theWorkerStatus
 
 			if workerIdx, exists := pod.Annotations["batch.kubernetes.io/job-completion-index"]; exists {
 				name = fmt.Sprintf("Worker %s Pool %d", workerIdx, poolIdx+1)
@@ -142,11 +142,11 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 		}
 	}
 
-	if model.addMessage(Message{timeOf(pod), "Cluster", name + " " + strings.ToLower(string(workerStatus))}) {
-		return true, nil
-	}
+	//	if model.addMessage(Message{timeOf(pod), "Cluster", name + " " + strings.ToLower(string(workerStatus))}) {
+	//		return true, nil
+	//	}
 
-	return false, nil
+	return true, nil
 }
 
 func timeOf(pod *v1.Pod) time.Time {
