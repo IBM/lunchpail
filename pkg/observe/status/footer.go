@@ -30,7 +30,6 @@ func cpuline(workers []cpu.Worker, resource Resource) string {
 	prevPrefix := ""
 	for _, worker := range workers {
 		prefix := ""
-		paddingLeft := 1
 		switch worker.Component {
 		case observe.DispatcherComponent:
 			prefix = "D "
@@ -40,7 +39,6 @@ func cpuline(workers []cpu.Worker, resource Resource) string {
 
 		if prefix == prevPrefix {
 			prefix = ""
-			paddingLeft = 0
 		} else {
 			prevPrefix = prefix
 		}
@@ -59,7 +57,7 @@ func cpuline(workers []cpu.Worker, resource Resource) string {
 		}
 
 		if val != "" {
-			info := colors.ComponentStyle(worker.Component).PaddingLeft(paddingLeft).Render(val)
+			info := colors.ComponentStyle(worker.Component).Render(val)
 			line = append(line, info)
 		}
 	}
