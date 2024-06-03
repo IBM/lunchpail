@@ -17,7 +17,7 @@ func (model *Model) streamEventUpdates(watcher watch.Interface, c chan Model) er
 		event := watchEvent.Object.(*v1.Event)
 
 		if event.Message != "" {
-			if model.addMessage(Message{event.LastTimestamp.Time, "Resource", event.Message}) {
+			if model.addMessage(Message{event.LastTimestamp.Time, "Cluster", event.Message}) {
 				c <- *model
 			}
 		}

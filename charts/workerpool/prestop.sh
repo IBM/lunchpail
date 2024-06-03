@@ -5,7 +5,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 PATH="${HOME}/rclone-v1.66.0-linux-$(uname -m)/":$PATH
 
-echo "[Lunchpail] Marker worker as done..."
+echo "DEBUG Marker worker as done..."
 
 # deregister ourselves as a live worker
 rclone --config $config delete $alive

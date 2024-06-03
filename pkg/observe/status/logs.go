@@ -19,7 +19,7 @@ type LogLine struct {
 	Message   string
 }
 
-func (model *Model) streamLogUpdates(run, namespace string, component observe.Component, c chan Model) error {
+func (model *Model) streamLogUpdates(run, namespace string, component observe.Component, linePrefixFilter string, negate bool, c chan Model) error {
 	clientset, _, err := k8s.Client()
 	if err != nil {
 		return err
@@ -52,7 +52,28 @@ func (model *Model) streamLogUpdates(run, namespace string, component observe.Co
 		sc := bufio.NewScanner(logsStreamer)
 		for sc.Scan() {
 			// TODO on time.Now() we could parse out the timestamps from the logs
-			if model.addMessage(Message{time.Now(), observe.ComponentShortName(component), sc.Text()}) {
+			line := sc.Text()
+			if linePrefixFilter != "" {
+				hasPrefix := strings.HasPrefix(line, linePrefixFilter)
+				if !negate && hasPrefix {
+					// then we want to include the
+					// line, but will strip off
+					// the prefix
+					line = line[len(linePrefixFilter)+1:]
+				} else if negate && !hasPrefix {
+					// then we want to include the
+					// line because it *doesn't*
+					// have the prefix; but no
+					// need to strip off the
+					// prefix. intentional no-op
+					// here.
+				} else {
+					// otherwise, we want to skip the line
+					continue
+				}
+			}
+
+			if model.addMessage(Message{time.Now(), observe.ComponentShortName(component), line}) {
 				c <- *model
 			}
 		}

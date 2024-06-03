@@ -142,7 +142,7 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 		}
 	}
 
-	if model.addMessage(Message{timeOf(pod), "Resource", name + " " + strings.ToLower(string(workerStatus))}) {
+	if model.addMessage(Message{timeOf(pod), "Cluster", name + " " + strings.ToLower(string(workerStatus))}) {
 		return true, nil
 	}
 

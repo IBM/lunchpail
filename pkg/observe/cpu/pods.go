@@ -103,7 +103,9 @@ func execIntoPod(pod *v1.Pod, component observe.Component, model *Model, interva
 		Stdout: writer,
 		Stderr: os.Stderr,
 	}); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		if !strings.Contains(err.Error(), "terminated") {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+		}
 		return err
 	}
 

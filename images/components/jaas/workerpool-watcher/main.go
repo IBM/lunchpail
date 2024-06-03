@@ -189,7 +189,7 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 		time.Sleep(3 * time.Second)
 	}
 
-	fmt.Println("Worker exiting normally")
+	fmt.Println("DEBUG Worker exiting normally")
 }
 
 func getPodNameSuffix(podName string) string {

@@ -11,11 +11,11 @@ const (
 func ComponentShortName(c Component) string {
 	switch c {
 	case WorkersComponent:
-		return "Worker"
+		return "Workers"
 	case DispatcherComponent:
 		return "Dispatch"
 	case WorkStealerComponent:
-		return "Balancer"
+		return "Runtime"
 	default:
 		return string(c)
 	}

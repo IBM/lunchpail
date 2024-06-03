@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "[Lunchpail] prestop starting"
+echo "DEBUG prestop starting"
 
 config=/tmp/rclone-prestop.conf
 donefile=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/done
@@ -16,6 +16,6 @@ secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
 acl = public-read
 EOF
 
-echo "[Lunchpail] prestop touching donefile"
+echo "DEBUG prestop touching donefile"
 rclone --config $config touch $donefile
-echo "[Lunchpail] prestop touching donefile: done"
+echo "DEBUG prestop touching donefile: done"

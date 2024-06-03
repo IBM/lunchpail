@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"github.com/dustin/go-humanize/english"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -241,10 +242,6 @@ func parseUpdatesFromStdin() Model {
 
 		what, thing, thing2 := whatChanged(line[1:])
 
-		if os.Getenv("DEBUG") != "" {
-			fmt.Fprintf(os.Stderr, "[workstealer] Update how=%v what=%v thing=%s thing2=%v line=%s\n", how, what, thing, thing2, line)
-		}
-
 		switch what {
 		case UnassignedTask:
 			unassignedTasks = append(unassignedTasks, thing)
@@ -263,7 +260,7 @@ func parseUpdatesFromStdin() Model {
 			if worker, ok := workersLookup[thing]; ok {
 				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, worker.assignedTasks, worker.processingTasks, true}
 			} else {
-				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+				fmt.Fprintf(os.Stderr, "ERROR unable to find worker=%s\n", thing)
 			}
 		case AssignedTaskByWorker:
 			// thing is worker name, thing2 is task name
@@ -271,7 +268,7 @@ func parseUpdatesFromStdin() Model {
 			if worker, ok := workersLookup[thing]; ok {
 				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, append(worker.assignedTasks, thing2), worker.processingTasks, worker.killfilePresent}
 			} else {
-				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+				fmt.Fprintf(os.Stderr, "ERROR Unable to find worker=%s\n", thing)
 			}
 		case ProcessingTaskByWorker:
 			// thing is worker name, thing2 is task name
@@ -279,7 +276,7 @@ func parseUpdatesFromStdin() Model {
 			if worker, ok := workersLookup[thing]; ok {
 				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail, worker.name, worker.assignedTasks, append(worker.processingTasks, thing2), worker.killfilePresent}
 			} else {
-				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+				fmt.Fprintf(os.Stderr, "ERROR unable to find worker=%s\n", thing)
 			}
 		case SuccessfulTaskByWorker:
 			// thing is worker name, thing2 is task name
@@ -287,7 +284,7 @@ func parseUpdatesFromStdin() Model {
 			if worker, ok := workersLookup[thing]; ok {
 				workersLookup[thing] = Worker{worker.alive, worker.nSuccess + 1, worker.nFail, worker.name, worker.assignedTasks, worker.processingTasks, worker.killfilePresent}
 			} else {
-				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+				fmt.Fprintf(os.Stderr, "ERROR unable to find worker=%s\n", thing)
 			}
 
 		case FailedTaskByWorker:
@@ -296,13 +293,13 @@ func parseUpdatesFromStdin() Model {
 			if worker, ok := workersLookup[thing]; ok {
 				workersLookup[thing] = Worker{worker.alive, worker.nSuccess, worker.nFail + 1, worker.name, worker.assignedTasks, worker.processingTasks, worker.killfilePresent}
 			} else {
-				fmt.Fprintf(os.Stderr, "[workstealer] Error unable to find worker=%s\n", thing)
+				fmt.Fprintf(os.Stderr, "ERROR unable to find worker=%s\n", thing)
 			}
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatalf("[workerstealer] Error parsing model from stdin: %v\n", err)
+		log.Fatalf("ERROR parsing model from stdin: %v\n", err)
 	}
 
 	liveWorkers := []Worker{}
@@ -334,9 +331,9 @@ func ParseUpdates() Model {
 func MarkDone(task string) {
 	finishedMarker := filepath.Join(finished, task)
 	if err := os.MkdirAll(finished, 0700); err != nil {
-		log.Fatalf("[workstealer] Failed to create finished directory: %v\n", err)
+		log.Fatalf("ERROR failed to create finished directory: %v\n", err)
 	} else if err := os.WriteFile(finishedMarker, []byte{}, 0644); err != nil {
-		log.Fatalf("[workstealer] Failed to touch finished marker: %v\n", err)
+		log.Fatalf("ERROR failed to touch finished marker: %v\n", err)
 	} else {
 		reportChangedFile(finishedMarker)
 	}
@@ -346,7 +343,7 @@ func MarkDone(task string) {
 func TouchKillFile(worker Worker) {
 	workerKillFileFilePath := filepath.Join(queues, worker.name, "kill")
 	if err := os.WriteFile(workerKillFileFilePath, []byte{}, 0644); err != nil {
-		log.Fatalf("[workstealer] Failed to touch killfile: %v\n", err)
+		log.Fatalf("ERROR failed to touch killfile: %v\n", err)
 	} else {
 		reportChangedFile(workerKillFileFilePath)
 	}
@@ -358,7 +355,7 @@ func MoveToWorkerInbox(task string, worker Worker) {
 	workerInboxFilePath := filepath.Join(queues, worker.name, "inbox", task)
 
 	if err := os.Rename(unassignedFilePath, workerInboxFilePath); err != nil {
-		log.Fatalf("[workstealer] Failed to move task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
+		log.Fatalf("ERROR failed to move task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
 	} else {
 		reportMovedFile(unassignedFilePath, workerInboxFilePath)
 	}
@@ -382,34 +379,34 @@ func CopyToFinalOutbox(task string, worker string, success TaskCode) {
 	fullyDoneSuccessFilePath := fullyDoneOutputFilePath + "." + string(success)
 
 	if err := os.MkdirAll(outbox, 0700); err != nil {
-		log.Fatalf("[workstealer] Failed to create outbox directory: %v\n", err)
+		log.Fatalf("ERROR failed to create outbox directory: %v\n", err)
 	} else {
 		if err := os.Link(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			log.Fatalf("[workstealer] Failed to link output to final outbox: %v\n", err)
+			log.Fatalf("ERROR failed to link output to final outbox: %v\n", err)
 		} else {
 			reportLinkedFile(fileInWorkerOutbox, fullyDoneOutputFilePath)
 		}
 
 		if err := os.Link(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			log.Fatalf("[workstealer] Failed to link code to final outbox: %v\n", err)
+			log.Fatalf("ERROR failed to link code to final outbox: %v\n", err)
 		} else {
 			reportLinkedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath)
 		}
 
 		if err := os.Link(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			log.Fatalf("[workstealer] Failed to link stdout to final outbox: %v\n", err)
+			log.Fatalf("ERROR failed to link stdout to final outbox: %v\n", err)
 		} else {
 			reportLinkedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath)
 		}
 
 		if err := os.Link(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			log.Fatalf("[workstealer] Failed to link stderr to final outbox: %v\n", err)
+			log.Fatalf("ERROR failed to link stderr to final outbox: %v\n", err)
 		} else {
 			reportLinkedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath)
 		}
 
 		if err := os.Link(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			log.Fatalf("[workstealer] Failed to link success to final outbox: %v\n", err)
+			log.Fatalf("ERROR failed to link success to final outbox: %v\n", err)
 		} else {
 			reportLinkedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath)
 		}
@@ -418,7 +415,7 @@ func CopyToFinalOutbox(task string, worker string, success TaskCode) {
 
 // Assign an unassigned Task to one of the given LiveWorkers
 func AssignNewTaskToWorker(task string, worker Worker) {
-	fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s task=%s\n", worker.name, task)
+	fmt.Fprintf(os.Stderr, "DEBUG Assigning task=%s to worker=%s \n", task, worker.name)
 	MoveToWorkerInbox(task, worker)
 }
 
@@ -436,9 +433,9 @@ func moveTaskBackToUnassigned(task string, worker Worker, box Box) {
 	unassignedFilePath := filepath.Join(inbox, task)
 
 	if err := os.MkdirAll(inbox, 0700); err != nil {
-		log.Fatalf("[workstealer] Failed to create inbox directory: %v\n", err)
+		log.Fatalf("ERROR failed to create inbox directory: %v\n", err)
 	} else if err := os.Rename(inWorkerFilePath, unassignedFilePath); err != nil {
-		log.Fatalf("[workstealer] Failed to move assigned task back to unassigned: %v\n", err)
+		log.Fatalf("ERROR failed to move assigned task back to unassigned: %v\n", err)
 	} else {
 		reportMovedFile(inWorkerFilePath, unassignedFilePath)
 	}
@@ -469,7 +466,8 @@ type Apportionment struct {
 func apportion(model Model) []Apportionment {
 	As := []Apportionment{}
 
-	if len(model.LiveWorkers) == 0 {
+	if len(model.LiveWorkers) == 0 || len(model.UnassignedTasks) == 0 {
+		// nothing to do: either no live workers or no unassigned tasks
 		return As
 	}
 
@@ -477,10 +475,10 @@ func apportion(model Model) []Apportionment {
 
 	fmt.Fprintf(
 		os.Stderr,
-		"[workstealer] Apportionment desiredLevel=%d nUnassigned=%d nLiveWorkers=%d\n",
-		desiredLevel,
-		len(model.UnassignedTasks),
-		len(model.LiveWorkers),
+		"DEBUG Allocating %s to %s. Seeking %s per worker.\n",
+		english.Plural(len(model.UnassignedTasks), "task", ""),
+		english.Plural(len(model.LiveWorkers), "worker", ""),
+		english.Plural(desiredLevel, "task", ""),
 	)
 
 	startIdx := 0
@@ -503,10 +501,11 @@ func apportion(model Model) []Apportionment {
 
 func assignNewTasks(model Model) {
 	for _, A := range apportion(model) {
-		fmt.Fprintf(os.Stderr, "[workstealer] Assigning to worker=%s startIdx=%d endIdx=%d\n", A.worker.name, A.startIdx, A.endIdx)
-		for idx := range A.endIdx - A.startIdx {
+		nTasks := A.endIdx-A.startIdx
+		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), A.worker.name)
+		for idx := range nTasks {
 			task := model.UnassignedTasks[A.startIdx+idx]
-			MoveToWorkerInbox(task, A.worker)
+			AssignNewTaskToWorker(task, A.worker)
 		}
 	}
 }
@@ -553,12 +552,21 @@ func rebalance(model Model) bool {
 			// Then we can shift load from those with to
 			// those without!
 			desiredLevel := max(1, (len(model.AssignedTasks)+len(model.ProcessingTasks))/len(model.LiveWorkers))
-			fmt.Fprintf(os.Stderr, "[workstealer] Rebalancing to desiredLevel=%d\n", desiredLevel)
+			fmt.Fprintf(
+				os.Stderr,
+				"INFO Rebalancing so that each worker has around %s\n",
+				english.Plural(desiredLevel, "task", ""),
+			)
 
 			// then we can steal at least one Task
 			for _, workerWithWork := range workersWithWork {
 				if stealThisMany := max(0, len(workerWithWork.assignedTasks)-desiredLevel); stealThisMany > 0 {
-					fmt.Fprintf(os.Stderr, "[workstealer] Rebalancer stealing %d tasks from worker=%s\n", stealThisMany, workerWithWork.name)
+					fmt.Fprintf(
+						os.Stderr,
+						"INFO Stealing %s from %s\n",
+						english.Plural(stealThisMany, "task", ""),
+						workerWithWork.name,
+					)
 
 					for i := range stealThisMany {
 						j := len(workerWithWork.assignedTasks) - i - 1
@@ -597,12 +605,12 @@ func readyToBye(model Model) bool {
 // `queue` directory. This will emit to stdout a newline-separated
 // stream of filepaths, one per file that it has changed in some way.
 func main() {
-	// fmt.Fprintf(os.Stderr, "[workstealer] Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
+	// fmt.Fprintf(os.Stderr, "INFO Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 	model := ParseUpdates()
 	reportState(model)
 
 	if readyToBye(model) {
-		fmt.Fprintln(os.Stderr, "All work has been completed, all workers have terminated")
+		fmt.Fprintln(os.Stderr, "INFO All work has been completed, all workers have terminated")
 		bye()
 	} else if !rebalance(model) {
 		assignNewTasks(model)
