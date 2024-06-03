@@ -552,15 +552,12 @@ func rebalance(model Model) bool {
 			// Then we can shift load from those with to
 			// those without!
 			desiredLevel := max(1, (len(model.AssignedTasks)+len(model.ProcessingTasks))/len(model.LiveWorkers))
-			fmt.Fprintf(
-				os.Stderr,
-				"INFO Rebalancing so that each worker has around %s\n",
-				english.Plural(desiredLevel, "task", ""),
-			)
+			stoleSomeTasks := false
 
 			// then we can steal at least one Task
 			for _, workerWithWork := range workersWithWork {
 				if stealThisMany := max(0, len(workerWithWork.assignedTasks)-desiredLevel); stealThisMany > 0 {
+					stoleSomeTasks = true
 					fmt.Fprintf(
 						os.Stderr,
 						"INFO Stealing %s from %s\n",
@@ -576,8 +573,8 @@ func rebalance(model Model) bool {
 				}
 			}
 
-			// Indicate that we did rebalance
-			return true
+			// Indicate whether we did any rebalancing
+			return stoleSomeTasks
 		}
 	}
 
