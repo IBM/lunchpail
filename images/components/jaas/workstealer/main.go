@@ -502,7 +502,7 @@ func apportion(model Model) []Apportionment {
 func assignNewTasks(model Model) {
 	for _, A := range apportion(model) {
 		nTasks := A.endIdx-A.startIdx
-		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), A.worker.name)
+		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, run + "-", "", 1))
 		for idx := range nTasks {
 			task := model.UnassignedTasks[A.startIdx+idx]
 			AssignNewTaskToWorker(task, A.worker)
