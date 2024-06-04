@@ -102,11 +102,11 @@ then
     # then kubectl logs deploy/run-controller -n $(basename $1) -f &
     # fi
 
-    if [[ -e "$1"/init.sh ]]; then
-        TEST_NAME=$testname "$1"/init.sh
-    fi
-
     namespace=${deployname-$testname}
+
+    if [[ -e "$1"/init.sh ]]; then
+        TEST_NAME=$testname "$1"/init.sh $namespace
+    fi
 
     ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
     EC=$?

@@ -132,12 +132,15 @@ function waitForIt {
         fi
 
         echo "Checking for done file (from dispatcher)"
-        donefilecount=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                                rclone ls s3:/$queue/lunchpail/$run_name/done | wc -l | xargs)
-        if [[ $donefilecount == 1 ]]
-        then echo "✅ PASS run-controller test=$name donefile exists"
-        else echo "❌ FAIL run-controller donefile missing" && return 1
-        fi
+        while true
+        do
+            donefilecount=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+                                    rclone ls s3:/$queue/lunchpail/$run_name/done | wc -l | xargs)
+            if [[ $donefilecount == 1 ]]
+            then echo "✅ PASS run-controller test=$name donefile exists" && break
+            else echo "still waiting for dispatcher donefile" && sleep 2
+            fi
+        done
 
         echo "Checking that no workerdispatchers remain running"
         while true

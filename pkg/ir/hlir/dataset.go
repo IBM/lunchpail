@@ -6,6 +6,9 @@ type Dataset struct {
 	S3        struct {
 		Secret    string
 		EnvPrefix string `yaml:"envPrefix,omitempty"`
+		CopyIn    struct {
+			Path string
+		} `yaml:"copyIn,omitempty"`
 	} `yaml:"s3,omitempty"`
 	Nfs struct {
 		Server string

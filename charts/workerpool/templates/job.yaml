@@ -46,6 +46,9 @@ spec:
       initContainers:
         {{- include "containers/workdir" . | indent 8 }}
         {{- include "containers/watcher" . | indent 8 }}
+        {{- if .Values.initContainers }}
+        {{- .Values.initContainers | b64dec | fromJsonArray | toYaml | nindent 8 }}
+        {{- end }}
       containers:
         {{- include "containers/app" . | indent 8 }}
 {{- end }}

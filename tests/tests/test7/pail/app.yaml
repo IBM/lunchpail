@@ -1,4 +1,3 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7") }}
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
@@ -7,15 +6,38 @@ spec:
   api: workqueue
   role: worker
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
-  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7/pail
-  command: ./src/main.sh
+  code:
+    - name: main.sh
+      source: |
+        #!/usr/bin/env sh
+
+        # $1 input filepath
+        # $2 output filepath
+        in="$1"
+        out="$2"
+
+        dataset_name=test # match with below!
+        bucket_name=test7
+        folder_name=test7
+        N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
+
+        echo "Processing $N $in"
+        sleep 5
+
+        echo "Done with $in"
+
+  command: ./main.sh
   minSize: auto
   securityContext:
     runAsUser: 2000 # lunchpail, same as is specified Dockerfile
     runAsGroup: 0 # root, ibid
+  containerSecurityContext:
+    runAsUser: 2000 # lunchpail, same as is specified Dockerfile
+    runAsGroup: 0 # root, ibid
 
-# TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
-#  inputs:
-#    - sizes:
-#        lg: test7data
-{{- end }}
+  datasets:
+    - name: test
+      s3:
+        secret: test7data
+        copyIn:
+          path: "test7/"

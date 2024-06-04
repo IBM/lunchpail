@@ -2,23 +2,21 @@
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
+export NAMESPACE=$1
+
 # number of iterations, where we add N tasks per iteration
-N=${2-10}
+N=${3-10}
 
 # number of tasks to add per iteration
-M=${1-3}
+M=${2-3}
 
 # name of s3 bucket in which to store the tasks
-BUCKET=${3-test7}
+BUCKET=${4-test7}
 RUN_NAME=$BUCKET
 
-# random sleep lower and upper bounds
-MINWAIT=${4-1}
-MAXWAIT=${5-5}
-
 B=$(mktemp -d)/$BUCKET # bucket path
-D=$B/$LUNCHPAIL/$RUN_NAME # data folder within that bucket
-mkdir -p "$D/inbox"
+D=$B/$BUCKET # data path; in this case the bucket name and the folder name are both the run name
+mkdir -p $D
 echo "Staging to $D" 1>&2
 
 idx=1
@@ -40,10 +38,9 @@ do
             id=$(uuidgen)
         fi
 
-        echo "this is task idx=$idx" > $D/inbox/task.$id.txt
+        echo "this is task idx=$idx" > $D/task.$id.txt
         idx=$((idx+1))
     done
 
     "$SCRIPTDIR"/../../../tests/bin/add-data.sh $B
-    sleep $((MINWAIT+RANDOM % (MAXWAIT-MINWAIT)))
 done

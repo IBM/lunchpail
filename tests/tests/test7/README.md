@@ -1,3 +1,3 @@
 # test7
 
-api=workqueue, where Application code comes from a git repo.
+Verifies securityContext, containerSecurityContext, and s3 copyin dataset.

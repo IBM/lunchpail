@@ -29,7 +29,7 @@ func LowerShell(assemblyName, runname, namespace string, app hlir.Application, q
 	}
 
 	sizing := applicationSizing(app)
-	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
+	volumes, volumeMounts, envFroms, _, dataseterr := datasetsB64(app, queueSpec)
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)

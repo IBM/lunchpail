@@ -1,0 +1,20 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: test7-workdispatcher
+spec:
+  api: shell
+  role: dispatcher
+  command: ./src/main.sh
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  env:
+    METHOD: parametersweep
+    SWEEP_MIN: '1'
+    SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
+    SWEEP_STEP: '1'
+    INTERVAL: {{ .Values.every | default 5 | quote }}
+
+  code:
+    - name: src/main.sh
+      source: |
+{{ .Files.Get "src/main.sh" | indent 8 }}

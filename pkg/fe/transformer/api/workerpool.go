@@ -60,7 +60,7 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 	)
 
 	sizing := workerpoolSizing(pool, app)
-	volumes, volumeMounts, envFroms, dataseterr := datasetsB64(app, queueSpec)
+	volumes, volumeMounts, envFroms, initContainers, dataseterr := datasetsB64(app, queueSpec)
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
@@ -116,6 +116,7 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
 		"envFroms=" + envFroms,
+		"initContainers=" + initContainers,
 		"env=" + env,
 		"startupDelay=" + strconv.Itoa(startupDelay),
 		"mcad.enabled=false",
