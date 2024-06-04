@@ -15,6 +15,13 @@ const (
 )
 
 func apply(yaml, namespace, context string, operation Operation) error {
+	if len(yaml) == 0 {
+		// Nothing to do. If we don't short-circuit this path,
+		// kubectl complains with "error: no objects passed to
+		// apply".
+		return nil
+	}
+
 	file, err := ioutil.TempFile("", "lunchpail")
 	if err != nil {
 		return err
