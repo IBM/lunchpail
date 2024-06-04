@@ -1,27 +1,14 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7f") }}
 apiVersion: lunchpail.io/v1alpha1
-kind: Application
+kind: ParameterSweep
 metadata:
   name: test7f-workdispatcher
 spec:
-  api: shell
-  role: dispatcher
-  command: ./src/main.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
   env:
     # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2
     taskprefix: tasky
     taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
 
-    # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
-    METHOD: parametersweep
-    SWEEP_MIN: '1'
-    SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
-    SWEEP_STEP: '1'
-    INTERVAL: {{ .Values.every | default 5 | quote }}
-
-  code:
-    - name: src/main.sh
-      source: |
-{{ .Files.Get "src/main.sh" | indent 8 }}
-{{- end }}
+  min: 1
+  max: {{ .Values.nTasks | default 10 }}
+  step: 1
+  interval: {{ .Values.every | default 5 }}

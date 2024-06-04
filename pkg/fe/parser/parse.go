@@ -44,6 +44,15 @@ func Parse(yamls string) (hlir.AppModel, error) {
 				model.Applications = append(model.Applications, r)
 			}
 
+		case "ParameterSweep":
+			var r hlir.ParameterSweep
+			if err := yaml.Unmarshal(bytes, &r); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: skipping yaml with invalid ParameterSweep resource %v", err)
+				continue
+			} else {
+				model.ParameterSweeps = append(model.ParameterSweeps, r)
+			}
+
 		case "PlatformRepoSecret":
 			var r hlir.RepoSecret
 			if err := yaml.Unmarshal(bytes, &r); err != nil {

@@ -1,25 +1,18 @@
 apiVersion: lunchpail.io/v1alpha1
-kind: Application
+kind: ParameterSweep
 metadata:
   name: {{ print (.Values.partOf | default "test7f-by-role-autorun-autodispatcher") "-workdispatcher" }}
 spec:
-  api: shell
-  role: dispatcher
-  minSize: auto
-  command: ./src/main.sh
-  image: {{ print .Values.image.registry "/" .Values.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
   env:
-    METHOD: parametersweep
-    SWEEP_MIN: '1'
-    {{- if .Values.N }}
-    SWEEP_MAX: {{ .Values.N | quote }}
-    {{- else }}
-    SWEEP_MAX: '10'
-    {{- end }}
-    SWEEP_STEP: '1'
+    # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2
     taskprefix: tasky
-    taskprefix2: "3333"
-  code:
-    - name: src/main.sh
-      source: |
-{{ .Files.Get "src/main.sh" | indent 8 }}
+    taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
+
+  min: 1
+  {{- if .Values.N }}
+  max: {{ .Values.N }}
+  {{- else }}
+  max: 10
+    {{- end }}
+  step: 1
+  interval: {{ .Values.every | default 5 }}

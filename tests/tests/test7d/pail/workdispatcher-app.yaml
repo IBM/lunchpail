@@ -1,21 +1,14 @@
 apiVersion: lunchpail.io/v1alpha1
-kind: Application
+kind: ParameterSweep
 metadata:
   name: test7d-workdispatcher
 spec:
-  api: shell
-  role: dispatcher
-  command: ./src/main.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
-  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7f-repo/pail
   env:
     # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2
     taskprefix: tasky
     taskprefix2: "3333" # this should pass through, since workdispatcher.yaml does not provide an override
 
-    # not overriding workdispatcher-app; test7c runs main.sh in this mode, so let's replicate that behavior
-    METHOD: parametersweep
-    SWEEP_MIN: '1'
-    SWEEP_MAX: {{ .Values.nTasks | default 10 | quote }}
-    SWEEP_STEP: '1'
-    INTERVAL: {{ .Values.every | default 5 | quote }}
+  min: 1
+  max: {{ .Values.nTasks | default 10 }}
+  step: 1
+  interval: {{ .Values.every | default 5 }}

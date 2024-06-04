@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-set -x
 set -e
 set -o pipefail
 
-echo -n "Started TaskDispatcher method=$METHOD "
-if [[ $METHOD = tasksimulator ]]
-then echo "injectedTasksPerInterval=$TASKS intervalSeconds=$INTERVAL"
-elif [[ $METHOD = parametersweep ]]
-then echo "min=$SWEEP_MIN max=$SWEEP_MAX step=$SWEEP_STEP"
+echo -n "Started TaskDispatcher method=$__LUNCHPAIL_METHOD "
+if [[ $__LUNCHPAIL_METHOD = tasksimulator ]]
+then echo "injectedTasksPerInterval=$TASKS intervalSeconds=$__LUNCHPAIL_INTERVAL"
+elif [[ $__LUNCHPAIL_METHOD = parametersweep ]]
+then echo "min=$__LUNCHPAIL_SWEEP_MIN max=$__LUNCHPAIL_SWEEP_MAX step=$__LUNCHPAIL_SWEEP_STEP"
 fi
 
 # test injected values from -f values.yaml
@@ -39,10 +38,14 @@ EOF
 # deterministic set of tasks
 idx=0
 
-if [[ $METHOD = parametersweep ]]
+if [[ $__LUNCHPAIL_METHOD = parametersweep ]]
 then
-  for parameter_value in $(seq $SWEEP_MIN $SWEEP_STEP $SWEEP_MAX)
+  for parameter_value in $(seq $__LUNCHPAIL_SWEEP_MIN $__LUNCHPAIL_SWEEP_STEP $__LUNCHPAIL_SWEEP_MAX)
   do
+    if [[ $parameter_value != $__LUNCHPAIL_SWEEP_MIN ]]
+    then sleep ${__LUNCHPAIL_INTERVAL-5}
+    fi
+
     task=/tmp/${taskprefix}.${idx}.txt
     idx=$((idx + 1))
 
@@ -61,10 +64,12 @@ if [[ -n "$COLUMNS" ]] && [[ -n "$COLUMN_TYPES" ]]
 then echo "Using schema columns=\"$COLUMNS\" columnTypes=\"$COLUMN_TYPES\""
 fi
 
-while true
+for i in $(seq 1 $TASKS)
 do
-  for i in $(seq 1 $TASKS)
-  do
+    if [[ $i > 1 ]]
+    then sleep ${__LUNCHPAIL_INTERVAL-5}
+    fi
+
     task=/tmp/${taskprefix}-$(cat /proc/sys/kernel/random/uuid).txt
     echo "Injecting task=$task format=${FORMAT-generic}"
 
@@ -112,9 +117,6 @@ do
 
     rclone --config $config sync $PROGRESS $task $remote
     rm -f "$task"
-  done
-
-  sleep ${INTERVAL-5}
 done
 
 echo "Exiting"

@@ -66,6 +66,7 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
 	imageRegistry := "ghcr.io"
+	imageRepo := "lunchpail"
 	imageVersion := lunchpail.Version()
 
 	yamls := []llir.Yaml{}
@@ -129,6 +130,7 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 		"watcher.image.registry=" + imageRegistry,
+		"watcher.image.repo=" + imageRepo,
 		"watcher.image.version=" + imageVersion,
 	}
 

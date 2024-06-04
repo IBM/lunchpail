@@ -31,7 +31,7 @@ git checkout -q ${_WORKDIR_BRANCH} 1>&2
 # Copy the workdir out of temp. Trailing slashes so we copy the contents of the directory.
 cp -a $_WORKDIR_SUBDIR/* $WORKDIR/
 
-echo "Done with clone. Here is what we cloned into workdir yo:"
+echo "Done with clone. Here is what we cloned into workdir:"
 find $WORKDIR
 
 # Probably not necessary inside of a container

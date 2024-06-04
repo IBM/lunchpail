@@ -1,7 +1,7 @@
 {{- define "containers/workdir" }}
 {{- if .Values.workdir.repo }}
 - name: workdir
-  image: {{ print .Values.lunchpail.image.registry "/" .Values.lunchpail.image.repo "/jaas-workdir-component:" .Values.lunchpail.image.version }}
+  image: {{ print .Values.watcher.image.registry "/" .Values.watcher.image.repo "/jaas-workdir-component:" .Values.watcher.image.version }}
   volumeMounts:
     {{ include "workdir/volumeMount" . | indent 4 }}
   env:

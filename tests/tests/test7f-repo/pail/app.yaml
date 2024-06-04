@@ -5,24 +5,9 @@ metadata:
 spec:
   api: workqueue
   role: worker
-  code:
-    - name: literal.sh
-      source: |
-        #!/usr/bin/env sh
-
-        # $1 input filepath
-        # $2 output filepath
-        in="$1"
-        out="$2"
-
-        echo "Processing $in"
-        t=${WORK_TIME-5}
-        duration=$(shuf -n 1 -i $((t-3))-$((t+3)))
-        sleep $duration
-
-        echo "Done with $in"
-
-  command: ./literal.sh
+#  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7f-repo/pail
+  repo: https://github.ibm.com/nickm/lunchpail/tree/sweep/tests/tests/test7f-repo/pail
+  command: ./src/main.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
   env:
     WORK_TIME: {{ .Values.duration | default 5 | quote }}

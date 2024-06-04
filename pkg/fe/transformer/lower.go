@@ -14,6 +14,11 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 		return llir.LLIR{}, err
 	}
 
+	dispatchers, err := lowerDispatchers(assemblyName, runname, namespace, model, queueSpec, verbose)
+	if err != nil {
+		return llir.LLIR{}, err
+	}
+
 	pools, err := lowerWorkerPools(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
@@ -28,6 +33,7 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 		CoreYaml: llir.Yaml{Yamls: others, Context: ""},
 		AppYaml: slices.Concat(
 			[]llir.Yaml{llir.Yaml{Yamls: apps, Context: ""}},
+			[]llir.Yaml{llir.Yaml{Yamls: dispatchers, Context: ""}},
 			pools,
 		),
 	}, nil
