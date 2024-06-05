@@ -68,12 +68,9 @@ func createManifest(image string, cli ContainerCli, verbose bool) error {
 }
 
 func imageName(name, suffix string) string {
-	imageRegistry := "ghcr.io" // TODO
-	imageRepo := "lunchpail"   // TODO
-	version := lunchpail.Version()
 	provider := "jaas"
 
-	return filepath.Join(imageRegistry, imageRepo, provider+"-"+name+suffix+":"+version)
+	return filepath.Join(lunchpail.ImageRegistry, lunchpail.ImageRepo, provider+"-"+name+suffix+":"+lunchpail.Version())
 }
 
 func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli ContainerCli, verbose bool) (string, error) {

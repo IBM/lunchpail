@@ -56,8 +56,8 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	systemNamespace := namespace
 
 	clusterType := "k8s"
-	imageRegistry := "ghcr.io"
-	imageRepo := "lunchpail"
+	imageRegistry := lunchpail.ImageRegistry
+	imageRepo := lunchpail.ImageRepo
 
 	if opts.AssemblyOptions.ClusterIsOpenShift {
 		clusterType = "oc"

@@ -34,9 +34,6 @@ func LowerShell(assemblyName, runname, namespace string, app hlir.Application, q
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
-	imageRegistry := "ghcr.io"
-	imageRepo := "lunchpail"
-	imageVersion := lunchpail.Version()
 
 	if codeerr != nil {
 		return []string{}, codeerr
@@ -87,9 +84,9 @@ func LowerShell(assemblyName, runname, namespace string, app hlir.Application, q
 		"workdir.secretName=" + workdirSecretName,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
-		"lunchpail.image.registry=" + imageRegistry,
-		"lunchpail.image.repo=" + imageRepo,
-		"lunchpail.image.version=" + imageVersion,
+		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
+		"lunchpail.image.repo=" + lunchpail.ImageRepo,
+		"lunchpail.image.version=" + lunchpail.Version(),
 	}
 
 	if len(app.Spec.Expose) > 0 {
