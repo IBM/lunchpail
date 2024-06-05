@@ -3,19 +3,24 @@ package boot
 import (
 	"context"
 	"fmt"
+
 	"golang.org/x/sync/errgroup"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be/ibmcloud"
 	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/observe/runs"
 )
 
 type DownOptions struct {
-	Namespace       string
-	Verbose         bool
-	DeleteNamespace bool
-	DeleteAll       bool
+	Namespace            string
+	Verbose              bool
+	DeleteNamespace      bool
+	DeleteAll            bool
+	TargetPlatform       string
+	ApiKey               string
+	DeleteCloudResources bool
 }
 
 func deleteNamespace(namespace string) error {
@@ -108,7 +113,8 @@ func Down(runname string, opts DownOptions) error {
 
 	assemblyOptions := assembly.Options{}
 	assemblyOptions.Namespace = opts.Namespace
-
+	assemblyOptions.TargetPlatform = opts.TargetPlatform
+	assemblyOptions.ApiKey = opts.ApiKey
 	configureOptions := linker.ConfigureOptions{}
 	configureOptions.AssemblyOptions = assemblyOptions
 	configureOptions.Verbose = opts.Verbose
@@ -117,7 +123,13 @@ func Down(runname string, opts DownOptions) error {
 	upOptions.ConfigureOptions = configureOptions
 	upOptions.UseThisRunName = runname
 
-	if err := upDown(upOptions, kubernetes.DeleteIt); err != nil {
+	var action ibmcloud.Action
+	if opts.DeleteCloudResources {
+		action = ibmcloud.Delete
+	} else {
+		action = ibmcloud.Stop
+	}
+	if err := upDown(upOptions, kubernetes.DeleteIt, action); err != nil {
 		return err
 	}
 

@@ -29,7 +29,9 @@ func ApplicationSizing(app hlir.Application, opts assembly.Options) RunSizeConfi
 	// for now...
 	config := defaultConfig
 
+	//TODO Default sizing for other non-Kubernetes opts.TargetPlatform?
 	sizing := config[hlir.AutoSize]
+
 	if app.Spec.MinSize != "" {
 		sizing = config[app.Spec.MinSize]
 	}

@@ -9,6 +9,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe"
 	"lunchpail.io/pkg/observe/qstat"
 )
@@ -63,14 +64,14 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 			// Added or Modified a Worker in a Pool we
 			// haven't seen yet; create a record of both
 			// the Pool and the Worker
-			pool := Pool{poolName, pod.Namespace, 1, []Worker{Worker{name, workerStatus, qstat.Worker{}}}}
+			pool := Pool{poolName, pod.Namespace, 1, be.Kubernetes, []Worker{Worker{name, workerStatus, qstat.Worker{}}}} //todo
 			return append(pools, pool), len(pools), workerStatus, nil
 		}
 	}
 
 	// otherwise, we have seen the pool before
 	pool := pools[pidx]
-
+	poolPlatform := be.Kubernetes //TODO
 	// worker index in `pool.Workers`
 	widx := slices.IndexFunc(pool.Workers, func(worker Worker) bool { return worker.Name == name })
 	if widx >= 0 {
@@ -80,11 +81,13 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 			// Pool by splicing it out of the Workers slice
 			pool.Workers = append(pool.Workers[:widx], pool.Workers[widx+1:]...)
 			pool.Parallelism = len(pool.Workers)
+			pool.Platform = poolPlatform
 		} else {
 			worker := pool.Workers[widx]
 			worker.Status = workerStatus
 			pool.Workers = slices.Concat(pool.Workers[:widx], []Worker{worker}, pool.Workers[widx+1:])
 			pool.Parallelism = len(pool.Workers)
+			pool.Platform = poolPlatform
 		}
 	} else {
 		// known Pool but unknown Worker

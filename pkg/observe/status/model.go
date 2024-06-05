@@ -2,11 +2,12 @@ package status
 
 import (
 	"container/ring"
+	"slices"
+	"sync"
+
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/observe/qstat"
-	"slices"
-	"sync"
 )
 
 type WorkerStatus string
@@ -30,6 +31,7 @@ type Pool struct {
 	Name        string
 	Namespace   string
 	Parallelism int
+	Platform    string
 	Workers     []Worker
 }
 
@@ -146,5 +148,5 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 
 func (pool *Pool) changeWorkers(delta int) error {
 	context := "" // TODO
-	return be.ChangeWorkers(pool.Name, pool.Namespace, context, delta)
+	return be.ChangeWorkers(pool.Name, pool.Namespace, pool.Platform, context, delta)
 }

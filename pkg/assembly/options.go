@@ -16,6 +16,14 @@ type Options struct {
 	Queue              string   `yaml:",omitempty"`
 	HasGpuSupport      bool     `yaml:"hasGpuSupport,omitempty"`
 	DockerHost         string   `yaml:"dockerHost,omitempty"`
+	ApiKey             string   `yaml:"apiKey,omitempty"`
+	TargetPlatform     string   `yaml:"targetPlatform,omitempty"`
+	ResourceGroupID    string   `yaml:"resourceGroupID,omitempty"`
+	SSHKeyType         string   `yaml:"SSHKeyType,omitempty"`
+	PublicSSHKey       string   `yaml:"publicSSHKey,omitempty"`
+	Zone               string   `yaml:"zone,omitempty"`
+	Profile            string   `yaml:"profile,omitempty"`
+	ImageID            string   `yaml:"imageID,omitempty"`
 }
 
 func optionsPath(appTemplatePath string) string {

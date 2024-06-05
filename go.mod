@@ -22,9 +22,33 @@ require (
 )
 
 require (
+	github.com/IBM/go-sdk-core/v5 v5.16.3 // indirect
+	github.com/coreos/yaml v0.0.0-20141224210557-6b16a5714269 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/go-openapi/errors v0.21.0 // indirect
+	github.com/go-openapi/strfmt v0.22.1 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.18.0 // indirect
+	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
+	github.com/juju/collections v0.0.0-20220203020748-febd7cad8a7a // indirect
+	github.com/juju/proxy v0.0.0-20220207021845-4d37a2e6a78f // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/oklog/ulid v1.3.1 // indirect
+	go.mongodb.org/mongo-driver v1.14.0 // indirect
+	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
+)
+
+require (
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
+	github.com/IBM/go-sdk-core/v4 v4.10.0
+	github.com/IBM/vpc-go-sdk v0.52.0
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
@@ -57,6 +81,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.8.2 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
+	github.com/elotl/cloud-init v1.14.2
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
@@ -92,6 +117,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/juju/packaging/v3 v3.1.0
 	github.com/jzelinskie/whirlpool v0.0.0-20201016144138-0675e54bb004 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
@@ -176,8 +202,8 @@ require (
 	k8s.io/component-base v0.30.1 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240521193020-835d969ad83a // indirect
-	k8s.io/kubectl v0.30.1 // indirect
-	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0 // indirect
+	k8s.io/kubectl v0.30.1
+	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 	oras.land/oras-go v1.2.5 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.17.2 // indirect

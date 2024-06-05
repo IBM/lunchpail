@@ -2,6 +2,7 @@ package subcommands
 
 import (
 	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/fe/linker"
 
@@ -21,6 +22,14 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().StringSliceVarP(&options.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
 	cmd.Flags().StringVarP(&options.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")
 
+	cmd.Flags().StringVarP(&options.ApiKey, "api-key", "a", "", "IBM Cloud api key")
+	cmd.Flags().StringVarP(&options.TargetPlatform, "target-platform", "p", be.Kubernetes, "Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot]")
+	cmd.Flags().StringVarP(&options.ResourceGroupID, "resource-group-id", "", "", "Identifier of a Cloud resource group to contain the instance(s)")
+	cmd.Flags().StringVarP(&options.SSHKeyType, "ssh-key-type", "", "rsa", "SSH key type [rsa, ed25519]")
+	cmd.Flags().StringVarP(&options.PublicSSHKey, "public-ssh-key", "", "", "An existing or new SSH public key to identify user on the instance")
+	cmd.Flags().StringVarP(&options.Zone, "zone", "", "", "A location to host the instance")
+	cmd.Flags().StringVarP(&options.Profile, "profile", "", "bx2-8x32", "An instance profile type to choose size and capability of the instance")
+	cmd.Flags().StringVarP(&options.ImageID, "image-id", "", "", "Identifier of a catalog or custom image to be used for instance creation")
 	return &options
 }
 
@@ -54,7 +63,11 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, RepoSecrets: repoSecrets, ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue, HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost}
+		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, RepoSecrets: repoSecrets,
+			ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue,
+			HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost,
+			ApiKey: appOpts.ApiKey, TargetPlatform: appOpts.TargetPlatform, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
+			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID}
 		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, CreateNamespace: createNamespace, Verbose: verboseFlag}
 
 		return boot.Up(boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
