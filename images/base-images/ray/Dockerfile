@@ -11,7 +11,7 @@ COPY requirements.txt requirements.txt
 RUN unset LD_LIBRARY_PATH && \
     apt-get update -qq --fix-missing && \
     apt-get install -y --no-install-recommends \
-        rclone \
+        rclone bc \
         build-essential \
         ca-certificates \
         cmake && \
