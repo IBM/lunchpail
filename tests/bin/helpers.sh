@@ -44,7 +44,7 @@ function waitForIt {
     # combination of Ready and Complete (i.e. not-Ready) pods. This is
     # important because pthe kubectl waits below expect the pods
     # either to be all-Ready or all-not-Ready.
-    local selector=app.kubernetes.io/component!=workdispatcher
+    local workerselector=app.kubernetes.io/component=workerpool
     local dispatcherselector=app.kubernetes.io/component=workdispatcher
 
     if [[ "$api" = ray ]]; then
@@ -55,21 +55,19 @@ function waitForIt {
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
-    # (kubectl -n $ns wait pod -l $selector --for=condition=Completed --timeout=-1s && pkill $$)
-
-    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
+    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$workerselector ns=$ns$(tput sgr0)" 1>&2
     while true; do
-        kubectl -n $ns wait pod -l $selector --for=condition=Ready --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+        kubectl -n $ns wait pod -l $workerselector --for=condition=Ready --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $workerselector$(tput sgr0)"
 
-        kubectl -n $ns wait pod -l $selector --for=condition=Ready=false --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $selector$(tput sgr0)"
+        kubectl -n $ns wait pod -l $workerselector --for=condition=Ready=false --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $workerselector$(tput sgr0)"
         sleep 4
     done
 
-    echo "$(tput setaf 2)🧪 Checking job output app=$selector$(tput sgr0)" 1>&2
+    echo "$(tput setaf 2)🧪 Checking job output app=$workerselector$(tput sgr0)" 1>&2
     for done in "${dones[@]}"; do
         idx=0
         while true; do
-            kubectl -n $ns logs $containers -l $selector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            kubectl -n $ns logs $containers -l $workerselector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
 
             if [[ -n $DEBUG ]] || (( $idx > 10 )); then
                 # if we can't find $done in the logs after a few
@@ -79,7 +77,7 @@ function waitForIt {
                 then TAIL=1000
                 else TAIL=10
                 fi
-                (kubectl -n $ns logs $containers -l $selector --tail=$TAIL || exit 0)
+                (kubectl -n $ns logs $containers -l $workerselector --tail=$TAIL || exit 0)
                 (kubectl -n $ns logs -l $dispatcherselector --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
