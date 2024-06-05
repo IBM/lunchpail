@@ -2,9 +2,7 @@ package ibmcloud
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"math"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 	comp "lunchpail.io/pkg/lunchpail"
@@ -322,7 +321,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 				}
 
 				//Compute number of VSIs to be provisioned and job parallelism for each VSI
-				parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, workerCount)
+				parallelism, numInstances, err := platform.ComputeParallelismAndInstanceCount(vpcService, profile, workerCount)
 				if err != nil {
 					return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
 				}
@@ -382,7 +381,7 @@ func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runnam
 	} else if action == Create {
 		zone := aopts.Zone //command line zone value
 		if zone == "" {    //random zone value using config
-			randomZone, err := getRandomizedZone(backend.config, backend.vpcService) //Todo: spread among random zones with a subnet in each zone
+			randomZone, err := platform.GetRandomizedZone(backend.config, backend.vpcService) //Todo: spread among random zones with a subnet in each zone
 			if err != nil {
 				return err
 			}
@@ -393,31 +392,4 @@ func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runnam
 		}
 	}
 	return nil
-}
-
-func computeParallelismAndInstanceCount(vpcService *vpcv1.VpcV1, profile string, workers int32) (parallelism int64, instanceCount int, err error) {
-	//TODO: 1. Mapping table from size specified by application and user to IBM's profile table
-	//2. Build comparison table for multiple cloud providers
-	prof, response, err := vpcService.GetInstanceProfile(
-		&vpcv1.GetInstanceProfileOptions{
-			Name: &profile,
-		})
-	if err != nil {
-		return parallelism, instanceCount, fmt.Errorf("failed to retrieve instance profile: %v and the response is: %s", err, response)
-	}
-
-	if prof != nil {
-		vcpuCount, ok := prof.VcpuCount.(*vpcv1.InstanceProfileVcpu)
-		if !ok {
-			return parallelism, instanceCount, errors.New("failed to get VcpuCount from instance profile")
-		}
-
-		parallelism = *vcpuCount.Value
-		if workers < int32(parallelism) {
-			parallelism = int64(workers)
-		}
-		instanceCount = max(1, int(math.Ceil(float64(workers)/float64(parallelism))))
-	}
-
-	return parallelism, instanceCount, nil
 }
