@@ -1,0 +1,8 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: ProcessS3Objects
+metadata:
+  name: test7b-workdispatcher
+spec:
+  secret: test7bdata
+  path: test7b/test7b
+  repeat: 2

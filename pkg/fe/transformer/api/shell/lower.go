@@ -1,10 +1,10 @@
-package api
+package shell
 
 import (
-	"embed"
 	"fmt"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
@@ -13,11 +13,7 @@ import (
 	"strings"
 )
 
-//go:generate /bin/sh -c "[ -d ../../../../charts/shell ] && tar --exclude '*~' --exclude '*README.md' -C ../../../../charts/shell -zcf shell.tar.gz . || exit 0"
-//go:embed shell.tar.gz
-var shellTemplate embed.FS
-
-func LowerShell(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -28,12 +24,12 @@ func LowerShell(assemblyName, runname, namespace string, app hlir.Application, q
 		component = "shell"
 	}
 
-	sizing := applicationSizing(app)
-	volumes, volumeMounts, envFroms, _, dataseterr := datasetsB64(app, queueSpec)
+	sizing := api.ApplicationSizing(app)
+	volumes, volumeMounts, envFroms, _, dataseterr := api.DatasetsB64(app, queueSpec)
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
-	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
+	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
 
 	if codeerr != nil {
 		return []string{}, codeerr
@@ -47,7 +43,7 @@ func LowerShell(assemblyName, runname, namespace string, app hlir.Application, q
 		return []string{}, errcsc
 	}
 
-	templatePath, err := stage(shellTemplate, "shell.tar.gz")
+	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
 		return []string{}, err
 	}

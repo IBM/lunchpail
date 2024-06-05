@@ -1,18 +1,14 @@
-package api
+package parametersweep
 
 import (
-	_ "embed"
 	"fmt"
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
 	"strconv"
 )
 
-//go:embed "parametersweep.sh"
-var parameterSweepMain string
-
-func appForSweep(sweep hlir.ParameterSweep) (hlir.Application, error) {
+// Transpile hlir.ParameterSweep to hlir.Application
+func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 	app := hlir.Application{}
 	app.ApiVersion = sweep.ApiVersion
 	app.Kind = "Application"
@@ -24,7 +20,7 @@ func appForSweep(sweep hlir.ParameterSweep) (hlir.Application, error) {
 	app.Spec.Code = []hlir.Code{
 		hlir.Code{
 			Name:   "main.sh",
-			Source: parameterSweepMain,
+			Source: main,
 		},
 	}
 
@@ -62,21 +58,4 @@ func appForSweep(sweep hlir.ParameterSweep) (hlir.Application, error) {
 	}
 
 	return app, nil
-}
-
-func LowerParameterSweep(assemblyName, runname, namespace string, sweep hlir.ParameterSweep, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
-	app, err := appForSweep(sweep)
-	if err != nil {
-		return []string{}, err
-	}
-
-	return LowerShell(
-		assemblyName,
-		runname,
-		namespace,
-		app,
-		queueSpec,
-		repoSecrets,
-		verbose,
-	)
 }

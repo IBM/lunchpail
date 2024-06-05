@@ -1,12 +1,8 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7b") }}
 apiVersion: lunchpail.io/v1alpha1
 kind: WorkerPool
 metadata:
-  name: test7b-pool1
+  name: test7-pool1
 spec:
   workers:
     count: 2
-    size: xxs
-  env:
-    xxx: "3333333333" # only override the xxx key from 111... to 333...
-{{- end }}
+    size: auto

@@ -1,4 +1,3 @@
-{{ if or (not .Values.app) (eq .Values.app "tests") (eq .Values.app "test7b") }}
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
@@ -6,29 +5,27 @@ metadata:
 spec:
   api: workqueue
   role: worker
-  code:
-  - name: literal.sh
-    source: |
-      #!/usr/bin/env sh
-
-      # $1 input filepath
-      # $2 output filepath
-      in="$1"
-      out="$2"
-
-      # $xxx and $yyy should come over from the env: specs in app.yaml and pool1.yaml
-      echo "Processing $xxx $yyy $in"
-      sleep 5
-
-      echo "Done with $in"
-
-  command: ./literal.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
-# TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap
-#  inputs:
-#    - sizes:
-#        lg: test7bdata
-  env:
-    xxx: "1111111111"
-    yyy: "2222222222"
-{{- end }}
+  code:
+    - name: main.sh
+      source: |
+        #!/usr/bin/env sh
+
+        # $1 input filepath
+        # $2 output filepath
+        in="$1"
+        out="$2"
+
+        echo "Processing $in"
+        sleep 5
+
+        echo "Done with $in"
+
+  command: ./main.sh
+  minSize: auto
+  securityContext:
+    runAsUser: 2000 # lunchpail, same as is specified Dockerfile
+    runAsGroup: 0 # root, ibid
+  containerSecurityContext:
+    runAsUser: 2000 # lunchpail, same as is specified Dockerfile
+    runAsGroup: 0 # root, ibid

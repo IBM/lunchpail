@@ -22,7 +22,7 @@ var defaultConfig = RunConfigs{
 	hlir.XxlSize:  {40, "8", "64Gi", 1},
 }
 
-func applicationSizing(app hlir.Application) RunSizeConfig {
+func ApplicationSizing(app hlir.Application) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
@@ -40,7 +40,7 @@ func applicationSizing(app hlir.Application) RunSizeConfig {
 
 // Applications can specify a minSize... so take the max of that and
 // what the WorkerPool specifies
-func workerpoolSizing(pool hlir.WorkerPool, app hlir.Application) RunSizeConfig {
+func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 

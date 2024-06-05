@@ -52,7 +52,7 @@ func code(application hlir.Application, namespace string, repoSecrets []hlir.Rep
 	}
 }
 
-func codeB64(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, string, string, error) {
+func CodeB64(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, string, string, error) {
 	a, b, d, e, err := code(application, namespace, repoSecrets)
 	if err != nil {
 		return a, b, "", e, err

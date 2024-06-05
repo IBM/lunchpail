@@ -1,7 +1,6 @@
-package api
+package workerpool
 
 import (
-	"embed"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,43 +8,14 @@ import (
 
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
-//go:generate /bin/sh -c "[ -d ../../../../charts/workerpool ] && tar --exclude '*~' --exclude '*README.md' -C ../../../../charts/workerpool -zcf workerpool.tar.gz . || exit 0"
-//go:embed workerpool.tar.gz
-var workerpoolTemplate embed.FS
-
-// parse 6s/6m/6d/6w into units of seconds
-func parseHumanTime(delayString string) (int, error) {
-	if delayString == "" {
-		return 0, nil
-	}
-
-	seconds_per_unit := map[byte]int{'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
-	unit, hasUnit := seconds_per_unit[delayString[len(delayString)-1]]
-	quantity := delayString
-
-	if !hasUnit {
-		// then we were given just a number, which we will interpret as
-		// seconds
-		unit = 1
-	} else {
-		quantity = delayString[:len(delayString)-1]
-	}
-
-	val, err := strconv.Atoi(quantity)
-	if err != nil {
-		return 0, err
-	}
-
-	return val * unit, nil
-}
-
-func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]llir.Yaml, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]llir.Yaml, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -59,12 +29,12 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 		"-",
 	)
 
-	sizing := workerpoolSizing(pool, app)
-	volumes, volumeMounts, envFroms, initContainers, dataseterr := datasetsB64(app, queueSpec)
+	sizing := api.WorkerpoolSizing(pool, app)
+	volumes, volumeMounts, envFroms, initContainers, dataseterr := api.DatasetsB64(app, queueSpec)
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
-	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := codeB64(app, namespace, repoSecrets)
+	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
 
 	yamls := []llir.Yaml{}
 
@@ -80,7 +50,7 @@ func LowerWorkerPool(assemblyName, runname, namespace string, app hlir.Applicati
 		return yamls, errcsc
 	}
 
-	templatePath, err := stage(workerpoolTemplate, "workerpool.tar.gz")
+	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
 		return yamls, err
 	}

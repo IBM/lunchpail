@@ -2,6 +2,8 @@ package transformer
 
 import (
 	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/fe/transformer/api/dispatch"
+	"lunchpail.io/pkg/fe/transformer/api/workerpool"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"slices"
@@ -14,12 +16,12 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := lowerDispatchers(assemblyName, runname, namespace, model, queueSpec, verbose)
+	dispatchers, err := dispatch.Lower(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	pools, err := lowerWorkerPools(assemblyName, runname, namespace, model, queueSpec, verbose)
+	pools, err := workerpool.LowerAll(assemblyName, runname, namespace, model, queueSpec, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}

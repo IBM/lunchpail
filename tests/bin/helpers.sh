@@ -44,7 +44,8 @@ function waitForIt {
     # combination of Ready and Complete (i.e. not-Ready) pods. This is
     # important because pthe kubectl waits below expect the pods
     # either to be all-Ready or all-not-Ready.
-    local selector=app.kubernetes.io/component!=workdispatcher,app.kubernetes.io/component!=lunchpail-controller
+    local selector=app.kubernetes.io/component!=workdispatcher
+    local dispatcherselector=app.kubernetes.io/component=workdispatcher
 
     if [[ "$api" = ray ]]; then
         local containers="-c job-logs"
@@ -79,6 +80,7 @@ function waitForIt {
                 else TAIL=10
                 fi
                 (kubectl -n $ns logs $containers -l $selector --tail=$TAIL || exit 0)
+                (kubectl -n $ns logs -l $dispatcherselector --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4
@@ -293,6 +295,4 @@ function undeploy {
 
 function watch {
     kubectl get pod --show-kind -A --watch &
-    kubectl get run --show-kind --all-namespaces --watch &
-    kubectl get workerpool --watch --all-namespaces -o custom-columns=KIND:.kind,NAME:.metadata.name,STATUS:.metadata.annotations.lunchpail\\.io/status,MESSAGE:.metadata.annotations.lunchpail\\.io/message &
 }

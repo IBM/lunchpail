@@ -1,10 +1,6 @@
 api=workqueue
-taskqueue=test7b
 
-# /queue/0,1 <-- 2 workers
-# task.1,task.3,task.5 <-- 3 tasks per iter
+# in pail/dispatcher.yaml we set repeat=2, so we expect the tasks to
+# be repeated twice
 
-# xxx should be 3333333333 coming from test7b/pool1.yaml
-# yyy should be 2222222222 coming from test7b/app.yaml
-values="3333333333 2222222222"
-expected=("Processing $values /queue/processing/task.1.txt" "Processing $values /queue/processing/task.3.txt" "Processing $values /queue/processing/task.5.txt" "Processing $values /queue/processing/task.2.txt" "Processing $values /queue/processing/task.4.txt" "Processing $values /queue/processing/task.6.txt")
+expected=("Processing /queue/processing/task.1.1.txt" "Processing /queue/processing/task.1.2.txt" "Processing /queue/processing/task.2.1.txt" "Processing /queue/processing/task.2.2.txt" "Processing /queue/processing/task.3.1.txt" "Processing /queue/processing/task.3.2.txt" "Processing /queue/processing/task.4.1.txt" "Processing /queue/processing/task.4.2.txt" "Processing /queue/processing/task.5.1.txt" "Processing /queue/processing/task.5.2.txt" "Processing /queue/processing/task.6.1.txt" "Processing /queue/processing/task.6.2.txt")

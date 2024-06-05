@@ -53,6 +53,15 @@ func Parse(yamls string) (hlir.AppModel, error) {
 				model.ParameterSweeps = append(model.ParameterSweeps, r)
 			}
 
+		case "ProcessS3Objects":
+			var r hlir.ProcessS3Objects
+			if err := yaml.Unmarshal(bytes, &r); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: skipping yaml with invalid ProcessS3Objects resource %v", err)
+				continue
+			} else {
+				model.ProcessS3Objects = append(model.ProcessS3Objects, r)
+			}
+
 		case "PlatformRepoSecret":
 			var r hlir.RepoSecret
 			if err := yaml.Unmarshal(bytes, &r); err != nil {

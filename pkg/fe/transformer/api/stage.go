@@ -6,7 +6,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func stage(fs embed.FS, file string) (string, error) {
+func Stage(fs embed.FS, file string) (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
 	} else if err := util.Expand(dir, fs, file); err != nil {

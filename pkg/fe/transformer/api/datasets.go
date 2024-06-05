@@ -73,10 +73,22 @@ func datasets(app hlir.Application, queueSpec queue.Spec) ([]volume, []volumeMou
 			volumeMounts = append(volumeMounts, volumeMount{name, dataset.MountPath})
 		}
 		if dataset.S3.Secret != "" {
-			env := envFrom{secretRef{dataset.S3.Secret}, dataset.Name + "_"}
-			// envFroms = append(envFroms, env)
+			prefix := dataset.S3.EnvPrefix
+			if prefix == "" {
+				prefix = dataset.Name + "_"
+			}
 
-			if dataset.S3.CopyIn.Path != "" {
+			env := envFrom{secretRef{dataset.S3.Secret}, prefix}
+
+			if dataset.S3.CopyIn.Path == "" {
+				// then we add the secrets as env vars
+				// attached to the main container
+				envFroms = append(envFroms, env)
+			} else {
+				// otherwise, we were asked to copy
+				// data in from s3, so we will use the
+				// secrets attached to an
+				// initContainer
 				initContainers = append(initContainers, initContainer{
 					Name:         "s3-copy-in-" + dataset.Name,
 					Image:        "docker.io/rclone/rclone:1",
@@ -113,7 +125,7 @@ rclone --config $config copyto s3:/%s /workdir/%s/%s
 	return volumes, volumeMounts, envFroms, initContainers, nil
 }
 
-func datasetsB64(app hlir.Application, queueSpec queue.Spec) (string, string, string, string, error) {
+func DatasetsB64(app hlir.Application, queueSpec queue.Spec) (string, string, string, string, error) {
 	volumes, volumeMounts, envFroms, initContainers, err := datasets(app, queueSpec)
 	if err != nil {
 		return "", "", "", "", err
