@@ -1,8 +1,6 @@
 # hapq test
 app=git@github.ibm.com:cloud-computer/lunchpail-hapq.git
-branch=v0.0.2
-app=git@github.ibm.com:nickm/lunchpail-hapq.git
-branch=autorun
+branch=v0.1.0
 deployname=lunchpail-hapq
 expected=('Epoch 0: 0%')
 
