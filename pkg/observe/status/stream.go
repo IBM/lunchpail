@@ -40,16 +40,14 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 		return model.streamEventUpdates(run, eventWatcher, c)
 	})
 
+	// TODO: we now launch the worker streamers in response to
+	// updates from the podWatcher (see ./pod.go). We probably
+	// should do the same thing for these two:
 	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, observe.WorkersComponent, false, c)
+		return model.streamLogUpdatesForComponent(run, namespace, observe.WorkStealerComponent, true, c)
 	})
-
 	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, observe.WorkStealerComponent, true, c)
-	})
-
-	errgroup.Go(func() error {
-		return model.streamLogUpdates(run, namespace, observe.DispatcherComponent, false, c)
+		return model.streamLogUpdatesForComponent(run, namespace, observe.DispatcherComponent, false, c)
 	})
 
 	errgroup.Go(func() error {

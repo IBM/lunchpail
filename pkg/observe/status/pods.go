@@ -99,7 +99,7 @@ func updateWorker(name string, pod *v1.Pod, pools []Pool, what watch.EventType) 
 	// }
 }
 
-func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error) {
+func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType, c chan Model) (bool, error) {
 	component, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
 		return false, fmt.Errorf("Worker without component label %s\n", pod.Name)
@@ -130,6 +130,17 @@ func updateFromPod(pod *v1.Pod, model *Model, what watch.EventType) (bool, error
 		workerStatus := statusFromPod(pod)
 		model.Dispatcher = workerStatus
 	case string(observe.WorkersComponent):
+		if what == watch.Added {
+			if err := model.streamLogUpdatesForWorker(pod.Name, pod.Namespace, c); err != nil {
+				return false, err
+			} else {
+				// TODO: are we leaking something
+				// here? do we need to add this to the
+				// top-level errgroup.Wait in
+				// ./stream.go?
+			}
+		}
+
 		if pools, poolIdx, _, err := updateWorker(name, pod, model.Pools, what); err != nil {
 			return false, err
 		} else {
@@ -165,7 +176,7 @@ func (model *Model) streamPodUpdates(watcher watch.Interface, c chan Model) erro
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if updated, err := updateFromPod(pod, model, event.Type); err != nil {
+			if updated, err := updateFromPod(pod, model, event.Type, c); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 			} else if updated {
 				c <- *model
