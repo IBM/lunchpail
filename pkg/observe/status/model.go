@@ -6,6 +6,7 @@ import (
 	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/observe/qstat"
 	"slices"
+	"sync"
 )
 
 type WorkerStatus string
@@ -40,8 +41,15 @@ type Model struct {
 	Dispatcher    WorkerStatus
 	WorkStealer   WorkerStatus
 	LastNMessages *ring.Ring // ring of type Message
+	Progress      Progress
 	Qstat         qstat.Model
 	Cpu           cpu.Model
+}
+
+func NewModel() *Model {
+	m := &Model{}
+	m.Progress.bars = &sync.Map{}
+	return m
 }
 
 func (model *Model) numPools() int {

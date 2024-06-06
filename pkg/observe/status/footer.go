@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -65,15 +66,23 @@ func cpuline(workers []cpu.Worker, resource Resource) string {
 	return message(string(resource), strings.Join(line, ""), colors.OtherComponentStyle, colors.Dim)
 }
 
-func footer(model Model, timestamp time.Time, maxheight int) []string {
+func footer(model Model, timestamp time.Time, maxwidth, maxheight int) []string {
 	maxheight-- // minus one for this timestamp
 	footer := []string{colors.Dim.Render(timestamp.Format(time.RFC850))}
 
+	// add cpu and memory stats
 	if model.Cpu.HasData() {
 		maxheight -= 2 // minus one for the cpu and memory line
 		workers := model.Cpu.Sorted()
 		footer = append(footer, cpuline(workers, Cpu))
 		footer = append(footer, cpuline(workers, Mem))
+	}
+
+	// add progress bars
+	progressbars := viewProgress(model, maxwidth)
+	if len(progressbars) > 0 {
+		maxheight -= len(progressbars)
+		footer = slices.Concat(footer, progressbars)
 	}
 
 	// then use the rest of maxheight for messages

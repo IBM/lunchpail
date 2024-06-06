@@ -28,6 +28,10 @@ func (model *Model) last() time.Time {
 }
 
 func (model *Model) addMessage(msg Message) bool {
+	if model.updateProgress(msg) {
+		return true
+	}
+
 	last, _ := model.lastOrZero()
 	if last.IsZero() || !msg.timestamp.Before(last) {
 		model.LastNMessages = model.LastNMessages.Next()

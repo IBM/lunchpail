@@ -16,7 +16,7 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 		return c, nil, err
 	}
 
-	model := Model{}
+	model := NewModel()
 	model.AppName = app
 	model.RunName = run
 	model.Namespace = namespace

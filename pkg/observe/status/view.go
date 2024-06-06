@@ -132,5 +132,5 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 	}
 
 	linesOfPaddingAboveFooter := 1
-	return rows, col1Width, footer(model, timestamp, max(0, maxheight-len(rows)-linesOfPaddingAboveFooter))
+	return rows, col1Width, footer(model, timestamp, maxwidth, max(0, maxheight-len(rows)-linesOfPaddingAboveFooter))
 }

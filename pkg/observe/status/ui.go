@@ -2,6 +2,7 @@ package status
 
 import (
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -30,6 +31,7 @@ type model struct {
 	footer         []string
 	selectedRowIdx int
 	rows           []statusRow
+	width          int
 }
 
 // Some necessary plumbing for BubbleTea: we need to cast our channel
@@ -62,11 +64,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case channelMsg:
-		if width, height, err := term.GetSize(1); err == nil {
-			r, col1Width, footer := rows(msg.model, width, height, m.opts.Summary)
+		if width, heightOfTerminal, err := term.GetSize(1); err == nil {
+			heightForTable := heightOfTerminal
+
+			r, col1Width, footer := rows(msg.model, width, heightForTable, m.opts.Summary)
 			m.footer = footer
 			// m.table.SetWidth(width)
-			m.table.SetHeight(height - len(footer))
+			m.table.SetHeight(heightForTable - len(footer))
 			m.table.SetColumns([]table.Column{
 				{Title: "", Width: col1Width},
 				{Title: "", Width: width},
@@ -80,6 +84,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				teaRows = append(teaRows, row.row)
 			}
 
+			m.width = width
 			m.rows = r
 			m.current = msg.model
 			m.table.SetRows(teaRows)
@@ -120,7 +125,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // The BubbleTea view lifecycle handler
 func (m model) View() string {
-	return m.table.View() + "\n" + strings.Join(m.footer, "\n")
+	lines := []string{m.table.View()}
+	lines = slices.Concat(lines, m.footer)
+	return strings.Join(lines, "\n")
 }
 
 func UI(runnameIn string, opts Options) error {
@@ -155,7 +162,12 @@ func UI(runnameIn string, opts Options) error {
 		table.WithFocused(true),
 	)
 
-	p := tea.NewProgram(model{c, Model{}, t, opts, []string{}, 0, []statusRow{}}, tea.WithAltScreen())
+	m := model{}
+	m.c = c
+	m.table = t
+	m.opts = opts
+
+	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		return err
 	}
