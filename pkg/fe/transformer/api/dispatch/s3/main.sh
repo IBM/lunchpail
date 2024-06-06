@@ -2,8 +2,6 @@
 
 set -eo pipefail
 
-printenv | grep __LUNCHPAIL
-
 config=/tmp/rclone.conf
 remote=queue:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/inbox
 
