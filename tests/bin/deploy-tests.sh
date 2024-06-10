@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
-set -o pipefail
+set -eo pipefail
 
 #
 # $1: test name
@@ -12,7 +11,6 @@ set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
-. "$TOP"/hack/settings.sh
 
 if [[ -n "$1" ]]
 then APP="--set app=$1"

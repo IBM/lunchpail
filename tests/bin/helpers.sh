@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
-set -o pipefail
+set -eo pipefail
 
 # in case there are things we want to do differently knowing that we
 # are running a test (e.g. to produce more predictible output);
@@ -26,7 +25,6 @@ TEST_FROM_ARGV_idx=$((xOPTIND))
 export TEST_FROM_ARGV="${!TEST_FROM_ARGV_idx}"
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/../../hack/settings.sh
 
 function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)

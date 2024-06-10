@@ -5,11 +5,9 @@
 # `data/` directory (if it exists). This can help with testing.
 #
 
-set -e
-set -o pipefail
+set -eo pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-. "$SCRIPTDIR"/../../hack/settings.sh
 
 if [[ -d data/s3 ]]; then
     for bucket_path in data/s3/*; do
