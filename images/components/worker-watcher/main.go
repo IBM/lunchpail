@@ -1,36 +1,49 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-//TODO use librclone/remote rc APIs to use rclone commands instead of exec's below
-
 func main() {
-	// this is the handler that will be called for each task
-	handler := os.Args[1:]
+	client, err := newClient()
+	if err != nil {
+		log.Panic(err)
+	}
 
-	config := "/tmp/rclone.conf"
-	remote := "s3:/" + os.Getenv(os.Getenv("TASKQUEUE_VAR")) + "/" + os.Getenv("LUNCHPAIL") +
-		"/" + os.Getenv("RUN_NAME") + "/queues/" + os.Getenv("POOL") + "." + getPodNameSuffix(os.Getenv("POD_NAME"))
+	// are we starting up or shutting down?
+	operation := os.Args[1]
+	
+	// this is the handler that will be called for each task
+	handler := os.Args[2:]
+
+	bucket := os.Getenv(os.Getenv("TASKQUEUE_VAR"))
+	prefix := filepath.Join(os.Getenv("LUNCHPAIL"), os.Getenv("RUN_NAME"), "queues", os.Getenv("POOL")+"."+getPodNameSuffix(os.Getenv("POD_NAME")))
+	remote := filepath.Join(bucket, prefix)
 	inbox := "inbox"
 	processing := "processing"
 	outbox := "outbox"
-	alive := remote + "/" + inbox + "/.alive"
+	alive := filepath.Join(prefix, inbox, ".alive")
+	dead := filepath.Join(prefix, inbox, "/.dead")
 	local := os.Getenv("WORKQUEUE")
 
-	// TODO: Check for rclone installation and install, if doesn't exist
-
-	err := createRcloneConfigFile(config, os.Getenv("S3_ENDPOINT_VAR"), os.Getenv("AWS_ACCESS_KEY_ID_VAR"), os.Getenv("AWS_SECRET_ACCESS_KEY_VAR"))
-	if err != nil {
-		fmt.Println("Internal Error creating rclone config file:", err)
+	if operation == "prestop" {
+		fmt.Println("DEBUG Marker worker as done...")
+		rm(client, bucket, alive)
+		touch(client, bucket, dead)
+		fmt.Printf("INFO This worker is shutting down %s\n", strings.Replace(os.Getenv("POD_NAME"), os.Getenv("RUN_NAME") + "-", "", 1))
 		return
 	}
 
@@ -45,27 +58,22 @@ func main() {
 		time.Sleep(delay)
 	}
 
-	err = rcloneTouch(config, alive)
+	err = touch(client, bucket, alive)
 	if err != nil {
 		fmt.Println("Internal Error creating alive marker:", err)
 		return
 	}
 
-	startWatch(handler, config, remote, inbox, processing, outbox, local)
+	startWatch(handler, client, bucket, prefix, remote, inbox, processing, outbox, local)
 }
 
-func killfileExists(config, remote string) bool {
-	exists, err := rcloneExists(config, remote, "kill")
-	if err != nil {
-		fmt.Printf("Internal error looking for kill file:", err)
-		return false
-	}
-	return exists
+func killfileExists(client *minio.Client, bucket, prefix string) bool {
+	return exists(client, bucket, prefix, "kill")
 }
 
-func startWatch(handler []string, config, remote, inbox, processing, outbox, local string) {
-	for !killfileExists(config, remote) {
-		tasks, err := rcloneLsf(config, remote, inbox)
+func startWatch(handler []string, client *minio.Client, bucket, prefix, remote, inbox, processing, outbox, local string) {
+	for !killfileExists(client, bucket, prefix) {
+		tasks, err := lsf(client, bucket, filepath.Join(prefix, inbox))
 		if err != nil {
 			fmt.Println("Internal Error listing tasks:", err)
 		}
@@ -73,68 +81,76 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 		for _, task := range tasks {
 			if task != "" {
 				// TODO: re-check if task still exists in our inbox before starting on it
-				in := remote + "/" + inbox + "/" + task
-				inprogress := remote + "/" + processing + "/" + task
-				out := remote + "/" + outbox + "/" + task
+				in := filepath.Join(prefix, inbox, task)
+				inprogress := filepath.Join(prefix, processing, task)
+				out := filepath.Join(prefix, outbox, task)
 
 				// capture exit code, stdout and stderr of the handler
-				ec := remote + "/" + outbox + "/" + task + ".code"
-				succeeded := remote + "/" + outbox + "/" + task + ".succeeded"
-				failed := remote + "/" + outbox + "/" + task + ".failed"
-				stdout := remote + "/" + outbox + "/" + task + ".stdout"
-				stderr := remote + "/" + outbox + "/" + task + ".stderr"
+				ec := filepath.Join(prefix, outbox, task+".code")
+				succeeded := filepath.Join(prefix, outbox, task+".succeeded")
+				failed := filepath.Join(prefix, outbox, task+".failed")
+				stdout := filepath.Join(prefix, outbox, task+".stdout")
+				stderr := filepath.Join(prefix, outbox, task+".stderr")
 
-				localinbox := local + "/" + inbox
-				localprocessing := local + "/" + processing
-				localoutbox := local + "/" + outbox
-				localec := localoutbox + "/" + task + ".code"
-				localstdout := localoutbox + "/" + task + ".stdout"
-				localstderr := localoutbox + "/" + task + ".stderr"
+				localinbox := filepath.Join(local, inbox)
+				localprocessing := filepath.Join(local, processing, task)
+				localoutbox := filepath.Join(local, outbox, task)
+				localec := localoutbox + ".code"
+				localstdout := localoutbox + ".stdout"
+				localstderr := localoutbox + ".stderr"
 
 				err := os.MkdirAll(localinbox, os.ModePerm)
 				if err != nil {
 					fmt.Println("Internal Error creating local inbox:", err)
+					continue
 				}
-				err = os.MkdirAll(localprocessing, os.ModePerm)
+				err = os.MkdirAll(filepath.Dir(localprocessing), os.ModePerm)
 				if err != nil {
 					fmt.Println("Internal Error creating local processing:", err)
+					continue
 				}
-				err = os.MkdirAll(localoutbox, os.ModePerm)
+				err = os.MkdirAll(filepath.Dir(localoutbox), os.ModePerm)
 				if err != nil {
 					fmt.Println("Internal Error creating local outbox:", err)
+					continue
 				}
 
-				err = rcloneCopy(config, in, localprocessing)
+				err = download(client, bucket, in, localprocessing)
 				if err != nil {
-					fmt.Println("Internal Error copying task to worker processing:", err)
+					fmt.Printf("Internal Error copying task to worker processing %s %s->%s: %v\n", bucket, in, localprocessing, err)
+					continue
 				}
 
 				// fmt.Println("sending file to handler: " + in)
-				err = os.Remove(localoutbox + "/" + task)
+				err = os.Remove(localoutbox)
 				if err != nil && !os.IsNotExist(err) {
 					fmt.Println("Internal Error removing task from local outbox:", err)
+					continue
 				}
 
-				err = rcloneMoveto(config, in, inprogress)
+				err = moveto(client, bucket, in, inprogress)
 				if err != nil {
-					fmt.Println("Internal Error moving task to global processing:", err)
+					fmt.Printf("Internal Error moving task to global processing %s->%s: %v\n", in, inprogress, err)
+					continue
 				}
 
 				// signify that the process is still going... or prematurely terminated
 				os.WriteFile(localec, []byte("-1"), os.ModePerm)
 
-				handlercmd := exec.Command(handler[0], slices.Concat(handler[1:], []string{localprocessing + "/" + task, localoutbox + "/" + task})...)
+				handlercmd := exec.Command(handler[0], slices.Concat(handler[1:], []string{localprocessing, localoutbox})...)
 
 				// open stdout/err files for writing
 				stdoutfile, err := os.Create(localstdout)
 				if err != nil {
 					fmt.Println("Internal Error creating stdout file:", err)
+					continue
 				}
 				defer stdoutfile.Close()
 
 				stderrfile, err := os.Create(localstderr)
 				if err != nil {
 					fmt.Println("Internal Error creating stderr file:", err)
+					continue
 				}
 				defer stderrfile.Close()
 
@@ -145,43 +161,44 @@ func startWatch(handler []string, config, remote, inbox, processing, outbox, loc
 				err = handlercmd.Run()
 				if err != nil {
 					fmt.Println("Internal Error running the handler:", err)
+					continue
 				}
 				EC := handlercmd.ProcessState.ExitCode()
 
 				os.WriteFile(localec, []byte(fmt.Sprintf("%d", EC)), os.ModePerm)
 
-				err = rcloneMoveto(config, localec, ec)
+				err = upload(client, bucket, localec, ec)
 				if err != nil {
 					fmt.Println("Internal Error moving exitcode to remote:", err)
 				}
 
-				err = rcloneMoveto(config, localstdout, stdout)
+				err = upload(client, bucket, localstdout, stdout)
 				if err != nil {
 					fmt.Println("Internal Error moving stdout to remote:", err)
 				}
 
-				err = rcloneMoveto(config, localstderr, stderr)
+				err = upload(client, bucket, localstderr, stderr)
 				if err != nil {
 					fmt.Println("Internal Error moving stderr to remote:", err)
 				}
 
 				if EC == 0 {
-					err = rcloneTouch(config, succeeded)
+					err = touch(client, bucket, succeeded)
 					if err != nil {
 						fmt.Println("Internal Error creating succeeded marker:", err)
 					}
 					// fmt.Println("handler success: " + in)
 				} else {
-					err = rcloneTouch(config, failed)
+					err = touch(client, bucket, failed)
 					if err != nil {
 						fmt.Println("Internal Error creating failed marker:", err)
 					}
 					fmt.Println("Worker error exit code " + strconv.Itoa(EC) + ": " + in)
 				}
 
-				err = rcloneMoveto(config, inprogress, out)
+				err = moveto(client, bucket, inprogress, out)
 				if err != nil {
-					fmt.Println("Internal Error moving task to global outbox:", err)
+					fmt.Printf("Internal Error moving task to global outbox %s->%s: %v\n", inprogress, out, err)
 				}
 			}
 		}
@@ -198,77 +215,94 @@ func getPodNameSuffix(podName string) string {
 	return parts[len(parts)-1]
 }
 
-func createRcloneConfigFile(config, s3Endpoint, accessKeyID, secretAccessKey string) error {
-	configFile, err := os.Create(config)
-	if err != nil {
-		return err
-	}
-	defer configFile.Close()
+func lsf(client *minio.Client, bucket, prefix string) ([]string, error) {
+	objectCh := client.ListObjects(context.Background(), bucket, minio.ListObjectsOptions{
+		Prefix:    prefix + "/",
+		Recursive: false,
+	})
 
-	configContent := fmt.Sprintf(`[s3]
-type = s3
-provider = Other
-env_auth = false
-endpoint = %s
-access_key_id = %s
-secret_access_key = %s
-acl = public-read
-`, os.Getenv(s3Endpoint), os.Getenv(accessKeyID), os.Getenv(secretAccessKey))
+	tasks := []string{}
+	for object := range objectCh {
+		if object.Err != nil {
+			return tasks, object.Err
+		}
 
-	_, err = configFile.WriteString(configContent)
-	if err != nil {
-		return err
+		task := filepath.Base(object.Key)
+		if task != ".alive" {
+			tasks = append(tasks, task)
+		}
 	}
 
-	return nil
-}
-
-func rcloneLsf(config, remote, inbox string) ([]string, error) {
-	cmd := exec.Command("rclone", "--config", config, "lsf", remote+"/"+inbox, "--files-only", "--exclude", ".alive")
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, err
-	}
-
-	if len(output) == 0 {
-		// otherwise, strings.Split will return [""]
-		return []string{}, nil
-	}
-
-	tasks := strings.Split(strings.TrimSpace(string(output)), "\n")
 	return tasks, nil
 }
 
-func rcloneExists(config, remote, file string) (bool, error) {
-	cmd := exec.Command("rclone", "--config", config, "lsf", remote+"/"+file, "--files-only")
-	output, err := cmd.Output()
-	if err != nil {
-		return false, err
+func exists(client *minio.Client, bucket, prefix, file string) bool {
+	if _, err := client.StatObject(context.Background(), bucket, filepath.Join(prefix, file), minio.StatObjectOptions{}); err == nil {
+		return true
+	} else {
+		return false
+	}
+}
+
+func copyto(client *minio.Client, bucket, source, destination string) error {
+	src := minio.CopySrcOptions{
+		Bucket: bucket,
+		Object: source,
 	}
 
-	if len(output) == 0 {
-		// otherwise, strings.Split will return [""]
-		return false, nil
+	dst := minio.CopyDestOptions{
+		Bucket: bucket,
+		Object: destination,
 	}
 
-	tasks := strings.Split(strings.TrimSpace(string(output)), "\n")
-	return len(tasks) == 1, nil
-}
-
-func rcloneCopy(config, source, destination string) error {
-	cmd := exec.Command("rclone", "--config", config, "copy", source, destination)
-	err := cmd.Run()
+	_, err := client.CopyObject(context.Background(), dst, src)
 	return err
 }
 
-func rcloneMoveto(config, source, destination string) error {
-	cmd := exec.Command("rclone", "--config", config, "moveto", source, destination)
-	err := cmd.Run()
+func moveto(client *minio.Client, bucket, source, destination string) error {
+	if err := copyto(client, bucket, source, destination); err != nil {
+		return err
+	}
+
+	return rm(client, bucket, source)
+}
+
+func upload(client *minio.Client, bucket, source, destination string) error {
+	_, err := client.FPutObject(context.Background(), bucket, destination, source, minio.PutObjectOptions{})
 	return err
 }
 
-func rcloneTouch(config, filePath string) error {
-	cmd := exec.Command("rclone", "--config", config, "touch", filePath)
-	err := cmd.Run()
+func download(client *minio.Client, bucket, source, destination string) error {
+	return client.FGetObject(context.Background(), bucket, source, destination, minio.GetObjectOptions{})
+}
+
+func touch(client *minio.Client, bucket, filePath string) error {
+	r := strings.NewReader("")
+	_, err := client.PutObject(context.Background(), bucket, filePath, r, 0, minio.PutObjectOptions{})
 	return err
+}
+
+func rm(client *minio.Client, bucket, filePath string) error {
+	return client.RemoveObject(context.Background(), bucket, filePath, minio.RemoveObjectOptions{})
+}
+
+// Initialize minio client object.
+func newClient() (*minio.Client, error) {
+	endpoint := os.Getenv(os.Getenv("S3_ENDPOINT_VAR"))
+	accessKeyID := os.Getenv(os.Getenv("AWS_ACCESS_KEY_ID_VAR"))
+	secretAccessKey := os.Getenv(os.Getenv("AWS_SECRET_ACCESS_KEY_VAR"))
+
+	useSSL := true
+	if !strings.HasPrefix(endpoint, "https") {
+		useSSL = false
+	}
+
+	endpoint = strings.Replace(endpoint, "https://", "", 1)
+	endpoint = strings.Replace(endpoint, "http://", "", 1)
+
+	return minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: useSSL,
+	})
+
 }

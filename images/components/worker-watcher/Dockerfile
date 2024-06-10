@@ -11,8 +11,6 @@ RUN chmod a+rX watcher
 FROM docker.io/alpine:3
 COPY --from=0 /init/watcher /init/watcher
 
-RUN apk update && apk add --no-cache rclone
-
 RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
 USER lunchpail
 ENV HOME=/home/lunchpail
