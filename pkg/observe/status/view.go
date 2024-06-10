@@ -68,7 +68,7 @@ func rows(model Model, maxwidth int, maxheight int, summary bool) ([]statusRow, 
 		row("App", colors.Blue.Render(model.AppName)),
 		row("Run", colors.Blue.Render(model.RunName)),
 		row("├─ Runtime", cellf(runningWorkStealer, totalWorkStealer, model.WorkStealer)),
-		row("├─ "+colors.Bold.Render("Dispatcher"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
+		row("├─ "+colors.Bold.Render("Dispatch"), cellf(runningDispatcher, totalDispatcher, model.Dispatcher)),
 	}
 
 	if !summary {
