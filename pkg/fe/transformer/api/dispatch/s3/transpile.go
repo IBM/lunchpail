@@ -21,7 +21,7 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 	app.ApiVersion = s3.ApiVersion
 	app.Kind = "Application"
 	app.Metadata.Name = s3.Metadata.Name
-	app.Spec.Image = lunchpail.ImageRegistry + "/" + lunchpail.ImageRepo + "/worker-alpine:" + lunchpail.Version()
+	app.Spec.Image = fmt.Sprintf("%s/%s/rclone:0.0.1", lunchpail.ImageRegistry, lunchpail.ImageRepo)
 	app.Spec.Api = "shell"
 	app.Spec.Role = "dispatcher"
 	app.Spec.Command = "./main.sh"
