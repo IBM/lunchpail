@@ -20,4 +20,4 @@ echo "DEBUG prestop touching donefile"
 rclone --config $config touch $donefile
 echo "DEBUG prestop touching donefile: done"
 
-echo "INFO Bye!"
+echo "INFO Done with my part of the job"

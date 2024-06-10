@@ -163,4 +163,4 @@ if [[ -n "$MINIO_PID" ]]
 then kill "$MINIO_PID"
 fi
 
-echo "INFO Bye!"
+echo "INFO The job should be all done now"
