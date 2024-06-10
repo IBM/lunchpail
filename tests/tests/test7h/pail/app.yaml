@@ -17,7 +17,7 @@ spec:
         out="$3"
 
         echo "Processing $in"
-        sleep 30
+        sleep 10
 
         echo "Done with $in"
 
