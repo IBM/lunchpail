@@ -13,7 +13,7 @@ func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 	app.ApiVersion = sweep.ApiVersion
 	app.Kind = "Application"
 	app.Metadata.Name = sweep.Metadata.Name
-	app.Spec.Image = fmt.Sprintf("%s/%s/jaas-workerpool-worker-alpine-component:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
+	app.Spec.Image = fmt.Sprintf("%s/%s/worker-alpine:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Api = "shell"
 	app.Spec.Role = "dispatcher"
 	app.Spec.Command = "./main.sh"

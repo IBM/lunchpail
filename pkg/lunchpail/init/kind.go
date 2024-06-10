@@ -2,10 +2,12 @@ package init
 
 import (
 	"fmt"
-	which "github.com/hairyhenderson/go-which"
 	"os"
 	"os/exec"
 	"runtime"
+
+	which "github.com/hairyhenderson/go-which"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 func getKind() error {
@@ -51,10 +53,9 @@ func getKind() error {
 }
 
 func createKindCluster() error {
-	clusterName := "jaas" // TODO
-	cmd := exec.Command("sh", "-c", "kind get clusters | grep -q "+clusterName)
+	cmd := exec.Command("sh", "-c", "kind get clusters | grep -q "+lunchpail.LocalClusterName)
 	if err := cmd.Run(); err != nil {
-		args := []string{"create", "cluster", "--wait", "10m", "--name", clusterName}
+		args := []string{"create", "cluster", "--wait", "10m", "--name", lunchpail.LocalClusterName}
 
 		// allows selectively hacking kind cluster config; e.g. see ./travis/setup.sh
 		if _, err := os.Stat("/tmp/kindhack.yaml"); err == nil {
@@ -63,7 +64,7 @@ func createKindCluster() error {
 			args = append(args, "/tmp/kindhack.yaml")
 		}
 
-		fmt.Printf("Creating kind cluster " + clusterName)
+		fmt.Printf("Creating kind cluster " + lunchpail.LocalClusterName)
 
 		cmd := exec.Command("kind", args...)
 		cmd.Stdout = os.Stdout

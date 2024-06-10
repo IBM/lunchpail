@@ -10,5 +10,5 @@ spec:
     size: {{ $.Values.size | default "xxs" }}
   target:
     kubernetes:
-      context: kind-jaas
+      context: kind-lunchpail
 {{- end }}

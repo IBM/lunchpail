@@ -7,6 +7,6 @@ spec:
   role: worker
   repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7f-repo/pail
   command: ./src/main.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/worker-alpine:" .Chart.AppVersion }}
   env:
     WORK_TIME: {{ .Values.duration | default 5 | quote }}

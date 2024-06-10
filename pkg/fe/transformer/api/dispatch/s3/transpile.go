@@ -21,7 +21,7 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 	app.ApiVersion = s3.ApiVersion
 	app.Kind = "Application"
 	app.Metadata.Name = s3.Metadata.Name
-	app.Spec.Image = "ghcr.io/lunchpail/jaas-workerpool-worker-alpine-component:" + lunchpail.Version()
+	app.Spec.Image = lunchpail.ImageRegistry + "/" + lunchpail.ImageRepo + "/worker-alpine:" + lunchpail.Version()
 	app.Spec.Api = "shell"
 	app.Spec.Role = "dispatcher"
 	app.Spec.Command = "./main.sh"

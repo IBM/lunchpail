@@ -30,7 +30,7 @@ spec:
       sleep 10000
 
   command: ./literal.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/worker-alpine:" .Chart.AppVersion }}
   env:
     # main.sh from workdispatcher1 uses $taskprefix and $taskprefix2; this overrides an env var from ./workdispatcher-app.yaml
     taskprefix: tasky

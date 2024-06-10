@@ -78,7 +78,7 @@ $testapp up \
          $GPU \
          $LP_ARGS \
          --set global.arch=$ARCH \
-         --set kubernetes.context=kind-jaas \
+         --set kubernetes.context=kind-lunchpail \
          --set cosAccessKey=$COS_ACCESS_KEY \
          --set cosSecretKey=$COS_SECRET_KEY \
          --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT

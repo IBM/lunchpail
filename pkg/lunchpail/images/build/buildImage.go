@@ -67,14 +67,12 @@ func createManifest(image string, cli ContainerCli, verbose bool) error {
 	return nil
 }
 
-func imageName(name, suffix string) string {
-	provider := "jaas"
-
-	return filepath.Join(lunchpail.ImageRegistry, lunchpail.ImageRepo, provider+"-"+name+suffix+":"+lunchpail.Version())
+func imageName(name string) string {
+	return filepath.Join(lunchpail.ImageRegistry, lunchpail.ImageRepo, name+":"+lunchpail.Version())
 }
 
-func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli ContainerCli, verbose bool) (string, error) {
-	image := imageName(name, suffix)
+func buildIt(dir, name, dockerfile string, kind ImageOrManifest, cli ContainerCli, verbose bool) (string, error) {
+	image := imageName(name)
 
 	var cmd *exec.Cmd
 	if kind == "manifest" {
@@ -120,8 +118,8 @@ func buildIt(dir, name, suffix, dockerfile string, kind ImageOrManifest, cli Con
 	// TODO --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
 }
 
-func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bool, force bool) (string, error) {
-	image := imageName(name, suffix)
+func buildProd(dir, name, dockerfile string, cli ContainerCli, verbose bool, force bool) (string, error) {
+	image := imageName(name)
 
 	imageExists, ierr := exists(image, "image", cli, verbose)
 	if ierr != nil {
@@ -147,11 +145,11 @@ func buildProd(dir, name, suffix, dockerfile string, cli ContainerCli, verbose b
 		}
 	}
 
-	return buildIt(dir, name, suffix, dockerfile, "manifest", cli, verbose)
+	return buildIt(dir, name, dockerfile, "manifest", cli, verbose)
 }
 
-func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bool) (string, error) {
-	image := imageName(name, suffix)
+func buildDev(dir, name, dockerfile string, cli ContainerCli, verbose bool) (string, error) {
+	image := imageName(name)
 
 	if manifestExists, err := exists(image, "manifest", cli, verbose); err != nil {
 		return "", err
@@ -163,19 +161,19 @@ func buildDev(dir, name, suffix, dockerfile string, cli ContainerCli, verbose bo
 		}
 	}
 
-	return buildIt(dir, name, suffix, dockerfile, "image", cli, verbose)
+	return buildIt(dir, name, dockerfile, "image", cli, verbose)
 }
 
-func buildImage(dir, name, suffix, dockerfile string, cli ContainerCli, opts BuildOptions) (string, error) {
+func buildImage(dir, name, dockerfile string, cli ContainerCli, opts BuildOptions) (string, error) {
 	if opts.Production {
-		return buildProd(dir, name, suffix, dockerfile, cli, opts.Verbose, opts.Force)
+		return buildProd(dir, name, dockerfile, cli, opts.Verbose, opts.Force)
 	} else {
-		return buildDev(dir, name, suffix, dockerfile, cli, opts.Verbose)
+		return buildDev(dir, name, dockerfile, cli, opts.Verbose)
 	}
 }
 
-func buildAndPushImage(dir, name, suffix, dockerfile string, cli ContainerCli, opts BuildOptions) error {
-	image, err := buildImage(dir, name, suffix, dockerfile, cli, opts)
+func buildAndPushImage(dir, name, dockerfile string, cli ContainerCli, opts BuildOptions) error {
+	image, err := buildImage(dir, name, dockerfile, cli, opts)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"lunchpail.io/pkg/lunchpail"
 )
 
 func pushIt(image string, kind ImageOrManifest, cli ContainerCli) error {
@@ -24,9 +26,7 @@ func pushIt(image string, kind ImageOrManifest, cli ContainerCli) error {
 }
 
 func loadIntoKindForDocker(image string) error {
-	clusterName := "jaas" // TODO
-
-	cmd := exec.Command("kind", "load", "docker-image", "-n", clusterName, image)
+	cmd := exec.Command("kind", "load", "docker-image", "-n", lunchpail.LocalClusterName, image)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
@@ -40,9 +40,7 @@ func loadIntoKindForDocker(image string) error {
 }
 
 func loadIntoKindForImageArchive(archiveFile string) error {
-	clusterName := "jaas" // TODO
-
-	cmd := exec.Command("kind", "-n", clusterName, "load", "image-archive", archiveFile)
+	cmd := exec.Command("kind", "-n", lunchpail.LocalClusterName, "load", "image-archive", archiveFile)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
@@ -93,8 +91,7 @@ func imageWithoutTag(image string) string {
 
 func podmanCurHash(image, tag string) ([]byte, error) {
 	//             curhash=$($SUDO podman exec -it ${CLUSTER_NAME}-control-plane crictl images | grep "$image2 " | grep $VERSION | awk '{print $3}' | head -c 12 || echo "nope")
-	clusterName := "jaas" // TODO
-	podName := clusterName + "-control-plane"
+	podName := lunchpail.LocalClusterName + "-control-plane"
 
 	if out, err := exec.Command("sh", "-c", "podman exec "+podName+" crictl images | grep "+image+" | grep "+tag+" | awk '{print $3}' | head -c 12 || echo nope").Output(); err != nil {
 		return nil, err

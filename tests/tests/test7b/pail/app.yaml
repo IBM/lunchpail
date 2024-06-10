@@ -5,7 +5,7 @@ metadata:
 spec:
   api: workqueue
   role: worker
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/jaas-workerpool-worker-alpine-component:" .Chart.AppVersion }}
+  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/worker-alpine:" .Chart.AppVersion }}
   code:
     - name: main.sh
       source: |
