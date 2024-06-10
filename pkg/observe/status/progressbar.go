@@ -14,7 +14,7 @@ import (
 // map from task being processed to percent completion
 type Progress struct {
 	numbars int
-	bars    *sync.Map
+	bars    *sync.Map // map from task name (string) to percent completion (float64)
 }
 
 func (msg *Message) isProgressBar() bool {
