@@ -42,20 +42,20 @@
     {{- include "watcher/volumeMount" . | indent 4 }}
   resources:
     limits:
-      {{- if ne (.Values.workers.cpu | quote) "\"auto\"" }}
+      {{- if and .Values.cpu (ne (.Values.workers.cpu | quote) "\"auto\"") (ne (.Values.workers.cpu | quote) "0") }}
       cpu: {{ .Values.workers.cpu }}
       {{- end }}
-      {{- if ne (.Values.workers.memory | quote) "\"auto\"" }}
+      {{- if and .Values.memory (ne (.Values.workers.memory | quote) "\"auto\"") (ne (.Values.workers.memory | quote) "0") }}
       memory: {{ .Values.workers.memory }}
       {{- end }}
       {{- if and (.Values.workers.gpu) (gt .Values.workers.gpu 0) }}
       nvidia.com/gpu: {{ .Values.workers.gpu }}
       {{- end }}
     requests:
-      {{- if ne (.Values.workers.cpu | quote) "\"auto\"" }}
+      {{- if and .Values.cpu (ne (.Values.workers.cpu | quote) "\"auto\"") (ne (.Values.workers.cpu | quote) "0") }}
       cpu: {{ .Values.workers.cpu }}
       {{- end }}
-      {{- if ne (.Values.workers.memory | quote) "\"auto\"" }}
+      {{- if and .Values.memory (ne (.Values.workers.memory | quote) "\"auto\"") (ne (.Values.workers.memory | quote) "0") }}
       memory: {{ .Values.workers.memory }}
       {{- end }}
       {{- if and (.Values.workers.gpu) (gt .Values.workers.gpu 0) }}
