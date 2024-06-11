@@ -18,7 +18,9 @@ else taskprefix=task
 fi
 echo "got value taskprefix=$taskprefix"
 
-printenv
+if [[ -n "$DEBUG" ]]
+then printenv
+fi
 
 config=/tmp/rclone.conf
 remote=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/inbox
