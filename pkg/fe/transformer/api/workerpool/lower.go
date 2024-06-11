@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
@@ -15,7 +16,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]llir.Yaml, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) ([]llir.Yaml, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -29,7 +30,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 		"-",
 	)
 
-	sizing := api.WorkerpoolSizing(pool, app)
+	sizing := api.WorkerpoolSizing(pool, app, opts)
 	volumes, volumeMounts, envFroms, initContainers, dataseterr := api.DatasetsB64(app, queueSpec)
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
@@ -109,10 +110,10 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	opts := linker.TemplateOptions{}
-	opts.OverrideValues = values
-	opts.Verbose = verbose
-	yaml, err := linker.Template(releaseName, namespace, templatePath, "", opts)
+	topts := linker.TemplateOptions{}
+	topts.OverrideValues = values
+	topts.Verbose = verbose
+	yaml, err := linker.Template(releaseName, namespace, templatePath, "", topts)
 	if err != nil {
 		return yamls, err
 	}

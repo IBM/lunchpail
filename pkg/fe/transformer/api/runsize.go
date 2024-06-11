@@ -1,6 +1,9 @@
 package api
 
-import "lunchpail.io/pkg/ir/hlir"
+import (
+	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/ir/hlir"
+)
 
 type RunSizeConfig struct {
 	Workers int
@@ -14,21 +17,26 @@ type RunConfigs map[hlir.TShirtSize]RunSizeConfig
 var defaultConfig = RunConfigs{
 	hlir.AutoSize: {1, "auto", "auto", 0},
 	hlir.XxsSize:  {1, "500m", "500Mi", 0},
-	hlir.XsSize:   {1, "1", "2Gi", 1},
-	hlir.SmSize:   {2, "1", "4Gi", 1},
-	hlir.MdSize:   {4, "2", "8Gi", 1},
-	hlir.LgSize:   {8, "4", "16Gi", 1},
-	hlir.XlSize:   {20, "4", "32Gi", 1},
-	hlir.XxlSize:  {40, "8", "64Gi", 1},
+	hlir.XsSize:   {1, "1", "2Gi", 0},
+	hlir.SmSize:   {2, "1", "4Gi", 0},
+	hlir.MdSize:   {4, "2", "8Gi", 0},
+	hlir.LgSize:   {8, "4", "16Gi", 0},
+	hlir.XlSize:   {20, "4", "32Gi", 0},
+	hlir.XxlSize:  {40, "8", "64Gi", 0},
 }
 
-func ApplicationSizing(app hlir.Application) RunSizeConfig {
+func ApplicationSizing(app hlir.Application, opts assembly.Options) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
 	sizing := config[hlir.AutoSize]
 	if app.Spec.MinSize != "" {
 		sizing = config[app.Spec.MinSize]
+	}
+
+	if opts.HasGpuSupport {
+		// TODO gpu count...
+		sizing.Gpu = 1
 	}
 
 	if app.Spec.SupportsGpu != true {
@@ -40,12 +48,17 @@ func ApplicationSizing(app hlir.Application) RunSizeConfig {
 
 // Applications can specify a minSize... so take the max of that and
 // what the WorkerPool specifies
-func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application) RunSizeConfig {
+func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application, opts assembly.Options) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
 	size := hlir.MaxTShirtSize(app.Spec.MinSize, pool.Spec.Workers.Size)
 	sizing := config[size]
+
+	if opts.HasGpuSupport {
+		// TODO gpu count...
+		sizing.Gpu = 1
+	}
 
 	if app.Spec.SupportsGpu != true {
 		sizing.Gpu = 0

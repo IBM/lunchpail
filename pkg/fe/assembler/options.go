@@ -1,8 +1,6 @@
 package assembler
 
-import (
-	"lunchpail.io/pkg/assembly"
-)
+import "lunchpail.io/pkg/assembly"
 
 type Options struct {
 	Name            string

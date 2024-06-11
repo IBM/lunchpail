@@ -15,7 +15,7 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&options.Queue, "queue", "", "", "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
 	cmd.Flags().BoolVarP(&options.ClusterIsOpenShift, "openshift", "t", false, "Include support for OpenShift")
-	cmd.Flags().BoolVarP(&options.HasGpuSupport, "gpu", "", false, "Include Nvidia GPU support")
+	cmd.Flags().BoolVarP(&options.HasGpuSupport, "gpu", "", false, "Run with GPUs (if supported by the application)")
 
 	cmd.Flags().StringSliceVarP(&options.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
 	cmd.Flags().StringVarP(&options.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")

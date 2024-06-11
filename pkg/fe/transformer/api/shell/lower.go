@@ -2,6 +2,7 @@ package shell
 
 import (
 	"fmt"
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
@@ -13,7 +14,7 @@ import (
 	"strings"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, verbose bool) ([]string, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) ([]string, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -24,7 +25,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		component = "shell"
 	}
 
-	sizing := api.ApplicationSizing(app)
+	sizing := api.ApplicationSizing(app, opts)
 	volumes, volumeMounts, envFroms, _, dataseterr := api.DatasetsB64(app, queueSpec)
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
@@ -93,9 +94,9 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	opts := linker.TemplateOptions{}
-	opts.OverrideValues = values
-	yaml, err := linker.Template(runname, namespace, templatePath, "", opts)
+	topts := linker.TemplateOptions{}
+	topts.OverrideValues = values
+	yaml, err := linker.Template(runname, namespace, templatePath, "", topts)
 	if err != nil {
 		return []string{}, err
 	}

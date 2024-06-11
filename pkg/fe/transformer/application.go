@@ -1,6 +1,7 @@
 package transformer
 
 import (
+	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/shell"
 	"lunchpail.io/pkg/ir/hlir"
@@ -8,7 +9,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, verbose bool) ([]string, error) {
+func lowerApplications(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts assembly.Options, verbose bool) ([]string, error) {
 	yamls := []string{}
 
 	for _, r := range model.Applications {
@@ -20,7 +21,7 @@ func lowerApplications(assemblyName, runname, namespace string, model hlir.AppMo
 			// handlers.
 			continue
 		case hlir.ShellApi:
-			if tyamls, err := shell.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, verbose); err != nil {
+			if tyamls, err := shell.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 				return yamls, err
 			} else {
 				yamls = slices.Concat(yamls, tyamls)

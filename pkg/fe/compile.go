@@ -60,7 +60,7 @@ func Compile(opts CompileOptions) (Linked, error) {
 		return Linked{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return Linked{}, err
-	} else if llir, err := transformer.Lower(assemblyName, runname, namespace, hlir, queueSpec, opts.Verbose); err != nil {
+	} else if llir, err := transformer.Lower(assemblyName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.AssemblyOptions, opts.Verbose); err != nil {
 		return Linked{}, err
 	} else {
 		return Linked{
