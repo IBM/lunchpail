@@ -77,6 +77,7 @@ $testapp up \
          $APP \
          $GPU \
          $LP_ARGS \
+         --create-namespace \
          --set global.arch=$ARCH \
          --set kubernetes.context=kind-lunchpail \
          --set cosAccessKey=$COS_ACCESS_KEY \

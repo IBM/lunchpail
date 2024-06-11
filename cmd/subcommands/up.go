@@ -27,6 +27,7 @@ func newUpCmd() *cobra.Command {
 	var verboseFlag bool
 	var dryrunFlag bool
 	var watchFlag bool
+	var createNamespace bool
 
 	var cmd = &cobra.Command{
 		Use:   "up",
@@ -39,14 +40,13 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "After deployment, watch for status updates")
+	cmd.Flags().BoolVarP(&createNamespace, "create-namespace", "N", false, "Create a new Kubernetes namespace")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
 		if err != nil {
 			return err
 		}
-
-		createNamespace := !dryrunFlag
 
 		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue, HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost}
 		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, CreateNamespace: createNamespace, Verbose: verboseFlag}

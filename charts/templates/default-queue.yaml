@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Values.taskqueue.dataset }}
+  namespace: {{ .Values.namespace.user }}
   labels:
     app.kubernetes.io/component: taskqueue
     app.kubernetes.io/instance: {{ .Release.Name }}
