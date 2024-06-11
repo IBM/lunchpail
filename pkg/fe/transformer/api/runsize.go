@@ -26,7 +26,7 @@ func ApplicationSizing(app hlir.Application) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
-	sizing := config[hlir.XxsSize]
+	sizing := config[hlir.AutoSize]
 	if app.Spec.MinSize != "" {
 		sizing = config[app.Spec.MinSize]
 	}
