@@ -28,6 +28,5 @@ func gatherRepoSecrets(cliSecrets []string) ([]hlir.RepoSecret, error) {
 		}
 	}
 
-	fmt.Printf("!!!!!!!!!! '%v'\n", secrets)
 	return secrets, nil
 }
