@@ -67,8 +67,7 @@ export LP_SLEEP_BEFORE_EXIT=10
 /tmp/lunchpail assemble -v \
                -o $testapp \
                $branch \
-               --set github_ibm_com.secret.user=$AI_FOUNDATION_GITHUB_USER \
-               --set github_ibm_com.secret.pat=BOGUSBOGUSBOGUS \
+               --repo-secret $AI_FOUNDATION_GITHUB_USER:$AI_FOUNDATION_GITHUB_PAT@https://github.ibm.com \
                $2
 
 $testapp up \
@@ -81,5 +80,4 @@ $testapp up \
          --set global.arch=$ARCH \
          --set kubernetes.context=kind-lunchpail \
          --set cosAccessKey=$COS_ACCESS_KEY \
-         --set cosSecretKey=$COS_SECRET_KEY \
-         --set github_ibm_com.secret.pat=$AI_FOUNDATION_GITHUB_PAT
+         --set cosSecretKey=$COS_SECRET_KEY

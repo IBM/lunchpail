@@ -12,6 +12,7 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	var options assembly.Options
 
 	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
+	cmd.Flags().StringSliceVarP(&options.RepoSecrets, "repo-secret", "r", []string{}, "Of the form <user>:<pat>@<githubUrl> e.g. me:3333@https://github.com")
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&options.Queue, "queue", "", "", "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
 	cmd.Flags().BoolVarP(&options.ClusterIsOpenShift, "openshift", "t", false, "Include support for OpenShift")
@@ -48,7 +49,12 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue, HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost}
+		repoSecrets, err := cmd.Flags().GetStringSlice("repo-secret")
+		if err != nil {
+			return err
+		}
+
+		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, RepoSecrets: repoSecrets, ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue, HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost}
 		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, CreateNamespace: createNamespace, Verbose: verboseFlag}
 
 		return boot.Up(boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})

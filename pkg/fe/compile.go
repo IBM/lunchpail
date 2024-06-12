@@ -51,14 +51,14 @@ func Compile(opts CompileOptions) (Linked, error) {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, queueSpec, err := linker.Configure(assemblyName, runname, namespace, templatePath, internalS3Port, opts.ConfigureOptions)
+	yamlValues, dashdashSetValues, repoSecrets, queueSpec, err := linker.Configure(assemblyName, runname, namespace, templatePath, internalS3Port, opts.ConfigureOptions)
 	if err != nil {
 		return Linked{}, err
 	}
 
 	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{OverrideValues: dashdashSetValues, Verbose: opts.Verbose}); err != nil {
 		return Linked{}, err
-	} else if hlir, err := parser.Parse(yaml); err != nil {
+	} else if hlir, err := parser.Parse(yaml, repoSecrets); err != nil {
 		return Linked{}, err
 	} else if llir, err := transformer.Lower(assemblyName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.AssemblyOptions, opts.Verbose); err != nil {
 		return Linked{}, err

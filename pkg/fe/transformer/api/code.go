@@ -11,14 +11,15 @@ import (
 
 type data map[string]string
 
-func codeFromGit(namespace, repo string, repoSecrets []hlir.RepoSecret) (string, string) {
+// returns (repo, user, pat)
+func codeFromGit(namespace, repo string, repoSecrets []hlir.RepoSecret) (string, string, string) {
 	// see if we have a matching RepoSecret
 	repoSecretIdx := slices.IndexFunc(repoSecrets, func(rs hlir.RepoSecret) bool { return strings.Contains(repo, rs.Spec.Repo) })
 	if repoSecretIdx >= 0 {
-		return repo, repoSecrets[repoSecretIdx].Spec.Secret.Name
+		return repo, repoSecrets[repoSecretIdx].Spec.User, repoSecrets[repoSecretIdx].Spec.Pat
 	}
 
-	return repo, ""
+	return repo, "", ""
 }
 
 func codeFromLiteral(codeSpecs []hlir.Code) (data, string) {
@@ -34,30 +35,30 @@ func codeFromLiteral(codeSpecs []hlir.Code) (data, string) {
 	return cm_data, cm_mount_path
 }
 
-func code(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, data, string, error) {
+func code(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, string, data, string, error) {
 	if len(application.Spec.Code) > 0 {
 		// then the Application specifies a `spec.code` literal
 		// (i.e. inlined code directly in the Application yaml)
 		d, mount_path := codeFromLiteral(application.Spec.Code)
-		return "", "", d, mount_path, nil
+		return "", "", "", d, mount_path, nil
 	} else if application.Spec.Repo != "" {
 		// otherwise the Application specifies code via a reference to
 		// a github `spec.repo`
-		repo, secretName := codeFromGit(namespace, application.Spec.Repo, repoSecrets)
-		return repo, secretName, data{}, "", nil
+		repo, repoUser, repoPat := codeFromGit(namespace, application.Spec.Repo, repoSecrets)
+		return repo, repoUser, repoPat, data{}, "", nil
 	} else if application.Spec.Command == "" {
-		return "", "", data{}, "", fmt.Errorf("Application spec is missing either `code` or `repo` field")
+		return "", "", "", data{}, "", fmt.Errorf("Application spec is missing either `code` or `repo` field")
 	} else {
-		return "", "", data{}, "", nil
+		return "", "", "", data{}, "", nil
 	}
 }
 
-func CodeB64(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, string, string, error) {
-	a, b, d, e, err := code(application, namespace, repoSecrets)
+func CodeB64(application hlir.Application, namespace string, repoSecrets []hlir.RepoSecret) (string, string, string, string, string, error) {
+	repo, repoUser, repoPat, data, mountPath, err := code(application, namespace, repoSecrets)
 	if err != nil {
-		return a, b, "", e, err
+		return "", "", "", "", "", err
 	}
 
-	ds, err := util.ToJsonB64(d)
-	return a, b, ds, e, err
+	ds, err := util.ToJsonB64(data)
+	return repo, repoUser, repoPat, ds, mountPath, err
 }

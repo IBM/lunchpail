@@ -1,13 +1,14 @@
 package hlir
 
+type RepoSecretSpec struct {
+	Repo string
+	User string
+	Pat  string
+}
+
 type RepoSecret struct {
 	ApiVersion string `yaml:"apiVersion"`
 	Kind       string
 	Metadata   Metadata
-	Spec       struct {
-		Repo   string
-		Secret struct {
-			Name string
-		}
-	}
+	Spec       RepoSecretSpec
 }

@@ -10,6 +10,7 @@ import (
 type Options struct {
 	Namespace          string   `yaml:",omitempty"`
 	ClusterIsOpenShift bool     `yaml:"clusterIsOpenShift,omitempty"`
+	RepoSecrets        []string `yaml:"repoSecrets,omitempty"`
 	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
 	OverrideValues     []string `yaml:"overrideValues,omitempty"`
 	Queue              string   `yaml:",omitempty"`

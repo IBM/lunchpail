@@ -8,11 +8,8 @@
     {{ include "workdir/env" . | indent 4 }}
     - name: REPO
       value: {{ .Values.workdir.repo }}
-  {{- if .Values.workdir.secretName }}
   envFrom:
-    - secretRef:
-        name: {{ print .Values.workdir.secretName }}
-  {{- end }}
+    {{ include "workdir/envFrom" . | indent 4 }}
 {{- end }}
 
 {{- if .Values.workdir.cm.data }}

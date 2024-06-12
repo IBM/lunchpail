@@ -44,3 +44,23 @@ metadata:
 data:
 {{- .Values.workdir.cm.data | b64dec | fromJson | toYaml | nindent 2 }}
 {{- end }}
+
+{{- if and .Values.workdir.user .Values.workdir.pat }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ print (.Release.Name | trunc 41) "-wp-workdir" }}
+type: Opaque
+stringData:
+  user: {{ .Values.workdir.user }}
+  PAT_USER: {{ .Values.workdir.user }}
+  pat: {{ .Values.workdir.pat }}
+  PAT: {{ .Values.workdir.pat }}
+{{- end }}
+
+{{- define "workdir/envFrom" }}
+{{- if and .Values.workdir.user .Values.workdir.pat }}
+- secretRef:
+    name: {{ print (.Release.Name | trunc 41) "-wp-workdir" }}
+{{- end }}
+{{- end }}

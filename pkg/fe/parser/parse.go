@@ -10,9 +10,11 @@ import (
 	"strings"
 )
 
-func Parse(yamls string) (hlir.AppModel, error) {
+func Parse(yamls string, repoSecrets []hlir.RepoSecret) (hlir.AppModel, error) {
 	model := hlir.AppModel{}
 	d := yaml.NewDecoder(strings.NewReader(yamls))
+
+	model.RepoSecrets = repoSecrets
 
 	for {
 		var m hlir.UnknownResource
@@ -60,15 +62,6 @@ func Parse(yamls string) (hlir.AppModel, error) {
 				continue
 			} else {
 				model.ProcessS3Objects = append(model.ProcessS3Objects, r)
-			}
-
-		case "PlatformRepoSecret":
-			var r hlir.RepoSecret
-			if err := yaml.Unmarshal(bytes, &r); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: skipping yaml with invalid RepoSecret resource %v", err)
-				continue
-			} else {
-				model.RepoSecrets = append(model.RepoSecrets, r)
 			}
 
 		case "WorkerPool":

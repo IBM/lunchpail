@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"slices"
 
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -16,14 +18,14 @@ type ConfigureOptions struct {
 	Verbose         bool
 }
 
-func Configure(appname, runname, namespace, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, queue.Spec, error) {
+func Configure(appname, runname, namespace, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, []hlir.RepoSecret, queue.Spec, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := assembly.RestoreOptions(templatePath)
 	if err != nil {
-		return "", []string{}, queue.Spec{}, err
+		return "", []string{}, nil, queue.Spec{}, err
 	} else {
 		if opts.AssemblyOptions.Namespace == "" {
 			opts.AssemblyOptions.Namespace = shrinkwrappedOptions.Namespace
@@ -65,17 +67,17 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	queueSpec, err := queue.ParseFlag(opts.AssemblyOptions.Queue, runname, internalS3Port)
 	if err != nil {
-		return "", []string{}, queue.Spec{}, err
+		return "", []string{}, nil, queue.Spec{}, err
 	}
 
 	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.AssemblyOptions.ImagePullSecret)
 	if ipsErr != nil {
-		return "", []string{}, queue.Spec{}, ipsErr
+		return "", []string{}, nil, queue.Spec{}, ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", []string{}, queue.Spec{}, err
+		return "", []string{}, nil, queue.Spec{}, err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -172,5 +174,10 @@ lunchpail_internal:
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.AssemblyOptions.OverrideValues)
 	}
 
-	return yaml, opts.AssemblyOptions.OverrideValues, queueSpec, nil
+	repoSecrets, err := gatherRepoSecrets(slices.Concat(opts.AssemblyOptions.RepoSecrets, shrinkwrappedOptions.RepoSecrets))
+	if err != nil {
+		return "", []string{}, nil, queue.Spec{}, err
+	}
+
+	return yaml, opts.AssemblyOptions.OverrideValues, repoSecrets, queueSpec, nil
 }

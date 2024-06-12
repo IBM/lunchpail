@@ -30,7 +30,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
-	workdirRepo, workdirSecretName, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
+	workdirRepo, workdirUser, workdirPat, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
 
 	if codeerr != nil {
 		return []string{}, codeerr
@@ -78,7 +78,8 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.repo=" + workdirRepo,
-		"workdir.secretName=" + workdirSecretName,
+		"workdir.user=" + workdirUser,
+		"workdir.pat=" + workdirPat,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
