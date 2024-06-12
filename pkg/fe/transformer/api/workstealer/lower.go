@@ -10,13 +10,14 @@ import (
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) ([]string, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Yaml, error) {
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
-		return []string{}, err
+		return llir.Yaml{}, err
 	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
 	} else {
@@ -53,8 +54,8 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 	topts.OverrideValues = values
 	yaml, err := linker.Template(runname, namespace, templatePath, "", topts)
 	if err != nil {
-		return []string{}, err
+		return llir.Yaml{}, err
 	}
 
-	return []string{yaml}, nil
+	return llir.Yaml{Yamls: []string{yaml}}, nil
 }

@@ -3,10 +3,11 @@ package transformer
 import (
 	"gopkg.in/yaml.v3"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 )
 
 // HLIR -> LLIR for non-lunchpail resources
-func lowerOthers(assemblyName, runname string, model hlir.AppModel) ([]string, error) {
+func lowerGlobals(assemblyName, runname string, model hlir.AppModel) (llir.Yaml, error) {
 	yamls := []string{}
 
 	for _, r := range model.Others {
@@ -34,10 +35,10 @@ func lowerOthers(assemblyName, runname string, model hlir.AppModel) ([]string, e
 
 		yaml, err := yaml.Marshal(r)
 		if err != nil {
-			return []string{}, err
+			return llir.Yaml{}, err
 		}
 		yamls = append(yamls, string(yaml))
 	}
 
-	return yamls, nil
+	return llir.Yaml{Yamls: yamls}, nil
 }

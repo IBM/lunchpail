@@ -119,7 +119,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 		return yamls, err
 	}
 
-	context := pool.Spec.Target.Kubernetes.Context
-
-	return append(yamls, llir.Yaml{Yamls: []string{yaml}, Context: context}), nil
+	return append(yamls, llir.Yaml{Yamls: []string{yaml}}), nil
 }

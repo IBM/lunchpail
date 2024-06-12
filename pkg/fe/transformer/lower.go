@@ -27,17 +27,13 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 		return llir.LLIR{}, err
 	}
 
-	others, err := lowerOthers(assemblyName, runname, model)
+	globals, err := lowerGlobals(assemblyName, runname, model)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
 	return llir.LLIR{
-		CoreYaml: llir.Yaml{Yamls: others, Context: ""},
-		AppYaml: slices.Concat(
-			[]llir.Yaml{llir.Yaml{Yamls: apps, Context: ""}},
-			[]llir.Yaml{llir.Yaml{Yamls: dispatchers, Context: ""}},
-			pools,
-		),
+		GlobalYaml:     globals,
+		ComponentYamls: slices.Concat(apps, dispatchers, pools),
 	}, nil
 }

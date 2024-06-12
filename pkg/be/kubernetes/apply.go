@@ -64,7 +64,9 @@ func ApplyOperation(ir llir.LLIR, namespace, context string, operation Operation
 			// delete in reverse order of apply
 			idx = len(yamls) - 1 - idx
 		}
-		if err := apply(yamls[idx].Yaml, namespace, yamls[idx].Context, operation); err != nil {
+
+		context := "" // TODO... from command line
+		if err := apply(yamls[idx].Yaml, namespace, context, operation); err != nil {
 			return err
 		}
 	}

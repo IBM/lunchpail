@@ -7,6 +7,7 @@ import (
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 	"os"
@@ -14,7 +15,7 @@ import (
 	"strings"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) ([]string, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Yaml, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -33,20 +34,20 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 	workdirRepo, workdirUser, workdirPat, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
 
 	if codeerr != nil {
-		return []string{}, codeerr
+		return llir.Yaml{}, codeerr
 	} else if dataseterr != nil {
-		return []string{}, dataseterr
+		return llir.Yaml{}, dataseterr
 	} else if enverr != nil {
-		return []string{}, enverr
+		return llir.Yaml{}, enverr
 	} else if errsc != nil {
-		return []string{}, errsc
+		return llir.Yaml{}, errsc
 	} else if errcsc != nil {
-		return []string{}, errcsc
+		return llir.Yaml{}, errcsc
 	}
 
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
-		return []string{}, err
+		return llir.Yaml{}, err
 	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
 	} else {
@@ -97,8 +98,8 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 	topts.OverrideValues = values
 	yaml, err := linker.Template(runname, namespace, templatePath, "", topts)
 	if err != nil {
-		return []string{}, err
+		return llir.Yaml{}, err
 	}
 
-	return []string{yaml}, nil
+	return llir.Yaml{Yamls: []string{yaml}}, nil
 }
