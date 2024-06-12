@@ -117,7 +117,11 @@ func startWatch(handler []string, client *minio.Client, bucket, prefix, remote, 
 
 				err = download(client, bucket, in, localprocessing)
 				if err != nil {
-					fmt.Printf("Internal Error copying task to worker processing %s %s->%s: %v\n", bucket, in, localprocessing, err)
+					if !strings.Contains(err.Error(), "key does not exist") {
+						// we ignore "key does not exist" errors, as these result from the work
+						// we thought we were assigned having been stolen by the workstealer
+						fmt.Printf("Internal Error copying task to worker processing %s %s->%s: %v\n", bucket, in, localprocessing, err)
+					}
 					continue
 				}
 
