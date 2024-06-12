@@ -25,9 +25,9 @@ metadata:
     app.kubernetes.io/managed-by: lunchpail.io
 data:
   workstealer.sh: |
-{{ .Files.Get "src/workstealer/workstealer.sh" | indent 4 }}
+{{ .Files.Get "src/workstealer.sh" | indent 4 }}
     
-{{- if .Values.s3.enabled }}
+{{- if .Values.internalS3.enabled }}
   minio.sh: |
-{{ .Files.Get "src/workstealer/minio.sh" | indent 4 }}
+{{ .Files.Get "src/minio.sh" | indent 4 }}
 {{- end }}

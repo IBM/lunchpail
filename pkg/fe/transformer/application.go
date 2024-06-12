@@ -4,6 +4,7 @@ import (
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/shell"
+	"lunchpail.io/pkg/fe/transformer/api/workstealer"
 	"lunchpail.io/pkg/ir/hlir"
 	"slices"
 )
@@ -13,14 +14,14 @@ func lowerApplications(assemblyName, runname, namespace string, model hlir.AppMo
 	yamls := []string{}
 
 	for _, r := range model.Applications {
-		switch r.Spec.Api {
-		case hlir.WorkqueueApi:
-			// TODO: We implicitly handle this in
-			// charts/template/workstealer. Perhaps we can
-			// move that to be parallel to the other api
-			// handlers.
-			continue
-		case hlir.ShellApi:
+		switch {
+		case r.Spec.Role == hlir.WorkerRole:
+			if tyamls, err := workstealer.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+				return yamls, err
+			} else {
+				yamls = slices.Concat(yamls, tyamls)
+			}
+		case r.Spec.Api == hlir.ShellApi:
 			if tyamls, err := shell.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 				return yamls, err
 			} else {

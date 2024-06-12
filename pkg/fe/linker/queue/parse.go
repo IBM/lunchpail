@@ -7,12 +7,13 @@ import (
 
 func ParseFlag(flag, runname string, internalS3Port int) (Spec, error) {
 	spec := Spec{
-		flag,  // name
-		false, // auto
-		flag,  // bucket
-		"",    // endpoint
-		"",    // accessKey
-		"",    // secretKey
+		flag,           // name
+		false,          // auto
+		flag,           // bucket
+		"",             // endpoint
+		internalS3Port, // port
+		"",             // accessKey
+		"",             // secretKey
 	}
 
 	if _, err := parseFlagAsRclone(flag, &spec); err != nil {

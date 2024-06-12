@@ -1,4 +1,4 @@
-{{- if .Values.s3.enabled }}
+{{- if .Values.internalS3.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -14,7 +14,7 @@ spec:
   ports:
   - name: api
     protocol: TCP
-    port: {{ .Values.s3.port }}
+    port: {{ .Values.internalS3.port }}
     targetPort: 9000
   # - name: console
   #   protocol: TCP

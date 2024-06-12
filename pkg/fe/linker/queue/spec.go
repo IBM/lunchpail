@@ -5,6 +5,7 @@ type Spec struct {
 	Auto      bool
 	Bucket    string
 	Endpoint  string
+	Port      int
 	AccessKey string
 	SecretKey string
 }

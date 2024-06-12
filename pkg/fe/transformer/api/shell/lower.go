@@ -47,9 +47,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
 		return []string{}, err
-	}
-
-	if verbose {
+	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
 	} else {
 		defer os.RemoveAll(templatePath)
