@@ -10,25 +10,25 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts assembly.Options, verbose bool) ([]llir.Yaml, error) {
-	yamls := []llir.Yaml{}
+func lowerApplications(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts assembly.Options, verbose bool) ([]llir.Component, error) {
+	components := []llir.Component{}
 
 	for _, r := range model.Applications {
 		switch {
 		case r.Spec.Role == hlir.WorkerRole:
-			if tyaml, err := workstealer.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
-				return yamls, err
+			if component, err := workstealer.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+				return components, err
 			} else {
-				yamls = append(yamls, tyaml)
+				components = append(components, component)
 			}
 		case r.Spec.Api == hlir.ShellApi:
-			if tyaml, err := shell.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
-				return yamls, err
+			if component, err := shell.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+				return components, err
 			} else {
-				yamls = append(yamls, tyaml)
+				components = append(components, component)
 			}
 		}
 	}
 
-	return yamls, nil
+	return components, nil
 }

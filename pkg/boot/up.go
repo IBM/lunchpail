@@ -13,7 +13,7 @@ func upDown(opts UpOptions, operation kubernetes.Operation) error {
 	if linked, err := fe.Compile(opts); err != nil {
 		return err
 	} else if opts.DryRun {
-		fmt.Printf(linked.Ir.Yaml())
+		fmt.Printf(linked.Ir.Marshal())
 	} else {
 		if err := kubernetes.ApplyOperation(linked.Ir, linked.Namespace, "", operation); err != nil {
 			return err

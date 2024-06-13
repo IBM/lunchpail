@@ -1,3 +1,4 @@
+{{- if eq .Values.extract "config" }}
 # a configmap to house the watcher.sh script
 apiVersion: v1
 kind: ConfigMap
@@ -15,3 +16,4 @@ data:
 {{ .Files.Get "prestop.sh" | indent 4 }}
   settings.sh: |
 {{ .Files.Get "settings.sh" | indent 4 }}
+{{- end }}

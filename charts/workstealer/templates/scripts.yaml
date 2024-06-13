@@ -12,6 +12,7 @@
   mountPath: "/opt/lunchpail/workstealer/scripts"
 {{- end }}
 
+{{- if eq .Values.extract "config" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -30,4 +31,5 @@ data:
 {{- if .Values.internalS3.enabled }}
   minio.sh: |
 {{ .Files.Get "src/minio.sh" | indent 4 }}
+{{- end }}
 {{- end }}

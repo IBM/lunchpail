@@ -92,6 +92,10 @@ type Model struct {
 	FailedTasks     []AssignedTask
 }
 
+func (model *Model) nFinishedTasks() int {
+	return len(model.FinishedTasks)
+}
+
 func (model *Model) nUnassignedTasks() int {
 	return len(model.UnassignedTasks)
 }
@@ -597,7 +601,7 @@ func rebalance(model Model) bool {
 // If the dispatcher is done and there are no more outstanding tasks,
 // then touch kill files in the worker inboxes.
 func touchKillFiles(model Model) {
-	if model.DispatcherDone && model.nTasksRemaining() == 0 {
+	if model.DispatcherDone && model.nFinishedTasks() > 0 && model.nTasksRemaining() == 0 {
 		for _, worker := range model.LiveWorkers {
 			if !worker.killfilePresent {
 				TouchKillFile(worker)
@@ -607,7 +611,7 @@ func touchKillFiles(model Model) {
 }
 
 func readyToBye(model Model) bool {
-	return model.DispatcherDone && model.nTasksRemaining() == 0 && len(model.LiveWorkers) == 0
+	return model.DispatcherDone && model.nFinishedTasks() > 0 && model.nTasksRemaining() == 0 && len(model.LiveWorkers) == 0
 }
 
 // Assumed to be called every time something has changed in the

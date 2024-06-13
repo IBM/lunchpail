@@ -1,3 +1,4 @@
+{{- if eq .Values.extract "pods" }}
 {{- if .Values.mcad.enabled }}
 apiVersion: mcad.ibm.com/v1beta1
 kind: AppWrapper
@@ -19,4 +20,5 @@ spec:
           {{ include "pod" . | indent 10 }}
 {{- else }}
 {{ include "pod" . }}
+{{- end }}
 {{- end }}

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
@@ -14,10 +13,10 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Yaml, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
-		return llir.Yaml{}, err
+		return llir.Component{}, err
 	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
 	} else {
@@ -50,12 +49,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		fmt.Fprintf(os.Stderr, "Workstealer values\n%s\n", "\n  -"+strings.Join(values, "\n  - "))
 	}
 
-	topts := linker.TemplateOptions{}
-	topts.OverrideValues = values
-	yaml, err := linker.Template(runname, namespace, templatePath, "", topts)
-	if err != nil {
-		return llir.Yaml{}, err
-	}
-
-	return llir.Yaml{Yamls: []string{yaml}}, nil
+	return api.GenerateComponent(runname, namespace, templatePath, values, verbose)
 }

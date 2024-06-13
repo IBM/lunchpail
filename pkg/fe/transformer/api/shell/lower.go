@@ -3,7 +3,6 @@ package shell
 import (
 	"fmt"
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
@@ -15,7 +14,7 @@ import (
 	"strings"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Yaml, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -34,20 +33,20 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 	workdirRepo, workdirUser, workdirPat, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
 
 	if codeerr != nil {
-		return llir.Yaml{}, codeerr
+		return llir.Component{}, codeerr
 	} else if dataseterr != nil {
-		return llir.Yaml{}, dataseterr
+		return llir.Component{}, dataseterr
 	} else if enverr != nil {
-		return llir.Yaml{}, enverr
+		return llir.Component{}, enverr
 	} else if errsc != nil {
-		return llir.Yaml{}, errsc
+		return llir.Component{}, errsc
 	} else if errcsc != nil {
-		return llir.Yaml{}, errcsc
+		return llir.Component{}, errcsc
 	}
 
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
-		return llir.Yaml{}, err
+		return llir.Component{}, err
 	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
 	} else {
@@ -94,12 +93,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	topts := linker.TemplateOptions{}
-	topts.OverrideValues = values
-	yaml, err := linker.Template(runname, namespace, templatePath, "", topts)
-	if err != nil {
-		return llir.Yaml{}, err
-	}
-
-	return llir.Yaml{Yamls: []string{yaml}}, nil
+	return api.GenerateComponent(runname, namespace, templatePath, values, verbose)
 }

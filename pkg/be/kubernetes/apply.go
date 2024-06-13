@@ -5,6 +5,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type Operation string
@@ -15,6 +16,7 @@ const (
 )
 
 func apply(yaml, namespace, context string, operation Operation) error {
+	yaml = strings.TrimSpace(yaml)
 	if len(yaml) == 0 {
 		// Nothing to do. If we don't short-circuit this path,
 		// kubectl complains with "error: no objects passed to
@@ -58,7 +60,11 @@ func apply(yaml, namespace, context string, operation Operation) error {
 }
 
 func ApplyOperation(ir llir.LLIR, namespace, context string, operation Operation) error {
-	yamls := ir.Yamlset()
+	yamls, err := ir.MarshalArray()
+	if err != nil {
+		return err
+	}
+
 	for idx := range yamls {
 		if operation == DeleteIt {
 			// delete in reverse order of apply
@@ -66,7 +72,7 @@ func ApplyOperation(ir llir.LLIR, namespace, context string, operation Operation
 		}
 
 		context := "" // TODO... from command line
-		if err := apply(yamls[idx].Yaml, namespace, context, operation); err != nil {
+		if err := apply(yamls[idx], namespace, context, operation); err != nil {
 			return err
 		}
 	}

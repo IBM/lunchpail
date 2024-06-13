@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
@@ -16,7 +15,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) ([]llir.Yaml, error) {
+func Lower(assemblyName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -37,23 +36,21 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirRepo, workdirUser, workdirPat, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
 
-	yamls := []llir.Yaml{}
-
 	if codeerr != nil {
-		return yamls, codeerr
+		return llir.Component{}, codeerr
 	} else if dataseterr != nil {
-		return yamls, dataseterr
+		return llir.Component{}, dataseterr
 	} else if enverr != nil {
-		return yamls, enverr
+		return llir.Component{}, enverr
 	} else if errsc != nil {
-		return yamls, errsc
+		return llir.Component{}, errsc
 	} else if errcsc != nil {
-		return yamls, errcsc
+		return llir.Component{}, errcsc
 	}
 
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
-		return yamls, err
+		return llir.Component{}, err
 	}
 
 	if verbose {
@@ -64,7 +61,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
 	if err != nil {
-		return yamls, err
+		return llir.Component{}, err
 	}
 
 	values := []string{
@@ -111,13 +108,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	topts := linker.TemplateOptions{}
-	topts.OverrideValues = values
-	topts.Verbose = verbose
-	yaml, err := linker.Template(releaseName, namespace, templatePath, "", topts)
-	if err != nil {
-		return yamls, err
-	}
-
-	return append(yamls, llir.Yaml{Yamls: []string{yaml}}), nil
+	return api.GenerateComponent(releaseName, namespace, templatePath, values, verbose)
 }

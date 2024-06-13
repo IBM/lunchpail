@@ -1,3 +1,4 @@
+{{- if eq .Values.extract "config" }}
 {{- if .Values.expose }}
 apiVersion: v1
 kind: Service
@@ -22,4 +23,5 @@ spec:
     app.kubernetes.io/name: {{ $.Values.name }}
     app.kubernetes.io/instance: {{ $.Values.enclosingRun }}
   {{- end }}
+{{- end }}
 {{- end }}

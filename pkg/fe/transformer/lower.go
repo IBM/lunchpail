@@ -33,7 +33,7 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 	}
 
 	return llir.LLIR{
-		GlobalYaml:     globals,
-		ComponentYamls: slices.Concat(apps, dispatchers, pools),
+		GlobalConfig: globals,
+		Components:   slices.Concat(apps, dispatchers, pools),
 	}, nil
 }

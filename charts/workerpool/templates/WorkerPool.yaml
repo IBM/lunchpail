@@ -1,3 +1,4 @@
+{{- if eq .Values.extract "job" }}
 {{- if .Values.mcad.enabled }}
 apiVersion: mcad.ibm.com/v1beta1
 kind: AppWrapper
@@ -21,4 +22,5 @@ spec:
           {{ include "job" . | indent 10 }}
 {{- else }}
 {{ include "job" . }}
+{{- end }}
 {{- end }}

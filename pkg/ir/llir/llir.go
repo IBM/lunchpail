@@ -1,44 +1,76 @@
 package llir
 
 import (
-	"slices"
 	"strings"
+
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
-type Yaml struct {
-	Yamls []string
-}
+// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
+type Component struct {
+	// Singleton runners
+	Pods []corev1.Pod
 
-type MarshaledYaml struct {
-	Yaml string
+	// Groups of runners, with group size=_.Spec.Parallelism
+	Jobs []batchv1.Job
+
+	// ConfigMaps, Secrets, etc. Non-runnable things to be applied
+	// to the runners in this Component.
+	Config string
 }
 
 type LLIR struct {
-	GlobalYaml     Yaml
-	ComponentYamls []Yaml
+	// ConfigMaps, Secrets, etc. Non-runnable things to applied to all Components
+	GlobalConfig string
+
+	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
+	Components []Component
 }
 
-func marshal(yaml Yaml) MarshaledYaml {
-	return MarshaledYaml{strings.Join(yaml.Yamls, "\n---\n")}
+func Join(ys []string) string {
+	return strings.Join(ys, "\n---\n")
 }
 
-func (l *LLIR) Yamlset() []MarshaledYaml {
-	ms := []MarshaledYaml{marshal(l.GlobalYaml)}
+func (l *LLIR) MarshalArray() ([]string, error) {
+	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme,
+		scheme.Scheme)
 
-	for _, y := range l.ComponentYamls {
-		ms = append(ms, marshal(y))
+	ys := []string{l.GlobalConfig}
+
+	for _, c := range l.Components {
+		ys = append(ys, c.Config)
+
+		for _, j := range c.Pods {
+			buf := new(strings.Builder)
+			if err := s.Encode(&j, buf); err != nil {
+				return ys, err
+			}
+
+			ys = append(ys, buf.String())
+		}
+
+		for _, j := range c.Jobs {
+			buf := new(strings.Builder)
+			if err := s.Encode(&j, buf); err != nil {
+				return ys, err
+			}
+
+			ys = append(ys, buf.String())
+		}
 	}
 
-	return ms
+	return ys, nil
 }
 
-// This is just to present a single string form of all of the yaml,
+// This is to present a single string form of all of the yaml,
 // e.g. for dry-running.
-func (l *LLIR) Yaml() string {
-	ys := []string{}
-	ys = slices.Concat(ys, l.GlobalYaml.Yamls)
-	for _, y := range l.ComponentYamls {
-		ys = slices.Concat(ys, y.Yamls)
+func (l *LLIR) Marshal() (string, error) {
+	if a, err := l.MarshalArray(); err != nil {
+		return "", err
+	} else {
+		return Join(a), nil
 	}
-	return marshal(Yaml{ys}).Yaml
 }

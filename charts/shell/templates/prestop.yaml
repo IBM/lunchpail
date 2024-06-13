@@ -1,3 +1,4 @@
+{{- if eq .Values.extract "config" }}
 # a configmap to house the lifecycle hook scripts
 {{- if eq .Values.component "workdispatcher" }}
 apiVersion: v1
@@ -14,6 +15,7 @@ metadata:
 data:
   prestop.sh: |
 {{ .Files.Get "prestop.sh" | indent 4 }}
+{{- end }}
 {{- end }}
 
 {{- define "prestop/volume" }}

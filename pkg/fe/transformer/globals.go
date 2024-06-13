@@ -7,8 +7,8 @@ import (
 )
 
 // HLIR -> LLIR for non-lunchpail resources
-func lowerGlobals(assemblyName, runname string, model hlir.AppModel) (llir.Yaml, error) {
-	yamls := []string{}
+func lowerGlobals(assemblyName, runname string, model hlir.AppModel) (string, error) {
+	components := []string{}
 
 	for _, r := range model.Others {
 		maybemetadata, ok := r["metadata"]
@@ -35,10 +35,10 @@ func lowerGlobals(assemblyName, runname string, model hlir.AppModel) (llir.Yaml,
 
 		yaml, err := yaml.Marshal(r)
 		if err != nil {
-			return llir.Yaml{}, err
+			return "", err
 		}
-		yamls = append(yamls, string(yaml))
+		components = append(components, string(yaml))
 	}
 
-	return llir.Yaml{Yamls: yamls}, nil
+	return llir.Join(components), nil
 }

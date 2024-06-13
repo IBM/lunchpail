@@ -56,6 +56,7 @@ func Compile(opts CompileOptions) (Linked, error) {
 		return Linked{}, err
 	}
 
+	defer os.RemoveAll(templatePath)
 	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{OverrideValues: dashdashSetValues, Verbose: opts.Verbose}); err != nil {
 		return Linked{}, err
 	} else if hlir, err := parser.Parse(yaml, repoSecrets); err != nil {

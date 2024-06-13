@@ -29,6 +29,7 @@ workingDir: /workdir
 {{- end }}
 {{- end }}
 
+{{- if eq .Values.extract "config" }}
 {{- if .Values.workdir.cm.data }}
 apiVersion: v1
 kind: ConfigMap
@@ -44,7 +45,9 @@ metadata:
 data:
 {{- .Values.workdir.cm.data | b64dec | fromJson | toYaml | nindent 2 }}
 {{- end }}
+{{- end }}
 
+{{- if eq .Values.extract "config" }}
 {{- if and .Values.workdir.user .Values.workdir.pat }}
 apiVersion: v1
 kind: Secret
@@ -56,6 +59,7 @@ stringData:
   PAT_USER: {{ .Values.workdir.user }}
   pat: {{ .Values.workdir.pat }}
   PAT: {{ .Values.workdir.pat }}
+{{- end }}
 {{- end }}
 
 {{- define "workdir/envFrom" }}

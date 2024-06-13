@@ -54,9 +54,7 @@ func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOp
 		return "", err
 	}
 
-	if !opts.Verbose {
-		defer os.RemoveAll(templatePath)
-	} else {
+	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
 	}
 
