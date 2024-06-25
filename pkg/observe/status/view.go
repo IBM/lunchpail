@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/table"
 	"lunchpail.io/pkg/observe/colors"
+	"lunchpail.io/pkg/observe/events"
 )
 
 func padRight(str string, availableSpace int) string {
@@ -21,7 +22,7 @@ func cellt(N, largestN, maxcells int, box Box) string {
 	return colors.Brown.Render(Nstrp + " " + taskCells(Ncells, box))
 }
 
-func cellf(num, denom int, status WorkerStatus) string {
+func cellf(num, denom int, status events.WorkerStatus) string {
 	frac := fmt.Sprintf("%d/%d", num, denom)
 	return fmt.Sprintf("%s %s", frac, statusCell(status))
 }

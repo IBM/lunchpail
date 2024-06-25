@@ -3,18 +3,14 @@ package status
 import (
 	"container/ring"
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/observe"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe/cpu"
+	"lunchpail.io/pkg/observe/events"
 	"lunchpail.io/pkg/observe/qstat"
 )
 
 func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
-
-	podWatcher, eventWatcher, err := startWatching(app, run, namespace)
-	if err != nil {
-		return c, nil, err
-	}
 
 	model := NewModel()
 	model.AppName = app
@@ -32,22 +28,49 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 		return c, nil, err
 	}
 
+	updates, messages, err := be.StreamRunComponentUpdates(app, run, namespace)
+	if err != nil {
+		return c, nil, err
+	}
 	errgroup.Go(func() error {
-		return model.streamPodUpdates(podWatcher, c)
+		for update := range updates {
+			switch update.Component {
+			case events.WorkStealerComponent:
+				model.WorkStealer = update.Status
+				c <- *model
+			case events.DispatcherComponent:
+				model.Dispatcher = update.Status
+				c <- *model
+			case events.WorkersComponent:
+				pools, err := updateWorker(update, model.Pools)
+				if err != nil {
+					return err
+				}
+				model.Pools = pools
+			}
+		}
+		return nil
+	})
+	errgroup.Go(func() error {
+		for msg := range messages {
+			if model.addMessage(msg) {
+				c <- *model
+			}
+		}
+		return nil
 	})
 
 	errgroup.Go(func() error {
-		return model.streamEventUpdates(run, eventWatcher, c)
-	})
-
-	// TODO: we now launch the worker streamers in response to
-	// updates from the podWatcher (see ./pod.go). We probably
-	// should do the same thing for these two:
-	errgroup.Go(func() error {
-		return model.streamLogUpdatesForComponent(run, namespace, observe.WorkStealerComponent, true, c)
-	})
-	errgroup.Go(func() error {
-		return model.streamLogUpdatesForComponent(run, namespace, observe.DispatcherComponent, false, c)
+		msgs, err := be.StreamRunEvents(app, run, namespace)
+		if err != nil {
+			return err
+		}
+		for msg := range msgs {
+			if model.addMessage(msg) {
+				c <- *model
+			}
+		}
+		return nil
 	})
 
 	errgroup.Go(func() error {

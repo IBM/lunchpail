@@ -17,13 +17,13 @@ type Progress struct {
 	bars    *sync.Map // map from task name (string) to percent completion (float64)
 }
 
-func (msg *Message) isProgressBar() bool {
-	return strings.HasPrefix(msg.message, "ProgressBar")
+func isProgressBar(msg Message) bool {
+	return strings.HasPrefix(msg.Message, "ProgressBar")
 }
 
 func (model *Model) updateProgress(msg Message) bool {
-	if msg.isProgressBar() {
-		fields := strings.Fields(msg.message)
+	if isProgressBar(msg) {
+		fields := strings.Fields(msg.Message)
 		if len(fields) == 3 {
 			task := fields[1]
 			percentStr := fields[2]

@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/observe"
+	"lunchpail.io/pkg/observe/events"
 )
 
 func newLogsCommand() *cobra.Command {
@@ -28,14 +29,14 @@ func newLogsCommand() *cobra.Command {
 				return err
 			}
 
-			comps := []observe.Component{}
+			comps := []events.Component{}
 			for _, component := range components {
 				if component == "workers" {
-					comps = append(comps, observe.WorkersComponent)
+					comps = append(comps, events.WorkersComponent)
 				} else if component == "dispatcher" {
-					comps = append(comps, observe.DispatcherComponent)
+					comps = append(comps, events.DispatcherComponent)
 				} else if component == "workstealer" {
-					comps = append(comps, observe.WorkStealerComponent)
+					comps = append(comps, events.WorkStealerComponent)
 				} else {
 					return fmt.Errorf("Unsupported component %s", component)
 				}

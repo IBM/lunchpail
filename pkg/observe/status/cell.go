@@ -2,24 +2,25 @@ package status
 
 import (
 	"lunchpail.io/pkg/observe/colors"
+	"lunchpail.io/pkg/observe/events"
 	"strings"
 )
 
-func statusCell(status WorkerStatus) string {
+func statusCell(status events.WorkerStatus) string {
 	style := colors.Yellow
 	cell := "◔"
 
 	switch status {
-	case Running:
+	case events.Running:
 		style = colors.Green
 		cell = "●"
-	case Terminating:
+	case events.Terminating:
 		style = colors.Gray
 		cell = "◌"
-	case Failed:
+	case events.Failed:
 		style = colors.Red
 		cell = "◉"
-	case Succeeded:
+	case events.Succeeded:
 		style = colors.Cyan
 		cell = "○"
 	}

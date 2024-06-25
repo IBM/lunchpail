@@ -7,23 +7,13 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe/cpu"
+	"lunchpail.io/pkg/observe/events"
 	"lunchpail.io/pkg/observe/qstat"
-)
-
-type WorkerStatus string
-
-const (
-	Pending     WorkerStatus = "Pending"
-	Booting                  = "Booting"
-	Running                  = "Running"
-	Succeeded                = "Succeeded"
-	Failed                   = "Failed"
-	Terminating              = "Terminating"
 )
 
 type Worker struct {
 	Name   string
-	Status WorkerStatus
+	Status events.WorkerStatus
 	Qstat  qstat.Worker
 }
 
@@ -40,8 +30,8 @@ type Model struct {
 	RunName       string
 	Namespace     string
 	Pools         []Pool
-	Dispatcher    WorkerStatus
-	WorkStealer   WorkerStatus
+	Dispatcher    events.WorkerStatus
+	WorkStealer   events.WorkerStatus
 	LastNMessages *ring.Ring // ring of type Message
 	Progress      Progress
 	Qstat         qstat.Model
@@ -67,8 +57,8 @@ func (model *Model) workers() []Worker {
 }
 
 // return the pair (numRunning, numTotal) of Runtime pods
-func (model *Model) split(ws WorkerStatus) (int, int) {
-	if ws == Running {
+func (model *Model) split(ws events.WorkerStatus) (int, int) {
+	if ws == events.Running {
 		return 1, 1
 	} else {
 		return 0, 1
@@ -95,7 +85,7 @@ func (pool *Pool) workersSplit() (int, int) {
 	total := len(pool.Workers)
 
 	for _, worker := range pool.Workers {
-		if worker.Status == Running {
+		if worker.Status == events.Running {
 			running++
 		}
 	}

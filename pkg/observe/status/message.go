@@ -3,17 +3,15 @@ package status
 import (
 	"sort"
 	"time"
+
+	"lunchpail.io/pkg/observe/events"
 )
 
-type Message struct {
-	timestamp time.Time
-	who       string
-	message   string
-}
+type Message = events.Message
 
 func (model *Model) lastOrZero() (time.Time, bool) {
-	if msg, ok := model.LastNMessages.Value.(Message); ok && !msg.timestamp.IsZero() {
-		return msg.timestamp, true
+	if msg, ok := model.LastNMessages.Value.(Message); ok && !msg.Timestamp.IsZero() {
+		return msg.Timestamp, true
 	}
 
 	return time.Time{}, false
@@ -33,7 +31,7 @@ func (model *Model) addMessage(msg Message) bool {
 	}
 
 	last, _ := model.lastOrZero()
-	if last.IsZero() || !msg.timestamp.Before(last) {
+	if last.IsZero() || !msg.Timestamp.Before(last) {
 		model.LastNMessages = model.LastNMessages.Next()
 		model.LastNMessages.Value = msg
 
@@ -44,7 +42,7 @@ func (model *Model) addMessage(msg Message) bool {
 }
 
 func (model *Model) addErrorMessage(msg string, err error) *Model {
-	model.addMessage(Message{time.Now(), "Error", msg + ": " + err.Error()})
+	model.addMessage(Message{Timestamp: time.Now(), Who: "Error", Message: msg + ": " + err.Error()})
 	return model
 }
 
@@ -59,7 +57,7 @@ func (model *Model) messages(max int) []Message {
 		})
 
 		sort.Slice(msgs, func(i, j int) bool {
-			return msgs[i].timestamp.Before(msgs[j].timestamp)
+			return msgs[i].Timestamp.Before(msgs[j].Timestamp)
 		})
 
 		if len(msgs) > max {

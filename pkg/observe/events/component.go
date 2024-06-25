@@ -1,4 +1,4 @@
-package observe
+package events
 
 type Component string
 

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"golang.org/x/sync/errgroup"
+	"lunchpail.io/pkg/observe/events"
 	"lunchpail.io/pkg/observe/runs"
 )
 
@@ -14,19 +15,19 @@ type LogsOptions struct {
 	Namespace  string
 	Follow     bool
 	Verbose    bool
-	Components []Component
+	Components []events.Component
 }
 
-func streamLogs(runname, namespace string, component Component, follow bool, verbose bool) error {
+func streamLogs(runname, namespace string, component events.Component, follow bool, verbose bool) error {
 	containers := "app"
 	appSelector := ",app.kubernetes.io/instance=" + runname
-	if component == DispatcherComponent {
+	if component == events.DispatcherComponent {
 		containers = "main"
 		// FIXME: the workdispatcher has an invalid part-of
 		appSelector = ""
-	} else if component == WorkStealerComponent {
+	} else if component == events.WorkStealerComponent {
 		containers = "workstealer"
-	} else if component == WorkersComponent {
+	} else if component == events.WorkersComponent {
 		appSelector = ""
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/observe/events"
 )
 
 const (
@@ -48,4 +49,12 @@ func ComputeParallelismAndInstanceCount(vpcService *vpcv1.VpcV1, profile string,
 	}
 
 	return parallelism, instanceCount, nil
+}
+
+func StreamRunEvents(appname, runname, namespace string) (chan events.Message, error) {
+	return kubernetes.StreamRunEvents(appname, runname, namespace)
+}
+
+func StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error) {
+	return kubernetes.StreamRunComponentUpdates(appname, runname, namespace)
 }

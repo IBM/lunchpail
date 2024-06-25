@@ -1,4 +1,4 @@
-package status
+package kubernetes
 
 import (
 	"bufio"
@@ -7,20 +7,19 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	k8s "lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/observe"
+	"lunchpail.io/pkg/observe/events"
 	"strings"
 	"time"
 )
 
 type LogLine struct {
 	Timestamp time.Time
-	Component observe.Component
+	Component events.Component
 	Message   string
 }
 
-func (model *Model) streamLogUpdatesForComponent(run, namespace string, component observe.Component, onlyInfo bool, c chan Model) error {
-	clientset, _, err := k8s.Client()
+func streamLogUpdatesForComponent(run, namespace string, component events.Component, onlyInfo bool, c chan events.Message) error {
+	clientset, _, err := Client()
 	if err != nil {
 		return err
 	}
@@ -30,24 +29,24 @@ func (model *Model) streamLogUpdatesForComponent(run, namespace string, componen
 		return err
 	}
 
-	return model.streamLogUpdatesForPod(podName, namespace, component, onlyInfo, clientset, c)
+	return streamLogUpdatesForPod(podName, namespace, component, onlyInfo, clientset, c)
 }
 
-func (model *Model) streamLogUpdatesForWorker(podName, namespace string, c chan Model) error {
-	clientset, _, err := k8s.Client()
+func streamLogUpdatesForWorker(podName, namespace string, c chan events.Message) error {
+	clientset, _, err := Client()
 	if err != nil {
 		return err
 	}
 
 	// TODO leak?
 	go func() error {
-		return model.streamLogUpdatesForPod(podName, namespace, observe.WorkersComponent, false, clientset, c)
+		return streamLogUpdatesForPod(podName, namespace, events.WorkersComponent, false, clientset, c)
 	}()
 
 	return nil
 }
 
-func (model *Model) streamLogUpdatesForPod(podName, namespace string, component observe.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan Model) error {
+func streamLogUpdatesForPod(podName, namespace string, component events.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan events.Message) error {
 	for {
 		tail := int64(500)
 		logsStreamer, err := clientset.
@@ -90,10 +89,7 @@ func (model *Model) streamLogUpdatesForPod(podName, namespace string, component 
 				}
 			}
 
-			if model.addMessage(Message{time.Now(), observe.ComponentShortName(component), line}) {
-				// the model changed, so notify the channel of the updates
-				c <- *model
-			}
+			c <- events.Message{Timestamp: time.Now(), Who: events.ComponentShortName(component), Message: line}
 		}
 
 		break
@@ -102,7 +98,7 @@ func (model *Model) streamLogUpdatesForPod(podName, namespace string, component 
 	return nil
 }
 
-func findPodName(run, namespace string, component observe.Component, clientset *kubernetes.Clientset) (string, error) {
+func findPodName(run, namespace string, component events.Component, clientset *kubernetes.Clientset) (string, error) {
 	for {
 		listOptions := metav1.ListOptions{
 			LabelSelector: "app.kubernetes.io/component=" + string(component) + ",app.kubernetes.io/instance=" + run,
