@@ -7,7 +7,6 @@ import (
 
 	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"k8s.io/utils/pointer"
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/ir/llir"
@@ -292,7 +291,7 @@ func SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Acti
 
 		for _, c := range ir.Components {
 			for _, j := range c.Jobs {
-				j.Spec.Parallelism = pointer.Int32Ptr(int32(parallelism)) //TODO modifying Job spec field
+				*j.Spec.Parallelism = int32(parallelism)
 			}
 		}
 
