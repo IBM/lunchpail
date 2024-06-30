@@ -2,10 +2,11 @@ package status
 
 import (
 	"container/ring"
+
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/be"
+	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/cpu"
-	"lunchpail.io/pkg/observe/events"
 	"lunchpail.io/pkg/observe/qstat"
 )
 
@@ -35,13 +36,13 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 	errgroup.Go(func() error {
 		for update := range updates {
 			switch update.Component {
-			case events.WorkStealerComponent:
+			case comp.WorkStealerComponent:
 				model.WorkStealer = update.Status
 				c <- *model
-			case events.DispatcherComponent:
+			case comp.DispatcherComponent:
 				model.Dispatcher = update.Status
 				c <- *model
-			case events.WorkersComponent:
+			case comp.WorkersComponent:
 				pools, err := updateWorker(update, model.Pools)
 				if err != nil {
 					return err

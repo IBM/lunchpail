@@ -12,6 +12,7 @@ import (
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
+	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
@@ -108,5 +109,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(releaseName, namespace, templatePath, values, verbose)
+	return api.GenerateComponent(releaseName, namespace, templatePath, values, verbose, comp.WorkersComponent)
 }

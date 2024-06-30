@@ -1,20 +1,16 @@
 package events
 
-type Component string
-
-const (
-	WorkersComponent     Component = "workerpool"
-	DispatcherComponent            = "workdispatcher"
-	WorkStealerComponent           = "workstealer"
+import (
+	comp "lunchpail.io/pkg/lunchpail"
 )
 
-func ComponentShortName(c Component) string {
+func ComponentShortName(c comp.Component) string {
 	switch c {
-	case WorkersComponent:
+	case comp.WorkersComponent:
 		return "Workers"
-	case DispatcherComponent:
+	case comp.DispatcherComponent:
 		return "Dispatch"
-	case WorkStealerComponent:
+	case comp.WorkStealerComponent:
 		return "Runtime"
 	default:
 		return string(c)

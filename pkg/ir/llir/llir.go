@@ -7,10 +7,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
+	comp "lunchpail.io/pkg/lunchpail"
 )
 
 // One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 type Component struct {
+	Name comp.Component
+
 	// Singleton runners
 	Pods []corev1.Pod
 
@@ -73,4 +76,33 @@ func (l *LLIR) Marshal() (string, error) {
 	} else {
 		return Join(a), nil
 	}
+}
+
+func (l *LLIR) MarshalComponentArray(c Component) (string, error) {
+	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme,
+		scheme.Scheme)
+
+	ys := []string{l.GlobalConfig}
+
+	ys = append(ys, c.Config)
+
+	for _, j := range c.Pods {
+		buf := new(strings.Builder)
+		if err := s.Encode(&j, buf); err != nil {
+			return "", err
+		}
+
+		ys = append(ys, buf.String())
+	}
+
+	for _, j := range c.Jobs {
+		buf := new(strings.Builder)
+		if err := s.Encode(&j, buf); err != nil {
+			return "", err
+		}
+
+		ys = append(ys, buf.String())
+	}
+
+	return Join(ys), nil
 }

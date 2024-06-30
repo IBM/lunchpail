@@ -2,10 +2,11 @@ package subcommands
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/assembly"
+	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe"
-	"lunchpail.io/pkg/observe/events"
 )
 
 func newLogsCommand() *cobra.Command {
@@ -29,14 +30,14 @@ func newLogsCommand() *cobra.Command {
 				return err
 			}
 
-			comps := []events.Component{}
+			comps := []comp.Component{}
 			for _, component := range components {
 				if component == "workers" {
-					comps = append(comps, events.WorkersComponent)
+					comps = append(comps, comp.WorkersComponent)
 				} else if component == "dispatcher" {
-					comps = append(comps, events.DispatcherComponent)
+					comps = append(comps, comp.DispatcherComponent)
 				} else if component == "workstealer" {
-					comps = append(comps, events.WorkStealerComponent)
+					comps = append(comps, comp.WorkStealerComponent)
 				} else {
 					return fmt.Errorf("Unsupported component %s", component)
 				}

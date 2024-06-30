@@ -11,6 +11,7 @@ import (
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
+	comp "lunchpail.io/pkg/lunchpail"
 )
 
 func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
@@ -49,5 +50,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		fmt.Fprintf(os.Stderr, "Workstealer values\n%s\n", "\n  -"+strings.Join(values, "\n  - "))
 	}
 
-	return api.GenerateComponent(runname, namespace, templatePath, values, verbose)
+	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, comp.WorkStealerComponent)
 }

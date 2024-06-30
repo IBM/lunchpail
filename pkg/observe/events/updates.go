@@ -3,10 +3,11 @@ package events
 import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	"lunchpail.io/pkg/be/platform"
+	comp "lunchpail.io/pkg/lunchpail"
 )
 
 type ComponentUpdate struct {
-	Component Component
+	Component comp.Component
 	Status    WorkerStatus
 	Type      watch.EventType
 
@@ -17,15 +18,15 @@ type ComponentUpdate struct {
 }
 
 func DispatcherUpdate(namespace string, platform platform.Platform, status WorkerStatus, event watch.EventType) ComponentUpdate {
-	name := ComponentShortName(DispatcherComponent)
-	return ComponentUpdate{DispatcherComponent, status, event, name, namespace, "", platform}
+	name := ComponentShortName(comp.DispatcherComponent)
+	return ComponentUpdate{comp.DispatcherComponent, status, event, name, namespace, "", platform}
 }
 
 func WorkStealerUpdate(namespace string, platform platform.Platform, status WorkerStatus, event watch.EventType) ComponentUpdate {
-	name := ComponentShortName(WorkStealerComponent)
-	return ComponentUpdate{WorkStealerComponent, status, event, name, namespace, "", platform}
+	name := ComponentShortName(comp.WorkStealerComponent)
+	return ComponentUpdate{comp.WorkStealerComponent, status, event, name, namespace, "", platform}
 }
 
 func WorkerUpdate(name, namespace, pool string, platform platform.Platform, status WorkerStatus, event watch.EventType) ComponentUpdate {
-	return ComponentUpdate{WorkersComponent, status, event, name, namespace, pool, platform}
+	return ComponentUpdate{comp.WorkersComponent, status, event, name, namespace, pool, platform}
 }

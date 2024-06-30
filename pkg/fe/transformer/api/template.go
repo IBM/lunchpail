@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/ir/llir"
+	comp "lunchpail.io/pkg/lunchpail"
 )
 
 type which string
@@ -95,7 +96,7 @@ func extractPods(runname, namespace, templatePath string, values []string, verbo
 	return pods, nil
 }
 
-func GenerateComponent(runname, namespace, templatePath string, values []string, verbose bool) (llir.Component, error) {
+func GenerateComponent(runname, namespace, templatePath string, values []string, verbose bool, name comp.Component) (llir.Component, error) {
 	defer os.RemoveAll(templatePath)
 
 	config, err := extract("config", runname, namespace, templatePath, values, verbose)
@@ -113,7 +114,7 @@ func GenerateComponent(runname, namespace, templatePath string, values []string,
 		return llir.Component{}, err
 	}
 
-	return llir.Component{Jobs: jobs, Pods: pods, Config: trim(config)}, nil
+	return llir.Component{Name: name, Jobs: jobs, Pods: pods, Config: trim(config)}, nil
 }
 
 // hmm, the client-go decoder doesn't handle comments well. without

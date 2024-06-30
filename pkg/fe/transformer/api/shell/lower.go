@@ -2,16 +2,18 @@ package shell
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
+	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
-	"os"
-	"strconv"
-	"strings"
 )
 
 func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
@@ -93,5 +95,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(runname, namespace, templatePath, values, verbose)
+	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, comp.DispatcherComponent)
 }
