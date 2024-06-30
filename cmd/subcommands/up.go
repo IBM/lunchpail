@@ -28,10 +28,12 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().StringVarP(&options.ApiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().VarP(&options.TargetPlatform, "target-platform", "p", "Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot]")
 	cmd.Flags().StringVarP(&options.ResourceGroupID, "resource-group-id", "", "", "Identifier of a Cloud resource group to contain the instance(s)")
+	//Todo: allow selecting existing ssh key?
 	cmd.Flags().StringVarP(&options.SSHKeyType, "ssh-key-type", "", "rsa", "SSH key type [rsa, ed25519]")
 	cmd.Flags().StringVarP(&options.PublicSSHKey, "public-ssh-key", "", "", "An existing or new SSH public key to identify user on the instance")
 	cmd.Flags().StringVarP(&options.Zone, "zone", "", "", "A location to host the instance")
 	cmd.Flags().StringVarP(&options.Profile, "profile", "", "bx2-8x32", "An instance profile type to choose size and capability of the instance")
+	//TODO: make public image as default
 	cmd.Flags().StringVarP(&options.ImageID, "image-id", "", "", "Identifier of a catalog or custom image to be used for instance creation")
 	return &options
 }

@@ -3,20 +3,22 @@ package kubernetes
 import (
 	"bufio"
 	"context"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
-	"lunchpail.io/pkg/observe/events"
 	"strings"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
+	comp "lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe/events"
 )
 
 type LogLine struct {
 	Timestamp time.Time
-	Component events.Component
+	Component comp.Component
 	Message   string
 }
 
-func streamLogUpdatesForComponent(podName, namespace string, component events.Component, onlyInfo bool, c chan events.Message) error {
+func streamLogUpdatesForComponent(podName, namespace string, component comp.Component, onlyInfo bool, c chan events.Message) error {
 	clientset, _, err := Client()
 	if err != nil {
 		return err
@@ -38,13 +40,13 @@ func streamLogUpdatesForWorker(podName, namespace string, c chan events.Message)
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, namespace, events.WorkersComponent, false, clientset, c)
+		return streamLogUpdatesForPod(podName, namespace, comp.WorkersComponent, false, clientset, c)
 	}()
 
 	return nil
 }
 
-func streamLogUpdatesForPod(podName, namespace string, component events.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan events.Message) error {
+func streamLogUpdatesForPod(podName, namespace string, component comp.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan events.Message) error {
 	for {
 		tail := int64(500)
 		logsStreamer, err := clientset.

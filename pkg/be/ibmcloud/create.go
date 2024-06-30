@@ -1,15 +1,17 @@
 package ibmcloud
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"os/exec"
 	"strconv"
 
 	"github.com/IBM/go-sdk-core/v4/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/ir/llir"
+	comp "lunchpail.io/pkg/lunchpail"
 
 	"github.com/elotl/cloud-init/config"
 )
@@ -22,7 +24,7 @@ const (
 	Delete        = "delete"
 )
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{
@@ -33,11 +35,10 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resource
 		}},
 	}
 
-	appYamlString, err := ir.Marshal()
+	appYamlString, err := ir.MarshalComponentArray(c)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to marshall yaml: %v", err)
+		return nil, fmt.Errorf("failed to marshall yaml: %v", err)
 	}
-
 	cc := &config.CloudConfig{
 		WriteFiles: []config.File{
 			{
@@ -46,7 +47,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resource
 				Owner:              "root:root",
 				RawFilePermissions: "0644",
 			}},
-		RunCmd: []string{"kind create cluster", "mkdir -p ~/.kube", "kind get kubeconfig > ~/.kube/config", "kubectl cluster-info --context kind-kind", "kubectl apply -f /app.yaml"},
+		RunCmd: []string{"sleep 10", "env HOME=/root kubectl apply -f /app.yaml"},
 	}
 
 	instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
@@ -78,7 +79,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resource
 			instancePrototypeModel,
 		))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create a virtual instance: %v and the response is: %s", err, response)
+		return nil, fmt.Errorf("failed to create a virtual instance: %v and the response is: %s", err, response)
 	}
 	fmt.Printf("Created a VSI instance with ID:%s.", *instance.ID)
 	return instance, nil
@@ -99,7 +100,7 @@ func createFloatingIP(vpcService *vpcv1.VpcV1, name string, resourceGroupID stri
 		floatingIPModel,
 	))
 	if err != nil {
-		return "", fmt.Errorf("Failed to create a floatingIP: %v and the response is: %s", err, response)
+		return "", fmt.Errorf("failed to create a floatingIP: %v and the response is: %s", err, response)
 	}
 	return *floatingIP.ID, nil
 }
@@ -116,7 +117,7 @@ func createSecurityGroup(vpcService *vpcv1.VpcV1, name string, resourceGroupID s
 	}
 	securityGroup, response, err := vpcService.CreateSecurityGroup(options)
 	if err != nil {
-		return "", fmt.Errorf("Failed to create a security group: %v and the response is: %s", err, response)
+		return "", fmt.Errorf("failed to create a security group: %v and the response is: %s", err, response)
 	}
 	return *securityGroup.ID, nil
 }
@@ -125,7 +126,7 @@ func createSecurityGroupRule(vpcService *vpcv1.VpcV1, secGroupID string) error {
 	addresscmd := exec.Command("curl", "-s", "ifconfig.me")
 	address, err := addresscmd.Output()
 	if err != nil {
-		return fmt.Errorf("Internal Error getting IP address: %v", err)
+		return fmt.Errorf("internal error getting IP address: %v", err)
 	}
 
 	options := &vpcv1.CreateSecurityGroupRuleOptions{
@@ -144,7 +145,7 @@ func createSecurityGroupRule(vpcService *vpcv1.VpcV1, secGroupID string) error {
 
 	_, response, err := vpcService.CreateSecurityGroupRule(options)
 	if err != nil {
-		return fmt.Errorf("Failed to create an inbound security group rule: %v and the response is: %s", err, response)
+		return fmt.Errorf("failed to create an inbound security group rule: %v and the response is: %s", err, response)
 	}
 
 	options = &vpcv1.CreateSecurityGroupRuleOptions{
@@ -157,7 +158,7 @@ func createSecurityGroupRule(vpcService *vpcv1.VpcV1, secGroupID string) error {
 
 	_, response, err = vpcService.CreateSecurityGroupRule(options)
 	if err != nil {
-		return fmt.Errorf("Failed to create an outboundc security group rule: %v and the response is: %s", err, response)
+		return fmt.Errorf("failed to create an outboundc security group rule: %v and the response is: %s", err, response)
 	}
 	return nil
 }
@@ -181,7 +182,7 @@ func createSubnet(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, 
 	}
 	subnet, response, err := vpcService.CreateSubnet(options)
 	if err != nil {
-		return "", fmt.Errorf("Failed to create a subnet: %v and the response is: %s", err, response)
+		return "", fmt.Errorf("failed to create a subnet: %v and the response is: %s", err, response)
 	}
 	return *subnet.ID, nil
 }
@@ -197,7 +198,7 @@ func createSSHKey(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, 
 	}
 	key, response, err := vpcService.CreateKey(options)
 	if err != nil {
-		return "", fmt.Errorf("Failed to create an ssh key: %v and the response is: %s", err, response)
+		return "", fmt.Errorf("failed to create an ssh key: %v and the response is: %s", err, response)
 	}
 	return *key.ID, nil
 }
@@ -211,12 +212,12 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (st
 	}
 	vpc, response, err := vpcService.CreateVPC(options)
 	if err != nil {
-		return "", fmt.Errorf("Failed to create a VPC: %v and the response is: %s", err, response)
+		return "", fmt.Errorf("failed to create a VPC: %v and the response is: %s", err, response)
 	}
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, count int, keyType string, publicKey string, zone string, profile string, imageID string) error {
+func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string) error {
 	vpcID, err := createVPC(vpcService, name, resourceGroupID)
 	if err != nil {
 		return err
@@ -241,28 +242,72 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 		return err
 	}
 
-	for i := 1; i <= count; i++ {
-		instance, err := createInstance(vpcService, name+"-"+strconv.Itoa(i), ir, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
-		if err != nil {
-			return err
-		}
+	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
+	for _, c := range ir.Components {
+		suff := "-" + string(c.Name)
+		if c.Name == comp.DispatcherComponent || c.Name == comp.WorkStealerComponent {
+			instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
+			if err != nil {
+				return err
+			}
 
-		floatingIPID, err := createFloatingIP(vpcService, name+"-"+strconv.Itoa(i), resourceGroupID, zone)
-		if err != nil {
-			return err
-		}
+			//TODO VSI instances other than jumpbox or main pod should not have floatingIP. Remove below after testing
+			floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
+			if err != nil {
+				return err
+			}
 
-		options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
-			ID:                 &floatingIPID,
-			InstanceID:         instance.ID,
-			NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
-		}
-		_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
-		if err != nil {
-			return fmt.Errorf("Failed to add floating IP to network interface: %v and the response is: %s", err, response)
-		}
+			options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
+				ID:                 &floatingIPID,
+				InstanceID:         instance.ID,
+				NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
+			}
+			_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
+			if err != nil {
+				return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
+			}
+		} else if c.Name == comp.WorkersComponent {
+			workerCount := int32(0)
+			for _, j := range c.Jobs {
+				workerCount = workerCount + *j.Spec.Parallelism
+			}
 
+			//Compute number of VSIs to be provisioned and job parallelism for each VSI
+			parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, workerCount)
+			if err != nil {
+				return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
+			}
+			for _, j := range c.Jobs {
+				*j.Spec.Parallelism = int32(parallelism)
+			}
+
+			for i := 1; i <= numInstances; i++ {
+				if numInstances > 1 {
+					suff = "-" + strconv.Itoa(i)
+				}
+				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
+				if err != nil {
+					return err
+				}
+
+				floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
+				if err != nil {
+					return err
+				}
+
+				options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
+					ID:                 &floatingIPID,
+					InstanceID:         instance.ID,
+					NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
+				}
+				_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
+				if err != nil {
+					return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
+				}
+			}
+		}
 	}
+
 	return nil
 }
 
@@ -277,27 +322,36 @@ func SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Acti
 			return err
 		}
 	} else if action == Create {
-		var workerCount int32
-		for _, c := range ir.Components {
-			for _, j := range c.Jobs {
-				workerCount = *j.Spec.Parallelism
-			}
-		}
-		//Compute number of VSIs to be provisioned and job parallelism for each VSI
-		parallelism, numInstances, err := be.ComputeParallelismAndInstanceCount(vpcService, aopts.Profile, workerCount)
-		if err != nil {
-			return fmt.Errorf("Failed to compute number of instances and job parallelism: %v", err)
-		}
-
-		for _, c := range ir.Components {
-			for _, j := range c.Jobs {
-				*j.Spec.Parallelism = int32(parallelism)
-			}
-		}
-
-		if err := createAndInitVM(vpcService, runname, ir, aopts.ResourceGroupID, numInstances, aopts.SSHKeyType, aopts.PublicSSHKey, aopts.Zone, aopts.Profile, aopts.ImageID); err != nil {
+		if err := createAndInitVM(vpcService, runname, ir, aopts.ResourceGroupID, aopts.SSHKeyType, aopts.PublicSSHKey, aopts.Zone, aopts.Profile, aopts.ImageID); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func computeParallelismAndInstanceCount(vpcService *vpcv1.VpcV1, profile string, workers int32) (parallelism int64, instanceCount int, err error) {
+	//TODO: 1. Mapping table from size specified by application and user to IBM's profile table
+	//2. Build comparison table for multiple cloud providers
+	prof, response, err := vpcService.GetInstanceProfile(
+		&vpcv1.GetInstanceProfileOptions{
+			Name: &profile,
+		})
+	if err != nil {
+		return parallelism, instanceCount, fmt.Errorf("failed to retrieve instance profile: %v and the response is: %s", err, response)
+	}
+
+	if prof != nil {
+		vcpuCount, ok := prof.VcpuCount.(*vpcv1.InstanceProfileVcpu)
+		if !ok {
+			return parallelism, instanceCount, errors.New("failed to get VcpuCount from instance profile")
+		}
+
+		parallelism = *vcpuCount.Value
+		if workers < int32(parallelism) {
+			parallelism = int64(workers)
+		}
+		instanceCount = max(1, int(math.Ceil(float64(workers)/float64(parallelism))))
+	}
+
+	return parallelism, instanceCount, nil
 }

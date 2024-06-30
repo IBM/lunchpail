@@ -9,6 +9,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
+// TODO: Self-destruction
 func stopOrDeleteVM(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, delete bool) error {
 	options := &vpcv1.ListInstancesOptions{
 		ResourceGroupID: &resourceGroupID,

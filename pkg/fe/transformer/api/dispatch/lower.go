@@ -17,6 +17,7 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 		if component, err := parametersweep.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 			return components, err
 		} else {
+			component.Name = "workdispatcher"
 			components = append(components, component)
 		}
 	}
@@ -25,6 +26,7 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 		if component, err := s3.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 			return components, err
 		} else {
+			component.Name = "workdispatcher"
 			components = append(components, component)
 		}
 	}

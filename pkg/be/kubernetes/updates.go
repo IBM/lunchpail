@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
 	"lunchpail.io/pkg/be/platform"
+	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/events"
 )
 
@@ -71,7 +72,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 
 	name := pod.Name
 
-	if component == string(events.WorkersComponent) {
+	if component == string(comp.WorkersComponent) {
 		poolname, exists := pod.Labels["app.kubernetes.io/name"]
 		if !exists {
 			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
@@ -86,23 +87,23 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 	workerStatus := statusFromPod(pod)
 
 	switch component {
-	case string(events.WorkStealerComponent):
+	case string(comp.WorkStealerComponent):
 		if what == watch.Added {
 			// new workerstealer pod. start streaming its logs
-			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, events.WorkStealerComponent, true, cm); err != nil {
+			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, comp.WorkStealerComponent, true, cm); err != nil {
 				return err
 			}
 		}
 		cc <- events.WorkStealerUpdate(pod.Namespace, platform.Kubernetes, workerStatus, what)
-	case string(events.DispatcherComponent):
+	case string(comp.DispatcherComponent):
 		if what == watch.Added {
 			// new dispatcher pod. start streaming its logs
-			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, events.DispatcherComponent, false, cm); err != nil {
+			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, comp.DispatcherComponent, false, cm); err != nil {
 				return err
 			}
 		}
 		cc <- events.DispatcherUpdate(pod.Namespace, platform.Kubernetes, workerStatus, what)
-	case string(events.WorkersComponent):
+	case string(comp.WorkersComponent):
 		if what == watch.Added {
 			// new worker pod. start streaming its logs
 			if err := streamLogUpdatesForWorker(pod.Name, pod.Namespace, cm); err != nil {

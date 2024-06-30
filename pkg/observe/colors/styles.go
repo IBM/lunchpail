@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/events"
 )
 
@@ -36,18 +37,18 @@ var ClusterComponentStyle = lipgloss.NewStyle().Background(grayColor).Foreground
 var OtherComponentStyle = lipgloss.NewStyle().Bold(true).Padding(0, 1)
 var ErrorComponentStyle = lipgloss.NewStyle().Background(redColor).Foreground(blackColor).Padding(0, 1)
 
-func ComponentStyle(c events.Component) lipgloss.Style {
+func ComponentStyle(c comp.Component) lipgloss.Style {
 	switch c {
-	case events.DispatcherComponent:
+	case comp.DispatcherComponent:
 		return DispatcherComponentStyle
-	case events.WorkersComponent:
+	case comp.WorkersComponent:
 		return WorkersComponentStyle
 	}
 
 	return OtherComponentStyle
 }
 
-func Component(c events.Component) string {
+func Component(c comp.Component) string {
 	short := fmt.Sprintf("%-8s", events.ComponentShortName(c))
 
 	return ComponentStyle(c).Render(short)
