@@ -1,5 +1,5 @@
 api=workqueue
-app=git@github.ibm.com:mceda/lunchpail-openroad-max-utilization.git
+app=https://github.com/IBM/lunchpail-openroad-max-utilization.git
 branch=v0.1.0
 deployname=lunchpail-openroad-max-utilization
 

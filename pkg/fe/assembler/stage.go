@@ -34,8 +34,10 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		fmt.Fprintf(os.Stderr, "Copying app templates into %s\n", appdir)
 	}
 
-	if strings.HasPrefix(sourcePath, "git@") {
-		if os.Getenv("CI") != "" && os.Getenv("AI_FOUNDATION_GITHUB_USER") != "" {
+	isGitSsh := strings.HasPrefix(sourcePath, "git@")
+	isGitHttp := !isGitSsh && strings.HasPrefix(sourcePath, "https:")
+	if isGitSsh || isGitHttp {
+		if isGitSsh && os.Getenv("CI") != "" && os.Getenv("AI_FOUNDATION_GITHUB_USER") != "" {
 			// git@github.ibm.com:user/repo.git -> https://patuser:pat@github.ibm.com/user/repo.git
 			pattern := regexp.MustCompile("^git@([^:]+):([^/]+)/([^.]+)[.]git$")
 			// apphttps := $(echo $appgit | sed -E "s#^git\@([^:]+):([^/]+)/([^.]+)[.]git\$#https://${AI_FOUNDATION_GITHUB_USER}:${AI_FOUNDATION_GITHUB_PAT}@\1/\2/\3.git#")

@@ -13,10 +13,10 @@ const (
 )
 
 func WhichContainerCli() (ContainerCli, error) {
-	if which.Found("podman") {
-		return "podman", nil
-	} else if which.Found("docker") {
+	if which.Found("docker") {
 		return "docker", nil
+	} else if which.Found("podman") {
+		return "podman", nil
 	} else {
 		return "", fmt.Errorf("No container CLI found")
 	}
