@@ -5,7 +5,7 @@ metadata:
 spec:
   api: workqueue
   role: worker
-  repo: https://github.ibm.com/cloud-computer/lunchpail/tree/main/tests/tests/test7f-repo/pail
+  repo: https://github.com/IBM/lunchpail/tree/main/tests/tests/test7f-repo/pail
   command: ./src/main.sh
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/worker-alpine:" .Chart.AppVersion }}
   env:

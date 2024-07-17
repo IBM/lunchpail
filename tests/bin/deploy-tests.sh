@@ -61,13 +61,15 @@ testapp="$TARGET"/test
 # Allows us to capture workstealer info before it auto-terminates
 export LP_SLEEP_BEFORE_EXIT=10
 
+repo_secret="" # e.g. user:pat@https://github.mycompany.com
+              
 # intentionally setting some critical values at assemble time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
 /tmp/lunchpail assemble -v \
                -o $testapp \
                $branch \
-               --repo-secret $AI_FOUNDATION_GITHUB_USER:$AI_FOUNDATION_GITHUB_PAT@https://github.ibm.com \
+               $repo_secret \
                $2
 
 $testapp up \

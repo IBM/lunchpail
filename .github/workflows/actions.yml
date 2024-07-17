@@ -1,4 +1,4 @@
-name: Kind
+name: CI Tests
 
 # cancel any prior runs for this workflow and this PR (or branch)
 concurrency:
@@ -12,15 +12,16 @@ on:
     branches: [ main ]
 
 jobs:
-  testsh:
+  ci:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        ARGS:
-          - "-e 'test(7.*|8.*)'" # baseline tests
-          - "-i 'test7.*' -e 'test8.*'" # including only test7* tests (simpler tests)
-          - "-i 'test8.*' -e 'test7.*'" # including only test8* tests (application tests)
+        SCRIPT:
+          - ./tests/bin/ci.sh -e 'test(7.*|8.*)' # baseline tests
+          - ./tests/bin/ci.sh -i 'test7.*' -e 'test8.*' # including only test7* tests (simpler tests)
+          - ./tests/bin/ci.sh -i 'test8.*' -e 'test7.*' # including only test8* tests (application tests)
+          - ./tests/bin/go.sh
         os: [ubuntu-latest]
 
     steps:
@@ -34,22 +35,10 @@ jobs:
     - name: Setup
       run: ./tests/bin/travis/setup.sh
 
+    - name: Check Docker
+      run: docker version && podman version
+
     - name: Run Test with args ${{ matrix.ARGS }}
-      run: bash -c "./tests/bin/ci.sh ${{matrix.ARGS }}"
-
-  gosh:
-    runs-on: ${{ matrix.os }}
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Create k8s Kind Cluster
-      uses: helm/kind-action@v1.10.0
-      with:
-        install_only: true
-
-    - name: Setup
-      run: ./tests/bin/travis/setup.sh
-
-    - name: Run Go Tests
-      run: ./tests/bin/go.sh
+      env:
+        TERM: xterm-256color
+      run: bash -c "${{matrix.SCRIPT}} ${{matrix.ARGS }}"

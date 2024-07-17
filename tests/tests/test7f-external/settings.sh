@@ -1,5 +1,5 @@
 api=workqueue
-app=git@github.ibm.com:cloud-computer/lunchpail-demo.git
+app=https://github.com/IBM/lunchpail-demo.git
 branch=v0.0.15
 deployname=lunchpail-demo
 
