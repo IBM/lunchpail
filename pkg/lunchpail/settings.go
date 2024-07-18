@@ -2,6 +2,6 @@ package lunchpail
 
 const (
 	ImageRegistry    = "ghcr.io"
-	ImageRepo        = "lunchpail"
+	ImageRepo        = "ibm"
 	LocalClusterName = "lunchpail"
 )

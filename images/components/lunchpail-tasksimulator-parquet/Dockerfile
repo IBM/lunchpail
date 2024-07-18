@@ -1,4 +1,5 @@
-FROM ghcr.io/lunchpail/fastparquet:0.0.1
+FROM ghcr.io/ibm/lunchpail-fastparquet:0.0.1
+LABEL org.opencontainers.image.source="https://github.com/IBM/lunchpail"
 
 COPY --chmod=755 main.sh /opt/lunchpail/bin/main.sh
 
