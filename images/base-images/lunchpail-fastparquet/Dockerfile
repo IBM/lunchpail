@@ -1,5 +1,5 @@
 FROM docker.io/alpine:3
-LABEL org.opencontainers.image.source https://github.com/IBM/lunchpail
+LABEL org.opencontainers.image.source="https://github.com/IBM/lunchpail"
 
 # RUN apk add --no-cache maven curl build-base openjdk11 && \
 #     cd /tmp && \

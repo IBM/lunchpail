@@ -7,5 +7,5 @@ gpu-operator:
 # these values may be overriden by hack/up.sh
 image:
   registry: ghcr.io
-  repo: lunchpail
+  repo: ibm
   version: 0.0.1
