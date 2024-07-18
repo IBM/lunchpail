@@ -2,7 +2,7 @@
 
 # Lunchpail
 
-[![Build Status](https://v3.travis.ibm.com/cloud-computer/lunchpail.svg?token=Xarp6oK5BSTVsrSknEPZ&branch=main)](https://v3.travis.ibm.com/cloud-computer/lunchpail)
+[![CI Tests](https://github.com/IBM/lunchpail/actions/workflows/actions.yml/badge.svg)](https://github.com/IBM/lunchpail/actions/workflows/actions.yml)
 
 Lunchpail is a lightweight way to package and execute highly scalable
 jobs.
