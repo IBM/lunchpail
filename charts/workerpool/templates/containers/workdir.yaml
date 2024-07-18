@@ -1,7 +1,7 @@
 {{- define "containers/workdir" }}
 {{- if .Values.workdir.repo }}
 - name: workdir
-  image: {{ print .Values.watcher.image.registry "/" .Values.watcher.image.repo "/workdir:" .Values.watcher.image.version }}
+  image: {{ print .Values.watcher.image.registry "/" .Values.watcher.image.repo "/lunchpail-workdir:" .Values.watcher.image.version }}
   volumeMounts:
     {{ include "workdir/volumeMount" . | indent 4 }}
   env:
