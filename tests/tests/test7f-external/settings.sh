@@ -1,6 +1,6 @@
 api=workqueue
 app=https://github.com/IBM/lunchpail-demo.git
-branch=v0.0.15
+branch=v0.1.0
 deployname=lunchpail-demo
 
 # /queue/0,1 <-- 2 workers

@@ -1,6 +1,6 @@
 {{- define "containers/watcher" }}
 - name: watcher
-  image: {{ print .Values.watcher.image.registry "/" .Values.lunchpail "/worker-watcher:" .Values.watcher.image.version }}
+  image: {{ print .Values.watcher.image.registry "/" .Values.watcher.image.repo "/lunchpail-worker-watcher:" .Values.watcher.image.version }}
   volumeMounts:
     {{ include "workdir/volumeMount" . | indent 4 }}
   command:
