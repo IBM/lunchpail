@@ -2,6 +2,7 @@
 
 # Lunchpail
 
+<a href="https://github.com/IBM/lunchpail/releases"><img src="https://img.shields.io/github/release/IBM/lunchpail.svg" alt="Latest Release"></a>
 [![CI Tests](https://github.com/IBM/lunchpail/actions/workflows/actions.yml/badge.svg)](https://github.com/IBM/lunchpail/actions/workflows/actions.yml)
 
 Lunchpail is a lightweight way to package and execute highly scalable
