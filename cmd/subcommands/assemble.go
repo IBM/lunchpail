@@ -10,6 +10,7 @@ func newAssembleCmd() *cobra.Command {
 	var outputFlag string
 	var branchFlag string
 	var verboseFlag bool
+	var allFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "assemble path-or-git",
@@ -25,10 +26,17 @@ func newAssembleCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	assemblyOptions := addAssemblyOptions(cmd)
+	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return assembler.Assemble(args[0], assembler.Options{Name: outputFlag, Branch: branchFlag, Verbose: verboseFlag, AssemblyOptions: *assemblyOptions})
+		return assembler.Assemble(args[0], assembler.Options{
+			Name:            outputFlag,
+			Branch:          branchFlag,
+			Verbose:         verboseFlag,
+			AllPlatforms:    allFlag,
+			AssemblyOptions: *assemblyOptions,
+		})
 	}
 
 	return cmd

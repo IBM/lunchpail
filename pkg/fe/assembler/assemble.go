@@ -1,14 +1,18 @@
 package assembler
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io/ioutil"
-	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/util"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+
+	"golang.org/x/sync/errgroup"
+	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/util"
 )
 
 //go:generate /bin/sh -c "while ! tar --exclude '*lunchpail-source.tar.gz' --exclude '*~' --exclude '*.git*' --exclude '*README.md' --exclude '*gitignore' --exclude '*DS_Store' --exclude '*lunchpail-source.tar.gz*' -C ../../.. -zcf lunchpail-source.tar.gz cmd pkg go.mod go.sum; do sleep 1; done"
@@ -81,6 +85,26 @@ func Assemble(sourcePath string, opts Options) error {
 	} else if err := assembly.DropBreadcrumb(assemblyName, lunchpailStageDir); err != nil {
 		return err
 	} else {
-		return emit(lunchpailStageDir, opts.Name)
+		if !opts.AllPlatforms {
+			return emit(lunchpailStageDir, opts.Name, "", "")
+		}
+
+		oss := supportedOs()
+		archs := supportedArch()
+		if !opts.AllPlatforms {
+			oss = []string{runtime.GOOS}
+			archs = []string{runtime.GOARCH}
+		}
+
+		group, _ := errgroup.WithContext(context.Background())
+		for _, targetOs := range oss {
+			for _, targetArch := range archs {
+				group.Go(func() error {
+					return emit(lunchpailStageDir, opts.Name, targetOs, targetArch)
+				})
+			}
+		}
+
+		return group.Wait()
 	}
 }
