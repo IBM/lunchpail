@@ -1,2 +1,0 @@
-api=ray
-expected=('eigenvalue')
