@@ -1,4 +1,4 @@
-module github.ibm.com/cloud-computer/jaas/platform/components/jaas/workstealer
+module github.com/IBM/lunchpail/images/components/lunchpail-workstealer
 
 go 1.22.1
 
