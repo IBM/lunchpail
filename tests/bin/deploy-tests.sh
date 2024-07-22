@@ -72,6 +72,18 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
                $repo_secret \
                $2
 
+echo "!!!!!!!!!!!!!!!XXXXXXXXXXXXXXXXXXXXXXX $2"
+if [[ -d "$2" ]] && [[ -f "$2"/version ]]
+then
+    # Check that app version passes through
+    expectedAppVersion=$(cat "$2"/version)
+    actualAppVersion=$($testapp version)
+    if [[ "$expectedAppVersion" = "$actualAppVersion" ]]
+    then echo "✅ PASS App Version passthrough $expectedAppVersion"
+    else echo "❌ FAIL App Version passthrough expected!=actual '$expectedAppVersion'!='$actualAppVersion'" && exit 1
+    fi
+fi
+
 $testapp up \
          -v \
          $QUEUE \

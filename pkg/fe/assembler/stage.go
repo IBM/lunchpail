@@ -28,7 +28,7 @@ func Appdir(templatePath string) string {
 	return filepath.Join(templatePath, "templates/__embededapp__")
 }
 
-func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbose bool) error {
+func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbose bool) (string, error) {
 	appdir := Appdir(templatePath)
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Copying app templates into %s\n", appdir)
@@ -62,10 +62,10 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Start(); err != nil {
-			return err
+			return "", err
 		}
 		if err := cmd.Wait(); err != nil {
-			return err
+			return "", err
 		}
 		fmt.Fprintln(os.Stderr, " done")
 	} else {
@@ -85,7 +85,22 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return err
+			return "", err
+		}
+	}
+
+	// check if the app has a version file
+	appVersion := ""
+	appVersionFile := filepath.Join(appdir, "version")
+	if _, err := os.Stat(appVersionFile); err == nil {
+		versionBytes, err := os.ReadFile(appVersionFile)
+		if err != nil {
+			return "", err
+		}
+		appVersion = strings.TrimSpace(string(versionBytes))
+
+		if err := os.Remove(appVersionFile); err != nil {
+			return "", err
 		}
 	}
 
@@ -95,7 +110,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		fmt.Fprintf(os.Stderr, "Including application helmignore\n")
 		templateHelmignore := filepath.Join(templatePath, ".helmignore")
 		if err := util.AppendFile(templateHelmignore, appHelmignore); err != nil {
-			return err
+			return "", err
 		}
 	}
 
@@ -108,7 +123,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		os.MkdirAll(templateSrc, 0755)
 		entries, err := os.ReadDir(appSrc)
 		if err != nil {
-			return err
+			return "", err
 		}
 		for _, entry := range entries {
 			sourcePath := filepath.Join(appSrc, entry.Name())
@@ -119,7 +134,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 			os.Rename(sourcePath, destPath)
 		}
 		if err := os.Remove(appSrc); err != nil {
-			return err
+			return "", err
 		}
 	}
 
@@ -128,12 +143,12 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		// then there is a values.yaml that we need to
 		// consolidate
 		if reader, err := os.Open(appValues); err != nil {
-			return err
+			return "", err
 		} else {
 			defer reader.Close()
 			templateValues := filepath.Join(templatePath, "values.yaml")
 			if writer, err := os.OpenFile(templateValues, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
-				return err
+				return "", err
 			} else {
 				io.Copy(writer, reader)
 				os.Remove(appValues) // otherwise fe/parser/parse will think this is an invalid resource yaml
@@ -142,7 +157,7 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		}
 	}
 
-	return nil
+	return appVersion, nil
 }
 
 type StageOptions struct {
@@ -150,16 +165,20 @@ type StageOptions struct {
 	Verbose bool
 }
 
-// return (templatePath, error)
-func StagePath(appname, sourcePath string, opts StageOptions) (string, error) {
+// return (templatePath, appVersion, error)
+func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
+	appVersion := ""
+
 	templatePath, err := StageTemplate()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if sourcePath != "" {
-		if err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
-			return "", err
+		if version, err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
+			return "", "", err
+		} else {
+			appVersion = version
 		}
 	}
 
@@ -167,13 +186,13 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, error) {
 		fmt.Fprintf(os.Stderr, "Finished staging to %s\n", templatePath)
 	}
 
-	return templatePath, nil
+	return templatePath, appVersion, nil
 }
 
-// return (appname, templatePath, error)
-func Stage(opts StageOptions) (string, string, error) {
+// return (appname, templatePath, appVersion, error)
+func Stage(opts StageOptions) (string, string, string, error) {
 	appname := assembly.Name()
-	templatePath, err := StagePath(appname, "", opts)
+	templatePath, appVersion, err := StagePath(appname, "", opts)
 
-	return appname, templatePath, err
+	return appname, templatePath, appVersion, err
 }

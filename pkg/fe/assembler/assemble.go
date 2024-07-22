@@ -76,13 +76,13 @@ func Assemble(sourcePath string, opts Options) error {
 		fmt.Fprintf(os.Stderr, "Using assemblyName=%s\n", assemblyName)
 	}
 
-	if appTemplatePath, err := StagePath(assemblyName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, appVersion, err := StagePath(assemblyName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
 	} else if err := assembly.SaveOptions(appTemplatePath, opts.AssemblyOptions); err != nil {
 		return err
 	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
-	} else if err := assembly.DropBreadcrumb(assemblyName, lunchpailStageDir); err != nil {
+	} else if err := assembly.DropBreadcrumb(assemblyName, appVersion, lunchpailStageDir); err != nil {
 		return err
 	} else {
 		if !opts.AllPlatforms {

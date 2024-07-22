@@ -27,7 +27,7 @@ type Linked struct {
 func Compile(opts CompileOptions) (Linked, error) {
 	stageOpts := assembler.StageOptions{}
 	stageOpts.Verbose = opts.Verbose
-	assemblyName, templatePath, err := assembler.Stage(stageOpts)
+	assemblyName, templatePath, _, err := assembler.Stage(stageOpts)
 	if err != nil {
 		return Linked{}, err
 	}
