@@ -33,15 +33,22 @@ func gogenerate(dir string) error {
 	return nil
 }
 
-func gobuild(dir, name string) error {
+func gobuild(dir, name, targetOs, targetArch string) error {
 	absName, err := filepath.Abs(name)
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command("go", "build", "-ldflags", "-s -w", "-o", absName, "cmd/main.go")
+	targetName := absName
+	if targetOs != "" && targetArch != "" {
+		targetName = absName + "-" + targetOs + "-" + targetArch
+	}
+
+	cmd := exec.Command("go", "build", "-ldflags", "-s -w", "-o", targetName, "cmd/main.go")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "CGO_ENABLED=0")
+	cmd.Env = append(cmd.Env, "GOOS="+targetOs)
+	cmd.Env = append(cmd.Env, "GOARCH="+targetArch)
 
 	cmd.Dir = dir
 	cmd.Stdout = os.Stdout
@@ -54,8 +61,8 @@ func gobuild(dir, name string) error {
 	return nil
 }
 
-func emit(dir, name string) error {
-	fmt.Fprint(os.Stderr, "Generating application binary...")
+func emit(dir, name, targetOs, targetArch string) error {
+	fmt.Fprintln(os.Stderr, "Generating application binary "+targetOs+" "+targetArch)
 	if err := goget(dir); err != nil {
 		return err
 	}
@@ -64,10 +71,9 @@ func emit(dir, name string) error {
 		return err
 	}
 
-	if err := gobuild(dir, name); err != nil {
+	if err := gobuild(dir, name, targetOs, targetArch); err != nil {
 		return err
 	}
-	fmt.Fprintln(os.Stderr, " done")
 
 	return nil
 }
