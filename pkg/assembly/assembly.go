@@ -22,6 +22,9 @@ var by string
 //go:embed assembledOn.txt
 var on string
 
+//go:embed appVersion.txt
+var appVersion string
+
 func Name() string {
 	return strings.TrimSpace(name)
 }
@@ -38,11 +41,15 @@ func On() string {
 	return strings.TrimSpace(on)
 }
 
+func AppVersion() string {
+	return strings.TrimSpace(appVersion)
+}
+
 func IsAssembled() bool {
 	return Name() != "<none>"
 }
 
-func DropBreadcrumb(assemblyName, stagedir string) error {
+func DropBreadcrumb(assemblyName, appVersion, stagedir string) error {
 	user, err := user.Current()
 	if err != nil {
 		return err
@@ -54,6 +61,8 @@ func DropBreadcrumb(assemblyName, stagedir string) error {
 	}
 
 	if err := os.WriteFile(filepath.Join(stagedir, "pkg/assembly/assemblyName.txt"), []byte(assemblyName), 0644); err != nil {
+		return err
+	} else if err := os.WriteFile(filepath.Join(stagedir, "pkg/assembly/appVersion.txt"), []byte(appVersion), 0644); err != nil {
 		return err
 	} else if err := os.WriteFile(filepath.Join(stagedir, "pkg/assembly/assemblyDate.txt"), []byte(time.Now().String()), 0644); err != nil {
 		return err
