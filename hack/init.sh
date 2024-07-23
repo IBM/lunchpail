@@ -9,4 +9,4 @@ if [ ! -f /tmp/lunchpail ]
 then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 fi
 
-/tmp/lunchpail init local
+/tmp/lunchpail init local --build-images

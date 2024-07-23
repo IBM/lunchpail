@@ -5,6 +5,8 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/fe/linker"
+	initialize "lunchpail.io/pkg/lunchpail/init"
+	"lunchpail.io/pkg/util"
 
 	"github.com/spf13/cobra"
 )
@@ -36,7 +38,8 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 func newUpCmd() *cobra.Command {
 	var verboseFlag bool
 	var dryrunFlag bool
-	var watchFlag bool
+	watchFlag := false
+	var createCluster bool
 	var createNamespace bool
 
 	var cmd = &cobra.Command{
@@ -45,14 +48,29 @@ func newUpCmd() *cobra.Command {
 		Long:  "Deploy the application",
 	}
 
+	if util.StdoutIsTty() {
+		// default to watch if we are connected to a TTY
+		watchFlag = true
+	}
+
 	cmd.Flags().SortFlags = false
 	appOpts := addAssemblyOptions(cmd)
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
-	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "After deployment, watch for status updates")
-	cmd.Flags().BoolVarP(&createNamespace, "create-namespace", "N", false, "Create a new Kubernetes namespace")
+	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", watchFlag, "After deployment, watch for status updates")
+	cmd.Flags().BoolVarP(&createCluster, "create-cluster", "I", false, "Create a new (local) Kubernetes cluster, if needed")
+	cmd.Flags().BoolVarP(&createNamespace, "create-namespace", "N", false, "Create a new Kubernetes namespace, if needed")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if appOpts.TargetPlatform == be.Kubernetes && createCluster {
+			if err := initialize.Local(initialize.InitLocalOptions{BuildImages: false, Verbose: verboseFlag}); err != nil {
+				return err
+			}
+
+			// if we were asked to create a cluster, then certainly we will want to create a namespace
+			createNamespace = true
+		}
+
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
 		if err != nil {
 			return err

@@ -27,10 +27,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Create k8s Kind Cluster
-      uses: helm/kind-action@v1.10.0
-      with:
-        install_only: true
+    # we will also be testing installing kind, so we don't want to do
+    # this as part of the github action workflow
+    #- name: Create k8s Kind Cluster
+    #  uses: helm/kind-action@v1.10.0
+    #  with:
+    #    install_only: true
 
     - name: Setup
       run: ./tests/bin/travis/setup.sh
