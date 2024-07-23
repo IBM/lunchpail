@@ -8,7 +8,8 @@ import (
 )
 
 type InitLocalOptions struct {
-	Verbose bool
+	BuildImages bool
+	Verbose     bool
 }
 
 func Local(opts InitLocalOptions) error {
@@ -37,7 +38,13 @@ func Local(opts InitLocalOptions) error {
 		return err
 	}
 
-	bopts := build.BuildOptions{}
-	bopts.Verbose = opts.Verbose
-	return images.Build(bopts)
+	if opts.BuildImages {
+		bopts := build.BuildOptions{}
+		bopts.Verbose = opts.Verbose
+		if err := images.Build(bopts); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -72,7 +72,6 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
                $repo_secret \
                $2
 
-echo "!!!!!!!!!!!!!!!XXXXXXXXXXXXXXXXXXXXXXX $2"
 if [[ -d "$2" ]] && [[ -f "$2"/version ]]
 then
     # Check that app version passes through

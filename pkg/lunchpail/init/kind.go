@@ -64,7 +64,7 @@ func createKindCluster() error {
 			args = append(args, "/tmp/kindhack.yaml")
 		}
 
-		fmt.Printf("Creating kind cluster " + lunchpail.LocalClusterName)
+		fmt.Printf("Creating kind cluster %s\n", lunchpail.LocalClusterName)
 
 		cmd := exec.Command("kind", args...)
 		cmd.Stdout = os.Stdout

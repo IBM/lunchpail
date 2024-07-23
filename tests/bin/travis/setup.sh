@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 
-set -e
-set -o pipefail
+set -eo pipefail
 
-# ibm travis currently runs ubuntu 20, for which there are no podman
-# v4 builds. We rely on v4 for the `podman machine init --rootful`
-# option
+# Keeping this here, in case we want to test podman in CI.
 # if ! which podman >& /dev/null
 # then
 #     echo "Installing podman"
