@@ -40,7 +40,7 @@ binaries](https://github.com/IBM/lunchpail-demo/releases). For
 example, if you are on MacOS with Apple Silicon:
 
 ```shell
-curl -LO https://github.com/IBM/lunchpail-demo/releases/download/v0.1.0/lunchpail-demo-darwin-arm64 && chmod +x lunchpail-demo-darwin-arm64
+curl -LO https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail-demo-darwin-arm64 && chmod +x lunchpail-demo-darwin-arm64
 ./lunchpail-demo-darwin-arm64 up --create-namespace --watch
 ```
 
