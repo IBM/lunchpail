@@ -21,8 +21,9 @@ func startWatching(app, run, namespace string) (watch.Interface, error) {
 
 	timeout := timeoutSeconds
 	podWatcher, err := clientset.CoreV1().Pods(namespace).Watch(context.Background(), metav1.ListOptions{
-		TimeoutSeconds: &timeout,
-		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + run,
+		TimeoutSeconds:  &timeout,
+		ResourceVersion: "",
+		LabelSelector:   "app.kubernetes.io/component,app.kubernetes.io/instance=" + run,
 	})
 	if err != nil {
 		return nil, err
@@ -86,7 +87,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 	switch component {
 	case string(events.WorkStealerComponent):
 		if what == watch.Added {
-			// new worker pod. start streaming its logs
+			// new workerstealer pod. start streaming its logs
 			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, events.WorkStealerComponent, true, cm); err != nil {
 				return err
 			}
@@ -94,7 +95,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 		cc <- events.WorkStealerUpdate(pod.Namespace, "Kubernetes", workerStatus, what)
 	case string(events.DispatcherComponent):
 		if what == watch.Added {
-			// new worker pod. start streaming its logs
+			// new dispatcher pod. start streaming its logs
 			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, events.DispatcherComponent, false, cm); err != nil {
 				return err
 			}
