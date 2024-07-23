@@ -12,12 +12,12 @@ var versionCmd = &cobra.Command{
 	Short: "version",
 	Long:  "version",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		version := lunchpail.Version()
-		if assembly.IsAssembled() {
-			version = assembly.AppVersion()
+		if assembly.IsAssembled() && assembly.AppVersion() != "" {
+			fmt.Printf("Application Version: %s\n", assembly.AppVersion())
 		}
 
-		fmt.Printf("%s\n", version)
+		fmt.Printf("  Lunchpail Version: %s\n", lunchpail.Version())
+
 		return nil
 	},
 }
