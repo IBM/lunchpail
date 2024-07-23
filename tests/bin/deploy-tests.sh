@@ -77,7 +77,7 @@ if [[ -d "$2" ]] && [[ -f "$2"/version ]]
 then
     # Check that app version passes through
     expectedAppVersion=$(cat "$2"/version)
-    actualAppVersion=$($testapp version)
+    actualAppVersion=$($testapp version | grep 'Application Version' | awk '{print $NF}')
     if [[ "$expectedAppVersion" = "$actualAppVersion" ]]
     then echo "✅ PASS App Version passthrough $expectedAppVersion"
     else echo "❌ FAIL App Version passthrough expected!=actual '$expectedAppVersion'!='$actualAppVersion'" && exit 1
