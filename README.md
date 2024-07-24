@@ -7,6 +7,8 @@
 
 Lunchpail compiles your job code into an all-in-one executable. Others download that binary, and `up` it to run your code in the Cloud or an existing Kubernetes cluster. 
 
+<img src="docs/status0.png" width="200"> <img src="docs/status1.png" width="200"> <img src="docs/status2.png" width="200">
+
 <table>
     <tr>
         <td>
