@@ -5,31 +5,26 @@
 <a href="https://github.com/IBM/lunchpail/releases"><img src="https://img.shields.io/github/release/IBM/lunchpail.svg" alt="Latest Release"></a>
 [![CI Tests](https://github.com/IBM/lunchpail/actions/workflows/actions.yml/badge.svg)](https://github.com/IBM/lunchpail/actions/workflows/actions.yml)
 
-Lunchpail takes your code and creates a executable. Others download
-that binary, and `up` it to run code in the Cloud or an existing
-Kubernetes cluster.
+Lunchpail compiles your job code into an all-in-one executable. Others download that binary, and `up` it to run your code in the Cloud or an existing Kubernetes cluster. 
 
-> Lunchpail is a new project. Bear with us, and please chip in if you
-> can, as we finish up the initial polishing passes.
-
-What you get, as an **application owner**: a way to shrink-wrap and
-distribute your code without having to worry about coding or
-maintaining the logic for deployment, scaling, load balancing,
-observability, etc.
-
-What you get, as a **platform engineer**: a way to shrink-wrap the
-variants of base application logic for your team's use cases. These
-also become distributable binaries that also contain everything needed
-for your team to run and observe jobs.
-
-What you get, as an **end user** or **automator**: you can stitch
-together the steps of your automation, because each step is a black
-box application created by the above.
-
-What you get, as a **budgeter** of time and money: you can have your
-developers run the applications in a mode that only queues up work.
-Separately, you allocate or reduce resources assigned to each queue,
-as your budget allows.
+<table>
+    <tr>
+        <td>
+            <strong>Application Owners</strong> shrink-wrap and distribute code as binaries. Lunchpail bundles your code with the logic for deployment, scaling, load balancing, observability, etc.
+        </td>
+        <td>
+            <strong>Platform engineers</strong> can shrink-wrap the variants of base application logic for their team's use cases. These also become distributable binaries.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <strong>End users</strong> or <strong>automators</strong> can stitch together the steps of automation, because each step is a black box shrink-wrapped application.
+        </td>
+        <td>
+            <strong>Budgeters</strong> and <strong>managers</strong> can have their developers run the applications in a mode that only queues up work. Separately, one can use the same binary to allocate or reduce resources assigned to each queue, as budget allows.
+        </td>
+    </tr>
+</table>
 
 ## Getting Started with a Demo Application
 
@@ -51,3 +46,9 @@ curl -L https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail
 
 - [Download](https://github.com/IBM/lunchpail/releases/latest) the latest `lunchpail` CLI.
 - Try out `lunchpail assemble` to generate binaries for your application.
+
+## And... Welcome!
+
+Lunchpail is a new project. Bear with us, and please chip in if you
+can, as we finish up the initial polishing passes.
+
