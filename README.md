@@ -28,26 +28,11 @@ Lunchpail compiles your job code into an all-in-one executable. Others download 
     </tr>
 </table>
 
-## Getting Started with a Demo Application
+## Getting Started
 
-We have a simple demo application. You can check out the
-[source](https://github.com/IBM/lunchpail-demo) or download one of the
-[prebuilt
-binaries](https://github.com/IBM/lunchpail-demo/releases). For
-example, if you are on MacOS with Apple Silicon:
-
-```shell
-curl -L https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail-demo-darwin-arm64 -o lunchpail-demo && chmod +x lunchpail-demo
-./lunchpail-demo up --create-namespace
-```
-
-> Note: the above command currently requires that you have a valid
-> Kubernetes context.
-
-## Getting Started as an Application Developer
-
-- [Download](https://github.com/IBM/lunchpail/releases/latest) the latest `lunchpail` CLI.
-- Try out `lunchpail assemble` to generate binaries for your application.
+- [Try a demo](./docs/demos/README.md). We have used Lunchpail to build binaries of several demo applications.
+- [Build binaries for your application](./docs/build/README.md)
+- [Develop Lunchpail itself](./docs/contribute/README.md)
 
 ## And... Welcome!
 
