@@ -33,15 +33,15 @@ as your budget allows.
 
 ## Getting Started with a Demo Application
 
-We have a simple [demo
-application](https://github.com/IBM/lunchpail-demo). You can check out
-the source and download one of the [prebuilt
+We have a simple demo application. You can check out the
+[source](https://github.com/IBM/lunchpail-demo) or download one of the
+[prebuilt
 binaries](https://github.com/IBM/lunchpail-demo/releases). For
 example, if you are on MacOS with Apple Silicon:
 
 ```shell
-curl -LO https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail-demo-darwin-arm64 && chmod +x lunchpail-demo-darwin-arm64
-./lunchpail-demo-darwin-arm64 up --create-namespace --watch
+curl -L https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail-demo-darwin-arm64 -o lunchpail-demo && chmod +x lunchpail-demo
+./lunchpail-demo up --create-namespace
 ```
 
 > Note: the above command currently requires that you have a valid
