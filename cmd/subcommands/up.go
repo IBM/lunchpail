@@ -35,6 +35,7 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().StringVarP(&options.Profile, "profile", "", "bx2-8x32", "An instance profile type to choose size and capability of the instance")
 	//TODO: make public image as default
 	cmd.Flags().StringVarP(&options.ImageID, "image-id", "", "", "Identifier of a catalog or custom image to be used for instance creation")
+	cmd.Flags().BoolVarP(&options.CreateNamespace, "create-namespace", "N", false, "Create a new namespace, if needed")
 	return &options
 }
 
@@ -43,7 +44,6 @@ func newUpCmd() *cobra.Command {
 	var dryrunFlag bool
 	watchFlag := false
 	var createCluster bool
-	var createNamespace bool
 
 	var cmd = &cobra.Command{
 		Use:   "up",
@@ -62,7 +62,6 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", watchFlag, "After deployment, watch for status updates")
 	cmd.Flags().BoolVarP(&createCluster, "create-cluster", "I", false, "Create a new (local) Kubernetes cluster, if needed")
-	cmd.Flags().BoolVarP(&createNamespace, "create-namespace", "N", false, "Create a new Kubernetes namespace, if needed")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if appOpts.TargetPlatform == platform.Kubernetes && createCluster {
@@ -71,7 +70,7 @@ func newUpCmd() *cobra.Command {
 			}
 
 			// if we were asked to create a cluster, then certainly we will want to create a namespace
-			createNamespace = true
+			appOpts.CreateNamespace = true
 		}
 
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
@@ -89,7 +88,7 @@ func newUpCmd() *cobra.Command {
 			HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost,
 			ApiKey: appOpts.ApiKey, TargetPlatform: appOpts.TargetPlatform, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
 			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID}
-		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, CreateNamespace: createNamespace, Verbose: verboseFlag}
+		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, Verbose: verboseFlag}
 
 		return boot.Up(boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
 	}

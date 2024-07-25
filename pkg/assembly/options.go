@@ -25,6 +25,7 @@ type Options struct {
 	Zone               string            `yaml:"zone,omitempty"`
 	Profile            string            `yaml:"profile,omitempty"`
 	ImageID            string            `yaml:"imageID,omitempty"`
+	CreateNamespace    bool              `yaml:"createNamespace,omitempty"`
 }
 
 func optionsPath(appTemplatePath string) string {

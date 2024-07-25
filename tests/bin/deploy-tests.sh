@@ -68,6 +68,7 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
 # overridden by final values at shrinkwrap time
 /tmp/lunchpail assemble -v \
                -o $testapp \
+               --create-namespace \
                $branch \
                $repo_secret \
                $2
@@ -90,7 +91,6 @@ $testapp up \
          $GPU \
          $LP_ARGS \
          --watch=false \
-         --create-namespace \
          --set global.arch=$ARCH \
          --set kubernetes.context=kind-lunchpail \
          --set cosAccessKey=$COS_ACCESS_KEY \

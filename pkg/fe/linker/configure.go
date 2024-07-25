@@ -14,7 +14,6 @@ import (
 
 type ConfigureOptions struct {
 	AssemblyOptions assembly.Options
-	CreateNamespace bool
 	Verbose         bool
 }
 
@@ -52,6 +51,9 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		}
 		if opts.AssemblyOptions.DockerHost == "" {
 			opts.AssemblyOptions.DockerHost = shrinkwrappedOptions.DockerHost
+		}
+		if !opts.AssemblyOptions.CreateNamespace {
+			opts.AssemblyOptions.CreateNamespace = shrinkwrappedOptions.CreateNamespace
 		}
 	}
 
@@ -141,15 +143,15 @@ lunchpail_internal:
   workstealer:
     sleep_before_exit: %s # sleepBeforeExit (31)
 `,
-		clusterType,                     // (1)
-		opts.AssemblyOptions.DockerHost, // (2)
-		runname,                         // (3)
-		imageRegistry,                   // (4)
-		imageRepo,                       // (5)
-		imagePullSecretName,             // (6)
-		dockerconfigjson,                // (7)
-		systemNamespace,                 // (8)
-		opts.CreateNamespace,            // (9)
+		clusterType,                          // (1)
+		opts.AssemblyOptions.DockerHost,      // (2)
+		runname,                              // (3)
+		imageRegistry,                        // (4)
+		imageRepo,                            // (5)
+		imagePullSecretName,                  // (6)
+		dockerconfigjson,                     // (7)
+		systemNamespace,                      // (8)
+		opts.AssemblyOptions.CreateNamespace, // (9)
 
 		runnameMax40,                       // (10)
 		systemNamespace,                    // (11)
