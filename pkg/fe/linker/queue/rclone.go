@@ -27,6 +27,9 @@ func parseFlagAsRclone(flag string, spec *Spec) (bool, error) {
 			return false, fmt.Errorf("Rclone config '%s' has invalid endpoint value: '%s'", rcloneRemote, maybe)
 		} else {
 			spec.Endpoint = s
+			if !isInternalS3(s) {
+				spec.Auto = false
+			}
 		}
 
 		if maybe, ok := config["access_key_id"]; !ok {
@@ -51,4 +54,11 @@ func parseFlagAsRclone(flag string, spec *Spec) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// Follow convention for internalS3 name in charts/workstealer/templates/s3 below.
+// Checks if hostname ends with the same suffix to determine if internalS3.
+func isInternalS3(endpoint string) bool {
+	internalS3Suffix := "-lunchpail-s3"
+	return strings.HasSuffix(strings.Split(endpoint, ".")[0], internalS3Suffix)
 }

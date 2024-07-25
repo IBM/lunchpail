@@ -1,4 +1,3 @@
-{{- if .Values.taskqueue.auto }}
 # the taskqueue to use, if none is provided by the application/command line
 apiVersion: v1
 kind: Secret
@@ -14,4 +13,3 @@ data:
   endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint | b64enc }}
   accessKeyID: {{ .Values.taskqueue.accessKey | default .Values.global.s3AccessKey | b64enc }}
   secretAccessKey: {{ .Values.taskqueue.secretKey | default .Values.global.s3SecretKey | b64enc }}
-{{- end }}
