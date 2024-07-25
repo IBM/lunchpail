@@ -2,7 +2,7 @@ package subcommands
 
 import (
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/fe/linker"
 	initialize "lunchpail.io/pkg/lunchpail/init"
@@ -13,6 +13,7 @@ import (
 
 func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	var options assembly.Options
+	options.TargetPlatform = platform.Kubernetes
 
 	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
 	cmd.Flags().StringSliceVarP(&options.RepoSecrets, "repo-secret", "r", []string{}, "Of the form <user>:<pat>@<githubUrl> e.g. me:3333@https://github.com")
@@ -25,7 +26,7 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().StringVarP(&options.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")
 
 	cmd.Flags().StringVarP(&options.ApiKey, "api-key", "a", "", "IBM Cloud api key")
-	cmd.Flags().StringVarP(&options.TargetPlatform, "target-platform", "p", be.Kubernetes, "Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot]")
+	cmd.Flags().VarP(&options.TargetPlatform, "target-platform", "p", "Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot]")
 	cmd.Flags().StringVarP(&options.ResourceGroupID, "resource-group-id", "", "", "Identifier of a Cloud resource group to contain the instance(s)")
 	cmd.Flags().StringVarP(&options.SSHKeyType, "ssh-key-type", "", "rsa", "SSH key type [rsa, ed25519]")
 	cmd.Flags().StringVarP(&options.PublicSSHKey, "public-ssh-key", "", "", "An existing or new SSH public key to identify user on the instance")
@@ -62,7 +63,7 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&createNamespace, "create-namespace", "N", false, "Create a new Kubernetes namespace, if needed")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if appOpts.TargetPlatform == be.Kubernetes && createCluster {
+		if appOpts.TargetPlatform == platform.Kubernetes && createCluster {
 			if err := initialize.Local(initialize.InitLocalOptions{BuildImages: false, Verbose: verboseFlag}); err != nil {
 				return err
 			}

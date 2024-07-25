@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/observe/cpu"
 	"lunchpail.io/pkg/observe/events"
 	"lunchpail.io/pkg/observe/qstat"
@@ -21,7 +22,7 @@ type Pool struct {
 	Name        string
 	Namespace   string
 	Parallelism int
-	Platform    string
+	Platform    platform.Platform
 	Workers     []Worker
 }
 

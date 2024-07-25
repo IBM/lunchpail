@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/observe/events"
 )
 
@@ -92,7 +93,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 				return err
 			}
 		}
-		cc <- events.WorkStealerUpdate(pod.Namespace, "Kubernetes", workerStatus, what)
+		cc <- events.WorkStealerUpdate(pod.Namespace, platform.Kubernetes, workerStatus, what)
 	case string(events.DispatcherComponent):
 		if what == watch.Added {
 			// new dispatcher pod. start streaming its logs
@@ -100,7 +101,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 				return err
 			}
 		}
-		cc <- events.DispatcherUpdate(pod.Namespace, "Kubernetes", workerStatus, what)
+		cc <- events.DispatcherUpdate(pod.Namespace, platform.Kubernetes, workerStatus, what)
 	case string(events.WorkersComponent):
 		if what == watch.Added {
 			// new worker pod. start streaming its logs
@@ -116,7 +117,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 
 		poolName, exists := pod.Labels["app.kubernetes.io/name"]
 		if exists {
-			cc <- events.WorkerUpdate(name, pod.Namespace, poolName, "Kubernetes", workerStatus, what)
+			cc <- events.WorkerUpdate(name, pod.Namespace, poolName, platform.Kubernetes, workerStatus, what)
 		}
 	}
 
