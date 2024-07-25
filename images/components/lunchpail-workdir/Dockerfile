@@ -1,4 +1,4 @@
-FROM alpine:3
+FROM docker.io/alpine:3
 LABEL org.opencontainers.image.source="https://github.com/IBM/lunchpail"
 
 RUN apk update && apk add --no-cache git ca-certificates bash
