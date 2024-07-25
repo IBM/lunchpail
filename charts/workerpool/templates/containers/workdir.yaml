@@ -14,7 +14,7 @@
 
 {{- if .Values.workdir.cm.data }}
 - name: workdir-code
-  image: alpine:3
+  image: docker.io/alpine:3
   volumeMounts:
     {{ include "workdir/volumeMount" . | indent 4 }}
   env:
