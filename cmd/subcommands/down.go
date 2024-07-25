@@ -3,7 +3,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/boot"
 )
 
@@ -12,7 +12,7 @@ func newDownCmd() *cobra.Command {
 	var verboseFlag bool
 	var deleteNamespaceFlag bool
 	var deleteAllRunsFlag bool
-	var targetPlatform string
+	var targetPlatform = platform.Kubernetes
 	var apiKey string
 	var deleteCloudResourcesFlag bool
 
@@ -32,7 +32,7 @@ func newDownCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&deleteNamespaceFlag, "delete-namespace", "N", false, "Also delete namespace (only for empty namespaces)")
 	cmd.Flags().BoolVarP(&deleteAllRunsFlag, "all", "A", false, "Delete all runs in the given namespace")
-	cmd.Flags().StringVarP(&targetPlatform, "target-platform", "p", be.Kubernetes, "Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot]")
+	cmd.Flags().VarP(&targetPlatform, "target-platform", "p", "Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot]")
 	cmd.Flags().StringVarP(&apiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
 	return cmd

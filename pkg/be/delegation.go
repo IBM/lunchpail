@@ -7,17 +7,12 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/observe/events"
 )
 
-const (
-	Kubernetes = "Kubernetes"
-	IBMCloud   = "IBMCloud"
-	SkyPilot   = "SkyPilot"
-)
-
-func ChangeWorkers(poolName, poolNamespace, poolPlatform, context string, delta int) error {
-	if poolPlatform == Kubernetes {
+func ChangeWorkers(poolName, poolNamespace string, poolPlatform platform.Platform, context string, delta int) error {
+	if poolPlatform == platform.Kubernetes {
 		return kubernetes.ChangeWorkers(poolName, poolNamespace, context, delta)
 	}
 	return nil
@@ -57,4 +52,13 @@ func StreamRunEvents(appname, runname, namespace string) (chan events.Message, e
 
 func StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error) {
 	return kubernetes.StreamRunComponentUpdates(appname, runname, namespace)
+}
+
+func Ok(target platform.Platform) error {
+	switch target {
+	case platform.Kubernetes:
+		return kubernetes.Ok()
+	}
+
+	return nil
 }

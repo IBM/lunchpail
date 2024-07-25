@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be/ibmcloud"
 	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/observe/runs"
 )
@@ -18,7 +19,7 @@ type DownOptions struct {
 	Verbose              bool
 	DeleteNamespace      bool
 	DeleteAll            bool
-	TargetPlatform       string
+	TargetPlatform       platform.Platform
 	ApiKey               string
 	DeleteCloudResources bool
 }
