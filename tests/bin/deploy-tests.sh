@@ -89,6 +89,7 @@ $testapp up \
          $APP \
          $GPU \
          $LP_ARGS \
+         --watch=false \
          --create-namespace \
          --set global.arch=$ARCH \
          --set kubernetes.context=kind-lunchpail \
