@@ -83,6 +83,12 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	// the app.kubernetes.io/part-of label value
 	partOf := appname
 
+	// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
+	runnameMax40 := runname
+	if len(runname) > 40 {
+		runnameMax40 = runname[:40]
+	}
+
 	yaml := fmt.Sprintf(`
 global:
   type: %s # clusterType (1)
@@ -101,7 +107,7 @@ global:
       create: %v # opts.CreateNamespace (9)
     context:
       name: ""
-  s3Endpoint: http://%s-s3.%s.svc.cluster.local:%d # runname (10) systemNamespace (11) internalS3Port (12)
+  s3Endpoint: http://%s-lunchpail-s3.%s.svc.cluster.local:%d # runnameMax40 (10) systemNamespace (11) internalS3Port (12)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 lunchpail: lunchpail
@@ -145,7 +151,7 @@ lunchpail_internal:
 		systemNamespace,                 // (8)
 		opts.CreateNamespace,            // (9)
 
-		runname,                            // (10)
+		runnameMax40,                       // (10)
 		systemNamespace,                    // (11)
 		internalS3Port,                     // (12)
 		user.Username,                      // (13)

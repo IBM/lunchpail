@@ -10,7 +10,7 @@
       prefix: {{ print .Values.taskqueue.dataset "_" }}
 {{- if .Values.internalS3.enabled }}
     - secretRef:
-        name: {{ print (.Release.Name | trunc 50) "-s3" }}
+        name: {{ print (.Release.Name | trunc 40) "-lunchpail-s3" }}
   ports:
     - containerPort: 9000
 {{- end }}
