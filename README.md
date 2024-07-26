@@ -7,7 +7,28 @@
 
 Lunchpail compiles your job code into an all-in-one executable. Others download that binary, and `up` it to run your code in the Cloud or an existing Kubernetes cluster. 
 
-<img src="docs/demo1.gif" width="222"> <img src="docs/status0.png" width="230"> <img src="docs/status1.png" width="230">
+<table>
+    <tr>
+        <td><img src="docs/demo1.gif" width="222"></td>
+        <td><img src="docs/status0.png" width="230"></td>
+        <td><img src="docs/status1.png" width="230"></td>
+    </tr>
+    <tr>
+        <td><a href="docs/demos/#openroad-demo"><tt>lunchpail-openroad up</tt></a></td>
+        <td><a href="docs/demos/#lunchpail-demo"><tt>lunchpail-demo up</tt></a></td>
+        <td>Commercial app</td>
+    </tr>
+</table>
+
+## Getting Started
+
+- [Try a demo](./docs/demos/README.md). We have used Lunchpail to build binaries of several demo applications.
+- [Build binaries for your application](./docs/build/README.md)
+- [Develop Lunchpail itself](./docs/contribute/README.md)
+
+## User Roles
+
+Here are some of the Lunchpail use cases, summarized by user role:
 
 <table>
     <tr>
@@ -28,14 +49,7 @@ Lunchpail compiles your job code into an all-in-one executable. Others download 
     </tr>
 </table>
 
-## Getting Started
-
-- [Try a demo](./docs/demos/README.md). We have used Lunchpail to build binaries of several demo applications.
-- [Build binaries for your application](./docs/build/README.md)
-- [Develop Lunchpail itself](./docs/contribute/README.md)
-
 ## And... Welcome!
 
 Lunchpail is a new project. Bear with us, and please chip in if you
-can, as we finish up the initial polishing passes.
-
+can, as we finish up the initial polishing passes. 
