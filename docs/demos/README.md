@@ -12,29 +12,30 @@ guidance of building your own binaries.
 - [Demo 1: Hello World](#hello-world-demo)
 - [Demo 2: OpenROAD](#openroad-demo)
 
-## Hello World Demo
+## Lunchpail Demo
 
 You can check out the
 [source](https://github.com/IBM/lunchpail-demo) or download one of the
 [prebuilt
-binaries](https://github.com/IBM/lunchpail-demo/releases). For
-example, if you are on MacOS with Apple Silicon:
+binaries](https://github.com/IBM/lunchpail-demo/releases):
 
 ```shell
-curl -L https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail-demo-darwin-arm64 -o lunchpail-demo && chmod +x lunchpail-demo
-./lunchpail-demo up -N
+curl -L https://github.com/IBM/lunchpail-demo/releases/latest/download/lunchpail-demo-$(uname | tr A-Z a-z)-$(uname -m) -o lunchpail-demo && chmod +x lunchpail-demo
+./lunchpail-demo up
 ```
 
-## How we built it
+## How we built `lunchpail-demo`
 
 To build these binaries, we first downloaded the latest [Lunchpail
 release](https://github.com/IBM/lunchpail/releases/latest) and then
 ran:
 
 ```shell
-lunchpail assemble https://github.com/IBM/lunchpail-demo -o /tmp/lunchpail-demo
+lunchpail assemble https://github.com/IBM/lunchpail-demo -o /tmp/lunchpail-demo -N
 ```
 
+Here, we used the `-N` flag (short for `--create-namespace`) so that
+users of the demo won't have to worry about managing namespaces.
 Optionally, if you add the `-A` option, a set of platform binaries
 will be generated. Without that flag, a single binary for the current
 platform will be generated.
@@ -55,20 +56,21 @@ binaries](https://github.com/IBM/lunchpail-openroad-max-utilization/releases). F
 example, if you are on MacOS with Apple Silicon:
 
 ```shell
-curl -L https://github.com/IBM/lunchpail-openroad-max-utilization/releases/latest/download/lunchpail-openroad-darwin-arm64 -o lunchpail-openroad && chmod +x lunchpail-openroad
-./lunchpail-openroad up -N
+curl -L https://github.com/IBM/lunchpail-openroad-max-utilization/releases/latest/download/lunchpail-openroad-$(uname | tr A-Z a-z)-$(uname -m) -o lunchpail-openroad && chmod +x lunchpail-openroad
+./lunchpail-openroad up
 ```
 
-## How we built it
+> Warning: while this demo can run on MacOS Apple Silicon, it will run
+> in emulation mode. Expect it to run a bit more slowly there.
+
+## How we built `lunchpail-openroad`
 
 To build these binaries, we first downloaded the latest [Lunchpail
 release](https://github.com/IBM/lunchpail/releases/latest) and then
 ran:
 
 ```shell
-lunchpail assemble https://github.com/IBM/lunchpail-openroad-max-utilization -o /tmp/lunchpail-openroad
+lunchpail assemble https://github.com/IBM/lunchpail-openroad-max-utilization -o /tmp/lunchpail-openroad -N
 ```
 
-Optionally, if you add the `-A` option, a set of platform binaries
-will be generated. Without that flag, a single binary for the current
-platform will be generated.
+See the [above commentary](#how-we-built-lunchpail-demo) for details.
