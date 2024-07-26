@@ -12,7 +12,7 @@ Lunchpail compiles your job code into an all-in-one executable. Others download 
 
 <table>
     <tr>
-        <td><img src="docs/demo1.gif" width="222"><br><a href="docs/demos/#openroad-demo"><tt>lunchpail-openroad up</tt></a></td>
+        <td><img src="docs/demo1.gif" width="203"><br><a href="docs/demos/#openroad-demo"><tt>lunchpail-openroad up</tt></a></td>
         <td><img src="docs/status0.png" width="230"><br><a href="docs/demos/#lunchpail-demo"><tt>lunchpail-demo up</tt></a></td>
         <td><img src="docs/status1.png" width="230"><br>Commercial application</td>
     </tr>
