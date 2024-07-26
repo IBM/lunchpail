@@ -4,7 +4,8 @@ Welcome to the Lunchpail demo page. The demo binaries described here
 are all products of Lunchpail. Look [here](../build/README.md) for
 guidance of building your own binaries.
 
-> Note: the demo commands below currently assume that you have a valid
+> [!IMPORTANT]
+> The demo commands below currently assume that you have a valid
 > Kubernetes context. Cloud VM support and support for bringing up a
 > local [Kind](https://github.com/kubernetes-sigs/kind) cluster will
 > be documented soon.
