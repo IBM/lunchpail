@@ -29,3 +29,12 @@ func Ok(target platform.Platform) error {
 
 	return nil
 }
+
+func Values(target platform.Platform) ([]string, error) {
+	switch target {
+	case platform.Kubernetes:
+		return kubernetes.Values()
+	}
+
+	return []string{}, nil
+}

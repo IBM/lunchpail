@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
@@ -30,9 +31,6 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 			opts.AssemblyOptions.Namespace = shrinkwrappedOptions.Namespace
 		}
 		// TODO here... how do we determine that boolean values were unset?
-		if opts.AssemblyOptions.ClusterIsOpenShift == false {
-			opts.AssemblyOptions.ClusterIsOpenShift = shrinkwrappedOptions.ClusterIsOpenShift
-		}
 		if opts.AssemblyOptions.ImagePullSecret == "" {
 			opts.AssemblyOptions.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
 		}
@@ -59,13 +57,8 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	systemNamespace := namespace
 
-	clusterType := "k8s"
 	imageRegistry := lunchpail.ImageRegistry
 	imageRepo := lunchpail.ImageRepo
-
-	if opts.AssemblyOptions.ClusterIsOpenShift {
-		clusterType = "oc"
-	}
 
 	queueSpec, err := queue.ParseFlag(opts.AssemblyOptions.Queue, runname, internalS3Port)
 	if err != nil {
@@ -93,7 +86,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	yaml := fmt.Sprintf(`
 global:
-  type: %s # clusterType (1)
+  unused: %s # "" (1)
   dockerHost: %s # dockerHost (2)
   rbac:
     serviceaccount: %s # runname (3)
@@ -143,7 +136,7 @@ lunchpail_internal:
   workstealer:
     sleep_before_exit: %s # sleepBeforeExit (31)
 `,
-		clusterType,                          // (1)
+		"",                                   // (1)
 		opts.AssemblyOptions.DockerHost,      // (2)
 		runname,                              // (3)
 		imageRegistry,                        // (4)
@@ -177,9 +170,15 @@ lunchpail_internal:
 		os.Getenv("LP_SLEEP_BEFORE_EXIT"),  // (31)
 	)
 
+	backendValues, err := be.Values(opts.AssemblyOptions.TargetPlatform)
+	if err != nil {
+		return "", []string{}, nil, queue.Spec{}, err
+	}
+
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.AssemblyOptions.OverrideValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap backend overrides=%v\n", backendValues)
 	}
 
 	repoSecrets, err := gatherRepoSecrets(slices.Concat(opts.AssemblyOptions.RepoSecrets, shrinkwrappedOptions.RepoSecrets))
@@ -187,5 +186,7 @@ lunchpail_internal:
 		return "", []string{}, nil, queue.Spec{}, err
 	}
 
-	return yaml, opts.AssemblyOptions.OverrideValues, repoSecrets, queueSpec, nil
+	overrides := slices.Concat(opts.AssemblyOptions.OverrideValues, backendValues)
+
+	return yaml, overrides, repoSecrets, queueSpec, nil
 }
