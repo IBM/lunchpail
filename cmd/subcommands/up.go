@@ -19,7 +19,6 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().StringSliceVarP(&options.RepoSecrets, "repo-secret", "r", []string{}, "Of the form <user>:<pat>@<githubUrl> e.g. me:3333@https://github.com")
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&options.Queue, "queue", "", "", "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
-	cmd.Flags().BoolVarP(&options.ClusterIsOpenShift, "openshift", "t", false, "Include support for OpenShift")
 	cmd.Flags().BoolVarP(&options.HasGpuSupport, "gpu", "", false, "Run with GPUs (if supported by the application)")
 
 	cmd.Flags().StringSliceVarP(&options.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
@@ -83,7 +82,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, ClusterIsOpenShift: appOpts.ClusterIsOpenShift, RepoSecrets: repoSecrets,
+		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, RepoSecrets: repoSecrets,
 			ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue,
 			HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost,
 			ApiKey: appOpts.ApiKey, TargetPlatform: appOpts.TargetPlatform, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
