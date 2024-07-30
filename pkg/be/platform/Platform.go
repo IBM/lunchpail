@@ -5,9 +5,9 @@ import "fmt"
 type Platform string
 
 const (
-	Kubernetes Platform = "Kubernetes"
-	IBMCloud            = "IBMCloud"
-	SkyPilot            = "SkyPilot"
+	Kubernetes Platform = "kubernetes"
+	IBMCloud            = "ibmcloud"
+	SkyPilot            = "skypilot"
 )
 
 func lookup(maybe string) (Platform, error) {
