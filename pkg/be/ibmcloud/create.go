@@ -312,17 +312,19 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 }
 
 func SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Action) error {
-	vpcService, err := Authenticator(aopts.ApiKey)
+	config := loadConfigWithCommandLineOverrides(aopts)
+
+	vpcService, err := Authenticator(aopts.ApiKey, config)
 	if err != nil {
 		return err
 	}
 
 	if action == Stop || action == Delete {
-		if err := stopOrDeleteVM(vpcService, runname, aopts.ResourceGroupID, action == Delete); err != nil {
+		if err := stopOrDeleteVM(vpcService, runname, config.ResourceGroup.GUID, action == Delete); err != nil {
 			return err
 		}
 	} else if action == Create {
-		if err := createAndInitVM(vpcService, runname, ir, aopts.ResourceGroupID, aopts.SSHKeyType, aopts.PublicSSHKey, aopts.Zone, aopts.Profile, aopts.ImageID); err != nil {
+		if err := createAndInitVM(vpcService, runname, ir, config.ResourceGroup.GUID, aopts.SSHKeyType, aopts.PublicSSHKey, aopts.Zone, aopts.Profile, aopts.ImageID); err != nil {
 			return err
 		}
 	}

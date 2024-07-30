@@ -8,16 +8,37 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
-func Authenticator(apiKey string) (*vpcv1.VpcV1, error) {
+func Authenticator(apiKey string, config ibmConfig) (*vpcv1.VpcV1, error) {
+	var auth core.Authenticator
+	var method = "apikey"
+	if apiKey == "" && config.IAMToken != "" {
+		bearerAuth, err := core.NewBearerTokenAuthenticator(config.IAMToken)
+		if err != nil {
+			return nil, err
+		}
+		method = "bearer token"
+		auth = bearerAuth
+	} else if apiKey != "" {
+		auth = &core.IamAuthenticator{
+			ApiKey: apiKey,
+		}
+
+	} else {
+		return nil, fmt.Errorf("Either use 'ibmcloud login' or rerun with an '--api-key' option")
+	}
+
 	// Instantiate the service with an API key based IAM authenticator
 	vpcService, err := vpcv1.NewVpcV1(&vpcv1.VpcV1Options{
-		Authenticator: &core.IamAuthenticator{
-			ApiKey: apiKey,
-		},
+		Authenticator: auth,
 	})
 	if err != nil {
 		return nil, errors.New("Error creating VPC Service with apikey" + apiKey)
 	}
-	fmt.Println("Instantiated the VPC service using API key.")
+	fmt.Printf("Accessing the VPC service via %s\n", method)
+
+	if err := Ok(config, vpcService); err != nil {
+		return nil, err
+	}
+
 	return vpcService, nil
 }
