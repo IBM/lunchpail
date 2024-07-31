@@ -18,7 +18,7 @@ func openshiftSpecificValues(clientset *k8s.Clientset) ([]string, error) {
 
 	openshiftIdx := slices.IndexFunc(namespaces.Items, func(ns corev1.Namespace) bool { return strings.Contains(ns.Name, "openshift") })
 	if openshiftIdx >= 0 {
-		return []string{"clusterType=oc"}, nil
+		return []string{"global.type=oc"}, nil
 	}
 
 	return []string{}, nil
