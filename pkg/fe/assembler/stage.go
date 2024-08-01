@@ -167,7 +167,7 @@ type StageOptions struct {
 
 // return (templatePath, appVersion, error)
 func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
-	appVersion := ""
+	appVersion := assembly.AppVersion()
 
 	templatePath, err := StageTemplate()
 	if err != nil {
