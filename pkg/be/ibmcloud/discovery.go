@@ -2,9 +2,12 @@ package ibmcloud
 
 import (
 	"encoding/json"
+	"fmt"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"lunchpail.io/pkg/assembly"
 )
 
@@ -16,6 +19,7 @@ type resourceGroup struct {
 type ibmConfig struct {
 	IAMToken      string        `json:"IAMToken"`
 	ResourceGroup resourceGroup `json:"ResourceGroup"`
+	Region        string        `json:"Region"`
 	// IAMRefreshToken string `json:"IAMRefreshToken"`
 }
 
@@ -49,4 +53,15 @@ func loadConfigWithCommandLineOverrides(aopts assembly.Options) ibmConfig {
 	}
 
 	return config
+}
+
+func getRandomizedZone(config ibmConfig, vpcService *vpcv1.VpcV1) (string, error) {
+	zones, response, err := vpcService.ListRegionZones(&vpcv1.ListRegionZonesOptions{
+		RegionName: &config.Region,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to get zones from region: %v and the response is: %s", err, response)
+	}
+
+	return *zones.Zones[rand.IntN(len(zones.Zones))].Name, err
 }

@@ -327,7 +327,14 @@ func SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Acti
 			return err
 		}
 	} else if action == Create {
-		if err := createAndInitVM(vpcService, runname, ir, config.ResourceGroup.GUID, aopts.SSHKeyType, aopts.PublicSSHKey, aopts.Zone, aopts.Profile, aopts.ImageID); err != nil {
+		zone := aopts.Zone //command line zone value
+		if zone == "" {    //random zone value using config
+			zone, err = getRandomizedZone(config, vpcService) //Todo: spread among random zones with a subnet in each zone
+			if err != nil {
+				return err
+			}
+		}
+		if err := createAndInitVM(vpcService, runname, ir, config.ResourceGroup.GUID, aopts.SSHKeyType, aopts.PublicSSHKey, zone, aopts.Profile, aopts.ImageID); err != nil {
 			return err
 		}
 	}
