@@ -37,7 +37,9 @@ func stopOrDeleteVM(vpcService *vpcv1.VpcV1, name string, resourceGroupID string
 					InstanceID:         instance.ID,
 					NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
 				})
-
+			if err != nil {
+				return fmt.Errorf("Failed to get floating IPs: %v and the response is: %s", err, response)
+			}
 			for _, fp := range floatingIPs.FloatingIps {
 				response, err := vpcService.RemoveInstanceNetworkInterfaceFloatingIP(
 					&vpcv1.RemoveInstanceNetworkInterfaceFloatingIPOptions{
