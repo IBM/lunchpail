@@ -6,12 +6,14 @@ import (
 	"math"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/ir/llir"
 	comp "lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/util"
 
 	"github.com/elotl/cloud-init/config"
 )
@@ -84,7 +86,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.C
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a virtual instance: %v and the response is: %s", err, response)
 	}
-	fmt.Printf("Created a VSI instance with ID:%s.", *instance.ID)
+	fmt.Printf("Created a VSI instance with ID: %s\n", *instance.ID)
 	return instance, nil
 }
 
@@ -221,30 +223,41 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (st
 }
 
 func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string) error {
+	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, resourceGroupID)
 	if err != nil {
 		return err
 	}
+	t1e := time.Now()
 
+	t2s := t1e
 	keyID, err := createSSHKey(vpcService, name, resourceGroupID, keyType, publicKey)
 	if err != nil {
 		return err
 	}
+	t2e := time.Now()
 
+	t3s := t2e
 	subnetID, err := createSubnet(vpcService, name, resourceGroupID, vpcID, zone)
 	if err != nil {
 		return err
 	}
+	t3e := time.Now()
 
+	t4s := t3e
 	secGroupID, err := createSecurityGroup(vpcService, name, resourceGroupID, vpcID)
 	if err != nil {
 		return err
 	}
+	t4e := time.Now()
 
+	t5s := t4e
 	if err = createSecurityGroupRule(vpcService, secGroupID); err != nil {
 		return err
 	}
+	t5e := time.Now()
 
+	t6s := t5e
 	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 	for _, c := range ir.Components {
 		suff := "-" + string(c.Name)
@@ -310,7 +323,15 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 			}
 		}
 	}
+	t6e := time.Now()
 
+	fmt.Printf("Setup done %s\n", util.RelTime(t1s, t6e))
+	fmt.Printf("  - VPC %s\n", util.RelTime(t1s, t1e))
+	fmt.Printf("  - SSH %s\n", util.RelTime(t2s, t2e))
+	fmt.Printf("  - Subnet %s\n", util.RelTime(t3s, t3e))
+	fmt.Printf("  - SecurityGroup %s\n", util.RelTime(t4s, t4e))
+	fmt.Printf("  - SecurityGroupRule %s\n", util.RelTime(t5s, t5e))
+	fmt.Printf("  - VMs %s\n", util.RelTime(t6s, t6e))
 	return nil
 }
 
