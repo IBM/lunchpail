@@ -1,6 +1,7 @@
 package ibmcloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -16,6 +17,7 @@ import (
 	"lunchpail.io/pkg/util"
 
 	"github.com/elotl/cloud-init/config"
+	"golang.org/x/sync/errgroup"
 )
 
 type Action string
@@ -257,55 +259,19 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	}
 	t5e := time.Now()
 
-	t6s := t5e
+	group, _ := errgroup.WithContext(context.Background())
+	t6s := time.Now()
 	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 	for _, c := range ir.Components {
-		suff := "-" + string(c.Name)
-		if c.Name == comp.DispatcherComponent || c.Name == comp.WorkStealerComponent {
-			instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
-			if err != nil {
-				return err
-			}
-
-			//TODO VSI instances other than jumpbox or main pod should not have floatingIP. Remove below after testing
-			floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
-			if err != nil {
-				return err
-			}
-
-			options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
-				ID:                 &floatingIPID,
-				InstanceID:         instance.ID,
-				NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
-			}
-			_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
-			if err != nil {
-				return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
-			}
-		} else if c.Name == comp.WorkersComponent {
-			workerCount := int32(0)
-			for _, j := range c.Jobs {
-				workerCount = workerCount + *j.Spec.Parallelism
-			}
-
-			//Compute number of VSIs to be provisioned and job parallelism for each VSI
-			parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, workerCount)
-			if err != nil {
-				return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
-			}
-			for _, j := range c.Jobs {
-				*j.Spec.Parallelism = int32(parallelism)
-			}
-
-			for i := 1; i <= numInstances; i++ {
-				if numInstances > 1 {
-					suff = "-" + strconv.Itoa(i)
-				}
+		group.Go(func() error {
+			suff := "-" + string(c.Name)
+			if c.Name == comp.DispatcherComponent || c.Name == comp.WorkStealerComponent {
 				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
 				if err != nil {
 					return err
 				}
 
+				//TODO VSI instances other than jumpbox or main pod should not have floatingIP. Remove below after testing
 				floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
 				if err != nil {
 					return err
@@ -320,8 +286,52 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 				if err != nil {
 					return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
 				}
+			} else if c.Name == comp.WorkersComponent {
+				workerCount := int32(0)
+				for _, j := range c.Jobs {
+					workerCount = workerCount + *j.Spec.Parallelism
+				}
+
+				//Compute number of VSIs to be provisioned and job parallelism for each VSI
+				parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, workerCount)
+				if err != nil {
+					return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
+				}
+				for _, j := range c.Jobs {
+					*j.Spec.Parallelism = int32(parallelism)
+				}
+
+				for i := 1; i <= numInstances; i++ {
+					if numInstances > 1 {
+						suff = "-" + strconv.Itoa(i)
+					}
+					instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
+					if err != nil {
+						return err
+					}
+
+					floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
+					if err != nil {
+						return err
+					}
+
+					options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
+						ID:                 &floatingIPID,
+						InstanceID:         instance.ID,
+						NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
+					}
+					_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
+					if err != nil {
+						return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
+					}
+				}
 			}
-		}
+
+			return nil
+		})
+	}
+	if err := group.Wait(); err != nil {
+		return err
 	}
 	t6e := time.Now()
 
