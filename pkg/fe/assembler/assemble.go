@@ -48,7 +48,7 @@ func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string
 	return nil
 }
 
-func Assemble(sourcePath string, opts Options) error {
+func Assemble(opts Options) error {
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
 		// } else if err == nil {
@@ -63,12 +63,12 @@ func Assemble(sourcePath string, opts Options) error {
 	}
 
 	// TODO... how do we really want to get a good name for the app?
-	assemblyName := filepath.Base(trimExt(sourcePath))
+	assemblyName := filepath.Base(trimExt(opts.Source))
 	if assemblyName == "pail" {
-		assemblyName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+		assemblyName = filepath.Base(filepath.Dir(trimExt(opts.Source)))
 		if assemblyName == "pail" {
 			// probably a trailing slash
-			assemblyName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
+			assemblyName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(opts.Source))))
 		}
 	}
 
@@ -76,7 +76,7 @@ func Assemble(sourcePath string, opts Options) error {
 		fmt.Fprintf(os.Stderr, "Using assemblyName=%s\n", assemblyName)
 	}
 
-	if appTemplatePath, appVersion, err := StagePath(assemblyName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, appVersion, err := StagePath(assemblyName, opts.Source, StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
 	} else if err := assembly.SaveOptions(appTemplatePath, opts.AssemblyOptions); err != nil {
 		return err

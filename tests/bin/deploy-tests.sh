@@ -31,6 +31,10 @@ rm -rf "$TARGET"
 
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) target=$TARGET $HELM_INSTALL_FLAGS"
 
+if [[ -n "$2" ]]
+then source="-S $2"
+fi
+
 if [[ -n "$3" ]]
 then branch="-b $3"
 fi
@@ -69,9 +73,9 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
 /tmp/lunchpail assemble -v \
                -o $testapp \
                --create-namespace \
+               $source \
                $branch \
-               $repo_secret \
-               $2
+               $repo_secret
 
 if [[ -d "$2" ]] && [[ -f "$2"/version ]]
 then
