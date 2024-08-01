@@ -63,7 +63,10 @@ func Assemble(sourcePath string, opts Options) error {
 	}
 
 	// TODO... how do we really want to get a good name for the app?
-	assemblyName := filepath.Base(trimExt(sourcePath))
+	assemblyName := assembly.Name()
+	if sourcePath != "" {
+		assemblyName = filepath.Base(trimExt(sourcePath))
+	}
 	if assemblyName == "pail" {
 		assemblyName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
 		if assemblyName == "pail" {

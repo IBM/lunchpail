@@ -13,10 +13,10 @@ func newAssembleCmd() *cobra.Command {
 	var allFlag bool
 
 	cmd := &cobra.Command{
-		Use:   "assemble path-or-git",
+		Use:   "assemble [path-or-git]",
 		Short: "Generate a binary specialized to a given application",
 		Long:  "Generate a binary specialized to a given application",
-		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
 	}
 
 	cmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path to store output binary")
@@ -30,7 +30,12 @@ func newAssembleCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return assembler.Assemble(args[0], assembler.Options{
+		sourcePath := ""
+		if len(args) >= 1 {
+			sourcePath = args[0]
+		}
+
+		return assembler.Assemble(sourcePath, assembler.Options{
 			Name:            outputFlag,
 			Branch:          branchFlag,
 			Verbose:         verboseFlag,

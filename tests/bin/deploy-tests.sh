@@ -67,11 +67,17 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
 /tmp/lunchpail assemble -v \
-               -o $testapp \
-               --create-namespace \
+               -o $testapp.tmp \
                $branch \
                $repo_secret \
                $2
+
+# test coverage for re-assemble
+$testapp.tmp assemble -v \
+             -o $testapp \
+             --create-namespace
+
+rm -f $testapp.tmp
 
 if [[ -d "$2" ]] && [[ -f "$2"/version ]]
 then
