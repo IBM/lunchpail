@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ import (
 	"lunchpail.io/pkg/util"
 
 	"github.com/elotl/cloud-init/config"
+	"golang.org/x/crypto/ssh"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -215,6 +217,23 @@ func createSSHKey(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, 
 	}
 	key, response, err := vpcService.CreateKey(options)
 	if err != nil {
+		if response.StatusCode == http.StatusBadRequest && err.Error() == "Key with fingerprint already exists" {
+			//get fingerprint of input public key
+			sshPubKey, _, _, _, _ := ssh.ParseAuthorizedKey([]byte(pubKey))
+			keyFingerprint := ssh.FingerprintSHA256(sshPubKey)
+
+			keys, response, err := vpcService.ListKeys(&vpcv1.ListKeysOptions{
+				Limit: core.Int64Ptr(100), //TODO: max limit on a page is 100, but need to list more pages
+			})
+			if err != nil {
+				return "", fmt.Errorf("failed to list ssh keys: %v and the response is: %s", err, response)
+			}
+			for _, ekey := range keys.Keys {
+				if *ekey.Type == keyType && *ekey.Fingerprint == keyFingerprint { //found existing one
+					return *ekey.ID, nil
+				}
+			}
+		}
 		return "", fmt.Errorf("failed to create an ssh key: %v and the response is: %s", err, response)
 	}
 	return *key.ID, nil
@@ -369,7 +388,7 @@ func (backend Backend) SetAction(aopts assembly.Options, ir llir.LLIR, runname s
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, aopts.SSHKeyType, aopts.PublicSSHKey, zone, aopts.Profile, aopts.ImageID); err != nil {
+		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, aopts.Profile, aopts.ImageID); err != nil {
 			return err
 		}
 	}
