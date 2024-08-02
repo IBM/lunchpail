@@ -24,7 +24,7 @@ func openshiftSpecificValues(clientset *k8s.Clientset) ([]string, error) {
 	return []string{}, nil
 }
 
-func Values() ([]string, error) {
+func (backend Backend) Values() ([]string, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err

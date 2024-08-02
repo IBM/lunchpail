@@ -20,21 +20,3 @@ func StreamRunEvents(appname, runname, namespace string) (chan events.Message, e
 func StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error) {
 	return kubernetes.StreamRunComponentUpdates(appname, runname, namespace)
 }
-
-func Ok(target platform.Platform) error {
-	switch target {
-	case platform.Kubernetes:
-		return kubernetes.Ok()
-	}
-
-	return nil
-}
-
-func Values(target platform.Platform) ([]string, error) {
-	switch target {
-	case platform.Kubernetes:
-		return kubernetes.Values()
-	}
-
-	return []string{}, nil
-}

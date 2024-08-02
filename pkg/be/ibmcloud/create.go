@@ -345,27 +345,21 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Action) error {
-	config := loadConfigWithCommandLineOverrides(aopts)
-
-	vpcService, err := Authenticator(aopts.ApiKey, config)
-	if err != nil {
-		return err
-	}
-
+func (backend Backend) SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Action) error {
 	if action == Stop || action == Delete {
-		if err := stopOrDeleteVM(vpcService, runname, config.ResourceGroup.GUID, action == Delete); err != nil {
+		if err := stopOrDeleteVM(backend.vpcService, runname, backend.config.ResourceGroup.GUID, action == Delete); err != nil {
 			return err
 		}
 	} else if action == Create {
 		zone := aopts.Zone //command line zone value
 		if zone == "" {    //random zone value using config
-			zone, err = getRandomizedZone(config, vpcService) //Todo: spread among random zones with a subnet in each zone
+			randomZone, err := getRandomizedZone(backend.config, backend.vpcService) //Todo: spread among random zones with a subnet in each zone
 			if err != nil {
 				return err
 			}
+			zone = randomZone
 		}
-		if err := createAndInitVM(vpcService, runname, ir, config.ResourceGroup.GUID, aopts.SSHKeyType, aopts.PublicSSHKey, zone, aopts.Profile, aopts.ImageID); err != nil {
+		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, aopts.SSHKeyType, aopts.PublicSSHKey, zone, aopts.Profile, aopts.ImageID); err != nil {
 			return err
 		}
 	}

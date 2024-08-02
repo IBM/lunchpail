@@ -36,9 +36,5 @@ func Authenticator(apiKey string, config ibmConfig) (*vpcv1.VpcV1, error) {
 	}
 	fmt.Printf("Accessing the VPC service via %s\n", method)
 
-	if err := Ok(config, vpcService); err != nil {
-		return nil, err
-	}
-
 	return vpcService, nil
 }

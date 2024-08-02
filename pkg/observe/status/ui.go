@@ -8,8 +8,10 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/term"
+
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/observe/colors"
-	"lunchpail.io/pkg/observe/runs"
 )
 
 // Options to our status UI component
@@ -130,8 +132,8 @@ func (m model) View() string {
 	return strings.Join(lines, "\n")
 }
 
-func UI(runnameIn string, opts Options) error {
-	appname, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, opts.Watch)
+func UI(runnameIn string, backend be.Backend, opts Options) error {
+	appname, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, opts.Watch, backend)
 	if err != nil {
 		return err
 	}

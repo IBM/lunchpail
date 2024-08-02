@@ -1,9 +1,11 @@
 package subcommands
 
 import (
-	"lunchpail.io/pkg/observe/cpu"
-
 	"github.com/spf13/cobra"
+
+	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/observe/cpu"
 )
 
 func Newcmd() *cobra.Command {
@@ -15,18 +17,26 @@ func Newcmd() *cobra.Command {
 		Use:   "cpu",
 		Short: "Displays CPU utilization",
 		Long:  "Displays CPU utilization",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			maybeRun := ""
-			if len(args) > 0 {
-				maybeRun = args[0]
-			}
-			return cpu.UI(maybeRun, cpu.CpuOptions{Namespace: namespaceFlag, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
-		},
 	}
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().IntVarP(&intervalSecondsFlag, "interval", "i", 2, "Sampling interval")
+	tgtOpts := addTargetOptions(cmd)
+
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		maybeRun := ""
+		if len(args) > 0 {
+			maybeRun = args[0]
+		}
+
+		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{}) // TODO assembly.Options
+		if err != nil {
+			return err
+		}
+
+		return cpu.UI(maybeRun, backend, cpu.CpuOptions{Namespace: namespaceFlag, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
+	}
 
 	return cmd
 }

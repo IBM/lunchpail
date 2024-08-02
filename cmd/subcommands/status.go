@@ -2,7 +2,9 @@ package subcommands
 
 import (
 	"github.com/spf13/cobra"
+
 	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe/status"
 )
 
@@ -17,13 +19,6 @@ func newStatusCommand() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "status",
 		Short: "Status of a run",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			maybeRun := ""
-			if len(args) > 0 {
-				maybeRun = args[0]
-			}
-			return status.UI(maybeRun, status.Options{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
-		},
 	}
 
 	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
@@ -36,6 +31,22 @@ func newStatusCommand() *cobra.Command {
 
 	// interval for polling cpu etc.
 	cmd.Flags().IntVarP(&intervalFlag, "interval", "i", 5, "Polling interval in seconds for resource utilization stats")
+
+	tgtOpts := addTargetOptions(cmd)
+
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		maybeRun := ""
+		if len(args) > 0 {
+			maybeRun = args[0]
+		}
+
+		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{}) // TODO assembly.Options
+		if err != nil {
+			return err
+		}
+
+		return status.UI(maybeRun, backend, status.Options{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
+	}
 
 	return cmd
 }

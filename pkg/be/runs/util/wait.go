@@ -1,14 +1,16 @@
-package runs
+package util
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/assembly"
 	"os"
 	"strings"
 	"time"
+
+	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/be"
 )
 
-func WaitForRun(runname, namespace string, wait bool) (string, string, string, error) {
+func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (string, string, string, error) {
 	appname := assembly.Name()
 	if namespace == "" {
 		namespace = appname
@@ -19,7 +21,7 @@ func WaitForRun(runname, namespace string, wait bool) (string, string, string, e
 
 	for waiting {
 		if runname == "" {
-			if singletonRun, err := Singleton(appname, namespace); err != nil {
+			if singletonRun, err := Singleton(appname, namespace, backend); err != nil {
 				if wait && strings.Contains(err.Error(), "No runs") {
 					if !alreadySaidWeAreWaiting {
 						fmt.Fprintf(os.Stderr, "Waiting for runs...")

@@ -2,10 +2,11 @@ package runs
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/dustin/go-humanize"
 	"strings"
 	"time"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/dustin/go-humanize"
 )
 
 func Pretty(runs []Run) string {

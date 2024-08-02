@@ -2,16 +2,13 @@ package boot
 
 import (
 	"context"
-	"fmt"
 
 	"golang.org/x/sync/errgroup"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/be/ibmcloud"
-	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/fe/linker"
-	"lunchpail.io/pkg/observe/runs"
 )
 
 type DownOptions struct {
@@ -19,71 +16,47 @@ type DownOptions struct {
 	Verbose              bool
 	DeleteNamespace      bool
 	DeleteAll            bool
-	TargetPlatform       platform.Platform
 	ApiKey               string
 	DeleteCloudResources bool
 }
 
-func deleteNamespace(namespace string) error {
-	clientset, _, err := kubernetes.Client()
-	if err != nil {
-		return err
-	}
-
-	api := clientset.CoreV1().Namespaces()
-	if err := api.Delete(context.Background(), namespace, metav1.DeleteOptions{}); err != nil {
-		return err
-	}
-	fmt.Printf("namespace \"%s\" deleted\n", namespace)
-	return nil
-}
-
-func tryDeleteNamespace(assemblyName, namespace string) error {
-	remainingRuns, err := runs.List(assemblyName, namespace)
-	if err != nil {
-		return err
-	} else if len(remainingRuns) != 0 {
-		return fmt.Errorf("Non-empty namespace %s still has %d runs:\n%s", namespace, len(remainingRuns), runs.Pretty(remainingRuns))
-	} else if err := deleteNamespace(namespace); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func DownList(runnames []string, opts DownOptions) error {
+func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 	assemblyName, namespace := nans(opts)
 	deleteNs := opts.DeleteNamespace
 
 	if len(runnames) == 0 {
 		if opts.DeleteAll {
-			remainingRuns, err := runs.List(assemblyName, namespace)
+			remainingRuns, err := backend.ListRuns(assemblyName, namespace)
 			if err != nil {
 				return err
 			}
 			for _, run := range remainingRuns {
 				runnames = append(runnames, run.Name)
 			}
+
+			// so that the Down() call won't delete the
+			// namespace. we'll do that after deleting all
+			// runs
 			opts.DeleteNamespace = false
 		} else {
 			// then the user didn't specify a run. pass "" which
 			// will activate the logic that looks for a singleton
 			// run in the given namespace
-			return Down("", opts)
+			return Down("", backend, opts)
 		}
 	}
 
 	// otherwise, Down all of the runs in the given list
 	group, _ := errgroup.WithContext(context.Background())
 	for _, runname := range runnames {
-		group.Go(func() error { return Down(runname, opts) })
+		group.Go(func() error { return Down(runname, backend, opts) })
 	}
 	if err := group.Wait(); err != nil {
 		return err
 	}
 
 	if deleteNs {
-		if err := tryDeleteNamespace(assemblyName, namespace); err != nil {
+		if err := backend.DeleteNamespace(assemblyName, namespace); err != nil {
 			return err
 		}
 	}
@@ -101,41 +74,52 @@ func nans(opts DownOptions) (string, string) {
 	return assemblyName, namespace
 }
 
-func Down(runname string, opts DownOptions) error {
-	assemblyName, namespace := nans(opts)
-
-	if runname == "" {
-		singletonRun, err := runs.Singleton(assemblyName, namespace)
-		if err != nil {
-			return err
-		}
-		runname = singletonRun.Name
-	}
-
+func toAssemblyOpts(opts DownOptions) assembly.Options {
 	assemblyOptions := assembly.Options{}
 	assemblyOptions.Namespace = opts.Namespace
-	assemblyOptions.TargetPlatform = opts.TargetPlatform
 	assemblyOptions.ApiKey = opts.ApiKey
+
+	return assemblyOptions
+}
+
+func toUpOpts(runname string, opts DownOptions) UpOptions {
 	configureOptions := linker.ConfigureOptions{}
-	configureOptions.AssemblyOptions = assemblyOptions
+	configureOptions.AssemblyOptions = toAssemblyOpts(opts)
 	configureOptions.Verbose = opts.Verbose
 
 	upOptions := UpOptions{}
 	upOptions.ConfigureOptions = configureOptions
 	upOptions.UseThisRunName = runname
 
-	var action ibmcloud.Action
+	return upOptions
+}
+
+func Down(runname string, backend be.Backend, opts DownOptions) error {
+	assemblyName, namespace := nans(opts)
+
+	if runname == "" {
+		singletonRun, err := util.Singleton(assemblyName, namespace, backend)
+		if err != nil {
+			return err
+		}
+		runname = singletonRun.Name
+	}
+
+	upOptions := toUpOpts(runname, opts)
+
+	/* var action ibmcloud.Action
 	if opts.DeleteCloudResources {
 		action = ibmcloud.Delete
 	} else {
 		action = ibmcloud.Stop
-	}
-	if err := upDown(upOptions, kubernetes.DeleteIt, action); err != nil {
+	} */
+
+	if err := upDown(backend, upOptions, false); err != nil {
 		return err
 	}
 
 	if opts.DeleteNamespace {
-		if err := tryDeleteNamespace(assemblyName, namespace); err != nil {
+		if err := backend.DeleteNamespace(assemblyName, namespace); err != nil {
 			return err
 		}
 	}

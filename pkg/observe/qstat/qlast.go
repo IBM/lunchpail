@@ -2,17 +2,19 @@ package qstat
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/observe/runs"
 	"strconv"
 	"strings"
+
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 )
 
 type QlastOptions struct {
 	Namespace string
 }
 
-func Qlast(marker, opt string, opts QlastOptions) (string, error) {
-	_, runname, namespace, err := runs.WaitForRun("", opts.Namespace, true)
+func Qlast(marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
+	_, runname, namespace, err := util.WaitForRun("", opts.Namespace, true, backend)
 	if err != nil {
 		return "", err
 	}
