@@ -4,46 +4,39 @@ import (
 	"fmt"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/ibmcloud"
-	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
 )
 
 type UpOptions = fe.CompileOptions
 
-func upDown(opts UpOptions, operation kubernetes.Operation, action ibmcloud.Action) error {
-	aopts := opts.AssemblyOptions
+func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
+	linked, err := fe.Compile(backend, opts)
 
-	if err := be.Ok(aopts.TargetPlatform); err != nil {
-		return err
-	}
-
-	if linked, err := fe.Compile(opts); err != nil {
+	if err != nil {
 		return err
 	} else if opts.DryRun {
 		fmt.Printf(linked.Ir.Marshal())
-	} else if aopts.TargetPlatform == platform.Kubernetes {
-		if err := kubernetes.ApplyOperation(linked.Ir, linked.Namespace, "", operation); err != nil {
-			return err
+		return nil
+	}
+
+	if isUp {
+		if err := backend.Up(linked); err != nil {
+			return nil
 		} else if opts.Watch {
-			return status.UI(linked.Runname, status.Options{Namespace: linked.Namespace, Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
+			return status.UI(linked.Runname, backend, status.Options{Namespace: linked.Namespace, Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}
-	} else if aopts.TargetPlatform == platform.IBMCloud {
-		if err := ibmcloud.SetAction(aopts, linked.Ir, linked.Runname, action); err != nil {
-			return err
-		} else if opts.Watch {
-			return status.UI(linked.Runname, status.Options{Namespace: linked.Namespace, Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
-		}
-	} else if aopts.TargetPlatform == platform.SkyPilot {
-		return nil //TODO
+	} else if err := backend.Down(linked); err != nil {
+		return err
 	}
 
 	return nil
-
 }
 
-func Up(opts UpOptions) error {
-	return upDown(opts, kubernetes.ApplyIt, ibmcloud.Create)
+func Up(backend be.Backend, opts UpOptions) error {
+	if err := upDown(backend, opts, true); err != nil {
+		return err
+	}
+
+	return nil
 }

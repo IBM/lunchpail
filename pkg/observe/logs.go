@@ -8,7 +8,9 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	comp "lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/observe/runs"
+
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 )
 
 type LogsOptions struct {
@@ -54,8 +56,8 @@ func streamLogs(runname, namespace string, component comp.Component, follow bool
 	return nil
 }
 
-func Logs(runnameIn string, opts LogsOptions) error {
-	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
+func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
+	_, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, true, backend)
 	if err != nil {
 		return err
 	}

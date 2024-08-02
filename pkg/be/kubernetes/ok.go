@@ -4,7 +4,7 @@ import (
 	"k8s.io/client-go/discovery"
 )
 
-func Ok() error {
+func (backend Backend) Ok() error {
 	_, config, err := Client()
 	if err != nil {
 		return err

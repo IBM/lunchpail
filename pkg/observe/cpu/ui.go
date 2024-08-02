@@ -2,8 +2,10 @@ package cpu
 
 import (
 	"fmt"
+
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/observe/colors"
-	"lunchpail.io/pkg/observe/runs"
 )
 
 type CpuOptions struct {
@@ -12,8 +14,8 @@ type CpuOptions struct {
 	IntervalSeconds int
 }
 
-func UI(runnameIn string, opts CpuOptions) error {
-	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
+func UI(runnameIn string, backend be.Backend, opts CpuOptions) error {
+	_, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, true, backend)
 	if err != nil {
 		return err
 	}

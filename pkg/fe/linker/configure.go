@@ -18,7 +18,7 @@ type ConfigureOptions struct {
 	Verbose         bool
 }
 
-func Configure(appname, runname, namespace, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, []hlir.RepoSecret, queue.Spec, error) {
+func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []hlir.RepoSecret, queue.Spec, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
@@ -170,7 +170,7 @@ lunchpail_internal:
 		os.Getenv("LP_SLEEP_BEFORE_EXIT"),  // (31)
 	)
 
-	backendValues, err := be.Values(opts.AssemblyOptions.TargetPlatform)
+	backendValues, err := backend.Values()
 	if err != nil {
 		return "", []string{}, nil, queue.Spec{}, err
 	}

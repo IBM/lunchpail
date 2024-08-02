@@ -2,12 +2,15 @@ package qstat
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"golang.org/x/term"
-	"lunchpail.io/pkg/observe/runs"
-	"os"
-	"strconv"
+
+	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 )
 
 type Options struct {
@@ -18,8 +21,8 @@ type Options struct {
 	Quiet     bool
 }
 
-func UI(runnameIn string, opts Options) error {
-	_, runname, namespace, err := runs.WaitForRun(runnameIn, opts.Namespace, true)
+func UI(runnameIn string, backend be.Backend, opts Options) error {
+	_, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, true, backend)
 	if err != nil {
 		return err
 	}
