@@ -84,6 +84,15 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		runnameMax40 = runname[:40]
 	}
 
+	if queueSpec.Endpoint == "" {
+		queueSpec.Endpoint = fmt.Sprintf("http://%s-lunchpail-s3.%s.svc.cluster.local:%d", runnameMax40, systemNamespace, internalS3Port)
+		queueSpec.AccessKey = "lunchpail"
+		queueSpec.SecretKey = "lunchpail"
+	}
+	if queueSpec.Bucket == "" {
+		queueSpec.Bucket = queueSpec.Name
+	}
+
 	yaml := fmt.Sprintf(`
 global:
   unused: %s # "" (1)
