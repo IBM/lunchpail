@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/component: taskqueue
     app.kubernetes.io/instance: {{ .Release.Name }}
 type: Opaque
-data:
-  bucket: {{ .Values.taskqueue.bucket | default .Values.taskqueue.dataset | b64enc }}
-  endpoint: {{ .Values.taskqueue.endpoint | default .Values.global.s3Endpoint | b64enc }}
-  accessKeyID: {{ .Values.taskqueue.accessKey | default .Values.global.s3AccessKey | b64enc }}
-  secretAccessKey: {{ .Values.taskqueue.secretKey | default .Values.global.s3SecretKey | b64enc }}
+stringData:
+  bucket: {{ .Values.taskqueue.bucket }}
+  endpoint: {{ .Values.taskqueue.endpoint }}
+  accessKeyID: {{ .Values.taskqueue.accessKey }}
+  secretAccessKey: {{ .Values.taskqueue.secretKey }}
