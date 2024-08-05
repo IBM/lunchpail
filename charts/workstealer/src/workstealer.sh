@@ -3,8 +3,6 @@
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 LOCAL_QUEUE_ROOT=$(mktemp -d /tmp/localqueue.XXXXXXXX)
-QUEUE_BUCKET=${!TASKQUEUE_VAR}
-QUEUE_PATH=$QUEUE_BUCKET/$LUNCHPAIL/$RUN_NAME
 export QUEUE=$LOCAL_QUEUE_ROOT/$QUEUE_PATH
 
 remote=s3:/$QUEUE_PATH
@@ -12,7 +10,7 @@ remote=s3:/$QUEUE_PATH
 S3_ENDPOINT=http://localhost:9000
 
 if [[ -z "$MINIO_ENABLED" ]]
-then S3_ENDPOINT=${!S3_ENDPOINT_VAR}
+then S3_ENDPOINT=$lunchpail_queue_endpoint
 fi
 
 # the rclone.conf file
@@ -24,8 +22,8 @@ type = s3
 provider = Other
 env_auth = false
 endpoint = $S3_ENDPOINT
-access_key_id = ${!AWS_ACCESS_KEY_ID_VAR}
-secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
+access_key_id = $lunchpail_queue_accessKeyID
+secret_access_key = $lunchpail_queue_secretAccessKey
 acl = public-read
 EOF
 

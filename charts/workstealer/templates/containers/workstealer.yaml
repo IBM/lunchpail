@@ -7,7 +7,7 @@
   envFrom:
     - secretRef:
         name: {{ .Values.taskqueue.dataset }}
-      prefix: {{ print .Values.taskqueue.dataset "_" }}
+      prefix: {{ print .Values.lunchpail "_queue_" }}
 {{- if .Values.internalS3.enabled }}
     - secretRef:
         name: {{ print (.Release.Name | trunc 40) "-lunchpail-s3" }}
@@ -29,14 +29,8 @@
       value: {{ .Values.outbox | default "outbox" }}
     - name: WORKER_QUEUES_SUBDIR
       value: queues
-    - name: S3_ENDPOINT_VAR
-      value: {{ print .Values.taskqueue.dataset "_endpoint" }}
-    - name: AWS_ACCESS_KEY_ID_VAR
-      value: {{ print .Values.taskqueue.dataset "_accessKeyID" }}
-    - name: AWS_SECRET_ACCESS_KEY_VAR
-      value: {{ print .Values.taskqueue.dataset "_secretAccessKey" }}
-    - name: TASKQUEUE_VAR
-      value: {{ print .Values.taskqueue.dataset "_bucket" }}
-    - name: LUNCHPAIL
-      value: {{ .Values.lunchpail }}
+    - name: QUEUE_BUCKET
+      value: {{ .Values.taskqueue.bucket }}
+    - name: QUEUE_PATH
+      value: {{ print .Values.taskqueue.bucket "/" .Values.lunchpail "/" .Values.name }}
 {{- end }}
