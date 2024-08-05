@@ -7,6 +7,7 @@ import (
 	"math"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -26,6 +27,12 @@ const (
 	Create Action = "create"
 	Stop          = "stop"
 	Delete        = "delete"
+)
+
+// IP address lengths (string).
+const (
+	IPv4Maxlen = 15
+	IPv6Maxlen = 39
 )
 
 func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string) (*vpcv1.Instance, error) {
@@ -135,13 +142,16 @@ func createSecurityGroupRule(vpcService *vpcv1.VpcV1, secGroupID string) error {
 	if err != nil {
 		return fmt.Errorf("internal error getting IP address: %v", err)
 	}
-
+	ipversion := "ipv4"
+	if len(address) > IPv4Maxlen && len(address) <= IPv6Maxlen && strings.Contains(string(address), ":") {
+		ipversion = "ipv6"
+	}
 	options := &vpcv1.CreateSecurityGroupRuleOptions{
 		SecurityGroupID: &secGroupID,
 		SecurityGroupRulePrototype: &vpcv1.SecurityGroupRulePrototype{
 			Direction: core.StringPtr("inbound"),
 			Protocol:  core.StringPtr("tcp"),
-			IPVersion: core.StringPtr("ipv4"),
+			IPVersion: core.StringPtr(ipversion),
 			PortMin:   core.Int64Ptr(22),
 			PortMax:   core.Int64Ptr(22),
 			Remote: &vpcv1.SecurityGroupRuleRemotePrototype{
