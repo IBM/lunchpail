@@ -7,7 +7,7 @@
   envFrom:
     - secretRef:
         name: {{ .Values.taskqueue.dataset }}
-      prefix: {{ print .Values.lunchpail "_queue_" }}
+      prefix: lunchpail_queue_
 {{- if .Values.internalS3.enabled }}
     - secretRef:
         name: {{ print (.Release.Name | trunc 40) "-lunchpail-s3" }}
@@ -29,8 +29,6 @@
       value: {{ .Values.outbox | default "outbox" }}
     - name: WORKER_QUEUES_SUBDIR
       value: queues
-    - name: QUEUE_BUCKET
-      value: {{ .Values.taskqueue.bucket }}
     - name: QUEUE_PATH
-      value: {{ print .Values.taskqueue.bucket "/" .Values.lunchpail "/" .Values.name }}
+      value: {{ .Values.taskqueue.prefixPath }}
 {{- end }}
