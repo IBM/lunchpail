@@ -30,6 +30,9 @@ spec:
       # each failure, allowing you to go back and review each"
       restartPolicy: Never
 
+      # disallow kubernetes api access
+      automountServiceAccountToken: false
+
       {{- if .Values.securityContext }}
       securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
       {{- end }}
