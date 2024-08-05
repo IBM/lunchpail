@@ -25,6 +25,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: lunchpail.io
 data:
+  launcher.sh: |
+{{ .Files.Get "src/launcher.sh" | indent 4 }}
+
   workstealer.sh: |
 {{ .Files.Get "src/workstealer.sh" | indent 4 }}
     

@@ -1,7 +1,7 @@
 {{- define "containers/workstealer" }}
 - name: workstealer
   image: {{ print .Values.image.registry "/" .Values.image.repo "/lunchpail-workstealer:" .Values.image.version }}
-  command: ["/opt/lunchpail/workstealer/scripts/workstealer.sh"]
+  command: ["/opt/lunchpail/workstealer/scripts/launcher.sh"]
   volumeMounts:
     {{- include "scripts/volumeMount" . | indent 4 }}
   envFrom:
