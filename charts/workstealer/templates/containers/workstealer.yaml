@@ -29,6 +29,6 @@
       value: {{ .Values.outbox | default "outbox" }}
     - name: WORKER_QUEUES_SUBDIR
       value: queues
-    - name: QUEUE_PATH
+    - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
 {{- end }}

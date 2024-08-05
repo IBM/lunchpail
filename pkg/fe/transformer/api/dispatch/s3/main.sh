@@ -5,7 +5,7 @@ set -eo pipefail
 printenv
 
 config=/tmp/rclone.conf
-remote=queue:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/inbox
+remote=queue:/$LUNCHPAIL_QUEUE_PATH/inbox
 
 echo "ProcessS3Objects dispatcher starting up. Using remote=$remote and processing bucket=$__LUNCHPAIL_PROCESS_S3_OBJECTS_PATH"
 
@@ -23,9 +23,9 @@ acl = public-read
 type = s3
 provider = Other
 env_auth = false
-endpoint = ${!S3_ENDPOINT_VAR}
-access_key_id = ${!AWS_ACCESS_KEY_ID_VAR}
-secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
+endpoint = $lunchpail_queue_endpoint
+access_key_id = $lunchpail_queue_accessKeyID
+secret_access_key = $lunchpail_queue_secretAccessKey
 acl = public-read
 EOF
 
@@ -47,7 +47,7 @@ do
         do
             ext=${task##*.}
             remote_task="${task%.*}.$i.$ext"
-            echo "Injecting task=$task as remote_task=$remote_task"
+            echo "Injecting task=$task as remote_task=$remote/$remote_task"
             rclone --config $config copyto origin:$__LUNCHPAIL_PROCESS_S3_OBJECTS_PATH/$task $remote/$remote_task
         done
     done

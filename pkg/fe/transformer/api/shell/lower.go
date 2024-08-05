@@ -70,6 +70,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		"volumeMounts=" + volumeMounts,
 		"envFroms=" + envFroms,
 		"env=" + env,
+		"taskqueue.prefixPath=" + api.QueuePrefixPath(queueSpec, runname),
 		"mcad.enabled=false",
 		"rbac.runAsRoot=false",
 		"rbac.serviceaccount=" + runname,

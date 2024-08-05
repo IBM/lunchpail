@@ -3,16 +3,16 @@
 echo "DEBUG prestop starting"
 
 config=/tmp/rclone-prestop.conf
-donefile=s3:/${!TASKQUEUE_VAR}/$LUNCHPAIL/$RUN_NAME/done
+donefile=s3:/$LUNCHPAIL_QUEUE_PATH/done
 
 cat <<EOF > $config
 [s3]
 type = s3
 provider = Other
 env_auth = false
-endpoint = ${!S3_ENDPOINT_VAR}
-access_key_id = ${!AWS_ACCESS_KEY_ID_VAR}
-secret_access_key = ${!AWS_SECRET_ACCESS_KEY_VAR}
+endpoint = $lunchpail_queue_endpoint
+access_key_id = $lunchpail_queue_accessKeyID
+secret_access_key = $lunchpail_queue_secretAccessKey
 acl = public-read
 EOF
 
