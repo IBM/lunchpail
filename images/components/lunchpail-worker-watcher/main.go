@@ -18,6 +18,9 @@ import (
 )
 
 func main() {
+	// helpful for debugging
+	fmt.Println(os.Environ())
+
 	client, err := newClient()
 	if err != nil {
 		log.Panic(err)

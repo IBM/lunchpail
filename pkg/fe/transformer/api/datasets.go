@@ -41,12 +41,13 @@ type secretRef struct {
 }
 
 type envFrom struct {
+	// The secret that stores the environment variables we wish to
+	// bind to a worker
 	SecretRef secretRef `json:"secretRef"`
-	Prefix    string    `json:"prefix,omitempty"`
-}
 
-func envForQueue(queueSpec queue.Spec) envFrom {
-	return envFrom{secretRef{queueSpec.Name}, queueSpec.Name + "_"}
+	// Prefix string for environment variables bound to the values
+	// in the referenced secret
+	Prefix string `json:"prefix,omitempty"`
 }
 
 func datasets(app hlir.Application, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, []initContainer, error) {

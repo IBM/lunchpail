@@ -12,7 +12,6 @@ import (
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
-	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
@@ -71,7 +70,6 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		"volumeMounts=" + volumeMounts,
 		"envFroms=" + envFroms,
 		"env=" + env,
-		"queue.dataset=" + queueSpec.Name,
 		"mcad.enabled=false",
 		"rbac.runAsRoot=false",
 		"rbac.serviceaccount=" + runname,
@@ -95,5 +93,5 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, comp.DispatcherComponent)
+	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, lunchpail.DispatcherComponent)
 }
