@@ -21,4 +21,7 @@ spec:
     {{- include "containers/workstealer" . | indent 4 }}
   volumes:
     {{- include "scripts/volume" . | indent 4 }}
+
+  # disallow kubernetes api access
+  automountServiceAccountToken: false
 {{- end }}

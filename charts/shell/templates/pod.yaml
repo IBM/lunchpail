@@ -19,6 +19,9 @@ spec:
   securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
   {{- end }}
 
+  # disallow kubernetes api access
+  automountServiceAccountToken: false
+
   volumes:
     {{- if .Values.volumes }}
     {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 4 }}
