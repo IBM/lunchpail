@@ -9,13 +9,13 @@
 
 {{- define "queue/env/dataset" }}
 - name: S3_ENDPOINT_VAR
-  value: {{ print .Values.queue.dataset "_endpoint" }}
+  value: lunchpail_queue_endpoint
 - name: AWS_ACCESS_KEY_ID_VAR
-  value: {{ print .Values.queue.dataset "_accessKeyID" }}
+  value: lunchpail_queue_accessKeyID
 - name: AWS_SECRET_ACCESS_KEY_VAR
-  value: {{ print .Values.queue.dataset "_secretAccessKey" }}
+  value: lunchpail_queue_secretAccessKey
 - name: TASKQUEUE_VAR
-  value: {{ print .Values.queue.dataset "_bucket" }}
+  value: lunchpail_queue_bucket
 - name: LUNCHPAIL
   value: {{ .Values.lunchpail }}
 {{- end }}
