@@ -71,7 +71,7 @@ idx=1
 # We will do an B/A comparison (Before/After) of the queue files
 B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
 
-rclone mkdir s3:$QUEUE_BUCKET
+rclone mkdir s3:$QUEUE_PATH
 
 # to future porters of this to e.g. go... this /tmp/done is only to
 # work around bash's inability for the whle read line below to cleanly
