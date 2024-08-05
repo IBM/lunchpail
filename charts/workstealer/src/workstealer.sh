@@ -3,9 +3,9 @@
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 LOCAL_QUEUE_ROOT=$(mktemp -d /tmp/localqueue.XXXXXXXX)
-export QUEUE=$LOCAL_QUEUE_ROOT/$QUEUE_PATH
+export QUEUE=$LOCAL_QUEUE_ROOT/$LUNCHPAIL_QUEUE_PATH
 
-remote=s3:/$QUEUE_PATH
+remote=s3:/$LUNCHPAIL_QUEUE_PATH
 
 S3_ENDPOINT=http://localhost:9000
 
@@ -71,7 +71,7 @@ idx=1
 # We will do an B/A comparison (Before/After) of the queue files
 B=$(mktemp /tmp/before.$idx.XXXXXXXXXXXX)
 
-rclone mkdir s3:$QUEUE_PATH
+rclone mkdir $remote
 
 # to future porters of this to e.g. go... this /tmp/done is only to
 # work around bash's inability for the whle read line below to cleanly

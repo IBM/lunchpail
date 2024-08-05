@@ -1,23 +1,13 @@
 {{- define "queue/env" }}
-- name: WORKQUEUE
+- name: LUNCHPAIL_LOCAL_QUEUE_ROOT
   value: /queue
-- name: POOL
-  value: {{ print .Release.Name | trunc 53 }} # workerpool name
-- name: RUN_NAME
+- name: LUNCHPAIL_RUN_NAME
   value: {{ .Values.runName }} # name of run in which this pool participates
 {{- end }}
 
 {{- define "queue/env/dataset" }}
-- name: S3_ENDPOINT_VAR
-  value: lunchpail_queue_endpoint
-- name: AWS_ACCESS_KEY_ID_VAR
-  value: lunchpail_queue_accessKeyID
-- name: AWS_SECRET_ACCESS_KEY_VAR
-  value: lunchpail_queue_secretAccessKey
-- name: TASKQUEUE_VAR
-  value: lunchpail_queue_bucket
-- name: LUNCHPAIL
-  value: {{ .Values.lunchpail }}
+- name: LUNCHPAIL_QUEUE_PATH
+  value: {{ .Values.taskqueue.prefixPath }}
 {{- end }}
 
 {{- define "queue/volumeMount" }}

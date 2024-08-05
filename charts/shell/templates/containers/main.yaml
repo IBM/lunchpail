@@ -16,16 +16,8 @@
       value: {{ .Values.name }}
     - name: WORKQUEUE
       value: /queue
-    - name: S3_ENDPOINT_VAR
-      value: lunchpail_queue_endpoint
-    - name: AWS_ACCESS_KEY_ID_VAR
-      value: lunchpail_queue_accessKeyID
-    - name: AWS_SECRET_ACCESS_KEY_VAR
-      value: lunchpail_queue_secretAccessKey
-    - name: TASKQUEUE_VAR
-      value: lunchpail_queue_bucket
-    - name: LUNCHPAIL
-      value: lunchpail
+    - name: LUNCHPAIL_QUEUE_PATH
+      value: {{ .Values.taskqueue.prefixPath }}
   {{- if .Values.containerSecurityContext }}
   securityContext: {{ .Values.containerSecurityContext | b64dec | fromYaml | toJson }}
   {{- end }}

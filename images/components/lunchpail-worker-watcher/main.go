@@ -32,21 +32,22 @@ func main() {
 	// this is the handler that will be called for each task
 	handler := os.Args[2:]
 
-	bucket := os.Getenv(os.Getenv("TASKQUEUE_VAR"))
-	prefix := filepath.Join(os.Getenv("LUNCHPAIL"), os.Getenv("RUN_NAME"), "queues", os.Getenv("POOL")+"."+getPodNameSuffix(os.Getenv("POD_NAME")))
+	fullPrefix := strings.Split(os.Getenv("LUNCHPAIL_QUEUE_PATH"), "/")
+	bucket := fullPrefix[0]
+	prefix := strings.Replace(filepath.Join(fullPrefix[1:]...), "$LUNCHPAIL_WORKER_NAME", getPodNameSuffix(os.Getenv("LUNCHPAIL_POD_NAME")), 1)
 	remote := filepath.Join(bucket, prefix)
 	inbox := "inbox"
 	processing := "processing"
 	outbox := "outbox"
 	alive := filepath.Join(prefix, inbox, ".alive")
-	dead := filepath.Join(prefix, inbox, "/.dead")
-	local := os.Getenv("WORKQUEUE")
+	dead := filepath.Join(prefix, inbox, ".dead")
+	local := os.Getenv("LUNCHPAIL_LOCAL_QUEUE_ROOT")
 
 	if operation == "prestop" {
 		fmt.Println("DEBUG Marker worker as done...")
 		rm(client, bucket, alive)
 		touch(client, bucket, dead)
-		fmt.Printf("INFO This worker is shutting down %s\n", strings.Replace(os.Getenv("POD_NAME"), os.Getenv("RUN_NAME") + "-", "", 1))
+		fmt.Printf("INFO This worker is shutting down %s\n", strings.Replace(os.Getenv("LUNCHPAIL_POD_NAME"), os.Getenv("LUNCHPAIL_RUN_NAME") + "-", "", 1))
 		return
 	}
 
@@ -63,7 +64,7 @@ func main() {
 
 	err = touch(client, bucket, alive)
 	if err != nil {
-		fmt.Println("Internal Error creating alive marker:", err)
+		fmt.Printf("Internal Error creating alive marker: bucket=%s path=%s\n%v\n", bucket, alive, err)
 		return
 	}
 
@@ -295,9 +296,9 @@ func rm(client *minio.Client, bucket, filePath string) error {
 
 // Initialize minio client object.
 func newClient() (*minio.Client, error) {
-	endpoint := os.Getenv(os.Getenv("S3_ENDPOINT_VAR"))
-	accessKeyID := os.Getenv(os.Getenv("AWS_ACCESS_KEY_ID_VAR"))
-	secretAccessKey := os.Getenv(os.Getenv("AWS_SECRET_ACCESS_KEY_VAR"))
+	endpoint := os.Getenv("lunchpail_queue_endpoint")
+	accessKeyID := os.Getenv("lunchpail_queue_accessKeyID")
+	secretAccessKey := os.Getenv("lunchpail_queue_secretAccessKey")
 
 	useSSL := true
 	if !strings.HasPrefix(endpoint, "https") {
