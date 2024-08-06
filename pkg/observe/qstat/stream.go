@@ -142,7 +142,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 }
 
 func poolName(worker Worker) string {
-	// test7f-pool1.w0.w96bh -> test7f-pool1
+	// test7f-pool1.w96bh -> test7f-pool1
 	if idx := strings.Index(worker.Name, "."); idx < 0 {
 		// TODO error handling here. what do we want to do?
 		return "INVALID: " + worker.Name
