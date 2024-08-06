@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: test7e-by-role-autorun
 spec:
-  api: workqueue
   code:
   - name: literal.sh
     source: |

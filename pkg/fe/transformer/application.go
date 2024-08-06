@@ -21,7 +21,7 @@ func lowerApplications(assemblyName, runname, namespace string, model hlir.AppMo
 			} else {
 				components = append(components, component)
 			}
-		case r.Spec.Api == hlir.ShellApi:
+		default:
 			if component, err := shell.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 				return components, err
 			} else {
