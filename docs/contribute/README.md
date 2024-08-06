@@ -84,6 +84,6 @@ After making a change, you can run a test, e.g.:
 ```
 
 The "re" part of `rerun.sh` means that all of the above steps will be
-repeated. This includes rebuiding base images (which is included in
+repeated. This includes rebuilding base images (which is included in
 `lunchpail init local --build-images` or `./lunchpail images build`)
 and rebuilding the CLI.
