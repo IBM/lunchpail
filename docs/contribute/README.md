@@ -9,10 +9,11 @@ on your fork. If you are not quite ready for a full review, you can
 mark the pull request as Draft. If ready for a review and merge,
 please squash all of your commits down to a single commit.
 
-We appreciate your using [conventional
-commit](https://www.conventionalcommits.org/en/v1.0.0/) messages where
-each PR'd commit (and the PR itself) has a title prefix of `feat: ` or
-`fix: ` or `chore: ` or `refactor: ` or `doc: `. Thanks!
+> [!TIP]
+> When submitting a PR, use [conventional
+> commit](https://www.conventionalcommits.org/en/v1.0.0/) messages,
+> where each PR'd commit (and the PR itself) has a title prefix of
+> `feat: ` or `fix: ` or `chore: ` or `refactor: ` or `doc: `.
 
 ## Step 2: Build the CLI
 
