@@ -83,11 +83,6 @@ func newUpCmd() *cobra.Command {
 			appOpts.CreateNamespace = true
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{}) // TODO assembly.Options
-		if err != nil {
-			return err
-		}
-
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
 		if err != nil {
 			return err
@@ -104,6 +99,11 @@ func newUpCmd() *cobra.Command {
 			ApiKey: appOpts.ApiKey, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
 			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID}
 		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, Verbose: verboseFlag}
+
+		backend, err := be.New(tgtOpts.TargetPlatform, assemblyOptions)
+		if err != nil {
+			return err
+		}
 
 		return boot.Up(backend, boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
 	}

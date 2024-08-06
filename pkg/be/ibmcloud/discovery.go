@@ -44,6 +44,7 @@ func loadConfig() (ibmConfig, error) {
 	return config, nil
 }
 
+// Replace the config file values with user specificed values from command line
 func loadConfigWithCommandLineOverrides(aopts assembly.Options) ibmConfig {
 	// intentionally ignoring error, as we have fallbacks if we couldn't find or load the config
 	config, _ := loadConfig()
@@ -55,13 +56,17 @@ func loadConfigWithCommandLineOverrides(aopts assembly.Options) ibmConfig {
 	return config
 }
 
+// Use region from ibmcloud's standard config file to get a randomized zone within that region
 func getRandomizedZone(config ibmConfig, vpcService *vpcv1.VpcV1) (string, error) {
-	zones, response, err := vpcService.ListRegionZones(&vpcv1.ListRegionZonesOptions{
-		RegionName: &config.Region,
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to get zones from region: %v and the response is: %s", err, response)
-	}
+	if config.Region != "" {
+		zones, response, err := vpcService.ListRegionZones(&vpcv1.ListRegionZonesOptions{
+			RegionName: &config.Region,
+		})
+		if err != nil {
+			return "", fmt.Errorf("failed to get zones from region: %v and the response is: %s", err, response)
+		}
 
-	return *zones.Zones[rand.IntN(len(zones.Zones))].Name, err
+		return *zones.Zones[rand.IntN(len(zones.Zones))].Name, err
+	}
+	return "", nil
 }
