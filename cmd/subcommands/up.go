@@ -22,6 +22,8 @@ func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
 	cmd.Flags().BoolVarP(&options.HasGpuSupport, "gpu", "", false, "Run with GPUs (if supported by the application)")
 
 	cmd.Flags().StringSliceVarP(&options.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
+	cmd.Flags().StringSliceVarP(&options.OverrideFileValues, "set-file", "", []string{}, "[Advanced] override specific template values with content from a file")
+
 	cmd.Flags().StringVarP(&options.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")
 
 	cmd.Flags().StringVarP(&options.ApiKey, "api-key", "a", "", "IBM Cloud api key")

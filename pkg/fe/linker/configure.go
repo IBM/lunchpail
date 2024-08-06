@@ -18,14 +18,14 @@ type ConfigureOptions struct {
 	Verbose         bool
 }
 
-func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []hlir.RepoSecret, queue.Spec, error) {
+func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, []hlir.RepoSecret, queue.Spec, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := assembly.RestoreOptions(templatePath)
 	if err != nil {
-		return "", []string{}, nil, queue.Spec{}, err
+		return "", nil, nil, nil, queue.Spec{}, err
 	} else {
 		if opts.AssemblyOptions.Namespace == "" {
 			opts.AssemblyOptions.Namespace = shrinkwrappedOptions.Namespace
@@ -39,6 +39,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		// value 4, so we need to place the shrinkwrapped
 		// options first in the list
 		opts.AssemblyOptions.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.AssemblyOptions.OverrideValues...)
+		opts.AssemblyOptions.OverrideFileValues = append(shrinkwrappedOptions.OverrideFileValues, opts.AssemblyOptions.OverrideFileValues...)
 
 		if opts.AssemblyOptions.Queue == "" {
 			opts.AssemblyOptions.Queue = shrinkwrappedOptions.Queue
@@ -62,17 +63,17 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	queueSpec, err := queue.ParseFlag(opts.AssemblyOptions.Queue, runname, internalS3Port)
 	if err != nil {
-		return "", []string{}, nil, queue.Spec{}, err
+		return "", nil, nil, nil, queue.Spec{}, err
 	}
 
 	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.AssemblyOptions.ImagePullSecret)
 	if ipsErr != nil {
-		return "", []string{}, nil, queue.Spec{}, ipsErr
+		return "", nil, nil, nil, queue.Spec{}, ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", []string{}, nil, queue.Spec{}, err
+		return "", nil, nil, nil, queue.Spec{}, err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -181,21 +182,23 @@ lunchpail_internal:
 
 	backendValues, err := backend.Values()
 	if err != nil {
-		return "", []string{}, nil, queue.Spec{}, err
+		return "", nil, nil, nil, queue.Spec{}, err
 	}
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.AssemblyOptions.OverrideValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.AssemblyOptions.OverrideFileValues)
 		fmt.Fprintf(os.Stderr, "shrinkwrap backend overrides=%v\n", backendValues)
 	}
 
 	repoSecrets, err := gatherRepoSecrets(slices.Concat(opts.AssemblyOptions.RepoSecrets, shrinkwrappedOptions.RepoSecrets))
 	if err != nil {
-		return "", []string{}, nil, queue.Spec{}, err
+		return "", nil, nil, nil, queue.Spec{}, err
 	}
 
 	overrides := slices.Concat(opts.AssemblyOptions.OverrideValues, backendValues)
+	fileOverrides := opts.AssemblyOptions.OverrideFileValues // Note: no backend value support here
 
-	return yaml, overrides, repoSecrets, queueSpec, nil
+	return yaml, overrides, fileOverrides, repoSecrets, queueSpec, nil
 }

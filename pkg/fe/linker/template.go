@@ -11,8 +11,9 @@ import (
 )
 
 type TemplateOptions struct {
-	OverrideValues []string
-	Verbose        bool
+	OverrideValues     []string
+	OverrideFileValues []string
+	Verbose            bool
 }
 
 func client(namespace string, verbose bool) (helmclient.Client, error) {
@@ -40,7 +41,8 @@ func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOp
 		DependencyUpdate: true,
 		ValuesYaml:       yaml,
 		ValuesOptions: values.Options{
-			Values: opts.OverrideValues,
+			Values:     opts.OverrideValues,
+			FileValues: opts.OverrideFileValues,
 		},
 	}
 

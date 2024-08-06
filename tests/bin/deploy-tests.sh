@@ -72,9 +72,24 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
                $repo_secret \
                $2
 
+
+# Pull in a `values` file if it exists. This allows for test coverage
+# of `--set` command line values, e.g. that they are correctly
+# propagated to the running code. Note that we intentionally attach
+# these values at assemble rather than up time (though up time would
+# work, too) so that `down` calls can pick up those values, too.
+if [[ -e "$2"/../values ]]
+then
+    values_filepath=$(realpath "$2"/../values)
+    # make sure to get an absolute path to the values filepath below:
+    values_from_pail="$(cat "$values_filepath" | sed -E "s#(--set-file [^=]+=)#\1$(dirname $values_filepath)/#g")"
+    echo "Using these values from the application definition: $values_from_pail"
+fi
+
 # test coverage for re-assemble
 $testapp.tmp assemble -v \
              -o $testapp \
+             $values_from_pail \
              --create-namespace
 
 rm -f $testapp.tmp

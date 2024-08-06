@@ -8,21 +8,22 @@ import (
 )
 
 type Options struct {
-	Namespace       string   `yaml:",omitempty"`
-	RepoSecrets     []string `yaml:"repoSecrets,omitempty"`
-	ImagePullSecret string   `yaml:"imagePullSecret,omitempty"`
-	OverrideValues  []string `yaml:"overrideValues,omitempty"`
-	Queue           string   `yaml:",omitempty"`
-	HasGpuSupport   bool     `yaml:"hasGpuSupport,omitempty"`
-	DockerHost      string   `yaml:"dockerHost,omitempty"`
-	ApiKey          string   `yaml:"apiKey,omitempty"`
-	ResourceGroupID string   `yaml:"resourceGroupID,omitempty"`
-	SSHKeyType      string   `yaml:"SSHKeyType,omitempty"`
-	PublicSSHKey    string   `yaml:"publicSSHKey,omitempty"`
-	Zone            string   `yaml:"zone,omitempty"`
-	Profile         string   `yaml:"profile,omitempty"`
-	ImageID         string   `yaml:"imageID,omitempty"`
-	CreateNamespace bool     `yaml:"createNamespace,omitempty"`
+	Namespace          string   `yaml:",omitempty"`
+	RepoSecrets        []string `yaml:"repoSecrets,omitempty"`
+	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
+	OverrideValues     []string `yaml:"overrideValues,omitempty"`
+	OverrideFileValues []string `yaml:"overrideFileValues,omitempty"`
+	Queue              string   `yaml:",omitempty"`
+	HasGpuSupport      bool     `yaml:"hasGpuSupport,omitempty"`
+	DockerHost         string   `yaml:"dockerHost,omitempty"`
+	ApiKey             string   `yaml:"apiKey,omitempty"`
+	ResourceGroupID    string   `yaml:"resourceGroupID,omitempty"`
+	SSHKeyType         string   `yaml:"SSHKeyType,omitempty"`
+	PublicSSHKey       string   `yaml:"publicSSHKey,omitempty"`
+	Zone               string   `yaml:"zone,omitempty"`
+	Profile            string   `yaml:"profile,omitempty"`
+	ImageID            string   `yaml:"imageID,omitempty"`
+	CreateNamespace    bool     `yaml:"createNamespace,omitempty"`
 }
 
 func optionsPath(appTemplatePath string) string {

@@ -15,10 +15,13 @@ spec:
         in="$1"
         out="$2"
 
-        echo "Processing $in"
+        echo "Processing $in {{ .Values.test7g.nonfilevalue }} $FILEVALUE"
         sleep 5
 
         echo "Done with $in"
+
+  env:
+    FILEVALUE: {{ .Values.test7g.filevalue }}
 
   command: ./main.sh
   minSize: auto
