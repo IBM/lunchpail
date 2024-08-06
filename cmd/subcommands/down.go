@@ -32,7 +32,7 @@ func newDownCmd() *cobra.Command {
 	tgtOpts := addTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{}) // TODO assembly.Options
+		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{ApiKey: apiKey}) // TODO assembly.Options
 		if err != nil {
 			return err
 		}
