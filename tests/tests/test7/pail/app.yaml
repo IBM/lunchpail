@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: test7
 spec:
-  api: workqueue
   role: worker
   image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/lunchpail-worker-alpine:" .Chart.AppVersion }}
   code:

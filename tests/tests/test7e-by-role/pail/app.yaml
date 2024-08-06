@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: test7e-by-role
 spec:
-  api: workqueue
   role: worker
   code:
   - name: literal.sh

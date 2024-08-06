@@ -4,7 +4,6 @@ kind: Application
 metadata:
   name: test7e
 spec:
-  api: workqueue
   role: worker
   code:
     - name: literal.sh

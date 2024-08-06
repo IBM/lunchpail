@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: test7f-repo
 spec:
-  api: workqueue
   role: worker
   repo: https://github.com/IBM/lunchpail/tree/main/tests/tests/test7f-repo/pail
   command: ./src/main.sh

@@ -12,7 +12,6 @@ type Application struct {
 	Kind       string
 	Metadata   Metadata
 	Spec       struct {
-		Api                      Api
 		Role                     Role
 		Code                     []Code                   `yaml:"code,omitempty"`
 		Description              string                   `yaml:"description,omitempty"`
