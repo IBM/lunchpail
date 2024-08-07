@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/fe/transformer/api"
 	"os"
 	"slices"
 	"strconv"
@@ -107,13 +108,23 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 				if err != nil {
 					continue
 				}
-				name := fields[6]
 
-				worker := Worker{
-					name, count, count2, count3, count4,
+				// The workstealer labels workers with
+				// the suffix of the queue path that
+				// we gave it via
+				// api.QueuePrefixPathForWorker(). See
+				// e.g. `assignedWorkPattern`. Here,
+				// we reverse that to extract the
+				// worker and pool name.
+				poolName, workerName, err := api.ExtractNamesFromSubPathForWorker(fields[6])
+				if err != nil {
+					continue
 				}
 
-				poolName := poolName(worker)
+				worker := Worker{
+					workerName, count, count2, count3, count4,
+				}
+
 				pidx := slices.IndexFunc(model.Pools, func(pool Pool) bool { return pool.Name == poolName })
 				var pool Pool
 				if pidx < 0 {
@@ -139,16 +150,6 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 	}
 
 	return nil
-}
-
-func poolName(worker Worker) string {
-	// test7f-pool1.w96bh -> test7f-pool1
-	if idx := strings.Index(worker.Name, "."); idx < 0 {
-		// TODO error handling here. what do we want to do?
-		return "INVALID: " + worker.Name
-	} else {
-		return worker.Name[:idx]
-	}
 }
 
 func QstatStreamer(runname, namespace string, opts Options) (chan Model, *errgroup.Group, error) {
