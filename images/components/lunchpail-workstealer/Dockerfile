@@ -1,5 +1,5 @@
 # Build stage
-FROM docker.io/golang:1.22.1-alpine
+FROM docker.io/golang:1.22.6-alpine
 LABEL org.opencontainers.image.source="https://github.com/IBM/lunchpail"
 WORKDIR /workstealer
 
