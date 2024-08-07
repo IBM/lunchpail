@@ -1,5 +1,5 @@
 module github.com/IBM/lunchpail/images/components/lunchpail-workstealer
 
-go 1.22.1
+go 1.22.6
 
-require github.com/dustin/go-humanize v1.0.1 // indirect
+require github.com/dustin/go-humanize v1.0.1
