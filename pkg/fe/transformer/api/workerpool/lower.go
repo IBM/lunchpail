@@ -78,7 +78,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, pool h
 		"workers.cpu=" + sizing.Cpu,
 		"workers.memory=" + sizing.Memory,
 		"workers.gpu=" + strconv.Itoa(sizing.Gpu),
-		"lunchpail=lunchpail",
+		"lunchpail.poolName=" + pool.Metadata.Name,
 		"taskqueue.prefixPath=" + api.QueuePrefixPathForWorker(queueSpec, runname, pool.Metadata.Name),
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,

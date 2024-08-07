@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -70,27 +69,6 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
-	runname, exists := pod.Labels["app.kubernetes.io/instance"]
-	if !exists {
-		return fmt.Errorf("Worker without instance/runname label %s\n", pod.Name)
-	}
-
-	name := pod.Name
-
-	if component == string(comp.WorkersComponent) {
-		poolname, exists := pod.Labels["app.kubernetes.io/name"]
-		if !exists {
-			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
-		}
-
-		poolname = strings.Replace(poolname, runname+"-", "", 1)
-
-		// see worker-watcher main.go getPodNameSuffix() TODO avoid these disparate hacks
-		lastDashIdx := strings.LastIndex(pod.Name, "-")
-		suffix := pod.Name[lastDashIdx+1:]
-		name = fmt.Sprintf("%s.%s", poolname, suffix)
-	}
-
 	workerStatus := statusFromPod(pod)
 
 	switch component {
@@ -124,10 +102,11 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 		}
 
 		poolName, exists := pod.Labels["app.kubernetes.io/name"]
-		if exists {
-			poolName = strings.Replace(poolName, runname+"-", "", 1)
-			cc <- events.WorkerUpdate(name, pod.Namespace, poolName, platform.Kubernetes, workerStatus, what)
+		if !exists {
+			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
 		}
+
+		cc <- events.WorkerUpdate(pod.Name, pod.Namespace, poolName, platform.Kubernetes, workerStatus, what)
 	}
 
 	return nil

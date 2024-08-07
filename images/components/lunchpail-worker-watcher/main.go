@@ -34,7 +34,7 @@ func main() {
 
 	fullPrefix := strings.Split(os.Getenv("LUNCHPAIL_QUEUE_PATH"), "/")
 	bucket := fullPrefix[0]
-	prefix := strings.Replace(filepath.Join(fullPrefix[1:]...), "$LUNCHPAIL_WORKER_NAME", getPodNameSuffix(os.Getenv("LUNCHPAIL_POD_NAME")), 1)
+	prefix := strings.Replace(filepath.Join(fullPrefix[1:]...), "$LUNCHPAIL_WORKER_NAME", os.Getenv("LUNCHPAIL_POD_NAME"), 1)
 	remote := filepath.Join(bucket, prefix)
 	inbox := "inbox"
 	processing := "processing"
@@ -215,12 +215,6 @@ func startWatch(handler []string, client *minio.Client, bucket, prefix, remote, 
 	}
 
 	fmt.Println("DEBUG Worker exiting normally")
-}
-
-func getPodNameSuffix(podName string) string {
-	// use pod name suffix hash from batch.v1/Job controller
-	parts := strings.Split(podName, "-")
-	return parts[len(parts)-1]
 }
 
 func lsf(client *minio.Client, bucket, prefix string) ([]string, error) {
