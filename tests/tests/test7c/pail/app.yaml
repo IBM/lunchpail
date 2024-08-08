@@ -22,7 +22,6 @@ spec:
         echo "Done with $in"
 
   command: ./literal.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/lunchpail-worker-alpine:" .Chart.AppVersion }}
   env:
     MESSAGE: {{ .Values.message | default "BUG" }}
 # TODO: dataset.py in run controller doesn't currently support adding both as mount and configmap

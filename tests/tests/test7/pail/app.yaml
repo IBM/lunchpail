@@ -4,7 +4,6 @@ metadata:
   name: test7
 spec:
   role: worker
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/lunchpail-worker-alpine:" .Chart.AppVersion }}
   code:
     - name: main.sh
       source: |

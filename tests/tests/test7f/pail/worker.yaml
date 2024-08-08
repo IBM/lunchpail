@@ -22,6 +22,5 @@ spec:
         echo "Done with $in"
 
   command: ./literal.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/lunchpail-worker-alpine:" .Chart.AppVersion }}
   env:
     WORK_TIME: {{ .Values.duration | default 5 | quote }}

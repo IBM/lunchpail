@@ -51,13 +51,13 @@ lifecycle:
 
 {{- define "prestop/command" }}
 {{- if eq .Values.component "workdispatcher" }}
-- /bin/bash
+- /bin/sh
 - "-c"
 - |
   touch /tmp/alive && {{ .Values.command }}
   /opt/lunchpail/internal/bin/prestop.sh
 {{- else }}
-- /bin/bash
+- /bin/sh
 - "-c"
 - |
   touch /tmp/alive && {{ .Values.command }}

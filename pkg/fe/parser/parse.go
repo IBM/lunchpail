@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"io"
+	"lunchpail.io/pkg/defaults/application"
 	"lunchpail.io/pkg/ir/hlir"
 	"os"
 	"strings"
@@ -41,7 +42,7 @@ func Parse(yamls string) (hlir.AppModel, error) {
 				fmt.Fprintf(os.Stderr, "Warning: skipping yaml with invalid Application resource %v", err)
 				continue
 			} else {
-				model.Applications = append(model.Applications, r)
+				model.Applications = append(model.Applications, application.WithDefaults(r))
 			}
 
 		case "ParameterSweep":
