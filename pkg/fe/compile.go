@@ -15,9 +15,10 @@ import (
 
 type CompileOptions struct {
 	linker.ConfigureOptions
-	DryRun         bool
-	Watch          bool
-	UseThisRunName string
+	DryRun          bool
+	Watch           bool
+	UseThisRunName  string
+	DeleteResources bool
 }
 
 func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
@@ -61,10 +62,11 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		return ir.Linked{}, err
 	} else {
 		return ir.Linked{
-			Runname:   runname,
-			Namespace: namespace,
-			Ir:        llir,
-			Options:   opts.ConfigureOptions.CompilationOptions,
+			Runname:         runname,
+			Namespace:       namespace,
+			Ir:              llir,
+			Options:         opts.ConfigureOptions.CompilationOptions,
+			DeleteResources: opts.DeleteResources,
 		}, nil
 	}
 }
