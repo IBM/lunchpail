@@ -15,7 +15,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -31,7 +31,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
-	workdirRepo, workdirUser, workdirPat, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
+	workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace)
 
 	if codeerr != nil {
 		return llir.Component{}, codeerr
@@ -76,9 +76,6 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 		"rbac.serviceaccount=" + runname,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
-		"workdir.repo=" + workdirRepo,
-		"workdir.user=" + workdirUser,
-		"workdir.pat=" + workdirPat,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 		"lunchpail.image.registry=" + lunchpail.ImageRegistry,

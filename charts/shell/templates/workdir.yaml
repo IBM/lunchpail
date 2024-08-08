@@ -61,10 +61,3 @@ stringData:
   PAT: {{ .Values.workdir.pat }}
 {{- end }}
 {{- end }}
-
-{{- define "workdir/envFrom" }}
-{{- if and .Values.workdir.user .Values.workdir.pat }}
-- secretRef:
-    name: {{ print (.Release.Name | trunc 41) "-wp-workdir" }}
-{{- end }}
-{{- end }}

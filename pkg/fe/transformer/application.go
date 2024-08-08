@@ -16,13 +16,13 @@ func lowerApplications(compilationName, runname, namespace string, model hlir.Ap
 	for _, r := range model.Applications {
 		switch {
 		case r.Spec.Role == hlir.WorkerRole:
-			if component, err := workstealer.Lower(compilationName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+			if component, err := workstealer.Lower(compilationName, runname, namespace, r, queueSpec, opts, verbose); err != nil {
 				return components, err
 			} else {
 				components = append(components, component)
 			}
 		default:
-			if component, err := shell.Lower(compilationName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+			if component, err := shell.Lower(compilationName, runname, namespace, r, queueSpec, opts, verbose); err != nil {
 				return components, err
 			} else {
 				components = append(components, component)

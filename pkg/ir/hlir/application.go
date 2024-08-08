@@ -19,7 +19,6 @@ type Application struct {
 		Expose                   []int                    `yaml:"expose,omitempty"`
 		MinSize                  TShirtSize               `yaml:"minSize,omitempty"`
 		Tags                     []string                 `yaml:"tags,omitempty"`
-		Repo                     string                   `yaml:"repo,omitempty"`
 		Command                  string                   `yaml:"command,omitempty"`
 		Image                    string                   `yaml:"image,omitempty"`
 		Env                      Env                      `yaml:"env,omitempty"`

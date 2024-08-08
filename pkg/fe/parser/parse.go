@@ -10,11 +10,9 @@ import (
 	"strings"
 )
 
-func Parse(yamls string, repoSecrets []hlir.RepoSecret) (hlir.AppModel, error) {
+func Parse(yamls string) (hlir.AppModel, error) {
 	model := hlir.AppModel{}
 	d := yaml.NewDecoder(strings.NewReader(yamls))
-
-	model.RepoSecrets = repoSecrets
 
 	for {
 		var m hlir.UnknownResource

@@ -9,7 +9,6 @@ import (
 
 type Options struct {
 	Namespace          string   `yaml:",omitempty"`
-	RepoSecrets        []string `yaml:"repoSecrets,omitempty"`
 	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
 	OverrideValues     []string `yaml:"overrideValues,omitempty"`
 	OverrideFileValues []string `yaml:"overrideFileValues,omitempty"`

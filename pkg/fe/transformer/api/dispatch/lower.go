@@ -14,7 +14,7 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 	components := []llir.Component{}
 
 	for _, r := range model.ParameterSweeps {
-		if component, err := parametersweep.Lower(compilationName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+		if component, err := parametersweep.Lower(compilationName, runname, namespace, r, queueSpec, opts, verbose); err != nil {
 			return components, err
 		} else {
 			component.Name = "workdispatcher"
@@ -23,7 +23,7 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 	}
 
 	for _, r := range model.ProcessS3Objects {
-		if component, err := s3.Lower(compilationName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+		if component, err := s3.Lower(compilationName, runname, namespace, r, queueSpec, opts, verbose); err != nil {
 			return components, err
 		} else {
 			component.Name = "workdispatcher"

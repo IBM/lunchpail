@@ -7,7 +7,6 @@ type AppModel struct {
 	ParameterSweeps  []ParameterSweep
 	ProcessS3Objects []ProcessS3Objects
 	WorkerPools      []WorkerPool
-	RepoSecrets      []RepoSecret
 	Others           []UnknownResource
 }
 

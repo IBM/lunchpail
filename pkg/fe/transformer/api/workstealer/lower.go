@@ -13,7 +13,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
 		return llir.Component{}, err

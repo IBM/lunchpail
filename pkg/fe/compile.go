@@ -47,7 +47,7 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, dashdashSetFileValues, repoSecrets, queueSpec, err := linker.Configure(compilationName, runname, namespace, templatePath, internalS3Port, backend, opts.ConfigureOptions)
+	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, namespace, templatePath, internalS3Port, backend, opts.ConfigureOptions)
 	if err != nil {
 		return ir.Linked{}, err
 	}
@@ -55,7 +55,7 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 	defer os.RemoveAll(templatePath)
 	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: opts.Verbose}); err != nil {
 		return ir.Linked{}, err
-	} else if hlir, err := parser.Parse(yaml, repoSecrets); err != nil {
+	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return ir.Linked{}, err
 	} else if llir, err := transformer.Lower(compilationName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
 		return ir.Linked{}, err

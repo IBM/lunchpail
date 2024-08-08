@@ -19,7 +19,7 @@ func LowerAll(compilationName, runname, namespace string, model hlir.AppModel, q
 	}
 
 	for _, pool := range model.WorkerPools {
-		if component, err := Lower(compilationName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+		if component, err := Lower(compilationName, runname, namespace, app, pool, queueSpec, opts, verbose); err != nil {
 			return components, err
 		} else {
 			components = append(components, component)
