@@ -2,7 +2,7 @@
 - name: app
   image: {{ .Values.image }}
   command:
-    - /bin/bash
+    - /bin/sh
     - "-c"
     - |
       trap "/workdir/watcher prestop" EXIT

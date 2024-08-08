@@ -20,4 +20,3 @@ spec:
         echo "Done with $in"
 
   command: ./literal.sh
-  image: {{ print .Values.image.registry "/" .Values.image.repo "/lunchpail-worker-alpine:" .Chart.AppVersion }}

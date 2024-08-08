@@ -21,5 +21,4 @@ spec:
         echo "Done with $in"
 
   command: ./literal.sh
-  image: {{ print .Values.global.image.registry "/" .Values.global.image.repo "/lunchpail-worker-alpine:" .Chart.AppVersion }}
 {{- end }}
