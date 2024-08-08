@@ -3,7 +3,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/cmd/subcommands/images"
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 )
 
 func newImagesCommand() *cobra.Command {
@@ -15,7 +15,7 @@ func newImagesCommand() *cobra.Command {
 }
 
 func init() {
-	if !assembly.IsAssembled() {
+	if !compilation.IsCompiled() {
 		imagesCmd := newImagesCommand()
 		rootCmd.AddCommand(imagesCmd)
 		imagesCmd.AddCommand(images.NewBuildCmd())

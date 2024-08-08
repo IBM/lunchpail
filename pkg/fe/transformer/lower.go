@@ -1,33 +1,34 @@
 package transformer
 
 import (
-	"lunchpail.io/pkg/assembly"
+	"slices"
+
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/dispatch"
 	"lunchpail.io/pkg/fe/transformer/api/workerpool"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
-	"slices"
 )
 
 // HLIR -> LLIR
-func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts assembly.Options, verbose bool) (llir.LLIR, error) {
-	apps, err := lowerApplications(assemblyName, runname, namespace, model, queueSpec, opts, verbose)
+func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
+	apps, err := lowerApplications(compilationName, runname, namespace, model, queueSpec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := dispatch.Lower(assemblyName, runname, namespace, model, queueSpec, opts, verbose)
+	dispatchers, err := dispatch.Lower(compilationName, runname, namespace, model, queueSpec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	pools, err := workerpool.LowerAll(assemblyName, runname, namespace, model, queueSpec, opts, verbose)
+	pools, err := workerpool.LowerAll(compilationName, runname, namespace, model, queueSpec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	globals, err := lowerGlobals(assemblyName, runname, model)
+	globals, err := lowerGlobals(compilationName, runname, model)
 	if err != nil {
 		return llir.LLIR{}, err
 	}

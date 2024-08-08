@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
@@ -15,7 +15,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts compilation.Options, verbose bool) (llir.Component, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -56,7 +56,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 
 	values := []string{
 		"name=" + runname,
-		"partOf=" + assemblyName,
+		"partOf=" + compilationName,
 		"component=" + component,
 		"enclosingRun=" + runname,
 		"image=" + app.Spec.Image,

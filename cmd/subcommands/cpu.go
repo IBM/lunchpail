@@ -3,8 +3,8 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/cpu"
 )
 
@@ -30,7 +30,7 @@ func Newcmd() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{}) // TODO assembly.Options
+		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}

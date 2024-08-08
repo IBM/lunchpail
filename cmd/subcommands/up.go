@@ -1,10 +1,10 @@
 package subcommands
 
 import (
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/boot"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
 	initialize "lunchpail.io/pkg/lunchpail/init"
 	"lunchpail.io/pkg/util"
@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addAssemblyOptions(cmd *cobra.Command) *assembly.Options {
-	var options assembly.Options
+func addCompilationOptions(cmd *cobra.Command) *compilation.Options {
+	var options compilation.Options
 
 	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
 	cmd.Flags().StringSliceVarP(&options.RepoSecrets, "repo-secret", "r", []string{}, "Of the form <user>:<pat>@<githubUrl> e.g. me:3333@https://github.com")
@@ -68,7 +68,7 @@ func newUpCmd() *cobra.Command {
 	}
 
 	cmd.Flags().SortFlags = false
-	appOpts := addAssemblyOptions(cmd)
+	appOpts := addCompilationOptions(cmd)
 	tgtOpts := addTargetOptions(cmd)
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
@@ -95,14 +95,14 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		assemblyOptions := assembly.Options{Namespace: appOpts.Namespace, RepoSecrets: repoSecrets,
+		compilationOptions := compilation.Options{Namespace: appOpts.Namespace, RepoSecrets: repoSecrets,
 			ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue,
 			HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost,
 			ApiKey: appOpts.ApiKey, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
 			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID}
-		configureOptions := linker.ConfigureOptions{AssemblyOptions: assemblyOptions, Verbose: verboseFlag}
+		configureOptions := linker.ConfigureOptions{CompilationOptions: compilationOptions, Verbose: verboseFlag}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, assemblyOptions)
+		backend, err := be.New(tgtOpts.TargetPlatform, compilationOptions)
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ func newUpCmd() *cobra.Command {
 }
 
 func init() {
-	if assembly.IsAssembled() {
+	if compilation.IsCompiled() {
 		rootCmd.AddCommand(newUpCmd())
 	}
 }

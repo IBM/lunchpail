@@ -3,11 +3,11 @@ package be
 import (
 	"fmt"
 
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be/ibmcloud"
 	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/be/runs"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir"
 )
 
@@ -25,13 +25,13 @@ type Backend interface {
 	Down(linked ir.Linked) error
 
 	// Delete namespace
-	DeleteNamespace(assemblyName, namespace string) error
+	DeleteNamespace(compilationName, namespace string) error
 
 	// List deployed runs
 	ListRuns(appName, namespace string) ([]runs.Run, error)
 }
 
-func New(backend platform.Platform, aopts assembly.Options) (Backend, error) {
+func New(backend platform.Platform, aopts compilation.Options) (Backend, error) {
 	var be Backend
 
 	switch backend {

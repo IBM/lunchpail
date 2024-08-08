@@ -2,14 +2,15 @@ package fe
 
 import (
 	"fmt"
+	"math/rand"
+	"os"
+
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/fe/assembler"
+	"lunchpail.io/pkg/fe/compiler"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/parser"
 	"lunchpail.io/pkg/fe/transformer"
 	"lunchpail.io/pkg/ir"
-	"math/rand"
-	"os"
 )
 
 type CompileOptions struct {
@@ -20,21 +21,21 @@ type CompileOptions struct {
 }
 
 func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
-	stageOpts := assembler.StageOptions{}
+	stageOpts := compiler.StageOptions{}
 	stageOpts.Verbose = opts.Verbose
-	assemblyName, templatePath, _, err := assembler.Stage(stageOpts)
+	compilationName, templatePath, _, err := compiler.Stage(stageOpts)
 	if err != nil {
 		return ir.Linked{}, err
 	}
 
-	namespace := opts.AssemblyOptions.Namespace
+	namespace := opts.CompilationOptions.Namespace
 	if namespace == "" {
-		namespace = assemblyName
+		namespace = compilationName
 	}
 
 	runname := opts.UseThisRunName
 	if runname == "" {
-		if generatedRunname, err := linker.GenerateRunName(assemblyName); err != nil {
+		if generatedRunname, err := linker.GenerateRunName(compilationName); err != nil {
 			return ir.Linked{}, err
 		} else {
 			runname = generatedRunname
@@ -46,7 +47,7 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, dashdashSetFileValues, repoSecrets, queueSpec, err := linker.Configure(assemblyName, runname, namespace, templatePath, internalS3Port, backend, opts.ConfigureOptions)
+	yamlValues, dashdashSetValues, dashdashSetFileValues, repoSecrets, queueSpec, err := linker.Configure(compilationName, runname, namespace, templatePath, internalS3Port, backend, opts.ConfigureOptions)
 	if err != nil {
 		return ir.Linked{}, err
 	}
@@ -56,14 +57,14 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		return ir.Linked{}, err
 	} else if hlir, err := parser.Parse(yaml, repoSecrets); err != nil {
 		return ir.Linked{}, err
-	} else if llir, err := transformer.Lower(assemblyName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.AssemblyOptions, opts.Verbose); err != nil {
+	} else if llir, err := transformer.Lower(compilationName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
 		return ir.Linked{}, err
 	} else {
 		return ir.Linked{
 			Runname:   runname,
 			Namespace: namespace,
 			Ir:        llir,
-			Options:   opts.ConfigureOptions.AssemblyOptions,
+			Options:   opts.ConfigureOptions.CompilationOptions,
 		}, nil
 	}
 }

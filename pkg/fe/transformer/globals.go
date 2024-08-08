@@ -7,7 +7,7 @@ import (
 )
 
 // HLIR -> LLIR for non-lunchpail resources
-func lowerGlobals(assemblyName, runname string, model hlir.AppModel) (string, error) {
+func lowerGlobals(compilationName, runname string, model hlir.AppModel) (string, error) {
 	components := []string{}
 
 	for _, r := range model.Others {
@@ -23,7 +23,7 @@ func lowerGlobals(assemblyName, runname string, model hlir.AppModel) (string, er
 				}
 
 				if labels != nil {
-					labels["app.kubernetes.io/part-of"] = assemblyName
+					labels["app.kubernetes.io/part-of"] = compilationName
 					labels["app.kubernetes.io/instance"] = runname
 					labels["app.kubernetes.io/managed-by"] = "lunchpail.io"
 

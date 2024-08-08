@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
@@ -13,7 +13,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(assemblyName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts assembly.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts compilation.Options, verbose bool) (llir.Component, error) {
 	templatePath, err := api.Stage(template, templateFile)
 	if err != nil {
 		return llir.Component{}, err
@@ -25,7 +25,7 @@ func Lower(assemblyName, runname, namespace string, app hlir.Application, queueS
 
 	values := []string{
 		"name=" + runname,
-		"partOf=" + assemblyName,
+		"partOf=" + compilationName,
 		"namespace.user=" + namespace,
 		"lunchpail=lunchpail",
 		"mcad.enabled=false",

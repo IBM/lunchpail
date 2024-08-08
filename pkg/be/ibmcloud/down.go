@@ -10,7 +10,7 @@ func (backend Backend) Down(linked ir.Linked) error {
 	return nil
 }
 
-func (backend Backend) DeleteNamespace(assemblyName, namespace string) error {
+func (backend Backend) DeleteNamespace(compilationName, namespace string) error {
 	// TODO?
 	return nil
 }

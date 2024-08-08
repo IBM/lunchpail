@@ -6,16 +6,16 @@ import (
 	"os/user"
 	"slices"
 
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
 type ConfigureOptions struct {
-	AssemblyOptions assembly.Options
-	Verbose         bool
+	CompilationOptions compilation.Options
+	Verbose            bool
 }
 
 func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, []hlir.RepoSecret, queue.Spec, error) {
@@ -23,36 +23,36 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
-	shrinkwrappedOptions, err := assembly.RestoreOptions(templatePath)
+	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
 	if err != nil {
 		return "", nil, nil, nil, queue.Spec{}, err
 	} else {
-		if opts.AssemblyOptions.Namespace == "" {
-			opts.AssemblyOptions.Namespace = shrinkwrappedOptions.Namespace
+		if opts.CompilationOptions.Namespace == "" {
+			opts.CompilationOptions.Namespace = shrinkwrappedOptions.Namespace
 		}
 		// TODO here... how do we determine that boolean values were unset?
-		if opts.AssemblyOptions.ImagePullSecret == "" {
-			opts.AssemblyOptions.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
+		if opts.CompilationOptions.ImagePullSecret == "" {
+			opts.CompilationOptions.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
 		}
 
 		// careful: `--set x=3 --set x=4` results in x having
 		// value 4, so we need to place the shrinkwrapped
 		// options first in the list
-		opts.AssemblyOptions.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.AssemblyOptions.OverrideValues...)
-		opts.AssemblyOptions.OverrideFileValues = append(shrinkwrappedOptions.OverrideFileValues, opts.AssemblyOptions.OverrideFileValues...)
+		opts.CompilationOptions.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.CompilationOptions.OverrideValues...)
+		opts.CompilationOptions.OverrideFileValues = append(shrinkwrappedOptions.OverrideFileValues, opts.CompilationOptions.OverrideFileValues...)
 
-		if opts.AssemblyOptions.Queue == "" {
-			opts.AssemblyOptions.Queue = shrinkwrappedOptions.Queue
+		if opts.CompilationOptions.Queue == "" {
+			opts.CompilationOptions.Queue = shrinkwrappedOptions.Queue
 		}
 		// TODO here... how do we determine that boolean values were unset?
-		if opts.AssemblyOptions.HasGpuSupport == false {
-			opts.AssemblyOptions.HasGpuSupport = shrinkwrappedOptions.HasGpuSupport
+		if opts.CompilationOptions.HasGpuSupport == false {
+			opts.CompilationOptions.HasGpuSupport = shrinkwrappedOptions.HasGpuSupport
 		}
-		if opts.AssemblyOptions.DockerHost == "" {
-			opts.AssemblyOptions.DockerHost = shrinkwrappedOptions.DockerHost
+		if opts.CompilationOptions.DockerHost == "" {
+			opts.CompilationOptions.DockerHost = shrinkwrappedOptions.DockerHost
 		}
-		if !opts.AssemblyOptions.CreateNamespace {
-			opts.AssemblyOptions.CreateNamespace = shrinkwrappedOptions.CreateNamespace
+		if !opts.CompilationOptions.CreateNamespace {
+			opts.CompilationOptions.CreateNamespace = shrinkwrappedOptions.CreateNamespace
 		}
 	}
 
@@ -61,12 +61,12 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	imageRegistry := lunchpail.ImageRegistry
 	imageRepo := lunchpail.ImageRepo
 
-	queueSpec, err := queue.ParseFlag(opts.AssemblyOptions.Queue, runname, internalS3Port)
+	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
 	if err != nil {
 		return "", nil, nil, nil, queue.Spec{}, err
 	}
 
-	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.AssemblyOptions.ImagePullSecret)
+	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.CompilationOptions.ImagePullSecret)
 	if ipsErr != nil {
 		return "", nil, nil, nil, queue.Spec{}, ipsErr
 	}
@@ -146,38 +146,38 @@ lunchpail_internal:
   workstealer:
     sleep_before_exit: %s # sleepBeforeExit (31)
 `,
-		"",                                   // (1)
-		opts.AssemblyOptions.DockerHost,      // (2)
-		runname,                              // (3)
-		imageRegistry,                        // (4)
-		imageRepo,                            // (5)
-		imagePullSecretName,                  // (6)
-		dockerconfigjson,                     // (7)
-		systemNamespace,                      // (8)
-		opts.AssemblyOptions.CreateNamespace, // (9)
+		"",                                      // (1)
+		opts.CompilationOptions.DockerHost,      // (2)
+		runname,                                 // (3)
+		imageRegistry,                           // (4)
+		imageRepo,                               // (5)
+		imagePullSecretName,                     // (6)
+		dockerconfigjson,                        // (7)
+		systemNamespace,                         // (8)
+		opts.CompilationOptions.CreateNamespace, // (9)
 
-		runnameMax40,                       // (10)
-		systemNamespace,                    // (11)
-		internalS3Port,                     // (12)
-		user.Username,                      // (13)
-		user.Uid,                           // (14)
-		runname,                            // (15)
-		imageRegistry,                      // (16)
-		imageRepo,                          // (17)
-		lunchpail.Version(),                // (18)
-		partOf,                             // (19)
-		queueSpec.Auto,                     // (20)
-		queueSpec.Name,                     // (21)
-		queueSpec.Endpoint,                 // (22)
-		queueSpec.Bucket,                   // (23)
-		queueSpec.AccessKey,                // (24)
-		queueSpec.SecretKey,                // (25)
-		runname,                            // (26)
-		namespace,                          // (27)
-		opts.AssemblyOptions.HasGpuSupport, // (28)
-		queueSpec.Auto,                     // (29)
-		internalS3Port,                     // (30)
-		os.Getenv("LP_SLEEP_BEFORE_EXIT"),  // (31)
+		runnameMax40,                          // (10)
+		systemNamespace,                       // (11)
+		internalS3Port,                        // (12)
+		user.Username,                         // (13)
+		user.Uid,                              // (14)
+		runname,                               // (15)
+		imageRegistry,                         // (16)
+		imageRepo,                             // (17)
+		lunchpail.Version(),                   // (18)
+		partOf,                                // (19)
+		queueSpec.Auto,                        // (20)
+		queueSpec.Name,                        // (21)
+		queueSpec.Endpoint,                    // (22)
+		queueSpec.Bucket,                      // (23)
+		queueSpec.AccessKey,                   // (24)
+		queueSpec.SecretKey,                   // (25)
+		runname,                               // (26)
+		namespace,                             // (27)
+		opts.CompilationOptions.HasGpuSupport, // (28)
+		queueSpec.Auto,                        // (29)
+		internalS3Port,                        // (30)
+		os.Getenv("LP_SLEEP_BEFORE_EXIT"),     // (31)
 	)
 
 	backendValues, err := backend.Values()
@@ -187,18 +187,18 @@ lunchpail_internal:
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.AssemblyOptions.OverrideValues)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.AssemblyOptions.OverrideFileValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.CompilationOptions.OverrideValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.CompilationOptions.OverrideFileValues)
 		fmt.Fprintf(os.Stderr, "shrinkwrap backend overrides=%v\n", backendValues)
 	}
 
-	repoSecrets, err := gatherRepoSecrets(slices.Concat(opts.AssemblyOptions.RepoSecrets, shrinkwrappedOptions.RepoSecrets))
+	repoSecrets, err := gatherRepoSecrets(slices.Concat(opts.CompilationOptions.RepoSecrets, shrinkwrappedOptions.RepoSecrets))
 	if err != nil {
 		return "", nil, nil, nil, queue.Spec{}, err
 	}
 
-	overrides := slices.Concat(opts.AssemblyOptions.OverrideValues, backendValues)
-	fileOverrides := opts.AssemblyOptions.OverrideFileValues // Note: no backend value support here
+	overrides := slices.Concat(opts.CompilationOptions.OverrideValues, backendValues)
+	fileOverrides := opts.CompilationOptions.OverrideFileValues // Note: no backend value support here
 
 	return yaml, overrides, fileOverrides, repoSecrets, queueSpec, nil
 }

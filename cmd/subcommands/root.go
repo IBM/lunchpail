@@ -1,9 +1,10 @@
 package subcommands
 
 import (
-	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/assembly"
 	"os"
+
+	"github.com/spf13/cobra"
+	"lunchpail.io/pkg/compilation"
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -12,8 +13,8 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	if assembly.IsAssembled() {
-		rootCmd.Use = assembly.Name()
+	if compilation.IsCompiled() {
+		rootCmd.Use = compilation.Name()
 	}
 
 	if err := rootCmd.Execute(); err != nil {

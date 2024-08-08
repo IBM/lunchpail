@@ -1,10 +1,10 @@
 package ibmcloud
 
 import (
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 )
 
-func New(aopts assembly.Options) (Backend, error) {
+func New(aopts compilation.Options) (Backend, error) {
 	config := loadConfigWithCommandLineOverrides(aopts)
 	keytype, key, err := loadPublicKey(config, aopts)
 

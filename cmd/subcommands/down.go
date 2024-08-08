@@ -3,9 +3,9 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
+	"lunchpail.io/pkg/compilation"
 )
 
 func newDownCmd() *cobra.Command {
@@ -32,7 +32,7 @@ func newDownCmd() *cobra.Command {
 	tgtOpts := addTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(tgtOpts.TargetPlatform, assembly.Options{ApiKey: apiKey}) // TODO assembly.Options
+		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{ApiKey: apiKey}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
@@ -47,7 +47,7 @@ func newDownCmd() *cobra.Command {
 }
 
 func init() {
-	if assembly.IsAssembled() {
+	if compilation.IsCompiled() {
 		rootCmd.AddCommand(newDownCmd())
 	}
 }

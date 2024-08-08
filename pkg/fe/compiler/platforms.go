@@ -1,4 +1,4 @@
-package assembler
+package compiler
 
 func supportedOs() []string {
 	return []string{

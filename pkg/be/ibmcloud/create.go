@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
@@ -374,7 +374,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(aopts assembly.Options, ir llir.LLIR, runname string, action Action) error {
+func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runname string, action Action) error {
 	if action == Stop || action == Delete {
 		if err := stopOrDeleteVM(backend.vpcService, runname, backend.config.ResourceGroup.GUID, action == Delete); err != nil {
 			return err

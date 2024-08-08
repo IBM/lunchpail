@@ -1,4 +1,4 @@
-package assembler
+package compiler
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"runtime"
 
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/util"
 )
 
@@ -30,7 +30,7 @@ func stageLunchpail() (string, error) {
 }
 
 func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string, verbose bool) error {
-	tarball := filepath.Join(lunchpailStageDir, "pkg/fe/assembler", "charts.tar.gz")
+	tarball := filepath.Join(lunchpailStageDir, "pkg/fe/compiler", "charts.tar.gz")
 	verboseFlag := ""
 	if verbose {
 		verboseFlag = "-v"
@@ -48,7 +48,7 @@ func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string
 	return nil
 }
 
-func Assemble(sourcePath string, opts Options) error {
+func Compile(sourcePath string, opts Options) error {
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
 		// } else if err == nil {
@@ -63,29 +63,29 @@ func Assemble(sourcePath string, opts Options) error {
 	}
 
 	// TODO... how do we really want to get a good name for the app?
-	assemblyName := assembly.Name()
+	compilationName := compilation.Name()
 	if sourcePath != "" {
-		assemblyName = filepath.Base(trimExt(sourcePath))
+		compilationName = filepath.Base(trimExt(sourcePath))
 	}
-	if assemblyName == "pail" {
-		assemblyName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
-		if assemblyName == "pail" {
+	if compilationName == "pail" {
+		compilationName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+		if compilationName == "pail" {
 			// probably a trailing slash
-			assemblyName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
+			compilationName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
 		}
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Using assemblyName=%s\n", assemblyName)
+		fmt.Fprintf(os.Stderr, "Using compilationName=%s\n", compilationName)
 	}
 
-	if appTemplatePath, appVersion, err := StagePath(assemblyName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, appVersion, err := StagePath(compilationName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
 		return err
-	} else if err := assembly.SaveOptions(appTemplatePath, opts.AssemblyOptions); err != nil {
+	} else if err := compilation.SaveOptions(appTemplatePath, opts.CompilationOptions); err != nil {
 		return err
 	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
-	} else if err := assembly.DropBreadcrumb(assemblyName, appVersion, lunchpailStageDir); err != nil {
+	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, lunchpailStageDir); err != nil {
 		return err
 	} else {
 		if !opts.AllPlatforms {

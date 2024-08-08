@@ -55,7 +55,7 @@ result in images being pushed to the default image repository.
 Now you can compile your first application:
 
 ```shell
-./lunchpail assemble https://github.com/IBM/lunchpail-demo -o demo -N
+./lunchpail compile https://github.com/IBM/lunchpail-demo -o demo -N
 ```
 
 And try it out!

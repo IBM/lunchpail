@@ -1,16 +1,16 @@
 # Lunchpail: Getting Started as an Application Developer
 
 - [Download](https://github.com/IBM/lunchpail/releases/latest) the latest `lunchpail` CLI.
-- Try out `lunchpail assemble` to generate binaries for your application.
+- Try out `lunchpail compile` to generate binaries for your application.
 
-## Usage of `lunchpail assemble`
+## Usage of `lunchpail compile`
 
 ```shell
-❯ ./lunchpail assemble -h
+❯ ./lunchpail compile -h
 Generate a binary specialized to a given application
 
 Usage:
-  lunchpail assemble path-or-git [flags]
+  lunchpail compile path-or-git [flags]
 
 Flags:
   -A, --all-platforms              Generate binaries for all supported platform/arch combinations
@@ -27,10 +27,10 @@ Flags:
   -v, --verbose                    Verbose output
 ```
       
-## Example of `lunchpail assemble`
+## Example of `lunchpail compile`
 
 ```shell
-lunchpail assemble https://github.com/IBM/lunchpail-demo -o /tmp/lunchpail-demo -N
+lunchpail compile https://github.com/IBM/lunchpail-demo -o /tmp/lunchpail-demo -N
 ```
 
 Here, we used the `-N` flag (short for `--create-namespace`) so that

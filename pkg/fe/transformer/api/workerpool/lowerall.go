@@ -2,14 +2,15 @@ package workerpool
 
 import (
 	"fmt"
-	"lunchpail.io/pkg/assembly"
+
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 )
 
 // HLIR -> LLIR for []hlir.WorkerPool
-func LowerAll(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts assembly.Options, verbose bool) ([]llir.Component, error) {
+func LowerAll(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	app, found := model.GetApplicationByRole(hlir.WorkerRole)
@@ -18,7 +19,7 @@ func LowerAll(assemblyName, runname, namespace string, model hlir.AppModel, queu
 	}
 
 	for _, pool := range model.WorkerPools {
-		if component, err := Lower(assemblyName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+		if component, err := Lower(compilationName, runname, namespace, app, pool, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 			return components, err
 		} else {
 			components = append(components, component)
