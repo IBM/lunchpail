@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Lower(compilationName, runname, namespace string, sweep hlir.ParameterSweep, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, sweep hlir.ParameterSweep, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	app, err := transpile(sweep)
 	if err != nil {
 		return llir.Component{}, err
@@ -20,7 +20,6 @@ func Lower(compilationName, runname, namespace string, sweep hlir.ParameterSweep
 		namespace,
 		app,
 		queueSpec,
-		repoSecrets,
 		opts,
 		verbose,
 	)

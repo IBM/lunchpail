@@ -16,7 +16,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, repoSecrets []hlir.RepoSecret, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -35,7 +35,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
-	workdirRepo, workdirUser, workdirPat, workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace, repoSecrets)
+	workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace)
 
 	if codeerr != nil {
 		return llir.Component{}, codeerr
@@ -91,9 +91,6 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		"rbac.serviceaccount=" + runname,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
-		"workdir.repo=" + workdirRepo,
-		"workdir.user=" + workdirUser,
-		"workdir.pat=" + workdirPat,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 		"watcher.image.registry=" + lunchpail.ImageRegistry,

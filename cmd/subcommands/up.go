@@ -16,7 +16,6 @@ func addCompilationOptions(cmd *cobra.Command) *compilation.Options {
 	var options compilation.Options
 
 	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
-	cmd.Flags().StringSliceVarP(&options.RepoSecrets, "repo-secret", "r", []string{}, "Of the form <user>:<pat>@<githubUrl> e.g. me:3333@https://github.com")
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&options.Queue, "queue", "", "", "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
 	cmd.Flags().BoolVarP(&options.HasGpuSupport, "gpu", "", false, "Run with GPUs (if supported by the application)")
@@ -90,12 +89,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		repoSecrets, err := cmd.Flags().GetStringSlice("repo-secret")
-		if err != nil {
-			return err
-		}
-
-		compilationOptions := compilation.Options{Namespace: appOpts.Namespace, RepoSecrets: repoSecrets,
+		compilationOptions := compilation.Options{Namespace: appOpts.Namespace,
 			ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue,
 			HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost,
 			ApiKey: appOpts.ApiKey, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,

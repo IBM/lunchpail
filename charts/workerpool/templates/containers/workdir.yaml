@@ -1,17 +1,4 @@
 {{- define "containers/workdir" }}
-{{- if .Values.workdir.repo }}
-- name: workdir
-  image: {{ print .Values.watcher.image.registry "/" .Values.watcher.image.repo "/lunchpail-workdir:" .Values.watcher.image.version }}
-  volumeMounts:
-    {{ include "workdir/volumeMount" . | indent 4 }}
-  env:
-    {{ include "workdir/env" . | indent 4 }}
-    - name: REPO
-      value: {{ .Values.workdir.repo }}
-  envFrom:
-    {{ include "workdir/envFrom" . | indent 4 }}
-{{- end }}
-
 {{- if .Values.workdir.cm.data }}
 - name: workdir-code
   image: docker.io/alpine:3
