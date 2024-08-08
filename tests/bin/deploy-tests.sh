@@ -63,10 +63,10 @@ export LP_SLEEP_BEFORE_EXIT=10
 
 repo_secret="" # e.g. user:pat@https://github.mycompany.com
               
-# intentionally setting some critical values at assemble time to the
+# intentionally setting some critical values at compile time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
-/tmp/lunchpail assemble -v \
+/tmp/lunchpail compile -v \
                -o $testapp.tmp \
                $branch \
                $repo_secret \
@@ -76,7 +76,7 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
 # Pull in a `values` file if it exists. This allows for test coverage
 # of `--set` command line values, e.g. that they are correctly
 # propagated to the running code. Note that we intentionally attach
-# these values at assemble rather than up time (though up time would
+# these values at compile rather than up time (though up time would
 # work, too) so that `down` calls can pick up those values, too.
 if [[ -e "$2"/../values ]]
 then
@@ -86,8 +86,8 @@ then
     echo "Using these values from the application definition: $values_from_pail"
 fi
 
-# test coverage for re-assemble
-$testapp.tmp assemble -v \
+# test coverage for re-compile
+$testapp.tmp compile -v \
              -o $testapp \
              $values_from_pail \
              --create-namespace

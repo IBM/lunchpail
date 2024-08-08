@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/compilation"
 )
 
 func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (string, string, string, error) {
-	appname := assembly.Name()
+	appname := compilation.Name()
 	if namespace == "" {
 		namespace = appname
 	}

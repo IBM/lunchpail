@@ -5,9 +5,9 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/assembly"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
 )
 
@@ -21,12 +21,12 @@ type DownOptions struct {
 }
 
 func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
-	assemblyName, namespace := nans(opts)
+	compilationName, namespace := nans(opts)
 	deleteNs := opts.DeleteNamespace
 
 	if len(runnames) == 0 {
 		if opts.DeleteAll {
-			remainingRuns, err := backend.ListRuns(assemblyName, namespace)
+			remainingRuns, err := backend.ListRuns(compilationName, namespace)
 			if err != nil {
 				return err
 			}
@@ -56,7 +56,7 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 	}
 
 	if deleteNs {
-		if err := backend.DeleteNamespace(assemblyName, namespace); err != nil {
+		if err := backend.DeleteNamespace(compilationName, namespace); err != nil {
 			return err
 		}
 	}
@@ -65,26 +65,26 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 }
 
 func nans(opts DownOptions) (string, string) {
-	assemblyName := assembly.Name()
-	namespace := assemblyName
+	compilationName := compilation.Name()
+	namespace := compilationName
 	if opts.Namespace != "" {
 		namespace = opts.Namespace
 	}
 
-	return assemblyName, namespace
+	return compilationName, namespace
 }
 
-func toAssemblyOpts(opts DownOptions) assembly.Options {
-	assemblyOptions := assembly.Options{}
-	assemblyOptions.Namespace = opts.Namespace
-	assemblyOptions.ApiKey = opts.ApiKey
+func toCompilationOpts(opts DownOptions) compilation.Options {
+	compilationOptions := compilation.Options{}
+	compilationOptions.Namespace = opts.Namespace
+	compilationOptions.ApiKey = opts.ApiKey
 
-	return assemblyOptions
+	return compilationOptions
 }
 
 func toUpOpts(runname string, opts DownOptions) UpOptions {
 	configureOptions := linker.ConfigureOptions{}
-	configureOptions.AssemblyOptions = toAssemblyOpts(opts)
+	configureOptions.CompilationOptions = toCompilationOpts(opts)
 	configureOptions.Verbose = opts.Verbose
 
 	upOptions := UpOptions{}
@@ -95,10 +95,10 @@ func toUpOpts(runname string, opts DownOptions) UpOptions {
 }
 
 func Down(runname string, backend be.Backend, opts DownOptions) error {
-	assemblyName, namespace := nans(opts)
+	compilationName, namespace := nans(opts)
 
 	if runname == "" {
-		singletonRun, err := util.Singleton(assemblyName, namespace, backend)
+		singletonRun, err := util.Singleton(compilationName, namespace, backend)
 		if err != nil {
 			return err
 		}
@@ -119,7 +119,7 @@ func Down(runname string, backend be.Backend, opts DownOptions) error {
 	}
 
 	if opts.DeleteNamespace {
-		if err := backend.DeleteNamespace(assemblyName, namespace); err != nil {
+		if err := backend.DeleteNamespace(compilationName, namespace); err != nil {
 			return err
 		}
 	}

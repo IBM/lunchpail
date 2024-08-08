@@ -1,8 +1,8 @@
 package info
 
 import (
-	"lunchpail.io/pkg/assembly"
-	"lunchpail.io/pkg/fe/assembler"
+	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/fe/compiler"
 )
 
 type Info struct {
@@ -10,19 +10,19 @@ type Info struct {
 	Date                 string
 	By                   string
 	On                   string
-	ShrinkwrappedOptions assembly.Options
+	ShrinkwrappedOptions compilation.Options
 }
 
 func Model() (Info, error) {
-	templatePath, err := assembler.StageTemplate()
+	templatePath, err := compiler.StageTemplate()
 	if err != nil {
 		return Info{}, err
 	}
 
-	shrinkwrappedOptions, err := assembly.RestoreOptions(templatePath)
+	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
 	if err != nil {
 		return Info{}, err
 	}
 
-	return Info{assembly.Name(), assembly.Date(), assembly.By(), assembly.On(), shrinkwrappedOptions}, nil
+	return Info{compilation.Name(), compilation.Date(), compilation.By(), compilation.On(), shrinkwrappedOptions}, nil
 }

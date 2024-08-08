@@ -22,8 +22,8 @@ func deleteNamespace(namespace string) error {
 	return nil
 }
 
-func (backend Backend) DeleteNamespace(assemblyName, namespace string) error {
-	remainingRuns, err := backend.ListRuns(assemblyName, namespace)
+func (backend Backend) DeleteNamespace(compilationName, namespace string) error {
+	remainingRuns, err := backend.ListRuns(compilationName, namespace)
 	if err != nil {
 		return err
 	} else if len(remainingRuns) != 0 {

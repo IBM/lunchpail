@@ -1,4 +1,4 @@
-package assembly
+package compilation
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ type Options struct {
 }
 
 func optionsPath(appTemplatePath string) string {
-	return filepath.Join(appTemplatePath, "assemblyOptions.json")
+	return filepath.Join(appTemplatePath, "compilationOptions.json")
 }
 
 func SaveOptions(appTemplatePath string, opts Options) error {
@@ -39,28 +39,28 @@ func SaveOptions(appTemplatePath string, opts Options) error {
 }
 
 func RestoreOptions(appTemplatePath string) (Options, error) {
-	var assemblyOptions Options
+	var compilationOptions Options
 
 	if _, err := os.Stat(optionsPath(appTemplatePath)); err != nil {
 		// no shrinkwrapped options
-		return assemblyOptions, nil
+		return compilationOptions, nil
 	}
 
 	jsonFile, err := os.Open(optionsPath(appTemplatePath))
 	if err != nil {
-		return assemblyOptions, err
+		return compilationOptions, err
 	} else {
 		defer jsonFile.Close()
 	}
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		return assemblyOptions, err
+		return compilationOptions, err
 	}
 
-	if err := json.Unmarshal(byteValue, &assemblyOptions); err != nil {
-		return assemblyOptions, err
+	if err := json.Unmarshal(byteValue, &compilationOptions); err != nil {
+		return compilationOptions, err
 	}
 
-	return assemblyOptions, nil
+	return compilationOptions, nil
 }

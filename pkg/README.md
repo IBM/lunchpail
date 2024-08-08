@@ -1,6 +1,6 @@
 # Lunchpail library routines
 
-- **assembly**: Manages state of assembled application, e.g. assembly name, assembly date, and preconfigured options.
+- **compilation**: Manages state of compiled application, e.g. compilation name, compilation date, and preconfigured options.
 
 - **be**: Backend logic that takes llir (low-level intermediate representation) and stands it up.
 

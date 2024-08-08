@@ -1,7 +1,7 @@
 package api
 
 import (
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/hlir"
 )
 
@@ -25,7 +25,7 @@ var defaultConfig = RunConfigs{
 	hlir.XxlSize:  {40, "8", "64Gi", 0},
 }
 
-func ApplicationSizing(app hlir.Application, opts assembly.Options) RunSizeConfig {
+func ApplicationSizing(app hlir.Application, opts compilation.Options) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
@@ -50,7 +50,7 @@ func ApplicationSizing(app hlir.Application, opts assembly.Options) RunSizeConfi
 
 // Applications can specify a minSize... so take the max of that and
 // what the WorkerPool specifies
-func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application, opts assembly.Options) RunSizeConfig {
+func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application, opts compilation.Options) RunSizeConfig {
 	// for now...
 	config := defaultConfig
 

@@ -1,4 +1,4 @@
-package assembler
+package compiler
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/util"
 )
 
@@ -167,7 +167,7 @@ type StageOptions struct {
 
 // return (templatePath, appVersion, error)
 func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
-	appVersion := assembly.AppVersion()
+	appVersion := compilation.AppVersion()
 
 	templatePath, err := StageTemplate()
 	if err != nil {
@@ -191,7 +191,7 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, string, e
 
 // return (appname, templatePath, appVersion, error)
 func Stage(opts StageOptions) (string, string, string, error) {
-	appname := assembly.Name()
+	appname := compilation.Name()
 	templatePath, appVersion, err := StagePath(appname, "", opts)
 
 	return appname, templatePath, appVersion, err

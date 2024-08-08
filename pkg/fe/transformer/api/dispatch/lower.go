@@ -1,7 +1,7 @@
 package dispatch
 
 import (
-	"lunchpail.io/pkg/assembly"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/dispatch/parametersweep"
 	"lunchpail.io/pkg/fe/transformer/api/dispatch/s3"
@@ -10,11 +10,11 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.ParameterSweep, ...
-func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts assembly.Options, verbose bool) ([]llir.Component, error) {
+func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	for _, r := range model.ParameterSweeps {
-		if component, err := parametersweep.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+		if component, err := parametersweep.Lower(compilationName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 			return components, err
 		} else {
 			component.Name = "workdispatcher"
@@ -23,7 +23,7 @@ func Lower(assemblyName, runname, namespace string, model hlir.AppModel, queueSp
 	}
 
 	for _, r := range model.ProcessS3Objects {
-		if component, err := s3.Lower(assemblyName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
+		if component, err := s3.Lower(compilationName, runname, namespace, r, queueSpec, model.RepoSecrets, opts, verbose); err != nil {
 			return components, err
 		} else {
 			component.Name = "workdispatcher"
