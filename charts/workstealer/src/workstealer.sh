@@ -5,6 +5,8 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 LOCAL_QUEUE_ROOT=$(mktemp -d /tmp/localqueue.XXXXXXXX)
 export QUEUE=$LOCAL_QUEUE_ROOT/$LUNCHPAIL_QUEUE_PATH
 
+export LUNCHPAIL_LOG_DIR="$QUEUE"/logs
+
 remote=s3:/$LUNCHPAIL_QUEUE_PATH
 
 S3_ENDPOINT=http://localhost:9000
@@ -86,7 +88,7 @@ do
     capture $B
 
     # Sync in changes from remote
-    rclone sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*.partial' $remote $QUEUE
+    rclone sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*.partial' --exclude '*logs*' $remote $QUEUE
 
     if [[ $? != 0 ]]
     then
