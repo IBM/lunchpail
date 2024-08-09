@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
@@ -9,7 +9,7 @@ remote=s3:/$LUNCHPAIL_QUEUE_PATH
 
 S3_ENDPOINT=http://localhost:9000
 
-if [[ -z "$MINIO_ENABLED" ]]
+if [ -z "$MINIO_ENABLED" ]
 then S3_ENDPOINT=$lunchpail_queue_endpoint
 fi
 
@@ -27,7 +27,7 @@ secret_access_key = $lunchpail_queue_secretAccessKey
 acl = public-read
 EOF
 
-if [[ -n "$MINIO_ENABLED" ]]
+if [ -n "$MINIO_ENABLED" ]
 then
     "$SCRIPTDIR"/minio.sh &
     MINIO_PID=$!
@@ -41,7 +41,7 @@ printenv
 function upload {
     local file=$1
     remotefile=s3:$(echo $file | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
-    if [[ -n "$DEBUG" ]]; then echo "Uploading changed file: $file -> $remotefile"; fi
+    if [ -n "$DEBUG" ]; then echo "Uploading changed file: $file -> $remotefile"; fi
     rclone copyto --retries 20 --retries-sleep=1s $file $remotefile &
 }
 
@@ -51,13 +51,13 @@ function move {
     local dst=$2
     remoteSrc=s3:$(echo $src | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
     remoteDst=s3:$(echo $dst | sed -E "s#^$LOCAL_QUEUE_ROOT/##")
-    if [[ -n "$DEBUG" ]]; then echo "Moving file: $remoteSrc $remoteDst"; fi
+    if [ -n "$DEBUG" ]; then echo "Moving file: $remoteSrc $remoteDst"; fi
     rclone moveto --retries 20 --retries-sleep=1s $remoteSrc $remoteDst &
 }
 
 # Capture state of files
 function capture {
-    if [[ -d $QUEUE ]]
+    if [ -d "$QUEUE" ]
     then (cd $QUEUE && find * | sort > $1)
     else echo "" > $1
     fi
@@ -76,9 +76,9 @@ rclone mkdir $remote
 # to future porters of this to e.g. go... this /tmp/done is only to
 # work around bash's inability for the whle read line below to cleanly
 # signal that this outer loop should also exit
-while [[ ! -e /tmp/lunchpail-bye ]]
+while [ ! -e /tmp/lunchpail-bye ]
 do
-    if [[ -f $A ]]; then rm -f $A; fi
+    if [ -f "$A" ]; then rm -f $A; fi
     A=$(mktemp /tmp/after.$idx.XXXXXXXXXXXX)
     idx=$((idx+1))
 
@@ -88,7 +88,7 @@ do
     # Sync in changes from remote
     rclone sync --create-empty-src-dirs --retries 20 --retries-sleep=1s --exclude '*.partial' $remote $QUEUE
 
-    if [[ $? != 0 ]]
+    if [ $? != 0 ]
     then
         # Then the rclone sync failed
         echo "Error with rclone sync. Nuking local clone to start from scratch. Diagnostics follow:"
@@ -106,7 +106,7 @@ do
 
         beforesum=$(sha256sum $B | awk '{print $1}')
         aftersum=$(sha256sum $A | awk '{print $1}')
-        if [[ $beforesum != $aftersum ]]
+        if [ "$beforesum" != "$aftersum" ]
         then
             # Then we sync'd in some updates. Launch the go code, which
             # will emit a newline-separated stream of files it has
@@ -127,13 +127,13 @@ do
             # And also stream the diff to stdin of the go code
             diff --new-line-format='+%L' --old-line-format='-%L' --unchanged-line-format=' %L' $B $A | "$SCRIPTDIR"/../bin/workstealer | while read file file2 change
             do
-                if [[ "$file" = bye ]]
+                if [ "$file" = "bye" ]
                 then
                     touch /tmp/lunchpail-bye
                     exit
-                elif [[ "$change" = move ]]
+                elif [ "$change" = "move" ]
                 then move $file $file2
-                elif [[ "$change" = link ]]
+                elif [ "$change" = "link" ]
                 then upload $file2
                 else
                   upload $file
@@ -142,7 +142,7 @@ do
         fi
     fi
 
-    if [[ -n "$done" ]]
+    if [ -n "$done" ]
     then break
     fi
 
@@ -157,7 +157,7 @@ done
 # allow for UIs e.g. to do a last poll of queue info.
 sleep ${SLEEP_BEFORE_EXIT:-10}
 
-if [[ -n "$MINIO_PID" ]]
+if [ -n "$MINIO_PID" ]
 then kill "$MINIO_PID"
 fi
 
