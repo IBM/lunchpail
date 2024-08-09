@@ -1,12 +1,17 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -e
-set -o pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+
 TOP="$SCRIPTDIR"/../..
+if [[ -d ./cmd ]]
+then TOP=$(pwd)
+fi
 
 cd "$TOP"
+
+export GOMODCACHE="$TOP"/.cache
 
 DST=${1-./lunchpail}
 
@@ -19,7 +24,7 @@ echo "$msg" && go get ./...
 msg="Integrating templates"
 echo "$msg" && go generate ./... && go generate ./...
 
-msg="Building CLI to $(tput setaf 5)$DST$(tput sgr0)"
+msg="Building CLI to $DST"
 echo "$msg" && CGO_ENABLED=0 go build -ldflags="-s -w" -o "$DST" cmd/main.go
 
 echo "✅ Done"

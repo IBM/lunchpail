@@ -38,5 +38,9 @@ func BuildComponents(cli ContainerCli, opts BuildOptions) error {
 		})
 	}
 
+	errs.Go(func() error {
+		return buildAndPushImage(".", "lunchpail", "Dockerfile", cli, opts)
+	})
+
 	return errs.Wait()
 }

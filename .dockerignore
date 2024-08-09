@@ -1,0 +1,6 @@
+/docs
+/images
+/builds
+/tests
+*.log
+*~
