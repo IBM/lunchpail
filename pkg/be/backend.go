@@ -7,6 +7,7 @@ import (
 	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/be/runs"
+	"lunchpail.io/pkg/be/skypilot"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir"
 )
@@ -42,6 +43,12 @@ func New(backend platform.Platform, aopts compilation.Options) (Backend, error) 
 			return nil, err
 		} else {
 			be = ibm
+		}
+	case platform.SkyPilot:
+		if sp, err := skypilot.New(aopts); err != nil {
+			return nil, err
+		} else {
+			be = sp
 		}
 	default:
 		return nil, fmt.Errorf("Unsupported backend %v", backend)

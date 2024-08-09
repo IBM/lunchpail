@@ -107,13 +107,6 @@ func Down(runname string, backend be.Backend, opts DownOptions) error {
 
 	upOptions := toUpOpts(runname, opts)
 
-	/* var action ibmcloud.Action
-	if opts.DeleteCloudResources {
-		action = ibmcloud.Delete
-	} else {
-		action = ibmcloud.Stop
-	} */
-
 	if err := upDown(backend, upOptions, false); err != nil {
 		return err
 	}

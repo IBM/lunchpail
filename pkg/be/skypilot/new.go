@@ -1,4 +1,4 @@
-package ibmcloud
+package skypilot
 
 import (
 	"lunchpail.io/pkg/be/platform"
@@ -7,12 +7,11 @@ import (
 
 func New(aopts compilation.Options) (Backend, error) {
 	config := platform.LoadConfigWithCommandLineOverrides(aopts)
-	keytype, key, err := platform.LoadPublicKey(config, aopts)
 
 	vpcService, err := Authenticator(aopts.ApiKey, config)
 	if err != nil {
 		return Backend{}, err
 	}
 
-	return Backend{config, vpcService, keytype, key}, nil
+	return Backend{config, vpcService}, nil
 }
