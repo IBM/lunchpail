@@ -93,33 +93,33 @@ function waitForIt {
 
         echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0) namespace=$ns" 1>&2
         nOutputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                            rclone ls s3:/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+                            /opt/lunchpail/workstealer/bin/workstealer qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
         if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
         then
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
             outputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                               rclone ls s3:/$queue/lunchpail/$run_name/outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
+                               /opt/lunchpail/workstealer/bin/workstealer qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
                 code=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                                rclone cat s3:/$queue/lunchpail/$run_name/outbox/${output}.code)
+                               /opt/lunchpail/workstealer/bin/workstealer qcat outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
                 fi
 
                 stdout=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                                  rclone ls s3:/$queue/lunchpail/$run_name/outbox/${output}.stdout | wc -l | xargs)
+                                  /opt/lunchpail/workstealer/bin/workstealer qls outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
                 stderr=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                                  rclone ls s3:/$queue/lunchpail/$run_name/outbox/${output}.stderr | wc -l | xargs)
+                                  /opt/lunchpail/workstealer/bin/workstealer qls outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stderr file test=$name output=$output"
@@ -133,7 +133,7 @@ function waitForIt {
         while true
         do
             donefilecount=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                                    rclone ls s3:/$queue/lunchpail/$run_name/done | wc -l | xargs)
+                                    /opt/lunchpail/workstealer/bin/workstealer qls done | wc -l | xargs)
             if [[ $donefilecount == 1 ]]
             then echo "✅ PASS run-controller test=$name donefile exists" && break
             else echo "still waiting for dispatcher donefile" && sleep 2
