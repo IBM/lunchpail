@@ -31,4 +31,8 @@
       value: queues
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
+{{- if .Values.lunchpail.debug }}
+    - name: DEBUG
+      value: "true"
+{{- end }}
 {{- end }}

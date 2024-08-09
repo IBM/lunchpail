@@ -27,7 +27,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 		"name=" + runname,
 		"partOf=" + compilationName,
 		"namespace.user=" + namespace,
-		"lunchpail=lunchpail",
+		fmt.Sprintf("lunchpail.debug=%v", verbose),
 		"mcad.enabled=false",
 		"rbac.serviceaccount=" + runname,
 		"image.registry=" + lunchpail.ImageRegistry,

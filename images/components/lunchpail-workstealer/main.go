@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"cmp"
 	"fmt"
 	"log"
@@ -112,6 +113,7 @@ func (model *Model) nTasksRemaining() int {
 
 var run = os.Getenv("RUN_NAME")
 var queue = os.Getenv("QUEUE")
+var logDir = os.Getenv("LUNCHPAIL_LOG_DIR")
 var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
 var finished = filepath.Join(queue, "finished")
 var outbox = filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
@@ -126,8 +128,6 @@ var killfilePattern = regexp.MustCompile("^queues/(.+)/kill$")
 var assignedTaskPattern = regexp.MustCompile("^queues/(.+)/inbox/(.+)$")
 var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
-
-var writer = tabwriter.NewWriter(os.Stderr, 0, 8, 1, '\t', tabwriter.AlignRight)
 
 // Emit the path to the file we linked
 func reportLinkedFile(src, dst string) {
@@ -150,7 +150,10 @@ func bye() {
 }
 
 // Record the current state of Model for observability
-func reportState(model Model) {
+func reportState(model Model) error {
+	var b bytes.Buffer
+	var writer = tabwriter.NewWriter(&b, 0, 8, 1, '\t', tabwriter.AlignRight)
+
 	now := time.Now()
 
 	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%s\n", len(model.UnassignedTasks), run, now.Format(time.UnixDate))
@@ -176,6 +179,25 @@ func reportState(model Model) {
 	fmt.Fprintf(writer, "lunchpail.io\t---\n")
 
 	writer.Flush()
+
+	// for now, also log to stderr
+	fmt.Fprintf(os.Stderr, b.String())
+
+	// and write to the log file
+	if err := os.MkdirAll(logDir, 0700); err != nil {
+		return err
+	}
+	logFile := filepath.Join(logDir, "qstat.txt")
+	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	if _, err := b.WriteTo(f); err != nil {
+		return err
+	}
+	
+	reportChangedFile(logFile)
+	return nil
 }
 
 // Determine from a diff the `HowChanged` property
@@ -620,7 +642,10 @@ func readyToBye(model Model) bool {
 func main() {
 	// fmt.Fprintf(os.Stderr, "INFO Starting with inbox=%s outbox=%s queues=%s\n", inbox, outbox, queues)
 	model := ParseUpdates()
-	reportState(model)
+
+	if err := reportState(model); err != nil {
+		panic(err)
+	}
 
 	if readyToBye(model) {
 		fmt.Fprintln(os.Stderr, "INFO All work has been completed, all workers have terminated")
