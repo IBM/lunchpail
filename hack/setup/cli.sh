@@ -11,8 +11,6 @@ fi
 
 cd "$TOP"
 
-export GOMODCACHE="$TOP"/.cache
-
 DST=${1-./lunchpail}
 
 msg="Downloading CLI dependencies"

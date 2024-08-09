@@ -89,6 +89,7 @@ func buildIt(dir, name, dockerfile string, kind ImageOrManifest, cli ContainerCl
 			string(cli),
 			"build",
 			"-t", image,
+
 			"-f", dockerfile,
 			".",
 		)
