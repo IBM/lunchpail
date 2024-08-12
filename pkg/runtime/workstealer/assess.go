@@ -16,35 +16,29 @@ func (c client) localPathToRemote(path string) string {
 
 // Emit the path to the file we linked
 func (c client) reportLinkedFile(src, dst string) error {
-	//return c.reportChangedFile(dst)
-	//fmt.Printf("%s %s link\n", src, dst)
 	rsrc := c.localPathToRemote(src)
 	rdst := c.localPathToRemote(dst)
-	return c.s3.copyto(c.paths.bucket, rsrc, rdst)
+	return c.s3.copyto(c.paths.bucket, rsrc, c.paths.bucket, rdst)
 }
 
 // Emit the path to the file we deleted
 func (c client) reportMovedFile(src, dst string) error {
-	// fmt.Printf("%s %s move\n", src, dst)
 	rsrc := c.localPathToRemote(src)
 	rdst := c.localPathToRemote(dst)
 	if debug {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading moved file: %s -> %s\n", rsrc, rdst)
 	}
 
-	//rclone copyto --retries 20 --retries-sleep=1s $file $remotefile &
 	return c.s3.moveto(c.paths.bucket, rsrc, rdst)
 }
 
 // Emit the path to the file we changed
 func (c client) reportChangedFile(filepath string) error {
-	//fmt.Printf("%s\n", filepath)
 	remotefile := c.localPathToRemote(filepath)
 	if debug {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading changed file: %s -> %s\n", filepath, remotefile)
 	}
 
-	//rclone copyto --retries 20 --retries-sleep=1s $file $remotefile &
 	return c.s3.upload(c.paths.bucket, filepath, remotefile)
 }
 
