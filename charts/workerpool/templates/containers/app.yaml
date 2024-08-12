@@ -39,7 +39,6 @@
     {{- end }}
     {{- include "queue/volumeMount" . | indent 4 }}
     {{- include "workdir/volumeMount" . | indent 4 }}
-    {{- include "watcher/volumeMount" . | indent 4 }}
   resources:
     limits:
       {{- if and .Values.cpu (ne (.Values.workers.cpu | quote) "\"auto\"") (ne (.Values.workers.cpu | quote) "0") }}
