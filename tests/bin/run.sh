@@ -56,17 +56,6 @@ then app="$SCRIPTDIR"/../tests/$testname/pail
 fi
 
 #
-# Copy in data to S3, if given a `data.sh`
-#
-if [[ -e "$1"/data.sh ]]; then
-    echo "$(tput setaf 2)🧪 Copying in data for $testname$(tput sgr0)" 1>&2
-    echo ""
-    "$1"/data.sh
-    "$SCRIPTDIR"/s3-copyin.sh
-    echo "✅ Done copying in data for $testname"
-fi
-
-#
 # Run and validate output
 #
 if [[ ${#expected[@]} != 0 ]]
