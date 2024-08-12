@@ -2,9 +2,9 @@ package s3
 
 import (
 	"fmt"
+
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
-	"strconv"
 )
 
 // Transpile hlir.ProcessS3Objects to hlir.Application
@@ -21,22 +21,22 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 	app.ApiVersion = s3.ApiVersion
 	app.Kind = "Application"
 	app.Metadata.Name = s3.Metadata.Name
-	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail-rclone:0.0.1", lunchpail.ImageRegistry, lunchpail.ImageRepo)
+	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "dispatcher"
-	app.Spec.Command = "./main.sh"
-	app.Spec.Code = []hlir.Code{
-		hlir.Code{
-			Name:   "main.sh",
-			Source: main,
-		},
+
+	repeat := 1
+	if s3.Spec.Repeat > 0 {
+		repeat = s3.Spec.Repeat
 	}
+
+	envPrefix := "LUNCHPAIL_PROCESS_S3_OBJECTS_"
+	app.Spec.Command = fmt.Sprintf("lunchpail enqueue s3 --repeat %d %s %s", repeat, s3.Spec.Path, envPrefix)
 
 	app.Spec.Env = hlir.Env{}
 	for key, value := range s3.Spec.Env {
 		app.Spec.Env[key] = value
 	}
 
-	envPrefix := "__LUNCHPAIL_S3_ORIGIN_"
 	app.Spec.Datasets = []hlir.Dataset{
 		hlir.Dataset{
 			Name: "origin",
@@ -45,16 +45,6 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 				EnvPrefix: envPrefix,
 			},
 		},
-	}
-
-	app.Spec.Env["__LUNCHPAIL_PROCESS_S3_OBJECTS_ENDPOINT_VAR"] = envPrefix + "endpoint"
-	app.Spec.Env["__LUNCHPAIL_PROCESS_S3_OBJECTS_ACCESS_KEY_VAR"] = envPrefix + "accessKeyID"
-	app.Spec.Env["__LUNCHPAIL_PROCESS_S3_OBJECTS_SECRET_KEY_VAR"] = envPrefix + "secretAccessKey"
-
-	app.Spec.Env["__LUNCHPAIL_PROCESS_S3_OBJECTS_PATH"] = s3.Spec.Path
-
-	if s3.Spec.Repeat > 0 {
-		app.Spec.Env["__LUNCHPAIL_PROCESS_S3_OBJECTS_REPEAT"] = strconv.Itoa(s3.Spec.Repeat)
 	}
 
 	return app, nil

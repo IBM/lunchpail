@@ -16,6 +16,7 @@ type filepaths struct {
 	inbox      string
 	processing string
 	outbox     string
+	done       string
 	alive      string
 	dead       string
 	local      string
@@ -29,9 +30,10 @@ func pathsForRun() filepaths {
 	inbox := "inbox"
 	processing := "processing"
 	outbox := "outbox"
+	done := filepath.Join(poolPrefix, "done")
 	alive := filepath.Join(prefix, inbox, ".alive")
 	dead := filepath.Join(prefix, inbox, ".dead")
 	local := filepath.Join(os.Getenv("LUNCHPAIL_LOCAL_QUEUE_ROOT"), bucket)
 
-	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, alive, dead, local}
+	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alive, dead, local}
 }

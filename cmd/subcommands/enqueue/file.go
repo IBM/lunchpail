@@ -1,4 +1,4 @@
-package subcommands
+package enqueue
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 	"lunchpail.io/pkg/runtime/workstealer"
 )
 
-func newQlsCmd() *cobra.Command {
+func NewEnqueueFileCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "qls [path]",
-		Short: "List queue path",
-		Long:  "List queue path",
-		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
+		Use:   "file <file>",
+		Short: "Enqueue a single file as a work task",
+		Long:  "Enqueue a single file as a work task",
+		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -24,16 +24,8 @@ func newQlsCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		path := ""
-		if len(args) == 1 {
-			path = args[0]
-		}
-		return workstealer.Qls(path)
+		return workstealer.EnqueueFile(args[0])
 	}
 
 	return cmd
-}
-
-func init() {
-	rootCmd.AddCommand(newQlsCmd())
 }

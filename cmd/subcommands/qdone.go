@@ -9,12 +9,12 @@ import (
 	"lunchpail.io/pkg/runtime/workstealer"
 )
 
-func newQlsCmd() *cobra.Command {
+func newQdoneCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "qls [path]",
-		Short: "List queue path",
-		Long:  "List queue path",
-		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
+		Use:   "qdone",
+		Short: "Indicate that dispatching is done",
+		Long:  "Indicate that dispatching is done",
+		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -24,16 +24,12 @@ func newQlsCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		path := ""
-		if len(args) == 1 {
-			path = args[0]
-		}
-		return workstealer.Qls(path)
+		return workstealer.Qdone()
 	}
 
 	return cmd
 }
 
 func init() {
-	rootCmd.AddCommand(newQlsCmd())
+	rootCmd.AddCommand(newQdoneCmd())
 }
