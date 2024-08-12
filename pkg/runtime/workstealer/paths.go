@@ -1,4 +1,4 @@
-package main
+package workstealer
 
 // TODO once we incorporate the workstealer into the top-level pkg, we
 // can share this with the runtime/worker/paths.go

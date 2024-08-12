@@ -1,4 +1,4 @@
-package main
+package workstealer
 
 import (
 	"cmp"
@@ -166,7 +166,7 @@ func (c client) fetchModel() Model {
 	workersLookup := make(map[string]Worker)
 
 	// we will strip off the queue path prefix below
-	l := len(c.paths.poolPrefix+"/")
+	l := len(c.paths.poolPrefix + "/")
 
 	for o := range c.s3.ListObjects(c.paths.bucket, c.paths.prefix, true) {
 		if len(o.Key) > l {
@@ -180,4 +180,3 @@ func (c client) fetchModel() Model {
 	m.finishUp(workersLookup)
 	return m
 }
-

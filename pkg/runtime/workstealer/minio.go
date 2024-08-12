@@ -1,4 +1,4 @@
-package main
+package workstealer
 
 import (
 	"os"
@@ -14,7 +14,7 @@ func launchMinioServer() error {
 		if err := os.MkdirAll(datadir, 0700); err != nil {
 			return err
 		}
-		
+
 		cmd := exec.Command("minio", "server", datadir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
