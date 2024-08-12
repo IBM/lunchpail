@@ -1,10 +1,10 @@
-package main
+package workstealer
 
 import (
 	"fmt"
 	"os"
-	"time"
 	"text/tabwriter"
+	"time"
 )
 
 // Record the current state of Model for observability

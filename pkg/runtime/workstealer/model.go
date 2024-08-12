@@ -1,4 +1,4 @@
-package main
+package workstealer
 
 // A Task that was assigned to a given Worker
 type AssignedTask struct {

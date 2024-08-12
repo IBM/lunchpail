@@ -11,8 +11,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hairyhenderson/go-which v0.2.0
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
-	github.com/minio/minio-go/v7 v7.0.74
-	github.com/mittwald/go-helm-client v0.12.11
+	github.com/minio/minio-go/v7 v7.0.75
+	github.com/mittwald/go-helm-client v0.12.12
 	github.com/rclone/rclone v1.67.0
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/sync v0.8.0
@@ -189,7 +189,7 @@ require (
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240808171019-573a1156607a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240812133136-8ffd90a71988 // indirect
 	google.golang.org/grpc v1.65.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect

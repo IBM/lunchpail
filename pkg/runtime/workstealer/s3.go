@@ -1,4 +1,4 @@
-package main
+package workstealer
 
 // TODO once we incorporate the workstealer into the top-level pkg, we
 // can share this with the runtime/worker/s3.go
@@ -119,7 +119,7 @@ func (s3 *S3Client) mark(bucket, filePath, marker string) error {
 
 func (s3 *S3Client) ListObjects(bucket, filePath string, recursive bool) <-chan minio.ObjectInfo {
 	return s3.client.ListObjects(context.Background(), bucket, minio.ListObjectsOptions{
-		Prefix: filePath,
+		Prefix:    filePath,
 		Recursive: recursive,
 	})
 }

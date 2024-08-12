@@ -1,4 +1,4 @@
-package main
+package workstealer
 
 import (
 	"fmt"
@@ -52,36 +52,19 @@ func (c client) reportChangedFile(filepath string) error {
 func (c client) markDone(task string) error {
 	finishedMarker := filepath.Join(finished, task)
 	return c.s3.mark(c.paths.bucket, c.localPathToRemote(finishedMarker), "done")
-	/*if err := os.MkdirAll(finished, 0700); err != nil {
-		return fmt.Errorf("ERROR failed to create finished directory: %v\n", err)
-	} else if err := os.WriteFile(finishedMarker, []byte{}, 0644); err != nil {
-		return fmt.Errorf("ERROR failed to touch finished marker: %v\n", err)
-	} else {
-		return c.reportChangedFile(finishedMarker)
-	}*/
 }
 
 // Touch killfile for the given Worker
 func (c client) touchKillFile(worker Worker) error {
 	workerKillFileFilePath := filepath.Join(queues, worker.name, "kill")
 	return c.s3.mark(c.paths.bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
-	/*if err := os.WriteFile(workerKillFileFilePath, []byte{}, 0644); err != nil {
-		return fmt.Errorf("ERROR failed to touch killfile: %v\n", err)
-	} else {
-		return c.reportChangedFile(workerKillFileFilePath)
-	}*/
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
 func (c client) moveToWorkerInbox(task string, worker Worker) error {
 	unassignedFilePath := filepath.Join(inbox, task)
 	workerInboxFilePath := filepath.Join(queues, worker.name, "inbox", task)
-
-	/*if err := os.Rename(unassignedFilePath, workerInboxFilePath); err != nil {
-		return fmt.Errorf("ERROR failed to move task=%s to worker inbox unassignedFilePath=%s workerInboxFilePath=%s: %v\n", task, unassignedFilePath, workerInboxFilePath, err)
-	} else*/ {
-		return c.reportMovedFile(unassignedFilePath, workerInboxFilePath)
-	}
+	return c.reportMovedFile(unassignedFilePath, workerInboxFilePath)
 }
 
 // As part of finishing up a Task, copy it from the Worker's Outbox to the final Outbox
@@ -101,38 +84,24 @@ func (c client) copyToFinalOutbox(task string, worker string, success TaskCode) 
 	successFileInWorkerOutbox := fileInWorkerOutbox + "." + string(success)
 	fullyDoneSuccessFilePath := fullyDoneOutputFilePath + "." + string(success)
 
-	/*if err := os.MkdirAll(outbox, 0700); err != nil {
-		return fmt.Errorf("ERROR failed to create outbox directory: %v\n", err)
-	} else*/ {
-		/*if err := os.Link(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			return fmt.Errorf("ERROR failed to link output to final outbox: %v\n", err)
-		} else*/ if err := c.reportLinkedFile(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
-			return err
-		}
+	if err := c.reportLinkedFile(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
+		return err
+	}
 
-		/*if err := os.Link(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			return fmt.Errorf("ERROR failed to link code to final outbox: %v\n", err)
-		} else*/ if err := c.reportLinkedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil {
-			return err
-		}
+	if err := c.reportLinkedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil {
+		return err
+	}
 
-		/*if err := os.Link(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			return fmt.Errorf("ERROR failed to link stdout to final outbox: %v\n", err)
-		} else*/ if err := c.reportLinkedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil {
-			return err
-		}
+	if err := c.reportLinkedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil {
+		return err
+	}
 
-		/*if err := os.Link(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			return fmt.Errorf("ERROR failed to link stderr to final outbox: %v\n", err)
-		} else*/ if err := c.reportLinkedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil {
-			return err
-		}
+	if err := c.reportLinkedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil {
+		return err
+	}
 
-		/*if err := os.Link(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil && !strings.Contains(err.Error(), "file exists") {
-			return fmt.Errorf("ERROR failed to link success to final outbox: %v\n", err)
-		} else*/ if err := c.reportLinkedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil {
-			return err
-		}
+	if err := c.reportLinkedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil {
+		return err
 	}
 
 	return nil
@@ -156,14 +125,7 @@ const (
 func (c client) moveTaskBackToUnassigned(task string, worker Worker, box Box) error {
 	inWorkerFilePath := filepath.Join(queues, worker.name, string(box), task)
 	unassignedFilePath := filepath.Join(inbox, task)
-
-	/*if err := os.MkdirAll(inbox, 0700); err != nil {
-		return fmt.Errorf("ERROR failed to create inbox directory: %v\n", err)
-	} else if err := os.Rename(inWorkerFilePath, unassignedFilePath); err != nil {
-		return fmt.Errorf("ERROR failed to move assigned task back to unassigned: %v\n", err)
-	} else*/ {
-		return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
-	}
+	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
 // A Worker has transitioned from Live to Dead. Reassign its Tasks.
@@ -171,7 +133,7 @@ func (c client) cleanupForDeadWorker(worker Worker) error {
 	nAssigned := len(worker.assignedTasks)
 	nProcessing := len(worker.processingTasks)
 
-	if nAssigned + nProcessing > 0 {
+	if nAssigned+nProcessing > 0 {
 		fmt.Fprintf(
 			os.Stderr,
 			"INFO Reassigning dead worker tasks (it had %s assigned and was processing %s)\n",
@@ -247,8 +209,8 @@ func (c client) apportion(model Model) []Apportionment {
 
 func (c client) assignNewTasks(model Model) {
 	for _, A := range c.apportion(model) {
-		nTasks := A.endIdx-A.startIdx
-		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, run + "-", "", 1))
+		nTasks := A.endIdx - A.startIdx
+		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, run+"-", "", 1))
 		for idx := range nTasks {
 			task := model.UnassignedTasks[A.startIdx+idx]
 			if err := c.assignNewTaskToWorker(task, A.worker); err != nil {
