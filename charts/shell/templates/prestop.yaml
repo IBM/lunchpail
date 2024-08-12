@@ -1,39 +1,3 @@
-{{- if eq .Values.extract "config" }}
-# a configmap to house the lifecycle hook scripts
-{{- if eq .Values.component "workdispatcher" }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ print (.Release.Name | trunc 50) "-ps" | trimSuffix "-" }}
-  namespace: {{ .Values.namespace }}
-  labels:
-    app.kubernetes.io/component: {{ .Values.component }}
-    app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/name: {{ .Values.name }}
-    app.kubernetes.io/instance: {{ .Values.enclosingRun }}
-    app.kubernetes.io/managed-by: lunchpail.io
-data:
-  prestop.sh: |
-{{ .Files.Get "prestop.sh" | indent 4 }}
-{{- end }}
-{{- end }}
-
-{{- define "prestop/volume" }}
-{{- if eq .Values.component "workdispatcher" }}
-- name: prestop
-  configMap:
-    name: {{ print (.Release.Name | trunc 50) "-ps" | trimSuffix "-" }}
-    defaultMode: 0755
-{{- end }}
-{{- end }}
-
-{{- define "prestop/volumeMount" }}
-{{- if eq .Values.component "workdispatcher" }}
-- name: prestop
-  mountPath: "/opt/lunchpail/internal/bin"
-{{- end }}
-{{- end }}
-
 {{- define "prestop/spec/pod" }}
 {{- if eq .Values.component "workdispatcher" }}
 terminationGracePeriodSeconds: 5 # give time for the preStop in the container
@@ -45,7 +9,7 @@ terminationGracePeriodSeconds: 5 # give time for the preStop in the container
 lifecycle:
   preStop:
     exec:
-      command: ["/bin/sh", "-c", "/opt/lunchpail/internal/bin/prestop.sh"]
+      command: ["lunchpail", "qdone"]
 {{- end }}
 {{- end }}
 
@@ -55,7 +19,8 @@ lifecycle:
 - "-c"
 - |
   touch /tmp/alive && {{ .Values.command }}
-  /opt/lunchpail/internal/bin/prestop.sh
+  lunchpail qdone
+  echo "INFO Done with my part of the job"
 {{- else }}
 - /bin/sh
 - "-c"

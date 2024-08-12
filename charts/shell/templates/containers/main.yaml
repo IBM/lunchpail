@@ -39,7 +39,6 @@
     {{- .Values.volumeMounts | b64dec | fromJsonArray | toYaml | nindent 4 }}
     {{- end }}
     {{- include "workdir/volumeMount" . | indent 4 }}
-    {{- include "prestop/volumeMount" . | indent 4 }}
   resources:
     limits:
       {{- if ne (.Values.workers.cpu | quote) "\"auto\"" }}
