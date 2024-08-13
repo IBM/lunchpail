@@ -4,18 +4,6 @@
   command:
     {{- include "prestop/command" . | indent 4 }}
   env:
-    - name: NAME
-      value: {{ .Release.Name }}
-    - name: NAMESPACE
-      value: {{ .Values.namespace }}
-    - name: ENCLOSING_UID
-      value: {{ .Values.uid }}
-    - name: ENCLOSING_RUN_NAME
-      value: {{ .Values.name }}
-    - name: RUN_NAME
-      value: {{ .Values.name }}
-    - name: WORKQUEUE
-      value: /queue
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
   {{- if .Values.containerSecurityContext }}
