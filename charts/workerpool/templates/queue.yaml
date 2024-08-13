@@ -1,8 +1,6 @@
 {{- define "queue/env" }}
 - name: LUNCHPAIL_LOCAL_QUEUE_ROOT
   value: /queue
-- name: LUNCHPAIL_RUN_NAME
-  value: {{ .Values.runName }} # name of run in which this pool participates
 {{- end }}
 
 {{- define "queue/env/dataset" }}
