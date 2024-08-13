@@ -9,7 +9,7 @@ import (
 
 // Transpile hlir.ProcessS3Objects to hlir.Application
 func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
-	app := hlir.Application{}
+	app := hlir.NewApplication(s3.Metadata.Name)
 
 	if s3.Spec.Secret == "" {
 		return app, fmt.Errorf("process s3 objects %s secret is missing", s3.Metadata.Name)
@@ -18,9 +18,6 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 		return app, fmt.Errorf("process s3 objects %s path is missing", s3.Metadata.Name)
 	}
 
-	app.ApiVersion = s3.ApiVersion
-	app.Kind = "Application"
-	app.Metadata.Name = s3.Metadata.Name
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "dispatcher"
 
