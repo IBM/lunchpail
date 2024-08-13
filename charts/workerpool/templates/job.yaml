@@ -1,4 +1,4 @@
-{{- define "job" }}
+{{- if eq .Values.extract "job" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
