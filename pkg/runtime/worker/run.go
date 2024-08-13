@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func Run(handler []string, opts Options) error {
@@ -12,12 +14,10 @@ func Run(handler []string, opts Options) error {
 		fmt.Println(os.Environ())
 	}
 
-	client, err := newS3Client()
+	client, err := queue.NewS3Client()
 	if err != nil {
 		return err
 	}
-
-	paths := pathsForRun()
 
 	startupDelayStr := os.Getenv("LUNCHPAIL_STARTUP_DELAY")
 	delay, err := time.ParseDuration(startupDelayStr + "s")
@@ -29,5 +29,5 @@ func Run(handler []string, opts Options) error {
 		time.Sleep(delay)
 	}
 
-	return startWatch(handler, client, paths)
+	return startWatch(handler, client)
 }

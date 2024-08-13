@@ -10,29 +10,31 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"lunchpail.io/pkg/runtime/queue"
 )
 
-func killfileExists(client S3Client, bucket, prefix string) bool {
-	return client.exists(bucket, prefix, "kill")
+func killfileExists(client queue.S3Client, bucket, prefix string) bool {
+	return client.Exists(bucket, prefix, "kill")
 }
 
-func startWatch(handler []string, client S3Client, paths filepaths) error {
-	bucket := paths.bucket
-	prefix := paths.prefix
-	inbox := paths.inbox
-	processing := paths.processing
-	outbox := paths.outbox
-	alive := paths.alive
-	// dead := paths.dead
-	local := paths.local
+func startWatch(handler []string, client queue.S3Client) error {
+	bucket := client.Paths.Bucket
+	prefix := client.Paths.Prefix
+	inbox := client.Paths.Inbox
+	processing := client.Paths.Processing
+	outbox := client.Paths.Outbox
+	alive := client.Paths.Alive
+	// dead := client.Paths.dead
+	local := client.Paths.Local
 
-	err := client.touch(bucket, alive)
+	err := client.Touch(bucket, alive)
 	if err != nil {
 		return err
 	}
 
 	for !killfileExists(client, bucket, prefix) {
-		tasks, err := client.lsf(bucket, filepath.Join(prefix, inbox))
+		tasks, err := client.Lsf(bucket, filepath.Join(prefix, inbox))
 		if err != nil {
 			return err
 		}
@@ -74,7 +76,7 @@ func startWatch(handler []string, client S3Client, paths filepaths) error {
 					continue
 				}
 
-				err = client.download(bucket, in, localprocessing)
+				err = client.Download(bucket, in, localprocessing)
 				if err != nil {
 					if !strings.Contains(err.Error(), "key does not exist") {
 						// we ignore "key does not exist" errors, as these result from the work
@@ -91,7 +93,7 @@ func startWatch(handler []string, client S3Client, paths filepaths) error {
 					continue
 				}
 
-				err = client.moveto(bucket, in, inprogress)
+				err = client.Moveto(bucket, in, inprogress)
 				if err != nil {
 					fmt.Printf("Internal Error moving task to global processing %s->%s: %v\n", in, inprogress, err)
 					continue
@@ -130,36 +132,36 @@ func startWatch(handler []string, client S3Client, paths filepaths) error {
 
 				os.WriteFile(localec, []byte(fmt.Sprintf("%d", EC)), os.ModePerm)
 
-				err = client.upload(bucket, localec, ec)
+				err = client.Upload(bucket, localec, ec)
 				if err != nil {
 					fmt.Println("Internal Error moving exitcode to remote:", err)
 				}
 
-				err = client.upload(bucket, localstdout, stdout)
+				err = client.Upload(bucket, localstdout, stdout)
 				if err != nil {
 					fmt.Println("Internal Error moving stdout to remote:", err)
 				}
 
-				err = client.upload(bucket, localstderr, stderr)
+				err = client.Upload(bucket, localstderr, stderr)
 				if err != nil {
 					fmt.Println("Internal Error moving stderr to remote:", err)
 				}
 
 				if EC == 0 {
-					err = client.touch(bucket, succeeded)
+					err = client.Touch(bucket, succeeded)
 					if err != nil {
 						fmt.Println("Internal Error creating succeeded marker:", err)
 					}
 					// fmt.Println("handler success: " + in)
 				} else {
-					err = client.touch(bucket, failed)
+					err = client.Touch(bucket, failed)
 					if err != nil {
 						fmt.Println("Internal Error creating failed marker:", err)
 					}
 					fmt.Println("Worker error exit code " + strconv.Itoa(EC) + ": " + in)
 				}
 
-				err = client.moveto(bucket, inprogress, out)
+				err = client.Moveto(bucket, inprogress, out)
 				if err != nil {
 					fmt.Printf("Internal Error moving task to global outbox %s->%s: %v\n", inprogress, out, err)
 				}

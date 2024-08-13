@@ -1,4 +1,4 @@
-package workstealer
+package queue
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 func CopyIn(srcDir, bucket string) error {
-	s3, err := newS3Client()
+	s3, err := NewS3Client()
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func CopyIn(srcDir, bucket string) error {
 			return err
 		} else if !dir.IsDir() {
 			for i := range 10 {
-				if err := s3.upload(bucket, path, strings.Replace(path, srcDir+"/", "", 1)); err == nil {
+				if err := s3.Upload(bucket, path, strings.Replace(path, srcDir+"/", "", 1)); err == nil {
 					break
 				} else {
 					fmt.Fprintf(os.Stderr, "Retrying upload iter=%d path=%s\n%v\n", i, path, err)

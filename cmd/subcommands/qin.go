@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func newQcopyinCmd() *cobra.Command {
@@ -24,7 +24,7 @@ func newQcopyinCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		return workstealer.CopyIn(args[0], args[1])
+		return queue.CopyIn(args[0], args[1])
 	}
 
 	return cmd

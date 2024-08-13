@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func newQlsCmd() *cobra.Command {
@@ -28,7 +28,7 @@ func newQlsCmd() *cobra.Command {
 		if len(args) == 1 {
 			path = args[0]
 		}
-		return workstealer.Qls(path)
+		return queue.Qls(path)
 	}
 
 	return cmd
