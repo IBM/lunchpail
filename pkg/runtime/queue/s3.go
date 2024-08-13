@@ -172,7 +172,8 @@ func (s3 *S3Client) BucketExists(bucket string) (bool, error) {
 	yup := false
 	for {
 		if exists, err := s3.client.BucketExists(context.Background(), bucket); err != nil {
-			if !strings.Contains(err.Error(), "connection refused") {
+			if !(strings.Contains(err.Error(), "connection refused") ||
+				strings.Contains(err.Error(), "i/o timeout")) {
 				return false, err
 			} else {
 				time.Sleep(1 * time.Second)
