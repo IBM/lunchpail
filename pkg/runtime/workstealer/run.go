@@ -68,10 +68,6 @@ func Run() error {
 	fmt.Printf("INFO Workstealer starting")
 	printenv()
 
-	if err := launchMinioServer(); err != nil {
-		return err
-	}
-
 	for {
 		// fetch model
 		m := c.fetchModel()
