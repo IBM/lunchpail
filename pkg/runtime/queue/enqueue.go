@@ -1,4 +1,4 @@
-package workstealer
+package queue
 
 import (
 	"context"
@@ -12,29 +12,27 @@ import (
 )
 
 func EnqueueFile(task string) error {
-	s3, err := newS3Client()
+	c, err := NewS3Client()
 	if err != nil {
 		return err
 	}
-	c := client{s3, pathsForRun()}
 
-	if err := c.s3.Mkdirp(c.paths.bucket); err != nil {
+	if err := c.Mkdirp(c.Paths.Bucket); err != nil {
 		return err
 	}
 
-	return c.s3.upload(c.paths.bucket, task, filepath.Join(c.paths.poolPrefix, c.paths.inbox, filepath.Base(task)))
+	return c.Upload(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task)))
 }
 
 func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int) error {
 	fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
 
-	queue, err := newS3Client()
+	queue, err := NewS3Client()
 	if err != nil {
 		return err
 	}
-	c := client{queue, pathsForRun()}
 
-	if err := queue.Mkdirp(c.paths.bucket); err != nil {
+	if err := queue.Mkdirp(queue.Paths.Bucket); err != nil {
 		return err
 	}
 
@@ -47,7 +45,7 @@ func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repe
 
 	group, _ := errgroup.WithContext(context.Background())
 
-	origin, err := newS3ClientFromOptions(S3ClientOptions{endpoint, accessKeyId, secretAccessKey})
+	origin, err := NewS3ClientFromOptions(S3ClientOptions{endpoint, accessKeyId, secretAccessKey})
 	if err != nil {
 		return err
 	}
@@ -64,8 +62,8 @@ func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repe
 	}
 
 	srcBucket := bucket
-	dstBucket := c.paths.bucket
-	inbox := filepath.Join(c.paths.poolPrefix, c.paths.inbox)
+	dstBucket := queue.Paths.Bucket
+	inbox := filepath.Join(queue.Paths.PoolPrefix, queue.Paths.Inbox)
 
 	for o := range origin.ListObjects(bucket, path, true) {
 		if o.Err != nil {

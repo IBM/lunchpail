@@ -1,4 +1,4 @@
-package workstealer
+package queue
 
 // TODO once we incorporate the workstealer into the top-level pkg, we
 // can share this with the runtime/worker/s3.go
@@ -19,15 +19,16 @@ import (
 type S3Client struct {
 	client   *minio.Client
 	endpoint string
+	Paths    filepaths
 }
 
 // Initialize minio client object
-func newS3Client() (S3Client, error) {
+func NewS3Client() (S3Client, error) {
 	endpoint := os.Getenv("lunchpail_queue_endpoint")
 	accessKeyID := os.Getenv("lunchpail_queue_accessKeyID")
 	secretAccessKey := os.Getenv("lunchpail_queue_secretAccessKey")
 
-	return newS3ClientFromOptions(S3ClientOptions{endpoint, accessKeyID, secretAccessKey})
+	return NewS3ClientFromOptions(S3ClientOptions{endpoint, accessKeyID, secretAccessKey})
 }
 
 type S3ClientOptions struct {
@@ -37,7 +38,7 @@ type S3ClientOptions struct {
 }
 
 // Initialize minio client object from options
-func newS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
+func NewS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
 	useSSL := true
 	if !strings.HasPrefix(opts.Endpoint, "https") {
 		useSSL = false
@@ -51,10 +52,10 @@ func newS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
 		Secure: useSSL,
 	})
 
-	return S3Client{client, opts.Endpoint}, err
+	return S3Client{client, opts.Endpoint, pathsForRun()}, err
 }
 
-func (s3 *S3Client) lsf(bucket, prefix string) ([]string, error) {
+func (s3 *S3Client) Lsf(bucket, prefix string) ([]string, error) {
 	objectCh := s3.client.ListObjects(context.Background(), bucket, minio.ListObjectsOptions{
 		Prefix:    prefix + "/",
 		Recursive: false,
@@ -75,7 +76,7 @@ func (s3 *S3Client) lsf(bucket, prefix string) ([]string, error) {
 	return tasks, nil
 }
 
-func (s3 *S3Client) exists(bucket, prefix, file string) bool {
+func (s3 *S3Client) Exists(bucket, prefix, file string) bool {
 	if _, err := s3.client.StatObject(context.Background(), bucket, filepath.Join(prefix, file), minio.StatObjectOptions{}); err == nil {
 		return true
 	} else {
@@ -83,7 +84,7 @@ func (s3 *S3Client) exists(bucket, prefix, file string) bool {
 	}
 }
 
-func (s3 *S3Client) copyto(sourceBucket, source, destBucket, dest string) error {
+func (s3 *S3Client) Copyto(sourceBucket, source, destBucket, dest string) error {
 	src := minio.CopySrcOptions{
 		Bucket: sourceBucket,
 		Object: source,
@@ -101,7 +102,7 @@ func (s3 *S3Client) copyto(sourceBucket, source, destBucket, dest string) error 
 func (origin *S3Client) CopyToRemote(remote S3Client, sourceBucket, source, destBucket, dest string) error {
 	if origin.endpoint == remote.endpoint {
 		// special case...
-		return origin.copyto(sourceBucket, source, destBucket, dest)
+		return origin.Copyto(sourceBucket, source, destBucket, dest)
 	}
 
 	object, err := origin.client.GetObject(context.Background(), sourceBucket, source, minio.GetObjectOptions{})
@@ -119,34 +120,34 @@ func (origin *S3Client) CopyToRemote(remote S3Client, sourceBucket, source, dest
 	return nil
 }
 
-func (s3 *S3Client) moveto(bucket, source, destination string) error {
-	if err := s3.copyto(bucket, source, bucket, destination); err != nil {
+func (s3 *S3Client) Moveto(bucket, source, destination string) error {
+	if err := s3.Copyto(bucket, source, bucket, destination); err != nil {
 		return err
 	}
 
-	return s3.rm(bucket, source)
+	return s3.Rm(bucket, source)
 }
 
-func (s3 *S3Client) upload(bucket, source, destination string) error {
+func (s3 *S3Client) Upload(bucket, source, destination string) error {
 	_, err := s3.client.FPutObject(context.Background(), bucket, destination, source, minio.PutObjectOptions{})
 	return err
 }
 
-func (s3 *S3Client) download(bucket, source, destination string) error {
+func (s3 *S3Client) Download(bucket, source, destination string) error {
 	return s3.client.FGetObject(context.Background(), bucket, source, destination, minio.GetObjectOptions{})
 }
 
-func (s3 *S3Client) touch(bucket, filePath string) error {
+func (s3 *S3Client) Touch(bucket, filePath string) error {
 	r := strings.NewReader("")
 	_, err := s3.client.PutObject(context.Background(), bucket, filePath, r, 0, minio.PutObjectOptions{})
 	return err
 }
 
-func (s3 *S3Client) rm(bucket, filePath string) error {
+func (s3 *S3Client) Rm(bucket, filePath string) error {
 	return s3.client.RemoveObject(context.Background(), bucket, filePath, minio.RemoveObjectOptions{})
 }
 
-func (s3 *S3Client) mark(bucket, filePath, marker string) error {
+func (s3 *S3Client) Mark(bucket, filePath, marker string) error {
 	_, err := s3.client.PutObject(context.Background(), bucket, filePath, strings.NewReader(marker), int64(len(marker)), minio.PutObjectOptions{})
 	return err
 }

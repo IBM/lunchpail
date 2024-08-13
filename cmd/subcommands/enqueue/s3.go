@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func NewEnqueueFromS3Cmd() *cobra.Command {
@@ -32,7 +32,7 @@ func NewEnqueueFromS3Cmd() *cobra.Command {
 		endpoint := os.Getenv(envvarPrefix + "endpoint")
 		accessKeyID := os.Getenv(envvarPrefix + "accessKeyID")
 		secretAccessKey := os.Getenv(envvarPrefix + "secretAccessKey")
-		return workstealer.EnqueueFromS3(args[0], endpoint, accessKeyID, secretAccessKey, repeat)
+		return queue.EnqueueFromS3(args[0], endpoint, accessKeyID, secretAccessKey, repeat)
 	}
 
 	return cmd

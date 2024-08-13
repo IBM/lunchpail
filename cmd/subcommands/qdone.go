@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func newQdoneCmd() *cobra.Command {
@@ -24,7 +24,7 @@ func newQdoneCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		return workstealer.Qdone()
+		return queue.Qdone()
 	}
 
 	return cmd

@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func newQcatCmd() *cobra.Command {
@@ -24,7 +24,7 @@ func newQcatCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		return workstealer.Qcat(args[0])
+		return queue.Qcat(args[0])
 	}
 
 	return cmd

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	q "lunchpail.io/pkg/runtime/queue"
 )
 
 var debug = os.Getenv("DEBUG") != ""
@@ -17,8 +19,7 @@ var outbox = filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
 var queues = filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
 
 type client struct {
-	s3    S3Client
-	paths filepaths
+	s3 q.S3Client
 }
 
 func sleepyTime(envvar string, defaultValue int) (time.Duration, error) {
@@ -53,11 +54,12 @@ func printenv() {
 }
 
 func Run() error {
-	s3, err := newS3Client()
+	s3, err := q.NewS3Client()
 	if err != nil {
 		return err
 	}
-	c := client{s3, pathsForRun()}
+	c := client{s3}
+
 	s, err := sleepyTime("QUEUE_POLL_INTERVAL_SECONDS", 3)
 	if err != nil {
 		return err

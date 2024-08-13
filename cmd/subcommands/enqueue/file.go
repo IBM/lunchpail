@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/pkg/runtime/queue"
 )
 
 func NewEnqueueFileCmd() *cobra.Command {
@@ -24,7 +24,7 @@ func NewEnqueueFileCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		return workstealer.EnqueueFile(args[0])
+		return queue.EnqueueFile(args[0])
 	}
 
 	return cmd

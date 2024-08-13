@@ -11,14 +11,14 @@ import (
 )
 
 func (c client) localPathToRemote(path string) string {
-	return strings.Replace(path, c.paths.bucket+"/", "", 1)
+	return strings.Replace(path, c.s3.Paths.Bucket+"/", "", 1)
 }
 
 // Emit the path to the file we linked
 func (c client) reportLinkedFile(src, dst string) error {
 	rsrc := c.localPathToRemote(src)
 	rdst := c.localPathToRemote(dst)
-	return c.s3.copyto(c.paths.bucket, rsrc, c.paths.bucket, rdst)
+	return c.s3.Copyto(c.s3.Paths.Bucket, rsrc, c.s3.Paths.Bucket, rdst)
 }
 
 // Emit the path to the file we deleted
@@ -29,7 +29,7 @@ func (c client) reportMovedFile(src, dst string) error {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading moved file: %s -> %s\n", rsrc, rdst)
 	}
 
-	return c.s3.moveto(c.paths.bucket, rsrc, rdst)
+	return c.s3.Moveto(c.s3.Paths.Bucket, rsrc, rdst)
 }
 
 // Emit the path to the file we changed
@@ -39,19 +39,19 @@ func (c client) reportChangedFile(filepath string) error {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading changed file: %s -> %s\n", filepath, remotefile)
 	}
 
-	return c.s3.upload(c.paths.bucket, filepath, remotefile)
+	return c.s3.Upload(c.s3.Paths.Bucket, filepath, remotefile)
 }
 
 // A Task has been fully completed by a Worker
 func (c client) markDone(task string) error {
 	finishedMarker := filepath.Join(finished, task)
-	return c.s3.mark(c.paths.bucket, c.localPathToRemote(finishedMarker), "done")
+	return c.s3.Mark(c.s3.Paths.Bucket, c.localPathToRemote(finishedMarker), "done")
 }
 
 // Touch killfile for the given Worker
 func (c client) touchKillFile(worker Worker) error {
 	workerKillFileFilePath := filepath.Join(queues, worker.name, "kill")
-	return c.s3.mark(c.paths.bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
+	return c.s3.Mark(c.s3.Paths.Bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
