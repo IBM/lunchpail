@@ -1,0 +1,22 @@
+{{- if eq .Values.extract "pods" }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ print .Release.Name "-minio" | trunc 53 | trimSuffix "-" }}
+  namespace: {{ .Values.namespace.user }}
+  labels:
+    app.kubernetes.io/component: minio
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/name: {{ .Values.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: lunchpail.io
+spec:
+  restartPolicy: OnFailure
+  terminationGracePeriodSeconds: 0
+  serviceAccountName: {{ .Values.rbac.serviceaccount }}
+  containers:
+    {{- include "containers/minio" . | indent 4 }}
+
+  # disallow kubernetes api access
+  automountServiceAccountToken: false
+{{- end }}

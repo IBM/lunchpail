@@ -10,7 +10,7 @@
       prefix: lunchpail_queue_
 {{- if .Values.internalS3.enabled }}
     - secretRef:
-        name: {{ print (.Release.Name | trunc 40) "-lunchpail-s3" }}
+        name: {{ print (.Release.Name | trunc 40) "-lunchpail-minio" }}
   ports:
     - containerPort: 9000
 {{- end }}

@@ -1,4 +1,4 @@
-package workstealer
+package minio
 
 import (
 	"os"
@@ -19,7 +19,7 @@ func launchMinioServer() error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		if err := cmd.Start(); err != nil {
+		if err := cmd.Run(); err != nil {
 			return err
 		}
 	}

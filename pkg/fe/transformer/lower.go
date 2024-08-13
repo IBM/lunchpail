@@ -6,6 +6,7 @@ import (
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/dispatch"
+	"lunchpail.io/pkg/fe/transformer/api/minio"
 	"lunchpail.io/pkg/fe/transformer/api/workerpool"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
@@ -13,6 +14,11 @@ import (
 
 // HLIR -> LLIR
 func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
+	minio, err := minio.Lower(compilationName, runname, namespace, model, queueSpec, opts, verbose)
+	if err != nil {
+		return llir.LLIR{}, err
+	}
+
 	apps, err := lowerApplications(compilationName, runname, namespace, model, queueSpec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
@@ -35,6 +41,6 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 
 	return llir.LLIR{
 		GlobalConfig: globals,
-		Components:   slices.Concat(apps, dispatchers, pools),
+		Components:   slices.Concat(minio, apps, dispatchers, pools),
 	}, nil
 }

@@ -1,0 +1,18 @@
+{{- define "containers/minio" }}
+{{- if .Values.internalS3.enabled }}
+- name: minio
+  image: {{ print .Values.image.registry "/" .Values.image.repo "/lunchpail:" .Values.image.version }}
+  command:
+    - lunchpail
+    - minio
+    - start
+  envFrom:
+    - secretRef:
+        name: {{ print (.Release.Name | trunc 40) "-lunchpail-minio" }}
+  ports:
+    - containerPort: 9000
+  env:
+    - name: MINIO_ENABLED
+      value: "yes"
+{{- end }}
+{{- end }}

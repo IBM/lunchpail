@@ -85,7 +85,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	}
 
 	if queueSpec.Endpoint == "" {
-		queueSpec.Endpoint = fmt.Sprintf("http://%s-lunchpail-s3.%s.svc.cluster.local:%d", runnameMax40, systemNamespace, internalS3Port)
+		queueSpec.Endpoint = fmt.Sprintf("http://%s-lunchpail-minio.%s.svc.cluster.local:%d", runnameMax40, systemNamespace, internalS3Port)
 		queueSpec.AccessKey = "lunchpail"
 		queueSpec.SecretKey = "lunchpail"
 	}
@@ -107,7 +107,7 @@ global:
       create: %v # opts.CreateNamespace (6)
     context:
       name: ""
-  s3Endpoint: http://%s-lunchpail-s3.%s.svc.cluster.local:%d # runnameMax40 (7) systemNamespace (8) internalS3Port (9)
+  s3Endpoint: http://%s-lunchpail-minio.%s.svc.cluster.local:%d # runnameMax40 (7) systemNamespace (8) internalS3Port (9)
   s3AccessKey: lunchpail
   s3SecretKey: lunchpail
 lunchpail: lunchpail
