@@ -15,7 +15,7 @@ func CopyIn(srcDir, bucket string) error {
 		return err
 	}
 
-	fmt.Printf("Uploading files from dir=%s to bucket=%s\n", srcDir, bucket)
+	fmt.Printf("Uploading files from local directory=%s to s3 bucket=%s\n", srcDir, bucket)
 	if err := s3.Mkdirp(bucket); err != nil {
 		return err
 	}
