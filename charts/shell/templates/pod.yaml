@@ -1,4 +1,4 @@
-{{- define "pod" }}
+{{- if eq .Values.extract "pods" }}
 apiVersion: v1
 kind: Pod
 metadata:
