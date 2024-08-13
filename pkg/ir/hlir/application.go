@@ -27,3 +27,13 @@ type Application struct {
 		ContainerSecurityContext ContainerSecurityContext `yaml:"containerSecurityContext,omitempty"`
 	}
 }
+
+func NewApplication(name string) Application {
+	app := Application{}
+
+	app.ApiVersion = "v1alpha1"
+	app.Kind = "Application"
+	app.Metadata = Metadata{name}
+
+	return app
+}

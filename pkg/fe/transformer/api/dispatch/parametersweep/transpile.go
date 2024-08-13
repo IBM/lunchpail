@@ -9,10 +9,8 @@ import (
 
 // Transpile hlir.ParameterSweep to hlir.Application
 func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
-	app := hlir.Application{}
-	app.ApiVersion = sweep.ApiVersion
-	app.Kind = "Application"
-	app.Metadata.Name = sweep.Metadata.Name
+	app := hlir.NewApplication(sweep.Metadata.Name)
+
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "dispatcher"
 	app.Spec.Command = "./main.sh"
