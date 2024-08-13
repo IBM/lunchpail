@@ -43,7 +43,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 		"taskqueue.accessKey=" + queueSpec.AccessKey,
 		"taskqueue.secretKey=" + queueSpec.SecretKey,
 		"taskqueue.prefixPath=" + api.QueuePrefixPath(queueSpec, runname),
-		"sleep_before_exit=" + os.Getenv("LP_SLEEP_BEFORE_EXIT"),
+		"sleep_before_exit=" + os.Getenv("LUNCHPAIL_SLEEP_BEFORE_EXIT"),
 	}
 
 	if verbose {

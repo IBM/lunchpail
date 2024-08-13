@@ -19,16 +19,10 @@
     - name: MINIO_ENABLED
       value: "yes"
 {{- end }}
-    - name: SLEEP_BEFORE_EXIT # if tests need to capture some output before we exit
+    - name: LUNCHPAIL_SLEEP_BEFORE_EXIT # if tests need to capture some output before we exit
       value: {{ .Values.sleep_before_exit | default 0 | quote }}
-    - name: RUN_NAME
+    - name: LUNCHPAIL_RUN_NAME
       value: {{ .Values.name }}
-    - name: UNASSIGNED_INBOX
-      value: {{ .Values.inbox | default "inbox" }}
-    - name: FULLY_DONE_OUTBOX
-      value: {{ .Values.outbox | default "outbox" }}
-    - name: WORKER_QUEUES_SUBDIR
-      value: queues
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
 {{- end }}
