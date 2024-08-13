@@ -11,12 +11,12 @@ import (
 )
 
 var debug = os.Getenv("DEBUG") != ""
-var run = os.Getenv("RUN_NAME")
+var run = os.Getenv("LUNCHPAIL_RUN_NAME")
 var queue = os.Getenv("LUNCHPAIL_QUEUE_PATH")
-var inbox = filepath.Join(queue, os.Getenv("UNASSIGNED_INBOX"))
+var inbox = filepath.Join(queue, "inbox")
 var finished = filepath.Join(queue, "finished")
-var outbox = filepath.Join(queue, os.Getenv("FULLY_DONE_OUTBOX"))
-var queues = filepath.Join(queue, os.Getenv("WORKER_QUEUES_SUBDIR"))
+var outbox = filepath.Join(queue, "outbox")
+var queues = filepath.Join(queue, "queues")
 
 type client struct {
 	s3 q.S3Client
@@ -39,7 +39,7 @@ func sleepyTime(envvar string, defaultValue int) (time.Duration, error) {
 // increase this. Otherwise, we will have a default grace period to
 // allow for UIs e.g. to do a last poll of queue info.
 func sleepBeforeExit() error {
-	if duration, err := sleepyTime("SLEEP_BEFORE_EXIT", 10); err != nil {
+	if duration, err := sleepyTime("LUNCHPAIL_SLEEP_BEFORE_EXIT", 10); err != nil {
 		return err
 	} else {
 		time.Sleep(duration)

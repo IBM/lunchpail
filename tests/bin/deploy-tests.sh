@@ -59,7 +59,7 @@ mkdir -p "$TARGET"
 testapp="$TARGET"/test
 
 # Allows us to capture workstealer info before it auto-terminates
-export LP_SLEEP_BEFORE_EXIT=10
+export LUNCHPAIL_SLEEP_BEFORE_EXIT=10
 
 repo_secret="" # e.g. user:pat@https://github.mycompany.com
               
