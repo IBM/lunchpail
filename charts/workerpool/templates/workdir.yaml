@@ -2,11 +2,6 @@
 workingDir: /workdir
 {{- end }}
 
-{{- define "workdir/env" }}
-- name: WORKDIR
-  value: /workdir
-{{- end }}
-
 {{- define "workdir/volumeMount" }}
 - name: workdir
   mountPath: /workdir
