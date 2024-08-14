@@ -15,10 +15,10 @@ spec:
         in="$1"
         out="$2"
 
-        echo "Processing $in"
+        echo "Processing $(basename $in)"
         sleep 5
 
-        echo "Done with $in"
+        echo "Done with $(basename $in)"
 
   command: ./literal.sh
 {{- end }}

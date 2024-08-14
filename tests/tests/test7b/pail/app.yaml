@@ -14,10 +14,10 @@ spec:
         in="$1"
         out="$2"
 
-        echo "Processing $in {{ .Values.test7g.nonfilevalue }} $FILEVALUE"
+        echo "Processing $(basename $in) {{ .Values.test7g.nonfilevalue }} $FILEVALUE"
         sleep 5
 
-        echo "Done with $in"
+        echo "Done with $(basename $in)"
 
   env:
     FILEVALUE: {{ .Values.test7g.filevalue }}

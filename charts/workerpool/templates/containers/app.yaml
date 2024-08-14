@@ -8,14 +8,14 @@
       trap "/workdir/lunchpail worker prestop" EXIT
       {{ print "/workdir/lunchpail worker run -- " .Values.command }}
   env:
+    - name: LUNCHPAIL_QUEUE_PATH
+      value: {{ .Values.taskqueue.prefixPath }}
     - name: LUNCHPAIL_STARTUP_DELAY
       value: {{ .Values.startupDelay | default 0 | quote }}
     - name: LUNCHPAIL_POD_NAME
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
-    {{- include "queue/env" . | indent 4 }}
-    {{- include "queue/env/dataset" . | indent 4 }}
 
   {{- if or .Values.env .Values.envFroms }}
   envFrom:
@@ -37,7 +37,6 @@
     {{- if .Values.volumeMounts }}
     {{- .Values.volumeMounts | b64dec | fromJsonArray | toYaml | nindent 4 }}
     {{- end }}
-    {{- include "queue/volumeMount" . | indent 4 }}
     {{- include "workdir/volumeMount" . | indent 4 }}
   resources:
     limits:

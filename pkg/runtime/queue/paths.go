@@ -26,11 +26,11 @@ type filepaths struct {
 	// Worker is dead
 	Dead string
 
-	//
+	// Where we will stash any locally downloaded tasks
 	Local string
 }
 
-func pathsForRun() filepaths {
+func pathsForRun() (filepaths, error) {
 	fullPrefix := strings.Split(os.Getenv("LUNCHPAIL_QUEUE_PATH"), "/")
 	bucket := fullPrefix[0]
 	poolPrefix := filepath.Join(fullPrefix[1:]...)
@@ -42,7 +42,12 @@ func pathsForRun() filepaths {
 	alldone := filepath.Join(poolPrefix, "alldone")
 	alive := filepath.Join(prefix, inbox, ".alive")
 	dead := filepath.Join(prefix, inbox, ".dead")
-	local := os.Getenv("LUNCHPAIL_LOCAL_QUEUE_ROOT")
 
-	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alldone, alive, dead, local}
+	tmpdir, err := os.MkdirTemp("", "lunchpail_local_queue_")
+	if err != nil {
+		return filepaths{}, err
+	}
+	local := tmpdir
+
+	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alldone, alive, dead, local}, nil
 }

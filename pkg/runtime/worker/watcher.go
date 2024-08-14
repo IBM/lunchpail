@@ -26,7 +26,6 @@ func startWatch(handler []string, client queue.S3Client) error {
 	outbox := client.Paths.Outbox
 	alive := client.Paths.Alive
 	// dead := client.Paths.dead
-	local := client.Paths.Local
 
 	err := client.Touch(bucket, alive)
 	if err != nil {
@@ -53,9 +52,9 @@ func startWatch(handler []string, client queue.S3Client) error {
 				stdout := filepath.Join(prefix, outbox, task+".stdout")
 				stderr := filepath.Join(prefix, outbox, task+".stderr")
 
-				localinbox := filepath.Join(local, inbox)
-				localprocessing := filepath.Join(local, processing, task)
-				localoutbox := filepath.Join(local, outbox, task)
+				localinbox := filepath.Join(client.Paths.Local, inbox)
+				localprocessing := filepath.Join(client.Paths.Local, processing, task)
+				localoutbox := filepath.Join(client.Paths.Local, outbox, task)
 				localec := localoutbox + ".code"
 				localstdout := localoutbox + ".stdout"
 				localstderr := localoutbox + ".stderr"

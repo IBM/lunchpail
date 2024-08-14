@@ -51,8 +51,16 @@ func NewS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
 		Creds:  credentials.NewStaticV4(opts.AccessKeyID, opts.SecretAccessKey, ""),
 		Secure: useSSL,
 	})
+	if err != nil {
+		return S3Client{}, err
+	}
 
-	return S3Client{client, opts.Endpoint, pathsForRun()}, err
+	paths, err := pathsForRun()
+	if err != nil {
+		return S3Client{}, err
+	}
+
+	return S3Client{client, opts.Endpoint, paths}, nil
 }
 
 func (s3 S3Client) Lsf(bucket, prefix string) ([]string, error) {
