@@ -65,7 +65,13 @@ function waitForIt {
     for done in "${dones[@]}"; do
         idx=0
         while true; do
-            kubectl -n $ns logs $containers -l $workerselector --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            if [[ -n $DEBUG ]] || (( $idx > 10 ))
+            then set -x
+            fi
+            kubectl -n $ns logs $containers -l 'app.kubernetes.io/component in (workerpool,workdispatcher)' --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            if [[ -n $DEBUG ]] || (( $idx > 10 ))
+            then set +x
+            fi
 
             if [[ -n $DEBUG ]] || (( $idx > 10 )); then
                 # if we can't find $done in the logs after a few

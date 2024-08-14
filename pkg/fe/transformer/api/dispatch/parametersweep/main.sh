@@ -37,6 +37,14 @@ do
     echo "Injecting task=$task parameter_value=${parameter_value}"
     echo -n ${parameter_value} > $task
 
-    lunchpail enqueue file $task
+    if [ -n "$__LUNCHPAIL_WAIT" ]
+    then waitflag="--wait"
+    fi
+
+    if [ -n "$__LUNCHPAIL_VERBOSE" ]
+    then verboseflag="--verbose"
+    fi
+
+    lunchpail enqueue file $task $waitflag $verboseflag
     rm -f "$task"
 done

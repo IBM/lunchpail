@@ -11,7 +11,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func EnqueueFile(task string) error {
+type EnqueueFileOptions struct {
+	// Wait for the enqueued task to be completed
+	Wait bool
+
+	// Verbose output
+	Verbose bool
+}
+
+func EnqueueFile(task string, opts EnqueueFileOptions) error {
 	c, err := NewS3Client()
 	if err != nil {
 		return err
@@ -21,7 +29,15 @@ func EnqueueFile(task string) error {
 		return err
 	}
 
-	return c.Upload(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task)))
+	if err := c.Upload(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task))); err != nil {
+		return err
+	}
+
+	if opts.Wait {
+		return c.WaitForCompletion(filepath.Base(task), opts.Verbose)
+	}
+
+	return nil
 }
 
 func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int) error {
