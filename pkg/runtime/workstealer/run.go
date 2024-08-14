@@ -83,6 +83,10 @@ func Run() error {
 		time.Sleep(s)
 	}
 
+	// Drop a final breadcrumb indicating we are ready to tear
+	// down all associated resources
+	s3.Touch(s3.Paths.Bucket, s3.Paths.AllDone)
+
 	sleepBeforeExit()
 	fmt.Fprintln(os.Stderr, "INFO The job should be all done now")
 	return nil

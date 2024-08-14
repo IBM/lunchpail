@@ -3,6 +3,7 @@ package minio
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"lunchpail.io/pkg/compilation"
@@ -26,6 +27,10 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 		defer os.RemoveAll(templatePath)
 	}
 
+	prefixIncludingBucket := api.QueuePrefixPath(queueSpec, runname)
+	A := strings.Split(prefixIncludingBucket, "/")
+	prefixExcludingBucket := filepath.Join(A[1:]...)
+
 	values := []string{
 		"name=" + runname,
 		"partOf=" + compilationName,
@@ -38,6 +43,8 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 		"image.version=" + lunchpail.Version(),
 		fmt.Sprintf("internalS3.enabled=%v", queueSpec.Auto),
 		fmt.Sprintf("internalS3.port=%d", queueSpec.Port),
+		fmt.Sprintf("taskqueue.bucket=%s", queueSpec.Bucket),
+		fmt.Sprintf("taskqueue.prefix=%s", prefixExcludingBucket),
 		"internalS3.accessKey=lunchpail", // TODO externalize
 		"internalS3.secretKey=lunchpail", // TODO externalize
 	}
