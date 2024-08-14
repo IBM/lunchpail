@@ -1,0 +1,11 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: ParameterSweep
+metadata:
+  name: test7-wait-withfail-workdispatcher
+spec:
+  min: 1
+  max: {{ .Values.nTasks | default 5 }}
+  step: 1
+  interval: {{ .Values.every | default 5 }}
+  wait: true
+  verbose: true

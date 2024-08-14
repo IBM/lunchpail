@@ -125,7 +125,6 @@ func startWatch(handler []string, client queue.S3Client) error {
 				err = handlercmd.Run()
 				if err != nil {
 					fmt.Println("Internal Error running the handler:", err)
-					continue
 				}
 				EC := handlercmd.ProcessState.ExitCode()
 
@@ -151,7 +150,6 @@ func startWatch(handler []string, client queue.S3Client) error {
 					if err != nil {
 						fmt.Println("Internal Error creating succeeded marker:", err)
 					}
-					// fmt.Println("handler success: " + in)
 				} else {
 					err = client.Touch(bucket, failed)
 					if err != nil {

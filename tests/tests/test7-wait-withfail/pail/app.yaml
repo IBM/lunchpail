@@ -1,0 +1,47 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: test7-wait-withfail
+spec:
+  role: worker
+  code:
+    - name: main.sh
+      source: |
+        #!/usr/bin/env sh
+
+        # $1 input filepath
+        # $2 output filepath
+        in="$1"
+        out="$2"
+
+        dataset_name=test # match with below!
+        bucket_name=test7-wait-withfail
+        folder_name=test7-wait-withfail
+        N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
+
+        echo "Processing $N $(basename $in)"
+        sleep 5
+
+        if [ $(basename $in) = "task.3.txt" ]
+          then
+            echo "Error!" 1>&2
+            exit 64
+        fi
+        
+        echo "Done with $(basename $in)"
+
+  command: ./main.sh
+  minSize: auto
+  securityContext:
+    runAsUser: 2000 # lunchpail, same as is specified Dockerfile
+    runAsGroup: 0 # root, ibid
+  containerSecurityContext:
+    runAsUser: 2000 # lunchpail, same as is specified Dockerfile
+    runAsGroup: 0 # root, ibid
+
+  datasets:
+    - name: test
+      s3:
+        secret: test7data
+        copyIn:
+          path: "test7-wait-withfail/"
