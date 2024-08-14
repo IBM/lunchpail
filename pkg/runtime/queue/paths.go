@@ -13,10 +13,21 @@ type filepaths struct {
 	Inbox      string
 	Processing string
 	Outbox     string
-	Done       string
-	Alive      string
-	Dead       string
-	Local      string
+
+	// Dispatcher is done
+	Done string
+
+	// Ready to tear everything done
+	AllDone string
+
+	// Worker is alive
+	Alive string
+
+	// Worker is dead
+	Dead string
+
+	//
+	Local string
 }
 
 func pathsForRun() filepaths {
@@ -28,9 +39,10 @@ func pathsForRun() filepaths {
 	processing := "processing"
 	outbox := "outbox"
 	done := filepath.Join(poolPrefix, "done")
+	alldone := filepath.Join(poolPrefix, "alldone")
 	alive := filepath.Join(prefix, inbox, ".alive")
 	dead := filepath.Join(prefix, inbox, ".dead")
 	local := os.Getenv("LUNCHPAIL_LOCAL_QUEUE_ROOT")
 
-	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alive, dead, local}
+	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alldone, alive, dead, local}
 }

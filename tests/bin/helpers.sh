@@ -175,6 +175,16 @@ function waitForIt {
             else echo "$nRunningWorkstealers workstealer(s) remaining running" && sleep 2
             fi
         done
+
+        echo "Checking that no minios remain running"
+        while true
+        do
+            nRunningMinios=$(kubectl get pod --ignore-not-found -l app.kubernetes.io/component=minio,app.kubernetes.io/instance=$run_name -n $ns --field-selector status.phase=Running --no-headers | wc -l | xargs)
+            if [[ $nRunningMinios == 0 ]]
+            then echo "✅ PASS run-controller test=$name no minios remain running" && break
+            else echo "$nRunningMinios minio(s) remaining running" && sleep 2
+            fi
+        done
     fi
 
     return 0
