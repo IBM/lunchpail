@@ -1,16 +1,20 @@
 FROM docker.io/golang:1.22.6-alpine as builder
 WORKDIR /init
 
+ENV CGO_ENABLED=0
 COPY go.* .
 RUN go mod download
 
-COPY hack/setup/cli.sh .
 COPY cmd cmd
 COPY pkg pkg
 COPY charts charts
 
-RUN ./cli.sh
-RUN chmod a+rX lunchpail
+# build the CLI
+RUN go generate ./... && \
+    go generate ./... && \
+    go build -ldflags="-s -w" -o lunchpail cmd/main.go && \
+    chmod a+rX lunchpail && \
+    find . -name '*.tar.gz' -exec rm {} \;
 
 FROM docker.io/alpine:3
 LABEL org.opencontainers.image.source="https://github.com/IBM/lunchpail"
