@@ -32,17 +32,23 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 
 	sizing := api.WorkerpoolSizing(pool, app, opts)
 	volumes, volumeMounts, envFroms, initContainers, dataseterr := api.DatasetsB64(app, queueSpec)
-	env, enverr := util.ToJsonB64(app.Spec.Env)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace)
+
+	env := ""
+	if len(app.Spec.Env) > 0 {
+		if menv, err := util.ToJsonB64(app.Spec.Env); err != nil {
+			return llir.Component{}, err
+		} else {
+			env = menv
+		}
+	}
 
 	if codeerr != nil {
 		return llir.Component{}, codeerr
 	} else if dataseterr != nil {
 		return llir.Component{}, dataseterr
-	} else if enverr != nil {
-		return llir.Component{}, enverr
 	} else if errsc != nil {
 		return llir.Component{}, errsc
 	} else if errcsc != nil {
