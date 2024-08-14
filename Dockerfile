@@ -19,10 +19,6 @@ RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lun
 ENV HOME=/home/lunchpail
 WORKDIR /home/lunchpail
 
-# minio server
-RUN apk update && apk add --no-cache minio
-EXPOSE 9000
-
 COPY --from=builder /init/lunchpail /usr/local/bin/lunchpail
 
 USER lunchpail

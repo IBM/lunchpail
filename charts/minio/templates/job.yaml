@@ -1,4 +1,5 @@
 {{- if eq .Values.extract "pods" }}
+{{- if .Values.internalS3.enabled }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -19,4 +20,5 @@ spec:
 
   # disallow kubernetes api access
   automountServiceAccountToken: false
+{{- end }}
 {{- end }}
