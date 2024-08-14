@@ -2,6 +2,7 @@ package enqueue
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -19,7 +20,7 @@ func NewEnqueueFileCmd() *cobra.Command {
 
 	var wait bool
 	var verbose bool
-	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the task to be completed")
+	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the task to be completed, and exit with the exit code of that task")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -29,7 +30,11 @@ func NewEnqueueFileCmd() *cobra.Command {
 			return fmt.Errorf("TODO")
 		}
 
-		return queue.EnqueueFile(args[0], queue.EnqueueFileOptions{Wait: wait, Verbose: verbose})
+		exitcode, err := queue.EnqueueFile(args[0], queue.EnqueueFileOptions{Wait: wait, Verbose: verbose})
+		if exitcode != 0 {
+			os.Exit(exitcode)
+		}
+		return err
 	}
 
 	return cmd

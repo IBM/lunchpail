@@ -19,25 +19,25 @@ type EnqueueFileOptions struct {
 	Verbose bool
 }
 
-func EnqueueFile(task string, opts EnqueueFileOptions) error {
+func EnqueueFile(task string, opts EnqueueFileOptions) (int, error) {
 	c, err := NewS3Client()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if err := c.Mkdirp(c.Paths.Bucket); err != nil {
-		return err
+		return 0, err
 	}
 
 	if err := c.Upload(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task))); err != nil {
-		return err
+		return 0, err
 	}
 
 	if opts.Wait {
 		return c.WaitForCompletion(filepath.Base(task), opts.Verbose)
 	}
 
-	return nil
+	return 0, nil
 }
 
 func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int) error {

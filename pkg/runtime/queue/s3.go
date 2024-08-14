@@ -4,6 +4,7 @@ package queue
 // can share this with the runtime/worker/s3.go
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -165,6 +166,16 @@ func (s3 S3Client) ListObjects(bucket, filePath string, recursive bool) <-chan m
 		Prefix:    filePath,
 		Recursive: recursive,
 	})
+}
+
+func (s3 S3Client) Get(bucket, filePath string) (string, error) {
+	var content bytes.Buffer
+	s, err := s3.client.GetObject(context.Background(), bucket, filePath, minio.GetObjectOptions{})
+	if err != nil {
+		return "", err
+	}
+	io.Copy(io.Writer(&content), s)
+	return content.String(), nil
 }
 
 func (s3 S3Client) Cat(bucket, filePath string) error {

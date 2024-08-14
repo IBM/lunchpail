@@ -114,7 +114,15 @@ function waitForIt {
                                lunchpail qcat outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
-                else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
+                else 
+                    if [[ -n "$expectTaskFailure" ]]
+                    then 
+                        if [[ ! "$code" =~ $expectTaskFailure ]]
+                        then echo "Missing expected task failure output from code=$code" && return 1
+                        fi
+                        echo "✅ PASS run-controller got expected non-zero exit code test=$name output=$output code=$code"
+                    else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
+                    fi
                 fi
 
                 stdout=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
