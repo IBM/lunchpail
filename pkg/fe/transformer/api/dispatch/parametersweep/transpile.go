@@ -54,5 +54,13 @@ func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 		app.Spec.Env["__LUNCHPAIL_INTERVAL"] = strconv.Itoa(sweep.Spec.Interval)
 	}
 
+	if sweep.Spec.Wait {
+		app.Spec.Env["__LUNCHPAIL_WAIT"] = "true"
+	}
+
+	if sweep.Spec.Verbose {
+		app.Spec.Env["__LUNCHPAIL_VERBOSE"] = "true"
+	}
+
 	return app, nil
 }

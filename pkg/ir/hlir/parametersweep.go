@@ -10,5 +10,11 @@ type ParameterSweep struct {
 		Step     int `yaml:",omitempty"`
 		Interval int `yaml:",omitempty"`
 		Env      Env `yaml:",omitempty"`
+
+		// Wait for each task to complete before proceeding to the next task
+		Wait bool
+
+		// Verbose output
+		Verbose bool
 	}
 }
