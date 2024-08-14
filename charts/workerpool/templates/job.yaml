@@ -43,7 +43,6 @@ spec:
         {{- if .Values.volumes }}
         {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 8 }}
         {{- end }}
-        {{- include "queue/volume" . | indent 8 }}
         {{- include "workdir/volume" . | indent 8 }}
       initContainers:
         {{- include "containers/workdir" . | indent 8 }}

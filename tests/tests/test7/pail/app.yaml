@@ -19,10 +19,10 @@ spec:
         folder_name=test7
         N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
 
-        echo "Processing $N $in"
+        echo "Processing $N $(basename $in)"
         sleep 5
 
-        echo "Done with $in"
+        echo "Done with $(basename $in)"
 
   command: ./main.sh
   minSize: auto
