@@ -16,16 +16,13 @@
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
-
-  {{- if or .Values.env .Values.envFroms }}
-  envFrom:
   {{- if or .Values.env }}
-  - configMapRef:
-      name: {{ print .Release.Name "-env" | trunc 53 | trimSuffix "-" }}
+    {{ .Values.env | b64dec | fromJsonArray | toYaml | nindent 4 }}
   {{- end }}
+
   {{- if .Values.envFroms }}
+  envFrom:
   {{ .Values.envFroms | b64dec | fromJsonArray | toYaml | nindent 2 }}
-  {{- end }}
   {{- end }}
 
   {{- if .Values.containerSecurityContext }}
