@@ -34,7 +34,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 
 	env := ""
 	if len(app.Spec.Env) > 0 {
-		if menv, err := util.ToJsonB64(app.Spec.Env); err != nil {
+		if menv, err := util.ToJsonEnvB64(app.Spec.Env); err != nil {
 			return llir.Component{}, err
 		} else {
 			env = menv

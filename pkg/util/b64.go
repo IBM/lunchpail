@@ -33,6 +33,24 @@ func ToJsonB64(something any) (string, error) {
 	return toB64(b), nil
 }
 
+type EnvEntry struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func ToJsonEnvB64(env map[string]string) (string, error) {
+	var entries []EnvEntry
+	for k, v := range env {
+		entries = append(entries, EnvEntry{k, v})
+	}
+
+	b, err := json.Marshal(entries)
+	if err != nil {
+		return "", err
+	}
+	return toB64(b), nil
+}
+
 func ToYamlB64(something any) (string, error) {
 	b, err := yaml.Marshal(something)
 	if err != nil {
