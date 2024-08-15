@@ -48,11 +48,6 @@
       nvidia.com/gpu: {{ .Values.workers.gpu }}
       {{- end }}
 
-  {{- if .Values.rbac.runAsRoot }}
-  securityContext:
-    privileged: true
-  {{- end }}
-
   readinessProbe:
     exec:
       command:
