@@ -98,7 +98,6 @@ global:
   dockerHost: %s # dockerHost (1)
   rbac:
     serviceaccount: %s # runname (2)
-    runAsRoot: false
   jaas:
     ips: %s # imagePullSecretName (3)
     dockerconfigjson: %s # dockerconfigjson (4)
