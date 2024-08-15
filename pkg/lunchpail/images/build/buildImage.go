@@ -85,6 +85,14 @@ func buildIt(dir, name, dockerfile string, kind ImageOrManifest, cli ContainerCl
 			".",
 		)
 	} else {
+		// clean out prior "final" and "temp" layers before building a new one
+		if err := clean(cli, "final"); err != nil {
+			return "", err
+		}
+		if err := clean(cli, "temp"); err != nil {
+			return "", err
+		}
+
 		cmd = exec.Command(
 			string(cli),
 			"build",
@@ -117,6 +125,20 @@ func buildIt(dir, name, dockerfile string, kind ImageOrManifest, cli ContainerCl
 	return image, nil
 
 	// TODO --build-arg registry=$IMAGE_REGISTRY --build-arg repo=$IMAGE_REPO --build-arg version=$VERSION \
+}
+
+func clean(cli ContainerCli, label string) error {
+	cmd := exec.Command(
+		string(cli),
+		"image",
+		"prune",
+		"--force",
+		"--filter",
+		"label=lunchpail="+label,
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func buildProd(dir, name, dockerfile string, cli ContainerCli, verbose bool, force bool) (string, error) {
