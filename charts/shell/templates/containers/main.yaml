@@ -3,22 +3,21 @@
   image: {{ .Values.image }}
   command:
     {{- include "prestop/command" . | indent 4 }}
+
   env:
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
+  {{- if .Values.env }}
+    {{ .Values.env | b64dec | fromJsonArray | toYaml | nindent 4 }}
+  {{- end }}
+
   {{- if .Values.containerSecurityContext }}
   securityContext: {{ .Values.containerSecurityContext | b64dec | fromYaml | toJson }}
   {{- end }}
-      
-  {{- if or .Values.env .Values.envFroms }}
-  envFrom:
-  {{- if .Values.env }}
-  - configMapRef:
-      name: {{ print .Release.Name | trunc 53 }}
-  {{- end }}
+
   {{- if .Values.envFroms }}
+  envFrom:
   {{ .Values.envFroms | b64dec | fromJsonArray | toYaml | nindent 2 }}
-  {{- end }}
   {{- end }}
 
   {{- include "workdir/path" . | indent 2 }}
