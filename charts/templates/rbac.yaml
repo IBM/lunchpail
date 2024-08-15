@@ -1,10 +1,11 @@
-# TODO run controller should create this on demand?
+{{- if .Values.rbac.serviceaccount }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .Values.global.rbac.serviceaccount }}
+  name: {{ .Values.rbac.serviceaccount }}
   namespace: {{ .Values.namespace.user }}
 {{- if .Values.global.jaas.ips }}
 imagePullSecrets:
   - name: {{ .Values.global.jaas.ips }}
+{{- end }}
 {{- end }}

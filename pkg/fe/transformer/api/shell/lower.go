@@ -15,7 +15,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) (llir.Component, error) {
 	component := ""
 	switch app.Spec.Role {
 	case "dispatcher":
@@ -79,7 +79,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 		"taskqueue.prefixPath=" + api.QueuePrefixPath(queueSpec, runname),
 		"mcad.enabled=false",
 		"rbac.runAsRoot=false",
-		"rbac.serviceaccount=" + runname,
+		"rbac.serviceaccount=" + serviceAccount,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.cm.data=" + workdirCmData,

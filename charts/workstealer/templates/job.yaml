@@ -16,7 +16,6 @@ metadata:
 spec:
   restartPolicy: OnFailure
   terminationGracePeriodSeconds: 0
-  serviceAccountName: {{ .Values.rbac.serviceaccount }}
   containers:
     {{- include "containers/workstealer" . | indent 4 }}
 

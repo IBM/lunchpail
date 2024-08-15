@@ -38,7 +38,11 @@ spec:
       {{- end }}
       
       terminationGracePeriodSeconds: 5 # give time for the preStop in the container
+
+      {{- if .Values.rbac.serviceaccount }}
       serviceAccountName: {{ .Values.rbac.serviceaccount }}
+      {{- end }}
+
       volumes:
         {{- if .Values.volumes }}
         {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 8 }}

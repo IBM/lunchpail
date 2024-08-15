@@ -17,14 +17,14 @@ type ConfigureOptions struct {
 	Verbose            bool
 }
 
-func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
+func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, queue.Spec, string, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
+		return "", nil, nil, queue.Spec{}, "", err
 	} else {
 		if opts.CompilationOptions.Namespace == "" {
 			opts.CompilationOptions.Namespace = shrinkwrappedOptions.Namespace
@@ -62,17 +62,17 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
+		return "", nil, nil, queue.Spec{}, "", err
 	}
 
 	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.CompilationOptions.ImagePullSecret)
 	if ipsErr != nil {
-		return "", nil, nil, queue.Spec{}, ipsErr
+		return "", nil, nil, queue.Spec{}, "", ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
+		return "", nil, nil, queue.Spec{}, "", err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -93,11 +93,19 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		queueSpec.Bucket = queueSpec.Name
 	}
 
+	backendValues, err := backend.Values()
+	if err != nil {
+		return "", nil, nil, queue.Spec{}, "", err
+	}
+
+	serviceAccount := runname
+	if !backendValues.NeedsServiceAccount && imagePullSecretName == "" {
+		serviceAccount = ""
+	}
+
 	yaml := fmt.Sprintf(`
 global:
   dockerHost: %s # dockerHost (1)
-  rbac:
-    serviceaccount: %s # runname (2)
   jaas:
     ips: %s # imagePullSecretName (3)
     dockerconfigjson: %s # dockerconfigjson (4)
@@ -115,7 +123,7 @@ uid: %s # user.Uid (11)
 mcad:
   enabled: false
 rbac:
-  serviceaccount: %s # runname (12)
+  serviceaccount: %s # serviceAccount (12)
 image:
   registry: %s # imageRegistry (13)
   repo: %s # imageRepo (14)
@@ -141,7 +149,6 @@ lunchpail_internal:
     sleep_before_exit: %s # sleepBeforeExit (28)
 `,
 		opts.CompilationOptions.DockerHost,      // (1)
-		runname,                                 // (2)
 		imagePullSecretName,                     // (3)
 		dockerconfigjson,                        // (4)
 		systemNamespace,                         // (5)
@@ -152,7 +159,7 @@ lunchpail_internal:
 		internalS3Port,                           // (9)
 		user.Username,                            // (10)
 		user.Uid,                                 // (11)
-		runname,                                  // (12)
+		serviceAccount,                           // (12)
 		imageRegistry,                            // (13)
 		imageRepo,                                // (14)
 		lunchpail.Version(),                      // (15)
@@ -171,11 +178,6 @@ lunchpail_internal:
 		os.Getenv("LUNCHPAIL_SLEEP_BEFORE_EXIT"), // (28)
 	)
 
-	backendValues, err := backend.Values()
-	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
-	}
-
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.CompilationOptions.OverrideValues)
@@ -183,8 +185,8 @@ lunchpail_internal:
 		fmt.Fprintf(os.Stderr, "shrinkwrap backend overrides=%v\n", backendValues)
 	}
 
-	overrides := slices.Concat(opts.CompilationOptions.OverrideValues, backendValues)
+	overrides := slices.Concat(opts.CompilationOptions.OverrideValues, backendValues.Kv)
 	fileOverrides := opts.CompilationOptions.OverrideFileValues // Note: no backend value support here
 
-	return yaml, overrides, fileOverrides, queueSpec, nil
+	return yaml, overrides, fileOverrides, queueSpec, serviceAccount, nil
 }

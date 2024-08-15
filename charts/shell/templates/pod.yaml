@@ -12,7 +12,11 @@ metadata:
     app.kubernetes.io/managed-by: lunchpail.io
 spec:
   restartPolicy: OnFailure
+
+  {{- if .Values.rbac.serviceaccount }}
   serviceAccountName: {{ .Values.rbac.serviceaccount }}
+  {{- end }}
+
   {{- include "prestop/spec/pod" . | indent 2 }}
 
   {{- if .Values.securityContext }}

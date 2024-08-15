@@ -37,7 +37,6 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 		"namespace.user=" + namespace,
 		"lunchpail=lunchpail",
 		"mcad.enabled=false",
-		"rbac.serviceaccount=" + runname,
 		"image.registry=" + lunchpail.ImageRegistry,
 		"image.repo=" + lunchpail.ImageRepo,
 		"image.version=" + lunchpail.Version(),

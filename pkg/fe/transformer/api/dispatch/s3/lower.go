@@ -20,6 +20,7 @@ func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects,
 		namespace,
 		app,
 		queueSpec,
+		"", // no service account needed
 		opts,
 		verbose,
 	)
