@@ -10,7 +10,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) ([]llir.Component, error) {
+func lowerApplications(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	for _, r := range model.Applications {
@@ -22,7 +22,7 @@ func lowerApplications(compilationName, runname, namespace string, model hlir.Ap
 				components = append(components, component)
 			}
 		default:
-			if component, err := shell.Lower(compilationName, runname, namespace, r, queueSpec, opts, verbose); err != nil {
+			if component, err := shell.Lower(compilationName, runname, namespace, r, queueSpec, serviceAccount, opts, verbose); err != nil {
 				return components, err
 			} else {
 				components = append(components, component)

@@ -16,7 +16,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) (llir.Component, error) {
 	// name of worker pods/deployment = run_name-pool_name
 	releaseName := strings.TrimSuffix(
 		util.Truncate(
@@ -94,7 +94,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		"startupDelay=" + strconv.Itoa(startupDelay),
 		"mcad.enabled=false",
 		"rbac.runAsRoot=false",
-		"rbac.serviceaccount=" + runname,
+		"rbac.serviceaccount=" + serviceAccount,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.cm.data=" + workdirCmData,

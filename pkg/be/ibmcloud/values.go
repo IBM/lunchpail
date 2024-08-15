@@ -1,5 +1,7 @@
 package ibmcloud
 
-func (backend Backend) Values() ([]string, error) {
-	return []string{}, nil
+import "lunchpail.io/pkg/be/platform"
+
+func (backend Backend) Values() (platform.Values, error) {
+	return platform.Values{}, nil
 }

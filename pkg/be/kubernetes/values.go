@@ -8,31 +8,36 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8s "k8s.io/client-go/kubernetes"
+
+	"lunchpail.io/pkg/be/platform"
 )
 
-func openshiftSpecificValues(clientset *k8s.Clientset) ([]string, error) {
+func openshiftSpecificValues(clientset *k8s.Clientset) (platform.Values, error) {
+	var values platform.Values
+
 	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		return values, err
 	}
 
 	openshiftIdx := slices.IndexFunc(namespaces.Items, func(ns corev1.Namespace) bool { return strings.Contains(ns.Name, "openshift") })
 	if openshiftIdx >= 0 {
-		return []string{"global.type=oc"}, nil
+		values.Kv = append(values.Kv, "global.type=oc")
+		values.NeedsServiceAccount = true
 	}
 
-	return []string{}, nil
+	return values, nil
 }
 
-func (backend Backend) Values() ([]string, error) {
+func (backend Backend) Values() (platform.Values, error) {
 	clientset, _, err := Client()
 	if err != nil {
-		return nil, err
+		return platform.Values{}, err
 	}
 
 	openshiftValues, err := openshiftSpecificValues(clientset)
 	if err != nil {
-		return nil, err
+		return platform.Values{}, err
 	}
 
 	return openshiftValues, nil

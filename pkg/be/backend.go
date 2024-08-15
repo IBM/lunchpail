@@ -16,7 +16,7 @@ type Backend interface {
 	Ok() error
 
 	// Overrides to values used by linker.Configure
-	Values() ([]string, error)
+	Values() (platform.Values, error)
 
 	// Bring up the linked application
 	Up(linked ir.Linked) error

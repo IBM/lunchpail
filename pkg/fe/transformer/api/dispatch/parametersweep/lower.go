@@ -20,6 +20,7 @@ func Lower(compilationName, runname, namespace string, sweep hlir.ParameterSweep
 		namespace,
 		app,
 		queueSpec,
+		"", // no service account needed
 		opts,
 		verbose,
 	)
