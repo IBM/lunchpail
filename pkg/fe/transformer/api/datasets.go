@@ -115,8 +115,11 @@ EOF
 
 rclone --config $config config dump
 
-rclone --config $config copyto s3:/%s /workdir/%s/%s
-`, env.Prefix, env.Prefix, env.Prefix, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
+# Delay the copy-in, if requested
+sleep %d
+
+rclone --retries 50 --config $config copyto -v s3:/%s /workdir/%s/%s
+`, env.Prefix, env.Prefix, env.Prefix, dataset.S3.CopyIn.Delay, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
 					},
 				})
 			}

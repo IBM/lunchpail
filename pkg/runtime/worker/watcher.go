@@ -27,6 +27,10 @@ func startWatch(handler []string, client queue.S3Client) error {
 	alive := client.Paths.Alive
 	// dead := client.Paths.dead
 
+	if err := client.Mkdirp(bucket); err != nil {
+		return err
+	}
+
 	err := client.Touch(bucket, alive)
 	if err != nil {
 		return err

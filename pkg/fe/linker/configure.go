@@ -78,14 +78,10 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	// the app.kubernetes.io/part-of label value
 	partOf := appname
 
-	// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
-	runnameMax40 := runname
-	if len(runname) > 40 {
-		runnameMax40 = runname[:40]
-	}
-
 	if queueSpec.Endpoint == "" {
-		queueSpec.Endpoint = fmt.Sprintf("http://%s-lunchpail-minio.%s.svc.cluster.local:%d", runnameMax40, systemNamespace, internalS3Port)
+		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
+		runnameMax53 := dns1035(runname + "-minio")
+		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, systemNamespace, internalS3Port)
 		queueSpec.AccessKey = "lunchpail"
 		queueSpec.SecretKey = "lunchpail"
 	}
@@ -114,9 +110,6 @@ global:
       create: %v # opts.CreateNamespace (6)
     context:
       name: ""
-  s3Endpoint: http://%s-lunchpail-minio.%s.svc.cluster.local:%d # runnameMax40 (7) systemNamespace (8) internalS3Port (9)
-  s3AccessKey: lunchpail
-  s3SecretKey: lunchpail
 lunchpail: lunchpail
 username: %s # user.Username (10)
 uid: %s # user.Uid (11)
@@ -154,9 +147,6 @@ lunchpail_internal:
 		systemNamespace,                         // (5)
 		opts.CompilationOptions.CreateNamespace, // (6)
 
-		runnameMax40,                             // (7)
-		systemNamespace,                          // (8)
-		internalS3Port,                           // (9)
 		user.Username,                            // (10)
 		user.Uid,                                 // (11)
 		serviceAccount,                           // (12)

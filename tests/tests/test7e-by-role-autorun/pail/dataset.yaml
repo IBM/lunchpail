@@ -8,7 +8,7 @@ spec:
   local:
     type: "COS"
     bucket: test7e-by-role-autorun
-    endpoint: {{ .Values.global.s3Endpoint }}
+    endpoint: {{ .Values.taskqueue.endpoint }}
     secret-name: test7edata-cfsecret
     secret-namespace: {{ .Values.namespace.user }}
     #readonly: "true" # default is false

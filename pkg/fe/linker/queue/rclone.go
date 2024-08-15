@@ -59,6 +59,6 @@ func parseFlagAsRclone(flag string, spec *Spec) (bool, error) {
 // Follow convention for internalS3 name in charts/workstealer/templates/s3 below.
 // Checks if hostname ends with the same suffix to determine if internalS3.
 func isInternalS3(endpoint string) bool {
-	internalS3Suffix := "-lunchpail-minio"
+	internalS3Suffix := "-minio"
 	return strings.HasSuffix(strings.Split(endpoint, ".")[0], internalS3Suffix)
 }

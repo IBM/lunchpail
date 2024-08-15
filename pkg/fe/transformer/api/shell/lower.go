@@ -16,15 +16,18 @@ import (
 )
 
 func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) (llir.Component, error) {
-	component := ""
+	var component lunchpail.Component
 	switch app.Spec.Role {
-	case "dispatcher":
-		component = "workdispatcher"
 	case "worker":
-		component = "workerpool"
+		component = lunchpail.WorkersComponent
 	default:
-		component = "shell"
+		component = lunchpail.DispatcherComponent
 	}
+
+	return LowerAsComponent(compilationName, runname, namespace, app, queueSpec, serviceAccount, opts, verbose, component)
+}
+
+func LowerAsComponent(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool, component lunchpail.Component) (llir.Component, error) {
 
 	sizing := api.ApplicationSizing(app, opts)
 	volumes, volumeMounts, envFroms, _, dataseterr := api.DatasetsB64(app, queueSpec)
@@ -63,7 +66,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 	values := []string{
 		"name=" + runname,
 		"partOf=" + compilationName,
-		"component=" + component,
+		"component=" + string(component),
 		"enclosingRun=" + runname,
 		"image=" + app.Spec.Image,
 		"namespace=" + namespace,
@@ -90,12 +93,12 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 	}
 
 	if len(app.Spec.Expose) > 0 {
-		values = append(values, "expose="+util.ToArray(app.Spec.Expose))
+		values = append(values, "expose="+util.ToPortArray(app.Spec.Expose))
 	}
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, lunchpail.DispatcherComponent)
+	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, component)
 }

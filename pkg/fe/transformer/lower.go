@@ -41,6 +41,6 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 
 	return llir.LLIR{
 		GlobalConfig: globals,
-		Components:   slices.Concat(minio, apps, dispatchers, pools),
+		Components:   slices.Concat([]llir.Component{minio}, apps, dispatchers, pools),
 	}, nil
 }
