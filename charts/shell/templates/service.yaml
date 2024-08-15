@@ -14,8 +14,10 @@ metadata:
 spec:
   ports:
   {{- range $port := .Values.expose }}
-  - name: {{ print "port-" $port }}
-    port: {{ $port }}
+  {{- $parts := regexSplit ":" $port 2 }}
+  - name: {{ print "port-" (index $parts 1) }}
+    port: {{ index $parts 0 }}
+    targetPort: {{ index $parts 1 }}
     protocol: TCP
   selector:
     app.kubernetes.io/component: {{ $.Values.component }}

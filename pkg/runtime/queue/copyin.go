@@ -15,7 +15,7 @@ func CopyIn(srcDir, bucket string) error {
 		return err
 	}
 
-	fmt.Printf("Uploading files from local directory=%s to s3 bucket=%s\n", srcDir, bucket)
+	fmt.Fprintf(os.Stderr, "Uploading files from local directory=%s to s3 bucket=%s\n", srcDir, bucket)
 	if err := s3.Mkdirp(bucket); err != nil {
 		return err
 	}
@@ -25,7 +25,9 @@ func CopyIn(srcDir, bucket string) error {
 			return err
 		} else if !dir.IsDir() {
 			for i := range 10 {
-				if err := s3.Upload(bucket, path, strings.Replace(path, srcDir+"/", "", 1)); err == nil {
+				dst := strings.Replace(path, srcDir+"/", "", 1)
+				fmt.Fprintf(os.Stderr, "Uploading %s to s3 %s\n", path, dst)
+				if err := s3.Upload(bucket, path, dst); err == nil {
 					break
 				} else {
 					fmt.Fprintf(os.Stderr, "Retrying upload iter=%d path=%s\n%v\n", i, path, err)

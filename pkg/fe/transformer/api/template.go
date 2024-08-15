@@ -22,8 +22,8 @@ const (
 	pods         = "pods"
 )
 
-func extract(which which, runname, namespace, templatePath string, values []string, verbose bool) (string, error) {
-	parts, err := linker.Template(runname, namespace, templatePath, "", linker.TemplateOptions{Verbose: verbose, OverrideValues: append(values, "extract="+string(which))})
+func extract(which which, name comp.Component, runname, namespace, templatePath string, values []string, verbose bool) (string, error) {
+	parts, err := linker.Template(runname+"-"+string(name), namespace, templatePath, "", linker.TemplateOptions{Verbose: verbose, OverrideValues: append(values, "extract="+string(which))})
 	if err != nil {
 		return "", err
 	}
@@ -33,10 +33,10 @@ func extract(which which, runname, namespace, templatePath string, values []stri
 
 // reparse marshaled jobs into typed batchv1.Job objects, because this
 // helps backends interpret the LLIR
-func extractJobs(runname, namespace, templatePath string, values []string, verbose bool) ([]batchv1.Job, error) {
+func extractJobs(name comp.Component, runname, namespace, templatePath string, values []string, verbose bool) ([]batchv1.Job, error) {
 	jobs := []batchv1.Job{}
 
-	job, err := extract("job", runname, namespace, templatePath, values, verbose)
+	job, err := extract("job", name, runname, namespace, templatePath, values, verbose)
 	if err != nil {
 		return jobs, err
 	}
@@ -66,10 +66,10 @@ func extractJobs(runname, namespace, templatePath string, values []string, verbo
 // TODO there has to be some way to share code here with extractJobs
 // reparse marshaled jobs into typed corev1.Pod objects, because this
 // helps backends interpret the LLIR
-func extractPods(runname, namespace, templatePath string, values []string, verbose bool) ([]corev1.Pod, error) {
+func extractPods(name comp.Component, runname, namespace, templatePath string, values []string, verbose bool) ([]corev1.Pod, error) {
 	pods := []corev1.Pod{}
 
-	pod, err := extract("pods", runname, namespace, templatePath, values, verbose)
+	pod, err := extract("pods", name, runname, namespace, templatePath, values, verbose)
 	if err != nil {
 		return pods, err
 	}
@@ -99,17 +99,17 @@ func extractPods(runname, namespace, templatePath string, values []string, verbo
 func GenerateComponent(runname, namespace, templatePath string, values []string, verbose bool, name comp.Component) (llir.Component, error) {
 	defer os.RemoveAll(templatePath)
 
-	config, err := extract("config", runname, namespace, templatePath, values, verbose)
+	config, err := extract("config", name, runname, namespace, templatePath, values, verbose)
 	if err != nil {
 		return llir.Component{}, err
 	}
 
-	jobs, err := extractJobs(runname, namespace, templatePath, values, verbose)
+	jobs, err := extractJobs(name, runname, namespace, templatePath, values, verbose)
 	if err != nil {
 		return llir.Component{}, err
 	}
 
-	pods, err := extractPods(runname, namespace, templatePath, values, verbose)
+	pods, err := extractPods(name, runname, namespace, templatePath, values, verbose)
 	if err != nil {
 		return llir.Component{}, err
 	}

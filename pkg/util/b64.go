@@ -4,6 +4,7 @@ import (
 	"bytes"
 	b64 "encoding/base64"
 	"encoding/json"
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"strconv"
 	"strings"
@@ -16,6 +17,19 @@ func ToArray(A []int) string {
 	}
 
 	return "{" + strings.Join(S, ",") + "}"
+}
+
+func ToPortArray(A []string) string {
+	portArray := []string{}
+	for _, port := range A {
+		if !strings.Contains(port, ":") {
+			portArray = append(portArray, fmt.Sprintf("%s:%s", port, port))
+		} else {
+			portArray = append(portArray, port)
+		}
+	}
+
+	return "{" + strings.Join(portArray, ",") + "}"
 }
 
 func toB64(b []byte) string {

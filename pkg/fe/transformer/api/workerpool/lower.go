@@ -105,7 +105,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 	}
 
 	if len(app.Spec.Expose) > 0 {
-		values = append(values, "expose="+util.ToArray(app.Spec.Expose))
+		values = append(values, "expose="+util.ToPortArray(app.Spec.Expose))
 	}
 
 	if verbose {

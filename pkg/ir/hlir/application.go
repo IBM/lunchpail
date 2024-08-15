@@ -16,7 +16,7 @@ type Application struct {
 		Code                     []Code                   `yaml:"code,omitempty"`
 		Description              string                   `yaml:"description,omitempty"`
 		SupportsGpu              bool                     `yaml:"supportsGpu,omitempty"`
-		Expose                   []int                    `yaml:"expose,omitempty"`
+		Expose                   []string                 `yaml:"expose,omitempty"`
 		MinSize                  TShirtSize               `yaml:"minSize,omitempty"`
 		Tags                     []string                 `yaml:"tags,omitempty"`
 		Command                  string                   `yaml:"command,omitempty"`

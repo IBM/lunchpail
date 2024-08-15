@@ -34,6 +34,8 @@ func client(namespace string, verbose bool) (helmclient.Client, error) {
 }
 
 func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOptions) (string, error) {
+	releaseName = dns1035(releaseName)
+
 	chartSpec := helmclient.ChartSpec{
 		ReleaseName:      releaseName,
 		ChartName:        templatePath,

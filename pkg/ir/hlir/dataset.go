@@ -4,7 +4,8 @@ type S3 struct {
 	Secret    string
 	EnvPrefix string `yaml:"envPrefix,omitempty"`
 	CopyIn    struct {
-		Path string
+		Path  string
+		Delay int `yaml:"delay,omitempty"`
 	} `yaml:"copyIn,omitempty"`
 }
 
