@@ -1,3 +1,5 @@
+//NOT YET needed by tests/bin/helpers.sh go:build full || observe
+
 package subcommands
 
 import (

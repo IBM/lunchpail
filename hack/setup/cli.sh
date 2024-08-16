@@ -23,7 +23,7 @@ msg="Integrating templates"
 echo "$msg" && go generate ./... && go generate ./...
 
 msg="Building CLI to $DST"
-echo "$msg" && CGO_ENABLED=0 go build -ldflags="-s -w" -o "$DST" cmd/main.go
+echo "$msg" && CGO_ENABLED=0 go build -tags full -ldflags="-s -w" -o "$DST" cmd/main.go
 
 echo "✅ Done"
 ls -lh "$DST"

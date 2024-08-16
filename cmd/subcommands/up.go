@@ -1,3 +1,5 @@
+//go:build full || deploy
+
 package subcommands
 
 import (
@@ -33,17 +35,6 @@ func addCompilationOptions(cmd *cobra.Command) *compilation.Options {
 	//TODO: make public image as default
 	cmd.Flags().StringVarP(&options.ImageID, "image-id", "", "", "Identifier of a catalog or custom image to be used for instance creation")
 	cmd.Flags().BoolVarP(&options.CreateNamespace, "create-namespace", "N", false, "Create a new namespace, if needed")
-	return &options
-}
-
-type TargetOptions struct {
-	TargetPlatform platform.Platform
-}
-
-func addTargetOptions(cmd *cobra.Command) *TargetOptions {
-	var options TargetOptions
-	options.TargetPlatform = platform.Kubernetes
-	cmd.Flags().VarP(&options.TargetPlatform, "target", "t", "Deployment target [kubernetes, ibmcloud, skypilot]")
 	return &options
 }
 

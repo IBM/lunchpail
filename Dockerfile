@@ -15,6 +15,7 @@ COPY pkg pkg
 # build the CLI
 FROM base as builder
 LABEL lunchpail=temp
+RUN find cmd
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod \
     go generate ./... && \
     go generate ./... && \
