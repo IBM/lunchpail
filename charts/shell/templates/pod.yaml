@@ -12,10 +12,7 @@ metadata:
     app.kubernetes.io/managed-by: lunchpail.io
 spec:
   restartPolicy: OnFailure
-
-  {{- if eq .Values.component "minio" }}
-  terminationGracePeriodSeconds: 0
-  {{- end }}
+  terminationGracePeriodSeconds: {{ .Values.lunchpail.terminationGracePeriodSeconds | default 0 }}
 
   {{- if .Values.rbac.serviceaccount }}
   serviceAccountName: {{ .Values.rbac.serviceaccount }}

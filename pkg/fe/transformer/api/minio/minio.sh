@@ -29,3 +29,7 @@ mc mb lunchpail/$LUNCHPAIL_QUEUE_BUCKET
 set -x
 { head -1; kill "$!"; } < <(mc watch lunchpail/$LUNCHPAIL_QUEUE_BUCKET --prefix $LUNCHPAIL_QUEUE_PREFIX/alldone --events put)
 echo "Got all done marker, exiting..."
+
+# Tests may want us to sleep a bit, so they can capture data for
+# validation checks.
+sleep ${LUNCHPAIL_SLEEP_BEFORE_EXIT:-0}
