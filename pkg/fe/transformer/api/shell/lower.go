@@ -63,6 +63,12 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		defer os.RemoveAll(templatePath)
 	}
 
+	terminationGracePeriodSeconds := 0
+	if os.Getenv("CI") != "" {
+		// tests may expect to observe output before self-destruction
+		terminationGracePeriodSeconds = 5
+	}
+
 	values := []string{
 		"name=" + runname,
 		"partOf=" + compilationName,
@@ -90,6 +96,7 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
 		"lunchpail.image.repo=" + lunchpail.ImageRepo,
 		"lunchpail.image.version=" + lunchpail.Version(),
+		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),
 	}
 
 	if len(app.Spec.Expose) > 0 {

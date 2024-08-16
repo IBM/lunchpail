@@ -216,7 +216,10 @@ func (s3 S3Client) Mkdirp(bucket string) error {
 
 	if !exists {
 		if err := s3.client.MakeBucket(context.Background(), bucket, minio.MakeBucketOptions{}); err != nil {
-			return err
+			if !strings.Contains(err.Error(), "Your previous request to create the named bucket succeeded and you already own it") {
+				// bucket already exists error
+				return err
+			}
 		}
 	}
 

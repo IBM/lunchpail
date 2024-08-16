@@ -2,6 +2,7 @@ package minio
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -33,6 +34,11 @@ func transpile(runname string, queueSpec queue.Spec) (hlir.Application, error) {
 	app.Spec.Env["USE_MINIO_EXTENSIONS"] = "true"
 	app.Spec.Env["LUNCHPAIL_QUEUE_BUCKET"] = queueSpec.Bucket
 	app.Spec.Env["LUNCHPAIL_QUEUE_PREFIX"] = prefixExcludingBucket
+
+	if os.Getenv("CI") != "" {
+		// Helps with tests. see ./minio.sh
+		app.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = "5"
+	}
 
 	return app, nil
 }
