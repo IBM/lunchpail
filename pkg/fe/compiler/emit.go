@@ -44,7 +44,7 @@ func gobuild(dir, name, targetOs, targetArch string) error {
 		targetName = absName + "-" + targetOs + "-" + targetArch
 	}
 
-	cmd := exec.Command("go", "build", "-ldflags", "-s -w", "-o", targetName, "cmd/main.go")
+	cmd := exec.Command("go", "build", "-tags", "full", "-ldflags", "-s -w", "-o", targetName, "cmd/main.go")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "CGO_ENABLED=0")
 	cmd.Env = append(cmd.Env, "GOOS="+targetOs)
