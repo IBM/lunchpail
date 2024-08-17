@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
 // Transpile workstealer to hlir.Application
-func transpile(runname string, queueSpec queue.Spec) (hlir.Application, error) {
+func transpile(runname string) (hlir.Application, error) {
 	app := hlir.NewApplication(runname + "-workstealer")
 
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())

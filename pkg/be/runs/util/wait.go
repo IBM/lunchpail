@@ -16,10 +16,9 @@ func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (strin
 		namespace = appname
 	}
 
-	waiting := true
 	alreadySaidWeAreWaiting := false
 
-	for waiting {
+	for {
 		if runname == "" {
 			if singletonRun, err := Singleton(appname, namespace, backend); err != nil {
 				if wait && strings.Contains(err.Error(), "No runs") {
@@ -42,6 +41,10 @@ func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (strin
 		}
 
 		break
+	}
+
+	if runname == "" {
+		return "", "", "", fmt.Errorf("Unable to find any runs for application %s in namespace %s\n", appname, namespace)
 	}
 
 	return appname, runname, namespace, nil

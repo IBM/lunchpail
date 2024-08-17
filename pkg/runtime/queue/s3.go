@@ -195,6 +195,7 @@ func (s3 S3Client) BucketExists(bucket string) (bool, error) {
 				strings.Contains(err.Error(), "i/o timeout")) {
 				return false, err
 			} else {
+				fmt.Fprintf(os.Stderr, "!!!!!!!!!!!!!!!!!!!!!! %v\n", err)
 				time.Sleep(1 * time.Second)
 				continue
 			}

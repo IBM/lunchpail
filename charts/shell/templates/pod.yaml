@@ -1,39 +1,11 @@
+{{- if not .Values.lunchpail.runAsJob }}
 {{- if eq .Values.extract "pods" }}
 apiVersion: v1
 kind: Pod
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace }}
-  labels:
-    app.kubernetes.io/component: {{ .Values.component }}
-    app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/name: {{ .Values.name }}
-    app.kubernetes.io/instance: {{ .Values.enclosingRun }}
-    app.kubernetes.io/managed-by: lunchpail.io
-spec:
-  restartPolicy: OnFailure
-  terminationGracePeriodSeconds: {{ .Values.lunchpail.terminationGracePeriodSeconds | default 0 }}
-
-  {{- if .Values.rbac.serviceaccount }}
-  serviceAccountName: {{ .Values.rbac.serviceaccount }}
-  {{- end }}
-
-  {{- include "prestop/spec/pod" . | indent 2 }}
-
-  {{- if .Values.securityContext }}
-  securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
-  {{- end }}
-
-  # disallow kubernetes api access
-  automountServiceAccountToken: false
-
-  volumes:
-    {{- if .Values.volumes }}
-    {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 4 }}
-    {{- end }}
-    {{- include "workdir/volume" . | indent 4 }}
-  initContainers:
-    {{- include "containers/workdir" . | indent 4 }}
-  containers:
-    {{- include "containers/main" . | indent 4 }}
+  {{- include "pod/labels" . | indent 2 }}
+{{- include "pod/spec" . }}
+{{- end }}
 {{- end }}

@@ -1,0 +1,8 @@
+{{- define "pod/labels" }}
+labels:
+  app.kubernetes.io/component: {{ .Values.component }}
+  app.kubernetes.io/part-of: {{ .Values.partOf }}
+  app.kubernetes.io/name: {{ .Values.lunchpail.instanceName }}
+  app.kubernetes.io/instance: {{ .Values.name }}
+  app.kubernetes.io/managed-by: lunchpail.io
+{{- end }}
