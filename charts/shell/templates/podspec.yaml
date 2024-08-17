@@ -1,0 +1,42 @@
+{{- define "pod/spec" }}
+spec:
+  {{- if .Values.lunchpail.runAsJob }}
+  # see
+  # https://stackoverflow.com/questions/54091659/kubernetes-pods-disappear-after-failed-jobs#comment133585091_54165455
+  # "when Restart=Never and backoffLimit>1 then a separately named
+  # pod (different random 5 digit extension) will stay around for
+  # each failure, allowing you to go back and review each"
+  restartPolicy: Never
+  {{- else }}
+  restartPolicy: OnFailure
+  {{- end }}
+
+  terminationGracePeriodSeconds: {{ .Values.lunchpail.terminationGracePeriodSeconds | default 0 }}
+
+  {{- if .Values.rbac.serviceaccount }}
+  serviceAccountName: {{ .Values.rbac.serviceaccount }}
+  {{- end }}
+
+  {{- include "prestop/spec/pod" . | indent 2 }}
+
+  {{- if .Values.securityContext }}
+  securityContext: {{ .Values.securityContext | b64dec | fromYaml | toJson }}
+  {{- end }}
+
+  # disallow kubernetes api access
+  automountServiceAccountToken: false
+
+  volumes:
+    {{- if .Values.volumes }}
+    {{- .Values.volumes | b64dec | fromJsonArray | toYaml | nindent 4 }}
+    {{- end }}
+    {{- include "workdir/volume" . | indent 4 }}
+  initContainers:
+    {{- include "containers/workdir" . | indent 4 }}
+    {{- include "containers/watcher" . | indent 4 }}
+    {{- if .Values.initContainers }}
+    {{- .Values.initContainers | b64dec | fromJsonArray | toYaml | nindent 4 }}
+    {{- end }}
+  containers:
+    {{- include "containers/main" . | indent 4 }}
+{{- end }}

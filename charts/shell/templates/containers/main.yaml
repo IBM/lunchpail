@@ -2,11 +2,23 @@
 - name: main
   image: {{ .Values.image }}
   command:
+    {{- if eq .Values.component "workdispatcher" }}
     {{- include "prestop/command" . | indent 4 }}
+    {{- else }}
+    - /bin/sh
+    - "-c"
+    - |
+      touch /tmp/alive # see readiness probe below
+{{ .Values.command | indent 6 }}
+    {{- end }}
 
   env:
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
+    - name: LUNCHPAIL_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
   {{- if .Values.env }}
     {{ .Values.env | b64dec | fromJsonArray | toYaml | nindent 4 }}
   {{- end }}

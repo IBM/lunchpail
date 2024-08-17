@@ -2,76 +2,49 @@ package workerpool
 
 import (
 	"fmt"
-	"os"
 	"strconv"
-	"strings"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/fe/transformer/api/shell"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
-	comp "lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) (llir.Component, error) {
-	// name of worker pods/deployment = run_name-pool_name
-	releaseName := strings.TrimSuffix(
-		util.Truncate(
-			fmt.Sprintf(
-				"%s-%s",
-				runname,
-				strings.Replace(pool.Metadata.Name, app.Metadata.Name+"-", "", -1),
-			),
-			53,
-		),
-		"-",
-	)
-
-	sizing := api.WorkerpoolSizing(pool, app, opts)
-	volumes, volumeMounts, envFroms, initContainers, dataseterr := api.DatasetsB64(app, queueSpec)
-	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
-	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
-	workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace)
-
-	env := ""
-	if len(app.Spec.Env) > 0 {
-		if menv, err := util.ToJsonEnvB64(app.Spec.Env); err != nil {
-			return llir.Component{}, err
-		} else {
-			env = menv
-		}
-	}
-
-	if codeerr != nil {
-		return llir.Component{}, codeerr
-	} else if dataseterr != nil {
-		return llir.Component{}, dataseterr
-	} else if errsc != nil {
-		return llir.Component{}, errsc
-	} else if errcsc != nil {
-		return llir.Component{}, errcsc
-	}
-
-	templatePath, err := api.Stage(template, templateFile)
-	if err != nil {
-		return llir.Component{}, err
-	}
-
-	if verbose {
-		fmt.Fprintf(os.Stderr, "Workerpool stage %s\n", templatePath)
-	} else {
-		defer os.RemoveAll(templatePath)
-	}
+func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
+	spec.RunAsJob = true
+	spec.Sizing = api.WorkerpoolSizing(pool, app, opts)
+	spec.InstanceName = pool.Metadata.Name
+	spec.QueuePrefixPath = api.QueuePrefixPathForWorker(spec.Queue, runname, pool.Metadata.Name)
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
 	if err != nil {
 		return llir.Component{}, err
 	}
+	if app.Spec.Env == nil {
+		app.Spec.Env = make(map[string]string)
+	}
+	app.Spec.Env["LUNCHPAIL_STARTUP_DELAY"] = strconv.Itoa(startupDelay)
 
-	values := []string{
+	// for now, we don't distinguish the two...
+	debug := verbose
+
+	app.Spec.Command = fmt.Sprintf(`trap "/workdir/lunchpail worker prestop" EXIT
+/workdir/lunchpail worker run --debug=%v -- %s`, debug, app.Spec.Command)
+
+	return shell.LowerAsComponent(
+		compilationName,
+		runname,
+		namespace,
+		app,
+		spec,
+		opts,
+		verbose,
+		lunchpail.WorkersComponent,
+	)
+
+	/*values := []string{
 		"name=" + app.Metadata.Name,
 		"runName=" + runname,
 		"partOf=" + compilationName,
@@ -85,7 +58,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		"workers.memory=" + sizing.Memory,
 		"workers.gpu=" + strconv.Itoa(sizing.Gpu),
 		"lunchpail.poolName=" + pool.Metadata.Name,
-		"taskqueue.prefixPath=" + api.QueuePrefixPathForWorker(queueSpec, runname, pool.Metadata.Name),
+		"taskqueue.prefixPath=" + api.QueuePrefixPathForWorker(spec.Queue, runname, pool.Metadata.Name),
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
 		"envFroms=" + envFroms,
@@ -94,7 +67,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		"startupDelay=" + strconv.Itoa(startupDelay),
 		"mcad.enabled=false",
 		"rbac.runAsRoot=false",
-		"rbac.serviceaccount=" + serviceAccount,
+		"rbac.serviceaccount=" + spec.ServiceAccount,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.cm.data=" + workdirCmData,
@@ -112,5 +85,5 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(releaseName, namespace, templatePath, values, verbose, comp.WorkersComponent)
+	return api.GenerateComponent(releaseName, namespace, templatePath, values, verbose, comp.WorkersComponent)*/
 }

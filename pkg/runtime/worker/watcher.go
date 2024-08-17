@@ -18,7 +18,7 @@ func killfileExists(client queue.S3Client, bucket, prefix string) bool {
 	return client.Exists(bucket, prefix, "kill")
 }
 
-func startWatch(handler []string, client queue.S3Client) error {
+func startWatch(handler []string, client queue.S3Client, debug bool) error {
 	bucket := client.Paths.Bucket
 	prefix := client.Paths.Prefix
 	inbox := client.Paths.Inbox
@@ -27,10 +27,16 @@ func startWatch(handler []string, client queue.S3Client) error {
 	alive := client.Paths.Alive
 	// dead := client.Paths.dead
 
+	if debug {
+		fmt.Fprintf(os.Stderr, "DEBUG Mkdirp bucket=%s\n", bucket)
+	}
 	if err := client.Mkdirp(bucket); err != nil {
 		return err
 	}
 
+	if debug {
+		fmt.Fprintf(os.Stderr, "DEBUG Lunchpail worker touching alive file bucket=%s path=%s\n", bucket, alive)
+	}
 	err := client.Touch(bucket, alive)
 	if err != nil {
 		return err

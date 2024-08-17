@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
@@ -15,7 +14,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	var component lunchpail.Component
 	switch app.Spec.Role {
 	case "worker":
@@ -24,13 +23,16 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, que
 		component = lunchpail.DispatcherComponent
 	}
 
-	return LowerAsComponent(compilationName, runname, namespace, app, queueSpec, serviceAccount, opts, verbose, component)
+	return LowerAsComponent(compilationName, runname, namespace, app, spec, opts, verbose, component)
 }
 
-func LowerAsComponent(compilationName, runname, namespace string, app hlir.Application, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool, component lunchpail.Component) (llir.Component, error) {
+func LowerAsComponent(compilationName, runname, namespace string, app hlir.Application, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool, component lunchpail.Component) (llir.Component, error) {
+	sizing := spec.Sizing
+	if sizing.Workers == 0 {
+		sizing = api.ApplicationSizing(app, opts)
+	}
 
-	sizing := api.ApplicationSizing(app, opts)
-	volumes, volumeMounts, envFroms, _, dataseterr := api.DatasetsB64(app, queueSpec)
+	volumes, volumeMounts, envFroms, initContainers, dataseterr := api.DatasetsB64(app, spec.Queue)
 	securityContext, errsc := util.ToYamlB64(app.Spec.SecurityContext)
 	containerSecurityContext, errcsc := util.ToYamlB64(app.Spec.ContainerSecurityContext)
 	workdirCmData, workdirCmMountPath, codeerr := api.CodeB64(app, namespace)
@@ -69,8 +71,19 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		terminationGracePeriodSeconds = 5
 	}
 
+	queuePrefixPath := spec.QueuePrefixPath
+	if queuePrefixPath == "" {
+		queuePrefixPath = api.QueuePrefixPath(spec.Queue, runname)
+	}
+
+	instanceName := spec.InstanceName
+	if instanceName == "" {
+		instanceName = runname
+	}
+
 	values := []string{
 		"name=" + runname,
+		"lunchpail.instanceName=" + instanceName,
 		"partOf=" + compilationName,
 		"component=" + string(component),
 		"enclosingRun=" + runname,
@@ -83,16 +96,16 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		"workers.gpu=" + strconv.Itoa(sizing.Gpu),
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
+		"initContainers=" + initContainers,
 		"envFroms=" + envFroms,
 		"env=" + env,
-		"taskqueue.prefixPath=" + api.QueuePrefixPath(queueSpec, runname),
-		"mcad.enabled=false",
-		"rbac.runAsRoot=false",
-		"rbac.serviceaccount=" + serviceAccount,
+		"taskqueue.prefixPath=" + queuePrefixPath,
+		"rbac.serviceaccount=" + spec.ServiceAccount,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
+		fmt.Sprintf("lunchpail.runAsJob=%v", spec.RunAsJob),
 		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
 		"lunchpail.image.repo=" + lunchpail.ImageRepo,
 		"lunchpail.image.version=" + lunchpail.Version(),
@@ -107,5 +120,5 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(runname, namespace, templatePath, values, verbose, component)
+	return api.GenerateComponent(instanceName, namespace, templatePath, values, verbose, component)
 }

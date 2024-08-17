@@ -17,6 +17,9 @@ func NewRunCmd() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
+	var debug bool
+	cmd.Flags().BoolVarP(&debug, "debug", "g", false, "Run in debug mode, which will emit extra log information")
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if compilation.IsCompiled() {
 			// TODO: pull out command line and other
@@ -28,7 +31,7 @@ func NewRunCmd() *cobra.Command {
 			return fmt.Errorf("Nothing to run. Specify the worker command line after a --: %v", args)
 		}
 
-		return worker.Run(args, worker.Options{})
+		return worker.Run(args, worker.Options{Debug: debug})
 	}
 
 	return cmd

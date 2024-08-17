@@ -1,0 +1,23 @@
+{{- if .Values.lunchpail.runAsJob }}
+{{- if eq .Values.extract "job" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ print .Release.Name | trunc 53 | trimSuffix "-" }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/component: {{ .Values.component }}
+    app.kubernetes.io/part-of: {{ .Values.partOf }}
+    app.kubernetes.io/name: {{ .Values.lunchpail.instanceName }}
+    app.kubernetes.io/instance: {{ .Values.name }}
+    app.kubernetes.io/managed-by: lunchpail.io
+spec:
+  parallelism: {{ .Values.workers.count }}
+  # ttlSecondsAfterFinished: 10000
+  backoffLimit: 6
+  template:
+    metadata:
+      {{- include "pod/labels" . | indent 6}}
+    {{- include "pod/spec" . | indent 4}}
+{{- end }}
+{{- end }}

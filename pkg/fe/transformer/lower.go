@@ -14,22 +14,24 @@ import (
 
 // HLIR -> LLIR
 func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, serviceAccount string, opts compilation.Options, verbose bool) (llir.LLIR, error) {
-	minio, err := minio.Lower(compilationName, runname, namespace, model, queueSpec, opts, verbose)
+	spec := llir.ApplicationInstanceSpec{Queue: queueSpec, ServiceAccount: serviceAccount}
+
+	minio, err := minio.Lower(compilationName, runname, namespace, model, spec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	apps, err := lowerApplications(compilationName, runname, namespace, model, queueSpec, serviceAccount, opts, verbose)
+	apps, err := lowerApplications(compilationName, runname, namespace, model, spec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := dispatch.Lower(compilationName, runname, namespace, model, queueSpec, opts, verbose)
+	dispatchers, err := dispatch.Lower(compilationName, runname, namespace, model, spec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	pools, err := workerpool.LowerAll(compilationName, runname, namespace, model, queueSpec, serviceAccount, opts, verbose)
+	pools, err := workerpool.LowerAll(compilationName, runname, namespace, model, spec, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}

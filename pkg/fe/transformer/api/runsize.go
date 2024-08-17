@@ -3,29 +3,23 @@ package api
 import (
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 )
 
-type RunSizeConfig struct {
-	Workers int
-	Cpu     string
-	Memory  string
-	Gpu     int
-}
-
-type RunConfigs map[hlir.TShirtSize]RunSizeConfig
+type RunConfigs map[hlir.TShirtSize]llir.RunSizeConfig
 
 var defaultConfig = RunConfigs{
-	hlir.AutoSize: {1, "auto", "auto", 0},
-	hlir.XxsSize:  {1, "500m", "500Mi", 0},
-	hlir.XsSize:   {1, "1", "2Gi", 0},
-	hlir.SmSize:   {2, "1", "4Gi", 0},
-	hlir.MdSize:   {4, "2", "8Gi", 0},
-	hlir.LgSize:   {8, "4", "16Gi", 0},
-	hlir.XlSize:   {20, "4", "32Gi", 0},
-	hlir.XxlSize:  {40, "8", "64Gi", 0},
+	hlir.AutoSize: {Workers: 1, Cpu: "auto", Memory: "auto", Gpu: 0},
+	hlir.XxsSize:  {Workers: 1, Cpu: "500m", Memory: "500Mi", Gpu: 0},
+	hlir.XsSize:   {Workers: 1, Cpu: "1", Memory: "2Gi", Gpu: 0},
+	hlir.SmSize:   {Workers: 2, Cpu: "1", Memory: "4Gi", Gpu: 0},
+	hlir.MdSize:   {Workers: 4, Cpu: "2", Memory: "8Gi", Gpu: 0},
+	hlir.LgSize:   {Workers: 8, Cpu: "4", Memory: "16Gi", Gpu: 0},
+	hlir.XlSize:   {Workers: 20, Cpu: "4", Memory: "32Gi", Gpu: 0},
+	hlir.XxlSize:  {Workers: 40, Cpu: "8", Memory: "64Gi", Gpu: 0},
 }
 
-func ApplicationSizing(app hlir.Application, opts compilation.Options) RunSizeConfig {
+func ApplicationSizing(app hlir.Application, opts compilation.Options) llir.RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
@@ -50,7 +44,7 @@ func ApplicationSizing(app hlir.Application, opts compilation.Options) RunSizeCo
 
 // Applications can specify a minSize... so take the max of that and
 // what the WorkerPool specifies
-func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application, opts compilation.Options) RunSizeConfig {
+func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application, opts compilation.Options) llir.RunSizeConfig {
 	// for now...
 	config := defaultConfig
 
