@@ -14,7 +14,6 @@ type Options struct {
 	OverrideFileValues []string `yaml:"overrideFileValues,omitempty"`
 	Queue              string   `yaml:",omitempty"`
 	HasGpuSupport      bool     `yaml:"hasGpuSupport,omitempty"`
-	DockerHost         string   `yaml:"dockerHost,omitempty"`
 	ApiKey             string   `yaml:"apiKey,omitempty"`
 	ResourceGroupID    string   `yaml:"resourceGroupID,omitempty"`
 	SSHKeyType         string   `yaml:"SSHKeyType,omitempty"`

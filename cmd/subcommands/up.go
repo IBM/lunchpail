@@ -23,8 +23,6 @@ func addCompilationOptions(cmd *cobra.Command) *compilation.Options {
 	cmd.Flags().StringSliceVarP(&options.OverrideValues, "set", "", []string{}, "[Advanced] override specific template values")
 	cmd.Flags().StringSliceVarP(&options.OverrideFileValues, "set-file", "", []string{}, "[Advanced] override specific template values with content from a file")
 
-	cmd.Flags().StringVarP(&options.DockerHost, "docker-host", "d", "", "[Advanced] Hostname/IP address of docker host")
-
 	cmd.Flags().StringVarP(&options.ApiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().StringVarP(&options.ResourceGroupID, "resource-group-id", "", "", "Identifier of a Cloud resource group to contain the instance(s)")
 	//Todo: allow selecting existing ssh key?
@@ -91,8 +89,8 @@ func newUpCmd() *cobra.Command {
 
 		compilationOptions := compilation.Options{Namespace: appOpts.Namespace,
 			ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue,
-			HasGpuSupport: appOpts.HasGpuSupport, DockerHost: appOpts.DockerHost,
-			ApiKey: appOpts.ApiKey, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
+			HasGpuSupport: appOpts.HasGpuSupport,
+			ApiKey:        appOpts.ApiKey, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
 			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID}
 		configureOptions := linker.ConfigureOptions{CompilationOptions: compilationOptions, Verbose: verboseFlag}
 
