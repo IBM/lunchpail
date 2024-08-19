@@ -10,6 +10,7 @@ import (
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/util"
 )
 
 type ConfigureOptions struct {
@@ -80,7 +81,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	if queueSpec.Endpoint == "" {
 		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
-		runnameMax53 := dns1035(runname + "-minio")
+		runnameMax53 := util.Dns1035(runname + "-minio")
 		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, systemNamespace, internalS3Port)
 		queueSpec.AccessKey = "lunchpail"
 		queueSpec.SecretKey = "lunchpail"

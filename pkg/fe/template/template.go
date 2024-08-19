@@ -1,4 +1,4 @@
-package linker
+package template
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 	"github.com/kirsle/configdir"
 	"github.com/mittwald/go-helm-client"
 	"github.com/mittwald/go-helm-client/values"
+
+	"lunchpail.io/pkg/util"
 )
 
 type TemplateOptions struct {
@@ -34,7 +36,7 @@ func client(namespace string, verbose bool) (helmclient.Client, error) {
 }
 
 func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOptions) (string, error) {
-	releaseName = dns1035(releaseName)
+	releaseName = util.Dns1035(releaseName)
 
 	chartSpec := helmclient.ChartSpec{
 		ReleaseName:      releaseName,

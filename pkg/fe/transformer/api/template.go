@@ -9,7 +9,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"lunchpail.io/pkg/fe/linker"
+	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/ir/llir"
 	comp "lunchpail.io/pkg/lunchpail"
 )
@@ -23,7 +23,7 @@ const (
 )
 
 func extract(which which, name comp.Component, runname, namespace, templatePath string, values []string, verbose bool) (string, error) {
-	parts, err := linker.Template(runname+"-"+string(name), namespace, templatePath, "", linker.TemplateOptions{Verbose: verbose, OverrideValues: append(values, "extract="+string(which))})
+	parts, err := template.Template(runname+"-"+string(name), namespace, templatePath, "", template.TemplateOptions{Verbose: verbose, OverrideValues: append(values, "extract="+string(which))})
 	if err != nil {
 		return "", err
 	}
