@@ -57,13 +57,6 @@ func createKindCluster() error {
 	if err := cmd.Run(); err != nil {
 		args := []string{"create", "cluster", "--wait", "10m", "--name", lunchpail.LocalClusterName}
 
-		// allows selectively hacking kind cluster config; e.g. see ./travis/setup.sh
-		if _, err := os.Stat("/tmp/kindhack.yaml"); err == nil {
-			fmt.Println("Hacking kind cluster config")
-			args = append(args, "--config")
-			args = append(args, "/tmp/kindhack.yaml")
-		}
-
 		fmt.Printf("Creating kind cluster %s\n", lunchpail.LocalClusterName)
 
 		cmd := exec.Command("kind", args...)

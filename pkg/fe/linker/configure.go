@@ -9,7 +9,6 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
-	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
@@ -48,18 +47,12 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		if opts.CompilationOptions.HasGpuSupport == false {
 			opts.CompilationOptions.HasGpuSupport = shrinkwrappedOptions.HasGpuSupport
 		}
-		if opts.CompilationOptions.DockerHost == "" {
-			opts.CompilationOptions.DockerHost = shrinkwrappedOptions.DockerHost
-		}
 		if !opts.CompilationOptions.CreateNamespace {
 			opts.CompilationOptions.CreateNamespace = shrinkwrappedOptions.CreateNamespace
 		}
 	}
 
 	systemNamespace := namespace
-
-	imageRegistry := lunchpail.ImageRegistry
-	imageRepo := lunchpail.ImageRepo
 
 	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
 	if err != nil {
@@ -102,26 +95,16 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	yaml := fmt.Sprintf(`
 global:
-  dockerHost: %s # dockerHost (1)
   jaas:
     ips: %s # imagePullSecretName (3)
     dockerconfigjson: %s # dockerconfigjson (4)
     namespace:
       name: %v # systemNamespace (5)
       create: %v # opts.CreateNamespace (6)
-    context:
-      name: ""
-lunchpail: lunchpail
 username: %s # user.Username (10)
 uid: %s # user.Uid (11)
-mcad:
-  enabled: false
 rbac:
   serviceaccount: %s # serviceAccount (12)
-image:
-  registry: %s # imageRegistry (13)
-  repo: %s # imageRepo (14)
-  version: %v # lunchpail.Version() (15)
 partOf: %s # partOf (16)
 taskqueue:
   auto: %v # queueSpec.Auto (17)
@@ -133,40 +116,24 @@ taskqueue:
 name: %s # runname (23)
 namespace:
   user: %s # namespace (24)
-tags:
-  gpu: %v # hasGpuSupport (25)
-s3:
-  enabled: %v # queueSpec.Auto (26)
-  port: %d # internalS3Port (27)
-lunchpail_internal:
-  workstealer:
-    sleep_before_exit: %s # sleepBeforeExit (28)
 `,
-		opts.CompilationOptions.DockerHost,      // (1)
 		imagePullSecretName,                     // (3)
 		dockerconfigjson,                        // (4)
 		systemNamespace,                         // (5)
 		opts.CompilationOptions.CreateNamespace, // (6)
 
-		user.Username,                            // (10)
-		user.Uid,                                 // (11)
-		serviceAccount,                           // (12)
-		imageRegistry,                            // (13)
-		imageRepo,                                // (14)
-		lunchpail.Version(),                      // (15)
-		partOf,                                   // (16)
-		queueSpec.Auto,                           // (17)
-		queueSpec.Name,                           // (18)
-		queueSpec.Endpoint,                       // (19)
-		queueSpec.Bucket,                         // (20)
-		queueSpec.AccessKey,                      // (21)
-		queueSpec.SecretKey,                      // (22)
-		runname,                                  // (23)
-		namespace,                                // (24)
-		opts.CompilationOptions.HasGpuSupport,    // (25)
-		queueSpec.Auto,                           // (26)
-		internalS3Port,                           // (27)
-		os.Getenv("LUNCHPAIL_SLEEP_BEFORE_EXIT"), // (28)
+		user.Username,       // (10)
+		user.Uid,            // (11)
+		serviceAccount,      // (12)
+		partOf,              // (16)
+		queueSpec.Auto,      // (17)
+		queueSpec.Name,      // (18)
+		queueSpec.Endpoint,  // (19)
+		queueSpec.Bucket,    // (20)
+		queueSpec.AccessKey, // (21)
+		queueSpec.SecretKey, // (22)
+		runname,             // (23)
+		namespace,           // (24)
 	)
 
 	if opts.Verbose {

@@ -35,9 +35,6 @@ jobs:
     #  with:
     #    install_only: true
 
-    - name: Setup
-      run: ./tests/bin/travis/setup.sh
-
     - name: Check Docker
       run: docker version && podman version
 
