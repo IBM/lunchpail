@@ -2,7 +2,7 @@ package template
 
 import "embed"
 
-//go:generate /bin/sh -c "[ ! -e ./chart.tar.gz ] || [ ./chart -nt ./chart.tar.gz ] && tar --exclude '*~' --exclude '*README.md' -C ./chart -zcf chart.tar.gz . || exit 0"
+//go:generate /bin/sh -c "[ ! -e ./chart.tar.gz ] || [ ./chart/templates -nt ./chart.tar.gz ] && tar --exclude '*~' --exclude '*README.md' -C ./chart -zcf chart.tar.gz . || exit 0"
 //go:embed chart.tar.gz
 var appTemplate embed.FS
 
