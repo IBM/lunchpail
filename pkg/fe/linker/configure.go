@@ -18,14 +18,14 @@ type ConfigureOptions struct {
 	Verbose            bool
 }
 
-func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, queue.Spec, string, error) {
+func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
 	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, "", err
+		return "", nil, nil, queue.Spec{}, err
 	} else {
 		if opts.CompilationOptions.Namespace == "" {
 			opts.CompilationOptions.Namespace = shrinkwrappedOptions.Namespace
@@ -57,17 +57,17 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, "", err
+		return "", nil, nil, queue.Spec{}, err
 	}
 
 	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.CompilationOptions.ImagePullSecret)
 	if ipsErr != nil {
-		return "", nil, nil, queue.Spec{}, "", ipsErr
+		return "", nil, nil, queue.Spec{}, ipsErr
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, "", err
+		return "", nil, nil, queue.Spec{}, err
 	}
 
 	// the app.kubernetes.io/part-of label value
@@ -86,7 +86,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 
 	backendValues, err := backend.Values()
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, "", err
+		return "", nil, nil, queue.Spec{}, err
 	}
 
 	serviceAccount := runname
@@ -149,5 +149,5 @@ partOf: %s # partOf (16)
 	overrides := slices.Concat(opts.CompilationOptions.OverrideValues, backendValues.Kv)
 	fileOverrides := opts.CompilationOptions.OverrideFileValues // Note: no backend value support here
 
-	return yaml, overrides, fileOverrides, queueSpec, serviceAccount, nil
+	return yaml, overrides, fileOverrides, queueSpec, nil
 }

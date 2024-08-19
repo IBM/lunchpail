@@ -23,4 +23,5 @@ spec:
 
   command: ./literal.sh
   env:
+    USER: {{ .Values.lunchpail.user.namey }}
     WORK_TIME: {{ .Values.duration | default 5 | quote }}
