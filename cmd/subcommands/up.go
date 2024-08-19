@@ -91,7 +91,7 @@ func newUpCmd() *cobra.Command {
 			ImagePullSecret: appOpts.ImagePullSecret, OverrideValues: overrideValues, Queue: appOpts.Queue,
 			HasGpuSupport: appOpts.HasGpuSupport,
 			ApiKey:        appOpts.ApiKey, ResourceGroupID: appOpts.ResourceGroupID, SSHKeyType: appOpts.SSHKeyType, PublicSSHKey: appOpts.PublicSSHKey,
-			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID}
+			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID, CreateNamespace: appOpts.CreateNamespace}
 		configureOptions := linker.ConfigureOptions{CompilationOptions: compilationOptions, Verbose: verboseFlag}
 
 		backend, err := be.New(tgtOpts.TargetPlatform, compilationOptions)
