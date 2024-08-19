@@ -5,10 +5,21 @@ import (
 )
 
 type ApplicationInstanceSpec struct {
-	RunAsJob        bool
-	InstanceName    string
+	// Use a Job-style (versus Pod-style) of deployment?
+	RunAsJob bool
+
+	// Defaults to run name
+	InstanceName string
+
+	// Details of how to reach the queue endpoint
+	Queue queue.Spec
+
+	// Where runners of this instance should pick up or dispatch queue data
 	QueuePrefixPath string
-	ServiceAccount  string
-	Sizing          RunSizeConfig
-	Queue           queue.Spec
+
+	// Kubernetes-specific
+	ServiceAccount string
+
+	// Sizing of this instance
+	Sizing RunSizeConfig
 }
