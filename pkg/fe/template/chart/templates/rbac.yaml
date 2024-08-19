@@ -1,11 +1,11 @@
-{{- if .Values.rbac.serviceaccount }}
+{{- if .Values.lunchpail.rbac.serviceaccount }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .Values.rbac.serviceaccount }}
-  namespace: {{ .Values.namespace.user }}
-{{- if .Values.global.jaas.ips }}
+  name: {{ .Values.lunchpail.rbac.serviceaccount }}
+  namespace: {{ .Release.Namespace }}
+{{- if .Values.lunchpail.ips.name }}
 imagePullSecrets:
-  - name: {{ .Values.global.jaas.ips }}
+  - name: {{ .Values.lunchpail.ips.name }}
 {{- end }}
 {{- end }}

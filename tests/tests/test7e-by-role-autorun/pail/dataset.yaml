@@ -8,8 +8,8 @@ spec:
   local:
     type: "COS"
     bucket: test7e-by-role-autorun
-    endpoint: {{ .Values.taskqueue.endpoint }}
+    endpoint: {{ .Values.lunchpail.taskqueue.endpoint }}
     secret-name: test7edata-cfsecret
-    secret-namespace: {{ .Values.namespace.user }}
+    secret-namespace: {{ .Release.Namespace }}
     #readonly: "true" # default is false
     provision: "true"

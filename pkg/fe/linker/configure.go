@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
@@ -94,46 +95,48 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	}
 
 	yaml := fmt.Sprintf(`
-global:
-  jaas:
-    ips: %s # imagePullSecretName (3)
+lunchpail:
+  ips:
+    name: %s # imagePullSecretName (3)
     dockerconfigjson: %s # dockerconfigjson (4)
-    namespace:
-      name: %v # systemNamespace (5)
-      create: %v # opts.CreateNamespace (6)
-username: %s # user.Username (10)
-uid: %s # user.Uid (11)
-rbac:
-  serviceaccount: %s # serviceAccount (12)
-partOf: %s # partOf (16)
-taskqueue:
-  auto: %v # queueSpec.Auto (17)
-  dataset: %s # queueSpec.Name (18)
-  endpoint: %s # queueSpec.Endpoint (19)
-  bucket: %s # queueSpec.Bucket (20)
-  accessKey: %s # queueSpec.AccessKey (21)
-  secretKey: %s # queueSpec.SecretKey (22)
+  namespace:
+    create: %v # opts.CreateNamespace (5)
+  rbac:
+    serviceaccount: %s # serviceAccount (6)
+  taskqueue:
+    auto: %v # queueSpec.Auto (17)
+    dataset: %s # queueSpec.Name (18)
+    endpoint: %s # queueSpec.Endpoint (19)
+    bucket: %s # queueSpec.Bucket (20)
+    accessKey: %s # queueSpec.AccessKey (21)
+    secretKey: %s # queueSpec.SecretKey (22)
+  user:
+    name: %s # user.Username (10)
+    uid: %s # user.Uid (11)
+  image:
+    registry: %s # (12)
+    repo: %s # (13)
+    version: %s # (14)
 name: %s # runname (23)
-namespace:
-  user: %s # namespace (24)
+partOf: %s # partOf (16)
 `,
 		imagePullSecretName,                     // (3)
 		dockerconfigjson,                        // (4)
-		systemNamespace,                         // (5)
-		opts.CompilationOptions.CreateNamespace, // (6)
-
-		user.Username,       // (10)
-		user.Uid,            // (11)
-		serviceAccount,      // (12)
-		partOf,              // (16)
-		queueSpec.Auto,      // (17)
-		queueSpec.Name,      // (18)
-		queueSpec.Endpoint,  // (19)
-		queueSpec.Bucket,    // (20)
-		queueSpec.AccessKey, // (21)
-		queueSpec.SecretKey, // (22)
-		runname,             // (23)
-		namespace,           // (24)
+		opts.CompilationOptions.CreateNamespace, // (5)
+		serviceAccount,                          // (6)
+		queueSpec.Auto,                          // (17)
+		queueSpec.Name,                          // (18)
+		queueSpec.Endpoint,                      // (19)
+		queueSpec.Bucket,                        // (20)
+		queueSpec.AccessKey,                     // (21)
+		queueSpec.SecretKey,                     // (22)
+		user.Username,                           // (10)
+		user.Uid,                                // (11)
+		lunchpail.ImageRegistry,                 // (12)
+		lunchpail.ImageRepo,                     // (13)
+		lunchpail.Version(),                     // (14)
+		runname,                                 // (23)
+		partOf,                                  // (16)
 	)
 
 	if opts.Verbose {

@@ -1,10 +1,10 @@
-{{- if .Values.global.jaas.namespace.create }}
+{{- if .Values.lunchpail.namespace.create }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.global.jaas.namespace.name }}
+  name: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Values.global.jaas.namespace.name }}
+    app.kubernetes.io/name: {{ .Values.lunchpail.namespace.name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/part-of: jaas
 {{- end }}
