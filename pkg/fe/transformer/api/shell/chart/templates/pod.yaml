@@ -4,7 +4,6 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ .Release.Name }}
-  namespace: {{ .Values.namespace }}
   {{- include "pod/labels" . | indent 2 }}
 {{- include "pod/spec" . }}
 {{- end }}

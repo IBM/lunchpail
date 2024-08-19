@@ -82,13 +82,10 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 	}
 
 	values := []string{
-		"name=" + runname,
 		"lunchpail.instanceName=" + instanceName,
-		"partOf=" + compilationName,
 		"component=" + string(component),
 		"enclosingRun=" + runname,
 		"image=" + app.Spec.Image,
-		"namespace=" + namespace,
 		"command=" + app.Spec.Command,
 		"workers.count=" + strconv.Itoa(sizing.Workers),
 		"workers.cpu=" + sizing.Cpu,
@@ -100,15 +97,11 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		"envFroms=" + envFroms,
 		"env=" + env,
 		"taskqueue.prefixPath=" + queuePrefixPath,
-		"lunchpail.rbac.serviceaccount=" + spec.ServiceAccount,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 		fmt.Sprintf("lunchpail.runAsJob=%v", spec.RunAsJob),
-		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
-		"lunchpail.image.repo=" + lunchpail.ImageRepo,
-		"lunchpail.image.version=" + lunchpail.Version(),
 		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),
 	}
 
@@ -120,5 +113,5 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	return api.GenerateComponent(instanceName, namespace, templatePath, values, verbose, component)
+	return api.GenerateComponent(instanceName, namespace, templatePath, spec.Values.Yaml, values, verbose, component)
 }
