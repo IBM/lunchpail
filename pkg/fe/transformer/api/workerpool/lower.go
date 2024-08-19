@@ -43,47 +43,4 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		verbose,
 		lunchpail.WorkersComponent,
 	)
-
-	/*values := []string{
-		"name=" + app.Metadata.Name,
-		"runName=" + runname,
-		"partOf=" + compilationName,
-		"component=workerpool",
-		"enclosingRun=" + runname,
-		"image=" + app.Spec.Image,
-		"namespace=" + namespace,
-		"command=" + app.Spec.Command,
-		"workers.count=" + strconv.Itoa(sizing.Workers),
-		"workers.cpu=" + sizing.Cpu,
-		"workers.memory=" + sizing.Memory,
-		"workers.gpu=" + strconv.Itoa(sizing.Gpu),
-		"lunchpail.poolName=" + pool.Metadata.Name,
-		"taskqueue.prefixPath=" + api.QueuePrefixPathForWorker(spec.Queue, runname, pool.Metadata.Name),
-		"volumes=" + volumes,
-		"volumeMounts=" + volumeMounts,
-		"envFroms=" + envFroms,
-		"initContainers=" + initContainers,
-		"env=" + env,
-		"startupDelay=" + strconv.Itoa(startupDelay),
-		"mcad.enabled=false",
-		"rbac.runAsRoot=false",
-		"rbac.serviceaccount=" + spec.ServiceAccount,
-		"securityContext=" + securityContext,
-		"containerSecurityContext=" + containerSecurityContext,
-		"workdir.cm.data=" + workdirCmData,
-		"workdir.cm.mount_path=" + workdirCmMountPath,
-		"watcher.image.registry=" + lunchpail.ImageRegistry,
-		"watcher.image.repo=" + lunchpail.ImageRepo,
-		"watcher.image.version=" + lunchpail.Version(),
-	}
-
-	if len(app.Spec.Expose) > 0 {
-		values = append(values, "expose="+util.ToPortArray(app.Spec.Expose))
-	}
-
-	if verbose {
-		fmt.Fprintf(os.Stderr, "WorkerPool values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
-	}
-
-	return api.GenerateComponent(releaseName, namespace, templatePath, values, verbose, comp.WorkersComponent)*/
 }
