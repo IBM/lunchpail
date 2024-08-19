@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
@@ -97,8 +96,6 @@ func extractPods(name comp.Component, runname, namespace, templatePath string, v
 }
 
 func GenerateComponent(runname, namespace, templatePath string, values []string, verbose bool, name comp.Component) (llir.Component, error) {
-	defer os.RemoveAll(templatePath)
-
 	config, err := extract("config", name, runname, namespace, templatePath, values, verbose)
 	if err != nil {
 		return llir.Component{}, err
