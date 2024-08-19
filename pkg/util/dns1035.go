@@ -1,11 +1,11 @@
-package linker
+package util
 
 import (
 	"regexp"
 	"strings"
 )
 
-func dns1035(name string) string {
+func Dns1035(name string) string {
 	if len(name) > 53 {
 		name = name[len(name)-53:]
 		if strings.HasSuffix(name, "-") {

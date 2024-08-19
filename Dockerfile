@@ -11,7 +11,6 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
 
 COPY cmd cmd
 COPY pkg pkg
-COPY charts charts
 
 # build the CLI
 FROM base as builder

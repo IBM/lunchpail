@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/util"
 )
 
@@ -27,25 +27,6 @@ func stageLunchpail() (string, error) {
 	} else {
 		return dir, nil
 	}
-}
-
-func moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string, verbose bool) error {
-	tarball := filepath.Join(lunchpailStageDir, "pkg/fe/compiler", "charts.tar.gz")
-	verboseFlag := ""
-	if verbose {
-		verboseFlag = "-v"
-		fmt.Fprintf(os.Stderr, "Transferring staged app template to final stage %s\n", tarball)
-	}
-
-	cmd := exec.Command("tar", verboseFlag, "-zcf", tarball, "-C", appTemplatePath, ".")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func Compile(sourcePath string, opts Options) error {
@@ -83,7 +64,7 @@ func Compile(sourcePath string, opts Options) error {
 		return err
 	} else if err := compilation.SaveOptions(appTemplatePath, opts.CompilationOptions); err != nil {
 		return err
-	} else if err := moveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
+	} else if err := template.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
 	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, lunchpailStageDir); err != nil {
 		return err

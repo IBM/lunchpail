@@ -2,7 +2,7 @@ package info
 
 import (
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/compiler"
+	"lunchpail.io/pkg/fe/template"
 )
 
 type Info struct {
@@ -14,7 +14,7 @@ type Info struct {
 }
 
 func Model() (Info, error) {
-	templatePath, err := compiler.StageTemplate()
+	templatePath, err := template.Stage()
 	if err != nil {
 		return Info{}, err
 	}

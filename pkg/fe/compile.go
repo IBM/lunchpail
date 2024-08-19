@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/fe/compiler"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/parser"
+	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/fe/transformer"
 	"lunchpail.io/pkg/ir"
 )
@@ -53,7 +54,7 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 	}
 
 	defer os.RemoveAll(templatePath)
-	if yaml, err := linker.Template(runname, namespace, templatePath, yamlValues, linker.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: opts.Verbose}); err != nil {
+	if yaml, err := template.Template(runname, namespace, templatePath, yamlValues, template.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: opts.Verbose}); err != nil {
 		return ir.Linked{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return ir.Linked{}, err

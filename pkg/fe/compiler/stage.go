@@ -3,7 +3,6 @@ package compiler
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,18 +10,9 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/util"
 )
-
-func StageTemplate() (string, error) {
-	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
-		return "", err
-	} else if err := util.Expand(dir, appTemplate, "charts.tar.gz"); err != nil {
-		return "", err
-	} else {
-		return dir, nil
-	}
-}
 
 func Appdir(templatePath string) string {
 	return filepath.Join(templatePath, "templates/__embededapp__")
@@ -169,7 +159,7 @@ type StageOptions struct {
 func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
 	appVersion := compilation.AppVersion()
 
-	templatePath, err := StageTemplate()
+	templatePath, err := template.Stage()
 	if err != nil {
 		return "", "", err
 	}
