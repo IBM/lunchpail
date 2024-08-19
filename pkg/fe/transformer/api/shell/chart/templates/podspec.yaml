@@ -13,8 +13,8 @@ spec:
 
   terminationGracePeriodSeconds: {{ .Values.lunchpail.terminationGracePeriodSeconds | default 0 }}
 
-  {{- if .Values.rbac.serviceaccount }}
-  serviceAccountName: {{ .Values.rbac.serviceaccount }}
+  {{- if .Values.lunchpail.rbac.serviceaccount }}
+  serviceAccountName: {{ .Values.lunchpail.rbac.serviceaccount }}
   {{- end }}
 
   {{- include "prestop/spec/pod" . | indent 2 }}

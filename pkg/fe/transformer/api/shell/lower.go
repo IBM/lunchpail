@@ -100,7 +100,7 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 		"envFroms=" + envFroms,
 		"env=" + env,
 		"taskqueue.prefixPath=" + queuePrefixPath,
-		"rbac.serviceaccount=" + spec.ServiceAccount,
+		"lunchpail.rbac.serviceaccount=" + spec.ServiceAccount,
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"workdir.cm.data=" + workdirCmData,

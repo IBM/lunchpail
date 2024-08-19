@@ -2,7 +2,6 @@ apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
   name: test0b
-  namespace: {{ .Values.namespace.user }}
 spec:
   image: ubuntu
   repo: https://github.com/does/not/exist/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx # expect failure
