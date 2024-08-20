@@ -1,29 +1,41 @@
 package llir
 
-import (
-	"lunchpail.io/pkg/fe/linker/queue"
-)
+import "lunchpail.io/pkg/lunchpail"
 
-type Values struct {
-	Yaml string
-}
+type ShellComponent struct {
+	// Which lunchpail component is this part of
+	lunchpail.Component
 
-type ShellSpec struct {
 	// Use a Job-style (versus Pod-style) of deployment?
 	RunAsJob bool
 
 	// Defaults to run name
 	InstanceName string
 
-	// Details of how to reach the queue endpoint
-	Queue queue.Spec
+	// DashDashSet Values (temporarily here)
+	Values []string
+
+	// Environment variables
+	Env map[string]string
 
 	// Where runners of this instance should pick up or dispatch queue data
 	QueuePrefixPath string
 
-	// Template values
-	Values
-
 	// Sizing of this instance
 	Sizing RunSizeConfig
+}
+
+// part of llir.Component interface
+func (c ShellComponent) C() lunchpail.Component {
+	return c.Component
+}
+
+// part of llir.Component interface
+func (c ShellComponent) Workers() int {
+	return c.Sizing.Workers
+}
+
+func (c ShellComponent) SetWorkers(w int) Component {
+	c.Sizing.Workers = w
+	return c // FIXME
 }

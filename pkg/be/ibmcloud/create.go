@@ -13,6 +13,7 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 	comp "lunchpail.io/pkg/lunchpail"
@@ -37,7 +38,7 @@ const (
 	IPv6Maxlen = 39
 )
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, verbose bool) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{
@@ -48,7 +49,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.C
 		}},
 	}
 
-	appYamlString, err := ir.MarshalComponentArray(c)
+	appYamlString, err := kubernetes.MarshalComponentArray(ir, c, verbose)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshall yaml: %v", err)
 	}
@@ -253,7 +254,7 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (st
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string) error {
+func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, verbose bool) error {
 	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, resourceGroupID)
 	if err != nil {
@@ -293,9 +294,9 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 	for _, c := range ir.Components {
 		group.Go(func() error {
-			suff := "-" + string(c.Name)
-			if c.Name == comp.DispatcherComponent || c.Name == comp.WorkStealerComponent {
-				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
+			suff := "-" + string(c.C())
+			if c.C() == comp.DispatcherComponent || c.C() == comp.WorkStealerComponent {
+				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, verbose)
 				if err != nil {
 					return err
 				}
@@ -315,26 +316,21 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 				if err != nil {
 					return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
 				}
-			} else if c.Name == comp.WorkersComponent {
-				workerCount := int32(0)
-				for _, j := range c.Jobs {
-					workerCount = workerCount + *j.Spec.Parallelism
-				}
+			} else if c.C() == comp.WorkersComponent {
+				workerCount := c.Workers()
 
 				//Compute number of VSIs to be provisioned and job parallelism for each VSI
-				parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, workerCount)
+				parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, int32(workerCount))
 				if err != nil {
 					return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
 				}
-				for _, j := range c.Jobs {
-					*j.Spec.Parallelism = int32(parallelism)
-				}
+				c = c.SetWorkers(int(parallelism))
 
 				for i := 1; i <= numInstances; i++ {
 					if numInstances > 1 {
 						suff = "-" + strconv.Itoa(i)
 					}
-					instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID)
+					instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, verbose)
 					if err != nil {
 						return err
 					}
@@ -374,7 +370,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runname string, action Action) error {
+func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runname string, action Action, verbose bool) error {
 	if action == Stop || action == Delete {
 		if err := stopOrDeleteVM(backend.vpcService, runname, backend.config.ResourceGroup.GUID, action == Delete); err != nil {
 			return err
@@ -388,7 +384,7 @@ func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runnam
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, aopts.Profile, aopts.ImageID); err != nil {
+		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, aopts.Profile, aopts.ImageID, verbose); err != nil {
 			return err
 		}
 	}

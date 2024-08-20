@@ -24,7 +24,6 @@ workingDir: /workdir
 {{- end }}
 {{- end }}
 
-{{- if eq .Values.extract "config" }}
 {{- if .Values.workdir.cm.data }}
 apiVersion: v1
 kind: ConfigMap
@@ -39,5 +38,4 @@ metadata:
     app.kubernetes.io/managed-by: lunchpail.io
 data:
 {{- .Values.workdir.cm.data | b64dec | fromJson | toYaml | nindent 2 }}
-{{- end }}
 {{- end }}

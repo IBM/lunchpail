@@ -2,8 +2,8 @@ package kubernetes
 
 import "lunchpail.io/pkg/ir"
 
-func (backend Backend) Up(linked ir.Linked) error {
-	if err := ApplyOperation(linked.Ir, linked.Namespace, "", ApplyIt); err != nil {
+func (backend Backend) Up(linked ir.Linked, verbose bool) error {
+	if err := applyOperation(linked.Ir, linked.Namespace, "", ApplyIt, verbose); err != nil {
 		return err
 	}
 

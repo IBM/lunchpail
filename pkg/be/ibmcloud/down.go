@@ -2,8 +2,8 @@ package ibmcloud
 
 import "lunchpail.io/pkg/ir"
 
-func (backend Backend) Down(linked ir.Linked) error {
-	if err := backend.SetAction(linked.Options, linked.Ir, linked.Runname, Delete); err != nil {
+func (backend Backend) Down(linked ir.Linked, verbose bool) error {
+	if err := backend.SetAction(linked.Options, linked.Ir, linked.Runname, Delete, verbose); err != nil {
 		return err
 	}
 

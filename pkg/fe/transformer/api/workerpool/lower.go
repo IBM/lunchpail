@@ -12,15 +12,17 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, spec llir.ShellSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
+
 	spec.RunAsJob = true
 	spec.Sizing = api.WorkerpoolSizing(pool, app, opts)
 	spec.InstanceName = pool.Metadata.Name
-	spec.QueuePrefixPath = api.QueuePrefixPathForWorker(spec.Queue, runname, pool.Metadata.Name)
+	spec.QueuePrefixPath = api.QueuePrefixPathForWorker(ir.Queue, runname, pool.Metadata.Name)
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
 	if err != nil {
-		return llir.Component{}, err
+		return nil, err
 	}
 	if app.Spec.Env == nil {
 		app.Spec.Env = make(map[string]string)
@@ -38,9 +40,9 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 		runname,
 		namespace,
 		app,
+		ir,
 		spec,
 		opts,
 		verbose,
-		lunchpail.WorkersComponent,
 	)
 }
