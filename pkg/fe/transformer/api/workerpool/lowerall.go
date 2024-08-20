@@ -9,7 +9,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.WorkerPool
-func LowerAll(compilationName, runname, namespace string, model hlir.AppModel, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool) ([]llir.Component, error) {
+func LowerAll(compilationName, runname, namespace string, model hlir.AppModel, spec llir.ShellSpec, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	app, found := model.GetApplicationByRole(hlir.WorkerRole)

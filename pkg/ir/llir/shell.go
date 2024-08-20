@@ -8,7 +8,7 @@ type Values struct {
 	Yaml string
 }
 
-type ApplicationInstanceSpec struct {
+type ShellSpec struct {
 	// Use a Job-style (versus Pod-style) of deployment?
 	RunAsJob bool
 
