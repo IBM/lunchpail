@@ -1,4 +1,3 @@
-{{- if eq .Values.extract "config" }}
 {{- if .Values.expose }}
 apiVersion: v1
 kind: Service
@@ -16,5 +15,4 @@ spec:
   selector:
     {{- include "labels" $ | indent 4 }}
   {{- end }}
-{{- end }}
 {{- end }}

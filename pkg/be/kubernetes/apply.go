@@ -60,8 +60,8 @@ func apply(yaml, namespace, context string, operation Operation) error {
 	return cmd.Run()
 }
 
-func ApplyOperation(ir llir.LLIR, namespace, context string, operation Operation) error {
-	yamls, err := ir.MarshalArray()
+func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, verbose bool) error {
+	yamls, err := MarshalArray(ir, verbose)
 	if err != nil {
 		return err
 	}
@@ -78,12 +78,4 @@ func ApplyOperation(ir llir.LLIR, namespace, context string, operation Operation
 		}
 	}
 	return nil
-}
-
-func Apply(ir llir.LLIR, namespace, context string) error {
-	return ApplyOperation(ir, namespace, context, ApplyIt)
-}
-
-func Delete(yaml, namespace, context string) error {
-	return apply(yaml, namespace, context, DeleteIt)
 }

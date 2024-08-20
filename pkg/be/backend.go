@@ -19,10 +19,10 @@ type Backend interface {
 	Values() (platform.Values, error)
 
 	// Bring up the linked application
-	Up(linked ir.Linked) error
+	Up(linked ir.Linked, verbose bool) error
 
 	// Bring down the linked application
-	Down(linked ir.Linked) error
+	Down(linked ir.Linked, verbose bool) error
 
 	// Delete namespace
 	DeleteNamespace(compilationName, namespace string) error

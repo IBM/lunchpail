@@ -2,8 +2,8 @@ package kubernetes
 
 import "lunchpail.io/pkg/ir"
 
-func (backend Backend) Down(linked ir.Linked) error {
-	if err := ApplyOperation(linked.Ir, linked.Namespace, "", DeleteIt); err != nil {
+func (backend Backend) Down(linked ir.Linked, verbose bool) error {
+	if err := applyOperation(linked.Ir, linked.Namespace, "", DeleteIt, verbose); err != nil {
 		return err
 	}
 

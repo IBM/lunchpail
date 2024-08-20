@@ -1,5 +1,4 @@
 {{- if .Values.lunchpail.runAsJob }}
-{{- if eq .Values.extract "job" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -18,5 +17,4 @@ spec:
     metadata:
       {{- include "pod/labels" . | indent 6}}
     {{- include "pod/spec" . | indent 4}}
-{{- end }}
 {{- end }}

@@ -9,7 +9,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(compilationName, runname, namespace string, model hlir.AppModel, spec llir.ShellSpec, opts compilation.Options, verbose bool) ([]llir.Component, error) {
+func lowerApplications(compilationName, runname, namespace string, model hlir.AppModel, spec llir.LLIR, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	for _, r := range model.Applications {

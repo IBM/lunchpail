@@ -5,20 +5,22 @@ import (
 	"lunchpail.io/pkg/fe/transformer/api/shell"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects, spec llir.ShellSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
 	app, err := transpile(s3)
 	if err != nil {
-		return llir.Component{}, err
+		return nil, err
 	}
 
-	return shell.Lower(
+	return shell.LowerAsComponent(
 		compilationName,
 		runname,
 		namespace,
 		app,
-		spec,
+		ir,
+		llir.ShellComponent{Component: lunchpail.DispatcherComponent},
 		opts,
 		verbose,
 	)

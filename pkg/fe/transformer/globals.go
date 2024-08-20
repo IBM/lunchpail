@@ -3,7 +3,7 @@ package transformer
 import (
 	"gopkg.in/yaml.v3"
 	"lunchpail.io/pkg/ir/hlir"
-	"lunchpail.io/pkg/ir/llir"
+	util "lunchpail.io/pkg/util/yaml"
 )
 
 // HLIR -> LLIR for non-lunchpail resources
@@ -40,5 +40,5 @@ func lowerGlobals(compilationName, runname string, model hlir.AppModel) (string,
 		components = append(components, string(yaml))
 	}
 
-	return llir.Join(components), nil
+	return util.Join(components), nil
 }
