@@ -4,12 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}
-  labels:
-    app.kubernetes.io/component: {{ .Values.component }}
-    app.kubernetes.io/part-of: {{ .Values.partOf }}
-    app.kubernetes.io/name: {{ .Values.name }}
-    app.kubernetes.io/instance: {{ .Values.enclosingRun }}
-    app.kubernetes.io/managed-by: lunchpail.io
+  {{- include "pod/labels" . | indent 2 }}
 spec:
   ports:
   {{- range $port := .Values.expose }}
@@ -19,10 +14,7 @@ spec:
     targetPort: {{ index $parts 1 }}
     protocol: TCP
   selector:
-    app.kubernetes.io/component: {{ $.Values.component }}
-    app.kubernetes.io/part-of: {{ $.Values.partOf }}
-    app.kubernetes.io/name: {{ $.Values.name }}
-    app.kubernetes.io/instance: {{ $.Values.enclosingRun }}
+    {{- include "labels" $ | indent 4 }}
   {{- end }}
 {{- end }}
 {{- end }}
