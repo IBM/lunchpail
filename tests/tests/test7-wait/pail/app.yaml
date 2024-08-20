@@ -20,8 +20,13 @@ spec:
         N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
 
         echo "Processing $N $(basename $in)"
-        sleep 5
 
+        if [ $(basename $in) = "task.3.txt" ]
+          then
+            echo "Error!" 1>&2
+            exit 64
+        fi
+        
         echo "Done with $(basename $in)"
 
   command: ./main.sh
