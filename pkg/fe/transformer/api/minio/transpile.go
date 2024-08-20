@@ -12,7 +12,7 @@ import (
 )
 
 // Transpile minio to hlir.Application
-func transpile(runname string, spec llir.ApplicationInstanceSpec) (hlir.Application, error) {
+func transpile(runname string, spec llir.ShellSpec) (hlir.Application, error) {
 	app := hlir.NewApplication(runname + "-minio")
 
 	app.Spec.Image = "docker.io/minio/minio:RELEASE.2024-07-04T14-25-45Z"

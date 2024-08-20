@@ -14,7 +14,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, spec llir.ShellSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	var component lunchpail.Component
 	switch app.Spec.Role {
 	case "worker":
@@ -26,7 +26,7 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, spe
 	return LowerAsComponent(compilationName, runname, namespace, app, spec, opts, verbose, component)
 }
 
-func LowerAsComponent(compilationName, runname, namespace string, app hlir.Application, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool, component lunchpail.Component) (llir.Component, error) {
+func LowerAsComponent(compilationName, runname, namespace string, app hlir.Application, spec llir.ShellSpec, opts compilation.Options, verbose bool, component lunchpail.Component) (llir.Component, error) {
 	sizing := spec.Sizing
 	if sizing.Workers == 0 {
 		sizing = api.ApplicationSizing(app, opts)

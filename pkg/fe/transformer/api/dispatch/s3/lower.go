@@ -7,7 +7,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects, spec llir.ShellSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	app, err := transpile(s3)
 	if err != nil {
 		return llir.Component{}, err

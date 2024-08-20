@@ -12,7 +12,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, spec llir.ApplicationInstanceSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, spec llir.ShellSpec, opts compilation.Options, verbose bool) (llir.Component, error) {
 	spec.RunAsJob = true
 	spec.Sizing = api.WorkerpoolSizing(pool, app, opts)
 	spec.InstanceName = pool.Metadata.Name
