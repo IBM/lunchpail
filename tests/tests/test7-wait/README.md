@@ -1,3 +1,3 @@
 # test7-wait
 
-Same as test7, except this test uses the ParameterSweep in "wait" mode.
+Same as test7, except this test uses the ParameterSweep in "wait" mode with one failing task.
