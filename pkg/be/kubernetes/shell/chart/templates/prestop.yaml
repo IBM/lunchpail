@@ -1,11 +1,11 @@
 {{- define "prestop/spec/pod" }}
-{{- if eq .Values.component "workdispatcher" }}
+{{- if eq .Values.lunchpail.component "workdispatcher" }}
 terminationGracePeriodSeconds: 5 # give time for the preStop in the container
 {{- end }}
 {{- end }}
 
 {{- define "prestop/spec/container" }}
-{{- if eq .Values.component "workdispatcher" }}
+{{- if eq .Values.lunchpail.component "workdispatcher" }}
 lifecycle:
   preStop:
     exec:
@@ -14,7 +14,7 @@ lifecycle:
 {{- end }}
 
 {{- define "prestop/command" }}
-{{- if eq .Values.component "workdispatcher" }}
+{{- if eq .Values.lunchpail.component "workdispatcher" }}
 - /bin/sh
 - "-c"
 - |

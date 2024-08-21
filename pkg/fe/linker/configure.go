@@ -70,9 +70,6 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		return "", nil, nil, queue.Spec{}, err
 	}
 
-	// the app.kubernetes.io/part-of label value
-	partOf := appname
-
 	if queueSpec.Endpoint == "" {
 		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
 		runnameMax53 := util.Dns1035(runname + "-minio")
@@ -117,8 +114,8 @@ lunchpail:
     registry: %s # (12)
     repo: %s # (13)
     version: %s # (14)
-name: %s # runname (23)
-partOf: %s # partOf (16)
+  name: %s # runname (23)
+  partOf: %s # appname (16)
 `,
 		imagePullSecretName,                     // (3)
 		dockerconfigjson,                        // (4)
@@ -136,7 +133,7 @@ partOf: %s # partOf (16)
 		lunchpail.ImageRepo,                     // (13)
 		lunchpail.Version(),                     // (14)
 		runname,                                 // (23)
-		partOf,                                  // (16)
+		appname,                                 // (16)
 	)
 
 	if opts.Verbose {

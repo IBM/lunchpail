@@ -2,7 +2,7 @@
 - name: main
   image: {{ .Values.image }}
   command:
-    {{- if eq .Values.component "workdispatcher" }}
+    {{- if eq .Values.lunchpail.component "workdispatcher" }}
     {{- include "prestop/command" . | indent 4 }}
     {{- else }}
     - /bin/sh
