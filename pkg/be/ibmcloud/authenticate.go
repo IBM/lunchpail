@@ -32,7 +32,7 @@ func Authenticator(apiKey string, config ibmConfig) (*vpcv1.VpcV1, error) {
 		Authenticator: auth,
 	})
 	if err != nil {
-		return nil, errors.New("Error creating VPC Service with apikey" + apiKey)
+		return nil, errors.New("Error creating VPC Service with apikey " + apiKey)
 	}
 	fmt.Printf("Accessing the VPC service via %s\n", method)
 

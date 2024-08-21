@@ -25,7 +25,7 @@ type Options struct {
 	ApiKey             string   `yaml:"apiKey,omitempty"`
 	ResourceGroupID    string   `yaml:"resourceGroupID,omitempty"`
 	SSHKeyType         string   `yaml:"SSHKeyType,omitempty"`
-	PublicSSHKey       string   `yaml:"publicSSHKey,omitempty"`
+	PublicSSHKey       []string `yaml:"publicSSHKey,omitempty"`
 	Zone               string   `yaml:"zone,omitempty"`
 	Profile            string   `yaml:"profile,omitempty"`
 	ImageID            string   `yaml:"imageID,omitempty"`

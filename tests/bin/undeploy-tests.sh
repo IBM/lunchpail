@@ -11,6 +11,11 @@ set -o pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../../
 
+if [[ -n "$TEST_IBMCLOUD" ]]
+then 
+    IC_TARGET="--target=ibmcloud --api-key=$IC_API_KEY" #TODO: needs runname 
+fi
+
 appname="${2-$1}"
 
 # retry once after failure; this may help to cope with `etcdserver:

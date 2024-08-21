@@ -1,0 +1,37 @@
+name: CI Tests for IBM Cloud backend
+
+# cancel any prior runs for this workflow and this PR (or branch)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        SCRIPT:
+          - ./tests/bin/ci.sh -i 'test7f.*'
+          - ./tests/bin/go.sh
+        os: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check Docker
+      run: docker version && podman version
+
+    - name: Run Test with args ${{ matrix.ARGS }}
+      env:
+        TERM: xterm-256color
+        IC_API_KEY: ${{ secrets.IC_API_KEY }}
+        RESOURCE_GROUP_ID: ${{ secrets.RESOURCE_GROUP_ID }}
+        SSH_KEY_PUB: ${{ secrets.SSH_KEY_PUB }}
+      run: bash -c "${{matrix.SCRIPT}} ${{matrix.ARGS }}"

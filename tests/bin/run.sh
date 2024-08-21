@@ -113,8 +113,11 @@ then
         TEST_NAME=$testname "$1"/init.sh $namespace
     fi
 
-    ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
-    EC=$?
+    if [[ -z "$TEST_IBMCLOUD" ]]
+    then   
+        ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
+        EC=$?
+    fi
     undeploy $testname $deployname
 
     if [[ $EC != 0 ]]

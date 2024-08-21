@@ -13,6 +13,11 @@ set -eo pipefail
 # e.g. see test7/init.sh
 export RUNNING_LUNCHPAIL_TESTS=1
 
+if [[ -n "$IC_API_KEY" ]]
+then
+    export TEST_IBMCLOUD=1
+fi
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 

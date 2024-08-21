@@ -282,7 +282,7 @@ func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, 
 	t1e := time.Now()
 
 	t2s := t1e
-	keyID, err := createSSHKey(vpcService, name, resourceGroupID, keyType, publicKey)
+	keyID, err := createSSHKey(vpcService, name, resourceGroupID, keyType, strings.Join(publicKey, " "))
 	if err != nil {
 		return err
 	}
