@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/ir/llir"
 )
 
@@ -60,8 +61,13 @@ func apply(yaml, namespace, context string, operation Operation) error {
 	return cmd.Run()
 }
 
-func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, verbose bool) error {
-	yamls, err := MarshalArray(ir, verbose)
+func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, cliOpts platform.CliOptions, verbose bool) error {
+	opts, err := options(cliOpts)
+	if err != nil {
+		return err
+	}
+
+	yamls, err := MarshalArray(ir, opts, verbose)
 	if err != nil {
 		return err
 	}

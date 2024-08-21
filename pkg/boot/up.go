@@ -5,6 +5,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
 )
@@ -12,22 +13,26 @@ import (
 type UpOptions = fe.CompileOptions
 
 func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
-	linked, err := fe.Compile(backend, opts)
+	cliOptions := platform.CliOptions{
+		CreateNamespace: opts.ConfigureOptions.CompilationOptions.CreateNamespace,
+		ImagePullSecret: opts.ConfigureOptions.CompilationOptions.ImagePullSecret,
+	}
 
+	linked, err := fe.Compile(backend, opts)
 	if err != nil {
 		return err
 	} else if opts.DryRun {
-		fmt.Printf(kubernetes.Marshal(linked.Ir, opts.Verbose))
+		fmt.Printf(kubernetes.DryRun(linked.Ir, cliOptions, opts.Verbose))
 		return nil
 	}
 
 	if isUp {
-		if err := backend.Up(linked, opts.Verbose); err != nil {
+		if err := backend.Up(linked, cliOptions, opts.Verbose); err != nil {
 			return nil
 		} else if opts.Watch {
 			return status.UI(linked.Runname, backend, status.Options{Namespace: linked.Namespace, Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}
-	} else if err := backend.Down(linked, opts.Verbose); err != nil {
+	} else if err := backend.Down(linked, cliOptions, opts.Verbose); err != nil {
 		return err
 	}
 

@@ -1,4 +1,4 @@
-package linker
+package common
 
 import (
 	b64 "encoding/base64"
@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func imagePullSecret(imagePullSecret string) (string, string, error) {
+func ImagePullSecret(imagePullSecret string) (string, string, error) {
 	imagePullSecretName := ""
 	dockerconfigjson := ""
 	if imagePullSecret != "" {

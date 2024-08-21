@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"slices"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
@@ -60,11 +59,6 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		return "", nil, nil, queue.Spec{}, err
 	}
 
-	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.CompilationOptions.ImagePullSecret)
-	if ipsErr != nil {
-		return "", nil, nil, queue.Spec{}, ipsErr
-	}
-
 	user, err := user.Current()
 	if err != nil {
 		return "", nil, nil, queue.Spec{}, err
@@ -81,32 +75,8 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		queueSpec.Bucket = queueSpec.Name
 	}
 
-	backendValues, err := backend.Values()
-	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
-	}
-
-	serviceAccount := runname
-	if !backendValues.NeedsServiceAccount && imagePullSecretName == "" {
-		serviceAccount = ""
-	}
-
 	yaml := fmt.Sprintf(`
 lunchpail:
-  ips:
-    name: %s # imagePullSecretName (3)
-    dockerconfigjson: %s # dockerconfigjson (4)
-  namespace:
-    create: %v # opts.CreateNamespace (5)
-  rbac:
-    serviceaccount: %s # serviceAccount (6)
-  taskqueue:
-    auto: %v # queueSpec.Auto (17)
-    dataset: %s # queueSpec.Name (18)
-    endpoint: %s # queueSpec.Endpoint (19)
-    bucket: %s # queueSpec.Bucket (20)
-    accessKey: %s # queueSpec.AccessKey (21)
-    secretKey: %s # queueSpec.SecretKey (22)
   user:
     name: %s # user.Username (10)
     uid: %s # user.Uid (11)
@@ -117,34 +87,23 @@ lunchpail:
   name: %s # runname (23)
   partOf: %s # appname (16)
 `,
-		imagePullSecretName,                     // (3)
-		dockerconfigjson,                        // (4)
-		opts.CompilationOptions.CreateNamespace, // (5)
-		serviceAccount,                          // (6)
-		queueSpec.Auto,                          // (17)
-		queueSpec.Name,                          // (18)
-		queueSpec.Endpoint,                      // (19)
-		queueSpec.Bucket,                        // (20)
-		queueSpec.AccessKey,                     // (21)
-		queueSpec.SecretKey,                     // (22)
-		user.Username,                           // (10)
-		user.Uid,                                // (11)
-		lunchpail.ImageRegistry,                 // (12)
-		lunchpail.ImageRepo,                     // (13)
-		lunchpail.Version(),                     // (14)
-		runname,                                 // (23)
-		appname,                                 // (16)
+		user.Username,           // (10)
+		user.Uid,                // (11)
+		lunchpail.ImageRegistry, // (12)
+		lunchpail.ImageRepo,     // (13)
+		lunchpail.Version(),     // (14)
+		runname,                 // (23)
+		appname,                 // (16)
 	)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.CompilationOptions.OverrideValues)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.CompilationOptions.OverrideFileValues)
-		fmt.Fprintf(os.Stderr, "shrinkwrap backend overrides=%v\n", backendValues)
 	}
 
-	overrides := slices.Concat(opts.CompilationOptions.OverrideValues, backendValues.Kv)
-	fileOverrides := opts.CompilationOptions.OverrideFileValues // Note: no backend value support here
+	overrides := opts.CompilationOptions.OverrideValues
+	fileOverrides := opts.CompilationOptions.OverrideFileValues
 
 	return yaml, overrides, fileOverrides, queueSpec, nil
 }
