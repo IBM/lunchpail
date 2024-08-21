@@ -57,6 +57,7 @@ func newUpCmd() *cobra.Command {
 		Use:   "up",
 		Short: "Deploy the application",
 		Long:  "Deploy the application",
+		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
 
 	if util.StdoutIsTty() {
