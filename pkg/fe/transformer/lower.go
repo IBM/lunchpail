@@ -14,7 +14,7 @@ import (
 
 // HLIR -> LLIR
 func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, yamlValues string, opts compilation.Options, verbose bool) (llir.LLIR, error) {
-	ir := llir.LLIR{AppName: compilationName, RunName: runname, Queue: queueSpec, Values: llir.Values{Yaml: yamlValues}}
+	ir := llir.LLIR{AppName: compilationName, RunName: runname, Namespace: namespace, Queue: queueSpec, Values: llir.Values{Yaml: yamlValues}}
 
 	minio, err := minio.Lower(compilationName, runname, namespace, model, ir, opts, verbose)
 	if err != nil {
