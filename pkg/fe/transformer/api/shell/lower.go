@@ -78,7 +78,7 @@ func LowerAsComponent(compilationName, runname, namespace string, app hlir.Appli
 
 	component.Values = []string{
 		"lunchpail.instanceName=" + instanceName,
-		"component=" + string(component.Component),
+		"lunchpail.component=" + string(component.Component),
 		"image=" + app.Spec.Image,
 		"command=" + app.Spec.Command,
 		"workers.count=" + strconv.Itoa(sizing.Workers),

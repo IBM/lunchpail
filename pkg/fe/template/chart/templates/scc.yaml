@@ -2,7 +2,7 @@
 kind: SecurityContextConstraints
 apiVersion: security.openshift.io/v1
 metadata:
-  name: {{ .Values.name }}
+  name: {{ .Values.lunchpail.name }}
 allowHostDirVolumePlugin: true
 allowHostIPC: true
 allowHostNetwork: true
