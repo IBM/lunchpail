@@ -1,8 +1,13 @@
 package llir
 
-import "lunchpail.io/pkg/lunchpail"
+import (
+	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/lunchpail"
+)
 
 type ShellComponent struct {
+	hlir.Application
+
 	// Which lunchpail component is this part of
 	lunchpail.Component
 
@@ -11,12 +16,6 @@ type ShellComponent struct {
 
 	// Defaults to run name
 	InstanceName string
-
-	// DashDashSet Values (temporarily here)
-	Values []string
-
-	// Environment variables
-	Env map[string]string
 
 	// Where runners of this instance should pick up or dispatch queue data
 	QueuePrefixPath string
