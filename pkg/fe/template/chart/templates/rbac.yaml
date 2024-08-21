@@ -3,7 +3,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ .Values.lunchpail.rbac.serviceaccount }}
-  namespace: {{ .Release.Namespace }}
 {{- if .Values.lunchpail.ips.name }}
 imagePullSecrets:
   - name: {{ .Values.lunchpail.ips.name }}
