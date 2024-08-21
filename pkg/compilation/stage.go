@@ -1,16 +1,15 @@
-package compiler
+package compilation
 
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/util"
 )
 
@@ -157,23 +156,24 @@ type StageOptions struct {
 
 // return (templatePath, appVersion, error)
 func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
-	appVersion := compilation.AppVersion()
+	appVersion := AppVersion()
 
-	templatePath, err := template.Stage()
+	// TODO overlay on kube/common?
+	templatePath, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
+		return "", "", err
+	} else if err := util.Expand(templatePath, appTemplate, appTemplateFile); err != nil {
 		return "", "", err
 	}
 
-	if sourcePath != "" {
-		if version, err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
-			return "", "", err
-		} else {
-			appVersion = version
-		}
+	if version, err := copyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
+		return "", "", err
+	} else {
+		appVersion = version
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Finished staging to %s\n", templatePath)
+		fmt.Fprintf(os.Stderr, "Finished staging application to %s\n", templatePath)
 	}
 
 	return templatePath, appVersion, nil
@@ -181,8 +181,29 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, string, e
 
 // return (appname, templatePath, appVersion, error)
 func Stage(opts StageOptions) (string, string, string, error) {
-	appname := compilation.Name()
+	appname := Name()
 	templatePath, appVersion, err := StagePath(appname, "", opts)
 
 	return appname, templatePath, appVersion, err
+}
+
+// Reverse of Stage(), store a staged local filesystem in the "right
+// place" so that future calls to Stage() will pick up the changes
+func MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string, verbose bool) error {
+	tarball := filepath.Join(lunchpailStageDir, embededTemplatePath)
+	verboseFlag := ""
+	if verbose {
+		verboseFlag = "-v"
+		fmt.Fprintf(os.Stderr, "Transferring staged app template to final stage %s -> %s\n", appTemplatePath, tarball)
+	}
+
+	cmd := exec.Command("tar", verboseFlag, "-zcf", tarball, "-C", appTemplatePath, ".")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }

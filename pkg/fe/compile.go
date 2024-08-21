@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/fe/compiler"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/parser"
 	"lunchpail.io/pkg/fe/template"
@@ -22,9 +22,9 @@ type CompileOptions struct {
 }
 
 func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
-	stageOpts := compiler.StageOptions{}
+	stageOpts := compilation.StageOptions{}
 	stageOpts.Verbose = opts.Verbose
-	compilationName, templatePath, _, err := compiler.Stage(stageOpts)
+	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
 	if err != nil {
 		return ir.Linked{}, err
 	}
@@ -58,7 +58,7 @@ func Compile(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		return ir.Linked{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return ir.Linked{}, err
-	} else if llir, err := transformer.Lower(compilationName, runname, namespace, hlir, queueSpec, yamlValues, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
+	} else if llir, err := transformer.Lower(compilationName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
 		return ir.Linked{}, err
 	} else {
 		return ir.Linked{

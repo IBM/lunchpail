@@ -10,7 +10,8 @@ import (
 	util "lunchpail.io/pkg/util/yaml"
 )
 
-func MarshalComponent(ir llir.LLIR, c llir.Component, opts common.Options, verbose bool) (string, error) {
+// Marshal one component.
+func marshalComponent(ir llir.LLIR, c llir.Component, opts common.Options, verbose bool) (string, error) {
 	switch cc := c.(type) {
 	case llir.ShellComponent:
 		return shell.Template(ir, cc, opts, verbose)
@@ -19,11 +20,16 @@ func MarshalComponent(ir llir.LLIR, c llir.Component, opts common.Options, verbo
 	return "", fmt.Errorf("Unsupported component type")
 }
 
-func MarshalArray(ir llir.LLIR, opts common.Options, verbose bool) ([]string, error) {
-	yamls := []string{ir.K8sCommonResources}
+// Marshal all components, including the common resources needed to
+// make them function in a cluster.
+func MarshalAllComponents(ir llir.LLIR, opts common.Options, verbose bool) ([]string, error) {
+	yamls, err := common.MarshalCommonResources(ir, verbose)
+	if err != nil {
+		return []string{}, err
+	}
 
 	for _, c := range ir.Components {
-		yaml, err := MarshalComponent(ir, c, opts, verbose)
+		yaml, err := marshalComponent(ir, c, opts, verbose)
 		if err != nil {
 			return []string{}, err
 		}
@@ -38,18 +44,24 @@ func MarshalArray(ir llir.LLIR, opts common.Options, verbose bool) ([]string, er
 // e.g. for dry-running.
 func DryRun(ir llir.LLIR, cliOpts platform.CliOptions, verbose bool) (string, error) {
 	opts := common.Options{CliOptions: cliOpts}
-	if a, err := MarshalArray(ir, opts, verbose); err != nil {
+	if arr, err := MarshalAllComponents(ir, opts, verbose); err != nil {
 		return "", err
 	} else {
-		return util.Join(a), nil
+		return util.Join(arr), nil
 	}
 }
 
-func MarshalComponentArray(ir llir.LLIR, c llir.Component, opts common.Options, verbose bool) (string, error) {
-	yamls := []string{ir.K8sCommonResources}
+// marshal resources for this component, including common resources
+// needed to make it function on its own in a cluster.
+func MarshalComponentAsStandalone(ir llir.LLIR, c llir.Component, opts common.Options, verbose bool) (string, error) {
+	yamls, err := common.MarshalCommonResources(ir, verbose)
+	if err != nil {
+		return "", err
+	}
+
 	// yamls = append(yamls, c.Config)
 
-	yaml, err := MarshalComponent(ir, c, opts, verbose)
+	yaml, err := marshalComponent(ir, c, opts, verbose)
 	if err != nil {
 		return "", err
 	}

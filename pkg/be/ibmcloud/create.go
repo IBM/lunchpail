@@ -54,7 +54,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.C
 	// TODO pass through actual Cli Options?
 	opts := common.Options{CliOptions: cliOpts}
 
-	appYamlString, err := kubernetes.MarshalComponentArray(ir, c, opts, verbose)
+	appYamlString, err := kubernetes.MarshalComponentAsStandalone(ir, c, opts, verbose)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshall yaml: %v", err)
 	}
