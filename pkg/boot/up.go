@@ -13,22 +13,22 @@ import (
 type UpOptions = fe.CompileOptions
 
 func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
-	cliOptions := platform.CliOptions{
-		CreateNamespace: opts.ConfigureOptions.CompilationOptions.CreateNamespace,
-		ImagePullSecret: opts.ConfigureOptions.CompilationOptions.ImagePullSecret,
-	}
-
-	linked, err := fe.Compile(backend, opts)
+	linked, err := fe.PrepareForRun(backend, opts)
 	if err != nil {
 		return err
-	} else if opts.DryRun {
-		fmt.Printf(kubernetes.DryRun(linked.Ir, cliOptions, opts.Verbose))
-		return nil
 	}
 
-	if isUp {
+	cliOptions := platform.CliOptions{
+		CreateNamespace: linked.Options.CreateNamespace,
+		ImagePullSecret: linked.Options.ImagePullSecret,
+	}
+
+	if opts.DryRun {
+		fmt.Printf(kubernetes.DryRun(linked.Ir, cliOptions, opts.Verbose))
+		return nil
+	} else if isUp {
 		if err := backend.Up(linked, cliOptions, opts.Verbose); err != nil {
-			return nil
+			return err
 		} else if opts.Watch {
 			return status.UI(linked.Runname, backend, status.Options{Namespace: linked.Namespace, Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}

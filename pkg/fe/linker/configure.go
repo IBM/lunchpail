@@ -22,38 +22,6 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
 	}
 
-	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
-	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
-	} else {
-		if opts.CompilationOptions.Namespace == "" {
-			opts.CompilationOptions.Namespace = shrinkwrappedOptions.Namespace
-		}
-		// TODO here... how do we determine that boolean values were unset?
-		if opts.CompilationOptions.ImagePullSecret == "" {
-			opts.CompilationOptions.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
-		}
-
-		// careful: `--set x=3 --set x=4` results in x having
-		// value 4, so we need to place the shrinkwrapped
-		// options first in the list
-		opts.CompilationOptions.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.CompilationOptions.OverrideValues...)
-		opts.CompilationOptions.OverrideFileValues = append(shrinkwrappedOptions.OverrideFileValues, opts.CompilationOptions.OverrideFileValues...)
-
-		if opts.CompilationOptions.Queue == "" {
-			opts.CompilationOptions.Queue = shrinkwrappedOptions.Queue
-		}
-		// TODO here... how do we determine that boolean values were unset?
-		if opts.CompilationOptions.HasGpuSupport == false {
-			opts.CompilationOptions.HasGpuSupport = shrinkwrappedOptions.HasGpuSupport
-		}
-		if !opts.CompilationOptions.CreateNamespace {
-			opts.CompilationOptions.CreateNamespace = shrinkwrappedOptions.CreateNamespace
-		}
-	}
-
-	systemNamespace := namespace
-
 	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
 	if err != nil {
 		return "", nil, nil, queue.Spec{}, err
@@ -67,7 +35,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	if queueSpec.Endpoint == "" {
 		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
 		runnameMax53 := util.Dns1035(runname + "-minio")
-		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, systemNamespace, internalS3Port)
+		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, namespace, internalS3Port)
 		queueSpec.AccessKey = "lunchpail"
 		queueSpec.SecretKey = "lunchpail"
 	}

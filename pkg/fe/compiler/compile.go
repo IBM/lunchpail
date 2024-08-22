@@ -60,7 +60,7 @@ func Compile(sourcePath string, opts Options) error {
 		fmt.Fprintf(os.Stderr, "Using compilationName=%s\n", compilationName)
 	}
 
-	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{Branch: opts.Branch, Verbose: opts.Verbose}); err != nil {
 		return err
 	} else if err := compilation.SaveOptions(appTemplatePath, opts.CompilationOptions); err != nil {
 		return err

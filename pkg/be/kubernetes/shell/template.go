@@ -97,16 +97,11 @@ func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose 
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	parts, err := templater.Template(
+	return templater.Template(
 		ir.RunName+"-"+string(c.Component),
 		ir.Namespace,
 		templatePath,
 		"", // no yaml values at the moment
 		templater.TemplateOptions{Verbose: verbose, OverrideValues: values},
 	)
-	if err != nil {
-		return "", err
-	}
-
-	return parts, nil
 }

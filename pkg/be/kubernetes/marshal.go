@@ -23,7 +23,7 @@ func marshalComponent(ir llir.LLIR, c llir.Component, opts common.Options, verbo
 // Marshal all components, including the common resources needed to
 // make them function in a cluster.
 func MarshalAllComponents(ir llir.LLIR, opts common.Options, verbose bool) ([]string, error) {
-	yamls, err := common.MarshalCommonResources(ir, verbose)
+	yamls, err := common.MarshalCommonResources(ir, opts, verbose)
 	if err != nil {
 		return []string{}, err
 	}
@@ -54,7 +54,7 @@ func DryRun(ir llir.LLIR, cliOpts platform.CliOptions, verbose bool) (string, er
 // marshal resources for this component, including common resources
 // needed to make it function on its own in a cluster.
 func MarshalComponentAsStandalone(ir llir.LLIR, c llir.Component, opts common.Options, verbose bool) (string, error) {
-	yamls, err := common.MarshalCommonResources(ir, verbose)
+	yamls, err := common.MarshalCommonResources(ir, opts, verbose)
 	if err != nil {
 		return "", err
 	}

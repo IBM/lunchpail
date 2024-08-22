@@ -19,6 +19,8 @@ func Values(ir llir.LLIR, opts Options) ([]string, error) {
 	}
 
 	return []string{
+		"lunchpail.name=" + ir.RunName,
+		"lunchpail.partOf=" + ir.AppName,
 		"lunchpail.ips.name=" + imagePullSecretName,
 		"lunchpail.ips.dockerconfigjson=" + dockerconfigjson,
 		fmt.Sprintf("lunchpail.namespace.create=%v", opts.CreateNamespace),
