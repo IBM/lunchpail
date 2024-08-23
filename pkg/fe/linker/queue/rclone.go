@@ -3,57 +3,102 @@ package queue
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	rcloneConfig "github.com/rclone/rclone/fs/config"
 	rcloneConfigFile "github.com/rclone/rclone/fs/config/configfile"
 )
 
-// return (isSpecValidAsRclone?, error)
-func parseFlagAsRclone(flag string, spec *Spec) (bool, error) {
-	rclonePattern := regexp.MustCompile("^rclone://([^/]+)/(.+)$")
-	if match := rclonePattern.FindStringSubmatch(flag); len(match) == 3 {
-		spec.Auto = true
-		rcloneRemote := match[1]
-		spec.Bucket = match[2]
-		spec.Name = "" // will be defined just after this block
-
-		rcloneConfigFile.Install() // otherwise, DumpRcRemote() yields an empty map
-		config := rcloneConfig.DumpRcRemote(rcloneRemote)
-
-		if maybe, ok := config["endpoint"]; !ok {
-			return false, fmt.Errorf("Rclone config '%s' is missing endpoint %v || %v", rcloneRemote, config, rcloneConfig.LoadedData())
-		} else if s, ok := maybe.(string); !ok {
-			return false, fmt.Errorf("Rclone config '%s' has invalid endpoint value: '%s'", rcloneRemote, maybe)
-		} else {
-			spec.Endpoint = s
-			if !isInternalS3(s) {
-				spec.Auto = false
-			}
-		}
-
-		if maybe, ok := config["access_key_id"]; !ok {
-			return false, fmt.Errorf("Rclone config '%s' is missing access_key_id", rcloneRemote)
-		} else if s, ok := maybe.(string); !ok {
-			return false, fmt.Errorf("Rclone config '%s' has invalid access_key_id value: '%s'", rcloneRemote, maybe)
-		} else {
-			spec.AccessKey = s
-		}
-
-		if maybe, ok := config["secret_access_key"]; !ok {
-			return false, fmt.Errorf("Rclone config '%s' is missing secret_access_key", rcloneRemote)
-		} else if s, ok := maybe.(string); !ok {
-			return false, fmt.Errorf("Rclone config '%s' has invalid secret_access_key value: '%s'", rcloneRemote, maybe)
-		} else {
-			spec.SecretKey = s
-		}
-
-		return true, nil
-	} else if strings.HasPrefix(flag, "rclone:") {
-		return false, fmt.Errorf("Invalid --queue option. Must be of the form 'rclone://configname/bucketname'")
+func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port int) (bool, Spec, error) {
+	spec := Spec{
+		// re: name of taskqueue Secret; dashes are
+		// not valid in bash variable names, so we avoid those
+		// here
+		strings.Replace(runname, "-", "", -1) + "queue", // Name
+		true,           // Auto
+		bucket,         // Bucket
+		"",             // Endpoint
+		internalS3Port, // Port
+		"",             // AccessKey
+		"",             // SecretKey
 	}
 
-	return false, nil
+	rcloneConfigFile.Install() // otherwise, DumpRcRemote() yields an empty map
+	config := rcloneConfig.DumpRcRemote(remoteName)
+
+	if maybe, ok := config["endpoint"]; !ok {
+		return false, Spec{}, fmt.Errorf("Rclone config '%s' is missing endpoint %v || %v", remoteName, config, rcloneConfig.LoadedData())
+	} else if s, ok := maybe.(string); !ok {
+		return false, Spec{}, fmt.Errorf("Rclone config '%s' has invalid endpoint value: '%s'", remoteName, maybe)
+	} else {
+		spec.Endpoint = s
+		if !isInternalS3(s) {
+			spec.Auto = false
+		}
+	}
+
+	if maybe, ok := config["access_key_id"]; !ok {
+		return false, Spec{}, fmt.Errorf("Rclone config '%s' is missing access_key_id", remoteName)
+	} else if s, ok := maybe.(string); !ok {
+		return false, Spec{}, fmt.Errorf("Rclone config '%s' has invalid access_key_id value: '%s'", remoteName, maybe)
+	} else {
+		spec.AccessKey = s
+	}
+
+	if maybe, ok := config["secret_access_key"]; !ok {
+		return false, Spec{}, fmt.Errorf("Rclone config '%s' is missing secret_access_key", remoteName)
+	} else if s, ok := maybe.(string); !ok {
+		return false, Spec{}, fmt.Errorf("Rclone config '%s' has invalid secret_access_key value: '%s'", remoteName, maybe)
+	} else {
+		spec.SecretKey = s
+	}
+
+	if spec.Endpoint == "" {
+		spec.Auto = true
+	}
+
+	if strings.Contains(spec.Endpoint, "$TEST_RUN") {
+		// helpful for tests, which want to point to the
+		// internal s3 whose service name isn't known ahead of
+		// time -- it includes the run name
+		spec.Endpoint = strings.Replace(spec.Endpoint, "$TEST_RUN", runname, -1)
+	}
+
+	if strings.Contains(spec.Endpoint, "$TEST_PORT") {
+		// helpful for tests, which want to point to the
+		// internal s3 whose service name isn't known ahead of
+		// time -- it includes the run name
+		spec.Endpoint = strings.Replace(spec.Endpoint, "$TEST_PORT", strconv.Itoa(internalS3Port), -1)
+	}
+
+	if strings.Contains(spec.AccessKey, "$TEST_ACCESSKEY") {
+		// helpful for tests, which want to point to the
+		// internal s3 whose service name isn't known ahead of
+		// time -- it includes the run name
+		spec.AccessKey = strings.Replace(spec.AccessKey, "$TEST_ACCESSKEY", "lunchpail", -1)
+	}
+
+	if strings.Contains(spec.SecretKey, "$TEST_SECRETKEY") {
+		// helpful for tests, which want to point to the
+		// internal s3 whose service name isn't known ahead of
+		// time -- it includes the run name
+		spec.SecretKey = strings.Replace(spec.SecretKey, "$TEST_SECRETKEY", "lunchpail", -1)
+	}
+
+	return true, spec, nil
+}
+
+// return (isSpecValidAsRclone?, error)
+func parseFlagAsRclone(flag, runname string, internalS3Port int) (bool, Spec, error) {
+	rclonePattern := regexp.MustCompile("^rclone://([^/]+)/(.+)$")
+	if match := rclonePattern.FindStringSubmatch(flag); len(match) == 3 {
+		return SpecFromRcloneRemoteName(match[1], match[2], runname, internalS3Port)
+	} else if strings.HasPrefix(flag, "rclone:") {
+		return false, Spec{}, fmt.Errorf("Invalid --queue option. Must be of the form 'rclone://configname/bucketname'")
+	}
+
+	return false, Spec{Name: strings.Replace(runname, "-", "", -1) + "queue"}, nil
 }
 
 // Follow convention for internalS3 name in charts/workstealer/templates/s3 below.

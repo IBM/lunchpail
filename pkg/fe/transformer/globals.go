@@ -7,7 +7,7 @@ import (
 )
 
 // HLIR -> LLIR for non-lunchpail resources
-func lowerGlobals(compilationName, runname string, model hlir.AppModel) (string, error) {
+func lowerAppProvidedKubernetesResources(compilationName, runname string, model hlir.AppModel) (string, error) {
 	components := []string{}
 
 	for _, r := range model.Others {

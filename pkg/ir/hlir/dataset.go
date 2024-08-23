@@ -1,12 +1,22 @@
 package hlir
 
+type Rclone struct {
+	RemoteName string `yaml:"remoteName"`
+}
+
+type CopyIn struct {
+	Path  string
+	Delay int `yaml:"delay,omitempty"`
+}
+
+type EnvFrom struct {
+	Prefix string
+}
+
 type S3 struct {
-	Secret    string
-	EnvPrefix string `yaml:"envPrefix,omitempty"`
-	CopyIn    struct {
-		Path  string
-		Delay int `yaml:"delay,omitempty"`
-	} `yaml:"copyIn,omitempty"`
+	Rclone
+	EnvFrom `yaml:"envFrom,omitempty"`
+	CopyIn  `yaml:"copyIn,omitempty"`
 }
 
 type Dataset struct {

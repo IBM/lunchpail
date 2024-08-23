@@ -15,14 +15,11 @@ type Backend interface {
 	// Is the backend ready for `up`?
 	Ok() error
 
-	// Overrides to values used by linker.Configure
-	Values() (platform.Values, error)
-
 	// Bring up the linked application
-	Up(linked ir.Linked, verbose bool) error
+	Up(linked ir.Linked, opts platform.CliOptions, verbose bool) error
 
 	// Bring down the linked application
-	Down(linked ir.Linked, verbose bool) error
+	Down(linked ir.Linked, opts platform.CliOptions, verbose bool) error
 
 	// Delete namespace
 	DeleteNamespace(compilationName, namespace string) error

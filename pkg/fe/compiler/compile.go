@@ -11,7 +11,6 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/util"
 )
 
@@ -19,7 +18,8 @@ import (
 //go:embed lunchpail-source.tar.gz
 var lunchpailSource embed.FS
 
-func stageLunchpail() (string, error) {
+// Extract the lunchpail source into a temporary local filesystem
+func stageLunchpailItself() (string, error) {
 	if dir, err := ioutil.TempDir("", "lunchpail"); err != nil {
 		return "", err
 	} else if err := util.Expand(dir, lunchpailSource, "lunchpail-source.tar.gz"); err != nil {
@@ -36,7 +36,7 @@ func Compile(sourcePath string, opts Options) error {
 		// return fmt.Errorf("Output path already exists: %s", opts.Name)
 	}
 
-	lunchpailStageDir, err := stageLunchpail()
+	lunchpailStageDir, err := stageLunchpailItself()
 	if err != nil {
 		return err
 	} else if opts.Verbose {
@@ -60,11 +60,11 @@ func Compile(sourcePath string, opts Options) error {
 		fmt.Fprintf(os.Stderr, "Using compilationName=%s\n", compilationName)
 	}
 
-	if appTemplatePath, appVersion, err := StagePath(compilationName, sourcePath, StageOptions{opts.Branch, opts.Verbose}); err != nil {
+	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{Branch: opts.Branch, Verbose: opts.Verbose}); err != nil {
 		return err
 	} else if err := compilation.SaveOptions(appTemplatePath, opts.CompilationOptions); err != nil {
 		return err
-	} else if err := template.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
+	} else if err := compilation.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
 	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, lunchpailStageDir); err != nil {
 		return err

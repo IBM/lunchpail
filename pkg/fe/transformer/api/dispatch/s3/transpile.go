@@ -11,8 +11,8 @@ import (
 func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 	app := hlir.NewApplication(s3.Metadata.Name)
 
-	if s3.Spec.Secret == "" {
-		return app, fmt.Errorf("process s3 objects %s secret is missing", s3.Metadata.Name)
+	if s3.Spec.Rclone.RemoteName == "" {
+		return app, fmt.Errorf("process s3 objects %s rclone remote name is missing", s3.Metadata.Name)
 	}
 	if s3.Spec.Path == "" {
 		return app, fmt.Errorf("process s3 objects %s path is missing", s3.Metadata.Name)
@@ -38,8 +38,10 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 		hlir.Dataset{
 			Name: "origin",
 			S3: hlir.S3{
-				Secret:    s3.Spec.Secret,
-				EnvPrefix: envPrefix,
+				Rclone: s3.Spec.Rclone,
+				EnvFrom: hlir.EnvFrom{
+					Prefix: envPrefix,
+				},
 			},
 		},
 	}

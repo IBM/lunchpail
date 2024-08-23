@@ -1,4 +1,4 @@
-package template
+package common
 
 import "embed"
 
@@ -9,4 +9,4 @@ var appTemplate embed.FS
 const appTemplateFile = "chart.tar.gz"
 
 // NOTE: keep this in sync with ... this directory and appTemplateFile
-const embededTemplatePath = "pkg/fe/template/chart.tar.gz"
+const embededTemplatePath = "pkg/be/kubernetes/common/chart.tar.gz"
