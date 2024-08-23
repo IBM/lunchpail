@@ -3,16 +3,18 @@ package shell
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
+	"lunchpail.io/pkg/be/kubernetes/common"
 	templater "lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 )
 
-func Template(ir llir.LLIR, c llir.ShellComponent, verbose bool) (string, error) {
+func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose bool) (string, error) {
 	templatePath, err := stage(template, templateFile)
 	if err != nil {
 		return "", err
@@ -38,7 +40,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, verbose bool) (string, error)
 		return "", err
 	}
 
-	volumes, volumeMounts, envFroms, initContainers, err := api.DatasetsB64(c.Application, ir.Queue)
+	volumes, volumeMounts, envFroms, initContainers, secrets, err := api.DatasetsB64(c.Application, ir.RunName, ir.Queue)
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +50,8 @@ func Template(ir llir.LLIR, c llir.ShellComponent, verbose bool) (string, error)
 		return "", err
 	}
 
-	values := []string{
+	// values for this component
+	myValues := []string{
 		"lunchpail.instanceName=" + c.InstanceName,
 		"lunchpail.component=" + string(c.Component),
 		"image=" + c.Application.Spec.Image,
@@ -70,33 +73,42 @@ func Template(ir llir.LLIR, c llir.ShellComponent, verbose bool) (string, error)
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 	}
 
+	if len(secrets) > 0 {
+		myValues = append(myValues, "lunchpail.secrets="+util.ToB64Array(secrets))
+		myValues = append(myValues, "lunchpail.secretPrefix="+ir.RunName+"-")
+	}
+
 	if len(c.Application.Spec.Env) > 0 {
 		if env, err := util.ToJsonEnvB64(c.Application.Spec.Env); err != nil {
 			return "", err
 		} else {
-			values = append(values, "env="+env)
+			myValues = append(myValues, "env="+env)
 		}
 	}
 
 	if len(c.Application.Spec.Expose) > 0 {
-		values = append(values, "expose="+util.ToPortArray(c.Application.Spec.Expose))
+		myValues = append(myValues, "expose="+util.ToPortArray(c.Application.Spec.Expose))
 	}
+
+	commonValues, err := common.Values(ir, opts)
+	if err != nil {
+		return "", err
+	}
+
+	values := slices.Concat(commonValues, myValues)
 
 	if verbose {
 		workdirCmData := ""
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	parts, err := templater.Template(
-		ir.RunName+"-"+string(c.Component),
+	releaseName := c.InstanceName + "-" + string(c.Component)
+
+	return templater.Template(
+		releaseName,
 		ir.Namespace,
 		templatePath,
-		ir.Values.Yaml,
+		"", // no yaml values at the moment
 		templater.TemplateOptions{Verbose: verbose, OverrideValues: values},
 	)
-	if err != nil {
-		return "", err
-	}
-
-	return parts, nil
 }

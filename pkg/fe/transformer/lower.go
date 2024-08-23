@@ -13,8 +13,8 @@ import (
 )
 
 // HLIR -> LLIR
-func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, yamlValues string, opts compilation.Options, verbose bool) (llir.LLIR, error) {
-	ir := llir.LLIR{AppName: compilationName, RunName: runname, Namespace: namespace, Queue: queueSpec, Values: llir.Values{Yaml: yamlValues}}
+func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
+	ir := llir.LLIR{AppName: compilationName, RunName: runname, Namespace: namespace, Queue: queueSpec}
 
 	minio, err := minio.Lower(compilationName, runname, namespace, model, ir, opts, verbose)
 	if err != nil {
@@ -36,12 +36,12 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, queu
 		return llir.LLIR{}, err
 	}
 
-	globals, err := lowerGlobals(compilationName, runname, model)
+	appProvidedKubernetes, err := lowerAppProvidedKubernetesResources(compilationName, runname, model)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
+	ir.AppProvidedKubernetesResources = appProvidedKubernetes
 
-	ir.K8sCommonResources = globals
 	ir.Components = slices.Concat([]llir.Component{minio}, apps, dispatchers, pools)
 
 	return ir, nil

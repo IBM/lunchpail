@@ -9,36 +9,41 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8s "k8s.io/client-go/kubernetes"
 
+	"lunchpail.io/pkg/be/kubernetes/common"
 	"lunchpail.io/pkg/be/platform"
 )
 
-func openshiftSpecificValues(clientset *k8s.Clientset) (platform.Values, error) {
-	var values platform.Values
-
+func isOpenShift(clientset *k8s.Clientset) (bool, error) {
 	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return values, err
+		return false, err
 	}
 
 	openshiftIdx := slices.IndexFunc(namespaces.Items, func(ns corev1.Namespace) bool { return strings.Contains(ns.Name, "openshift") })
 	if openshiftIdx >= 0 {
-		values.Kv = append(values.Kv, "global.type=oc")
-		values.NeedsServiceAccount = true
+		return true, nil
 	}
 
-	return values, nil
+	return false, nil
 }
 
-func (backend Backend) Values() (platform.Values, error) {
+func options(cliOpts platform.CliOptions) (common.Options, error) {
+	opts := common.Options{CliOptions: cliOpts}
+
 	clientset, _, err := Client()
 	if err != nil {
-		return platform.Values{}, err
+		return opts, err
 	}
 
-	openshiftValues, err := openshiftSpecificValues(clientset)
+	oc, err := isOpenShift(clientset)
 	if err != nil {
-		return platform.Values{}, err
+		return opts, err
 	}
 
-	return openshiftValues, nil
+	if oc {
+		opts.NeedsServiceAccount = true
+		opts.NeedsSecurityContextConstraint = true
+	}
+
+	return opts, nil
 }

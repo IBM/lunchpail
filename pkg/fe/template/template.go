@@ -55,13 +55,17 @@ func Template(releaseName, namespace, templatePath, yaml string, opts TemplateOp
 		return "", err
 	}
 
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
+	}
+
 	release, err := helmClient.TemplateChart(&chartSpec, &helmclient.HelmTemplateOptions{})
 	if err != nil {
 		return "", err
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Template directory: %s\n", templatePath)
+		fmt.Fprintf(os.Stderr, "Succesfully rendered templates using Helm %s\n", releaseName)
 	}
 
 	return string(release), nil

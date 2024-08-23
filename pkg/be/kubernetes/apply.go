@@ -6,7 +6,9 @@ import (
 	"os/exec"
 	"strings"
 
+	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/ir/llir"
+	util "lunchpail.io/pkg/util/yaml"
 )
 
 type Operation string
@@ -60,22 +62,21 @@ func apply(yaml, namespace, context string, operation Operation) error {
 	return cmd.Run()
 }
 
-func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, verbose bool) error {
-	yamls, err := MarshalArray(ir, verbose)
+func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, cliOpts platform.CliOptions, verbose bool) error {
+	opts, err := options(cliOpts)
 	if err != nil {
 		return err
 	}
 
-	for idx := range yamls {
-		if operation == DeleteIt {
-			// delete in reverse order of apply
-			idx = len(yamls) - 1 - idx
-		}
-
-		context := "" // TODO... from command line
-		if err := apply(yamls[idx], namespace, context, operation); err != nil {
-			return err
-		}
+	yamls, err := MarshalAllComponents(ir, opts, verbose)
+	if err != nil {
+		return err
 	}
+
+	yaml := util.Join(yamls)
+	if err := apply(yaml, namespace, context, operation); err != nil {
+		return err
+	}
+
 	return nil
 }

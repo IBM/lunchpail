@@ -14,24 +14,17 @@ type Component interface {
 	SetWorkers(w int) Component
 }
 
-type Values struct {
-	Yaml string
-}
-
 type LLIR struct {
 	AppName   string
 	RunName   string
 	Namespace string
 
-	// Resources that are shared across all Components and are
-	// specific to running in a Kubernetes cluster
-	K8sCommonResources string
+	// Applications may provide their own Kubernetes resources
+	// that will be deployed once per run
+	AppProvidedKubernetesResources string
 
 	// Details of how to reach the queue endpoint
 	Queue queue.Spec
-
-	// Template values
-	Values
 
 	// One Component per WorkerPool, one for WorkerStealer, etc.
 	Components []Component

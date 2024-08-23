@@ -22,6 +22,8 @@ func Parse(yamls string) (hlir.AppModel, error) {
 		} else if err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: skipping yaml with parse error %v", err)
 			continue
+		} else if len(m) == 0 {
+			continue
 		}
 
 		kind, err := stringVal("kind", m)
@@ -73,6 +75,7 @@ func Parse(yamls string) (hlir.AppModel, error) {
 			}
 
 		default:
+			fmt.Printf("@@@@@@@@@@@@@@@@@@OOOOOO\n%v\n", m)
 			model.Others = append(model.Others, m)
 		}
 	}

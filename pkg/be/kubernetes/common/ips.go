@@ -1,4 +1,4 @@
-package linker
+package common
 
 import (
 	b64 "encoding/base64"

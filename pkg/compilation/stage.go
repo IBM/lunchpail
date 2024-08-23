@@ -1,28 +1,28 @@
-package compiler
+package compilation
 
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/util"
 )
 
-func Appdir(templatePath string) string {
+func appdir(templatePath string) string {
 	return filepath.Join(templatePath, "templates/__embededapp__")
 }
 
 func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbose bool) (string, error) {
-	appdir := Appdir(templatePath)
+	appdir := appdir(templatePath)
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Copying app templates into %s\n", appdir)
 	}
+	os.MkdirAll(appdir, 0755)
 
 	isGitSsh := strings.HasPrefix(sourcePath, "git@")
 	isGitHttp := !isGitSsh && strings.HasPrefix(sourcePath, "https:")
@@ -59,8 +59,6 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		}
 		fmt.Fprintln(os.Stderr, " done")
 	} else {
-		os.MkdirAll(appdir, 0755)
-
 		// TODO port this to pure go?
 		verboseFlag := ""
 		if verbose {
@@ -157,11 +155,19 @@ type StageOptions struct {
 
 // return (templatePath, appVersion, error)
 func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
-	appVersion := compilation.AppVersion()
+	appVersion := AppVersion()
 
-	templatePath, err := template.Stage()
+	// TODO overlay on kube/common?
+	templatePath, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
 		return "", "", err
+
+	} else if err := util.Expand(templatePath, appTemplate, appTemplateFile); err != nil {
+		return "", "", err
+	}
+
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Application source stage dir=%s\n", templatePath)
 	}
 
 	if sourcePath != "" {
@@ -173,7 +179,7 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, string, e
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Finished staging to %s\n", templatePath)
+		fmt.Fprintf(os.Stderr, "Finished staging application to %s\n", templatePath)
 	}
 
 	return templatePath, appVersion, nil
@@ -181,8 +187,62 @@ func StagePath(appname, sourcePath string, opts StageOptions) (string, string, e
 
 // return (appname, templatePath, appVersion, error)
 func Stage(opts StageOptions) (string, string, string, error) {
-	appname := compilation.Name()
+	appname := Name()
 	templatePath, appVersion, err := StagePath(appname, "", opts)
 
+	// TODO parallelize these two
+	if err := dropChartYaml(templatePath); err != nil {
+		return "", "", "", err
+	}
+	if err := dropHelmIgnore(templatePath); err != nil {
+		return "", "", "", err
+	}
+
 	return appname, templatePath, appVersion, err
+}
+
+// This is just to make helmClient.Template happy.
+func dropChartYaml(templatePath string) error {
+	chartYaml := `
+apiVersion: v1
+name: lunchpail
+type: application
+version: 0.0.1
+appVersion: 0.0.1`
+	return os.WriteFile(filepath.Join(templatePath, "Chart.yaml"), []byte(chartYaml), 0644)
+}
+
+// This is just to make helmClient.Template happy.
+func dropHelmIgnore(templatePath string) error {
+	ignore := `
+*.md
+*~
+.git
+.gitignore
+.helmignore
+.DS_Store
+.cache
+LICENSE`
+	return util.AppendToFile(filepath.Join(templatePath, ".helmignore"), []byte(ignore))
+}
+
+// Reverse of Stage(), store a staged local filesystem in the "right
+// place" so that future calls to Stage() will pick up the changes
+func MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath string, verbose bool) error {
+	tarball := filepath.Join(lunchpailStageDir, embededTemplatePath)
+	verboseFlag := ""
+	if verbose {
+		verboseFlag = "-v"
+		fmt.Fprintf(os.Stderr, "Transferring staged app template to final stage %s -> %s\n", appTemplatePath, tarball)
+	}
+
+	cmd := exec.Command("tar", verboseFlag, "-zcf", tarball, "--exclude", "LICENSE", "--exclude", "*.git*", "-C", appTemplatePath, ".")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }

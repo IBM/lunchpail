@@ -3,6 +3,7 @@ kind: ProcessS3Objects
 metadata:
   name: test7b-workdispatcher
 spec:
-  secret: test7bdata
+  rclone:
+    remoteName: rcloneremotetest # see preinit.sh
   path: test7b/test7b
   repeat: 2

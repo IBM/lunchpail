@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"slices"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
@@ -20,49 +19,12 @@ type ConfigureOptions struct {
 
 func Configure(appname, runname, namespace, templatePath string, internalS3Port int, backend be.Backend, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Stage directory %s\n", templatePath)
+		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
-
-	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
-	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
-	} else {
-		if opts.CompilationOptions.Namespace == "" {
-			opts.CompilationOptions.Namespace = shrinkwrappedOptions.Namespace
-		}
-		// TODO here... how do we determine that boolean values were unset?
-		if opts.CompilationOptions.ImagePullSecret == "" {
-			opts.CompilationOptions.ImagePullSecret = shrinkwrappedOptions.ImagePullSecret
-		}
-
-		// careful: `--set x=3 --set x=4` results in x having
-		// value 4, so we need to place the shrinkwrapped
-		// options first in the list
-		opts.CompilationOptions.OverrideValues = append(shrinkwrappedOptions.OverrideValues, opts.CompilationOptions.OverrideValues...)
-		opts.CompilationOptions.OverrideFileValues = append(shrinkwrappedOptions.OverrideFileValues, opts.CompilationOptions.OverrideFileValues...)
-
-		if opts.CompilationOptions.Queue == "" {
-			opts.CompilationOptions.Queue = shrinkwrappedOptions.Queue
-		}
-		// TODO here... how do we determine that boolean values were unset?
-		if opts.CompilationOptions.HasGpuSupport == false {
-			opts.CompilationOptions.HasGpuSupport = shrinkwrappedOptions.HasGpuSupport
-		}
-		if !opts.CompilationOptions.CreateNamespace {
-			opts.CompilationOptions.CreateNamespace = shrinkwrappedOptions.CreateNamespace
-		}
-	}
-
-	systemNamespace := namespace
 
 	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
 	if err != nil {
 		return "", nil, nil, queue.Spec{}, err
-	}
-
-	imagePullSecretName, dockerconfigjson, ipsErr := imagePullSecret(opts.CompilationOptions.ImagePullSecret)
-	if ipsErr != nil {
-		return "", nil, nil, queue.Spec{}, ipsErr
 	}
 
 	user, err := user.Current()
@@ -73,7 +35,8 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	if queueSpec.Endpoint == "" {
 		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
 		runnameMax53 := util.Dns1035(runname + "-minio")
-		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, systemNamespace, internalS3Port)
+		queueSpec.Port = internalS3Port
+		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, namespace, internalS3Port)
 		queueSpec.AccessKey = "lunchpail"
 		queueSpec.SecretKey = "lunchpail"
 	}
@@ -81,32 +44,8 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 		queueSpec.Bucket = queueSpec.Name
 	}
 
-	backendValues, err := backend.Values()
-	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
-	}
-
-	serviceAccount := runname
-	if !backendValues.NeedsServiceAccount && imagePullSecretName == "" {
-		serviceAccount = ""
-	}
-
 	yaml := fmt.Sprintf(`
 lunchpail:
-  ips:
-    name: %s # imagePullSecretName (3)
-    dockerconfigjson: %s # dockerconfigjson (4)
-  namespace:
-    create: %v # opts.CreateNamespace (5)
-  rbac:
-    serviceaccount: %s # serviceAccount (6)
-  taskqueue:
-    auto: %v # queueSpec.Auto (17)
-    dataset: %s # queueSpec.Name (18)
-    endpoint: %s # queueSpec.Endpoint (19)
-    bucket: %s # queueSpec.Bucket (20)
-    accessKey: %s # queueSpec.AccessKey (21)
-    secretKey: %s # queueSpec.SecretKey (22)
   user:
     name: %s # user.Username (10)
     uid: %s # user.Uid (11)
@@ -117,34 +56,23 @@ lunchpail:
   name: %s # runname (23)
   partOf: %s # appname (16)
 `,
-		imagePullSecretName,                     // (3)
-		dockerconfigjson,                        // (4)
-		opts.CompilationOptions.CreateNamespace, // (5)
-		serviceAccount,                          // (6)
-		queueSpec.Auto,                          // (17)
-		queueSpec.Name,                          // (18)
-		queueSpec.Endpoint,                      // (19)
-		queueSpec.Bucket,                        // (20)
-		queueSpec.AccessKey,                     // (21)
-		queueSpec.SecretKey,                     // (22)
-		user.Username,                           // (10)
-		user.Uid,                                // (11)
-		lunchpail.ImageRegistry,                 // (12)
-		lunchpail.ImageRepo,                     // (13)
-		lunchpail.Version(),                     // (14)
-		runname,                                 // (23)
-		appname,                                 // (16)
+		user.Username,           // (10)
+		user.Uid,                // (11)
+		lunchpail.ImageRegistry, // (12)
+		lunchpail.ImageRepo,     // (13)
+		lunchpail.Version(),     // (14)
+		runname,                 // (23)
+		appname,                 // (16)
 	)
 
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.CompilationOptions.OverrideValues)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.CompilationOptions.OverrideFileValues)
-		fmt.Fprintf(os.Stderr, "shrinkwrap backend overrides=%v\n", backendValues)
 	}
 
-	overrides := slices.Concat(opts.CompilationOptions.OverrideValues, backendValues.Kv)
-	fileOverrides := opts.CompilationOptions.OverrideFileValues // Note: no backend value support here
+	overrides := opts.CompilationOptions.OverrideValues
+	fileOverrides := opts.CompilationOptions.OverrideFileValues
 
 	return yaml, overrides, fileOverrides, queueSpec, nil
 }

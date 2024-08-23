@@ -50,13 +50,14 @@ type envFrom struct {
 	Prefix string `json:"prefix,omitempty"`
 }
 
-func datasets(app hlir.Application, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, []initContainer, error) {
+func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, []initContainer, []map[string]string, error) {
 	volumes := []volume{}
 	volumeMounts := []volumeMount{}
 	envFroms := []envFrom{envForQueue(queueSpec)}
+	secrets := []map[string]string{}
 	initContainers := []initContainer{}
 
-	for _, dataset := range app.Spec.Datasets {
+	for didx, dataset := range app.Spec.Datasets {
 		name := dataset.Name
 
 		if dataset.Nfs.Server != "" {
@@ -73,27 +74,30 @@ func datasets(app hlir.Application, queueSpec queue.Spec) ([]volume, []volumeMou
 			volumes = append(volumes, v)
 			volumeMounts = append(volumeMounts, volumeMount{name, dataset.MountPath})
 		}
-		if dataset.S3.Secret != "" {
-			prefix := dataset.S3.EnvPrefix
-			if prefix == "" {
-				prefix = dataset.Name + "_"
-			}
+		if dataset.S3.Rclone.RemoteName != "" {
+			isValid, spec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, queueSpec.Port)
 
-			env := envFrom{secretRef{dataset.S3.Secret}, prefix}
-
-			if dataset.S3.CopyIn.Path == "" {
-				// then we add the secrets as env vars
-				// attached to the main container
-				envFroms = append(envFroms, env)
-			} else {
+			if err != nil {
+				return nil, nil, nil, nil, secrets, err
+			} else if !isValid {
+				return nil, nil, nil, nil, secrets, fmt.Errorf("Error: invalid or missing rclone config for given remote=%s for Application=%s", dataset.S3.Rclone.RemoteName, app.Metadata.Name)
+			} else if dataset.S3.EnvFrom.Prefix != "" {
+				secretName := fmt.Sprintf("%s-%d", runname, didx)
+				secrets = append(secrets, map[string]string{
+					"endpoint":        spec.Endpoint,
+					"accessKeyID":     spec.AccessKey,
+					"secretAccessKey": spec.SecretKey,
+				})
+				envFroms = append(envFroms, envFrom{secretRef{secretName}, dataset.S3.EnvFrom.Prefix})
+			} else if dataset.S3.CopyIn.Path != "" {
 				// otherwise, we were asked to copy
 				// data in from s3, so we will use the
 				// secrets attached to an
 				// initContainer
 				initContainers = append(initContainers, initContainer{
-					Name:         "s3-copy-in-" + dataset.Name,
-					Image:        "docker.io/rclone/rclone:1",
-					EnvFrom:      []envFrom{env},
+					Name:  "s3-copy-in-" + dataset.Name,
+					Image: "docker.io/rclone/rclone:1",
+					// EnvFrom:      []envFrom{env},
 					VolumeMounts: []volumeMount{volumeMount{"workdir", "/workdir"}},
 					Command: []string{
 						"/bin/sh",
@@ -107,9 +111,9 @@ cat <<EOF > $config
 type = s3
 provider = Other
 env_auth = false
-endpoint = $%sendpoint
-access_key_id = $%saccessKeyID
-secret_access_key = $%ssecretAccessKey
+endpoint = %s
+access_key_id = %s
+secret_access_key = %s
 acl = public-read
 EOF
 
@@ -119,41 +123,51 @@ rclone --config $config config dump
 sleep %d
 
 rclone --retries 50 --config $config copyto -v s3:/%s /workdir/%s/%s
-`, env.Prefix, env.Prefix, env.Prefix, dataset.S3.CopyIn.Delay, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
+`, spec.Endpoint, spec.AccessKey, spec.SecretKey, dataset.S3.CopyIn.Delay, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
 					},
 				})
 			}
 		}
 	}
 
-	return volumes, volumeMounts, envFroms, initContainers, nil
+	return volumes, volumeMounts, envFroms, initContainers, secrets, nil
 }
 
-func DatasetsB64(app hlir.Application, queueSpec queue.Spec) (string, string, string, string, error) {
-	volumes, volumeMounts, envFroms, initContainers, err := datasets(app, queueSpec)
+func DatasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (string, string, string, string, []string, error) {
+	secretsB64 := []string{}
+
+	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasets(app, runname, queueSpec)
 	if err != nil {
-		return "", "", "", "", err
+		return "", "", "", "", secretsB64, err
 	}
 
 	volumesB64, err := util.ToJsonB64(volumes)
 	if err != nil {
-		return "", "", "", "", err
+		return "", "", "", "", secretsB64, err
 	}
 
 	volumeMountsB64, err := util.ToJsonB64(volumeMounts)
 	if err != nil {
-		return "", "", "", "", err
+		return "", "", "", "", secretsB64, err
 	}
 
 	envFromsB64, err := util.ToJsonB64(envFroms)
 	if err != nil {
-		return "", "", "", "", err
+		return "", "", "", "", secretsB64, err
 	}
 
 	initContainersB64, err := util.ToJsonB64(initContainers)
 	if err != nil {
-		return "", "", "", "", err
+		return "", "", "", "", secretsB64, err
 	}
 
-	return volumesB64, volumeMountsB64, envFromsB64, initContainersB64, nil
+	for _, secret := range secrets {
+		str, err := util.ToJsonB64(secret)
+		if err != nil {
+			return "", "", "", "", secretsB64, err
+		}
+		secretsB64 = append(secretsB64, str)
+	}
+
+	return volumesB64, volumeMountsB64, envFromsB64, initContainersB64, secretsB64, nil
 }

@@ -36,7 +36,8 @@ spec:
   datasets:
     - name: test
       s3:
-        secret: test7data
+        rclone:
+          remoteName: rcloneremotetest # see preinit.sh
         copyIn:
           path: "test7/"
           delay: 8 # tests/bin/run.sh only copies in the data that we will copy out *after* the test has begun

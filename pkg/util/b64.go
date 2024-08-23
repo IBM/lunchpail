@@ -19,6 +19,10 @@ func ToArray(A []int) string {
 	return "{" + strings.Join(S, ",") + "}"
 }
 
+func ToB64Array(A []string) string {
+	return "{" + strings.Join(A, ",") + "}"
+}
+
 func ToPortArray(A []string) string {
 	portArray := []string{}
 	for _, port := range A {

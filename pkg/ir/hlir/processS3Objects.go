@@ -5,7 +5,7 @@ type ProcessS3Objects struct {
 	Kind       string
 	Metadata   Metadata
 	Spec       struct {
-		Secret string
+		Rclone
 		Path   string
 		Repeat int `yaml:",omitempty"`
 		Env    Env `yaml:",omitempty"`
