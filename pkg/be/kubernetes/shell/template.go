@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/be/kubernetes/common"
-	templater "lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 )
@@ -103,11 +103,11 @@ func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose 
 
 	releaseName := c.InstanceName + "-" + string(c.Component)
 
-	return templater.Template(
+	return helm.Template(
 		releaseName,
 		ir.Namespace,
 		templatePath,
 		"", // no yaml values at the moment
-		templater.TemplateOptions{Verbose: verbose, OverrideValues: values},
+		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},
 	)
 }

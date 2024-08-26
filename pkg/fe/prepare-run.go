@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/parser"
-	"lunchpail.io/pkg/fe/template"
 	"lunchpail.io/pkg/fe/transformer"
 	"lunchpail.io/pkg/ir"
 )
@@ -98,7 +98,8 @@ func PrepareForRun(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		defer os.RemoveAll(templatePath)
 	}
 
-	if yaml, err := template.Template(runname, namespace, templatePath, yamlValues, template.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: opts.Verbose}); err != nil {
+	// we need to instantiate the application's templates first...
+	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: opts.Verbose}); err != nil {
 		return ir.Linked{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return ir.Linked{}, err
