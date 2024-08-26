@@ -1,4 +1,4 @@
-package api
+package shell
 
 import (
 	"fmt"
@@ -35,7 +35,7 @@ func code(application hlir.Application, namespace string) (data, string, error) 
 	}
 }
 
-func CodeB64(application hlir.Application, namespace string) (string, string, error) {
+func codeB64(application hlir.Application, namespace string) (string, string, error) {
 	data, mountPath, err := code(application, namespace)
 	if err != nil {
 		return "", "", err

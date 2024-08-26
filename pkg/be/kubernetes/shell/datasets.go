@@ -1,4 +1,4 @@
-package api
+package shell
 
 import (
 	"fmt"
@@ -133,7 +133,7 @@ rclone --retries 50 --config $config copyto -v s3:/%s /workdir/%s/%s
 	return volumes, volumeMounts, envFroms, initContainers, secrets, nil
 }
 
-func DatasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (string, string, string, string, []string, error) {
+func datasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (string, string, string, string, []string, error) {
 	secretsB64 := []string{}
 
 	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasets(app, runname, queueSpec)
@@ -170,4 +170,12 @@ func DatasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (st
 	}
 
 	return volumesB64, volumeMountsB64, envFromsB64, initContainersB64, secretsB64, nil
+}
+
+// Inject queue secrets
+func envForQueue(queueSpec queue.Spec) envFrom {
+	return envFrom{
+		Prefix:    "lunchpail_queue_",
+		SecretRef: secretRef{queueSpec.Name},
+	}
 }

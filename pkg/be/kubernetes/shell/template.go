@@ -9,7 +9,6 @@ import (
 
 	"lunchpail.io/pkg/be/kubernetes/common"
 	templater "lunchpail.io/pkg/fe/template"
-	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 )
@@ -40,12 +39,12 @@ func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose 
 		return "", err
 	}
 
-	volumes, volumeMounts, envFroms, initContainers, secrets, err := api.DatasetsB64(c.Application, ir.RunName, ir.Queue)
+	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasetsB64(c.Application, ir.RunName, ir.Queue)
 	if err != nil {
 		return "", err
 	}
 
-	workdirCmData, workdirCmMountPath, err := api.CodeB64(c.Application, ir.Namespace)
+	workdirCmData, workdirCmMountPath, err := codeB64(c.Application, ir.Namespace)
 	if err != nil {
 		return "", err
 	}
