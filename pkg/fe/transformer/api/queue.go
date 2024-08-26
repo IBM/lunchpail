@@ -41,11 +41,3 @@ func QueuePrefixPathForWorker(queueSpec queue.Spec, runname, poolName string) st
 		QueueSubPathForWorker(poolName, "$LUNCHPAIL_WORKER_NAME"),
 	)
 }
-
-// Inject queue secrets
-func envForQueue(queueSpec queue.Spec) envFrom {
-	return envFrom{
-		Prefix:    "lunchpail_queue_",
-		SecretRef: secretRef{queueSpec.Name},
-	}
-}
