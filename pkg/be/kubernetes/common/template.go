@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	templater "lunchpail.io/pkg/fe/template"
+	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 )
@@ -26,12 +26,12 @@ func templateLunchpailCommonResources(ir llir.LLIR, opts Options, verbose bool) 
 		return "", err
 	}
 
-	return templater.Template(
+	return helm.Template(
 		ir.RunName+"-common",
 		ir.Namespace,
 		templatePath,
 		"", // no yaml values at the moment
-		templater.TemplateOptions{Verbose: verbose, OverrideValues: values},
+		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},
 	)
 }
 
