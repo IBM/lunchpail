@@ -103,7 +103,7 @@ func PrepareForRun(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		return ir.Linked{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return ir.Linked{}, err
-	} else if llir, err := transformer.Lower(compilationName, runname, namespace, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
+	} else if llir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
 		return ir.Linked{}, err
 	} else {
 		return ir.Linked{

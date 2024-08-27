@@ -13,7 +13,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose bool) (string, error) {
+func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common.Options, verbose bool) (string, error) {
 	templatePath, err := stage(template, templateFile)
 	if err != nil {
 		return "", err
@@ -44,7 +44,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose 
 		return "", err
 	}
 
-	workdirCmData, workdirCmMountPath, err := codeB64(c.Application, ir.Namespace)
+	workdirCmData, workdirCmMountPath, err := codeB64(c.Application)
 	if err != nil {
 		return "", err
 	}
@@ -105,7 +105,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, opts common.Options, verbose 
 
 	return helm.Template(
 		releaseName,
-		ir.Namespace,
+		namespace,
 		templatePath,
 		"", // no yaml values at the moment
 		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},

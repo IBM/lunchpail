@@ -24,7 +24,7 @@ func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
 	}
 
 	if opts.DryRun {
-		fmt.Printf(kubernetes.DryRun(linked.Ir, cliOptions, opts.Verbose))
+		fmt.Printf(kubernetes.DryRun(linked.Ir, linked.Namespace, cliOptions, opts.Verbose))
 		return nil
 	} else if isUp {
 		if err := backend.Up(linked, cliOptions, opts.Verbose); err != nil {

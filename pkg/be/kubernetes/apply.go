@@ -68,7 +68,7 @@ func applyOperation(ir llir.LLIR, namespace, context string, operation Operation
 		return err
 	}
 
-	yamls, err := MarshalAllComponents(ir, opts, verbose)
+	yamls, err := MarshalAllComponents(ir, namespace, opts, verbose)
 	if err != nil {
 		return err
 	}
