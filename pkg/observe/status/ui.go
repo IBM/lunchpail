@@ -146,7 +146,7 @@ func UI(runnameIn string, backend be.Backend, opts Options) error {
 		defer f.Close()
 	}
 
-	c, _, err := StatusStreamer(appname, runname, namespace, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
+	c, _, err := StatusStreamer(appname, runname, namespace, backend, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}

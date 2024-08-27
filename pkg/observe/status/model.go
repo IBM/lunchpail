@@ -5,10 +5,9 @@ import (
 	"slices"
 	"sync"
 
-	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/be/controller"
+	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/observe/cpu"
-	"lunchpail.io/pkg/observe/events"
 	"lunchpail.io/pkg/observe/qstat"
 )
 
@@ -22,7 +21,7 @@ type Pool struct {
 	Name        string
 	Namespace   string
 	Parallelism int
-	Platform    platform.Platform
+	Ctrl        controller.Controller
 	Workers     []Worker
 }
 
@@ -139,5 +138,5 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 
 func (pool *Pool) changeWorkers(delta int) error {
 	context := "" // TODO
-	return be.ChangeWorkers(pool.Name, pool.Namespace, pool.Platform, context, delta)
+	return pool.Ctrl.ChangeWorkers(pool.Name, pool.Namespace, context, delta)
 }

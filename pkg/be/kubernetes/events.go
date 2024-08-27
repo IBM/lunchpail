@@ -7,7 +7,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
-	"lunchpail.io/pkg/observe/events"
+
+	"lunchpail.io/pkg/be/events"
 )
 
 // ugh, i don't see a way to track events for a *class* of pods, e.g. by label selector
@@ -25,7 +26,7 @@ func stream(runname string, watcher watch.Interface, c chan events.Message) {
 	}
 }
 
-func StreamRunEvents(appname, runname, namespace string) (chan events.Message, error) {
+func (backend Backend) StreamRunEvents(appname, runname, namespace string) (chan events.Message, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err

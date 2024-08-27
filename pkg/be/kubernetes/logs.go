@@ -8,17 +8,18 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	comp "lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/observe/events"
+
+	"lunchpail.io/pkg/be/events"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 type LogLine struct {
 	Timestamp time.Time
-	Component comp.Component
+	Component lunchpail.Component
 	Message   string
 }
 
-func streamLogUpdatesForComponent(podName, namespace string, component comp.Component, onlyInfo bool, c chan events.Message) error {
+func streamLogUpdatesForComponent(podName, namespace string, component lunchpail.Component, onlyInfo bool, c chan events.Message) error {
 	clientset, _, err := Client()
 	if err != nil {
 		return err
@@ -40,13 +41,13 @@ func streamLogUpdatesForWorker(podName, namespace string, c chan events.Message)
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, namespace, comp.WorkersComponent, false, clientset, c)
+		return streamLogUpdatesForPod(podName, namespace, lunchpail.WorkersComponent, false, clientset, c)
 	}()
 
 	return nil
 }
 
-func streamLogUpdatesForPod(podName, namespace string, component comp.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan events.Message) error {
+func streamLogUpdatesForPod(podName, namespace string, component lunchpail.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan events.Message) error {
 	for {
 		tail := int64(500)
 		logsStreamer, err := clientset.
@@ -89,7 +90,7 @@ func streamLogUpdatesForPod(podName, namespace string, component comp.Component,
 				}
 			}
 
-			c <- events.Message{Timestamp: time.Now(), Who: events.ComponentShortName(component), Message: line}
+			c <- events.Message{Timestamp: time.Now(), Who: lunchpail.ComponentShortName(component), Message: line}
 		}
 
 		break

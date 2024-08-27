@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func ChangeWorkers(poolName, poolNamespace, poolContext string, delta int) error {
+func (backend Backend) ChangeWorkers(poolName, poolNamespace, poolContext string, delta int) error {
 	// TODO handle poolContext!!!
 	clientset, _, err := Client()
 	if err != nil {
