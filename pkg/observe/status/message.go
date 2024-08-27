@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"lunchpail.io/pkg/observe/events"
+	"lunchpail.io/pkg/be/events"
 )
 
 type Message = events.Message

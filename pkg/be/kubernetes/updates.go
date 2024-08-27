@@ -9,9 +9,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
-	"lunchpail.io/pkg/be/platform"
-	comp "lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/observe/events"
+
+	"lunchpail.io/pkg/be/events"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 func startWatching(app, run, namespace string) (watch.Interface, error) {
@@ -63,7 +63,7 @@ func statusFromPod(pod *v1.Pod) events.WorkerStatus {
 	return workerStatus
 }
 
-func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUpdate, cm chan events.Message) error {
+func (backend Backend) updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUpdate, cm chan events.Message) error {
 	component, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
@@ -72,23 +72,23 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 	workerStatus := statusFromPod(pod)
 
 	switch component {
-	case string(comp.WorkStealerComponent):
+	case string(lunchpail.WorkStealerComponent):
 		if what == watch.Added {
 			// new workerstealer pod. start streaming its logs
-			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, comp.WorkStealerComponent, true, cm); err != nil {
+			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, lunchpail.WorkStealerComponent, true, cm); err != nil {
 				return err
 			}
 		}
-		cc <- events.WorkStealerUpdate(pod.Namespace, platform.Kubernetes, workerStatus, what)
-	case string(comp.DispatcherComponent):
+		cc <- events.WorkStealerUpdate(pod.Namespace, backend, workerStatus, what)
+	case string(lunchpail.DispatcherComponent):
 		if what == watch.Added {
 			// new dispatcher pod. start streaming its logs
-			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, comp.DispatcherComponent, false, cm); err != nil {
+			if err := streamLogUpdatesForComponent(pod.Name, pod.Namespace, lunchpail.DispatcherComponent, false, cm); err != nil {
 				return err
 			}
 		}
-		cc <- events.DispatcherUpdate(pod.Namespace, platform.Kubernetes, workerStatus, what)
-	case string(comp.WorkersComponent):
+		cc <- events.DispatcherUpdate(pod.Namespace, backend, workerStatus, what)
+	case string(lunchpail.WorkersComponent):
 		if what == watch.Added {
 			// new worker pod. start streaming its logs
 			if err := streamLogUpdatesForWorker(pod.Name, pod.Namespace, cm); err != nil {
@@ -106,7 +106,7 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, cc chan events.ComponentUp
 			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
 		}
 
-		cc <- events.WorkerUpdate(pod.Name, pod.Namespace, poolName, platform.Kubernetes, workerStatus, what)
+		cc <- events.WorkerUpdate(pod.Name, pod.Namespace, poolName, backend, workerStatus, what)
 	}
 
 	return nil
@@ -124,18 +124,18 @@ func timeOf(pod *v1.Pod) time.Time {
 	return last
 }
 
-func streamPodUpdates(watcher watch.Interface, cc chan events.ComponentUpdate, cm chan events.Message) {
+func (backend Backend) streamPodUpdates(watcher watch.Interface, cc chan events.ComponentUpdate, cm chan events.Message) {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if err := updateFromPod(pod, event.Type, cc, cm); err != nil {
+			if err := backend.updateFromPod(pod, event.Type, cc, cm); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 			}
 		}
 	}
 }
 
-func StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error) {
+func (backend Backend) StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error) {
 	watcher, err := startWatching(appname, runname, namespace)
 	if err != nil {
 		return nil, nil, err
@@ -143,6 +143,6 @@ func StreamRunComponentUpdates(appname, runname, namespace string) (chan events.
 
 	cc := make(chan events.ComponentUpdate)
 	cm := make(chan events.Message)
-	go streamPodUpdates(watcher, cc, cm)
+	go backend.streamPodUpdates(watcher, cc, cm)
 	return cc, cm, nil
 }

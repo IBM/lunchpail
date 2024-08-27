@@ -1,9 +1,10 @@
 package status
 
 import (
-	"lunchpail.io/pkg/observe/colors"
-	"lunchpail.io/pkg/observe/events"
 	"strings"
+
+	"lunchpail.io/pkg/be/events"
+	"lunchpail.io/pkg/observe/colors"
 )
 
 func statusCell(status events.WorkerStatus) string {

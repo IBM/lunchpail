@@ -1,6 +1,7 @@
 package be
 
 import (
+	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/ir"
@@ -21,4 +22,10 @@ type Backend interface {
 
 	// List deployed runs
 	ListRuns(appName, namespace string) ([]runs.Run, error)
+
+	//
+	StreamRunEvents(appname, runname, namespace string) (chan events.Message, error)
+
+	//
+	StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error)
 }

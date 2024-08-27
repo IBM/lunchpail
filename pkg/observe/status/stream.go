@@ -10,7 +10,7 @@ import (
 	"lunchpail.io/pkg/observe/qstat"
 )
 
-func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(app, run, namespace string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
 
 	model := NewModel()
@@ -29,7 +29,7 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 		return c, nil, err
 	}
 
-	updates, messages, err := be.StreamRunComponentUpdates(app, run, namespace)
+	updates, messages, err := backend.StreamRunComponentUpdates(app, run, namespace)
 	if err != nil {
 		return c, nil, err
 	}
@@ -62,7 +62,7 @@ func StatusStreamer(app, run, namespace string, verbose bool, nLoglinesMax int, 
 	})
 
 	errgroup.Go(func() error {
-		msgs, err := be.StreamRunEvents(app, run, namespace)
+		msgs, err := backend.StreamRunEvents(app, run, namespace)
 		if err != nil {
 			return err
 		}
