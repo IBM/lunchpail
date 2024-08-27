@@ -11,7 +11,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func templateLunchpailCommonResources(ir llir.LLIR, opts Options, verbose bool) (string, error) {
+func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Options, verbose bool) (string, error) {
 	templatePath, err := stage(appTemplate, appTemplateFile)
 	if err != nil {
 		return "", err
@@ -28,7 +28,7 @@ func templateLunchpailCommonResources(ir llir.LLIR, opts Options, verbose bool) 
 
 	return helm.Template(
 		ir.RunName+"-common",
-		ir.Namespace,
+		namespace,
 		templatePath,
 		"", // no yaml values at the moment
 		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},

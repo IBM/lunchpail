@@ -6,7 +6,7 @@ import (
 )
 
 func (backend Backend) Up(linked ir.Linked, opts platform.CliOptions, verbose bool) error {
-	if err := backend.SetAction(linked.Options, linked.Ir, linked.Runname, Create, opts, verbose); err != nil {
+	if err := backend.SetAction(linked.Options, linked.Ir, linked.Runname, linked.Namespace, Create, opts, verbose); err != nil {
 		return err
 	}
 

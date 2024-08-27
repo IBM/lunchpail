@@ -13,8 +13,8 @@ import (
 )
 
 // HLIR -> LLIR
-func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
-	ir := llir.LLIR{AppName: compilationName, RunName: runname, Namespace: namespace, Queue: queueSpec}
+func Lower(compilationName, runname string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
+	ir := llir.LLIR{AppName: compilationName, RunName: runname, Queue: queueSpec}
 
 	minio, err := minio.Lower(compilationName, runname, model, ir, opts, verbose)
 	if err != nil {

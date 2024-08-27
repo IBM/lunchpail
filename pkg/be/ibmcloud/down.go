@@ -6,7 +6,7 @@ import (
 )
 
 func (backend Backend) Down(linked ir.Linked, opts platform.CliOptions, verbose bool) error {
-	if err := backend.SetAction(linked.Options, linked.Ir, linked.Runname, Delete, opts, verbose); err != nil {
+	if err := backend.SetAction(linked.Options, linked.Ir, linked.Runname, linked.Namespace, Delete, opts, verbose); err != nil {
 		return err
 	}
 

@@ -22,7 +22,7 @@ func codeFromLiteral(codeSpecs []hlir.Code) (data, string) {
 	return cm_data, cm_mount_path
 }
 
-func code(application hlir.Application, namespace string) (data, string, error) {
+func code(application hlir.Application) (data, string, error) {
 	if len(application.Spec.Code) > 0 {
 		// then the Application specifies a `spec.code` literal
 		// (i.e. inlined code directly in the Application yaml)
@@ -35,8 +35,8 @@ func code(application hlir.Application, namespace string) (data, string, error) 
 	}
 }
 
-func codeB64(application hlir.Application, namespace string) (string, string, error) {
-	data, mountPath, err := code(application, namespace)
+func codeB64(application hlir.Application) (string, string, error) {
+	data, mountPath, err := code(application)
 	if err != nil {
 		return "", "", err
 	}

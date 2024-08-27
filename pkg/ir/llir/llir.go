@@ -15,9 +15,8 @@ type Component interface {
 }
 
 type LLIR struct {
-	AppName   string
-	RunName   string
-	Namespace string
+	AppName string
+	RunName string
 
 	// Applications may provide their own Kubernetes resources
 	// that will be deployed once per run
