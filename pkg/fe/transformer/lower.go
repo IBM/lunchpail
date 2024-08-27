@@ -16,22 +16,22 @@ import (
 func Lower(compilationName, runname, namespace string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
 	ir := llir.LLIR{AppName: compilationName, RunName: runname, Namespace: namespace, Queue: queueSpec}
 
-	minio, err := minio.Lower(compilationName, runname, namespace, model, ir, opts, verbose)
+	minio, err := minio.Lower(compilationName, runname, model, ir, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	apps, err := lowerApplications(compilationName, runname, namespace, model, ir, opts, verbose)
+	apps, err := lowerApplications(compilationName, runname, model, ir, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := dispatch.Lower(compilationName, runname, namespace, model, ir, opts, verbose)
+	dispatchers, err := dispatch.Lower(compilationName, runname, model, ir, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	pools, err := workerpool.LowerAll(compilationName, runname, namespace, model, ir, opts, verbose)
+	pools, err := workerpool.LowerAll(compilationName, runname, model, ir, opts, verbose)
 	if err != nil {
 		return llir.LLIR{}, err
 	}

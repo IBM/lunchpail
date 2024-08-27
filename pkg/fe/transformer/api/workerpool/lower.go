@@ -12,7 +12,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname, namespace string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
 	spec.RunAsJob = true
@@ -38,7 +38,6 @@ func Lower(compilationName, runname, namespace string, app hlir.Application, poo
 	return shell.LowerAsComponent(
 		compilationName,
 		runname,
-		namespace,
 		app,
 		ir,
 		spec,

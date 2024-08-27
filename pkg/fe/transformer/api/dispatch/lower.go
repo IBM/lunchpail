@@ -9,11 +9,11 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.ParameterSweep, ...
-func Lower(compilationName, runname, namespace string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options, verbose bool) ([]llir.Component, error) {
+func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	for _, r := range model.ParameterSweeps {
-		if component, err := parametersweep.Lower(compilationName, runname, namespace, r, ir, opts, verbose); err != nil {
+		if component, err := parametersweep.Lower(compilationName, runname, r, ir, opts, verbose); err != nil {
 			return components, err
 		} else {
 			components = append(components, component)
@@ -21,7 +21,7 @@ func Lower(compilationName, runname, namespace string, model hlir.AppModel, ir l
 	}
 
 	for _, r := range model.ProcessS3Objects {
-		if component, err := s3.Lower(compilationName, runname, namespace, r, ir, opts, verbose); err != nil {
+		if component, err := s3.Lower(compilationName, runname, r, ir, opts, verbose); err != nil {
 			return components, err
 		} else {
 			components = append(components, component)
