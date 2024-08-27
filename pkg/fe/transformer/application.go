@@ -9,23 +9,28 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(compilationName, runname, namespace string, model hlir.AppModel, spec llir.LLIR, opts compilation.Options, verbose bool) ([]llir.Component, error) {
+func lowerApplications(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options, verbose bool) ([]llir.Component, error) {
 	components := []llir.Component{}
 
-	for _, r := range model.Applications {
-		switch {
-		case r.Spec.Role == hlir.WorkerRole:
-			if component, err := workstealer.Lower(compilationName, runname, namespace, r, spec, opts, verbose); err != nil {
-				return components, err
-			} else {
-				components = append(components, component)
+	if workstealer.IsNeeded(model) {
+		// Note, the actual worker resources will be dealt
+		// with when a WorkerPool is created. Here, we only
+		// need to specify a WorkStealer.
+		c, err := workstealer.Lower(compilationName, runname, ir, opts, verbose)
+		if err != nil {
+			return nil, err
+		}
+		components = append(components, c)
+	}
+
+	// Then, for every non-Worker, we lower it as a "shell"
+	for _, app := range model.Applications {
+		if app.Spec.Role != hlir.WorkerRole {
+			c, err := shell.Lower(compilationName, runname, app, ir, opts, verbose)
+			if err != nil {
+				return nil, err
 			}
-		default:
-			if component, err := shell.Lower(compilationName, runname, namespace, r, spec, opts, verbose); err != nil {
-				return components, err
-			} else {
-				components = append(components, component)
-			}
+			components = append(components, c)
 		}
 	}
 

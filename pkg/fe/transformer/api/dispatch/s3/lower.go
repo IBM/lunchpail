@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname string, s3 hlir.ProcessS3Objects, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
 	app, err := transpile(s3)
 	if err != nil {
 		return nil, err
@@ -17,7 +17,6 @@ func Lower(compilationName, runname, namespace string, s3 hlir.ProcessS3Objects,
 	return shell.LowerAsComponent(
 		compilationName,
 		runname,
-		namespace,
 		app,
 		ir,
 		llir.ShellComponent{Component: lunchpail.DispatcherComponent},
