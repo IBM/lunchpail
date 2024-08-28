@@ -15,11 +15,12 @@ func CopyIn(srcDir, bucket string) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "Uploading files from local directory=%s to s3 bucket=%s\n", srcDir, bucket)
+	fmt.Fprintf(os.Stderr, "Preparing upload with mkdirp on s3 bucket=%s\n", bucket)
 	if err := s3.Mkdirp(bucket); err != nil {
 		return err
 	}
 
+	fmt.Fprintf(os.Stderr, "Uploading files from local directory=%s to s3 bucket=%s\n", srcDir, bucket)
 	if err := filepath.WalkDir(srcDir, func(path string, dir fs.DirEntry, err error) error {
 		if err != nil {
 			return err
