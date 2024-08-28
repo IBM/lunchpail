@@ -56,7 +56,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"image=" + c.Application.Spec.Image,
 		"command=" + c.Application.Spec.Command,
 		fmt.Sprintf("lunchpail.runAsJob=%v", c.RunAsJob),
-		fmt.Sprintf("lunchpail.debug=%v", verbose),
+		// fmt.Sprintf("lunchpail.debug=%v", verbose),
 		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),
 		"workers.count=" + strconv.Itoa(c.Sizing.Workers),
 		"workers.cpu=" + c.Sizing.Cpu,

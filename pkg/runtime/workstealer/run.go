@@ -69,6 +69,10 @@ func Run() error {
 	fmt.Printf("INFO Workstealer starting")
 	printenv()
 
+	if err := c.s3.Mkdirp(s3.Paths.Bucket); err != nil {
+		return err
+	}
+
 	for {
 		// fetch model
 		m := c.fetchModel()
