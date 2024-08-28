@@ -138,8 +138,15 @@ func (s3 S3Client) Moveto(bucket, source, destination string) error {
 }
 
 func (s3 S3Client) Upload(bucket, source, destination string) error {
-	_, err := s3.client.FPutObject(context.Background(), bucket, destination, source, minio.PutObjectOptions{})
-	return err
+	for {
+		_, err := s3.client.FPutObject(context.Background(), bucket, destination, source, minio.PutObjectOptions{})
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (s3 S3Client) Download(bucket, source, destination string) error {
@@ -187,18 +194,23 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 	return nil
 }
 
+func (s3 S3Client) retryOnError(err error) bool {
+	if !(strings.Contains(err.Error(), "connection refused") ||
+		strings.Contains(err.Error(), "i/o timeout")) {
+		return false
+	}
+
+	time.Sleep(1 * time.Second)
+	return true
+}
+
 func (s3 S3Client) BucketExists(bucket string) (bool, error) {
 	yup := false
 	for {
-		if exists, err := s3.client.BucketExists(context.Background(), bucket); err != nil {
-			if !(strings.Contains(err.Error(), "connection refused") ||
-				strings.Contains(err.Error(), "i/o timeout")) {
-				return false, err
-			} else {
-				time.Sleep(1 * time.Second)
-				continue
-			}
-		} else {
+		exists, err := s3.client.BucketExists(context.Background(), bucket)
+		if err != nil && !s3.retryOnError(err) {
+			return false, err
+		} else if err == nil {
 			yup = exists
 			break
 		}

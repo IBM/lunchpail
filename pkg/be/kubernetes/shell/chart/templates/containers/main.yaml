@@ -15,6 +15,10 @@
   env:
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
+    {{- if .Values.lunchpail.debug }}
+    - name: DEBUG
+      value: "true"
+    {{- end }}
     - name: LUNCHPAIL_POD_NAME
       valueFrom:
         fieldRef:

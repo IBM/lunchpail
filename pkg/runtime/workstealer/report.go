@@ -1,16 +1,20 @@
 package workstealer
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"text/tabwriter"
 	"time"
 )
 
 // Record the current state of Model for observability
-func (model Model) report() {
+func (model Model) report(c client) error {
 	now := time.Now()
-	writer := tabwriter.NewWriter(os.Stderr, 0, 8, 1, '\t', tabwriter.AlignRight)
+
+	var b bytes.Buffer
+	writer := tabwriter.NewWriter(&b, 0, 8, 1, '\t', tabwriter.AlignRight)
 
 	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%s\n", len(model.UnassignedTasks), run, now.Format(time.UnixDate))
 	fmt.Fprintf(writer, "lunchpail.io\tdispatcherDone\t%v\t\t\t\t\t%s\n", model.DispatcherDone, run)
@@ -35,4 +39,22 @@ func (model Model) report() {
 	fmt.Fprintf(writer, "lunchpail.io\t---\n")
 
 	writer.Flush()
+
+	// for now, also log to stderr
+	fmt.Fprintf(os.Stderr, b.String())
+
+	// and write to the log file
+	if err := os.MkdirAll(logDir, 0700); err != nil {
+		return err
+	}
+	logFile := filepath.Join(logDir, "qstat.txt")
+	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	if _, err := b.WriteTo(f); err != nil {
+		return err
+	}
+
+	return c.reportChangedFile(logFile)
 }

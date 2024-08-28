@@ -13,6 +13,7 @@ import (
 var debug = os.Getenv("DEBUG") != ""
 var run = os.Getenv("LUNCHPAIL_RUN_NAME")
 var queue = os.Getenv("LUNCHPAIL_QUEUE_PATH")
+var logDir = filepath.Join(queue, "logs")
 var inbox = filepath.Join(queue, "inbox")
 var finished = filepath.Join(queue, "finished")
 var outbox = filepath.Join(queue, "outbox")
@@ -71,7 +72,10 @@ func Run() error {
 	for {
 		// fetch model
 		m := c.fetchModel()
-		m.report()
+
+		if err := m.report(c); err != nil {
+			return err
+		}
 
 		// assess it
 		if c.assess(m) {
