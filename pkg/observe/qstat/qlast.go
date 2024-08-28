@@ -19,7 +19,7 @@ func Qlast(marker, opt string, backend be.Backend, opts QlastOptions) (string, e
 		return "", err
 	}
 
-	c, _, err := backend.StreamQueueStats(runname, qstat.Options{Tail: int64(1000)})
+	c, _, err := backend.Streamer().QueueStats(runname, qstat.Options{Tail: int64(1000)})
 	if err != nil {
 		return strconv.Itoa(0), err
 	}

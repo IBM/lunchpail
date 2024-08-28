@@ -1,3 +1,5 @@
+//go:build full || observe
+
 package kubernetes
 
 import (
@@ -18,7 +20,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *utilization.Model, intervalSeconds int, c chan utilization.Model) error {
+func (streamer Streamer) execIntoPod(pod *v1.Pod, component lunchpail.Component, model *utilization.Model, intervalSeconds int, c chan utilization.Model) error {
 	sleep := strconv.Itoa(intervalSeconds)
 	sleepNanos := sleep + "000000000"
 	sleepMicros := sleep + "000000"
@@ -113,7 +115,7 @@ func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *utilization.
 	return nil
 }
 
-func updateFromPod(pod *v1.Pod, what watch.EventType, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
+func (streamer Streamer) utilizationUpdateFromPod(pod *v1.Pod, what watch.EventType, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
 	componentName, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
@@ -127,22 +129,22 @@ func updateFromPod(pod *v1.Pod, what watch.EventType, intervalSeconds int, c cha
 		component = lunchpail.WorkersComponent
 	}
 
-	if component != "" && pod.Status.Phase == "Running" && !alreadyExecdIntoPod(pod, model) {
-		go execIntoPod(pod, component, model, intervalSeconds, c)
+	if component != "" && pod.Status.Phase == "Running" && !streamer.alreadyExecdIntoPod(pod, model) {
+		go streamer.execIntoPod(pod, component, model, intervalSeconds, c)
 	}
 
 	return nil
 }
 
-func alreadyExecdIntoPod(pod *v1.Pod, model *utilization.Model) bool {
+func (streamer Streamer) alreadyExecdIntoPod(pod *v1.Pod, model *utilization.Model) bool {
 	return slices.IndexFunc(model.Workers, func(worker utilization.Worker) bool { return worker.Name == pod.Name }) >= 0
 }
 
-func streamPodUpdates(watcher watch.Interface, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
+func (streamer Streamer) streamPodUtilizationUpdates(watcher watch.Interface, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if err := updateFromPod(pod, event.Type, intervalSeconds, c, model); err != nil {
+			if err := streamer.utilizationUpdateFromPod(pod, event.Type, intervalSeconds, c, model); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 			}
 		}

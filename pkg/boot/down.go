@@ -1,3 +1,5 @@
+//go:build full || manage
+
 package boot
 
 import (

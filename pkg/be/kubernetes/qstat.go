@@ -1,3 +1,5 @@
+//go:build full || observe
+
 package kubernetes
 
 import (
@@ -19,7 +21,7 @@ import (
 	"lunchpail.io/pkg/fe/transformer/api"
 )
 
-func streamModel(runname, namespace string, follow bool, tail int64, quiet bool, c chan qstat.Model) error {
+func (streamer Streamer) streamModel(runname string, follow bool, tail int64, quiet bool, c chan qstat.Model) error {
 	opts := v1.PodLogOptions{Follow: follow}
 	if tail != -1 {
 		opts.TailLines = &tail
@@ -30,16 +32,16 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 		return err
 	}
 
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + runname})
+	pods, err := clientset.CoreV1().Pods(streamer.backend.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + runname})
 	if err != nil {
 		return err
 	} else if len(pods.Items) == 0 {
-		return fmt.Errorf("Cannot find run in namespace=%s\n", namespace)
+		return fmt.Errorf("Cannot find run in namespace=%s\n", streamer.backend.Namespace)
 	} else if len(pods.Items) > 1 {
-		return fmt.Errorf("Multiple matching runs found in namespace=%s\n", namespace)
+		return fmt.Errorf("Multiple matching runs found in namespace=%s\n", streamer.backend.Namespace)
 	}
 
-	podLogs := clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &opts)
+	podLogs := clientset.CoreV1().Pods(streamer.backend.Namespace).GetLogs(pods.Items[0].Name, &opts)
 	stream, err := podLogs.Stream(context.TODO())
 	if err != nil {
 		if strings.Contains(err.Error(), "waiting to start") {
@@ -48,7 +50,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 			}
 			time.Sleep(2 * time.Second)
 			// TODO update this to use the kubernetes watch api?
-			return streamModel(runname, namespace, follow, tail, quiet, c)
+			return streamer.streamModel(runname, follow, tail, quiet, c)
 		} else {
 			return err
 		}
@@ -155,12 +157,12 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 	return nil
 }
 
-func (backend Backend) StreamQueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error) {
+func (streamer Streamer) QueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error) {
 	c := make(chan qstat.Model)
 
 	errs, _ := errgroup.WithContext(context.Background())
 	errs.Go(func() error {
-		err := streamModel(runname, backend.Namespace, opts.Follow, opts.Tail, opts.Quiet, c)
+		err := streamer.streamModel(runname, opts.Follow, opts.Tail, opts.Quiet, c)
 		close(c)
 		return err
 	})

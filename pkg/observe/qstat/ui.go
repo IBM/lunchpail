@@ -22,7 +22,7 @@ func UI(runnameIn string, backend be.Backend, opts Options) error {
 		return err
 	}
 
-	c, errs, err := backend.StreamQueueStats(runname, opts)
+	c, errs, err := backend.Streamer().QueueStats(runname, opts)
 	if err != nil {
 		return err
 	}

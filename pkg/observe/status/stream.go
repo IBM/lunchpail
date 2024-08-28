@@ -17,17 +17,17 @@ func StatusStreamer(app, run string, backend be.Backend, verbose bool, nLoglines
 	model.RunName = run
 	model.LastNMessages = ring.New(nLoglinesMax)
 
-	qc, errgroup, err := backend.StreamQueueStats(run, qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
+	qc, errgroup, err := backend.Streamer().QueueStats(run, qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
 	if err != nil {
 		return c, nil, err
 	}
 
-	cpuc, err := backend.StreamUtilization(run, intervalSeconds)
+	cpuc, err := backend.Streamer().Utilization(run, intervalSeconds)
 	if err != nil {
 		return c, nil, err
 	}
 
-	updates, messages, err := backend.StreamRunComponentUpdates(app, run)
+	updates, messages, err := backend.Streamer().RunComponentUpdates(app, run)
 	if err != nil {
 		return c, nil, err
 	}
@@ -60,7 +60,7 @@ func StatusStreamer(app, run string, backend be.Backend, verbose bool, nLoglines
 	})
 
 	errgroup.Go(func() error {
-		msgs, err := backend.StreamRunEvents(app, run)
+		msgs, err := backend.Streamer().RunEvents(app, run)
 		if err != nil {
 			return err
 		}
