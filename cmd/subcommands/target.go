@@ -3,16 +3,23 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/compilation"
 )
 
-type TargetOptions struct {
-	TargetPlatform platform.Platform
-}
+type TargetOptions = be.TargetOptions
 
-func addTargetOptions(cmd *cobra.Command) *TargetOptions {
-	var options TargetOptions
-	options.TargetPlatform = platform.Kubernetes
+func addTargetOptions(cmd *cobra.Command) TargetOptions {
+	options := TargetOptions{TargetPlatform: platform.Kubernetes}
+
+	if compilation.IsCompiled() {
+		// by default, we use Namespace == app name
+		options.Namespace = compilation.Name()
+	}
+
 	cmd.Flags().VarP(&options.TargetPlatform, "target", "t", "Deployment target [kubernetes, ibmcloud, skypilot]")
-	return &options
+	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", options.Namespace, "Kubernetes namespace to deploy to")
+
+	return options
 }

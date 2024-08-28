@@ -14,7 +14,6 @@ import (
 )
 
 func newLogsCommand() *cobra.Command {
-	var namespaceFlag string
 	var componentsFlag []string
 	var followFlag bool
 	var verboseFlag bool
@@ -25,7 +24,6 @@ func newLogsCommand() *cobra.Command {
 		Long:  "Print or stream logs from the application",
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer)")
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
@@ -37,7 +35,7 @@ func newLogsCommand() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
@@ -60,7 +58,7 @@ func newLogsCommand() *cobra.Command {
 			}
 		}
 
-		return observe.Logs(maybeRun, backend, observe.LogsOptions{Namespace: namespaceFlag, Follow: followFlag, Verbose: verboseFlag, Components: comps})
+		return observe.Logs(maybeRun, backend, observe.LogsOptions{Namespace: tgtOpts.Namespace, Follow: followFlag, Verbose: verboseFlag, Components: comps})
 	}
 
 	return cmd

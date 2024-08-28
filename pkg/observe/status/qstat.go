@@ -1,7 +1,7 @@
 package status
 
 import (
-	"lunchpail.io/pkg/observe/qstat"
+	"lunchpail.io/pkg/be/events/qstat"
 	"slices"
 )
 

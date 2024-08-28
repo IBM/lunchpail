@@ -13,7 +13,7 @@ func (backend Backend) Down(linked ir.Linked, opts platform.CliOptions, verbose 
 	return nil
 }
 
-func (backend Backend) DeleteNamespace(compilationName, namespace string) error {
+func (backend Backend) DeleteNamespace(compilationName string) error {
 	// TODO?
 	return nil
 }

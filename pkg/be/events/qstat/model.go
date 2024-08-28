@@ -26,7 +26,7 @@ type Model struct {
 }
 
 // Count of Live workers across all pools
-func (model *Model) liveWorkers() int {
+func (model *Model) LiveWorkers() int {
 	N := 0
 	for _, pool := range model.Pools {
 		N += len(pool.LiveWorkers)
@@ -35,7 +35,7 @@ func (model *Model) liveWorkers() int {
 }
 
 // Count of Dead workers across all pools
-func (model *Model) deadWorkers() int {
+func (model *Model) DeadWorkers() int {
 	N := 0
 	for _, pool := range model.Pools {
 		N += len(pool.DeadWorkers)
@@ -44,6 +44,6 @@ func (model *Model) deadWorkers() int {
 }
 
 // Count of Live or Dead workers across all pools
-func (model *Model) workers() int {
-	return model.liveWorkers() + model.deadWorkers()
+func (model *Model) Workers() int {
+	return model.LiveWorkers() + model.DeadWorkers()
 }

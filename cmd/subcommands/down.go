@@ -11,7 +11,6 @@ import (
 )
 
 func newDownCmd() *cobra.Command {
-	var namespaceFlag string
 	var verboseFlag bool
 	var deleteNamespaceFlag bool
 	var deleteAllRunsFlag bool
@@ -24,7 +23,6 @@ func newDownCmd() *cobra.Command {
 		Long:  "Undeploy the application",
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&deleteNamespaceFlag, "delete-namespace", "N", false, "Also delete namespace (only for empty namespaces)")
 	cmd.Flags().BoolVarP(&deleteAllRunsFlag, "all", "A", false, "Delete all runs in the given namespace")
@@ -34,13 +32,13 @@ func newDownCmd() *cobra.Command {
 	tgtOpts := addTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{ApiKey: apiKey}) // TODO compilation.Options
+		backend, err := be.New(tgtOpts, compilation.Options{ApiKey: apiKey}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
 
 		return boot.DownList(args, backend, boot.DownOptions{
-			Namespace: namespaceFlag, Verbose: verboseFlag, DeleteNamespace: deleteNamespaceFlag,
+			Namespace: tgtOpts.Namespace, Verbose: verboseFlag, DeleteNamespace: deleteNamespaceFlag,
 			DeleteAll: deleteAllRunsFlag,
 			ApiKey:    apiKey, DeleteCloudResources: deleteCloudResourcesFlag})
 	}

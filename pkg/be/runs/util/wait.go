@@ -10,17 +10,13 @@ import (
 	"lunchpail.io/pkg/compilation"
 )
 
-func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (string, string, string, error) {
+func WaitForRun(runname string, wait bool, backend be.Backend) (string, string, error) {
 	appname := compilation.Name()
-	if namespace == "" {
-		namespace = appname
-	}
-
 	alreadySaidWeAreWaiting := false
 
 	for {
 		if runname == "" {
-			if singletonRun, err := Singleton(appname, namespace, backend); err != nil {
+			if singletonRun, err := Singleton(appname, backend); err != nil {
 				if wait && strings.Contains(err.Error(), "No runs") {
 					if !alreadySaidWeAreWaiting {
 						fmt.Fprintf(os.Stderr, "Waiting for runs...")
@@ -29,7 +25,7 @@ func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (strin
 					time.Sleep(2 * time.Second)
 					continue
 				} else {
-					return "", "", "", err
+					return "", "", err
 				}
 			} else {
 				runname = singletonRun.Name
@@ -44,8 +40,8 @@ func WaitForRun(runname, namespace string, wait bool, backend be.Backend) (strin
 	}
 
 	if runname == "" {
-		return "", "", "", fmt.Errorf("Unable to find any runs for application %s in namespace %s\n", appname, namespace)
+		return "", "", fmt.Errorf("Unable to find any runs for application %s\n", appname)
 	}
 
-	return appname, runname, namespace, nil
+	return appname, runname, nil
 }

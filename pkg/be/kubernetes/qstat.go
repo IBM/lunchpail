@@ -1,28 +1,31 @@
-package qstat
+package kubernetes
 
 import (
 	"bufio"
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/fe/transformer/api"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"lunchpail.io/pkg/be/events/qstat"
+	"lunchpail.io/pkg/fe/transformer/api"
 )
 
-func streamModel(runname, namespace string, follow bool, tail int64, quiet bool, c chan Model) error {
+func streamModel(runname, namespace string, follow bool, tail int64, quiet bool, c chan qstat.Model) error {
 	opts := v1.PodLogOptions{Follow: follow}
 	if tail != -1 {
 		opts.TailLines = &tail
 	}
 
-	clientset, _, err := kubernetes.Client()
+	clientset, _, err := Client()
 	if err != nil {
 		return err
 	}
@@ -52,7 +55,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 	}
 	buffer := bufio.NewReader(stream)
 
-	var model Model = Model{false, "", 0, 0, 0, 0, 0, []Pool{}}
+	model := qstat.Model{}
 	for {
 		line, err := buffer.ReadString('\n')
 		if err != nil { // == io.EOF {
@@ -71,7 +74,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 		marker := fields[1]
 		if marker == "---" && model.Valid {
 			c <- model
-			model = Model{true, "", 0, 0, 0, 0, 0, []Pool{}}
+			model = qstat.Model{Valid: true}
 			continue
 		} else if len(fields) >= 3 {
 			count, err := strconv.Atoi(fields[2])
@@ -121,15 +124,15 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 					continue
 				}
 
-				worker := Worker{
-					workerName, count, count2, count3, count4,
+				worker := qstat.Worker{
+					Name: workerName, Inbox: count, Processing: count2, Outbox: count3, Errorbox: count4,
 				}
 
-				pidx := slices.IndexFunc(model.Pools, func(pool Pool) bool { return pool.Name == poolName })
-				var pool Pool
+				pidx := slices.IndexFunc(model.Pools, func(pool qstat.Pool) bool { return pool.Name == poolName })
+				var pool qstat.Pool
 				if pidx < 0 {
 					// new pool
-					pool = Pool{poolName, []Worker{}, []Worker{}}
+					pool = qstat.Pool{Name: poolName}
 				} else {
 					pool = model.Pools[pidx]
 				}
@@ -143,7 +146,7 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 				if pidx < 0 {
 					model.Pools = append(model.Pools, pool)
 				} else {
-					model.Pools = slices.Concat(model.Pools[:pidx], []Pool{pool}, model.Pools[pidx+1:])
+					model.Pools = slices.Concat(model.Pools[:pidx], []qstat.Pool{pool}, model.Pools[pidx+1:])
 				}
 			}
 		}
@@ -152,12 +155,12 @@ func streamModel(runname, namespace string, follow bool, tail int64, quiet bool,
 	return nil
 }
 
-func QstatStreamer(runname, namespace string, opts Options) (chan Model, *errgroup.Group, error) {
-	c := make(chan Model)
+func (backend Backend) StreamQueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error) {
+	c := make(chan qstat.Model)
 
 	errs, _ := errgroup.WithContext(context.Background())
 	errs.Go(func() error {
-		err := streamModel(runname, namespace, opts.Follow, opts.Tail, opts.Quiet, c)
+		err := streamModel(runname, backend.Namespace, opts.Follow, opts.Tail, opts.Quiet, c)
 		close(c)
 		return err
 	})

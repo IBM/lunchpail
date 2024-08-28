@@ -26,14 +26,14 @@ func stream(runname string, watcher watch.Interface, c chan events.Message) {
 	}
 }
 
-func (backend Backend) StreamRunEvents(appname, runname, namespace string) (chan events.Message, error) {
+func (backend Backend) StreamRunEvents(appname, runname string) (chan events.Message, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err
 	}
 
 	timeout := timeoutSeconds
-	eventWatcher, err := clientset.CoreV1().Events(namespace).Watch(context.Background(), metav1.ListOptions{
+	eventWatcher, err := clientset.CoreV1().Events(backend.Namespace).Watch(context.Background(), metav1.ListOptions{
 		TimeoutSeconds: &timeout,
 	})
 	if err != nil {

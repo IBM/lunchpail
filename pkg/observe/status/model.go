@@ -7,8 +7,8 @@ import (
 
 	"lunchpail.io/pkg/be/controller"
 	"lunchpail.io/pkg/be/events"
-	"lunchpail.io/pkg/observe/cpu"
-	"lunchpail.io/pkg/observe/qstat"
+	"lunchpail.io/pkg/be/events/qstat"
+	"lunchpail.io/pkg/be/events/utilization"
 )
 
 type Worker struct {
@@ -28,14 +28,13 @@ type Pool struct {
 type Model struct {
 	AppName       string
 	RunName       string
-	Namespace     string
 	Pools         []Pool
 	Dispatcher    events.WorkerStatus
 	WorkStealer   events.WorkerStatus
 	LastNMessages *ring.Ring // ring of type Message
 	Progress      Progress
 	Qstat         qstat.Model
-	Cpu           cpu.Model
+	Cpu           utilization.Model
 }
 
 func NewModel() *Model {

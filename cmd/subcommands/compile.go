@@ -28,7 +28,7 @@ func newCompileCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
-	compilationOptions := addCompilationOptions(cmd)
+	compilationOptions := addCompilationOptions(cmd, false)
 	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 

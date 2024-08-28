@@ -13,15 +13,12 @@ import (
 )
 
 func newQlastCommand() *cobra.Command {
-	var namespaceFlag string
-
 	var cmd = &cobra.Command{
 		Use:   "qlast",
 		Short: "Stream queue statistics to console",
 		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	tgtOpts := addTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -31,12 +28,12 @@ func newQlastCommand() *cobra.Command {
 			extra = args[1]
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
 
-		val, err := qstat.Qlast(marker, extra, backend, qstat.QlastOptions{Namespace: namespaceFlag})
+		val, err := qstat.Qlast(marker, extra, backend, qstat.QlastOptions{})
 		if err != nil {
 			return err
 		}

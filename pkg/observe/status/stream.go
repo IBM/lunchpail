@@ -5,31 +5,29 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/events/qstat"
 	comp "lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/observe/cpu"
-	"lunchpail.io/pkg/observe/qstat"
 )
 
-func StatusStreamer(app, run, namespace string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(app, run string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
 
 	model := NewModel()
 	model.AppName = app
 	model.RunName = run
-	model.Namespace = namespace
 	model.LastNMessages = ring.New(nLoglinesMax)
 
-	qc, errgroup, err := qstat.QstatStreamer(run, namespace, qstat.Options{Namespace: namespace, Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
+	qc, errgroup, err := backend.StreamQueueStats(run, qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
 	if err != nil {
 		return c, nil, err
 	}
 
-	cpuc, err := cpu.CpuStreamer(run, namespace, intervalSeconds)
+	cpuc, err := backend.StreamUtilization(run, intervalSeconds)
 	if err != nil {
 		return c, nil, err
 	}
 
-	updates, messages, err := backend.StreamRunComponentUpdates(app, run, namespace)
+	updates, messages, err := backend.StreamRunComponentUpdates(app, run)
 	if err != nil {
 		return c, nil, err
 	}
@@ -62,7 +60,7 @@ func StatusStreamer(app, run, namespace string, backend be.Backend, verbose bool
 	})
 
 	errgroup.Go(func() error {
-		msgs, err := backend.StreamRunEvents(app, run, namespace)
+		msgs, err := backend.StreamRunEvents(app, run)
 		if err != nil {
 			return err
 		}

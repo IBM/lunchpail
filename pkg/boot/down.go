@@ -21,12 +21,11 @@ type DownOptions struct {
 }
 
 func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
-	compilationName, namespace := nans(opts)
 	deleteNs := opts.DeleteNamespace
 
 	if len(runnames) == 0 {
 		if opts.DeleteAll {
-			remainingRuns, err := backend.ListRuns(compilationName, namespace)
+			remainingRuns, err := backend.ListRuns(compilation.Name())
 			if err != nil {
 				return err
 			}
@@ -56,22 +55,12 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 	}
 
 	if deleteNs {
-		if err := backend.DeleteNamespace(compilationName, namespace); err != nil {
+		if err := backend.DeleteNamespace(compilation.Name()); err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-func nans(opts DownOptions) (string, string) {
-	compilationName := compilation.Name()
-	namespace := compilationName
-	if opts.Namespace != "" {
-		namespace = opts.Namespace
-	}
-
-	return compilationName, namespace
 }
 
 func toCompilationOpts(opts DownOptions) compilation.Options {
@@ -95,10 +84,8 @@ func toUpOpts(runname string, opts DownOptions) UpOptions {
 }
 
 func Down(runname string, backend be.Backend, opts DownOptions) error {
-	compilationName, namespace := nans(opts)
-
 	if runname == "" {
-		singletonRun, err := util.Singleton(compilationName, namespace, backend)
+		singletonRun, err := util.Singleton(compilation.Name(), backend)
 		if err != nil {
 			return err
 		}
@@ -119,7 +106,7 @@ func Down(runname string, backend be.Backend, opts DownOptions) error {
 	}
 
 	if opts.DeleteNamespace {
-		if err := backend.DeleteNamespace(compilationName, namespace); err != nil {
+		if err := backend.DeleteNamespace(compilation.Name()); err != nil {
 			return err
 		}
 	}

@@ -9,16 +9,16 @@ import (
 
 // Return a Run if there is one in the given namespace for the given
 // app, otherwise error
-func Singleton(appName, namespace string, backend be.Backend) (runs.Run, error) {
-	list, err := backend.ListRuns(appName, namespace)
+func Singleton(appName string, backend be.Backend) (runs.Run, error) {
+	list, err := backend.ListRuns(appName)
 	if err != nil {
 		return runs.Run{}, err
 	}
 	if len(list) == 1 {
 		return list[0], nil
 	} else if len(list) > 1 {
-		return runs.Run{}, fmt.Errorf("More than one run found in namespace %s:\n%s", namespace, runs.Pretty(list))
+		return runs.Run{}, fmt.Errorf("More than one run found for %s:\n%s", appName, runs.Pretty(list))
 	} else {
-		return runs.Run{}, fmt.Errorf("No runs found in namespace %s", namespace)
+		return runs.Run{}, fmt.Errorf("No runs found for %s", appName)
 	}
 }
