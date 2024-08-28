@@ -15,12 +15,12 @@ type CpuOptions struct {
 }
 
 func UI(runnameIn string, backend be.Backend, opts CpuOptions) error {
-	_, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, true, backend)
+	_, runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}
 
-	c, err := CpuStreamer(runname, namespace, opts.IntervalSeconds)
+	c, err := backend.StreamUtilization(runname, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}

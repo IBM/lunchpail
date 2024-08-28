@@ -10,24 +10,19 @@ import (
 	"golang.org/x/term"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/runs/util"
 )
 
-type Options struct {
-	Namespace string
-	Follow    bool
-	Tail      int64
-	Verbose   bool
-	Quiet     bool
-}
+type Options = qstat.Options
 
 func UI(runnameIn string, backend be.Backend, opts Options) error {
-	_, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, true, backend)
+	_, runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}
 
-	c, errs, err := QstatStreamer(runname, namespace, opts)
+	c, errs, err := backend.StreamQueueStats(runname, opts)
 	if err != nil {
 		return err
 	}
@@ -78,7 +73,7 @@ func UI(runnameIn string, backend be.Backend, opts Options) error {
 			}
 		}
 
-		fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.liveWorkers())
+		fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
 		fmt.Println(t)
 	}
 

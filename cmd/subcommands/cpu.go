@@ -11,7 +11,6 @@ import (
 )
 
 func Newcmd() *cobra.Command {
-	var namespaceFlag string
 	var verboseFlag bool
 	var intervalSecondsFlag int
 
@@ -21,7 +20,6 @@ func Newcmd() *cobra.Command {
 		Long:  "Displays CPU utilization",
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().IntVarP(&intervalSecondsFlag, "interval", "i", 2, "Sampling interval")
 	tgtOpts := addTargetOptions(cmd)
@@ -32,12 +30,12 @@ func Newcmd() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
 
-		return cpu.UI(maybeRun, backend, cpu.CpuOptions{Namespace: namespaceFlag, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
+		return cpu.UI(maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
 	}
 
 	return cmd

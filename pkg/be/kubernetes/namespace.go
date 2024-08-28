@@ -22,13 +22,13 @@ func deleteNamespace(namespace string) error {
 	return nil
 }
 
-func (backend Backend) DeleteNamespace(compilationName, namespace string) error {
-	remainingRuns, err := backend.ListRuns(compilationName, namespace)
+func (backend Backend) DeleteNamespace(compilationName string) error {
+	remainingRuns, err := backend.ListRuns(compilationName)
 	if err != nil {
 		return err
 	} else if len(remainingRuns) != 0 {
-		return fmt.Errorf("Non-empty namespace %s still has %d runs:\n%s", namespace, len(remainingRuns), runs.Pretty(remainingRuns))
-	} else if err := deleteNamespace(namespace); err != nil {
+		return fmt.Errorf("Non-empty namespace %s still has %d runs:\n%s", backend.Namespace, len(remainingRuns), runs.Pretty(remainingRuns))
+	} else if err := deleteNamespace(backend.Namespace); err != nil {
 		return err
 	}
 

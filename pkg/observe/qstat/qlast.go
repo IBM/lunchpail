@@ -6,25 +6,25 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/runs/util"
 )
 
 type QlastOptions struct {
-	Namespace string
 }
 
 func Qlast(marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
-	_, runname, namespace, err := util.WaitForRun("", opts.Namespace, true, backend)
+	_, runname, err := util.WaitForRun("", true, backend)
 	if err != nil {
 		return "", err
 	}
 
-	c, _, err := QstatStreamer(runname, namespace, Options{namespace, false, int64(1000), false, false})
+	c, _, err := backend.StreamQueueStats(runname, qstat.Options{Tail: int64(1000)})
 	if err != nil {
 		return strconv.Itoa(0), err
 	}
 
-	var lastmodel Model
+	var lastmodel qstat.Model
 	for model := range c {
 		lastmodel = model
 	}
@@ -34,9 +34,9 @@ func Qlast(marker, opt string, backend be.Backend, opts QlastOptions) (string, e
 		case "unassigned":
 			return strconv.Itoa(lastmodel.Unassigned), nil
 		case "liveworkers":
-			return strconv.Itoa(lastmodel.liveWorkers()), nil
+			return strconv.Itoa(lastmodel.LiveWorkers()), nil
 		case "workers":
-			return strconv.Itoa(lastmodel.workers()), nil
+			return strconv.Itoa(lastmodel.Workers()), nil
 		case "processing":
 			return strconv.Itoa(lastmodel.Processing), nil
 		case "success":

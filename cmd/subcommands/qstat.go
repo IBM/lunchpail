@@ -10,7 +10,6 @@ import (
 )
 
 func newQstatCommand() *cobra.Command {
-	var namespaceFlag string
 	var tailFlag int64
 	var followFlag bool
 	var verboseFlag bool
@@ -21,7 +20,6 @@ func newQstatCommand() *cobra.Command {
 		Short: "Stream queue statistics to console",
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Track updates (rather than printing once)")
 	cmd.Flags().Int64VarP(&tailFlag, "tail", "T", -1, "Number of lines to tail")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
@@ -34,12 +32,12 @@ func newQstatCommand() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
 
-		return qstat.UI(maybeRun, backend, qstat.Options{Namespace: namespaceFlag, Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
+		return qstat.UI(maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
 	}
 
 	return cmd

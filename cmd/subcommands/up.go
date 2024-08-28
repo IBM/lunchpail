@@ -14,10 +14,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addCompilationOptions(cmd *cobra.Command) *compilation.Options {
+func addCompilationOptions(cmd *cobra.Command, skipNamespaceFlag bool) *compilation.Options {
 	var options compilation.Options
 
-	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
+	if !skipNamespaceFlag {
+		cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Kubernetes namespace to deploy to")
+	}
+
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", "", "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVarP(&options.Queue, "queue", "", "", "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
 	cmd.Flags().BoolVarP(&options.HasGpuSupport, "gpu", "", false, "Run with GPUs (if supported by the application)")
@@ -57,7 +60,7 @@ func newUpCmd() *cobra.Command {
 	}
 
 	cmd.Flags().SortFlags = false
-	appOpts := addCompilationOptions(cmd)
+	appOpts := addCompilationOptions(cmd, true)
 	tgtOpts := addTargetOptions(cmd)
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
@@ -86,7 +89,7 @@ func newUpCmd() *cobra.Command {
 			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID, CreateNamespace: appOpts.CreateNamespace}
 		configureOptions := linker.ConfigureOptions{CompilationOptions: compilationOptions, Verbose: verboseFlag}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, compilationOptions)
+		backend, err := be.New(tgtOpts, compilationOptions)
 		if err != nil {
 			return err
 		}

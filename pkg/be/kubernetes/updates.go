@@ -135,8 +135,8 @@ func (backend Backend) streamPodUpdates(watcher watch.Interface, cc chan events.
 	}
 }
 
-func (backend Backend) StreamRunComponentUpdates(appname, runname, namespace string) (chan events.ComponentUpdate, chan events.Message, error) {
-	watcher, err := startWatching(appname, runname, namespace)
+func (backend Backend) StreamRunComponentUpdates(appname, runname string) (chan events.ComponentUpdate, chan events.Message, error) {
+	watcher, err := startWatching(appname, runname, backend.Namespace)
 	if err != nil {
 		return nil, nil, err
 	}

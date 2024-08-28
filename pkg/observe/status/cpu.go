@@ -1,10 +1,10 @@
 package status
 
 import (
-	"lunchpail.io/pkg/observe/cpu"
+	"lunchpail.io/pkg/be/events/utilization"
 )
 
-func (model *Model) streamCpuUpdates(cpuc chan cpu.Model, c chan Model) error {
+func (model *Model) streamCpuUpdates(cpuc chan utilization.Model, c chan Model) error {
 	for cpum := range cpuc {
 		model.Cpu = cpum
 		c <- *model

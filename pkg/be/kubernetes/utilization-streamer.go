@@ -1,4 +1,4 @@
-package cpu
+package kubernetes
 
 import (
 	"bufio"
@@ -13,11 +13,12 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
-	"lunchpail.io/pkg/be/kubernetes"
-	comp "lunchpail.io/pkg/lunchpail"
+
+	"lunchpail.io/pkg/be/events/utilization"
+	"lunchpail.io/pkg/lunchpail"
 )
 
-func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSeconds int, c chan Model) error {
+func execIntoPod(pod *v1.Pod, component lunchpail.Component, model *utilization.Model, intervalSeconds int, c chan utilization.Model) error {
 	sleep := strconv.Itoa(intervalSeconds)
 	sleepNanos := sleep + "000000000"
 	sleepMicros := sleep + "000000"
@@ -26,7 +27,7 @@ func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSe
 
 	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=` + sleepNanos + `;b=$(cat $f);sleep ` + sleep + `;e=$(cat $f);else f=cpu.stat;s=` + sleepMicros + `;b=$(cat $f|head -1|cut -d" " -f2);sleep ` + sleep + `;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f %d %s\n" $(echo "($e-$b)/($s)*100"|bc -l) ` + mem + `; done`}
 
-	clientset, kubeConfig, err := kubernetes.Client()
+	clientset, kubeConfig, err := Client()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return err
@@ -36,7 +37,7 @@ func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSe
 		Namespace(pod.Namespace).SubResource("exec")
 
 	container := "app"
-	if component == comp.DispatcherComponent {
+	if component == lunchpail.DispatcherComponent {
 		container = "main"
 	}
 
@@ -62,7 +63,7 @@ func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSe
 
 	reader, writer := io.Pipe()
 
-	model.Workers = append(model.Workers, Worker{pod.Name, component, 0.0, 0})
+	model.Workers = append(model.Workers, utilization.Worker{Name: pod.Name, Component: component})
 
 	go func() {
 		buffer := bufio.NewReader(reader)
@@ -72,7 +73,7 @@ func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSe
 				break
 			}
 
-			workerIdx := slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name })
+			workerIdx := slices.IndexFunc(model.Workers, func(worker utilization.Worker) bool { return worker.Name == pod.Name })
 			if workerIdx >= 0 {
 				changed := false
 				worker := model.Workers[workerIdx]
@@ -91,7 +92,7 @@ func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSe
 				}
 
 				if changed {
-					model.Workers = slices.Concat(model.Workers[:workerIdx], []Worker{worker}, model.Workers[workerIdx+1:])
+					model.Workers = slices.Concat(model.Workers[:workerIdx], []utilization.Worker{worker}, model.Workers[workerIdx+1:])
 					c <- *model
 				}
 			}
@@ -112,36 +113,36 @@ func execIntoPod(pod *v1.Pod, component comp.Component, model *Model, intervalSe
 	return nil
 }
 
-func updateFromPod(pod *v1.Pod, what watch.EventType, model *Model, intervalSeconds int, c chan Model) error {
+func updateFromPod(pod *v1.Pod, what watch.EventType, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
 	componentName, exists := pod.Labels["app.kubernetes.io/component"]
 	if !exists {
 		return fmt.Errorf("Worker without component label %s\n", pod.Name)
 	}
 
-	var component comp.Component
+	var component lunchpail.Component
 	switch componentName {
-	case string(comp.DispatcherComponent):
-		component = comp.DispatcherComponent
-	case string(comp.WorkersComponent):
-		component = comp.WorkersComponent
+	case string(lunchpail.DispatcherComponent):
+		component = lunchpail.DispatcherComponent
+	case string(lunchpail.WorkersComponent):
+		component = lunchpail.WorkersComponent
 	}
 
-	if component != "" && pod.Status.Phase == "Running" && !model.alreadyExecdIntoPod(pod) {
+	if component != "" && pod.Status.Phase == "Running" && !alreadyExecdIntoPod(pod, model) {
 		go execIntoPod(pod, component, model, intervalSeconds, c)
 	}
 
 	return nil
 }
 
-func (model *Model) alreadyExecdIntoPod(pod *v1.Pod) bool {
-	return slices.IndexFunc(model.Workers, func(worker Worker) bool { return worker.Name == pod.Name }) >= 0
+func alreadyExecdIntoPod(pod *v1.Pod, model *utilization.Model) bool {
+	return slices.IndexFunc(model.Workers, func(worker utilization.Worker) bool { return worker.Name == pod.Name }) >= 0
 }
 
-func (model *Model) streamPodUpdates(watcher watch.Interface, intervalSeconds int, c chan Model) error {
+func streamPodUpdates(watcher watch.Interface, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if err := updateFromPod(pod, event.Type, model, intervalSeconds, c); err != nil {
+			if err := updateFromPod(pod, event.Type, intervalSeconds, c, model); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 			}
 		}

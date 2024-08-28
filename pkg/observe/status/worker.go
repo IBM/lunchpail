@@ -5,7 +5,7 @@ import (
 
 	watch "k8s.io/apimachinery/pkg/watch"
 	"lunchpail.io/pkg/be/events"
-	"lunchpail.io/pkg/observe/qstat"
+	"lunchpail.io/pkg/be/events/qstat"
 )
 
 func updateWorker(update events.ComponentUpdate, pools []Pool) ([]Pool, error) {

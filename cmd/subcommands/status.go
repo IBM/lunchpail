@@ -11,7 +11,6 @@ import (
 )
 
 func newStatusCommand() *cobra.Command {
-	var namespaceFlag string
 	var watchFlag bool
 	var verboseFlag bool
 	var summaryFlag bool
@@ -23,7 +22,6 @@ func newStatusCommand() *cobra.Command {
 		Short: "Status of a run",
 	}
 
-	cmd.Flags().StringVarP(&namespaceFlag, "namespace", "n", "", "Kubernetes namespace that houses your instance")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Track updates to run status")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Stream more verbose updates to console")
 	cmd.Flags().BoolVarP(&summaryFlag, "summary", "s", false, "Show only summary information, do not break out queue stats")
@@ -42,12 +40,12 @@ func newStatusCommand() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(tgtOpts.TargetPlatform, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
 
-		return status.UI(maybeRun, backend, status.Options{Namespace: namespaceFlag, Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
+		return status.UI(maybeRun, backend, status.Options{Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
 	}
 
 	return cmd

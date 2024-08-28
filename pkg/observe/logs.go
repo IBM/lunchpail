@@ -57,7 +57,7 @@ func streamLogs(runname, namespace string, component comp.Component, follow bool
 }
 
 func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
-	_, runname, namespace, err := util.WaitForRun(runnameIn, opts.Namespace, true, backend)
+	_, runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
 
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			return streamLogs(runname, namespace, component, opts.Follow, opts.Verbose)
+			return streamLogs(runname, opts.Namespace, component, opts.Follow, opts.Verbose) // fixme Namespace
 		})
 	}
 

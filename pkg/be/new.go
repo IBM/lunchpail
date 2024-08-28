@@ -9,12 +9,17 @@ import (
 	"lunchpail.io/pkg/compilation"
 )
 
-func New(backend platform.Platform, aopts compilation.Options) (Backend, error) {
+type TargetOptions struct {
+	Namespace      string
+	TargetPlatform platform.Platform
+}
+
+func New(topts TargetOptions, aopts compilation.Options) (Backend, error) {
 	var be Backend
 
-	switch backend {
+	switch topts.TargetPlatform {
 	case platform.Kubernetes:
-		be = kubernetes.Backend{}
+		be = kubernetes.Backend{Namespace: topts.Namespace}
 	case platform.IBMCloud:
 		if ibm, err := ibmcloud.New(aopts); err != nil {
 			return nil, err
@@ -22,7 +27,7 @@ func New(backend platform.Platform, aopts compilation.Options) (Backend, error) 
 			be = ibm
 		}
 	default:
-		return nil, fmt.Errorf("Unsupported backend %v", backend)
+		return nil, fmt.Errorf("Unsupported backend %v", topts.TargetPlatform)
 	}
 
 	if err := be.Ok(); err != nil {

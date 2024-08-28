@@ -43,11 +43,11 @@ func listRuns(appName, namespace string, client kubernetes.Interface) ([]runs.Ru
 }
 
 // Return all Runs in the given namespace for the given app
-func (backend Backend) ListRuns(appName, namespace string) ([]runs.Run, error) {
+func (backend Backend) ListRuns(appName string) ([]runs.Run, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return []runs.Run{}, err
 	}
 
-	return listRuns(appName, namespace, clientset)
+	return listRuns(appName, backend.Namespace, clientset)
 }
