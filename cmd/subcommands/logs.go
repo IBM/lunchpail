@@ -58,7 +58,7 @@ func newLogsCommand() *cobra.Command {
 			}
 		}
 
-		return observe.Logs(maybeRun, backend, observe.LogsOptions{Namespace: tgtOpts.Namespace, Follow: followFlag, Verbose: verboseFlag, Components: comps})
+		return observe.Logs(maybeRun, backend, observe.LogsOptions{Follow: followFlag, Verbose: verboseFlag, Components: comps})
 	}
 
 	return cmd

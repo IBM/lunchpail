@@ -20,7 +20,7 @@ func UI(runnameIn string, backend be.Backend, opts CpuOptions) error {
 		return err
 	}
 
-	c, err := backend.StreamUtilization(runname, opts.IntervalSeconds)
+	c, err := backend.Streamer().Utilization(runname, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}

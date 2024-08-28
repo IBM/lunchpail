@@ -1,8 +1,13 @@
+//go:build full || observe
+
 package kubernetes
 
 import (
 	"bufio"
 	"context"
+	"fmt"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -19,7 +24,8 @@ type LogLine struct {
 	Message   string
 }
 
-func streamLogUpdatesForComponent(podName, namespace string, component lunchpail.Component, onlyInfo bool, c chan events.Message) error {
+// Stream logs from a given Component to the given channel
+func (streamer Streamer) podLogs(podName string, component lunchpail.Component, onlyInfo, follow bool, c chan events.Message) error {
 	clientset, _, err := Client()
 	if err != nil {
 		return err
@@ -27,8 +33,36 @@ func streamLogUpdatesForComponent(podName, namespace string, component lunchpail
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, namespace, component, onlyInfo, clientset, c)
+		return streamLogUpdatesForPod(podName, streamer.backend.Namespace, component, onlyInfo, follow, clientset, c)
 	}()
+
+	return nil
+}
+
+// TODO port this to use client-go
+func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Component, follow, verbose bool) error {
+	containers := "main"
+	runSelector := ",app.kubernetes.io/instance=" + runname
+
+	followFlag := ""
+	if follow {
+		followFlag = "-f"
+	}
+
+	selector := "app.kubernetes.io/component=" + string(component) + runSelector
+	cmdline := "kubectl logs -n " + streamer.backend.Namespace + " -l " + selector + " --tail=-1 " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
+
+	if verbose {
+		fmt.Fprintf(os.Stderr, "Tracking logs of component=%s\n", component)
+		fmt.Fprintf(os.Stderr, "Tracking logs via cmdline=%s\n", cmdline)
+	}
+
+	cmd := exec.Command("/bin/sh", "-c", cmdline)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -41,19 +75,19 @@ func streamLogUpdatesForWorker(podName, namespace string, c chan events.Message)
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, namespace, lunchpail.WorkersComponent, false, clientset, c)
+		return streamLogUpdatesForPod(podName, namespace, lunchpail.WorkersComponent, false, true, clientset, c)
 	}()
 
 	return nil
 }
 
-func streamLogUpdatesForPod(podName, namespace string, component lunchpail.Component, onlyInfo bool, clientset *kubernetes.Clientset, c chan events.Message) error {
+func streamLogUpdatesForPod(podName, namespace string, component lunchpail.Component, onlyInfo, follow bool, clientset *kubernetes.Clientset, c chan events.Message) error {
 	for {
 		tail := int64(500)
 		logsStreamer, err := clientset.
 			CoreV1().
 			Pods(namespace).
-			GetLogs(podName, &corev1.PodLogOptions{Follow: true, TailLines: &tail}).
+			GetLogs(podName, &corev1.PodLogOptions{Follow: follow, TailLines: &tail}).
 			Stream(context.Background())
 		if err != nil {
 			if !strings.Contains(err.Error(), "waiting to start") {
