@@ -2,19 +2,15 @@
 - name: main
   image: {{ .Values.image }}
   command:
-    {{- if eq .Values.lunchpail.component "workdispatcher" }}
-    {{- include "prestop/command" . | indent 4 }}
-    {{- else }}
     - /bin/sh
     - "-c"
     - |
-      touch /tmp/alive # see readiness probe below
+      touch /tmp/alive # for readiness probe
 {{ .Values.command | indent 6 }}
-    {{- end }}
-
   env:
     - name: LUNCHPAIL_QUEUE_PATH
       value: {{ .Values.taskqueue.prefixPath }}
+    {{- include "workdir/env" . | indent 4 }}
     {{- if .Values.lunchpail.debug }}
     - name: DEBUG
       value: "true"

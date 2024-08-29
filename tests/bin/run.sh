@@ -30,7 +30,7 @@ export RCLONE_CONFIG=$(mktemp)
 if [[ -e "$1"/.disabled ]]
 then
     echo "$(tput setaf 3)🧪 Skipping disabled test $(basename $1)$(tput sgr0)"
-    exit
+    exit 0
 fi
 
 . "$SCRIPTDIR"/helpers.sh
@@ -76,10 +76,23 @@ then
     rm -rf "$TARGET"
     mkdir -p "$TARGET"
 
+    namespace=${deployname-$testname}
+
+    if [[ -e "$1"/target ]]
+    then
+        if [[ $(cat "$1"/target) != "$LUNCHPAIL_TARGET" ]]
+        then
+            echo "$(tput setaf 3)🧪 Skipping due to unsupported target $(basename $1)$(tput sgr0)"
+            exit 0
+        fi
+    fi
+
+    compile $testname $app $branch $deployname
+
     if [[ -n "$expectCompilationFailure" ]]
     then
         set +e
-        out=$(deploy $testname $app $branch $deployname 2>&1)
+        out=$("$SCRIPTDIR"/up.sh $testname 2>&1)
         if [[ $? = 0 ]]
         then echo "Expected compilation failure, but compilation succeeded" 1>&2 && exit 1
         else
@@ -93,10 +106,8 @@ then
             exit 0
         fi
     else
-        deploy $testname $app $branch $deployname
+        "$SCRIPTDIR"/up.sh $testname &
     fi
-
-    namespace=${deployname-$testname}
 
     if [[ -e "$1"/init.sh ]]; then
         TEST_NAME=$testname "$1"/init.sh $namespace

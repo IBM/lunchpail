@@ -39,10 +39,12 @@ func (s3 S3Client) Lsf(bucket, prefix string) ([]string, error) {
 }
 
 func (s3 S3Client) Exists(bucket, prefix, file string) bool {
-	if _, err := s3.client.StatObject(context.Background(), bucket, filepath.Join(prefix, file), minio.StatObjectOptions{}); err == nil {
-		return true
-	} else {
-		return false
+	for {
+		if _, err := s3.client.StatObject(context.Background(), bucket, filepath.Join(prefix, file), minio.StatObjectOptions{}); err == nil {
+			return true
+		} else if !s3.retryOnError(err) {
+			return false
+		}
 	}
 }
 
@@ -133,8 +135,16 @@ func (s3 S3Client) Download(bucket, source, destination string) error {
 
 func (s3 S3Client) Touch(bucket, filePath string) error {
 	r := strings.NewReader("")
-	_, err := s3.client.PutObject(context.Background(), bucket, filePath, r, 0, minio.PutObjectOptions{})
-	return err
+	for {
+		_, err := s3.client.PutObject(context.Background(), bucket, filePath, r, 0, minio.PutObjectOptions{})
+
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (s3 S3Client) Rm(bucket, filePath string) error {
@@ -212,7 +222,6 @@ func (s3 S3Client) BucketExists(bucket string) (bool, error) {
 			yup = exists
 			break
 		}
-
 	}
 
 	return yup, nil

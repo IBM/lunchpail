@@ -7,11 +7,14 @@ type Platform string
 const (
 	Kubernetes Platform = "kubernetes"
 	IBMCloud            = "ibmcloud"
+	Local               = "local"
 	SkyPilot            = "skypilot"
 )
 
 func lookup(maybe string) (Platform, error) {
 	switch maybe {
+	case string(Local):
+		return Local, nil
 	case string(Kubernetes):
 		return Kubernetes, nil
 	case string(IBMCloud):

@@ -2,6 +2,11 @@
 workingDir: /workdir
 {{- end }}
 
+{{- define "workdir/env" }}
+- name: LUNCHPAIL_EXE
+  value: /workdir/lunchpail
+{{- end }}
+
 {{- define "workdir/volumeMount" }}
 - name: workdir
   mountPath: /workdir

@@ -14,7 +14,7 @@ func transpile(runname string) (hlir.Application, error) {
 
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "workstealer"
-	app.Spec.Command = "lunchpail workstealer"
+	app.Spec.Command = "$LUNCHPAIL_EXE workstealer"
 
 	app.Spec.Env = hlir.Env{}
 	app.Spec.Env["LUNCHPAIL_RUN_NAME"] = runname

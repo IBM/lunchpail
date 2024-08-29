@@ -18,13 +18,7 @@ func transpile(runname string, ir llir.LLIR) (hlir.Application, error) {
 	app.Spec.Image = "docker.io/minio/minio:RELEASE.2024-07-04T14-25-45Z"
 	app.Spec.Role = "queue"
 	app.Spec.Expose = []string{fmt.Sprintf("%d:9000", ir.Queue.Port)}
-	app.Spec.Command = "/workdir/lunchpail minio server"
-	/*app.Spec.Code = []hlir.Code{
-		hlir.Code{
-			Name:   "main.sh",
-			Source: main,
-		},
-	}*/
+	app.Spec.Command = "$LUNCHPAIL_EXE minio server"
 
 	prefixIncludingBucket := api.QueuePrefixPath(ir.Queue, runname)
 	A := strings.Split(prefixIncludingBucket, "/")

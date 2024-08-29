@@ -42,7 +42,7 @@ function waitForIt {
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set -x
             fi
-            $testapp logs -n $ns -c workers -c dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            $testapp logs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers -c dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set +x
             fi
@@ -55,15 +55,15 @@ function waitForIt {
                 then TAIL=1000
                 else TAIL=10
                 fi
-                ($testapp logs -n $ns -c workers --tail=$TAIL || exit 0)
-                ($testapp logs -n $ns -c dispatcher --tail=$TAIL || exit 0)
+                ($testapp logs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers --tail=$TAIL || exit 0)
+                ($testapp logs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c dispatcher --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4
         done
     done
 
-    local run_name=$($testapp run list -n $ns --latest --name)
+    local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
     echo "✅ PASS run-controller found run test=$name run_name=$run_name"
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
@@ -72,25 +72,25 @@ function waitForIt {
         while true
         do
             echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name namespace=$ns num_desired_outputs=${NUM_DESIRED_OUTPUTS:-1}$(tput sgr0)" 1>&2
-            nOutputs=$($testapp qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+            nOutputs=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
             if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
             then break
             fi
 
             echo "$(tput setaf 2)🧪 Still waiting test=$name for expectedNumOutputs=${NUM_DESIRED_OUTPUTS:-1} actualNumOutputs=$nOutputs$(tput sgr0)"
-            echo "Current output files: $($testapp qls outbox)"
+            echo "Current output files: $($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)"
             sleep 1
         done
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$($testapp qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
+            outputs=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
-            allOutputs=$($testapp qls outbox)
+            allOutputs=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)
             echo "AllOutputs: $allOutputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
-                code=$($testapp qcat outbox/${output}.code)
+                code=$($testapp qcat --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else 
@@ -104,13 +104,13 @@ function waitForIt {
                     fi
                 fi
 
-                stdout=$($testapp qls outbox/${output}.stdout | wc -l | xargs)
+                stdout=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
-                stderr=$($testapp qls outbox/${output}.stderr | wc -l | xargs)
+                stderr=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stderr file test=$name output=$output"
@@ -120,55 +120,37 @@ function waitForIt {
         echo "Checking for done file (from dispatcher)"
         while true
         do
-            donefilecount=$($testapp qls done | wc -l | xargs)
+            donefilecount=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} done | wc -l | xargs)
             if [[ $donefilecount == 1 ]]
             then echo "✅ PASS run-controller test=$name donefile exists" && break
             else echo "still waiting for dispatcher donefile" && sleep 2
             fi
         done
 
-        echo "Checking that no workerdispatchers remain running"
-        while true
-        do
-            nRunningWorkDispatchers=$($testapp run instances --component workdispatcher -n $ns)
-            if [[ $nRunningWorkDispatchers == 0 ]]
-            then echo "✅ PASS run-controller test=$name no workdispatchers remain running" && break
-            else echo "$nRunningWorkDispatchers workdispatcher(s) remaining running" && sleep 2
-            fi
-        done
-
-        echo "Checking that no workers remain running"
-        while true
-        do
-            nRunningWorkers=$($testapp run instances --component workerpool -n $ns)
-            if [[ $nRunningWorkers == 0 ]]
-            then echo "✅ PASS run-controller test=$name no workers remain running" && break
-            else echo "$nRunningWorkers worker(s) remaining running" && sleep 2
-            fi
-        done
-        
-        echo "Checking that no workerstealers remain running"
-        while true
-        do
-            nRunningWorkstealers=$($testapp run instances --component workstealer -n $ns)
-            if [[ $nRunningWorkstealers == 0 ]]
-            then echo "✅ PASS run-controller test=$name no workstealers remain running" && break
-            else echo "$nRunningWorkstealers workstealer(s) remaining running" && sleep 2
-            fi
-        done
-
-        echo "Checking that no minios remain running"
-        while true
-        do
-            nRunningMinios=$($testapp run instances --component minio -n $ns)
-            if [[ $nRunningMinios == 0 ]]
-            then echo "✅ PASS run-controller test=$name no minios remain running" && break
-            else echo "$nRunningMinios minio(s) remaining running" && sleep 2
-            fi
-        done
+        waitForEveryoneToDie
     fi
 
     return 0
+}
+
+function waitForEveryoneToDie {
+    waitForNoInstances workdispatcher
+    waitForNoInstances workerpool
+    waitForNoInstances workstealer
+    waitForNoInstances minio
+}
+
+function waitForNoInstances {
+    local component=$1
+    echo "Checking that no $component remain running"
+    while true
+    do
+        nRunning=$($testapp run instances --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
+        if [[ $nRunning == 0 ]]
+        then echo "✅ PASS run-controller test=$name no $component remain running" && break
+        else echo "$nRunning ${component}(s) remaining running" && sleep 2
+        fi
+    done
 }
 
 # Checks if the the amount of unassigned tasks remaining is 0 and the number of tasks in the outbox is 6
@@ -191,8 +173,7 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
-        # here we use jq to sum up all of the unassigned annotations
-        actualUnassignedTasks=$("$SCRIPTDIR"/../../builds/test/$name/test qlast unassigned)
+        actualUnassignedTasks=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} unassigned)
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
 
@@ -213,8 +194,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$("$SCRIPTDIR"/../../builds/test/$name/test qlast workers)
-        actualNumInOutbox=$("$SCRIPTDIR"/../../builds/test/$name/test qlast success)
+        numQueues=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} workers)
+        actualNumInOutbox=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} success)
 
         if [[ -z "$waitForMix" ]]
         then
@@ -225,7 +206,7 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
-            gotMix=$("$SCRIPTDIR"/../../builds/test/$name/test qlast worker.success)
+            gotMix=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} worker.success)
             gotMixFrom=0
             gotMixTotal=0
             for actual in $gotMix
@@ -249,14 +230,16 @@ function waitForUnassignedAndOutbox {
     done
     echo "✅ PASS run-controller run test $name"
 
-    local run_name=$($testapp run list -n $ns --latest --name)
+    local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
     echo "✅ PASS run-controller found run test=$name"
+
+    waitForEveryoneToDie
 }
 
-function deploy {
-    "$SCRIPTDIR"/deploy-tests.sh $@
+function compile {
+    "$SCRIPTDIR"/compile.sh $@
 }
 
 function undeploy {
-    ("$SCRIPTDIR"/undeploy-tests.sh $@ || exit 0)
+    ("$SCRIPTDIR"/undeploy-tests.sh $@ 2>&1 | grep -v 'No runs found' || exit 0)
 }

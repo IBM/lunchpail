@@ -19,7 +19,7 @@ TOP="$SCRIPTDIR"/../..
 . "$SCRIPTDIR"/helpers.sh
 
 # On ctrl+c, kill the subprocesses that may have launched
-trap "pkill -P $$" SIGINT
+trap "pkill -P $$" SIGINT SIGTERM
 
 #
 # Iterate over the tests/* directory

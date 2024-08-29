@@ -40,8 +40,8 @@ func (model Model) report(c client) error {
 
 	writer.Flush()
 
-	// for now, also log to stderr
-	fmt.Fprintf(os.Stderr, b.String())
+	// for now, also log to stdout
+	fmt.Fprintf(os.Stdout, b.String())
 
 	// and write to the log file
 	if err := os.MkdirAll(logDir, 0700); err != nil {
