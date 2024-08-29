@@ -2,18 +2,14 @@
 
 package ibmcloud
 
-import (
-	"lunchpail.io/pkg/compilation"
-)
+func New(opts NewOptions) (Backend, error) {
+	config := loadConfigWithCommandLineOverrides(opts.Options)
+	keytype, key, err := loadPublicKey(config, opts.Options)
 
-func New(aopts compilation.Options) (Backend, error) {
-	config := loadConfigWithCommandLineOverrides(aopts)
-	keytype, key, err := loadPublicKey(config, aopts)
-
-	vpcService, err := Authenticator(aopts.ApiKey, config)
+	vpcService, err := Authenticator(opts.Options.ApiKey, config)
 	if err != nil {
 		return Backend{}, err
 	}
 
-	return Backend{config, vpcService, keytype, key}, nil
+	return Backend{opts.Namespace, config, vpcService, keytype, key}, nil
 }

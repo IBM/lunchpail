@@ -10,15 +10,15 @@ import (
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/be/streamer"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
 type Backend struct {
 }
 
-func New(aopts compilation.Options) (Backend, error) {
+func New(opts NewOptions) (Backend, error) {
 	return Backend{}, nil
 }
 
@@ -32,6 +32,10 @@ func (backend Backend) Up(linked ir.Linked, opts options.CliOptions, verbose boo
 
 func (backend Backend) Down(linked ir.Linked, opts options.CliOptions, verbose bool) error {
 	return nil
+}
+
+func (backend Backend) DryRun(ir llir.LLIR, cliOpts options.CliOptions, verbose bool) (string, error) {
+	return "", nil
 }
 
 func (backend Backend) Purge() error {

@@ -5,6 +5,7 @@ import (
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/be/streamer"
 	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/ir/llir"
 )
 
 type Backend interface {
@@ -16,6 +17,9 @@ type Backend interface {
 
 	// Bring down the linked application
 	Down(linked ir.Linked, opts options.CliOptions, verbose bool) error
+
+	// Return a string to convey relevant dry-run info
+	DryRun(ir llir.LLIR, cliOpts options.CliOptions, verbose bool) (string, error)
 
 	// Purge any non-run resources that may have been created
 	Purge() error

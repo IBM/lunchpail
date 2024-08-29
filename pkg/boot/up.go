@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
@@ -26,7 +25,7 @@ func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
 	}
 
 	if opts.DryRun {
-		fmt.Printf(kubernetes.DryRun(linked.Ir, linked.Namespace, cliOptions, opts.Verbose))
+		fmt.Printf(backend.DryRun(linked.Ir, cliOptions, opts.Verbose))
 		return nil
 	} else if isUp {
 		if err := backend.Up(linked, cliOptions, opts.Verbose); err != nil {

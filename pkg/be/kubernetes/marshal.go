@@ -44,9 +44,9 @@ func MarshalAllComponents(ir llir.LLIR, namespace string, opts common.Options, v
 
 // This is to present a single string form of all of the yaml,
 // e.g. for dry-running.
-func DryRun(ir llir.LLIR, namespace string, cliOpts options.CliOptions, verbose bool) (string, error) {
+func (backend Backend) DryRun(ir llir.LLIR, cliOpts options.CliOptions, verbose bool) (string, error) {
 	opts := common.Options{CliOptions: cliOpts}
-	if arr, err := MarshalAllComponents(ir, namespace, opts, verbose); err != nil {
+	if arr, err := MarshalAllComponents(ir, backend.Namespace, opts, verbose); err != nil {
 		return "", err
 	} else {
 		return util.Join(arr), nil

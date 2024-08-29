@@ -6,8 +6,7 @@ import (
 )
 
 type Linked struct {
-	Runname   string
-	Namespace string
-	Ir        llir.LLIR
-	Options   compilation.Options
+	Runname string
+	Ir      llir.LLIR
+	Options compilation.Options
 }

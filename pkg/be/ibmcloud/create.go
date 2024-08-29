@@ -377,7 +377,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runname, namespace string, action Action, cliOpts options.CliOptions, verbose bool) error {
+func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runname string, action Action, cliOpts options.CliOptions, verbose bool) error {
 	if action == Stop || action == Delete {
 		if err := stopOrDeleteVM(backend.vpcService, runname, backend.config.ResourceGroup.GUID, action == Delete); err != nil {
 			return err
@@ -391,7 +391,7 @@ func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runnam
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, aopts.Profile, aopts.ImageID, namespace, cliOpts, verbose); err != nil {
+		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, aopts.Profile, aopts.ImageID, backend.namespace, cliOpts, verbose); err != nil {
 			return err
 		}
 	}
