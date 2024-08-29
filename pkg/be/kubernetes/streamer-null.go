@@ -60,7 +60,7 @@ func (backend Backend) ChangeWorkers(poolName, poolNamespace, poolContext string
 	return nil
 }
 
-func (backend Backend) DeleteNamespace(compilationName string) error {
+func (backend Backend) Purge() error {
 	return nil
 }
 

@@ -17,8 +17,8 @@ type Backend interface {
 	// Bring down the linked application
 	Down(linked ir.Linked, opts options.CliOptions, verbose bool) error
 
-	// Delete namespace
-	DeleteNamespace(compilationName string) error
+	// Purge any non-run resources that may have been created
+	Purge() error
 
 	// List deployed runs
 	ListRuns(appName string) ([]runs.Run, error)
