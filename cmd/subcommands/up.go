@@ -4,7 +4,6 @@ package subcommands
 
 import (
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
@@ -68,7 +67,7 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&createCluster, "create-cluster", "I", false, "Create a new (local) Kubernetes cluster, if needed")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if tgtOpts.TargetPlatform == platform.Kubernetes && createCluster {
+		if tgtOpts.TargetPlatform == be.Kubernetes && createCluster {
 			if err := initialize.Local(initialize.InitLocalOptions{BuildImages: false, Verbose: verboseFlag}); err != nil {
 				return err
 			}

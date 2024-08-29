@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/ir/llir"
 	util "lunchpail.io/pkg/util/yaml"
 )
@@ -64,8 +64,8 @@ func apply(yaml, namespace, context string, operation Operation) error {
 	return cmd.Run()
 }
 
-func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, cliOpts platform.CliOptions, verbose bool) error {
-	opts, err := options(cliOpts)
+func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, cliOpts options.CliOptions, verbose bool) error {
+	opts, err := k8sOptions(cliOpts)
 	if err != nil {
 		return err
 	}

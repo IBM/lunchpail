@@ -1,4 +1,4 @@
-package platform
+package options
 
 type CliOptions struct {
 	CreateNamespace bool

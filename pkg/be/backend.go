@@ -1,7 +1,7 @@
 package be
 
 import (
-	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/be/streamer"
 	"lunchpail.io/pkg/ir"
@@ -12,10 +12,10 @@ type Backend interface {
 	Ok() error
 
 	// Bring up the linked application
-	Up(linked ir.Linked, opts platform.CliOptions, verbose bool) error
+	Up(linked ir.Linked, opts options.CliOptions, verbose bool) error
 
 	// Bring down the linked application
-	Down(linked ir.Linked, opts platform.CliOptions, verbose bool) error
+	Down(linked ir.Linked, opts options.CliOptions, verbose bool) error
 
 	// Delete namespace
 	DeleteNamespace(compilationName string) error

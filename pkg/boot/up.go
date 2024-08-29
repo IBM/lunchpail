@@ -7,7 +7,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
 )
@@ -20,7 +20,7 @@ func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
 		return err
 	}
 
-	cliOptions := platform.CliOptions{
+	cliOptions := options.CliOptions{
 		CreateNamespace: linked.Options.CreateNamespace,
 		ImagePullSecret: linked.Options.ImagePullSecret,
 	}

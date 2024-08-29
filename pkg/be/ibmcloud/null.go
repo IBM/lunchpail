@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
-	"lunchpail.io/pkg/be/platform"
+	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/be/streamer"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir"
@@ -26,11 +26,11 @@ func (backend Backend) Ok() error {
 	return nil
 }
 
-func (backend Backend) Up(linked ir.Linked, opts platform.CliOptions, verbose bool) error {
+func (backend Backend) Up(linked ir.Linked, opts options.CliOptions, verbose bool) error {
 	return nil
 }
 
-func (backend Backend) Down(linked ir.Linked, opts platform.CliOptions, verbose bool) error {
+func (backend Backend) Down(linked ir.Linked, opts options.CliOptions, verbose bool) error {
 	return nil
 }
 
