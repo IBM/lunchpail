@@ -13,7 +13,7 @@ func PreStop() error {
 		return err
 	}
 
-	fmt.Println("DEBUG Marker worker as done...")
+	fmt.Println("DEBUG Marking worker as done...")
 
 	client.Rm(client.Paths.Bucket, client.Paths.Alive)
 	client.Touch(client.Paths.Bucket, client.Paths.Dead)

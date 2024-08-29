@@ -12,19 +12,6 @@ set -eo pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 
-if [[ -n "$1" ]]
-then APP="--set app=$1"
-fi
-
-if [[ -n "$taskqueue" ]]
-then QUEUE="--queue $taskqueue"
-fi
-
-if which lspci && lspci | grep -iq nvidia; then
-    echo "$(tput setaf 2)Detected GPU support for arch=$ARCH$(tput sgr0)"
-    GPU="--set supportsGpu=true"
-fi
-
 echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) testapp=$testapp $HELM_INSTALL_FLAGS"
 
 if [[ -n "$3" ]]
@@ -37,12 +24,12 @@ then
     . "$SCRIPTDIR"/my.secrets.sh
 fi
 
-if [ -z "$LUNCHPAIL_SKIP_CLI_BUILD" ]
-then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
-fi
-
 # Allows us to capture workstealer info before it auto-terminates
 export LUNCHPAIL_SLEEP_BEFORE_EXIT=10
+
+if [ -z "$LUNCHPAIL_BUILD_NOT_NEEDED" ]
+then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
+fi
 
 repo_secret="" # e.g. user:pat@https://github.mycompany.com
               
@@ -87,15 +74,3 @@ then
     else echo "❌ FAIL App Version passthrough expected!=actual '$expectedAppVersion'!='$actualAppVersion'" && exit 1
     fi
 fi
-
-$testapp up \
-         -v \
-         $QUEUE \
-         $APP \
-         $GPU \
-         $LP_ARGS \
-         --watch=false \
-         --set global.arch=$ARCH \
-         --set kubernetes.context=kind-lunchpail \
-         --set cosAccessKey=$COS_ACCESS_KEY \
-         --set cosSecretKey=$COS_SECRET_KEY

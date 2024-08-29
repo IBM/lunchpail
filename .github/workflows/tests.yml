@@ -17,6 +17,9 @@ jobs:
 
     strategy:
       matrix:
+        LUNCHPAIL_TARGET:
+          - kubernetes
+          - local
         SCRIPT:
           - ./tests/bin/ci.sh -e 'test(7.*|8.*)' # baseline tests
           - ./tests/bin/ci.sh -i 'test7.*' -e 'test7(b.*|c.*|d.*|e.*|f.*|g.*|h.*)'
@@ -42,4 +45,5 @@ jobs:
     - name: Run Test with args ${{ matrix.ARGS }}
       env:
         TERM: xterm-256color
+        LUNCHPAIL_TARGET: ${{ matrix.LUNCHPAIL_TARGET }}
       run: bash -c "${{matrix.SCRIPT}} ${{matrix.ARGS }}"

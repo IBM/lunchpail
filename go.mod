@@ -13,7 +13,10 @@ require (
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/minio/minio-go/v7 v7.0.75
 	github.com/mittwald/go-helm-client v0.12.12
+	github.com/nxadm/tail v1.4.8
 	github.com/rclone/rclone v1.67.0
+	github.com/shirou/gopsutil v3.21.11+incompatible
+	github.com/shirou/gopsutil/v4 v4.24.8
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/sync v0.8.0
 	golang.org/x/term v0.23.0
@@ -28,6 +31,7 @@ require (
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/coreos/yaml v0.0.0-20141224210557-6b16a5714269 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
@@ -46,6 +50,7 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	go.mongodb.org/mongo-driver v1.16.1 // indirect
+	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
 require (

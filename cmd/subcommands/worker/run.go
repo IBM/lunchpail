@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/worker"
 )
 
@@ -21,12 +20,6 @@ func NewRunCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&debug, "debug", "g", false, "Run in debug mode, which will emit extra log information")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if compilation.IsCompiled() {
-			// TODO: pull out command line and other
-			// embeddings from this compiled executable
-			return fmt.Errorf("TODO")
-		}
-
 		if len(args) == 0 {
 			return fmt.Errorf("Nothing to run. Specify the worker command line after a --: %v", args)
 		}

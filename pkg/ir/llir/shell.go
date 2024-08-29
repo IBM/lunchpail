@@ -38,3 +38,8 @@ func (c ShellComponent) SetWorkers(w int) Component {
 	c.Sizing.Workers = w
 	return c // FIXME
 }
+
+func (c ShellComponent) WithInstanceNameSuffix(suffix string) ShellComponent {
+	c.InstanceName = c.InstanceName + suffix
+	return c
+}

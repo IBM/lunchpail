@@ -2,9 +2,11 @@ package parametersweep
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
-	"strconv"
 )
 
 // Transpile hlir.ParameterSweep to hlir.Application
@@ -13,7 +15,12 @@ func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "dispatcher"
-	app.Spec.Command = "./main.sh"
+
+	app.Spec.Command = strings.Join([]string{
+		`trap "$LUNCHPAIL_EXE qdone" EXIT`,
+		"./main.sh",
+	}, "\n")
+
 	app.Spec.Code = []hlir.Code{
 		hlir.Code{
 			Name:   "main.sh",

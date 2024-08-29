@@ -2,6 +2,7 @@ package s3
 
 import (
 	"fmt"
+	"strings"
 
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/lunchpail"
@@ -27,7 +28,10 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 	}
 
 	envPrefix := "LUNCHPAIL_PROCESS_S3_OBJECTS_"
-	app.Spec.Command = fmt.Sprintf("lunchpail enqueue s3 --repeat %d %s %s", repeat, s3.Spec.Path, envPrefix)
+	app.Spec.Command = strings.Join([]string{
+		`trap "$LUNCHPAIL_EXE qdone" EXIT`,
+		fmt.Sprintf("$LUNCHPAIL_EXE enqueue s3 --repeat %d %s %s", repeat, s3.Spec.Path, envPrefix),
+	}, "\n")
 
 	app.Spec.Env = hlir.Env{}
 	for key, value := range s3.Spec.Env {

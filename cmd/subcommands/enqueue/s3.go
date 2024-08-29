@@ -1,12 +1,10 @@
 package enqueue
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -22,12 +20,6 @@ func NewEnqueueFromS3Cmd() *cobra.Command {
 	cmd.Flags().IntVarP(&repeat, "repeat", "r", 1, "Upload N copies of the task")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if compilation.IsCompiled() {
-			// TODO: pull out command line and other
-			// embeddings from this compiled executable
-			return fmt.Errorf("TODO")
-		}
-
 		envvarPrefix := args[1]
 		endpoint := os.Getenv(envvarPrefix + "endpoint")
 		accessKeyID := os.Getenv(envvarPrefix + "accessKeyID")

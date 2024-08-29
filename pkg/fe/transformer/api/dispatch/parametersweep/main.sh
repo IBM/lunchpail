@@ -38,13 +38,16 @@ do
     echo -n ${parameter_value} > $task
 
     if [ -n "$__LUNCHPAIL_WAIT" ]
-    then waitflag="--wait"
+    then waitflag="--wait --ignore-worker-errors"
     fi
 
     if [ -n "$__LUNCHPAIL_VERBOSE" ]
     then verboseflag="--verbose"
     fi
 
-    lunchpail enqueue file $task $waitflag $verboseflag
+    # If we were asked to wait, then `enqueue file` will exit with the
+    # exit code of the underlying worker. Here, we intentionally
+    # ignore any errors from the task.
+    $LUNCHPAIL_EXE enqueue file $task $waitflag $verboseflag
     rm -f "$task"
 done

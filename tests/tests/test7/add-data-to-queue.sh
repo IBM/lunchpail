@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 export NAMESPACE=$1

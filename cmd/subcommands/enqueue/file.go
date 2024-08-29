@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -18,23 +17,27 @@ func NewEnqueueFileCmd() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
-	var wait bool
-	var verbose bool
-	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for the task to be completed, and exit with the exit code of that task")
-	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
+	var opts queue.EnqueueFileOptions
+	var ignoreWorkerErrors bool
+	cmd.Flags().BoolVarP(&opts.Wait, "wait", "w", false, "Wait for the task to be completed, and exit with the exit code of that task")
+	cmd.Flags().BoolVarP(&opts.Verbose, "verbose", "v", false, "Verbose output")
+	cmd.Flags().BoolVar(&ignoreWorkerErrors, "ignore-worker-errors", false, "When --wait, ignore any errors from the workers processing the tasks")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if compilation.IsCompiled() {
-			// TODO: pull out command line and other
-			// embeddings from this compiled executable
-			return fmt.Errorf("TODO")
+		if !opts.Wait && ignoreWorkerErrors {
+			return fmt.Errorf("Invalid combination of options, not --wait and --ignore-worker-errors")
 		}
 
-		exitcode, err := queue.EnqueueFile(args[0], queue.EnqueueFileOptions{Wait: wait, Verbose: verbose})
-		if exitcode != 0 {
+		exitcode, err := queue.EnqueueFile(args[0], opts)
+
+		switch {
+		case err != nil:
+			return err
+		case exitcode != 0 && !ignoreWorkerErrors:
 			os.Exit(exitcode)
 		}
-		return err
+
+		return nil
 	}
 
 	return cmd

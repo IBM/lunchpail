@@ -32,8 +32,8 @@ func Lower(compilationName, runname string, app hlir.Application, pool hlir.Work
 	// for now, we don't distinguish the two...
 	debug := verbose
 
-	app.Spec.Command = fmt.Sprintf(`trap "/workdir/lunchpail worker prestop" EXIT
-/workdir/lunchpail worker run --debug=%v -- %s`, debug, app.Spec.Command)
+	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE worker prestop" EXIT
+$LUNCHPAIL_EXE worker run --debug=%v -- %s`, debug, app.Spec.Command)
 
 	return shell.LowerAsComponent(
 		compilationName,

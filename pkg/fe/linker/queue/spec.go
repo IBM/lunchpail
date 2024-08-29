@@ -1,13 +1,13 @@
 package queue
 
 type Spec struct {
-	Name      string
-	Auto      bool
-	Bucket    string
-	Endpoint  string
-	Port      int
-	AccessKey string
-	SecretKey string
+	Name      string `json:"name"`
+	Auto      bool   `json:"auto"`
+	Bucket    string `json:"bucket"`
+	Endpoint  string `json:"endpoint"`
+	Port      int    `json:"port"`
+	AccessKey string `json:"accessKey"`
+	SecretKey string `json:"secretKey"`
 }
 
 func (spec Spec) UpdateEndpoint(endpoint string) Spec {

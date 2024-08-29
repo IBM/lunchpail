@@ -12,19 +12,3 @@ lifecycle:
       command: ["lunchpail", "qdone"]
 {{- end }}
 {{- end }}
-
-{{- define "prestop/command" }}
-{{- if eq .Values.lunchpail.component "workdispatcher" }}
-- /bin/sh
-- "-c"
-- |
-  touch /tmp/alive && {{ .Values.command }}
-  lunchpail qdone
-  echo "INFO Done with my part of the job"
-{{- else }}
-- /bin/sh
-- "-c"
-- |
-  touch /tmp/alive && {{ .Values.command }}
-{{- end }}
-{{- end }}
