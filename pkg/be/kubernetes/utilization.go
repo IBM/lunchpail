@@ -36,7 +36,7 @@ func (streamer Streamer) startWatchingUtilization(runname string) (watch.Interfa
 
 	timeoutSeconds := int64(7 * 24 * time.Hour / time.Second)
 
-	podWatcher, err := clientset.CoreV1().Pods(streamer.backend.Namespace).Watch(context.Background(), metav1.ListOptions{
+	podWatcher, err := clientset.CoreV1().Pods(streamer.backend.namespace).Watch(context.Background(), metav1.ListOptions{
 		TimeoutSeconds: &timeoutSeconds,
 		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + runname,
 	})

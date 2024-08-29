@@ -51,5 +51,5 @@ func (backend Backend) ListRuns(appName string) ([]runs.Run, error) {
 		return []runs.Run{}, err
 	}
 
-	return listRuns(appName, backend.Namespace, clientset)
+	return listRuns(appName, backend.namespace, clientset)
 }

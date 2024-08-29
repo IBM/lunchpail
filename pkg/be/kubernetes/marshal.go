@@ -46,7 +46,7 @@ func MarshalAllComponents(ir llir.LLIR, namespace string, opts common.Options, v
 // e.g. for dry-running.
 func (backend Backend) DryRun(ir llir.LLIR, cliOpts options.CliOptions, verbose bool) (string, error) {
 	opts := common.Options{CliOptions: cliOpts}
-	if arr, err := MarshalAllComponents(ir, backend.Namespace, opts, verbose); err != nil {
+	if arr, err := MarshalAllComponents(ir, backend.namespace, opts, verbose); err != nil {
 		return "", err
 	} else {
 		return util.Join(arr), nil

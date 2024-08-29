@@ -35,7 +35,7 @@ func (streamer Streamer) RunEvents(appname, runname string) (chan events.Message
 	}
 
 	timeout := timeoutSeconds
-	eventWatcher, err := clientset.CoreV1().Events(streamer.backend.Namespace).Watch(context.Background(), metav1.ListOptions{
+	eventWatcher, err := clientset.CoreV1().Events(streamer.backend.namespace).Watch(context.Background(), metav1.ListOptions{
 		TimeoutSeconds: &timeout,
 	})
 	if err != nil {

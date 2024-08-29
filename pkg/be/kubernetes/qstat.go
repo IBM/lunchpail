@@ -32,16 +32,16 @@ func (streamer Streamer) streamModel(runname string, follow bool, tail int64, qu
 		return err
 	}
 
-	pods, err := clientset.CoreV1().Pods(streamer.backend.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + runname})
+	pods, err := clientset.CoreV1().Pods(streamer.backend.namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + runname})
 	if err != nil {
 		return err
 	} else if len(pods.Items) == 0 {
-		return fmt.Errorf("Cannot find run in namespace=%s\n", streamer.backend.Namespace)
+		return fmt.Errorf("Cannot find run in namespace=%s\n", streamer.backend.namespace)
 	} else if len(pods.Items) > 1 {
-		return fmt.Errorf("Multiple matching runs found in namespace=%s\n", streamer.backend.Namespace)
+		return fmt.Errorf("Multiple matching runs found in namespace=%s\n", streamer.backend.namespace)
 	}
 
-	podLogs := clientset.CoreV1().Pods(streamer.backend.Namespace).GetLogs(pods.Items[0].Name, &opts)
+	podLogs := clientset.CoreV1().Pods(streamer.backend.namespace).GetLogs(pods.Items[0].Name, &opts)
 	stream, err := podLogs.Stream(context.TODO())
 	if err != nil {
 		if strings.Contains(err.Error(), "waiting to start") {

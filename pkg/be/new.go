@@ -18,7 +18,7 @@ func New(topts TargetOptions, aopts compilation.Options) (Backend, error) {
 
 	switch topts.TargetPlatform {
 	case Kubernetes:
-		be = kubernetes.Backend{Namespace: topts.Namespace}
+		be = kubernetes.New(kubernetes.NewOptions{Namespace: topts.Namespace})
 	case IBMCloud:
 		if ibm, err := ibmcloud.New(ibmcloud.NewOptions{Options: aopts, Namespace: topts.Namespace}); err != nil {
 			return nil, err
