@@ -31,8 +31,8 @@ func (backend Backend) Purge() error {
 	if err != nil {
 		return err
 	} else if len(remainingRuns) != 0 {
-		return fmt.Errorf("Non-empty namespace %s still has %d runs:\n%s", backend.Namespace, len(remainingRuns), runs.Pretty(remainingRuns))
-	} else if err := deleteNamespace(backend.Namespace); err != nil {
+		return fmt.Errorf("Non-empty namespace %s still has %d runs:\n%s", backend.namespace, len(remainingRuns), runs.Pretty(remainingRuns))
+	} else if err := deleteNamespace(backend.namespace); err != nil {
 		return err
 	}
 

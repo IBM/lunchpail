@@ -138,7 +138,7 @@ func (streamer Streamer) streamPodUpdates(watcher watch.Interface, cc chan event
 }
 
 func (streamer Streamer) RunComponentUpdates(appname, runname string) (chan events.ComponentUpdate, chan events.Message, error) {
-	watcher, err := startWatching(appname, runname, streamer.backend.Namespace)
+	watcher, err := startWatching(appname, runname, streamer.backend.namespace)
 	if err != nil {
 		return nil, nil, err
 	}

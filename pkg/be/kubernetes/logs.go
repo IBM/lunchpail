@@ -33,7 +33,7 @@ func (streamer Streamer) podLogs(podName string, component lunchpail.Component, 
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, streamer.backend.Namespace, component, onlyInfo, follow, clientset, c)
+		return streamLogUpdatesForPod(podName, streamer.backend.namespace, component, onlyInfo, follow, clientset, c)
 	}()
 
 	return nil
@@ -50,7 +50,7 @@ func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Compo
 	}
 
 	selector := "app.kubernetes.io/component=" + string(component) + runSelector
-	cmdline := "kubectl logs -n " + streamer.backend.Namespace + " -l " + selector + " --tail=-1 " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
+	cmdline := "kubectl logs -n " + streamer.backend.namespace + " -l " + selector + " --tail=-1 " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Tracking logs of component=%s\n", component)
