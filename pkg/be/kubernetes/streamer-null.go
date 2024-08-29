@@ -12,6 +12,7 @@ import (
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/be/streamer"
 	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -50,6 +51,10 @@ func (backend Backend) Up(linked ir.Linked, opts options.CliOptions, verbose boo
 
 func (backend Backend) Down(linked ir.Linked, opts options.CliOptions, verbose bool) error {
 	return nil
+}
+
+func (backend Backend) DryRun(ir llir.LLIR, cliOpts options.CliOptions, verbose bool) (string, error) {
+	return "", nil
 }
 
 func (backend Backend) ListRuns(appName string) ([]runs.Run, error) {

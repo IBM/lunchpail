@@ -8,7 +8,7 @@ import (
 )
 
 func (backend Backend) Down(linked ir.Linked, opts options.CliOptions, verbose bool) error {
-	if err := applyOperation(linked.Ir, linked.Namespace, "", DeleteIt, opts, verbose); err != nil {
+	if err := applyOperation(linked.Ir, backend.Namespace, "", DeleteIt, opts, verbose); err != nil {
 		return err
 	}
 

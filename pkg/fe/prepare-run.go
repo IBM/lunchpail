@@ -106,10 +106,9 @@ func PrepareForRun(opts CompileOptions) (ir.Linked, error) {
 		return ir.Linked{}, err
 	} else {
 		return ir.Linked{
-			Runname:   runname,
-			Namespace: namespace,
-			Ir:        llir,
-			Options:   opts.ConfigureOptions.CompilationOptions,
+			Runname: runname,
+			Ir:      llir,
+			Options: opts.ConfigureOptions.CompilationOptions,
 		}, nil
 	}
 }
