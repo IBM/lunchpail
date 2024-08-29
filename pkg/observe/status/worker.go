@@ -3,7 +3,6 @@ package status
 import (
 	"slices"
 
-	watch "k8s.io/apimachinery/pkg/watch"
 	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 )
@@ -17,7 +16,7 @@ func updateWorker(update events.ComponentUpdate, pools []Pool) ([]Pool, error) {
 
 	if pidx < 0 {
 		// couldn't find the Pool
-		if update.Type == watch.Deleted {
+		if update.Type == events.Deleted {
 			// Deleted a Worker that in a Pool we haven't
 			// yet seen; safe to ignore for now
 			return pools, nil
@@ -37,7 +36,7 @@ func updateWorker(update events.ComponentUpdate, pools []Pool) ([]Pool, error) {
 	widx := slices.IndexFunc(pool.Workers, func(worker Worker) bool { return worker.Name == name })
 	if widx >= 0 {
 		// known Pool and known Worker
-		if update.Type == watch.Deleted {
+		if update.Type == events.Deleted {
 			// Remove record of Deleted Worker in known
 			// Pool by splicing it out of the Workers slice
 			pool.Workers = append(pool.Workers[:widx], pool.Workers[widx+1:]...)
