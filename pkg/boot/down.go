@@ -57,7 +57,7 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 	}
 
 	if deleteNs {
-		if err := backend.DeleteNamespace(compilation.Name()); err != nil {
+		if err := backend.Purge(); err != nil {
 			return err
 		}
 	}
@@ -95,20 +95,12 @@ func Down(runname string, backend be.Backend, opts DownOptions) error {
 	}
 
 	upOptions := toUpOpts(runname, opts)
-
-	/* var action ibmcloud.Action
-	if opts.DeleteCloudResources {
-		action = ibmcloud.Delete
-	} else {
-		action = ibmcloud.Stop
-	} */
-
 	if err := upDown(backend, upOptions, false); err != nil {
 		return err
 	}
 
 	if opts.DeleteNamespace {
-		if err := backend.DeleteNamespace(compilation.Name()); err != nil {
+		if err := backend.Purge(); err != nil {
 			return err
 		}
 	}

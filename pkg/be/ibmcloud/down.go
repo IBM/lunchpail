@@ -15,7 +15,7 @@ func (backend Backend) Down(linked ir.Linked, opts options.CliOptions, verbose b
 	return nil
 }
 
-func (backend Backend) DeleteNamespace(compilationName string) error {
-	// TODO?
+func (backend Backend) Purge() error {
+	// Is there anything to do here?
 	return nil
 }
