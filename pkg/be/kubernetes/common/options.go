@@ -1,9 +1,9 @@
 package common
 
-import "lunchpail.io/pkg/be/platform"
+import "lunchpail.io/pkg/be/options"
 
 type Options struct {
-	platform.CliOptions
+	options.CliOptions
 	NeedsServiceAccount            bool
 	NeedsSecurityContextConstraint bool
 }

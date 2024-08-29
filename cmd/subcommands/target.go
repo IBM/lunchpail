@@ -4,14 +4,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/compilation"
 )
 
 type TargetOptions = be.TargetOptions
 
 func addTargetOptions(cmd *cobra.Command) TargetOptions {
-	options := TargetOptions{TargetPlatform: platform.Kubernetes}
+	options := TargetOptions{TargetPlatform: be.Kubernetes}
 
 	if compilation.IsCompiled() {
 		// by default, we use Namespace == app name

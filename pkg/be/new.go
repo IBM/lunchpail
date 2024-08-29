@@ -5,22 +5,21 @@ import (
 
 	"lunchpail.io/pkg/be/ibmcloud"
 	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/be/platform"
 	"lunchpail.io/pkg/compilation"
 )
 
 type TargetOptions struct {
 	Namespace      string
-	TargetPlatform platform.Platform
+	TargetPlatform Platform
 }
 
 func New(topts TargetOptions, aopts compilation.Options) (Backend, error) {
 	var be Backend
 
 	switch topts.TargetPlatform {
-	case platform.Kubernetes:
+	case Kubernetes:
 		be = kubernetes.Backend{Namespace: topts.Namespace}
-	case platform.IBMCloud:
+	case IBMCloud:
 		if ibm, err := ibmcloud.New(aopts); err != nil {
 			return nil, err
 		} else {
