@@ -11,10 +11,10 @@ import (
 
 type Streamer interface {
 	//
-	RunEvents(appname, runname string) (chan events.Message, error)
+	RunEvents(runname string) (chan events.Message, error)
 
 	//
-	RunComponentUpdates(appname, runname string) (chan events.ComponentUpdate, chan events.Message, error)
+	RunComponentUpdates(runname string) (chan events.ComponentUpdate, chan events.Message, error)
 
 	// Stream cpu and memory statistics
 	Utilization(runname string, intervalSeconds int) (chan utilization.Model, error)

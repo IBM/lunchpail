@@ -19,7 +19,7 @@ type LogsOptions struct {
 }
 
 func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
-	_, runname, err := util.WaitForRun(runnameIn, true, backend)
+	runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}

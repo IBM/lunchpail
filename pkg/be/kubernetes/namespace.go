@@ -7,7 +7,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"lunchpail.io/pkg/be/runs"
-	"lunchpail.io/pkg/compilation"
 )
 
 func deleteNamespace(namespace string) error {
@@ -25,7 +24,7 @@ func deleteNamespace(namespace string) error {
 }
 
 func (backend Backend) Purge() error {
-	remainingRuns, err := backend.ListRuns(compilation.Name())
+	remainingRuns, err := backend.ListRuns()
 	if err != nil {
 		return err
 	} else if len(remainingRuns) != 0 {
