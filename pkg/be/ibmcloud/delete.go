@@ -1,5 +1,3 @@
-//go:build full || manage
-
 package ibmcloud
 
 import (

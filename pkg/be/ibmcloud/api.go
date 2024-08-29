@@ -1,5 +1,3 @@
-//go:build full || manage || observe
-
 package ibmcloud
 
 import "github.com/IBM/vpc-go-sdk/vpcv1"

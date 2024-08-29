@@ -1,5 +1,3 @@
-//go:build full || manage
-
 package kubernetes
 
 import (
