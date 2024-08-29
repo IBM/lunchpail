@@ -1,3 +1,5 @@
+//go:build full || deploy || manage || observe
+
 package subcommands
 
 import (

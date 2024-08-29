@@ -1,5 +1,3 @@
-//go:build full || manage || observe
-
 package ibmcloud
 
 func New(opts NewOptions) (Backend, error) {
