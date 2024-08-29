@@ -25,7 +25,7 @@ type Backend interface {
 	Purge() error
 
 	// List deployed runs
-	ListRuns(appName string) ([]runs.Run, error)
+	ListRuns() ([]runs.Run, error)
 
 	// Return a streamer
 	Streamer() streamer.Streamer

@@ -4,16 +4,18 @@ import (
 	"container/ring"
 
 	"golang.org/x/sync/errgroup"
+
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events/qstat"
-	comp "lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/lunchpail"
 )
 
-func StatusStreamer(app, run string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(run string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
 	c := make(chan Model)
 
 	model := NewModel()
-	model.AppName = app
+	model.AppName = compilation.Name()
 	model.RunName = run
 	model.LastNMessages = ring.New(nLoglinesMax)
 
@@ -27,20 +29,20 @@ func StatusStreamer(app, run string, backend be.Backend, verbose bool, nLoglines
 		return c, nil, err
 	}
 
-	updates, messages, err := backend.Streamer().RunComponentUpdates(app, run)
+	updates, messages, err := backend.Streamer().RunComponentUpdates(run)
 	if err != nil {
 		return c, nil, err
 	}
 	errgroup.Go(func() error {
 		for update := range updates {
 			switch update.Component {
-			case comp.WorkStealerComponent:
+			case lunchpail.WorkStealerComponent:
 				model.WorkStealer = update.Status
 				c <- *model
-			case comp.DispatcherComponent:
+			case lunchpail.DispatcherComponent:
 				model.Dispatcher = update.Status
 				c <- *model
-			case comp.WorkersComponent:
+			case lunchpail.WorkersComponent:
 				pools, err := updateWorker(update, model.Pools)
 				if err != nil {
 					return err
@@ -60,7 +62,7 @@ func StatusStreamer(app, run string, backend be.Backend, verbose bool, nLoglines
 	})
 
 	errgroup.Go(func() error {
-		msgs, err := backend.Streamer().RunEvents(app, run)
+		msgs, err := backend.Streamer().RunEvents(run)
 		if err != nil {
 			return err
 		}

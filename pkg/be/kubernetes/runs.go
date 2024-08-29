@@ -7,7 +7,9 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+
 	"lunchpail.io/pkg/be/runs"
+	"lunchpail.io/pkg/compilation"
 )
 
 func groupByRun(jobs *batchv1.JobList) []runs.Run {
@@ -43,11 +45,11 @@ func listRuns(appName, namespace string, client kubernetes.Interface) ([]runs.Ru
 }
 
 // Return all Runs in the given namespace for the given app
-func (backend Backend) ListRuns(appName string) ([]runs.Run, error) {
+func (backend Backend) ListRuns() ([]runs.Run, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return []runs.Run{}, err
 	}
 
-	return listRuns(appName, backend.namespace, clientset)
+	return listRuns(compilation.Name(), backend.namespace, clientset)
 }

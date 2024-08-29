@@ -14,7 +14,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func startWatching(app, run, namespace string) (watch.Interface, error) {
+func startWatching(run, namespace string) (watch.Interface, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err
@@ -135,8 +135,8 @@ func (streamer Streamer) streamPodUpdates(watcher watch.Interface, cc chan event
 	}
 }
 
-func (streamer Streamer) RunComponentUpdates(appname, runname string) (chan events.ComponentUpdate, chan events.Message, error) {
-	watcher, err := startWatching(appname, runname, streamer.backend.namespace)
+func (streamer Streamer) RunComponentUpdates(runname string) (chan events.ComponentUpdate, chan events.Message, error) {
+	watcher, err := startWatching(runname, streamer.backend.namespace)
 	if err != nil {
 		return nil, nil, err
 	}

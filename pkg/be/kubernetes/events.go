@@ -26,7 +26,7 @@ func stream(runname string, watcher watch.Interface, c chan events.Message) {
 	}
 }
 
-func (streamer Streamer) RunEvents(appname, runname string) (chan events.Message, error) {
+func (streamer Streamer) RunEvents(runname string) (chan events.Message, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err

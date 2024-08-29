@@ -132,7 +132,7 @@ func (m model) View() string {
 }
 
 func UI(runnameIn string, backend be.Backend, opts Options) error {
-	appname, runname, err := util.WaitForRun(runnameIn, opts.Watch, backend)
+	runname, err := util.WaitForRun(runnameIn, opts.Watch, backend)
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func UI(runnameIn string, backend be.Backend, opts Options) error {
 		defer f.Close()
 	}
 
-	c, _, err := StatusStreamer(appname, runname, backend, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
+	c, _, err := StatusStreamer(runname, backend, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}
