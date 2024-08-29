@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"os"
 
-	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
@@ -56,7 +55,7 @@ func valuesFromShrinkwrap(templatePath string, opts compilation.Options) (compil
 	return opts, nil
 }
 
-func PrepareForRun(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
+func PrepareForRun(opts CompileOptions) (ir.Linked, error) {
 	stageOpts := compilation.StageOptions{}
 	stageOpts.Verbose = opts.Verbose
 	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
@@ -89,7 +88,7 @@ func PrepareForRun(backend be.Backend, opts CompileOptions) (ir.Linked, error) {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, namespace, templatePath, internalS3Port, backend, opts.ConfigureOptions)
+	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, namespace, templatePath, internalS3Port, opts.ConfigureOptions)
 	if err != nil {
 		return ir.Linked{}, err
 	}

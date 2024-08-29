@@ -15,7 +15,7 @@ import (
 type UpOptions = fe.CompileOptions
 
 func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
-	linked, err := fe.PrepareForRun(backend, opts)
+	linked, err := fe.PrepareForRun(opts)
 	if err != nil {
 		return err
 	}
