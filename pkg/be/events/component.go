@@ -1,8 +1,6 @@
 package events
 
 import (
-	watch "k8s.io/apimachinery/pkg/watch"
-
 	"lunchpail.io/pkg/be/controller"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -10,7 +8,7 @@ import (
 type ComponentUpdate struct {
 	Component lunchpail.Component
 	Status    WorkerStatus
-	Type      watch.EventType
+	Type      EventType
 
 	Name      string
 	Namespace string
