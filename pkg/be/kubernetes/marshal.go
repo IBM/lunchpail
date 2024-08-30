@@ -5,7 +5,6 @@ import (
 
 	"lunchpail.io/pkg/be/kubernetes/common"
 	"lunchpail.io/pkg/be/kubernetes/shell"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 	util "lunchpail.io/pkg/util/yaml"
 )
@@ -42,7 +41,7 @@ func MarshalAllComponents(ir llir.LLIR, namespace string, opts common.Options, v
 
 // This is to present a single string form of all of the yaml,
 // e.g. for dry-running.
-func (backend Backend) DryRun(ir llir.LLIR, copts compilation.Options, verbose bool) (string, error) {
+func (backend Backend) DryRun(ir llir.LLIR, copts llir.Options, verbose bool) (string, error) {
 	opts := common.Options{Options: copts}
 	if arr, err := MarshalAllComponents(ir, backend.namespace, opts, verbose); err != nil {
 		return "", err

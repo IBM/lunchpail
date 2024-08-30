@@ -10,7 +10,7 @@ import (
 	k8s "k8s.io/client-go/kubernetes"
 
 	"lunchpail.io/pkg/be/kubernetes/common"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/ir/llir"
 )
 
 func isOpenShift(clientset *k8s.Clientset) (bool, error) {
@@ -27,7 +27,7 @@ func isOpenShift(clientset *k8s.Clientset) (bool, error) {
 	return false, nil
 }
 
-func k8sOptions(copts compilation.Options) (common.Options, error) {
+func k8sOptions(copts llir.Options) (common.Options, error) {
 	opts := common.Options{Options: copts}
 
 	clientset, _, err := Client()

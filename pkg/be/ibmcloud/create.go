@@ -19,7 +19,6 @@ import (
 
 	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/be/kubernetes/common"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
@@ -39,7 +38,7 @@ const (
 	IPv6Maxlen = 39
 )
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts compilation.Options, verbose bool) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options, verbose bool) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{
@@ -258,7 +257,7 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (st
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts compilation.Options, verbose bool) error {
+func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options, verbose bool) error {
 	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, resourceGroupID)
 	if err != nil {
@@ -374,7 +373,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(opts compilation.Options, ir llir.LLIR, action Action, verbose bool) error {
+func (backend Backend) SetAction(opts llir.Options, ir llir.LLIR, action Action, verbose bool) error {
 	runname := ir.RunName
 
 	if action == Stop || action == Delete {

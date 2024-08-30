@@ -28,13 +28,3 @@ type LLIR struct {
 	// One Component per WorkerPool, one for WorkerStealer, etc.
 	Components []Component
 }
-
-/*func (ir LLIR) Jobs() []Component {
-	jobs := []Component{}
-	for _, c := range ir.Components {
-		if c.IsJob() {
-			jobs = append(jobs, c)
-		}
-	}
-	return jobs
-        }*/

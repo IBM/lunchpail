@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 	util "lunchpail.io/pkg/util/yaml"
 )
@@ -62,7 +61,7 @@ func apply(yaml, namespace, context string, operation Operation) error {
 	return cmd.Run()
 }
 
-func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, copts compilation.Options, verbose bool) error {
+func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, copts llir.Options, verbose bool) error {
 	opts, err := k8sOptions(copts)
 	if err != nil {
 		return err

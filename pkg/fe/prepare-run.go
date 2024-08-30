@@ -21,7 +21,7 @@ type CompileOptions struct {
 }
 
 // TODO move into RestoreOptions
-func valuesFromShrinkwrap(templatePath string, opts compilation.Options) (compilation.Options, error) {
+func valuesFromShrinkwrap(templatePath string, opts compilation.Options) (llir.Options, error) {
 	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
 	if err != nil {
 		return opts, err
