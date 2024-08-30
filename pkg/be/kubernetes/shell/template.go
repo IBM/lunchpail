@@ -102,10 +102,8 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
 
-	releaseName := c.InstanceName + "-" + string(c.Component)
-
 	return helm.Template(
-		releaseName,
+		ResourceName(c.InstanceName, c.Component),
 		namespace,
 		templatePath,
 		"", // no yaml values at the moment
