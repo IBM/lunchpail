@@ -32,7 +32,7 @@ func newQstatCommand() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(*tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}

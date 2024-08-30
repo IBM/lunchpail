@@ -88,7 +88,7 @@ func newUpCmd() *cobra.Command {
 			Zone: appOpts.Zone, Profile: appOpts.Profile, ImageID: appOpts.ImageID, CreateNamespace: appOpts.CreateNamespace}
 		configureOptions := linker.ConfigureOptions{CompilationOptions: compilationOptions, Verbose: verboseFlag}
 
-		backend, err := be.New(tgtOpts, compilationOptions)
+		backend, err := be.New(*tgtOpts, compilationOptions)
 		if err != nil {
 			return err
 		}

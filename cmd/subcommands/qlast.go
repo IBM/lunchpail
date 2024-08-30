@@ -28,7 +28,7 @@ func newQlastCommand() *cobra.Command {
 			extra = args[1]
 		}
 
-		backend, err := be.New(tgtOpts, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(*tgtOpts, compilation.Options{}) // TODO compilation.Options
 		if err != nil {
 			return err
 		}
