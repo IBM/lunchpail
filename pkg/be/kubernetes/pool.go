@@ -3,8 +3,12 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	"lunchpail.io/pkg/be/kubernetes/shell"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 func (backend Backend) ChangeWorkers(poolName, poolNamespace, poolContext string, delta int) error {
@@ -14,14 +18,16 @@ func (backend Backend) ChangeWorkers(poolName, poolNamespace, poolContext string
 		return err
 	}
 
+	k8sName := shell.ResourceName(poolName, lunchpail.WorkersComponent)
+
 	jobsClient := clientset.BatchV1().Jobs(poolNamespace)
-	job, err := jobsClient.Get(context.Background(), poolName, metav1.GetOptions{})
+	job, err := jobsClient.Get(context.Background(), k8sName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
 	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, *job.Spec.Parallelism+int32(delta)))
-	if _, err := jobsClient.Patch(context.Background(), poolName, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
+	if _, err := jobsClient.Patch(context.Background(), k8sName, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
 		return err
 	}
 

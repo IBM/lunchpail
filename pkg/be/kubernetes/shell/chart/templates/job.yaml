@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ print .Release.Name | trunc 53 | trimSuffix "-" }}
+  name: {{ print .Release.Name }}
   labels:
     app.kubernetes.io/component: {{ .Values.lunchpail.component }}
     app.kubernetes.io/part-of: {{ .Values.lunchpail.partOf }}

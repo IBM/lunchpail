@@ -32,7 +32,7 @@ metadata:
   labels:
     app.kubernetes.io/component: {{ .Values.lunchpail.component }}
     app.kubernetes.io/name: {{ .Values.lunchpail.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Values.lunchpail.instanceName }}
     app.kubernetes.io/part-of: {{ .Values.lunchpail.partOf }}
     app.kubernetes.io/managed-by: lunchpail.io
 data:
