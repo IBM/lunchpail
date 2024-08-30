@@ -13,17 +13,16 @@ import (
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/be/kubernetes/common"
-	"lunchpail.io/pkg/be/options"
-	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/ir/llir"
-	comp "lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/util"
-
 	"github.com/elotl/cloud-init/config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/sync/errgroup"
+
+	"lunchpail.io/pkg/be/kubernetes"
+	"lunchpail.io/pkg/be/kubernetes/common"
+	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/util"
 )
 
 type Action string
@@ -40,7 +39,7 @@ const (
 	IPv6Maxlen = 39
 )
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, cliOpts options.CliOptions, verbose bool) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts compilation.Options, verbose bool) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{
@@ -52,7 +51,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.C
 	}
 
 	// TODO pass through actual Cli Options?
-	opts := common.Options{CliOptions: cliOpts}
+	opts := common.Options{Options: copts}
 
 	appYamlString, err := kubernetes.MarshalComponentAsStandalone(ir, c, namespace, opts, verbose)
 	if err != nil {
@@ -259,7 +258,7 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (st
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, cliOpts options.CliOptions, verbose bool) error {
+func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts compilation.Options, verbose bool) error {
 	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, resourceGroupID)
 	if err != nil {
@@ -300,8 +299,8 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	for _, c := range ir.Components {
 		group.Go(func() error {
 			suff := "-" + string(c.C())
-			if c.C() == comp.DispatcherComponent || c.C() == comp.WorkStealerComponent {
-				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, cliOpts, verbose)
+			if c.C() == lunchpail.DispatcherComponent || c.C() == lunchpail.WorkStealerComponent {
+				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
 				if err != nil {
 					return err
 				}
@@ -321,7 +320,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 				if err != nil {
 					return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
 				}
-			} else if c.C() == comp.WorkersComponent {
+			} else if c.C() == lunchpail.WorkersComponent {
 				workerCount := c.Workers()
 
 				//Compute number of VSIs to be provisioned and job parallelism for each VSI
@@ -335,7 +334,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 					if numInstances > 1 {
 						suff = "-" + strconv.Itoa(i)
 					}
-					instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, cliOpts, verbose)
+					instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
 					if err != nil {
 						return err
 					}
@@ -375,7 +374,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, action Action, cliOpts options.CliOptions, verbose bool) error {
+func (backend Backend) SetAction(opts compilation.Options, ir llir.LLIR, action Action, verbose bool) error {
 	runname := ir.RunName
 
 	if action == Stop || action == Delete {
@@ -383,15 +382,15 @@ func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, action
 			return err
 		}
 	} else if action == Create {
-		zone := aopts.Zone //command line zone value
-		if zone == "" {    //random zone value using config
+		zone := opts.Zone //command line zone value
+		if zone == "" {   //random zone value using config
 			randomZone, err := getRandomizedZone(backend.config, backend.vpcService) //Todo: spread among random zones with a subnet in each zone
 			if err != nil {
 				return err
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, aopts.Profile, aopts.ImageID, backend.namespace, cliOpts, verbose); err != nil {
+		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts, verbose); err != nil {
 			return err
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
 )
@@ -19,21 +18,16 @@ func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
 		return err
 	}
 
-	cliOpts := options.CliOptions{
-		CreateNamespace: copts.CreateNamespace,
-		ImagePullSecret: copts.ImagePullSecret,
-	}
-
 	if opts.DryRun {
-		fmt.Printf(backend.DryRun(ir, cliOpts, opts.Verbose))
+		fmt.Printf(backend.DryRun(ir, copts, opts.Verbose))
 		return nil
 	} else if isUp {
-		if err := backend.Up(ir, copts, cliOpts, opts.Verbose); err != nil {
+		if err := backend.Up(ir, copts, opts.Verbose); err != nil {
 			return err
 		} else if opts.Watch {
 			return status.UI(ir.RunName, backend, status.Options{Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}
-	} else if err := backend.Down(ir, copts, cliOpts, opts.Verbose); err != nil {
+	} else if err := backend.Down(ir, copts, opts.Verbose); err != nil {
 		return err
 	}
 
