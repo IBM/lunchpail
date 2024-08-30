@@ -375,7 +375,9 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, runname string, action Action, cliOpts options.CliOptions, verbose bool) error {
+func (backend Backend) SetAction(aopts compilation.Options, ir llir.LLIR, action Action, cliOpts options.CliOptions, verbose bool) error {
+	runname := ir.RunName
+
 	if action == Stop || action == Delete {
 		if err := stopOrDeleteVM(backend.vpcService, runname, backend.config.ResourceGroup.GUID, action == Delete); err != nil {
 			return err
