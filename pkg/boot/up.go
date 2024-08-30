@@ -31,7 +31,7 @@ func upDown(backend be.Backend, opts UpOptions, isUp bool) error {
 		if err := backend.Up(linked, cliOptions, opts.Verbose); err != nil {
 			return err
 		} else if opts.Watch {
-			return status.UI(linked.Runname, backend, status.Options{Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
+			return status.UI(linked.Ir.RunName, backend, status.Options{Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}
 	} else if err := backend.Down(linked, cliOptions, opts.Verbose); err != nil {
 		return err
