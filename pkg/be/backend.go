@@ -4,7 +4,7 @@ import (
 	"lunchpail.io/pkg/be/options"
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/be/streamer"
-	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/ir/llir"
 )
 
@@ -13,10 +13,10 @@ type Backend interface {
 	Ok() error
 
 	// Bring up the linked application
-	Up(linked ir.Linked, opts options.CliOptions, verbose bool) error
+	Up(linked llir.LLIR, copts compilation.Options, cliOpts options.CliOptions, verbose bool) error
 
 	// Bring down the linked application
-	Down(linked ir.Linked, opts options.CliOptions, verbose bool) error
+	Down(linked llir.LLIR, copts compilation.Options, cliOpts options.CliOptions, verbose bool) error
 
 	// Return a string to convey relevant dry-run info
 	DryRun(ir llir.LLIR, cliOpts options.CliOptions, verbose bool) (string, error)

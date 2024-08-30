@@ -2,11 +2,12 @@ package ibmcloud
 
 import (
 	"lunchpail.io/pkg/be/options"
-	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/ir/llir"
 )
 
-func (backend Backend) Down(linked ir.Linked, opts options.CliOptions, verbose bool) error {
-	if err := backend.SetAction(linked.Options, linked.Ir, Delete, opts, verbose); err != nil {
+func (backend Backend) Down(ir llir.LLIR, copts compilation.Options, opts options.CliOptions, verbose bool) error {
+	if err := backend.SetAction(copts, ir, Delete, opts, verbose); err != nil {
 		return err
 	}
 

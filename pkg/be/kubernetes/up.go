@@ -2,11 +2,12 @@ package kubernetes
 
 import (
 	"lunchpail.io/pkg/be/options"
-	"lunchpail.io/pkg/ir"
+	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/ir/llir"
 )
 
-func (backend Backend) Up(linked ir.Linked, opts options.CliOptions, verbose bool) error {
-	if err := applyOperation(linked.Ir, backend.namespace, "", ApplyIt, opts, verbose); err != nil {
+func (backend Backend) Up(ir llir.LLIR, copts compilation.Options, cliOpts options.CliOptions, verbose bool) error {
+	if err := applyOperation(ir, backend.namespace, "", ApplyIt, cliOpts, verbose); err != nil {
 		return err
 	}
 
