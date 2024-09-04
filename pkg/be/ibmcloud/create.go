@@ -67,7 +67,9 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.C
 		RunCmd: []string{"sleep 10", //Minimum of 10 seconds needed for cluster to be able to run `apply`
 			"while ! kind get clusters | grep lunchpail; do sleep 2; done",
 			"echo 'Kind cluster is ready'",
-			"env HOME=/root kubectl apply -f /app.yaml -n " + namespace},
+			"env HOME=/root kubectl create ns " + namespace,
+			"n=0; until [ $n -ge 60 ]; do env HOME=/root kubectl get serviceaccount default -o name -n " + namespace + " && break; n=$((n + 1)); sleep 1; done",
+			"env HOME=/root kubectl create -f /app.yaml -n " + namespace},
 	}
 
 	instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
