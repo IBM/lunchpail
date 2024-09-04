@@ -9,6 +9,10 @@ import (
 )
 
 func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+	if !ir.Queue.Auto {
+		return nil, nil
+	}
+
 	app, err := transpile(runname, ir)
 	if err != nil {
 		return nil, err
