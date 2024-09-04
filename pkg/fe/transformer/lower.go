@@ -20,6 +20,9 @@ func Lower(compilationName, runname string, model hlir.AppModel, queueSpec queue
 	if err != nil {
 		return llir.LLIR{}, err
 	}
+	if minio != nil {
+		ir.Components = slices.Concat([]llir.Component{minio})
+	}
 
 	apps, err := lowerApplications(compilationName, runname, model, ir, opts, verbose)
 	if err != nil {
@@ -42,7 +45,7 @@ func Lower(compilationName, runname string, model hlir.AppModel, queueSpec queue
 	}
 	ir.AppProvidedKubernetesResources = appProvidedKubernetes
 
-	ir.Components = slices.Concat([]llir.Component{minio}, apps, dispatchers, pools)
+	ir.Components = slices.Concat(ir.Components, apps, dispatchers, pools)
 
 	return ir, nil
 }

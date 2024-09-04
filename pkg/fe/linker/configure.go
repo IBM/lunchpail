@@ -34,6 +34,7 @@ func Configure(appname, runname, namespace, templatePath string, internalS3Port 
 	if queueSpec.Endpoint == "" {
 		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
 		runnameMax53 := util.Dns1035(runname + "-minio")
+		queueSpec.Auto = true
 		queueSpec.Port = internalS3Port
 		queueSpec.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local:%d", runnameMax53, namespace, internalS3Port)
 		queueSpec.AccessKey = "lunchpail"
