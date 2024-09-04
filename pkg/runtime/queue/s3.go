@@ -237,3 +237,18 @@ func (s3 S3Client) Mkdirp(bucket string) error {
 
 	return nil
 }
+
+func (s3 S3Client) WaitTillExists(bucket, object string) error {
+	suffix := ""
+	for notificationInfo := range s3.client.ListenBucketNotification(context.Background(), bucket, object, suffix, []string{
+		"s3:ObjectCreated:*",
+	}) {
+		if notificationInfo.Err != nil {
+			return notificationInfo.Err
+		}
+
+		break
+	}
+
+	return nil
+}
