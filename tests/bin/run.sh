@@ -67,6 +67,12 @@ then
         TEST_NAME=$testname "$1"/preinit.sh
     fi
 
+    export appname="${deployname-$testname}"
+    export TARGET="$TOP"/builds/test/$appname
+    export testapp="$TARGET"/test
+    rm -rf "$TARGET"
+    mkdir -p "$TARGET"
+
     if [[ -n "$expectCompilationFailure" ]]
     then
         set +e

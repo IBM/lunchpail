@@ -25,11 +25,7 @@ if which lspci && lspci | grep -iq nvidia; then
     GPU="--set supportsGpu=true"
 fi
 
-appname="${4-$1}"
-TARGET="$TOP"/builds/test/$appname
-rm -rf "$TARGET"
-
-echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) target=$TARGET $HELM_INSTALL_FLAGS"
+echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) testapp=$testapp $HELM_INSTALL_FLAGS"
 
 if [[ -n "$3" ]]
 then branch="-b $3"
@@ -42,9 +38,6 @@ then
 fi
 
 "$TOP"/hack/setup/cli.sh /tmp/lunchpail
-
-mkdir -p "$TARGET"
-testapp="$TARGET"/test
 
 # Allows us to capture workstealer info before it auto-terminates
 export LUNCHPAIL_SLEEP_BEFORE_EXIT=10

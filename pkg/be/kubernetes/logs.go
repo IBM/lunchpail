@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,7 +39,7 @@ func (streamer Streamer) podLogs(podName string, component lunchpail.Component, 
 }
 
 // TODO port this to use client-go
-func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Component, follow, verbose bool) error {
+func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Component, tail int, follow, verbose bool) error {
 	containers := "main"
 	runSelector := ",app.kubernetes.io/instance=" + runname
 
@@ -48,7 +49,7 @@ func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Compo
 	}
 
 	selector := "app.kubernetes.io/component=" + string(component) + runSelector
-	cmdline := "kubectl logs -n " + streamer.backend.namespace + " -l " + selector + " --tail=-1 " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
+	cmdline := "kubectl logs -n " + streamer.backend.namespace + " -l " + selector + " --tail=" + strconv.Itoa(tail) + " " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Tracking logs of component=%s\n", component)

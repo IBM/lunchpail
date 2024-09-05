@@ -26,7 +26,10 @@ then
     then "$TOP"/builds/test/"$appname"/test down -v
     else
         for dir in $(ls -t "$TOP"/builds/test)
-        do "$TOP"/builds/test/"$dir"/test down -v &
+        do
+            if [ -f "$TOP"/builds/test/"$dir"/test ]
+            then "$TOP"/builds/test/"$dir"/test down -v &
+            fi
         done
 
         wait
