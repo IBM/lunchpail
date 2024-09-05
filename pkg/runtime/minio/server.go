@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/util"
 )
 
 func Server() error {
@@ -98,6 +99,7 @@ func Server() error {
 	gotKillFile = true
 	fmt.Fprintf(os.Stderr, "Waiting for kill file <-- got it\n")
 
+	util.SleepBeforeExit()
 	if err := cmd.Process.Kill(); err != nil {
 		return err
 	}

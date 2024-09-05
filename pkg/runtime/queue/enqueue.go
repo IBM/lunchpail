@@ -29,6 +29,10 @@ func EnqueueFile(task string, opts EnqueueFileOptions) (int, error) {
 		return 0, err
 	}
 
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Enqueuing task %s\n", task)
+	}
+
 	if err := c.Upload(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task))); err != nil {
 		return 0, err
 	}
