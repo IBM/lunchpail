@@ -269,7 +269,7 @@ function waitForUnassignedAndOutbox {
     done
     echo "✅ PASS run-controller run test $name"
 
-    local run_name=$(kubectl -n $ns get pod -o custom-columns=N:'.metadata.labels.app\.kubernetes\.io/instance' --no-headers | head -1)
+    local run_name=$($testapp runs -n $ns --latest --name)
     echo "✅ PASS run-controller found run test=$name"
 }
 
