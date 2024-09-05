@@ -35,7 +35,7 @@ func transpile(runname string, ir llir.LLIR) (hlir.Application, error) {
 	app.Spec.Env["LUNCHPAIL_QUEUE_PREFIX"] = prefixExcludingBucket
 
 	// Helps with tests. see ./minio.sh
-	app.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = "5"
+	app.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = "10"
 
 	return app, nil
 }
