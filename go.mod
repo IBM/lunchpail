@@ -26,6 +26,8 @@ require (
 require (
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/coreos/yaml v0.0.0-20141224210557-6b16a5714269 // indirect
+	github.com/fatih/camelcase v1.0.0 // indirect
+	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-openapi/errors v0.22.0 // indirect
@@ -198,11 +200,11 @@ require (
 	helm.sh/helm/v3 v3.15.3 // indirect
 	k8s.io/apiextensions-apiserver v0.30.3 // indirect
 	k8s.io/apiserver v0.30.3 // indirect
-	k8s.io/cli-runtime v0.30.3 // indirect
+	k8s.io/cli-runtime v0.30.3
 	k8s.io/component-base v0.30.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8 // indirect
-	k8s.io/kubectl v0.30.3 // indirect
+	k8s.io/kubectl v0.30.3
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
 	oras.land/oras-go v1.2.6 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect

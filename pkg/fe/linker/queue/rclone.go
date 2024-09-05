@@ -15,7 +15,7 @@ func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port
 		// re: name of taskqueue Secret; dashes are
 		// not valid in bash variable names, so we avoid those
 		// here
-		strings.Replace(runname, "-", "", -1) + "queue", // Name
+		Name(runname),  // Name
 		true,           // Auto
 		bucket,         // Bucket
 		"",             // Endpoint

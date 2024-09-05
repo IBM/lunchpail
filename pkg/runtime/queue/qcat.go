@@ -1,9 +1,14 @@
 package queue
 
-import "path/filepath"
+import (
+	"context"
+	"path/filepath"
 
-func Qcat(path string) error {
-	c, err := NewS3Client()
+	"lunchpail.io/pkg/be"
+)
+
+func Qcat(ctx context.Context, backend be.Backend, runname, path string) error {
+	c, stop, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return err
 	}
@@ -13,5 +18,6 @@ func Qcat(path string) error {
 		return err
 	}
 
+	stop()
 	return nil
 }
