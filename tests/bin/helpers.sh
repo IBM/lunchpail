@@ -273,31 +273,6 @@ function waitForUnassignedAndOutbox {
     echo "✅ PASS run-controller found run test=$name"
 }
 
-function waitForStatus {
-    local name=$1
-    local ns=$2
-    local api=$3
-    local statuses=("${@:4}") # an array formed from everything from the fourth argument on... 
-
-    if [[ -n "$DEBUG" ]]; then set -x; fi
-
-    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$selector ns=$ns$(tput sgr0)" 1>&2
-    for status in "${statuses[@]}"
-    do
-        while true
-        do
-            kubectl -n $ns get run.lunchpail.io $name --no-headers | grep -q "$status" && break || echo "$(tput setaf 5)🧪 Still waiting for Failed: $name$(tput sgr0)"
-            (kubectl -n $ns get run.lunchpail.io $name --show-kind --no-headers | grep $name || exit 0)
-            sleep 4
-        done
-    done
-
-    echo "✅ PASS run-controller run test $name"
-
-    kubectl delete run $name -n $ns
-    echo "✅ PASS run-controller delete test $name"
-}
-
 function deploy {
     "$SCRIPTDIR"/deploy-tests.sh $@
 }
