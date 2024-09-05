@@ -25,6 +25,7 @@ TEST_FROM_ARGV_idx=$((xOPTIND))
 export TEST_FROM_ARGV="${!TEST_FROM_ARGV_idx}"
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
+TOP="$SCRIPTDIR"/../..
 
 function up {
     local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)
@@ -40,16 +41,10 @@ function waitForIt {
     # Future readers: the != part is meant to avoid any pods that are
     # known to be short-lived without this, we may witness a
     # combination of Ready and Complete (i.e. not-Ready) pods. This is
-    # important because pthe kubectl waits below expect the pods
+    # important because the kubectl waits below expect the pods
     # either to be all-Ready or all-not-Ready.
     local workerselector=app.kubernetes.io/component=workerpool
     local dispatcherselector=app.kubernetes.io/component=workdispatcher
-
-    if [[ "$api" = ray ]]; then
-        local containers="-c job-logs"
-    else
-        local containers="--all-containers"
-    fi
 
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
@@ -68,7 +63,7 @@ function waitForIt {
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set -x
             fi
-            kubectl -n $ns logs $containers -l 'app.kubernetes.io/component in (workerpool,workdispatcher)' --tail=-1 | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            $testapp logs -n $ns -c workers -c dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set +x
             fi
@@ -81,8 +76,8 @@ function waitForIt {
                 then TAIL=1000
                 else TAIL=10
                 fi
-                (kubectl -n $ns logs $containers -l $workerselector --tail=$TAIL || exit 0)
-                (kubectl -n $ns logs -l $dispatcherselector --tail=$TAIL || exit 0)
+                ($testapp logs -n $ns -c workers --tail=$TAIL || exit 0)
+                ($testapp logs -n $ns -c dispatcher --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4

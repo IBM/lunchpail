@@ -23,5 +23,5 @@ type Streamer interface {
 	QueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error)
 
 	// Stream logs from a given Component to os.Stdout
-	ComponentLogs(runname string, component lunchpail.Component, follow, verbose bool) error
+	ComponentLogs(runname string, component lunchpail.Component, tail int, follow, verbose bool) error
 }

@@ -5,7 +5,7 @@ set -e
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 
 TOP="$SCRIPTDIR"/../..
-if [[ -d ./cmd ]]
+if [ -d ./cmd ]
 then TOP=$(pwd)
 fi
 

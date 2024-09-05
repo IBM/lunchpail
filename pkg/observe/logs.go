@@ -13,6 +13,7 @@ import (
 )
 
 type LogsOptions struct {
+	Tail       int
 	Follow     bool
 	Verbose    bool
 	Components []lunchpail.Component
@@ -35,7 +36,7 @@ func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
 
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			return backend.Streamer().ComponentLogs(runname, component, opts.Follow, opts.Verbose)
+			return backend.Streamer().ComponentLogs(runname, component, opts.Tail, opts.Follow, opts.Verbose)
 		})
 	}
 
