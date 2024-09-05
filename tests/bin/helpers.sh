@@ -280,7 +280,3 @@ function deploy {
 function undeploy {
     ("$SCRIPTDIR"/undeploy-tests.sh $@ || exit 0)
 }
-
-function watch {
-    kubectl get pod --show-kind -A --watch &
-}

@@ -19,12 +19,11 @@ TOP="$SCRIPTDIR"/../..
 
 . "$SCRIPTDIR"/helpers.sh
 
-# On ctrl+c, kill the subprocesses that `watch` may have launched
+# On ctrl+c, kill the subprocesses that may have launched
 trap "pkill -P $$" SIGINT
 
 undeploy
 up
-watch
 
 #
 # Iterate over the tests/* directory
