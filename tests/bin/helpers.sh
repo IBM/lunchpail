@@ -38,25 +38,9 @@ function waitForIt {
     local api=$3
     local dones=("${@:4}") # an array formed from everything from the fourth argument on... 
 
-    # Future readers: the != part is meant to avoid any pods that are
-    # known to be short-lived without this, we may witness a
-    # combination of Ready and Complete (i.e. not-Ready) pods. This is
-    # important because the kubectl waits below expect the pods
-    # either to be all-Ready or all-not-Ready.
-    local workerselector=app.kubernetes.io/component=workerpool
-    local dispatcherselector=app.kubernetes.io/component=workdispatcher
-
     if [[ -n "$DEBUG" ]]; then set -x; fi
 
-    echo "$(tput setaf 2)🧪 Waiting for job to finish app=$workerselector ns=$ns$(tput sgr0)" 1>&2
-    while true; do
-        kubectl -n $ns wait pod -l $workerselector --for=condition=Ready --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $workerselector$(tput sgr0)"
-
-        kubectl -n $ns wait pod -l $workerselector --for=condition=Ready=false --timeout=5s && break || echo "$(tput setaf 5)🧪 Run not found: $workerselector$(tput sgr0)"
-        sleep 4
-    done
-
-    echo "$(tput setaf 2)🧪 Checking job output app=$workerselector$(tput sgr0)" 1>&2
+    echo "$(tput setaf 2)🧪 Checking job output app=$appname$(tput sgr0)" 1>&2
     for done in "${dones[@]}"; do
         idx=0
         while true; do
@@ -90,20 +74,34 @@ function waitForIt {
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
     else
-        echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0) namespace=$ns" 1>&2
-        nOutputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
-                            lunchpail qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+        while true
+        do
+            echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name namespace=$ns num_desired_outputs=${NUM_DESIRED_OUTPUTS:-1}$(tput sgr0)" 1>&2
+            nOutputs=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+                               lunchpail qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
-        if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
-        then
+            if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
+            then break
+            fi
+
+            echo "$(tput setaf 2)🧪 Still waiting test=$name for expectedNumOutputs=${NUM_DESIRED_OUTPUTS:-1} actualNumOutputs=$nOutputs$(tput sgr0)"
+            set -x
+            outputs=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- lunchpail qls outbox)
+            set +x
+            echo "Current output files: $outputs"
+            sleep 1
+        done
+
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+            outputs=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
                                lunchpail qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
+            allOutputs=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- lunchpail qls outbox)
+            echo "AllOutputs: $allOutputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
-                code=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+                code=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
                                lunchpail qcat outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
@@ -118,28 +116,25 @@ function waitForIt {
                     fi
                 fi
 
-                stdout=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+                stdout=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
                                   lunchpail qls outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
-                stderr=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+                stderr=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
                                   lunchpail qls outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stderr file test=$name output=$output"
                 fi
             done
-        else
-            echo "❌ FAIL run-controller run test $selector: bad nOutputs=$nOutputs" && return 1
-        fi
 
         echo "Checking for done file (from dispatcher)"
         while true
         do
-            donefilecount=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
+            donefilecount=$(kubectl exec -c main $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
                                     lunchpail qls done | wc -l | xargs)
             if [[ $donefilecount == 1 ]]
             then echo "✅ PASS run-controller test=$name donefile exists" && break

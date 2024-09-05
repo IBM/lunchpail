@@ -5,3 +5,5 @@ api=workqueue
 
 expected=("Processing 6 task.1.txt" "Task completed task.1.txt" "Task completed task.1.txt with return code 0" "Task completed task.3.txt" "Task completed task.3.txt with return code 64")
 expectTaskFailure=64
+
+NUM_DESIRED_OUTPUTS=3

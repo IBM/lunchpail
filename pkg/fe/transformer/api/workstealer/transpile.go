@@ -17,8 +17,10 @@ func transpile(runname string) (hlir.Application, error) {
 	app.Spec.Command = "lunchpail workstealer"
 
 	app.Spec.Env = hlir.Env{}
-	app.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = os.Getenv("LUNCHPAIL_SLEEP_BEFORE_EXIT")
 	app.Spec.Env["LUNCHPAIL_RUN_NAME"] = runname
+
+	// This can help with tests
+	app.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = os.Getenv("LUNCHPAIL_SLEEP_BEFORE_EXIT")
 
 	return app, nil
 }
