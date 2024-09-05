@@ -90,8 +90,6 @@ function waitForIt {
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
     else
-        local queue=${taskqueue-$(kubectl -n $ns get secret -l app.kubernetes.io/component=taskqueue,app.kubernetes.io/instance=$run_name --no-headers -o custom-columns=NAME:.metadata.name)}
-
         echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name$(tput sgr0) namespace=$ns" 1>&2
         nOutputs=$(kubectl exec $(kubectl get pod -n $ns -l app.kubernetes.io/component=$S3C -o name) -n $ns -- \
                             lunchpail qls outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
