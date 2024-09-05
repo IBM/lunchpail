@@ -84,8 +84,8 @@ function waitForIt {
         done
     done
 
-    local run_name=$(kubectl -n $ns get pod -o custom-columns=N:'.metadata.labels.app\.kubernetes\.io/instance' --no-headers | head -1)
-    echo "✅ PASS run-controller found run test=$name"
+    local run_name=$($testapp runs -n $ns --latest --name)
+    echo "✅ PASS run-controller found run test=$name run_name=$run_name"
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
