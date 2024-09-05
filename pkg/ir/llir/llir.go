@@ -14,6 +14,9 @@ type Component interface {
 	SetWorkers(w int) Component
 }
 
+// Specification of the queue, e.g. endpoint
+type Queue = queue.Spec
+
 type LLIR struct {
 	AppName string
 	RunName string
@@ -23,7 +26,7 @@ type LLIR struct {
 	AppProvidedKubernetesResources string
 
 	// Details of how to reach the queue endpoint
-	Queue queue.Spec
+	Queue
 
 	// One Component per WorkerPool, one for WorkerStealer, etc.
 	Components []Component

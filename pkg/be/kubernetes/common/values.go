@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 
+	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -31,6 +32,7 @@ func Values(ir llir.LLIR, opts Options) ([]string, error) {
 		"lunchpail.taskqueue.bucket=" + ir.Queue.Bucket,
 		"lunchpail.taskqueue.accessKey=" + ir.Queue.AccessKey,
 		"lunchpail.taskqueue.secretKey=" + ir.Queue.SecretKey,
+		"lunchpail.taskqueue.prefixPath=" + api.QueuePrefixPath(ir.Queue, ir.RunName),
 		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
 		"lunchpail.image.repo=" + lunchpail.ImageRepo,
 		"lunchpail.image.version=" + lunchpail.Version(),

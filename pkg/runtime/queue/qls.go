@@ -1,13 +1,16 @@
 package queue
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"lunchpail.io/pkg/be"
 )
 
-func Qls(path string) error {
-	c, err := NewS3Client()
+func Qls(ctx context.Context, backend be.Backend, runname, path string) error {
+	c, stop, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return err
 	}
@@ -17,5 +20,6 @@ func Qls(path string) error {
 		fmt.Println(strings.Replace(o.Key, prefix+"/", "", 1))
 	}
 
+	stop()
 	return nil
 }

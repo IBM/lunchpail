@@ -1,41 +1,50 @@
-//NOT YET needed by tests/bin/helpers.sh go:build full || observe
+//go:build full || observe
 
 package subcommands
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
 func newQlsCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "qls [path]",
 		Short: "List queue path",
 		Long:  "List queue path",
 		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
 	}
 
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if compilation.IsCompiled() {
-			// TODO: pull out command line and other
-			// embeddings from this compiled executable
-			return fmt.Errorf("TODO")
-		}
+	var runname string
+	cmd.Flags().StringVarP(&runname, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
 
+	tgtOpts := options.AddTargetOptions(cmd)
+
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		path := ""
 		if len(args) == 1 {
 			path = args[0]
 		}
-		return queue.Qls(path)
+
+		backend, err := be.New(*tgtOpts, compilation.Options{}) // TODO compilation.Options
+		if err != nil {
+			return err
+		}
+
+		return queue.Qls(context.Background(), backend, runname, path)
 	}
 
 	return cmd
 }
 
 func init() {
-	rootCmd.AddCommand(newQlsCmd())
+	if compilation.IsCompiled() {
+		rootCmd.AddCommand(newQlsCmd())
+	}
 }

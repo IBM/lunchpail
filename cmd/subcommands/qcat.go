@@ -1,12 +1,14 @@
-//NOT YET needed by tests/bin/helpers.sh go:build full || observe
+//go:build full || observe
 
 package subcommands
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
+	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
 )
@@ -19,19 +21,25 @@ func newQcatCmd() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
+	var runname string
+	cmd.Flags().StringVarP(&runname, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
+
+	tgtOpts := options.AddTargetOptions(cmd)
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if compilation.IsCompiled() {
-			// TODO: pull out command line and other
-			// embeddings from this compiled executable
-			return fmt.Errorf("TODO")
+		backend, err := be.New(*tgtOpts, compilation.Options{}) // TODO compilation.Options
+		if err != nil {
+			return err
 		}
 
-		return queue.Qcat(args[0])
+		return queue.Qcat(context.Background(), backend, runname, args[0])
 	}
 
 	return cmd
 }
 
 func init() {
-	rootCmd.AddCommand(newQcatCmd())
+	if compilation.IsCompiled() {
+		rootCmd.AddCommand(newQcatCmd())
+	}
 }
