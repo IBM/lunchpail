@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/compilation"
@@ -60,7 +61,7 @@ func newUpCmd() *cobra.Command {
 
 	cmd.Flags().SortFlags = false
 	appOpts := addCompilationOptions(cmd, true)
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", watchFlag, "After deployment, watch for status updates")

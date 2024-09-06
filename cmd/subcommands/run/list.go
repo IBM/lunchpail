@@ -1,28 +1,29 @@
 //go:build full || observe
 
-package subcommands
+package run
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/compilation"
 )
 
-func newRunsCommand() *cobra.Command {
+func List() *cobra.Command {
 	var name bool
 	var latest bool
 
 	var cmd = &cobra.Command{
-		Use:   "runs",
+		Use:   "list",
 		Short: "List recent runs",
 	}
 	cmd.Flags().BoolVarP(&name, "name", "N", false, "Show only the run name")
 	cmd.Flags().BoolVarP(&latest, "latest", "l", false, "Show only the most recent run")
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		backend, err := be.New(*tgtOpts, compilation.Options{}) // TODO compilation.Options
@@ -39,12 +40,6 @@ func newRunsCommand() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	if compilation.IsCompiled() {
-		rootCmd.AddCommand(newRunsCommand())
-	}
 }
 
 // TODO move to a pkg/observe/runs/ui?
