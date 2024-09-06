@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	comp "lunchpail.io/pkg/lunchpail"
@@ -29,7 +30,7 @@ func newLogsCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().IntVarP(&tailFlag, "tail", "T", -1, "Lines of recent log file to display, with -1 showing all available log data")
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""

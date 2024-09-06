@@ -4,6 +4,7 @@ import (
 	"lunchpail.io/pkg/be/runs"
 	"lunchpail.io/pkg/be/streamer"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/lunchpail"
 )
 
 type Backend interface {
@@ -24,6 +25,9 @@ type Backend interface {
 
 	// List deployed runs
 	ListRuns() ([]runs.Run, error)
+
+	// Number of instances of the given component for the given run
+	InstanceCount(c lunchpail.Component, runname string) (int, error)
 
 	// Return a streamer
 	Streamer() streamer.Streamer

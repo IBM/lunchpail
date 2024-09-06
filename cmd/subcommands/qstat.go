@@ -4,6 +4,8 @@ package subcommands
 
 import (
 	"github.com/spf13/cobra"
+
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/qstat"
@@ -24,7 +26,7 @@ func newQstatCommand() *cobra.Command {
 	cmd.Flags().Int64VarP(&tailFlag, "tail", "T", -1, "Number of lines to tail")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Silence extraneous output")
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""

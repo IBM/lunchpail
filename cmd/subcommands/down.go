@@ -5,6 +5,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/compilation"
@@ -29,7 +30,7 @@ func newDownCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&apiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
 
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		backend, err := be.New(*tgtOpts, compilation.Options{ApiKey: apiKey}) // TODO compilation.Options

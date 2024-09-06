@@ -1,6 +1,6 @@
 //go:build full || deploy || manage || observe
 
-package subcommands
+package options
 
 import (
 	"github.com/spf13/cobra"
@@ -9,10 +9,8 @@ import (
 	"lunchpail.io/pkg/compilation"
 )
 
-type TargetOptions = be.TargetOptions
-
-func addTargetOptions(cmd *cobra.Command) *TargetOptions {
-	options := TargetOptions{TargetPlatform: be.Kubernetes}
+func AddTargetOptions(cmd *cobra.Command) *be.TargetOptions {
+	options := be.TargetOptions{TargetPlatform: be.Kubernetes}
 
 	if compilation.IsCompiled() {
 		// by default, we use Namespace == app name

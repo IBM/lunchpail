@@ -5,6 +5,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/cpu"
@@ -22,7 +23,7 @@ func Newcmd() *cobra.Command {
 
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().IntVarP(&intervalSecondsFlag, "interval", "i", 2, "Sampling interval")
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""

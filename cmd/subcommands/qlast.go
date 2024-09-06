@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/qstat"
@@ -19,7 +20,7 @@ func newQlastCommand() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	}
 
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		marker := args[0]

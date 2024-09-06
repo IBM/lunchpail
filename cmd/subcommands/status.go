@@ -5,6 +5,7 @@ package subcommands
 import (
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/status"
@@ -32,7 +33,7 @@ func newStatusCommand() *cobra.Command {
 	// interval for polling cpu etc.
 	cmd.Flags().IntVarP(&intervalFlag, "interval", "i", 5, "Polling interval in seconds for resource utilization stats")
 
-	tgtOpts := addTargetOptions(cmd)
+	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
