@@ -1,5 +1,4 @@
-rclone config delete rcloneremotetest
-cat <<'EOF' >> ~/.config/rclone/rclone.conf 
+cat <<'EOF' >> $RCLONE_CONFIG
 [rcloneremotetest]
 type = s3
 provider = Other

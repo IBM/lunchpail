@@ -27,8 +27,6 @@ for bucket_path in $@; do
         done
         
         set -x
-#        kubectl cp -c main $bucket_path $pod:/tmp/$bucket -n $NAMESPACE
-#        kubectl exec $pod -n $NAMESPACE -c main -- sh -c "lunchpail qin /tmp/$bucket $bucket && rm -rf /tmp/$bucket"
         $testapp qin $bucket_path $bucket
         set +x
     fi
