@@ -2,6 +2,7 @@ package queue
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,6 +25,12 @@ func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port
 		"",             // SecretKey
 	}
 
+	if os.Getenv("RCLONE_CONFIG") != "" {
+		// sigh, rclone doesn't seem to support this except at the level of the rclone CLI
+		if err := rcloneConfig.SetConfigPath(os.Getenv("RCLONE_CONFIG")); err != nil {
+			return false, Spec{}, err
+		}
+	}
 	rcloneConfigFile.Install() // otherwise, DumpRcRemote() yields an empty map
 	config := rcloneConfig.DumpRcRemote(remoteName)
 

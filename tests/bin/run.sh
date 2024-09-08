@@ -23,6 +23,9 @@ then
     exit 1
 fi
 
+# in case tests want to populate an rclone config
+export RCLONE_CONFIG=$(mktemp)
+
 # Skip disabled tests
 if [[ -e "$1"/.disabled ]]
 then
