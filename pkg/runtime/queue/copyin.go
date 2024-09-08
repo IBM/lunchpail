@@ -1,19 +1,23 @@
 package queue
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"lunchpail.io/pkg/be"
 )
 
-func CopyIn(srcDir, bucket string) error {
-	s3, err := NewS3Client()
+func CopyIn(ctx context.Context, backend be.Backend, runname, srcDir, bucket string) error {
+	s3, stop, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return err
 	}
+	defer stop()
 
 	fmt.Fprintf(os.Stderr, "Preparing upload with mkdirp on s3 bucket=%s\n", bucket)
 	if err := s3.Mkdirp(bucket); err != nil {
