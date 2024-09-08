@@ -93,10 +93,6 @@ then
         deploy $testname $app $branch $deployname
     fi
 
-    # if [[ $(basename $1) = test7d ]]
-    # then kubectl logs deploy/run-controller -n $(basename $1) -f &
-    # fi
-
     namespace=${deployname-$testname}
 
     if [[ -e "$1"/init.sh ]]; then
