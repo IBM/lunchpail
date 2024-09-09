@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	batchv1 "k8s.io/api/batch/v1"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -12,12 +12,12 @@ import (
 	"lunchpail.io/pkg/compilation"
 )
 
-func groupByRun(jobs *batchv1.JobList) []runs.Run {
+func groupByRun(pods *v1.PodList) []runs.Run {
 	runsLookup := make(map[string]runs.Run)
-	for _, job := range jobs.Items {
-		if runname, exists := job.Labels["app.kubernetes.io/instance"]; exists {
+	for _, pod := range pods.Items {
+		if runname, exists := pod.Labels["app.kubernetes.io/instance"]; exists {
 			if _, alreadySeen := runsLookup[runname]; !alreadySeen {
-				runsLookup[runname] = runs.Run{Name: runname, CreationTimestamp: job.CreationTimestamp.Time}
+				runsLookup[runname] = runs.Run{Name: runname, CreationTimestamp: pod.CreationTimestamp.Time}
 			}
 		}
 	}
@@ -32,16 +32,16 @@ func groupByRun(jobs *batchv1.JobList) []runs.Run {
 	return runs
 }
 
-// Return all lunchpail Jobs for the given appname in the given namespace
+// Return all lunchpail runs for the given appname in the given namespace
 func listRuns(appName, namespace string, client kubernetes.Interface) ([]runs.Run, error) {
-	label := "app.kubernetes.io/component=workerpool,app.kubernetes.io/part-of=" + appName
+	label := "app.kubernetes.io/part-of=" + appName
 
-	jobs, err := client.BatchV1().Jobs(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: label})
+	pods, err := client.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: label})
 	if err != nil {
 		return []runs.Run{}, err
 	}
 
-	return groupByRun(jobs), nil
+	return groupByRun(pods), nil
 }
 
 // Return all Runs in the given namespace for the given app
