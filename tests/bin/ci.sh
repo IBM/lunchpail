@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 
 #
-# test.sh: run all tests subject to optional inclusion `-i` and
+# ci.sh: run all tests subject to optional inclusion `-i` and
 # exclusion `-e` filters. After ensuring that the system is ready, we
 # invoke `./run.sh` to do the heavy lifting of the actual run.
 #
 
-set -e
-set -o pipefail
+set -eo pipefail
 
 # In case there are things we want to do differently knowing that we
 # are running a test (e.g. to produce more predictible output);
 # e.g. see test7/init.sh
-export RUNNING_CODEFLARE_TESTS=1
+export RUNNING_LUNCHPAIL_TESTS=1
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
@@ -21,9 +20,6 @@ TOP="$SCRIPTDIR"/../..
 
 # On ctrl+c, kill the subprocesses that may have launched
 trap "pkill -P $$" SIGINT
-
-undeploy
-up
 
 #
 # Iterate over the tests/* directory

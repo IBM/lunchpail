@@ -5,7 +5,7 @@ set -eo pipefail
 # in case there are things we want to do differently knowing that we
 # are running a test (e.g. to produce more predictible output);
 # e.g. see 7/init.sh
-export RUNNING_CODEFLARE_TESTS=1
+export RUNNING_LUNCHPAIL_TESTS=1
 
 # app.kubernetes.io/component label of pod that houses local s3
 S3C=workstealer
@@ -26,11 +26,6 @@ export TEST_FROM_ARGV="${!TEST_FROM_ARGV_idx}"
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
-
-function up {
-    local MAIN_SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-    "$SCRIPTDIR"/up.sh
-}
 
 function waitForIt {
     local name=$1
