@@ -58,7 +58,6 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 			transport, upgrader, err := spdy.RoundTripperFor(restConfig)
 			if err != nil {
 				if !retryOnError(err) {
-					fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
 					return err
 				}
 				continue
@@ -72,7 +71,6 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 			fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", localPort, podPort)}, stopCh, readyCh, stdout, stderr)
 			if err != nil {
 				if !retryOnError(err) {
-					fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!2")
 					return err
 				}
 				continue
@@ -80,7 +78,6 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 
 			if err := fw.ForwardPorts(); err != nil {
 				if !retryOnError(err) {
-					fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!3")
 					return err
 				}
 				continue
