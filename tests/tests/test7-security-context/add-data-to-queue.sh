@@ -22,7 +22,7 @@ do
     # repeatable name for the task files, so that we know what
     # to look for when confirming that the tasks were
     # processed by the workers
-    if [[ -n "$CI" ]] || [[ -n "$RUNNING_CODEFLARE_TESTS" ]]; then
+    if [[ -n "$CI" ]] || [[ -n "$RUNNING_LUNCHPAIL_TESTS" ]]; then
         id=$idx
     else
         # otherwise, use a more random name, so that we can

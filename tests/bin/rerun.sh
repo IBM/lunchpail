@@ -12,5 +12,4 @@ fi
 
 rm -f /tmp/lunchpail
 
-"$TOP"/hack/init.sh
 "$SCRIPTDIR"/run.sh $1
