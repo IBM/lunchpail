@@ -49,6 +49,8 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		return "", err
 	}
 
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!\n%s", c.Application.Spec.Command)
+
 	// values for this component
 	myValues := []string{
 		"lunchpail.instanceName=" + c.InstanceName,
