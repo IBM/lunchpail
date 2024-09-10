@@ -94,36 +94,24 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 				// data in from s3, so we will use the
 				// secrets attached to an
 				// initContainer
+				secretName := fmt.Sprintf("%s-%d", runname, didx)
+				secrets = append(secrets, map[string]string{
+					"endpoint":        spec.Endpoint,
+					"accessKeyID":     spec.AccessKey,
+					"secretAccessKey": spec.SecretKey,
+				})
 				initContainers = append(initContainers, initContainer{
-					Name:  "s3-copy-in-" + dataset.Name,
-					Image: "docker.io/rclone/rclone:1",
-					// EnvFrom:      []envFrom{env},
+					Name:         "s3-copy-in-" + dataset.Name,
+					Image:        "docker.io/alpine:3",
+					EnvFrom:      []envFrom{envFrom{secretRef{secretName}, "lunchpail_queue_"}},
 					VolumeMounts: []volumeMount{volumeMount{"workdir", "/workdir"}},
 					Command: []string{
 						"/bin/sh",
 						"-c",
 						fmt.Sprintf(`
-printenv
-
-config=/tmp/rclone.conf
-cat <<EOF > $config
-[s3]
-type = s3
-provider = Other
-env_auth = false
-endpoint = %s
-access_key_id = %s
-secret_access_key = %s
-acl = public-read
-EOF
-
-rclone --config $config config dump
-
-# Delay the copy-in, if requested
-sleep %d
-
-rclone --retries 50 --config $config copyto -v s3:/%s /workdir/%s/%s
-`, spec.Endpoint, spec.AccessKey, spec.SecretKey, dataset.S3.CopyIn.Delay, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
+sleep %d # Delay the copy-out, if requested
+/workdir/lunchpail qout %s /workdir/%s/%s
+`, dataset.S3.CopyIn.Delay, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
 					},
 				})
 			}
