@@ -9,3 +9,8 @@ type Spec struct {
 	AccessKey string
 	SecretKey string
 }
+
+func (spec Spec) UpdateEndpoint(endpoint string) Spec {
+	spec.Endpoint = endpoint
+	return spec
+}
