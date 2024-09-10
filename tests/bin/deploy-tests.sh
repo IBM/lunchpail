@@ -37,7 +37,9 @@ then
     . "$SCRIPTDIR"/my.secrets.sh
 fi
 
-"$TOP"/hack/setup/cli.sh /tmp/lunchpail
+if [ -z "$LUNCHPAIL_SKIP_CLI_BUILD" ]
+then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
+fi
 
 # Allows us to capture workstealer info before it auto-terminates
 export LUNCHPAIL_SLEEP_BEFORE_EXIT=10

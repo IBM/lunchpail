@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/minio/minio-go/v7"
+	"golang.org/x/sync/errgroup"
 )
 
 func (s3 S3Client) Lsf(bucket, prefix string) ([]string, error) {
@@ -99,6 +100,27 @@ func (s3 S3Client) Upload(bucket, source, destination string) error {
 		}
 	}
 	return nil
+}
+
+func (s3 S3Client) DownloadFolder(octx context.Context, bucket, source, destination string) error {
+	group, ctx := errgroup.WithContext(octx)
+	for o := range s3.ListObjects(bucket, source, true) {
+		group.Go(func() error {
+			if o.Err != nil {
+				return o.Err
+			} else if strings.HasSuffix(o.Key, "/") {
+				// skip folders
+				return nil
+			}
+
+			localPath := filepath.Join(destination, o.Key)
+			if err := os.MkdirAll(filepath.Dir(localPath), 0755); err != nil {
+				return err
+			}
+			return s3.client.FGetObject(ctx, bucket, o.Key, localPath, minio.GetObjectOptions{})
+		})
+	}
+	return group.Wait()
 }
 
 func (s3 S3Client) Download(bucket, source, destination string) error {
