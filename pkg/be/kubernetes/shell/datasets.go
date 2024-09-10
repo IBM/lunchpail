@@ -2,6 +2,8 @@ package shell
 
 import (
 	"fmt"
+	"strings"
+
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/util"
@@ -74,7 +76,7 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 			volumeMounts = append(volumeMounts, volumeMount{name, dataset.MountPath})
 		}
 		if dataset.S3.Rclone.RemoteName != "" {
-			isValid, spec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, queueSpec.Port)
+			isValid, remoteSpec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, queueSpec.Port)
 
 			if err != nil {
 				return nil, nil, nil, nil, secrets, err
@@ -83,9 +85,9 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 			} else if dataset.S3.EnvFrom.Prefix != "" {
 				secretName := fmt.Sprintf("%s-%d", runname, didx)
 				secrets = append(secrets, map[string]string{
-					"endpoint":        spec.Endpoint,
-					"accessKeyID":     spec.AccessKey,
-					"secretAccessKey": spec.SecretKey,
+					"endpoint":        updateTestQueueEndpoint(remoteSpec.Endpoint, queueSpec),
+					"accessKeyID":     remoteSpec.AccessKey,
+					"secretAccessKey": remoteSpec.SecretKey,
 				})
 				envFroms = append(envFroms, envFrom{secretRef{secretName}, dataset.S3.EnvFrom.Prefix})
 			}
@@ -140,4 +142,8 @@ func envForQueue(queueSpec queue.Spec) envFrom {
 		Prefix:    "lunchpail_queue_",
 		SecretRef: secretRef{queueSpec.Name},
 	}
+}
+
+func updateTestQueueEndpoint(s string, queue queue.Spec) string {
+	return strings.Replace(s, "$TEST_QUEUE_ENDPOINT", queue.Endpoint, -1)
 }
