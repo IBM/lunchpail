@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -37,6 +38,18 @@ const (
 	IPv4Maxlen = 15
 	IPv6Maxlen = 39
 )
+
+type intCounter struct {
+	lock    sync.Mutex
+	counter int
+}
+
+func (i *intCounter) inc() {
+	i.lock.Lock()
+	time.Sleep(10 * time.Millisecond)
+	i.counter++
+	i.lock.Unlock()
+}
 
 func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options, verbose bool) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
@@ -297,17 +310,18 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	group, _ := errgroup.WithContext(context.Background())
 	t6s := time.Now()
 	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
+	poolCount := intCounter{}
 	for _, c := range ir.Components {
+		instanceName := name + "-" + string(c.C())
 		group.Go(func() error {
-			suff := "-" + string(c.C())
 			if c.C() == lunchpail.DispatcherComponent || c.C() == lunchpail.WorkStealerComponent {
-				instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
+				instance, err := createInstance(vpcService, instanceName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
 				if err != nil {
 					return err
 				}
 
 				//TODO VSI instances other than jumpbox or main pod should not have floatingIP. Remove below after testing
-				floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
+				floatingIPID, err := createFloatingIP(vpcService, instanceName, resourceGroupID, zone)
 				if err != nil {
 					return err
 				}
@@ -322,25 +336,25 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 					return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
 				}
 			} else if c.C() == lunchpail.WorkersComponent {
+				poolCount.inc()
 				workerCount := c.Workers()
+				poolName := instanceName + strconv.Itoa(poolCount.counter) //multiple worker pools, maybe
 
 				//Compute number of VSIs to be provisioned and job parallelism for each VSI
 				parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, int32(workerCount))
 				if err != nil {
 					return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
 				}
-				c = c.SetWorkers(int(parallelism))
 
-				for i := 1; i <= numInstances; i++ {
-					if numInstances > 1 {
-						suff = "-" + strconv.Itoa(i)
-					}
-					instance, err := createInstance(vpcService, name+suff, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
+				for i := 0; i < numInstances; i++ {
+					workerName := poolName + "-" + strconv.Itoa(i) //multiple worker instances
+					c = c.SetWorkers(int(parallelism[i]))
+					instance, err := createInstance(vpcService, workerName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
 					if err != nil {
 						return err
 					}
 
-					floatingIPID, err := createFloatingIP(vpcService, name+suff, resourceGroupID, zone)
+					floatingIPID, err := createFloatingIP(vpcService, workerName, resourceGroupID, zone)
 					if err != nil {
 						return err
 					}
@@ -355,8 +369,8 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 						return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
 					}
 				}
-			}
 
+			}
 			return nil
 		})
 	}
@@ -398,7 +412,7 @@ func (backend Backend) SetAction(opts llir.Options, ir llir.LLIR, action Action,
 	return nil
 }
 
-func computeParallelismAndInstanceCount(vpcService *vpcv1.VpcV1, profile string, workers int32) (parallelism int64, instanceCount int, err error) {
+func computeParallelismAndInstanceCount(vpcService *vpcv1.VpcV1, profile string, workers int32) (parallelism []int64, instanceCount int, err error) {
 	//TODO: 1. Mapping table from size specified by application and user to IBM's profile table
 	//2. Build comparison table for multiple cloud providers
 	prof, response, err := vpcService.GetInstanceProfile(
@@ -414,12 +428,22 @@ func computeParallelismAndInstanceCount(vpcService *vpcv1.VpcV1, profile string,
 		if !ok {
 			return parallelism, instanceCount, errors.New("failed to get VcpuCount from instance profile")
 		}
+		numCpu := *vcpuCount.Value
 
-		parallelism = *vcpuCount.Value
-		if workers < int32(parallelism) {
-			parallelism = int64(workers)
+		instanceCount = int(float64(workers) / float64(numCpu))
+		remainder := int(math.Mod(float64(workers), float64(numCpu)))
+
+		if workers < int32(numCpu) {
+			parallelism = []int64{int64(workers)}
+		} else {
+			for range instanceCount {
+				parallelism = append(parallelism, numCpu)
+			}
+			if remainder > 0 {
+				parallelism = append(parallelism, int64(remainder))
+				instanceCount++
+			}
 		}
-		instanceCount = max(1, int(math.Ceil(float64(workers)/float64(parallelism))))
 	}
 
 	return parallelism, instanceCount, nil
