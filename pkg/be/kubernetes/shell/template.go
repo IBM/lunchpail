@@ -54,7 +54,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"lunchpail.instanceName=" + c.InstanceName,
 		"lunchpail.component=" + string(c.Component),
 		"image=" + c.Application.Spec.Image,
-		"command=" + c.Application.Spec.Command,
+		"command=" + updateTestQueueEndpoint(c.Application.Spec.Command, ir.Queue),
 		fmt.Sprintf("lunchpail.runAsJob=%v", c.RunAsJob),
 		// fmt.Sprintf("lunchpail.debug=%v", verbose),
 		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),

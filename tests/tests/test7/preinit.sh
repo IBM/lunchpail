@@ -3,8 +3,8 @@ cat <<'EOF' >> $RCLONE_CONFIG
 type = s3
 provider = Other
 env_auth = false
-endpoint = http://$TEST_RUN-minio.test7.svc.cluster.local:$TEST_PORT
-access_key_id = $TEST_ACCESSKEY
-secret_access_key = $TEST_SECRETKEY
+endpoint = $TEST_QUEUE_ENDPOINT
+access_key_id = $TEST_QUEUE_ACCESSKEY
+secret_access_key = $TEST_QUEUE_SECRETKEY
 acl = public-read
 EOF

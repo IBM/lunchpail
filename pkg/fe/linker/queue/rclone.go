@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	rcloneConfig "github.com/rclone/rclone/fs/config"
@@ -61,36 +60,22 @@ func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port
 		spec.SecretKey = s
 	}
 
-	if spec.Endpoint == "" {
+	if spec.Endpoint == "" || spec.Endpoint == "$TEST_QUEUE_ENDPOINT" {
 		spec.Auto = true
 	}
 
-	if strings.Contains(spec.Endpoint, "$TEST_RUN") {
+	if strings.Contains(spec.AccessKey, "$TEST_QUEUE_ACCESSKEY") {
 		// helpful for tests, which want to point to the
 		// internal s3 whose service name isn't known ahead of
 		// time -- it includes the run name
-		spec.Endpoint = strings.Replace(spec.Endpoint, "$TEST_RUN", runname, -1)
+		spec.AccessKey = strings.Replace(spec.AccessKey, "$TEST_QUEUE_ACCESSKEY", "lunchpail", -1)
 	}
 
-	if strings.Contains(spec.Endpoint, "$TEST_PORT") {
+	if strings.Contains(spec.SecretKey, "$TEST_QUEUE_SECRETKEY") {
 		// helpful for tests, which want to point to the
 		// internal s3 whose service name isn't known ahead of
 		// time -- it includes the run name
-		spec.Endpoint = strings.Replace(spec.Endpoint, "$TEST_PORT", strconv.Itoa(internalS3Port), -1)
-	}
-
-	if strings.Contains(spec.AccessKey, "$TEST_ACCESSKEY") {
-		// helpful for tests, which want to point to the
-		// internal s3 whose service name isn't known ahead of
-		// time -- it includes the run name
-		spec.AccessKey = strings.Replace(spec.AccessKey, "$TEST_ACCESSKEY", "lunchpail", -1)
-	}
-
-	if strings.Contains(spec.SecretKey, "$TEST_SECRETKEY") {
-		// helpful for tests, which want to point to the
-		// internal s3 whose service name isn't known ahead of
-		// time -- it includes the run name
-		spec.SecretKey = strings.Replace(spec.SecretKey, "$TEST_SECRETKEY", "lunchpail", -1)
+		spec.SecretKey = strings.Replace(spec.SecretKey, "$TEST_QUEUE_SECRETKEY", "lunchpail", -1)
 	}
 
 	return true, spec, nil
