@@ -1,7 +1,11 @@
 package shell
 
 import (
+	"fmt"
+	"path/filepath"
+
 	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
@@ -32,5 +36,24 @@ func LowerAsComponent(compilationName, runname string, app hlir.Application, ir 
 		component.InstanceName = runname
 	}
 
+	for _, dataset := range app.Spec.Datasets {
+		if dataset.S3.Rclone.RemoteName != "" && dataset.S3.CopyIn.Path != "" {
+			// We were asked to copy data in from s3, so
+			// we will use the secrets attached to an
+			// initContainer
+			isValid, spec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, ir.Queue.Port)
+
+			if err != nil {
+				return nil, err
+			} else if !isValid {
+				return nil, fmt.Errorf("Error: invalid or missing rclone config for given remote=%s for Application=%s", dataset.S3.Rclone.RemoteName, app.Metadata.Name)
+			}
+
+			// sleep to delay the copy-out, if requested
+			component.Spec.Command = fmt.Sprintf(`sleep %d
+env lunchpail_queue_endpoint=%s lunchpail_queue_accessKeyID=%s lunchpail_queue_secretAccessKey=%s /workdir/lunchpail qout %s /workdir/%s/%s
+%s`, dataset.S3.CopyIn.Delay, spec.Endpoint, spec.AccessKey, spec.SecretKey, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path), component.Spec.Command)
+		}
+	}
 	return component, nil
 }

@@ -5,7 +5,6 @@ import (
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/util"
-	"path/filepath"
 )
 
 type nfs struct {
@@ -89,31 +88,6 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 					"secretAccessKey": spec.SecretKey,
 				})
 				envFroms = append(envFroms, envFrom{secretRef{secretName}, dataset.S3.EnvFrom.Prefix})
-			} else if dataset.S3.CopyIn.Path != "" {
-				// otherwise, we were asked to copy
-				// data in from s3, so we will use the
-				// secrets attached to an
-				// initContainer
-				secretName := fmt.Sprintf("%s-%d", runname, didx)
-				secrets = append(secrets, map[string]string{
-					"endpoint":        spec.Endpoint,
-					"accessKeyID":     spec.AccessKey,
-					"secretAccessKey": spec.SecretKey,
-				})
-				initContainers = append(initContainers, initContainer{
-					Name:         "s3-copy-in-" + dataset.Name,
-					Image:        "docker.io/alpine:3",
-					EnvFrom:      []envFrom{envFrom{secretRef{secretName}, "lunchpail_queue_"}},
-					VolumeMounts: []volumeMount{volumeMount{"workdir", "/workdir"}},
-					Command: []string{
-						"/bin/sh",
-						"-c",
-						fmt.Sprintf(`
-sleep %d # Delay the copy-out, if requested
-/workdir/lunchpail qout %s /workdir/%s/%s
-`, dataset.S3.CopyIn.Delay, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path)),
-					},
-				})
 			}
 		}
 	}
