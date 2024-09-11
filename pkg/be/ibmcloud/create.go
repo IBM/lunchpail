@@ -258,12 +258,13 @@ func createSSHKey(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, 
 	return *key.ID, nil
 }
 
-func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (string, error) {
+func createVPC(vpcService *vpcv1.VpcV1, name string, appName string, resourceGroupID string) (string, error) {
 	options := &vpcv1.CreateVPCOptions{
 		Name: &name,
 		ResourceGroup: &vpcv1.ResourceGroupIdentity{
 			ID: &resourceGroupID,
 		},
+		Headers: map[string]string{"AppName": appName},
 	}
 	vpc, response, err := vpcService.CreateVPC(options)
 	if err != nil {
@@ -274,7 +275,7 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, resourceGroupID string) (st
 
 func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options, verbose bool) error {
 	t1s := time.Now()
-	vpcID, err := createVPC(vpcService, name, resourceGroupID)
+	vpcID, err := createVPC(vpcService, name, ir.AppName, resourceGroupID)
 	if err != nil {
 		return err
 	}
