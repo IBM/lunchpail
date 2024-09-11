@@ -75,7 +75,6 @@ func Parse(yamls string) (hlir.AppModel, error) {
 			}
 
 		default:
-			fmt.Printf("@@@@@@@@@@@@@@@@@@OOOOOO\n%v\n", m)
 			model.Others = append(model.Others, m)
 		}
 	}
