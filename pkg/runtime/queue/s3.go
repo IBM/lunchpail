@@ -103,6 +103,10 @@ func (s3 S3Client) Upload(bucket, source, destination string) error {
 }
 
 func (s3 S3Client) DownloadFolder(octx context.Context, bucket, source, destination string) error {
+	if err := s3.waitForBucket(bucket); err != nil {
+		return err
+	}
+
 	group, ctx := errgroup.WithContext(octx)
 	for o := range s3.ListObjects(bucket, source, true) {
 		group.Go(func() error {
@@ -168,6 +172,7 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 	return nil
 }
 
+// Helps with situations where the s3 server is still coming up
 func (s3 S3Client) retryOnError(err error) bool {
 	if !(strings.Contains(err.Error(), "connection refused") ||
 		strings.Contains(err.Error(), "i/o timeout")) {
@@ -178,6 +183,25 @@ func (s3 S3Client) retryOnError(err error) bool {
 	return true
 }
 
+func (s3 S3Client) waitForBucket(bucket string) error {
+	// TODO use notifications
+	for {
+		exists, err := s3.BucketExists(bucket)
+		if err != nil {
+			return err
+		} else if !exists {
+			fmt.Fprintf(os.Stderr, "Waiting for bucket %s\n", bucket)
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
+	}
+
+	return nil
+}
+
+// This will wait for the s3 server to be reachable, but will not wait
+// for the bucket to exist
 func (s3 S3Client) BucketExists(bucket string) (bool, error) {
 	yup := false
 	for {
