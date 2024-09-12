@@ -12,14 +12,24 @@ import (
 )
 
 func QstatFromStream(stream io.ReadCloser, c chan qstat.Model) error {
-	buffer := bufio.NewReader(stream)
-	model := qstat.Model{}
-	for {
-		line, err := buffer.ReadString('\n')
-		if err != nil { // == io.EOF {
-			break
-		}
+	lines := make(chan string)
+	done := make(chan struct{})
 
+	go QstatFromChan(lines, c, done)
+
+	sc := bufio.NewScanner(stream)
+	for sc.Scan() {
+		lines <- sc.Text()
+	}
+
+	close(lines)
+	<-done
+	return nil
+}
+
+func QstatFromChan(lines chan string, c chan qstat.Model, done chan struct{}) {
+	model := qstat.Model{}
+	for line := range lines {
 		if !strings.HasPrefix(line, "lunchpail.io") {
 			continue
 		}
@@ -110,5 +120,5 @@ func QstatFromStream(stream io.ReadCloser, c chan qstat.Model) error {
 		}
 	}
 
-	return nil
+	done <- struct{}{}
 }
