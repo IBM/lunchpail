@@ -63,6 +63,8 @@ function waitForIt {
         done
     done
 
+    # Note: we will use --run $run_name in a few places, but not all
+    # -- intentionally so we have test coverage of both code paths
     local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
     echo "✅ PASS run-controller found run test=$name run_name=$run_name"
 
@@ -72,7 +74,7 @@ function waitForIt {
         while true
         do
             echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name namespace=$ns num_desired_outputs=${NUM_DESIRED_OUTPUTS:-1}$(tput sgr0)" 1>&2
-            nOutputs=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+            nOutputs=$($testapp qls --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
             if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
             then break
@@ -90,7 +92,7 @@ function waitForIt {
             for output in $outputs
             do
                 echo "Checking output=$output"
-                code=$($testapp qcat --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
+                code=$($testapp qcat --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else 

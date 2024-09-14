@@ -21,9 +21,7 @@ func newQcatCmd() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
-	var runname string
-	cmd.Flags().StringVarP(&runname, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
-
+	runOpts := options.AddRunOptions(cmd)
 	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -32,7 +30,7 @@ func newQcatCmd() *cobra.Command {
 			return err
 		}
 
-		return queue.Qcat(context.Background(), backend, runname, args[0])
+		return queue.Qcat(context.Background(), backend, runOpts.Run, args[0])
 	}
 
 	return cmd

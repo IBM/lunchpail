@@ -25,8 +25,8 @@ type Backend interface {
 	// Purge any non-run resources that may have been created
 	Purge() error
 
-	// List deployed runs
-	ListRuns() ([]runs.Run, error)
+	// List runs for this application. If !all, then include only live runs, otherwise also include terminated runs as well.
+	ListRuns(all bool) ([]runs.Run, error)
 
 	// Number of instances of the given component for the given run
 	InstanceCount(c lunchpail.Component, runname string) (int, error)

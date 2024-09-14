@@ -11,7 +11,7 @@ import (
 )
 
 // List deployed runs
-func (backend Backend) ListRuns() ([]runs.Run, error) {
+func (backend Backend) ListRuns(all bool) ([]runs.Run, error) {
 	runsdir, err := files.RunsDir()
 	if err != nil {
 		return nil, err
@@ -31,11 +31,15 @@ func (backend Backend) ListRuns() ([]runs.Run, error) {
 		}
 
 		runname := e.Name()
-		running, err := isRunning(runname)
-		if err != nil {
-			return nil, err
-		} else if running {
-			L = append(L, runs.Run{Name: e.Name(), CreationTimestamp: info.ModTime()})
+
+		include := all
+		if !include {
+			running, err := isRunning(runname)
+			if err != nil {
+				return nil, err
+			} else if running {
+				L = append(L, runs.Run{Name: e.Name(), CreationTimestamp: info.ModTime()})
+			}
 		}
 	}
 

@@ -27,7 +27,7 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 
 	if len(runnames) == 0 {
 		if opts.DeleteAll {
-			remainingRuns, err := backend.ListRuns()
+			remainingRuns, err := backend.ListRuns(true)
 			if err != nil {
 				return err
 			}

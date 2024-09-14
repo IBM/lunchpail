@@ -21,9 +21,7 @@ func newQlsCmd() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
 	}
 
-	var runname string
-	cmd.Flags().StringVarP(&runname, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
-
+	runOpts := options.AddRunOptions(cmd)
 	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -37,7 +35,7 @@ func newQlsCmd() *cobra.Command {
 			return err
 		}
 
-		return queue.Qls(context.Background(), backend, runname, path)
+		return queue.Qls(context.Background(), backend, runOpts.Run, path)
 	}
 
 	return cmd
