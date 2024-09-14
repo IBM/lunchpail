@@ -14,13 +14,16 @@ import (
 )
 
 func List() *cobra.Command {
+	var all bool
 	var name bool
 	var latest bool
 
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Short: "List recent runs",
+		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
+	cmd.Flags().BoolVarP(&all, "all", "a", false, "Include terminated runs (if false, include only live runs)")
 	cmd.Flags().BoolVarP(&name, "name", "N", false, "Show only the run name")
 	cmd.Flags().BoolVarP(&latest, "latest", "l", false, "Show only the most recent run")
 	tgtOpts := options.AddTargetOptions(cmd)
@@ -31,7 +34,7 @@ func List() *cobra.Command {
 			return err
 		}
 
-		runs, err := backend.ListRuns()
+		runs, err := backend.ListRuns(all)
 		if err != nil {
 			return err
 		}

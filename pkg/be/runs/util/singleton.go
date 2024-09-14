@@ -10,7 +10,7 @@ import (
 // Return a Run if there is one in the given namespace for the given
 // app, otherwise error
 func Singleton(backend be.Backend) (runs.Run, error) {
-	list, err := backend.ListRuns()
+	list, err := backend.ListRuns(false)
 	if err != nil {
 		return runs.Run{}, err
 	}

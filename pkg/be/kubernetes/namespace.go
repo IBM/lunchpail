@@ -24,7 +24,7 @@ func deleteNamespace(namespace string) error {
 }
 
 func (backend Backend) Purge() error {
-	remainingRuns, err := backend.ListRuns()
+	remainingRuns, err := backend.ListRuns(false)
 	if err != nil {
 		return err
 	} else if len(remainingRuns) != 0 {

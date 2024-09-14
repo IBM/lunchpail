@@ -20,6 +20,7 @@ func Instances() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "instances",
 		Short: "Report the number of instances of a given component",
+		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
 
 	var wait bool
@@ -27,6 +28,7 @@ func Instances() *cobra.Command {
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for at least one instance to be ready")
 	cmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Only respond via exit code")
 
+	runOpts := options.AddRunOptions(cmd)
 	tgtOpts := options.AddTargetOptions(cmd)
 	component := options.AddComponentOption(cmd)
 	cmd.MarkFlagRequired("component")
@@ -42,21 +44,21 @@ func Instances() *cobra.Command {
 				return err
 			}
 
-			runname := ""
-			if len(args) > 0 {
-				runname = args[0]
-			} else if r, err := util.Singleton(backend); err != nil {
-				if wait {
-					waitItOut(*component, -1, err)
-					continue
+			runname := runOpts.Run
+			if runname == "" {
+				if r, err := util.Singleton(backend); err != nil {
+					if wait {
+						waitItOut(*component, -1, err)
+						continue
+					}
+					if strings.Contains(err.Error(), "No runs found") {
+						fmt.Println("0")
+						return nil
+					}
+					return err
+				} else {
+					runname = r.Name
 				}
-				if strings.Contains(err.Error(), "No runs found") {
-					fmt.Println("0")
-					return nil
-				}
-				return err
-			} else {
-				runname = r.Name
 			}
 
 			count, err := backend.InstanceCount(*component, runname)
