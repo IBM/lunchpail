@@ -2,6 +2,7 @@ package local
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"golang.org/x/sync/errgroup"
@@ -17,7 +18,7 @@ func (backend Backend) Up(ir llir.LLIR, opts llir.Options, verbose bool) error {
 		return err
 	}
 
-	ir.Queue = ir.Queue.UpdateEndpoint("localhost:9000")
+	ir.Queue = ir.Queue.UpdateEndpoint(fmt.Sprintf("localhost:%d", ir.Queue.Port))
 
 	logdir, err := files.LogDir(ir.RunName, true)
 	if err != nil {

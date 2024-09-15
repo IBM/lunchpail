@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,8 +30,13 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 			return
 		}
 
+		podPort, perr := portFromEndpoint(endpoint)
+		if perr != nil {
+			err = perr
+			return
+		}
 		fmt.Fprintf(os.Stderr, "Opening port forward to pod=%s\n", podName)
-		podPort := 9000 // TODO hard-wired
+
 		localPort := 50001
 		for localPort < 1000 {
 			localPort = rand.Intn(65535) + 1
@@ -48,6 +55,20 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 	}
 
 	return
+}
+
+func portFromEndpoint(endpoint string) (int, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return -1, err
+	}
+
+	port, err := strconv.Atoi(u.Port())
+	if err != nil {
+		return -1, err
+	}
+
+	return port, nil
 }
 
 func (backend Backend) Queue(runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error) {

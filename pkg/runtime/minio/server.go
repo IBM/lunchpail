@@ -15,7 +15,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Server() error {
+func Server(port int) error {
 	fmt.Fprintf(os.Stderr, "Lunchpail Minio component starting up\n")
 	fmt.Fprintf(os.Stderr, "%v\n", os.Environ())
 
@@ -38,7 +38,7 @@ func Server() error {
 	}
 
 	c, err := queue.NewS3ClientFromOptions(queue.S3ClientOptions{
-		Endpoint:        "localhost:9000",
+		Endpoint:        fmt.Sprintf("localhost:%d", port),
 		AccessKeyID:     accessKey,
 		SecretAccessKey: secretKey,
 	})
@@ -60,7 +60,7 @@ func Server() error {
 
 	fmt.Fprintf(os.Stderr, "Launching Minio server with minio=%s bucket=%s prefix=%s\n", minio, bucket, prefix)
 	// NOT CommandContext, as group.Wait() below will otherwise kill the minio server
-	cmd := exec.Command("minio", "server", datadir)
+	cmd := exec.Command("minio", "server", datadir, "--address", fmt.Sprintf(":%d", port))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = slices.Concat(os.Environ(), []string{
