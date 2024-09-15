@@ -7,13 +7,19 @@ import (
 )
 
 func Server() *cobra.Command {
-	return &cobra.Command{
+	var port int
+
+	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "Run as the minio component",
 		Long:  "Run as the minio component",
 		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return minio.Server()
+			return minio.Server(port)
 		},
 	}
+
+	cmd.Flags().IntVarP(&port, "port", "p", 9000, "Port to use for the Minio api endpoint")
+
+	return cmd
 }
