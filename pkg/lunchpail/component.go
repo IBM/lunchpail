@@ -26,7 +26,7 @@ func ComponentShortName(c Component) string {
 	}
 }
 
-func lookup(maybe string) (Component, error) {
+func LookupComponent(maybe string) (Component, error) {
 	switch maybe {
 	case string(WorkersComponent):
 		return WorkersComponent, nil
@@ -48,7 +48,7 @@ func (c *Component) String() string {
 
 // Set must have pointer receiver so it doesn't change the value of a copy
 func (c *Component) Set(v string) error {
-	cc, err := lookup(v)
+	cc, err := LookupComponent(v)
 	if err != nil {
 		return err
 	}

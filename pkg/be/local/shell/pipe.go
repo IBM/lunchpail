@@ -2,6 +2,7 @@ package shell
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -10,8 +11,8 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func pipe(f func() (io.ReadCloser, error), out io.Writer, teefile string, c llir.Component) (chan struct{}, error) {
-	p, err := f()
+func pipe(mkpipe func() (io.ReadCloser, error), out io.Writer, teefile string, c llir.Component) (chan struct{}, error) {
+	p, err := mkpipe()
 	if err != nil {
 		return nil, err
 	}
@@ -42,4 +43,19 @@ func pipe(f func() (io.ReadCloser, error), out io.Writer, teefile string, c llir
 	}()
 
 	return done, nil
+}
+
+type nonVerboseFilter struct {
+	stream io.Writer
+}
+
+func (filter nonVerboseFilter) Write(p []byte) (n int, err error) {
+	switch {
+	case bytes.HasPrefix(p, []byte("[INFO] ")):
+		return filter.stream.Write(p[8:])
+	case bytes.HasPrefix(p, []byte("[DEBUG] ")):
+		return filter.stream.Write(p[9:])
+	}
+
+	return filter.stream.Write(p)
 }

@@ -3,6 +3,7 @@ package shell
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, logdir string) error {
+func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, logdir string, verbose bool) error {
 	pidfile, err := files.Pidfile(runname, c.InstanceName, c.C(), true)
 	if err != nil {
 		return err
@@ -35,15 +36,29 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 	outfile := filepath.Join(logdir, logfile+".out")
 	errfile := filepath.Join(logdir, logfile+".err")
 
-	fmt.Fprintf(os.Stderr, "Launching process with commandline: %s\n", command)
+	if verbose {
+		fmt.Fprintf(os.Stderr, "Launching process with commandline: %s\n", command)
+	}
+
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", command)
 	cmd.Dir = workdir
 
-	outdone, err := pipe(cmd.StdoutPipe, os.Stdout, outfile, c)
+	stdout := io.Discard
+	if verbose {
+		stdout = os.Stdout
+	}
+	outdone, err := pipe(cmd.StdoutPipe, stdout, outfile, c)
 	if err != nil {
 		return err
 	}
-	errdone, err := pipe(cmd.StderrPipe, os.Stderr, errfile, c)
+
+	stderr := io.Discard
+	if verbose {
+		stderr = os.Stderr
+	} else {
+		stderr = nonVerboseFilter{os.Stderr}
+	}
+	errdone, err := pipe(cmd.StderrPipe, stderr, errfile, c)
 	if err != nil {
 		return err
 	}
@@ -62,8 +77,11 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
-	<-outdone
-	<-errdone
+	select {
+	case <-outdone:
+	case <-errdone:
+	case <-ctx.Done():
+	}
 
 	return cmd.Wait()
 }

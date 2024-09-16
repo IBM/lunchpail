@@ -37,7 +37,7 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options)
 
 	group, ctx := errgroup.WithContext(octx)
 	for _, c := range ir.Components {
-		group.Go(func() error { return spawn(ctx, c, ir.Queue, ir.RunName, logdir) })
+		group.Go(func() error { return backend.spawn(ctx, c, ir.Queue, ir.RunName, logdir, opts.Log.Verbose) })
 	}
 
 	return group.Wait()
