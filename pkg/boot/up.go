@@ -23,12 +23,12 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 		fmt.Printf(backend.DryRun(ir, copts, opts.Verbose))
 		return nil
 	} else if isUp {
-		if err := backend.Up(ir, copts, opts.Verbose); err != nil {
+		if err := backend.Up(ctx, ir, copts, opts.Verbose); err != nil {
 			return err
 		} else if opts.Watch {
 			return status.UI(ctx, ir.RunName, backend, status.Options{Watch: true, Verbose: opts.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
 		}
-	} else if err := backend.Down(ir, copts, opts.Verbose); err != nil {
+	} else if err := backend.Down(ctx, ir, copts, opts.Verbose); err != nil {
 		return err
 	}
 

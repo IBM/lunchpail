@@ -13,7 +13,7 @@ import (
 )
 
 // Bring up the linked application
-func (backend Backend) Up(ir llir.LLIR, opts llir.Options, verbose bool) error {
+func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options, verbose bool) error {
 	if err := backend.IsCompatible(ir); err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (backend Backend) Up(ir llir.LLIR, opts llir.Options, verbose bool) error {
 		return err
 	}
 
-	group, ctx := errgroup.WithContext(context.Background())
+	group, ctx := errgroup.WithContext(octx)
 	for _, c := range ir.Components {
 		group.Go(func() error { return spawn(ctx, c, ir.Queue, ir.RunName, logdir) })
 	}

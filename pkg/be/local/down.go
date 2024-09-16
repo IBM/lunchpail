@@ -1,11 +1,13 @@
 package local
 
 import (
+	"context"
+
 	"lunchpail.io/pkg/ir/llir"
 )
 
 // Bring down the linked application
-func (backend Backend) Down(ir llir.LLIR, opts llir.Options, verbose bool) error {
+func (backend Backend) Down(ctx context.Context, ir llir.LLIR, opts llir.Options, verbose bool) error {
 	if err := backend.IsCompatible(ir); err != nil {
 		return err
 	}
