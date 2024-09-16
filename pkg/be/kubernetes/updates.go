@@ -91,7 +91,7 @@ func (streamer Streamer) updateFromPod(pod *v1.Pod, what watch.EventType, cc cha
 	case string(lunchpail.WorkersComponent):
 		if what == watch.Added {
 			// new worker pod. start streaming its logs
-			if err := streamLogUpdatesForWorker(pod.Name, pod.Namespace, cm); err != nil {
+			if err := streamLogUpdatesForWorker(streamer.Context, pod.Name, pod.Namespace, cm); err != nil {
 				return err
 			} else {
 				// TODO: are we leaking something
@@ -135,8 +135,8 @@ func (streamer Streamer) streamPodUpdates(watcher watch.Interface, cc chan event
 	}
 }
 
-func (streamer Streamer) RunComponentUpdates(runname string) (chan events.ComponentUpdate, chan events.Message, error) {
-	watcher, err := startWatching(runname, streamer.backend.namespace)
+func (streamer Streamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
+	watcher, err := startWatching(streamer.runname, streamer.backend.namespace)
 	if err != nil {
 		return nil, nil, err
 	}

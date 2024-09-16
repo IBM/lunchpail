@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -39,7 +40,7 @@ func newQstatCommand() *cobra.Command {
 			return err
 		}
 
-		return qstat.UI(maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
+		return qstat.UI(context.Background(), maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
 	}
 
 	return cmd

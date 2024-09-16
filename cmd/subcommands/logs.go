@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -58,7 +59,7 @@ func newLogsCommand() *cobra.Command {
 			}
 		}
 
-		return observe.Logs(runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Components: comps})
+		return observe.Logs(context.Background(), runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Components: comps})
 	}
 
 	return cmd

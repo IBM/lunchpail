@@ -19,48 +19,50 @@ import (
 )
 
 type localStreamer struct {
+	context.Context
+	runname string
 	backend Backend
 }
 
 // Return a streamer
-func (backend Backend) Streamer() streamer.Streamer {
-	return localStreamer{backend}
+func (backend Backend) Streamer(ctx context.Context, runname string) streamer.Streamer {
+	return localStreamer{ctx, runname, backend}
 }
 
-func (s localStreamer) RunEvents(runname string) (chan events.Message, error) {
+func (s localStreamer) RunEvents() (chan events.Message, error) {
 	c := make(chan events.Message)
 	return c, nil
 }
 
-func (s localStreamer) RunComponentUpdates(runname string) (chan events.ComponentUpdate, chan events.Message, error) {
+func (s localStreamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
 	cc := make(chan events.ComponentUpdate)
 	cm := make(chan events.Message)
 	return cc, cm, nil
 }
 
 // Stream cpu and memory statistics
-func (s localStreamer) Utilization(runname string, intervalSeconds int) (chan utilization.Model, error) {
+func (s localStreamer) Utilization(intervalSeconds int) (chan utilization.Model, error) {
 	c := make(chan utilization.Model)
 	return c, nil
 }
 
 // Stream queue statistics
-func (s localStreamer) QueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error) {
-	f, err := files.LogsForComponent(runname, lunchpail.WorkStealerComponent)
+func (s localStreamer) QueueStats(opts qstat.Options) (chan qstat.Model, error) {
+	f, err := files.LogsForComponent(s.runname, lunchpail.WorkStealerComponent)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	tail, err := tailfChan(f, opts.Follow)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	c := make(chan qstat.Model)
 	done := make(chan struct{})
 	lines := make(chan string)
 
-	errs, _ := errgroup.WithContext(context.Background())
+	errs, _ := errgroup.WithContext(s.Context)
 	errs.Go(func() error {
 		for line := range tail.Lines {
 			if line.Err != nil {
@@ -81,12 +83,12 @@ func (s localStreamer) QueueStats(runname string, opts qstat.Options) (chan qsta
 		return nil
 	})
 
-	return c, errs, nil
+	return c, nil
 }
 
 // Stream logs from a given Component to os.Stdout
-func (s localStreamer) ComponentLogs(runname string, c lunchpail.Component, taillines int, follow, verbose bool) error {
-	logdir, err := files.LogDir(runname, false)
+func (s localStreamer) ComponentLogs(c lunchpail.Component, taillines int, follow, verbose bool) error {
+	logdir, err := files.LogDir(s.runname, false)
 	if err != nil {
 		return err
 	}
@@ -97,7 +99,7 @@ func (s localStreamer) ComponentLogs(runname string, c lunchpail.Component, tail
 		if err != nil {
 			return err
 		}
-		group, _ := errgroup.WithContext(context.Background())
+		group, _ := errgroup.WithContext(s.Context)
 		for _, f := range fs {
 			if strings.HasPrefix(f.Name(), "workerpool-") {
 				group.Go(func() error { return tailf(filepath.Join(logdir, f.Name()), follow) })
@@ -106,7 +108,7 @@ func (s localStreamer) ComponentLogs(runname string, c lunchpail.Component, tail
 		return group.Wait()
 	default:
 		// TODO allow caller to select stderr versus stdout
-		group, _ := errgroup.WithContext(context.Background())
+		group, _ := errgroup.WithContext(s.Context)
 		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".out"), follow) })
 		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".err"), follow) })
 		return group.Wait()

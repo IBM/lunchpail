@@ -22,7 +22,7 @@ type DownOptions struct {
 	DeleteCloudResources bool
 }
 
-func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
+func DownList(ctx context.Context, runnames []string, backend be.Backend, opts DownOptions) error {
 	deleteNs := opts.DeleteNamespace
 
 	if len(runnames) == 0 {
@@ -43,14 +43,14 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 			// then the user didn't specify a run. pass "" which
 			// will activate the logic that looks for a singleton
 			// run in the given namespace
-			return Down("", backend, opts)
+			return Down(ctx, "", backend, opts)
 		}
 	}
 
 	// otherwise, Down all of the runs in the given list
-	group, _ := errgroup.WithContext(context.Background())
+	group, dctx := errgroup.WithContext(ctx)
 	for _, runname := range runnames {
-		group.Go(func() error { return Down(runname, backend, opts) })
+		group.Go(func() error { return Down(dctx, runname, backend, opts) })
 	}
 	if err := group.Wait(); err != nil {
 		return err
@@ -85,7 +85,7 @@ func toUpOpts(runname string, opts DownOptions) UpOptions {
 	return upOptions
 }
 
-func Down(runname string, backend be.Backend, opts DownOptions) error {
+func Down(ctx context.Context, runname string, backend be.Backend, opts DownOptions) error {
 	if runname == "" {
 		singletonRun, err := util.Singleton(backend)
 		if err != nil {
@@ -95,7 +95,7 @@ func Down(runname string, backend be.Backend, opts DownOptions) error {
 	}
 
 	upOptions := toUpOpts(runname, opts)
-	if err := upDown(backend, upOptions, false); err != nil {
+	if err := upDown(ctx, backend, upOptions, false); err != nil {
 		return err
 	}
 

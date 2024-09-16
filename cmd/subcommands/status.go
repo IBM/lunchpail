@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -46,7 +47,7 @@ func newStatusCommand() *cobra.Command {
 			return err
 		}
 
-		return status.UI(maybeRun, backend, status.Options{Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
+		return status.UI(context.Background(), maybeRun, backend, status.Options{Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
 	}
 
 	return cmd

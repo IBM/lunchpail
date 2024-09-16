@@ -32,16 +32,16 @@ func (streamer Streamer) podLogs(podName string, component lunchpail.Component, 
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, streamer.backend.namespace, component, onlyInfo, follow, clientset, c)
+		return streamLogUpdatesForPod(streamer.Context, podName, streamer.backend.namespace, component, onlyInfo, follow, clientset, c)
 	}()
 
 	return nil
 }
 
 // TODO port this to use client-go
-func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Component, tail int, follow, verbose bool) error {
+func (streamer Streamer) ComponentLogs(component lunchpail.Component, tail int, follow, verbose bool) error {
 	containers := "main"
-	runSelector := ",app.kubernetes.io/instance=" + runname
+	runSelector := ",app.kubernetes.io/instance=" + streamer.runname
 
 	followFlag := ""
 	if follow {
@@ -66,7 +66,7 @@ func (streamer Streamer) ComponentLogs(runname string, component lunchpail.Compo
 	return nil
 }
 
-func streamLogUpdatesForWorker(podName, namespace string, c chan events.Message) error {
+func streamLogUpdatesForWorker(ctx context.Context, podName, namespace string, c chan events.Message) error {
 	clientset, _, err := Client()
 	if err != nil {
 		return err
@@ -74,20 +74,20 @@ func streamLogUpdatesForWorker(podName, namespace string, c chan events.Message)
 
 	// TODO leak?
 	go func() error {
-		return streamLogUpdatesForPod(podName, namespace, lunchpail.WorkersComponent, false, true, clientset, c)
+		return streamLogUpdatesForPod(ctx, podName, namespace, lunchpail.WorkersComponent, false, true, clientset, c)
 	}()
 
 	return nil
 }
 
-func streamLogUpdatesForPod(podName, namespace string, component lunchpail.Component, onlyInfo, follow bool, clientset *kubernetes.Clientset, c chan events.Message) error {
+func streamLogUpdatesForPod(ctx context.Context, podName, namespace string, component lunchpail.Component, onlyInfo, follow bool, clientset *kubernetes.Clientset, c chan events.Message) error {
 	for {
 		tail := int64(500)
 		logsStreamer, err := clientset.
 			CoreV1().
 			Pods(namespace).
 			GetLogs(podName, &corev1.PodLogOptions{Follow: follow, TailLines: &tail}).
-			Stream(context.Background())
+			Stream(ctx)
 		if err != nil {
 			if !strings.Contains(err.Error(), "waiting to start") {
 				return err
