@@ -27,7 +27,7 @@ func newQcopyinCmd() *cobra.Command {
 	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(*tgtOpts, compilation.Options{}) // TODO compilation.Options
+		backend, err := be.New(compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}

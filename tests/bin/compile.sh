@@ -56,13 +56,28 @@ then
     echo "Using these values from the application definition: $values_from_pail"
 fi
 
+# intentionally test passing a valid target at compile time that is
+# different from the desired target, to test that the ./up.sh --target
+# options overrides this compile-time one
+compileTimeTarget=local
+if [ "$LUNCHPAIL_TARGET" = "local" ]
+then compileTimeTarget=kubernetes
+fi
+
 # test coverage for re-compile
 $testapp.tmp compile -v \
              -o $testapp \
              $values_from_pail \
+             --target=$compileTimeTarget \
              --create-namespace
-
 rm -f $testapp.tmp
+
+# validate the compiled-in target (TODO add a '$testapp values platform' command?)
+actualCompileTimeTarget=$($testapp info | grep platform: | awk '{print $2}')
+if [ "$compileTimeTarget" = "$actualCompileTimeTarget" ]
+then echo "✅ PASS Compile-time target $compileTimeTarget"
+else echo "❌ FAIL Compile-time target expected!=actual '$$compileTimeTarget'!='$actualCompileTimeTarget'" && exit 1
+fi
 
 if [[ -d "$2" ]] && [[ -f "$2"/version ]]
 then

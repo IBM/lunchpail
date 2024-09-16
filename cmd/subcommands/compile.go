@@ -6,6 +6,8 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/fe/compiler"
 )
 
@@ -28,14 +30,32 @@ func newCompileCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
-	compilationOptions := addCompilationOptions(cmd, false)
 	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
+
+	compilationOptions, err := options.AddCompilationOptions(cmd)
+	if err != nil {
+		panic(err)
+	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		sourcePath := ""
 		if len(args) >= 1 {
 			sourcePath = args[0]
+		}
+
+		overrideValues, err := cmd.Flags().GetStringSlice("set")
+		if err != nil {
+			return err
+		} else {
+			compilationOptions.OverrideValues = overrideValues
+		}
+
+		overrideFileValues, err := cmd.Flags().GetStringSlice("set-file")
+		if err != nil {
+			return err
+		} else {
+			compilationOptions.OverrideFileValues = overrideFileValues
 		}
 
 		return compiler.Compile(sourcePath, compiler.Options{

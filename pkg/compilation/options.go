@@ -1,14 +1,22 @@
 package compilation
 
 import (
+	_ "embed"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"lunchpail.io/pkg/be/target"
 )
 
+type TargetOptions struct {
+	Namespace string
+	target.Platform
+}
+
 type Options struct {
-	Namespace          string   `yaml:",omitempty"`
+	Target *TargetOptions
+
 	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
 	OverrideValues     []string `yaml:"overrideValues,omitempty"`
 	OverrideFileValues []string `yaml:"overrideFileValues,omitempty"`
@@ -24,41 +32,72 @@ type Options struct {
 	CreateNamespace    bool     `yaml:"createNamespace,omitempty"`
 }
 
-func optionsPath(appTemplatePath string) string {
-	return filepath.Join(appTemplatePath, "compilationOptions.json")
-}
+//go:embed compilationOptions.json
+var valuesJson []byte
 
-func SaveOptions(appTemplatePath string, opts Options) error {
+func saveOptions(stagedir string, opts Options) error {
 	if serialized, err := json.Marshal(opts); err != nil {
 		return err
 	} else {
-		return os.WriteFile(optionsPath(appTemplatePath), serialized, 0644)
+		return os.WriteFile(filepath.Join(stagedir, "pkg/compilation/compilationOptions.json"), serialized, 0644)
 	}
 }
 
-func RestoreOptions(appTemplatePath string) (Options, error) {
+func RestoreOptions() (Options, error) {
 	var compilationOptions Options
 
-	if _, err := os.Stat(optionsPath(appTemplatePath)); err != nil {
-		// no shrinkwrapped options
-		return compilationOptions, nil
-	}
-
-	jsonFile, err := os.Open(optionsPath(appTemplatePath))
-	if err != nil {
-		return compilationOptions, err
-	} else {
-		defer jsonFile.Close()
-	}
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return compilationOptions, err
-	}
-
-	if err := json.Unmarshal(byteValue, &compilationOptions); err != nil {
+	if err := json.Unmarshal(valuesJson, &compilationOptions); err != nil {
 		return compilationOptions, err
 	}
 
 	return compilationOptions, nil
+}
+
+// Overlay command line args with options from shrinkwrap (i.e. RestoreOptions)
+func RestoreOptionsWithCliOverlay(cliOpts Options) (Options, error) {
+	compiledOpts, err := RestoreOptions()
+	if err != nil {
+		return cliOpts, err
+	} else {
+		return cliOpts.overlay(compiledOpts), nil
+	}
+}
+
+func either(a string, b string) string {
+	if b == "" {
+		return a
+	}
+	return b
+}
+
+func eitherPlatform(a target.Platform, b target.Platform) target.Platform {
+	if b == "" {
+		return a
+	}
+	return b
+}
+
+func eitherB(a bool, b bool) bool {
+	return b || a
+}
+
+func (cliOpts Options) overlay(compiledOpts Options) Options {
+	cliOpts.Queue = either(compiledOpts.Queue, cliOpts.Queue)
+	cliOpts.ImagePullSecret = either(compiledOpts.ImagePullSecret, cliOpts.ImagePullSecret)
+	cliOpts.Target = &TargetOptions{
+		Platform:  eitherPlatform(compiledOpts.Target.Platform, cliOpts.Target.Platform),
+		Namespace: either(compiledOpts.Target.Namespace, cliOpts.Target.Namespace),
+	}
+
+	// TODO here... how do we determine that boolean values were unset?
+	cliOpts.HasGpuSupport = eitherB(compiledOpts.HasGpuSupport, cliOpts.HasGpuSupport)
+	cliOpts.CreateNamespace = eitherB(compiledOpts.CreateNamespace, cliOpts.CreateNamespace)
+
+	// careful: `--set x=3 --set x=4` results in x having
+	// value 4, so we need to place the compiled
+	// options first in the list
+	cliOpts.OverrideValues = append(compiledOpts.OverrideValues, cliOpts.OverrideValues...)
+	cliOpts.OverrideFileValues = append(compiledOpts.OverrideFileValues, cliOpts.OverrideFileValues...)
+
+	return cliOpts
 }

@@ -13,12 +13,7 @@ type Info struct {
 }
 
 func Model() (Info, error) {
-	_, templatePath, _, err := compilation.Stage(compilation.StageOptions{})
-	if err != nil {
-		return Info{}, err
-	}
-
-	shrinkwrappedOptions, err := compilation.RestoreOptions(templatePath)
+	shrinkwrappedOptions, err := compilation.RestoreOptions()
 	if err != nil {
 		return Info{}, err
 	}
