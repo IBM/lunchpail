@@ -1,6 +1,7 @@
 package status
 
 import (
+	"context"
 	"os"
 	"slices"
 	"strings"
@@ -131,7 +132,7 @@ func (m model) View() string {
 	return strings.Join(lines, "\n")
 }
 
-func UI(runnameIn string, backend be.Backend, opts Options) error {
+func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {
 	runname, err := util.WaitForRun(runnameIn, opts.Watch, backend)
 	if err != nil {
 		return err
@@ -145,7 +146,7 @@ func UI(runnameIn string, backend be.Backend, opts Options) error {
 		defer f.Close()
 	}
 
-	c, _, err := StatusStreamer(runname, backend, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
+	c, err := StatusStreamer(ctx, runname, backend, opts.Verbose, opts.Nloglines, opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}

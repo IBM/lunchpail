@@ -2,6 +2,7 @@ package status
 
 import (
 	"container/ring"
+	"context"
 
 	"golang.org/x/sync/errgroup"
 
@@ -11,7 +12,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func StatusStreamer(run string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, *errgroup.Group, error) {
+func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose bool, nLoglinesMax int, intervalSeconds int) (chan Model, error) {
 	c := make(chan Model)
 
 	model := NewModel()
@@ -19,19 +20,22 @@ func StatusStreamer(run string, backend be.Backend, verbose bool, nLoglinesMax i
 	model.RunName = run
 	model.LastNMessages = ring.New(nLoglinesMax)
 
-	qc, errgroup, err := backend.Streamer().QueueStats(run, qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
+	errgroup, sctx := errgroup.WithContext(ctx)
+	streamer := backend.Streamer(sctx, run)
+
+	qc, err := streamer.QueueStats(qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
 	if err != nil {
-		return c, nil, err
+		return c, err
 	}
 
-	cpuc, err := backend.Streamer().Utilization(run, intervalSeconds)
+	cpuc, err := streamer.Utilization(intervalSeconds)
 	if err != nil {
-		return c, nil, err
+		return c, err
 	}
 
-	updates, messages, err := backend.Streamer().RunComponentUpdates(run)
+	updates, messages, err := streamer.RunComponentUpdates()
 	if err != nil {
-		return c, nil, err
+		return c, err
 	}
 	errgroup.Go(func() error {
 		for update := range updates {
@@ -62,7 +66,7 @@ func StatusStreamer(run string, backend be.Backend, verbose bool, nLoglinesMax i
 	})
 
 	errgroup.Go(func() error {
-		msgs, err := backend.Streamer().RunEvents(run)
+		msgs, err := streamer.RunEvents()
 		if err != nil {
 			return err
 		}
@@ -82,5 +86,5 @@ func StatusStreamer(run string, backend be.Backend, verbose bool, nLoglinesMax i
 		return model.streamCpuUpdates(cpuc, c)
 	})
 
-	return c, errgroup, nil
+	return c, nil
 }

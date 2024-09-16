@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"context"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,11 +10,11 @@ import (
 )
 
 // Stream cpu and memory statistics
-func (streamer Streamer) Utilization(runname string, intervalSeconds int) (chan utilization.Model, error) {
+func (streamer Streamer) Utilization(intervalSeconds int) (chan utilization.Model, error) {
 	c := make(chan utilization.Model)
 	model := utilization.Model{}
 
-	podWatcher, err := streamer.startWatchingUtilization(runname)
+	podWatcher, err := streamer.startWatchingUtilization()
 	if err != nil {
 		return c, err
 	}
@@ -26,7 +25,7 @@ func (streamer Streamer) Utilization(runname string, intervalSeconds int) (chan 
 	return c, nil
 }
 
-func (streamer Streamer) startWatchingUtilization(runname string) (watch.Interface, error) {
+func (streamer Streamer) startWatchingUtilization() (watch.Interface, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err
@@ -34,9 +33,9 @@ func (streamer Streamer) startWatchingUtilization(runname string) (watch.Interfa
 
 	timeoutSeconds := int64(7 * 24 * time.Hour / time.Second)
 
-	podWatcher, err := clientset.CoreV1().Pods(streamer.backend.namespace).Watch(context.Background(), metav1.ListOptions{
+	podWatcher, err := clientset.CoreV1().Pods(streamer.backend.namespace).Watch(streamer.Context, metav1.ListOptions{
 		TimeoutSeconds: &timeoutSeconds,
-		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + runname,
+		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + streamer.runname,
 	})
 	if err != nil {
 		return nil, err

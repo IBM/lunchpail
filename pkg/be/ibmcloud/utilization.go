@@ -7,6 +7,6 @@ import (
 )
 
 // Stream cpu and memory statistics
-func (streamer Streamer) Utilization(runname string, intervalSeconds int) (chan utilization.Model, error) {
+func (streamer Streamer) Utilization(intervalSeconds int) (chan utilization.Model, error) {
 	return nil, fmt.Errorf("Unsupported operation: 'StreamUtilization'")
 }

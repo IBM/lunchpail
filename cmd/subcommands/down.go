@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -38,7 +39,7 @@ func newDownCmd() *cobra.Command {
 			return err
 		}
 
-		return boot.DownList(args, backend, boot.DownOptions{
+		return boot.DownList(context.Background(), args, backend, boot.DownOptions{
 			Namespace: tgtOpts.Namespace, Verbose: verboseFlag, DeleteNamespace: deleteNamespaceFlag,
 			DeleteAll: deleteAllRunsFlag,
 			ApiKey:    apiKey, DeleteCloudResources: deleteCloudResourcesFlag})

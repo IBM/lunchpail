@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -76,7 +77,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return boot.Up(backend, boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
+		return boot.Up(context.Background(), backend, boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
 	}
 
 	return cmd

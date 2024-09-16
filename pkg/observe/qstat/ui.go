@@ -1,6 +1,7 @@
 package qstat
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -16,13 +17,13 @@ import (
 
 type Options = qstat.Options
 
-func UI(runnameIn string, backend be.Backend, opts Options) error {
+func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {
 	runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}
 
-	c, errs, err := backend.Streamer().QueueStats(runname, opts)
+	c, err := backend.Streamer(ctx, runname).QueueStats(opts)
 	if err != nil {
 		return err
 	}
@@ -77,5 +78,5 @@ func UI(runnameIn string, backend be.Backend, opts Options) error {
 		fmt.Println(t)
 	}
 
-	return errs.Wait()
+	return nil
 }

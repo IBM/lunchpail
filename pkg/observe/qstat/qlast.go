@@ -1,6 +1,7 @@
 package qstat
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,13 +14,13 @@ import (
 type QlastOptions struct {
 }
 
-func Qlast(marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
+func Qlast(ctx context.Context, marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
 	runname, err := util.WaitForRun("", true, backend)
 	if err != nil {
 		return "", err
 	}
 
-	c, _, err := backend.Streamer().QueueStats(runname, qstat.Options{Tail: int64(1000)})
+	c, err := backend.Streamer(ctx, runname).QueueStats(qstat.Options{Tail: int64(1000)})
 	if err != nil {
 		return strconv.Itoa(0), err
 	}

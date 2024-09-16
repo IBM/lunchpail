@@ -1,8 +1,6 @@
 package streamer
 
 import (
-	"golang.org/x/sync/errgroup"
-
 	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
@@ -11,17 +9,17 @@ import (
 
 type Streamer interface {
 	//
-	RunEvents(runname string) (chan events.Message, error)
+	RunEvents() (chan events.Message, error)
 
 	//
-	RunComponentUpdates(runname string) (chan events.ComponentUpdate, chan events.Message, error)
+	RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error)
 
 	// Stream cpu and memory statistics
-	Utilization(runname string, intervalSeconds int) (chan utilization.Model, error)
+	Utilization(intervalSeconds int) (chan utilization.Model, error)
 
 	// Stream queue statistics
-	QueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error)
+	QueueStats(opts qstat.Options) (chan qstat.Model, error)
 
 	// Stream logs from a given Component to os.Stdout
-	ComponentLogs(runname string, component lunchpail.Component, tail int, follow, verbose bool) error
+	ComponentLogs(component lunchpail.Component, tail int, follow, verbose bool) error
 }

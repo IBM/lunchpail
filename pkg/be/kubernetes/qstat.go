@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -16,7 +15,7 @@ import (
 	streamerCommon "lunchpail.io/pkg/be/streamer"
 )
 
-func (streamer Streamer) streamModel(runname string, follow bool, tail int64, quiet bool, c chan qstat.Model) error {
+func (streamer Streamer) streamModel(follow bool, tail int64, quiet bool, c chan qstat.Model) error {
 	opts := v1.PodLogOptions{Follow: follow}
 	if tail != -1 {
 		opts.TailLines = &tail
@@ -27,7 +26,7 @@ func (streamer Streamer) streamModel(runname string, follow bool, tail int64, qu
 		return err
 	}
 
-	pods, err := clientset.CoreV1().Pods(streamer.backend.namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + runname})
+	pods, err := clientset.CoreV1().Pods(streamer.backend.namespace).List(streamer.Context, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + streamer.runname})
 	if err != nil {
 		return err
 	} else if len(pods.Items) == 0 {
@@ -37,7 +36,7 @@ func (streamer Streamer) streamModel(runname string, follow bool, tail int64, qu
 	}
 
 	podLogs := clientset.CoreV1().Pods(streamer.backend.namespace).GetLogs(pods.Items[0].Name, &opts)
-	stream, err := podLogs.Stream(context.TODO())
+	stream, err := podLogs.Stream(streamer.Context)
 	if err != nil {
 		if strings.Contains(err.Error(), "waiting to start") {
 			if !quiet {
@@ -45,7 +44,7 @@ func (streamer Streamer) streamModel(runname string, follow bool, tail int64, qu
 			}
 			time.Sleep(2 * time.Second)
 			// TODO update this to use the kubernetes watch api?
-			return streamer.streamModel(runname, follow, tail, quiet, c)
+			return streamer.streamModel(follow, tail, quiet, c)
 		} else {
 			return err
 		}
@@ -54,15 +53,15 @@ func (streamer Streamer) streamModel(runname string, follow bool, tail int64, qu
 	return streamerCommon.QstatFromStream(stream, c)
 }
 
-func (streamer Streamer) QueueStats(runname string, opts qstat.Options) (chan qstat.Model, *errgroup.Group, error) {
+func (streamer Streamer) QueueStats(opts qstat.Options) (chan qstat.Model, error) {
 	c := make(chan qstat.Model)
 
-	errs, _ := errgroup.WithContext(context.Background())
+	errs, _ := errgroup.WithContext(streamer.Context)
 	errs.Go(func() error {
-		err := streamer.streamModel(runname, opts.Follow, opts.Tail, opts.Quiet, c)
+		err := streamer.streamModel(opts.Follow, opts.Tail, opts.Quiet, c)
 		close(c)
 		return err
 	})
 
-	return c, errs, nil
+	return c, nil
 }

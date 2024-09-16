@@ -38,5 +38,5 @@ type Backend interface {
 	AccessQueue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, stop func(), err error)
 
 	// Return a streamer
-	Streamer() streamer.Streamer
+	Streamer(ctx context.Context, runname string) streamer.Streamer
 }

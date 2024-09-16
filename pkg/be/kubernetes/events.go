@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"context"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -26,14 +25,14 @@ func stream(runname string, watcher watch.Interface, c chan events.Message) {
 	}
 }
 
-func (streamer Streamer) RunEvents(runname string) (chan events.Message, error) {
+func (streamer Streamer) RunEvents() (chan events.Message, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err
 	}
 
 	timeout := timeoutSeconds
-	eventWatcher, err := clientset.CoreV1().Events(streamer.backend.namespace).Watch(context.Background(), metav1.ListOptions{
+	eventWatcher, err := clientset.CoreV1().Events(streamer.backend.namespace).Watch(streamer.Context, metav1.ListOptions{
 		TimeoutSeconds: &timeout,
 	})
 	if err != nil {
@@ -41,7 +40,7 @@ func (streamer Streamer) RunEvents(runname string) (chan events.Message, error) 
 	}
 
 	c := make(chan events.Message)
-	go stream(runname, eventWatcher, c)
+	go stream(streamer.runname, eventWatcher, c)
 
 	return c, nil
 }

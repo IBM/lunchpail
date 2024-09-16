@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"context"
 	"fmt"
 
 	"lunchpail.io/pkg/be"
@@ -14,13 +15,13 @@ type CpuOptions struct {
 	IntervalSeconds int
 }
 
-func UI(runnameIn string, backend be.Backend, opts CpuOptions) error {
+func UI(ctx context.Context, runnameIn string, backend be.Backend, opts CpuOptions) error {
 	runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}
 
-	c, err := backend.Streamer().Utilization(runname, opts.IntervalSeconds)
+	c, err := backend.Streamer(ctx, runname).Utilization(opts.IntervalSeconds)
 	if err != nil {
 		return err
 	}

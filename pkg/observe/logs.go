@@ -19,13 +19,14 @@ type LogsOptions struct {
 	Components []lunchpail.Component
 }
 
-func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
+func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOptions) error {
 	runname, err := util.WaitForRun(runnameIn, true, backend)
 	if err != nil {
 		return err
 	}
 
-	group, _ := errgroup.WithContext(context.Background())
+	group, lctx := errgroup.WithContext(ctx)
+	streamer := backend.Streamer(lctx, runname)
 
 	c := make(chan events.Message)
 	go func() {
@@ -36,7 +37,7 @@ func Logs(runnameIn string, backend be.Backend, opts LogsOptions) error {
 
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			return backend.Streamer().ComponentLogs(runname, component, opts.Tail, opts.Follow, opts.Verbose)
+			return streamer.ComponentLogs(component, opts.Tail, opts.Follow, opts.Verbose)
 		})
 	}
 

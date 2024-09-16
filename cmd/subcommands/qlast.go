@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ func newQlastCommand() *cobra.Command {
 			return err
 		}
 
-		val, err := qstat.Qlast(marker, extra, backend, qstat.QlastOptions{})
+		val, err := qstat.Qlast(context.Background(), marker, extra, backend, qstat.QlastOptions{})
 		if err != nil {
 			return err
 		}

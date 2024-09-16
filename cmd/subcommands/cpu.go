@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -36,7 +37,7 @@ func Newcmd() *cobra.Command {
 			return err
 		}
 
-		return cpu.UI(maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
+		return cpu.UI(context.Background(), maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
 	}
 
 	return cmd
