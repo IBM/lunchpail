@@ -2,14 +2,17 @@ package local
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/nxadm/tail"
 	"golang.org/x/sync/errgroup"
 
+	"lunchpail.io/pkg/be/controller"
 	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
@@ -37,6 +40,72 @@ func (s localStreamer) RunEvents() (chan events.Message, error) {
 func (s localStreamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
 	cc := make(chan events.ComponentUpdate)
 	cm := make(chan events.Message)
+
+	pidsDir, err := files.PidfileDir(s.runname)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	group, ctx := errgroup.WithContext(s.Context)
+	runningLookup := make(map[string]bool)
+	group.Go(func() error {
+		ctrl := controller.Controller(nil)
+		for {
+			pidfiles, err := os.ReadDir(pidsDir)
+			if err != nil && !errors.Is(err, os.ErrNotExist) {
+				return err
+			} else if err == nil {
+				for _, pidfileEntry := range pidfiles {
+					pidfile := pidfileEntry.Name()
+					if files.IsMainPidfile(pidfile) {
+						continue
+					}
+
+					runningNow, err := isPidRunning(filepath.Join(pidsDir, pidfile))
+					if err != nil {
+						return err
+					}
+
+					runningBefore, ok := runningLookup[pidfile]
+					if !ok || runningBefore != runningNow {
+						runningLookup[pidfile] = runningNow
+						component, instanceName, err := files.ComponentForPidfile(pidfile)
+						if err != nil {
+							return err
+						}
+
+						// TODO infer events.Failed
+						state := events.WorkerStatus(events.Running)
+						event := events.EventType(events.Added)
+						if !runningNow {
+							state = events.Terminating
+							event = events.Deleted
+						}
+
+						switch component {
+						case lunchpail.WorkersComponent:
+							dashIdx := strings.LastIndex(instanceName, "-")
+							poolName := instanceName[:dashIdx]
+							workerName := instanceName
+							cc <- events.WorkerUpdate(workerName, "", poolName, ctrl, state, event)
+						case lunchpail.WorkStealerComponent:
+							cc <- events.WorkStealerUpdate("", ctrl, state, event)
+						case lunchpail.DispatcherComponent:
+							cc <- events.DispatcherUpdate("", ctrl, state, event)
+						}
+					}
+				}
+			}
+
+			time.Sleep(1 * time.Second)
+
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+	})
+
 	return cc, cm, nil
 }
 

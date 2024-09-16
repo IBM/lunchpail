@@ -53,6 +53,10 @@ func isRunning(runname string) (bool, error) {
 		return false, err
 	}
 
+	return isPidRunning(pidfile)
+}
+
+func isPidRunning(pidfile string) (bool, error) {
 	pidb, err := os.ReadFile(pidfile)
 	if err != nil {
 		return false, err

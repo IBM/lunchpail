@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/lunchpail"
@@ -105,8 +106,32 @@ func PidfileForMain(runname string) (string, error) {
 	return filepath.Join(dir, "main.pid"), nil
 }
 
+func IsMainPidfile(pidfile string) bool {
+	return pidfile == "main.pid"
+}
+
 func PidfileDir(runname string) (string, error) {
 	return componentsDir(runname)
+}
+
+func ComponentForPidfile(pidfile string) (lunchpail.Component, string, error) {
+	idx := strings.Index(pidfile, "-")
+	if idx < 0 {
+		return lunchpail.Component(""), "", fmt.Errorf("Invalid pidfile in ComponentForPidFile: %s", pidfile)
+	}
+
+	p := strings.TrimSuffix(pidfile[idx+1:], ".pid")
+	c, err := lunchpail.LookupComponent(pidfile[:idx])
+	if err != nil {
+		return c, p, err
+	}
+
+	switch c {
+	case lunchpail.MinioComponent, lunchpail.WorkStealerComponent, lunchpail.DispatcherComponent, lunchpail.WorkersComponent:
+		return c, p, nil
+	default:
+		return c, p, fmt.Errorf("Unknown component in ComponentForPidfile: %v", c)
+	}
 }
 
 func Pidfile(runname, instanceName string, c lunchpail.Component, mkdir bool) (string, error) {
