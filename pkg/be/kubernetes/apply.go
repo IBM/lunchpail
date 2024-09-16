@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -17,7 +18,7 @@ const (
 	DeleteIt           = "delete"
 )
 
-func apply(yaml, namespace, context string, operation Operation) error {
+func apply(ctx context.Context, yaml, namespace, context string, operation Operation) error {
 	yaml = strings.TrimSpace(yaml)
 	if len(yaml) == 0 {
 		// Nothing to do. If we don't short-circuit this path,
@@ -55,13 +56,13 @@ func apply(yaml, namespace, context string, operation Operation) error {
 	// The yaml may be self-referential, e.g. it may include a
 	// namespace spec and also use that namespace spec; same for
 	// service accounts. Thus, we may need to apply twice (n=2)
-	cmd := exec.Command("kubectl", args...)
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
-func applyOperation(ir llir.LLIR, namespace, context string, operation Operation, copts llir.Options, verbose bool) error {
+func applyOperation(ctx context.Context, ir llir.LLIR, namespace, context string, operation Operation, copts llir.Options, verbose bool) error {
 	opts, err := k8sOptions(copts)
 	if err != nil {
 		return err
@@ -73,7 +74,7 @@ func applyOperation(ir llir.LLIR, namespace, context string, operation Operation
 	}
 
 	yaml := util.Join(yamls)
-	if err := apply(yaml, namespace, context, operation); err != nil {
+	if err := apply(ctx, yaml, namespace, context, operation); err != nil {
 		return err
 	}
 

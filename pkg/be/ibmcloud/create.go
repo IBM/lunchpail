@@ -273,7 +273,7 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, appName string, resourceGro
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options, verbose bool) error {
+func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options, verbose bool) error {
 	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, ir.AppName, resourceGroupID)
 	if err != nil {
@@ -308,7 +308,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	}
 	t5e := time.Now()
 
-	group, _ := errgroup.WithContext(context.Background())
+	group, _ := errgroup.WithContext(ctx)
 	t6s := time.Now()
 	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 	poolCount := intCounter{}
@@ -390,7 +390,7 @@ func createAndInitVM(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourc
 	return nil
 }
 
-func (backend Backend) SetAction(opts llir.Options, ir llir.LLIR, action Action, verbose bool) error {
+func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir.LLIR, action Action, verbose bool) error {
 	runname := ir.RunName
 
 	if action == Stop || action == Delete {
@@ -406,7 +406,7 @@ func (backend Backend) SetAction(opts llir.Options, ir llir.LLIR, action Action,
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts, verbose); err != nil {
+		if err := createAndInitVM(ctx, backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts, verbose); err != nil {
 			return err
 		}
 	}
