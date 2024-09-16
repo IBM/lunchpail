@@ -13,7 +13,7 @@ func UI() error {
 		return err
 	}
 
-	bold := colors.Bold.Faint(true)
+	bold := colors.Bold
 
 	fmt.Printf("%-24s %s\n", bold.Render("Name"), colors.Cyan.Render(info.Name))
 	fmt.Printf("%-24s %s\n", bold.Render("Created By"), info.By)
@@ -26,11 +26,11 @@ func UI() error {
 	}
 
 	optsString := strings.TrimSpace(string(optsBytes))
-	fmt.Printf("\n%s\n", bold.Render("Shrinkwrapped Values"))
+	fmt.Printf("\n%s\n", bold.Render("Values"))
 	if optsString == "{}" {
 		optsString = "none"
 	}
-	fmt.Println(colors.Yellow.Render(optsString))
+	fmt.Println(optsString)
 
 	return nil
 }

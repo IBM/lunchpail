@@ -49,7 +49,7 @@ func IsCompiled() bool {
 	return Name() != "<none>"
 }
 
-func DropBreadcrumb(compilationName, appVersion, stagedir string) error {
+func DropBreadcrumb(compilationName, appVersion string, opts Options, stagedir string) error {
 	user, err := user.Current()
 	if err != nil {
 		return err
@@ -69,6 +69,8 @@ func DropBreadcrumb(compilationName, appVersion, stagedir string) error {
 	} else if err := os.WriteFile(filepath.Join(stagedir, "pkg/compilation/compiledBy.txt"), []byte(fmt.Sprintf("%s <%s>", user.Name, user.Username)), 0644); err != nil {
 		return err
 	} else if err := os.WriteFile(filepath.Join(stagedir, "pkg/compilation/compiledOn.txt"), []byte(hostname), 0644); err != nil {
+		return err
+	} else if err := saveOptions(stagedir, opts); err != nil {
 		return err
 	}
 

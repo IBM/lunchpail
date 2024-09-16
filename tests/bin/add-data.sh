@@ -8,7 +8,7 @@
 set -eo pipefail
 
 # Wait for minio component
-echo "$(tput setaf 2)Pre-Populating s3 bucket $bucket from $bucket_path (waiting for s3 to be ready)$(tput sgr0)"
+echo "$(tput setaf 2)Pre-Populating s3 app=$testapp target=${LUNCHPAIL_TARGET:-kubernetes} (waiting for s3 to be ready)$(tput sgr0)"
 $testapp run instances \
          --namespace $NAMESPACE \
          --target ${LUNCHPAIL_TARGET:-kubernetes} \
@@ -18,7 +18,7 @@ $testapp run instances \
 for bucket_path in $@; do
     if [[ -d $bucket_path ]]; then
         bucket=$(basename $bucket_path)
-        echo "$(tput setaf 2)Populating s3 bucket $bucket from $bucket_path$(tput sgr0)"
+        echo "$(tput setaf 2)Populating s3 app=$testapp target=${LUNCHPAIL_TARGET:-kubernetes} bucket=$bucket from $bucket_path$(tput sgr0)"
         $testapp qin $bucket_path $bucket --target ${LUNCHPAIL_TARGET:-kubernetes}
     fi
 done

@@ -67,7 +67,7 @@ func DownList(runnames []string, backend be.Backend, opts DownOptions) error {
 
 func toCompilationOpts(opts DownOptions) compilation.Options {
 	compilationOptions := compilation.Options{}
-	compilationOptions.Namespace = opts.Namespace
+	compilationOptions.Target = &compilation.TargetOptions{Namespace: opts.Namespace}
 	compilationOptions.ApiKey = opts.ApiKey
 
 	return compilationOptions

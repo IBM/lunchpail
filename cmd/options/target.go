@@ -5,20 +5,27 @@ package options
 import (
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/target"
 	"lunchpail.io/pkg/compilation"
 )
 
-func AddTargetOptions(cmd *cobra.Command) *be.TargetOptions {
-	options := be.TargetOptions{TargetPlatform: be.Kubernetes}
+func AddTargetOptions(cmd *cobra.Command) *compilation.TargetOptions {
+	return addTargetOptionsTo(cmd, &compilation.Options{})
+}
 
-	if compilation.IsCompiled() {
-		// by default, we use Namespace == app name
-		options.Namespace = compilation.Name()
+func addTargetOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.TargetOptions {
+	if opts.Target == nil {
+		opts.Target = &compilation.TargetOptions{}
+	}
+	if compilation.IsCompiled() && opts.Target.Namespace == "" {
+		opts.Target.Namespace = compilation.Name()
+	}
+	if opts.Target.Platform == "" {
+		opts.Target.Platform = target.Kubernetes
 	}
 
-	cmd.Flags().VarP(&options.TargetPlatform, "target", "t", "Deployment target [local, kubernetes, ibmcloud, skypilot]")
-	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", options.Namespace, "Kubernetes namespace to deploy to")
+	cmd.Flags().VarP(&opts.Target.Platform, "target", "t", "Deployment target [local, kubernetes, ibmcloud, skypilot]")
+	cmd.Flags().StringVarP(&opts.Target.Namespace, "namespace", "n", opts.Target.Namespace, "Kubernetes namespace to deploy to")
 
-	return &options
+	return opts.Target
 }

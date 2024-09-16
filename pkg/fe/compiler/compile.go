@@ -62,11 +62,9 @@ func Compile(sourcePath string, opts Options) error {
 
 	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{Branch: opts.Branch, Verbose: opts.Verbose}); err != nil {
 		return err
-	} else if err := compilation.SaveOptions(appTemplatePath, opts.CompilationOptions); err != nil {
-		return err
 	} else if err := compilation.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
 		return err
-	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, lunchpailStageDir); err != nil {
+	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, opts.CompilationOptions, lunchpailStageDir); err != nil {
 		return err
 	} else {
 		if !opts.AllPlatforms {

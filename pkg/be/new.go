@@ -8,29 +8,25 @@ import (
 	"lunchpail.io/pkg/be/ibmcloud"
 	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/be/local"
+	"lunchpail.io/pkg/be/target"
 	"lunchpail.io/pkg/compilation"
 )
 
-type TargetOptions struct {
-	Namespace      string
-	TargetPlatform Platform
-}
-
-func makeIt(topts TargetOptions, aopts compilation.Options) (Backend, error) {
-	switch topts.TargetPlatform {
-	case Local:
+func makeIt(opts compilation.Options) (Backend, error) {
+	switch opts.Target.Platform {
+	case target.Local:
 		return local.New(), nil
-	case Kubernetes:
-		return kubernetes.New(kubernetes.NewOptions{Namespace: topts.Namespace}), nil
-	case IBMCloud:
-		return ibmcloud.New(ibmcloud.NewOptions{Options: aopts, Namespace: topts.Namespace})
+	case target.IBMCloud:
+		return ibmcloud.New(ibmcloud.NewOptions{Options: opts, Namespace: opts.Target.Namespace})
+	case target.Kubernetes:
+		return kubernetes.New(kubernetes.NewOptions{Namespace: opts.Target.Namespace}), nil
 	default:
-		return nil, fmt.Errorf("Unsupported backend %v", topts.TargetPlatform)
+		return nil, fmt.Errorf("Unsupported backend %v", opts.Target.Platform)
 	}
 }
 
-func NewInitOk(initOk bool, topts TargetOptions, aopts compilation.Options) (Backend, error) {
-	be, err := makeIt(topts, aopts)
+func NewInitOk(initOk bool, opts compilation.Options) (Backend, error) {
+	be, err := makeIt(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +38,6 @@ func NewInitOk(initOk bool, topts TargetOptions, aopts compilation.Options) (Bac
 	return be, nil
 }
 
-func New(topts TargetOptions, aopts compilation.Options) (Backend, error) {
-	return NewInitOk(false, topts, aopts)
+func New(opts compilation.Options) (Backend, error) {
+	return NewInitOk(false, opts)
 }

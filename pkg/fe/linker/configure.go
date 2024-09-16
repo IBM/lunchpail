@@ -15,7 +15,7 @@ type ConfigureOptions struct {
 	Verbose            bool
 }
 
-func Configure(appname, runname, namespace, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
+func Configure(appname, runname, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
