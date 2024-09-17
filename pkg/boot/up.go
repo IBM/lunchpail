@@ -5,10 +5,12 @@ package boot
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/observe/status"
+	"lunchpail.io/pkg/util"
 )
 
 type UpOptions = fe.CompileOptions
@@ -17,6 +19,13 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 	ir, copts, err := fe.PrepareForRun(opts)
 	if err != nil {
 		return err
+	}
+
+	if opts.Watch && !util.StdoutIsTty() {
+		// if stdout is not a tty, then we can't support
+		// watch, no matter what the user asked for
+		fmt.Fprintf(os.Stderr, "Warning: disabling watch mode because stdout is not a tty\n")
+		opts.Watch = false
 	}
 
 	if opts.DryRun {
