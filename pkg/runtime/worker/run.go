@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -24,7 +25,7 @@ func delay() error {
 	return nil
 }
 
-func Run(handler []string, opts Options) error {
+func Run(ctx context.Context, handler []string, opts Options) error {
 	fmt.Fprintf(os.Stderr, "INFO Lunchpail worker starting up\n")
 
 	if opts.Debug {
@@ -36,10 +37,10 @@ func Run(handler []string, opts Options) error {
 		return err
 	}
 
-	client, err := queue.NewS3Client()
+	client, err := queue.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
 
-	return startWatch(handler, client, opts.Debug)
+	return startWatch(ctx, handler, client, opts.Debug)
 }

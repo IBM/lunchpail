@@ -5,7 +5,6 @@ package queue
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -18,7 +17,7 @@ import (
 )
 
 func (s3 S3Client) Lsf(bucket, prefix string) ([]string, error) {
-	objectCh := s3.client.ListObjects(context.Background(), bucket, minio.ListObjectsOptions{
+	objectCh := s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{
 		Prefix:    prefix + "/",
 		Recursive: false,
 	})
@@ -40,7 +39,7 @@ func (s3 S3Client) Lsf(bucket, prefix string) ([]string, error) {
 
 func (s3 S3Client) Exists(bucket, prefix, file string) bool {
 	for {
-		if _, err := s3.client.StatObject(context.Background(), bucket, filepath.Join(prefix, file), minio.StatObjectOptions{}); err == nil {
+		if _, err := s3.client.StatObject(s3.context, bucket, filepath.Join(prefix, file), minio.StatObjectOptions{}); err == nil {
 			return true
 		} else if !s3.retryOnError(err) {
 			return false
@@ -59,7 +58,7 @@ func (s3 S3Client) Copyto(sourceBucket, source, destBucket, dest string) error {
 		Object: dest,
 	}
 
-	_, err := s3.client.CopyObject(context.Background(), dst, src)
+	_, err := s3.client.CopyObject(s3.context, dst, src)
 	return err
 }
 
@@ -69,7 +68,7 @@ func (origin S3Client) CopyToRemote(remote S3Client, sourceBucket, source, destB
 		return origin.Copyto(sourceBucket, source, destBucket, dest)
 	}
 
-	object, err := origin.client.GetObject(context.Background(), sourceBucket, source, minio.GetObjectOptions{})
+	object, err := origin.client.GetObject(origin.context, sourceBucket, source, minio.GetObjectOptions{})
 	if err != nil {
 		return fmt.Errorf("Error downloading in CopyToRemote %v", err)
 	}
@@ -77,7 +76,7 @@ func (origin S3Client) CopyToRemote(remote S3Client, sourceBucket, source, destB
 
 	// TODO on size?
 	size := int64(-1)
-	if _, err := remote.client.PutObject(context.Background(), destBucket, dest, object, size, minio.PutObjectOptions{}); err != nil {
+	if _, err := remote.client.PutObject(remote.context, destBucket, dest, object, size, minio.PutObjectOptions{}); err != nil {
 		return fmt.Errorf("Error uploading in CopyToRemote %v", err)
 	}
 
@@ -94,7 +93,7 @@ func (s3 S3Client) Moveto(bucket, source, destination string) error {
 
 func (s3 S3Client) Upload(bucket, source, destination string) error {
 	for {
-		_, err := s3.client.FPutObject(context.Background(), bucket, destination, source, minio.PutObjectOptions{})
+		_, err := s3.client.FPutObject(s3.context, bucket, destination, source, minio.PutObjectOptions{})
 		if err != nil && !s3.retryOnError(err) {
 			return err
 		} else if err == nil {
@@ -104,12 +103,12 @@ func (s3 S3Client) Upload(bucket, source, destination string) error {
 	return nil
 }
 
-func (s3 S3Client) DownloadFolder(octx context.Context, bucket, source, destination string) error {
+func (s3 S3Client) DownloadFolder(bucket, source, destination string) error {
 	if err := s3.waitForBucket(bucket); err != nil {
 		return err
 	}
 
-	group, ctx := errgroup.WithContext(octx)
+	group, ctx := errgroup.WithContext(s3.context)
 	for o := range s3.ListObjects(bucket, source, true) {
 		group.Go(func() error {
 			if o.Err != nil {
@@ -130,13 +129,13 @@ func (s3 S3Client) DownloadFolder(octx context.Context, bucket, source, destinat
 }
 
 func (s3 S3Client) Download(bucket, source, destination string) error {
-	return s3.client.FGetObject(context.Background(), bucket, source, destination, minio.GetObjectOptions{})
+	return s3.client.FGetObject(s3.context, bucket, source, destination, minio.GetObjectOptions{})
 }
 
 func (s3 S3Client) Touch(bucket, filePath string) error {
 	r := strings.NewReader("")
 	for {
-		_, err := s3.client.PutObject(context.Background(), bucket, filePath, r, 0, minio.PutObjectOptions{})
+		_, err := s3.client.PutObject(s3.context, bucket, filePath, r, 0, minio.PutObjectOptions{})
 
 		if err != nil && !s3.retryOnError(err) {
 			return err
@@ -148,16 +147,16 @@ func (s3 S3Client) Touch(bucket, filePath string) error {
 }
 
 func (s3 S3Client) Rm(bucket, filePath string) error {
-	return s3.client.RemoveObject(context.Background(), bucket, filePath, minio.RemoveObjectOptions{})
+	return s3.client.RemoveObject(s3.context, bucket, filePath, minio.RemoveObjectOptions{})
 }
 
 func (s3 S3Client) Mark(bucket, filePath, marker string) error {
-	_, err := s3.client.PutObject(context.Background(), bucket, filePath, strings.NewReader(marker), int64(len(marker)), minio.PutObjectOptions{})
+	_, err := s3.client.PutObject(s3.context, bucket, filePath, strings.NewReader(marker), int64(len(marker)), minio.PutObjectOptions{})
 	return err
 }
 
 func (s3 S3Client) ListObjects(bucket, filePath string, recursive bool) <-chan minio.ObjectInfo {
-	return s3.client.ListObjects(context.Background(), bucket, minio.ListObjectsOptions{
+	return s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{
 		Prefix:    filePath,
 		Recursive: recursive,
 	})
@@ -165,7 +164,7 @@ func (s3 S3Client) ListObjects(bucket, filePath string, recursive bool) <-chan m
 
 func (s3 S3Client) Get(bucket, filePath string) (string, error) {
 	var content bytes.Buffer
-	s, err := s3.client.GetObject(context.Background(), bucket, filePath, minio.GetObjectOptions{})
+	s, err := s3.client.GetObject(s3.context, bucket, filePath, minio.GetObjectOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -174,7 +173,7 @@ func (s3 S3Client) Get(bucket, filePath string) (string, error) {
 }
 
 func (s3 S3Client) Cat(bucket, filePath string) error {
-	s, err := s3.client.GetObject(context.Background(), bucket, filePath, minio.GetObjectOptions{})
+	s, err := s3.client.GetObject(s3.context, bucket, filePath, minio.GetObjectOptions{})
 	if err != nil {
 		return err
 	}
@@ -215,7 +214,7 @@ func (s3 S3Client) waitForBucket(bucket string) error {
 func (s3 S3Client) BucketExists(bucket string) (bool, error) {
 	yup := false
 	for {
-		exists, err := s3.client.BucketExists(context.Background(), bucket)
+		exists, err := s3.client.BucketExists(s3.context, bucket)
 		if err != nil && !s3.retryOnError(err) {
 			return false, err
 		} else if err == nil {
@@ -234,7 +233,7 @@ func (s3 S3Client) Mkdirp(bucket string) error {
 	}
 
 	if !exists {
-		if err := s3.client.MakeBucket(context.Background(), bucket, minio.MakeBucketOptions{}); err != nil {
+		if err := s3.client.MakeBucket(s3.context, bucket, minio.MakeBucketOptions{}); err != nil {
 			if !strings.Contains(err.Error(), "Your previous request to create the named bucket succeeded and you already own it") {
 				// bucket already exists error
 				return err
@@ -247,7 +246,7 @@ func (s3 S3Client) Mkdirp(bucket string) error {
 
 func (s3 S3Client) WaitTillExists(bucket, object string) error {
 	suffix := ""
-	for notificationInfo := range s3.client.ListenBucketNotification(context.Background(), bucket, object, suffix, []string{
+	for notificationInfo := range s3.client.ListenBucketNotification(s3.context, bucket, object, suffix, []string{
 		"s3:ObjectCreated:*",
 	}) {
 		if notificationInfo.Err != nil {

@@ -1,14 +1,15 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func PreStop() error {
-	client, err := queue.NewS3Client()
+func PreStop(ctx context.Context) error {
+	client, err := queue.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}

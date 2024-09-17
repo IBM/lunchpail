@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -18,7 +19,7 @@ func killfileExists(client queue.S3Client, bucket, prefix string) bool {
 	return client.Exists(bucket, prefix, "kill")
 }
 
-func startWatch(handler []string, client queue.S3Client, debug bool) error {
+func startWatch(ctx context.Context, handler []string, client queue.S3Client, debug bool) error {
 	bucket := client.Paths.Bucket
 	prefix := client.Paths.Prefix
 	inbox := client.Paths.Inbox
@@ -111,7 +112,7 @@ func startWatch(handler []string, client queue.S3Client, debug bool) error {
 				// signify that the process is still going... or prematurely terminated
 				os.WriteFile(localec, []byte("-1"), os.ModePerm)
 
-				handlercmd := exec.Command(handler[0], slices.Concat(handler[1:], []string{localprocessing, localoutbox})...)
+				handlercmd := exec.CommandContext(ctx, handler[0], slices.Concat(handler[1:], []string{localprocessing, localoutbox})...)
 
 				// open stdout/err files for writing
 				stdoutfile, err := os.Create(localstdout)

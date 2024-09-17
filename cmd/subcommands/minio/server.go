@@ -1,6 +1,8 @@
 package minio
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/runtime/minio"
@@ -15,7 +17,7 @@ func Server() *cobra.Command {
 		Long:  "Run as the minio component",
 		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return minio.Server(port)
+			return minio.Server(context.Background(), port)
 		},
 	}
 

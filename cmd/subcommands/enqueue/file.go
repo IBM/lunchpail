@@ -1,6 +1,7 @@
 package enqueue
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -28,7 +29,7 @@ func NewEnqueueFileCmd() *cobra.Command {
 			return fmt.Errorf("Invalid combination of options, not --wait and --ignore-worker-errors")
 		}
 
-		exitcode, err := queue.EnqueueFile(args[0], opts)
+		exitcode, err := queue.EnqueueFile(context.Background(), args[0], opts)
 
 		switch {
 		case err != nil:

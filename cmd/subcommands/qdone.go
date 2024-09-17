@@ -1,6 +1,8 @@
 package subcommands
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/runtime/queue"
@@ -15,7 +17,7 @@ func newQdoneCmd() *cobra.Command {
 	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return queue.Qdone()
+		return queue.Qdone(context.Background())
 	}
 
 	return cmd

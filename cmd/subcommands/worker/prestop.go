@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/runtime/worker"
@@ -14,7 +16,7 @@ func NewPreStopCmd() *cobra.Command {
 	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return worker.PreStop()
+		return worker.PreStop(context.Background())
 	}
 
 	return cmd
