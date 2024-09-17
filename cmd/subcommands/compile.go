@@ -3,6 +3,7 @@
 package subcommands
 
 import (
+	"context"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -58,7 +59,7 @@ func newCompileCmd() *cobra.Command {
 			compilationOptions.OverrideFileValues = overrideFileValues
 		}
 
-		return compiler.Compile(sourcePath, compiler.Options{
+		return compiler.Compile(context.Background(), sourcePath, compiler.Options{
 			Name:               outputFlag,
 			Branch:             branchFlag,
 			Verbose:            verboseFlag,
