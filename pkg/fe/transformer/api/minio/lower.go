@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options) (llir.Component, error) {
 	if !ir.Queue.Auto {
 		return nil, nil
 	}
@@ -25,7 +25,6 @@ func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, o
 		ir,
 		llir.ShellComponent{Component: lunchpail.MinioComponent},
 		opts,
-		verbose,
 	)
 
 	return component, err

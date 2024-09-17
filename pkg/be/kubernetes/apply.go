@@ -62,13 +62,13 @@ func apply(ctx context.Context, yaml, namespace, context string, operation Opera
 	return cmd.Run()
 }
 
-func applyOperation(ctx context.Context, ir llir.LLIR, namespace, context string, operation Operation, copts llir.Options, verbose bool) error {
+func applyOperation(ctx context.Context, ir llir.LLIR, namespace, context string, operation Operation, copts llir.Options) error {
 	opts, err := k8sOptions(ctx, copts)
 	if err != nil {
 		return err
 	}
 
-	yamls, err := MarshalAllComponents(ir, namespace, opts, verbose)
+	yamls, err := MarshalAllComponents(ir, namespace, opts)
 	if err != nil {
 		return err
 	}

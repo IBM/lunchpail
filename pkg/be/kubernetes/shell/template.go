@@ -13,11 +13,11 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common.Options, verbose bool) (string, error) {
+func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common.Options) (string, error) {
 	templatePath, err := stage(template, templateFile)
 	if err != nil {
 		return "", err
-	} else if verbose {
+	} else if opts.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "Shell stage %s\n", templatePath)
 	} else {
 		defer os.RemoveAll(templatePath)
@@ -56,7 +56,6 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"image=" + c.Application.Spec.Image,
 		"command=" + updateTestQueueEndpoint(c.Application.Spec.Command, ir.Queue),
 		fmt.Sprintf("lunchpail.runAsJob=%v", c.RunAsJob),
-		// fmt.Sprintf("lunchpail.debug=%v", verbose),
 		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),
 		"workers.count=" + strconv.Itoa(c.Sizing.Workers),
 		"workers.cpu=" + c.Sizing.Cpu,
@@ -97,7 +96,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 
 	values := slices.Concat(commonValues, myValues)
 
-	if verbose {
+	if opts.Log.Verbose {
 		workdirCmData := ""
 		fmt.Fprintf(os.Stderr, "Shell values\n%s\n", strings.Replace(strings.Join(values, "\n  - "), workdirCmData, "", 1))
 	}
@@ -107,6 +106,6 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		namespace,
 		templatePath,
 		"", // no yaml values at the moment
-		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},
+		helm.TemplateOptions{Verbose: opts.Log.Verbose, OverrideValues: values},
 	)
 }

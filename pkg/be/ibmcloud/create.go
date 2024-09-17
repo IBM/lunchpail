@@ -51,7 +51,7 @@ func (i *intCounter) inc() {
 	i.lock.Unlock()
 }
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options, verbose bool) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{
@@ -65,7 +65,7 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.C
 	// TODO pass through actual Cli Options?
 	opts := common.Options{Options: copts}
 
-	appYamlString, err := kubernetes.MarshalComponentAsStandalone(ir, c, namespace, opts, verbose)
+	appYamlString, err := kubernetes.MarshalComponentAsStandalone(ir, c, namespace, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshall yaml: %v", err)
 	}
@@ -273,7 +273,7 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, appName string, resourceGro
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options, verbose bool) error {
+func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options) error {
 	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, ir.AppName, resourceGroupID)
 	if err != nil {
@@ -316,7 +316,7 @@ func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, 
 		instanceName := name + "-" + string(c.C())
 		group.Go(func() error {
 			if c.C() == lunchpail.DispatcherComponent || c.C() == lunchpail.WorkStealerComponent {
-				instance, err := createInstance(vpcService, instanceName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
+				instance, err := createInstance(vpcService, instanceName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts)
 				if err != nil {
 					return err
 				}
@@ -350,7 +350,7 @@ func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, 
 				for i := 0; i < numInstances; i++ {
 					workerName := poolName + "-" + strconv.Itoa(i) //multiple worker instances
 					c = c.SetWorkers(int(parallelism[i]))
-					instance, err := createInstance(vpcService, workerName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, verbose)
+					instance, err := createInstance(vpcService, workerName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts)
 					if err != nil {
 						return err
 					}
@@ -390,7 +390,7 @@ func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, 
 	return nil
 }
 
-func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir.LLIR, action Action, verbose bool) error {
+func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir.LLIR, action Action) error {
 	runname := ir.RunName
 
 	if action == Stop || action == Delete {
@@ -406,7 +406,7 @@ func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(ctx, backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts, verbose); err != nil {
+		if err := createAndInitVM(ctx, backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts); err != nil {
 			return err
 		}
 	}

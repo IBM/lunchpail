@@ -14,13 +14,13 @@ type Backend interface {
 	Ok(ctx context.Context, initOk bool) error
 
 	// Bring up the linked application
-	Up(ctx context.Context, linked llir.LLIR, opts llir.Options, verbose bool) error
+	Up(ctx context.Context, linked llir.LLIR, opts llir.Options) error
 
 	// Bring down the linked application
-	Down(ctx context.Context, linked llir.LLIR, opts llir.Options, verbose bool) error
+	Down(ctx context.Context, linked llir.LLIR, opts llir.Options) error
 
 	// Return a string to convey relevant dry-run info
-	DryRun(ir llir.LLIR, opts llir.Options, verbose bool) (string, error)
+	DryRun(ir llir.LLIR, opts llir.Options) (string, error)
 
 	// Purge any non-run resources that may have been created
 	Purge(ctx context.Context) error

@@ -76,7 +76,7 @@ func toCompilationOpts(opts DownOptions) compilation.Options {
 func toUpOpts(runname string, opts DownOptions) UpOptions {
 	configureOptions := linker.ConfigureOptions{}
 	configureOptions.CompilationOptions = toCompilationOpts(opts)
-	configureOptions.Verbose = opts.Verbose
+	configureOptions.CompilationOptions.Log.Verbose = opts.Verbose
 
 	upOptions := UpOptions{}
 	upOptions.ConfigureOptions = configureOptions

@@ -22,7 +22,8 @@ type CompileOptions struct {
 
 func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) {
 	stageOpts := compilation.StageOptions{}
-	stageOpts.Verbose = opts.Verbose
+	verbose := opts.CompilationOptions.Log.Verbose
+	stageOpts.Verbose = verbose
 	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
 	if err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
@@ -38,7 +39,7 @@ func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) 
 	}
 
 	internalS3Port := rand.Intn(65536) + 1
-	if opts.Verbose {
+	if verbose {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
@@ -47,17 +48,17 @@ func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) 
 		return llir.LLIR{}, opts.CompilationOptions, err
 	}
 
-	if !opts.Verbose {
+	if !verbose {
 		defer os.RemoveAll(templatePath)
 	}
 
 	// we need to instantiate the application's templates first...
 	namespace := "" // intentionally not passing Target.Namespace to application templates
-	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: opts.Verbose}); err != nil {
+	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: verbose}); err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
-	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions, opts.Verbose); err != nil {
+	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions); err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
 	} else {
 		return ir, opts.CompilationOptions, nil

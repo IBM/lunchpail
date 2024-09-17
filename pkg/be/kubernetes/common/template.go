@@ -11,11 +11,11 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Options, verbose bool) (string, error) {
+func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Options) (string, error) {
 	templatePath, err := stage(appTemplate, appTemplateFile)
 	if err != nil {
 		return "", err
-	} else if verbose {
+	} else if opts.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "Templating Kubernetes common components to %s\n", templatePath)
 	} else {
 		defer os.RemoveAll(templatePath)
@@ -31,7 +31,7 @@ func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Optio
 		namespace,
 		templatePath,
 		"", // no yaml values at the moment
-		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},
+		helm.TemplateOptions{Verbose: opts.Log.Verbose, OverrideValues: values},
 	)
 }
 

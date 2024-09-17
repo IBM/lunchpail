@@ -36,5 +36,6 @@ func Values(ir llir.LLIR, opts Options) ([]string, error) {
 		"lunchpail.image.registry=" + lunchpail.ImageRegistry,
 		"lunchpail.image.repo=" + lunchpail.ImageRepo,
 		"lunchpail.image.version=" + lunchpail.Version(),
+		fmt.Sprintf("lunchpail.debug=%v", opts.Log.Debug),
 	}, nil
 }
