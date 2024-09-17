@@ -13,9 +13,10 @@ import (
 
 func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Options) (string, error) {
 	templatePath, err := stage(appTemplate, appTemplateFile)
+	verbose := opts.Log.Verbose
 	if err != nil {
 		return "", err
-	} else if opts.Log.Verbose {
+	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Templating Kubernetes common components to %s\n", templatePath)
 	} else {
 		defer os.RemoveAll(templatePath)
@@ -31,7 +32,7 @@ func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Optio
 		namespace,
 		templatePath,
 		"", // no yaml values at the moment
-		helm.TemplateOptions{Verbose: opts.Log.Verbose, OverrideValues: values},
+		helm.TemplateOptions{Verbose: verbose, OverrideValues: values},
 	)
 }
 

@@ -60,7 +60,6 @@ func newCompileCmd() *cobra.Command {
 		return compiler.Compile(context.Background(), sourcePath, compiler.Options{
 			Name:               outputFlag,
 			Branch:             branchFlag,
-			Verbose:            compilationOptions.Log.Verbose,
 			AllPlatforms:       allFlag,
 			CompilationOptions: *compilationOptions,
 		})
