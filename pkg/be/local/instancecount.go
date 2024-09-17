@@ -1,6 +1,7 @@
 package local
 
 import (
+	"context"
 	"os"
 	"strings"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // Number of instances of the given component for the given run
-func (backend Backend) InstanceCount(c lunchpail.Component, runname string) (int, error) {
+func (backend Backend) InstanceCount(ctx context.Context, c lunchpail.Component, runname string) (int, error) {
 	dir, err := files.PidfileDir(runname)
 	if err != nil {
 		return 0, err

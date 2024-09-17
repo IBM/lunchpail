@@ -45,9 +45,10 @@ func Instances() *cobra.Command {
 				return err
 			}
 
+			ctx := context.Background()
 			runname := runOpts.Run
 			if runname == "" {
-				if r, err := util.Singleton(context.Background(), backend); err != nil {
+				if r, err := util.Singleton(ctx, backend); err != nil {
 					if wait {
 						waitItOut(*component, -1, err)
 						continue
@@ -62,7 +63,7 @@ func Instances() *cobra.Command {
 				}
 			}
 
-			count, err := backend.InstanceCount(*component, runname)
+			count, err := backend.InstanceCount(ctx, *component, runname)
 			if err != nil {
 				if wait {
 					waitItOut(*component, -1, err)
