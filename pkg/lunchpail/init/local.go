@@ -12,8 +12,8 @@ type InitLocalOptions struct {
 	Verbose     bool
 }
 
-func Local(opts InitLocalOptions) error {
-	errs, _ := errgroup.WithContext(context.Background())
+func Local(ctx context.Context, opts InitLocalOptions) error {
+	errs, _ := errgroup.WithContext(ctx)
 
 	if err := getContainerCli(); err != nil {
 		return err

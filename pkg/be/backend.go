@@ -11,7 +11,7 @@ import (
 
 type Backend interface {
 	// Is the backend ready for `up`?
-	Ok(initOk bool) error
+	Ok(ctx context.Context, initOk bool) error
 
 	// Bring up the linked application
 	Up(ctx context.Context, linked llir.LLIR, opts llir.Options, verbose bool) error

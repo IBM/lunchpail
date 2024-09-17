@@ -34,12 +34,13 @@ func newDownCmd() *cobra.Command {
 	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(compilation.Options{Target: tgtOpts, ApiKey: apiKey})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts, ApiKey: apiKey})
 		if err != nil {
 			return err
 		}
 
-		return boot.DownList(context.Background(), args, backend, boot.DownOptions{
+		return boot.DownList(ctx, args, backend, boot.DownOptions{
 			Namespace: tgtOpts.Namespace, Verbose: verboseFlag, DeleteNamespace: deleteNamespaceFlag,
 			DeleteAll: deleteAllRunsFlag,
 			ApiKey:    apiKey, DeleteCloudResources: deleteCloudResourcesFlag})

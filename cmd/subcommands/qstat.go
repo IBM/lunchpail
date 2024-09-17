@@ -35,12 +35,13 @@ func newQstatCommand() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
 
-		return qstat.UI(context.Background(), maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
+		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
 	}
 
 	return cmd

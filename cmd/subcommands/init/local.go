@@ -1,7 +1,10 @@
 package init
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
+
 	initialize "lunchpail.io/pkg/lunchpail/init"
 )
 
@@ -14,7 +17,7 @@ func NewInitLocalCmd() *cobra.Command {
 		Short: "Initialize a local control plane",
 		Long:  "Initialize a local control plane",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initialize.Local(initialize.InitLocalOptions{BuildImages: buildFlag, Verbose: verboseFlag})
+			return initialize.Local(context.Background(), initialize.InitLocalOptions{BuildImages: buildFlag, Verbose: verboseFlag})
 		},
 	}
 
