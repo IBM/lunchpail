@@ -11,7 +11,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func (backend Backend) ChangeWorkers(poolName, poolNamespace, poolContext string, delta int) error {
+func (backend Backend) ChangeWorkers(ctx context.Context, poolName, poolNamespace, poolContext string, delta int) error {
 	// TODO handle poolContext!!!
 	clientset, _, err := Client()
 	if err != nil {
@@ -21,13 +21,13 @@ func (backend Backend) ChangeWorkers(poolName, poolNamespace, poolContext string
 	k8sName := shell.ResourceName(poolName, lunchpail.WorkersComponent)
 
 	jobsClient := clientset.BatchV1().Jobs(poolNamespace)
-	job, err := jobsClient.Get(context.Background(), k8sName, metav1.GetOptions{})
+	job, err := jobsClient.Get(ctx, k8sName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
 	patch := []byte(fmt.Sprintf(`{"spec": {"parallelism": %d}}`, *job.Spec.Parallelism+int32(delta)))
-	if _, err := jobsClient.Patch(context.Background(), k8sName, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
+	if _, err := jobsClient.Patch(ctx, k8sName, types.StrategicMergePatchType, patch, metav1.PatchOptions{}); err != nil {
 		return err
 	}
 
