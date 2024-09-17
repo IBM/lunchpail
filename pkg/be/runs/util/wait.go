@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -9,12 +10,12 @@ import (
 	"lunchpail.io/pkg/be"
 )
 
-func WaitForRun(runname string, wait bool, backend be.Backend) (string, error) {
+func WaitForRun(ctx context.Context, runname string, wait bool, backend be.Backend) (string, error) {
 	alreadySaidWeAreWaiting := false
 
 	for {
 		if runname == "" {
-			if singletonRun, err := Singleton(backend); err != nil {
+			if singletonRun, err := Singleton(ctx, backend); err != nil {
 				if wait && strings.Contains(err.Error(), "No runs") {
 					if !alreadySaidWeAreWaiting {
 						fmt.Fprintf(os.Stderr, "Waiting for runs...")

@@ -1,6 +1,7 @@
 package local
 
 import (
+	"context"
 	"os"
 	"strconv"
 
@@ -11,7 +12,7 @@ import (
 )
 
 // List deployed runs
-func (backend Backend) ListRuns(all bool) ([]runs.Run, error) {
+func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, error) {
 	runsdir, err := files.RunsDir()
 	if err != nil {
 		return nil, err

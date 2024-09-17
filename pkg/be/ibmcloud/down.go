@@ -14,7 +14,7 @@ func (backend Backend) Down(ctx context.Context, ir llir.LLIR, opts llir.Options
 	return nil
 }
 
-func (backend Backend) Purge() error {
+func (backend Backend) Purge(ctx context.Context) error {
 	// Is there anything to do here?
 	return nil
 }

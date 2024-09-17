@@ -33,7 +33,7 @@ func groupByRun(pods *v1.PodList) []runs.Run {
 }
 
 // Return all lunchpail runs for the given appname in the given namespace
-func listRuns(all bool, appName, namespace string, client kubernetes.Interface) ([]runs.Run, error) {
+func listRuns(ctx context.Context, all bool, appName, namespace string, client kubernetes.Interface) ([]runs.Run, error) {
 	label := "app.kubernetes.io/part-of=" + appName
 
 	opts := &metav1.ListOptions{LabelSelector: label}
@@ -41,7 +41,7 @@ func listRuns(all bool, appName, namespace string, client kubernetes.Interface) 
 		opts.FieldSelector = "status.phase=Running"
 	}
 
-	pods, err := client.CoreV1().Pods(namespace).List(context.TODO(), *opts)
+	pods, err := client.CoreV1().Pods(namespace).List(ctx, *opts)
 	if err != nil {
 		return []runs.Run{}, err
 	}
@@ -50,11 +50,11 @@ func listRuns(all bool, appName, namespace string, client kubernetes.Interface) 
 }
 
 // Return all Runs in the given namespace for the given app
-func (backend Backend) ListRuns(all bool) ([]runs.Run, error) {
+func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return []runs.Run{}, err
 	}
 
-	return listRuns(all, compilation.Name(), backend.namespace, clientset)
+	return listRuns(ctx, all, compilation.Name(), backend.namespace, clientset)
 }

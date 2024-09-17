@@ -27,7 +27,7 @@ func DownList(ctx context.Context, runnames []string, backend be.Backend, opts D
 
 	if len(runnames) == 0 {
 		if opts.DeleteAll {
-			remainingRuns, err := backend.ListRuns(true)
+			remainingRuns, err := backend.ListRuns(ctx, true)
 			if err != nil {
 				return err
 			}
@@ -57,7 +57,7 @@ func DownList(ctx context.Context, runnames []string, backend be.Backend, opts D
 	}
 
 	if deleteNs {
-		if err := backend.Purge(); err != nil {
+		if err := backend.Purge(ctx); err != nil {
 			return err
 		}
 	}
@@ -87,7 +87,7 @@ func toUpOpts(runname string, opts DownOptions) UpOptions {
 
 func Down(ctx context.Context, runname string, backend be.Backend, opts DownOptions) error {
 	if runname == "" {
-		singletonRun, err := util.Singleton(backend)
+		singletonRun, err := util.Singleton(ctx, backend)
 		if err != nil {
 			return err
 		}
@@ -100,7 +100,7 @@ func Down(ctx context.Context, runname string, backend be.Backend, opts DownOpti
 	}
 
 	if opts.DeleteNamespace {
-		if err := backend.Purge(); err != nil {
+		if err := backend.Purge(ctx); err != nil {
 			return err
 		}
 	}
