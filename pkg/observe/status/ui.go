@@ -26,6 +26,7 @@ type Options struct {
 
 // Our model for BubbleTea
 type model struct {
+	context        context.Context
 	c              chan Model
 	current        Model
 	table          table.Model
@@ -112,7 +113,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					delta = -1
 				}
 				// log.Printf("Updating pool parallelism pool=%s currentParallelism=%d delta=%d\n", row.pool.Name, row.pool.Parallelism, delta)
-				if err := row.pool.changeWorkers(delta); err != nil {
+				if err := row.pool.changeWorkers(m.context, delta); err != nil {
 					// log.Printf("Error updating pool parallelism pool=%s delta=%d: %v\n", row.pool.Name, delta, err)
 					m.c <- *m.current.addErrorMessage("Updating pool size", err)
 				}
@@ -164,11 +165,7 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 		table.WithFocused(true),
 	)
 
-	m := model{}
-	m.c = c
-	m.table = t
-	m.opts = opts
-
+	m := model{context: ctx, c: c, table: t, opts: opts}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		return err

@@ -2,6 +2,7 @@ package status
 
 import (
 	"container/ring"
+	"context"
 	"slices"
 	"sync"
 
@@ -135,7 +136,7 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 	return inbox, processing, success, failure
 }
 
-func (pool *Pool) changeWorkers(delta int) error {
+func (pool *Pool) changeWorkers(ctx context.Context, delta int) error {
 	context := "" // TODO
-	return pool.Ctrl.ChangeWorkers(pool.Name, pool.Namespace, context, delta)
+	return pool.Ctrl.ChangeWorkers(ctx, pool.Name, pool.Namespace, context, delta)
 }
