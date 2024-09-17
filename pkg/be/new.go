@@ -3,6 +3,7 @@
 package be
 
 import (
+	"context"
 	"fmt"
 
 	"lunchpail.io/pkg/be/ibmcloud"
@@ -25,19 +26,19 @@ func makeIt(opts compilation.Options) (Backend, error) {
 	}
 }
 
-func NewInitOk(initOk bool, opts compilation.Options) (Backend, error) {
+func NewInitOk(ctx context.Context, initOk bool, opts compilation.Options) (Backend, error) {
 	be, err := makeIt(opts)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := be.Ok(initOk); err != nil {
+	if err := be.Ok(ctx, initOk); err != nil {
 		return nil, err
 	}
 
 	return be, nil
 }
 
-func New(opts compilation.Options) (Backend, error) {
-	return NewInitOk(false, opts)
+func New(ctx context.Context, opts compilation.Options) (Backend, error) {
+	return NewInitOk(ctx, false, opts)
 }

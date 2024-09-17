@@ -1,6 +1,7 @@
 package local
 
 import (
+	"context"
 	"fmt"
 
 	"lunchpail.io/pkg/be/local/shell"
@@ -8,7 +9,7 @@ import (
 )
 
 // Is the backend ready for `up`?
-func (backend Backend) Ok(initOk bool) error {
+func (backend Backend) Ok(ctx context.Context, initOk bool) error {
 	return nil
 }
 

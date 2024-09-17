@@ -8,11 +8,9 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/target"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe/linker"
-	initialize "lunchpail.io/pkg/lunchpail/init"
 	"lunchpail.io/pkg/util"
 )
 
@@ -46,15 +44,6 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&createCluster, "create-cluster", "I", false, "Create a new (local) Kubernetes cluster, if needed")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if compilationOpts.Target.Platform == target.Kubernetes && createCluster {
-			if err := initialize.Local(initialize.InitLocalOptions{BuildImages: false, Verbose: verboseFlag}); err != nil {
-				return err
-			}
-
-			// if we were asked to create a cluster, then certainly we will want to create a namespace
-			compilationOpts.CreateNamespace = true
-		}
-
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
 		if err != nil {
 			return err
@@ -72,12 +61,13 @@ func newUpCmd() *cobra.Command {
 
 		configureOptions := linker.ConfigureOptions{CompilationOptions: *compilationOpts, Verbose: verboseFlag}
 
-		backend, err := be.NewInitOk(true, *compilationOpts)
+		ctx := context.Background()
+		backend, err := be.NewInitOk(ctx, createCluster, *compilationOpts)
 		if err != nil {
 			return err
 		}
 
-		return boot.Up(context.Background(), backend, boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
+		return boot.Up(ctx, backend, boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
 	}
 
 	return cmd

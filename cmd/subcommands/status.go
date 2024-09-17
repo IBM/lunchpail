@@ -42,12 +42,13 @@ func newStatusCommand() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
 
-		return status.UI(context.Background(), maybeRun, backend, status.Options{Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
+		return status.UI(ctx, maybeRun, backend, status.Options{Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
 	}
 
 	return cmd

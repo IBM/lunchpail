@@ -35,8 +35,9 @@ func Instances() *cobra.Command {
 	cmd.MarkFlagRequired("component")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		ctx := context.Background()
 		for {
-			backend, err := be.New(compilation.Options{Target: tgtOpts})
+			backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 			if err != nil {
 				if wait {
 					waitItOut(*component, -1, err)

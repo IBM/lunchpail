@@ -30,12 +30,13 @@ func newQlastCommand() *cobra.Command {
 			extra = args[1]
 		}
 
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
 
-		val, err := qstat.Qlast(context.Background(), marker, extra, backend, qstat.QlastOptions{})
+		val, err := qstat.Qlast(ctx, marker, extra, backend, qstat.QlastOptions{})
 		if err != nil {
 			return err
 		}

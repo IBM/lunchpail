@@ -32,12 +32,13 @@ func Newcmd() *cobra.Command {
 			maybeRun = args[0]
 		}
 
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
 
-		return cpu.UI(context.Background(), maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
+		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
 	}
 
 	return cmd

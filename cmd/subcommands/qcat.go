@@ -25,12 +25,13 @@ func newQcatCmd() *cobra.Command {
 	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
 
-		return queue.Qcat(context.Background(), backend, runOpts.Run, args[0])
+		return queue.Qcat(ctx, backend, runOpts.Run, args[0])
 	}
 
 	return cmd

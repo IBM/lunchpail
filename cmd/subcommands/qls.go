@@ -30,12 +30,13 @@ func newQlsCmd() *cobra.Command {
 			path = args[0]
 		}
 
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
 
-		return queue.Qls(context.Background(), backend, runOpts.Run, path)
+		return queue.Qls(ctx, backend, runOpts.Run, path)
 	}
 
 	return cmd

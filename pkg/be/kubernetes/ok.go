@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -11,10 +12,10 @@ import (
 	initialize "lunchpail.io/pkg/lunchpail/init"
 )
 
-func (backend Backend) Ok(initOk bool) error {
+func (backend Backend) Ok(ctx context.Context, initOk bool) error {
 	announcedWait := false
 	for {
-		if err := backend.ok(initOk); err != nil {
+		if err := backend.ok(ctx, initOk); err != nil {
 			if !initOk && clientcmd.IsEmptyConfig(err) {
 				if !announcedWait {
 					announcedWait = true
@@ -33,12 +34,12 @@ func (backend Backend) Ok(initOk bool) error {
 	return nil
 }
 
-func (backend Backend) ok(initOk bool) error {
+func (backend Backend) ok(ctx context.Context, initOk bool) error {
 	_, config, err := Client()
 	if err != nil {
 		if clientcmd.IsEmptyConfig(err) && initOk {
 			if ok, buildImages := userIsOkWithInit(); ok {
-				return initialize.Local(initialize.InitLocalOptions{BuildImages: buildImages})
+				return initialize.Local(ctx, initialize.InitLocalOptions{BuildImages: buildImages})
 			}
 			return err
 		}

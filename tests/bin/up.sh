@@ -25,6 +25,7 @@ $testapp up \
          $APP \
          $GPU \
          $LP_ARGS \
+         --create-cluster \
          --target=${LUNCHPAIL_TARGET:-kubernetes} \
          --watch=false \
          --set global.arch=$ARCH \

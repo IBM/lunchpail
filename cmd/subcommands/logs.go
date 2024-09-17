@@ -36,7 +36,8 @@ func newLogsCommand() *cobra.Command {
 	tgtOpts := options.AddTargetOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		backend, err := be.New(compilation.Options{Target: tgtOpts})
+		ctx := context.Background()
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
 		if err != nil {
 			return err
 		}
@@ -59,7 +60,7 @@ func newLogsCommand() *cobra.Command {
 			}
 		}
 
-		return observe.Logs(context.Background(), runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Components: comps})
+		return observe.Logs(ctx, runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Components: comps})
 	}
 
 	return cmd

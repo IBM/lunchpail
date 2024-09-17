@@ -1,10 +1,14 @@
 package ibmcloud
 
-import "github.com/IBM/vpc-go-sdk/vpcv1"
+import (
+	"context"
+
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+)
 
 // Validate that our vpc service works
 // TODO: this should accept no arguments and be a method on an instance that we return
-func (backend Backend) Ok(initOk bool) error {
+func (backend Backend) Ok(ctx context.Context, initOk bool) error {
 	limit := int64(1)
 	resourceGroupId := backend.config.ResourceGroup.GUID
 
