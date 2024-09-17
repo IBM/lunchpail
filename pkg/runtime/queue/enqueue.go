@@ -19,8 +19,8 @@ type EnqueueFileOptions struct {
 	Verbose bool
 }
 
-func EnqueueFile(task string, opts EnqueueFileOptions) (int, error) {
-	c, err := NewS3Client()
+func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (int, error) {
+	c, err := NewS3Client(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -44,10 +44,10 @@ func EnqueueFile(task string, opts EnqueueFileOptions) (int, error) {
 	return 0, nil
 }
 
-func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int) error {
+func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int) error {
 	fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
 
-	queue, err := NewS3Client()
+	queue, err := NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
@@ -63,9 +63,9 @@ func EnqueueFromS3(fullpath, endpoint, accessKeyId, secretAccessKey string, repe
 		path = filepath.Join(fullpathSplit[1:]...)
 	}
 
-	group, _ := errgroup.WithContext(context.Background())
+	group, gctx := errgroup.WithContext(ctx)
 
-	origin, err := NewS3ClientFromOptions(S3ClientOptions{endpoint, accessKeyId, secretAccessKey})
+	origin, err := NewS3ClientFromOptions(gctx, S3ClientOptions{endpoint, accessKeyId, secretAccessKey})
 	if err != nil {
 		return err
 	}

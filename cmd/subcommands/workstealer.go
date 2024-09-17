@@ -1,6 +1,7 @@
 package subcommands
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/runtime/workstealer"
@@ -15,7 +16,7 @@ func newWorkstealerCmd() *cobra.Command {
 	}
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return workstealer.Run()
+		return workstealer.Run(context.Background())
 	}
 
 	return cmd

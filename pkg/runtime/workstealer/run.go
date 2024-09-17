@@ -1,6 +1,7 @@
 package workstealer
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,8 +30,8 @@ func printenv() {
 	}
 }
 
-func Run() error {
-	s3, err := q.NewS3Client()
+func Run(ctx context.Context) error {
+	s3, err := q.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}

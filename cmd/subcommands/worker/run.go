@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -24,7 +25,7 @@ func NewRunCmd() *cobra.Command {
 			return fmt.Errorf("Nothing to run. Specify the worker command line after a --: %v", args)
 		}
 
-		return worker.Run(args, worker.Options{Debug: debug})
+		return worker.Run(context.Background(), args, worker.Options{Debug: debug})
 	}
 
 	return cmd

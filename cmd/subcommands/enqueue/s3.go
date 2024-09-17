@@ -1,6 +1,7 @@
 package enqueue
 
 import (
+	"context"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -24,7 +25,7 @@ func NewEnqueueFromS3Cmd() *cobra.Command {
 		endpoint := os.Getenv(envvarPrefix + "endpoint")
 		accessKeyID := os.Getenv(envvarPrefix + "accessKeyID")
 		secretAccessKey := os.Getenv(envvarPrefix + "secretAccessKey")
-		return queue.EnqueueFromS3(args[0], endpoint, accessKeyID, secretAccessKey, repeat)
+		return queue.EnqueueFromS3(context.Background(), args[0], endpoint, accessKeyID, secretAccessKey, repeat)
 	}
 
 	return cmd

@@ -13,18 +13,19 @@ import (
 )
 
 type S3Client struct {
+	context  context.Context
 	client   *minio.Client
 	endpoint string
 	Paths    filepaths
 }
 
 // Initialize minio client object
-func NewS3Client() (S3Client, error) {
+func NewS3Client(ctx context.Context) (S3Client, error) {
 	endpoint := os.Getenv("lunchpail_queue_endpoint")
 	accessKeyID := os.Getenv("lunchpail_queue_accessKeyID")
 	secretAccessKey := os.Getenv("lunchpail_queue_secretAccessKey")
 
-	return NewS3ClientFromOptions(S3ClientOptions{endpoint, accessKeyID, secretAccessKey})
+	return NewS3ClientFromOptions(ctx, S3ClientOptions{endpoint, accessKeyID, secretAccessKey})
 }
 
 type S3ClientOptions struct {
@@ -34,7 +35,7 @@ type S3ClientOptions struct {
 }
 
 // Initialize minio client object from options
-func NewS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
+func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client, error) {
 	useSSL := true
 	if !strings.HasPrefix(opts.Endpoint, "https") {
 		useSSL = false
@@ -56,7 +57,7 @@ func NewS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
 		return S3Client{}, err
 	}
 
-	return S3Client{client, opts.Endpoint, paths}, nil
+	return S3Client{ctx, client, opts.Endpoint, paths}, nil
 }
 
 // Client for a given run in the given backend
@@ -74,7 +75,7 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) 
 		return S3Client{}, nil, err
 	}
 
-	c, err := NewS3ClientFromOptions(S3ClientOptions{Endpoint: endpoint, AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey})
+	c, err := NewS3ClientFromOptions(ctx, S3ClientOptions{Endpoint: endpoint, AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey})
 	if err != nil {
 		return S3Client{}, nil, err
 	}
