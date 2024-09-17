@@ -13,8 +13,8 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func isOpenShift(clientset *k8s.Clientset) (bool, error) {
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+func isOpenShift(ctx context.Context, clientset *k8s.Clientset) (bool, error) {
+	namespaces, err := clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return false, err
 	}
@@ -27,7 +27,7 @@ func isOpenShift(clientset *k8s.Clientset) (bool, error) {
 	return false, nil
 }
 
-func k8sOptions(copts llir.Options) (common.Options, error) {
+func k8sOptions(ctx context.Context, copts llir.Options) (common.Options, error) {
 	opts := common.Options{Options: copts}
 
 	clientset, _, err := Client()
@@ -35,7 +35,7 @@ func k8sOptions(copts llir.Options) (common.Options, error) {
 		return opts, err
 	}
 
-	oc, err := isOpenShift(clientset)
+	oc, err := isOpenShift(ctx, clientset)
 	if err != nil {
 		return opts, err
 	}

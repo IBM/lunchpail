@@ -63,7 +63,7 @@ func apply(ctx context.Context, yaml, namespace, context string, operation Opera
 }
 
 func applyOperation(ctx context.Context, ir llir.LLIR, namespace, context string, operation Operation, copts llir.Options, verbose bool) error {
-	opts, err := k8sOptions(copts)
+	opts, err := k8sOptions(ctx, copts)
 	if err != nil {
 		return err
 	}
