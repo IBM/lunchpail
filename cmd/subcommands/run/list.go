@@ -3,6 +3,7 @@
 package run
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ func List() *cobra.Command {
 			return err
 		}
 
-		runs, err := backend.ListRuns(all)
+		runs, err := backend.ListRuns(context.Background(), all)
 		if err != nil {
 			return err
 		}

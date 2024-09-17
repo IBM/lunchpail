@@ -1,6 +1,7 @@
 package ibmcloud
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -11,7 +12,7 @@ import (
 	"lunchpail.io/pkg/compilation"
 )
 
-func (backend Backend) ListRuns(all bool) ([]runs.Run, error) {
+func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, error) {
 	appName := compilation.Name()
 	resourceGroupID := backend.config.ResourceGroup.GUID
 	vpcRuns := []runs.Run{}

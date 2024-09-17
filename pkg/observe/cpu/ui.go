@@ -16,7 +16,7 @@ type CpuOptions struct {
 }
 
 func UI(ctx context.Context, runnameIn string, backend be.Backend, opts CpuOptions) error {
-	runname, err := util.WaitForRun(runnameIn, true, backend)
+	runname, err := util.WaitForRun(ctx, runnameIn, true, backend)
 	if err != nil {
 		return err
 	}

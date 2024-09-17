@@ -15,7 +15,7 @@ type QlastOptions struct {
 }
 
 func Qlast(ctx context.Context, marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
-	runname, err := util.WaitForRun("", true, backend)
+	runname, err := util.WaitForRun(ctx, "", true, backend)
 	if err != nil {
 		return "", err
 	}

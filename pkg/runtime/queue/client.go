@@ -62,7 +62,7 @@ func NewS3ClientFromOptions(opts S3ClientOptions) (S3Client, error) {
 // Client for a given run in the given backend
 func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) (S3Client, func(), error) {
 	if runname == "" {
-		run, err := util.Singleton(backend)
+		run, err := util.Singleton(ctx, backend)
 		if err != nil {
 			return S3Client{}, nil, err
 		}

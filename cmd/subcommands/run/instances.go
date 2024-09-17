@@ -3,6 +3,7 @@
 package run
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -46,7 +47,7 @@ func Instances() *cobra.Command {
 
 			runname := runOpts.Run
 			if runname == "" {
-				if r, err := util.Singleton(backend); err != nil {
+				if r, err := util.Singleton(context.Background(), backend); err != nil {
 					if wait {
 						waitItOut(*component, -1, err)
 						continue

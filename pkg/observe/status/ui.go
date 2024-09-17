@@ -133,7 +133,7 @@ func (m model) View() string {
 }
 
 func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {
-	runname, err := util.WaitForRun(runnameIn, opts.Watch, backend)
+	runname, err := util.WaitForRun(ctx, runnameIn, opts.Watch, backend)
 	if err != nil {
 		return err
 	}
