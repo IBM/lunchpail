@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -15,7 +16,6 @@ import (
 )
 
 func newUpCmd() *cobra.Command {
-	var verboseFlag bool
 	var dryrunFlag bool
 	watchFlag := false
 	var createCluster bool
@@ -39,7 +39,6 @@ func newUpCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&dryrunFlag, "dry-run", "", false, "Emit application yaml to stdout")
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", watchFlag, "After deployment, watch for status updates")
 	cmd.Flags().BoolVarP(&createCluster, "create-cluster", "I", false, "Create a new (local) Kubernetes cluster, if needed")
 
@@ -59,7 +58,7 @@ func newUpCmd() *cobra.Command {
 		compilationOpts.OverrideValues = append(compilationOpts.OverrideValues, overrideValues...)
 		compilationOpts.OverrideFileValues = append(compilationOpts.OverrideFileValues, overrideFileValues...)
 
-		configureOptions := linker.ConfigureOptions{CompilationOptions: *compilationOpts, Verbose: verboseFlag}
+		configureOptions := linker.ConfigureOptions{CompilationOptions: *compilationOpts}
 
 		ctx := context.Background()
 		backend, err := be.NewInitOk(ctx, createCluster, *compilationOpts)

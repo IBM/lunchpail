@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -15,7 +16,6 @@ import (
 func newQstatCommand() *cobra.Command {
 	var tailFlag int64
 	var followFlag bool
-	var verboseFlag bool
 	var quietFlag bool
 
 	var cmd = &cobra.Command{
@@ -25,9 +25,9 @@ func newQstatCommand() *cobra.Command {
 
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Track updates (rather than printing once)")
 	cmd.Flags().Int64VarP(&tailFlag, "tail", "T", -1, "Number of lines to tail")
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Silence extraneous output")
 	tgtOpts := options.AddTargetOptions(cmd)
+	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -41,7 +41,7 @@ func newQstatCommand() *cobra.Command {
 			return err
 		}
 
-		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Quiet: quietFlag})
+		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: logOpts.Verbose, Quiet: quietFlag})
 	}
 
 	return cmd

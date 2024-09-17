@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -13,7 +14,6 @@ import (
 )
 
 func newDownCmd() *cobra.Command {
-	var verboseFlag bool
 	var deleteNamespaceFlag bool
 	var deleteAllRunsFlag bool
 	var apiKey string
@@ -25,13 +25,13 @@ func newDownCmd() *cobra.Command {
 		Long:  "Undeploy the application",
 	}
 
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVarP(&deleteNamespaceFlag, "delete-namespace", "N", false, "Also delete namespace (only for empty namespaces)")
 	cmd.Flags().BoolVarP(&deleteAllRunsFlag, "all", "A", false, "Delete all runs in the given namespace")
 	cmd.Flags().StringVarP(&apiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
 
 	tgtOpts := options.AddTargetOptions(cmd)
+	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
@@ -41,7 +41,7 @@ func newDownCmd() *cobra.Command {
 		}
 
 		return boot.DownList(ctx, args, backend, boot.DownOptions{
-			Namespace: tgtOpts.Namespace, Verbose: verboseFlag, DeleteNamespace: deleteNamespaceFlag,
+			Namespace: tgtOpts.Namespace, Verbose: logOpts.Verbose, DeleteNamespace: deleteNamespaceFlag,
 			DeleteAll: deleteAllRunsFlag,
 			ApiKey:    apiKey, DeleteCloudResources: deleteCloudResourcesFlag})
 	}

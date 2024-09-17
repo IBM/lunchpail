@@ -21,7 +21,6 @@ func NewEnqueueFileCmd() *cobra.Command {
 	var opts queue.EnqueueFileOptions
 	var ignoreWorkerErrors bool
 	cmd.Flags().BoolVarP(&opts.Wait, "wait", "w", false, "Wait for the task to be completed, and exit with the exit code of that task")
-	cmd.Flags().BoolVarP(&opts.Verbose, "verbose", "v", false, "Verbose output")
 	cmd.Flags().BoolVar(&ignoreWorkerErrors, "ignore-worker-errors", false, "When --wait, ignore any errors from the workers processing the tasks")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {

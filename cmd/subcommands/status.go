@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -14,7 +15,6 @@ import (
 
 func newStatusCommand() *cobra.Command {
 	var watchFlag bool
-	var verboseFlag bool
 	var summaryFlag bool
 	var loglinesFlag int
 	var intervalFlag int
@@ -25,7 +25,6 @@ func newStatusCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Track updates to run status")
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Stream more verbose updates to console")
 	cmd.Flags().BoolVarP(&summaryFlag, "summary", "s", false, "Show only summary information, do not break out queue stats")
 
 	// max num tracked... we still limit num shown in status/view.go
@@ -35,6 +34,7 @@ func newStatusCommand() *cobra.Command {
 	cmd.Flags().IntVarP(&intervalFlag, "interval", "i", 5, "Polling interval in seconds for resource utilization stats")
 
 	tgtOpts := options.AddTargetOptions(cmd)
+	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -48,7 +48,7 @@ func newStatusCommand() *cobra.Command {
 			return err
 		}
 
-		return status.UI(ctx, maybeRun, backend, status.Options{Watch: watchFlag, Verbose: verboseFlag, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
+		return status.UI(ctx, maybeRun, backend, status.Options{Watch: watchFlag, Verbose: logOpts.Verbose, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
 	}
 
 	return cmd

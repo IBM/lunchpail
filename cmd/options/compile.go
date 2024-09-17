@@ -38,5 +38,6 @@ func AddCompilationOptions(cmd *cobra.Command) (*compilation.Options, error) {
 	cmd.Flags().BoolVarP(&options.CreateNamespace, "create-namespace", "N", options.CreateNamespace, "Create a new namespace, if needed")
 
 	addTargetOptionsTo(cmd, &options)
+	addLogOptionsTo(cmd, &options)
 	return &options, nil
 }

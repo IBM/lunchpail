@@ -18,7 +18,6 @@ import (
 func newLogsCommand() *cobra.Command {
 	var componentsFlag []string
 	var followFlag bool
-	var verboseFlag bool
 	var tailFlag int
 
 	var cmd = &cobra.Command{
@@ -30,10 +29,10 @@ func newLogsCommand() *cobra.Command {
 
 	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer)")
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().IntVarP(&tailFlag, "tail", "T", -1, "Lines of recent log file to display, with -1 showing all available log data")
 	runOpts := options.AddRunOptions(cmd)
 	tgtOpts := options.AddTargetOptions(cmd)
+	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
@@ -60,7 +59,7 @@ func newLogsCommand() *cobra.Command {
 			}
 		}
 
-		return observe.Logs(ctx, runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: verboseFlag, Components: comps})
+		return observe.Logs(ctx, runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: logOpts.Verbose, Components: comps})
 	}
 
 	return cmd
