@@ -15,7 +15,6 @@ import (
 func newCompileCmd() *cobra.Command {
 	var outputFlag string
 	var branchFlag string
-	var verboseFlag bool
 	var allFlag bool
 
 	cmd := &cobra.Command{
@@ -32,7 +31,6 @@ func newCompileCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", verboseFlag, "Verbose output")
 
 	compilationOptions, err := options.AddCompilationOptions(cmd)
 	if err != nil {
@@ -62,7 +60,7 @@ func newCompileCmd() *cobra.Command {
 		return compiler.Compile(context.Background(), sourcePath, compiler.Options{
 			Name:               outputFlag,
 			Branch:             branchFlag,
-			Verbose:            verboseFlag,
+			Verbose:            compilationOptions.Log.Verbose,
 			AllPlatforms:       allFlag,
 			CompilationOptions: *compilationOptions,
 		})

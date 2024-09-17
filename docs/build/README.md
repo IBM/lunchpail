@@ -24,6 +24,7 @@ Flags:
   -r, --repo-secret strings        Of the form <user>:<pat>@<githubUrl> e.g. me:3333@https://github.com
       --set strings                [Advanced] override specific template values
   -p, --target-platform Platform   Backend platform for deploying lunchpail [Kubernetes, IBMCloud, Skypilot] (default Kubernetes)
+  -d, --debug                      Debug output
   -v, --verbose                    Verbose output
 ```
       

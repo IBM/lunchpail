@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
@@ -13,7 +14,6 @@ import (
 )
 
 func Newcmd() *cobra.Command {
-	var verboseFlag bool
 	var intervalSecondsFlag int
 
 	var cmd = &cobra.Command{
@@ -22,9 +22,9 @@ func Newcmd() *cobra.Command {
 		Long:  "Displays CPU utilization",
 	}
 
-	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Verbose output")
 	cmd.Flags().IntVarP(&intervalSecondsFlag, "interval", "i", 2, "Sampling interval")
 	tgtOpts := options.AddTargetOptions(cmd)
+	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -33,12 +33,12 @@ func Newcmd() *cobra.Command {
 		}
 
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts, Log: logOpts})
 		if err != nil {
 			return err
 		}
 
-		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: verboseFlag, IntervalSeconds: intervalSecondsFlag})
+		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: logOpts.Verbose, IntervalSeconds: intervalSecondsFlag})
 	}
 
 	return cmd

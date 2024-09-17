@@ -14,8 +14,14 @@ type TargetOptions struct {
 	target.Platform
 }
 
+type LogOptions struct {
+	Verbose bool
+	Debug   bool
+}
+
 type Options struct {
 	Target *TargetOptions
+	Log    *LogOptions
 
 	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
 	OverrideValues     []string `yaml:"overrideValues,omitempty"`
