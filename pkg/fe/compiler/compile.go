@@ -37,9 +37,10 @@ func Compile(ctx context.Context, sourcePath string, opts Options) error {
 	}
 
 	lunchpailStageDir, err := stageLunchpailItself()
+	verbose := opts.CompilationOptions.Log.Verbose
 	if err != nil {
 		return err
-	} else if opts.Verbose {
+	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory: %s\n", lunchpailStageDir)
 	}
 
@@ -56,13 +57,13 @@ func Compile(ctx context.Context, sourcePath string, opts Options) error {
 		}
 	}
 
-	if opts.Verbose {
+	if verbose {
 		fmt.Fprintf(os.Stderr, "Using compilationName=%s\n", compilationName)
 	}
 
-	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{Branch: opts.Branch, Verbose: opts.Verbose}); err != nil {
+	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{Branch: opts.Branch, Verbose: verbose}); err != nil {
 		return err
-	} else if err := compilation.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose); err != nil {
+	} else if err := compilation.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, verbose); err != nil {
 		return err
 	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, opts.CompilationOptions, lunchpailStageDir); err != nil {
 		return err

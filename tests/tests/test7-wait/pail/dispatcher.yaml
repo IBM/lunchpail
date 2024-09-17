@@ -9,3 +9,4 @@ spec:
   interval: {{ .Values.every | default 5 }}
   wait: true
   verbose: true
+  debug: true
