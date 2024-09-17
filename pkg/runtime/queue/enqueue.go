@@ -17,6 +17,17 @@ type EnqueueFileOptions struct {
 
 	// Verbose output
 	Verbose bool
+
+	// Debug output
+	Debug bool
+}
+
+type EnqueueS3Options struct {
+	// Verbose output
+	Verbose bool
+
+	// Debug output
+	Debug bool
 }
 
 func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (int, error) {
@@ -44,8 +55,10 @@ func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (int
 	return 0, nil
 }
 
-func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int) error {
-	fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
+func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts EnqueueS3Options) error {
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
+	}
 
 	queue, err := NewS3Client(ctx)
 	if err != nil {
@@ -76,7 +89,9 @@ func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretA
 		} else if exists {
 			break
 		} else {
-			fmt.Fprintf(os.Stderr, "Waiting for source bucket to exist: %s\n", bucket)
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Waiting for source bucket to exist: %s\n", bucket)
+			}
 			time.Sleep(1 * time.Second)
 		}
 	}
@@ -98,8 +113,9 @@ func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretA
 			group.Go(func() error {
 				task := fmt.Sprintf("%s.%d%s", withoutExt, idx+1, ext) // Note: idx+1 to have 1-indexed
 				dst := filepath.Join(inbox, filepath.Base(task))
-				fmt.Fprintf(os.Stderr, "Enqueue task from s3 srcBucket=%s src=%s dstBucket=%s dst=%s\n", srcBucket, src, dstBucket, dst)
-
+				if opts.Verbose {
+					fmt.Fprintf(os.Stderr, "Enqueue task from s3 srcBucket=%s src=%s dstBucket=%s dst=%s\n", srcBucket, src, dstBucket, dst)
+				}
 				return origin.CopyToRemote(queue, srcBucket, src, dstBucket, dst)
 			})
 		}
@@ -107,7 +123,9 @@ func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretA
 
 	err = group.Wait()
 
-	fmt.Printf("Here is what we enqueued to %s:\n", inbox)
+	if opts.Verbose {
+		fmt.Printf("Here is what we enqueued to %s:\n", inbox)
+	}
 	for o := range queue.ListObjects(dstBucket, inbox, true) {
 		fmt.Println(o.Key)
 	}

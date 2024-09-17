@@ -16,5 +16,8 @@ type ParameterSweep struct {
 
 		// Verbose output
 		Verbose bool
+
+		// Debug output
+		Debug bool
 	}
 }
