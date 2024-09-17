@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"time"
@@ -14,14 +13,14 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func startWatching(run, namespace string) (watch.Interface, error) {
+func (streamer Streamer) startWatching(run, namespace string) (watch.Interface, error) {
 	clientset, _, err := Client()
 	if err != nil {
 		return nil, err
 	}
 
 	timeout := timeoutSeconds
-	podWatcher, err := clientset.CoreV1().Pods(namespace).Watch(context.Background(), metav1.ListOptions{
+	podWatcher, err := clientset.CoreV1().Pods(namespace).Watch(streamer.Context, metav1.ListOptions{
 		TimeoutSeconds:  &timeout,
 		ResourceVersion: "",
 		LabelSelector:   "app.kubernetes.io/component,app.kubernetes.io/instance=" + run,
@@ -136,7 +135,7 @@ func (streamer Streamer) streamPodUpdates(watcher watch.Interface, cc chan event
 }
 
 func (streamer Streamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
-	watcher, err := startWatching(streamer.runname, streamer.backend.namespace)
+	watcher, err := streamer.startWatching(streamer.runname, streamer.backend.namespace)
 	if err != nil {
 		return nil, nil, err
 	}
