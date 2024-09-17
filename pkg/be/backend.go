@@ -29,7 +29,7 @@ type Backend interface {
 	ListRuns(ctx context.Context, all bool) ([]runs.Run, error)
 
 	// Number of instances of the given component for the given run
-	InstanceCount(c lunchpail.Component, runname string) (int, error)
+	InstanceCount(ctx context.Context, c lunchpail.Component, runname string) (int, error)
 
 	// Queue properties for a given run
 	Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error)
