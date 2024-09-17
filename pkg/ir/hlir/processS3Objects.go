@@ -9,5 +9,11 @@ type ProcessS3Objects struct {
 		Path   string
 		Repeat int `yaml:",omitempty"`
 		Env    Env `yaml:",omitempty"`
+
+		// Verbose output
+		Verbose bool
+
+		// Debug output
+		Debug bool
 	}
 }

@@ -69,5 +69,9 @@ func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 		app.Spec.Env["__LUNCHPAIL_VERBOSE"] = "true"
 	}
 
+	if sweep.Spec.Debug {
+		app.Spec.Env["__LUNCHPAIL_DEBUG"] = "true"
+	}
+
 	return app, nil
 }

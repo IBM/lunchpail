@@ -27,10 +27,20 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 		repeat = s3.Spec.Repeat
 	}
 
+	var verbose string
+	if s3.Spec.Verbose {
+		verbose = "--verbose"
+	}
+
+	var debug string
+	if s3.Spec.Debug {
+		debug = "--debug"
+	}
+
 	envPrefix := "LUNCHPAIL_PROCESS_S3_OBJECTS_"
 	app.Spec.Command = strings.Join([]string{
 		`trap "$LUNCHPAIL_EXE qdone" EXIT`,
-		fmt.Sprintf("$LUNCHPAIL_EXE enqueue s3 --repeat %d %s %s", repeat, s3.Spec.Path, envPrefix),
+		fmt.Sprintf("$LUNCHPAIL_EXE enqueue s3 --repeat %d %s %s %s %s", repeat, verbose, debug, s3.Spec.Path, envPrefix),
 	}, "\n")
 
 	app.Spec.Env = hlir.Env{}
