@@ -11,7 +11,7 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 	return
 }
 
-func (backend Backend) Queue(runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error) {
+func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error) {
 	err = fmt.Errorf("Unsupported operation: 'Queue'")
 	return
 }
