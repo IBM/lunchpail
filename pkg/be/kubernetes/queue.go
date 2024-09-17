@@ -16,7 +16,7 @@ import (
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
 func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, stop func(), err error) {
-	endpoint, accessKeyID, secretAccessKey, bucket, prefixPath, err = backend.Queue(runname)
+	endpoint, accessKeyID, secretAccessKey, bucket, prefixPath, err = backend.Queue(ctx, runname)
 	if err != nil {
 		return
 	}
@@ -71,7 +71,7 @@ func portFromEndpoint(endpoint string) (int, error) {
 	return port, nil
 }
 
-func (backend Backend) Queue(runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error) {
+func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error) {
 	endpoint = os.Getenv("lunchpail_queue_endpoint")
 	accessKeyID = os.Getenv("lunchpail_queue_accessKeyID")
 	secretAccessKey = os.Getenv("lunchpail_queue_secretAccessKey")
@@ -86,7 +86,7 @@ func (backend Backend) Queue(runname string) (endpoint, accessKeyID, secretAcces
 			return
 		}
 
-		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(context.Background(), queue.Name(runname), metav1.GetOptions{})
+		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, queue.Name(runname), metav1.GetOptions{})
 		if cerr != nil {
 			err = cerr
 			return
