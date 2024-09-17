@@ -10,10 +10,10 @@ import (
 )
 
 // Marshal one component.
-func marshalComponent(ir llir.LLIR, c llir.Component, namespace string, opts common.Options, verbose bool) (string, error) {
+func marshalComponent(ir llir.LLIR, c llir.Component, namespace string, opts common.Options) (string, error) {
 	switch cc := c.(type) {
 	case llir.ShellComponent:
-		return shell.Template(ir, cc, namespace, opts, verbose)
+		return shell.Template(ir, cc, namespace, opts)
 	}
 
 	return "", fmt.Errorf("Unsupported component type")
@@ -21,14 +21,14 @@ func marshalComponent(ir llir.LLIR, c llir.Component, namespace string, opts com
 
 // Marshal all components, including the common resources needed to
 // make them function in a cluster.
-func MarshalAllComponents(ir llir.LLIR, namespace string, opts common.Options, verbose bool) ([]string, error) {
-	yamls, err := common.MarshalCommonResources(ir, namespace, opts, verbose)
+func MarshalAllComponents(ir llir.LLIR, namespace string, opts common.Options) ([]string, error) {
+	yamls, err := common.MarshalCommonResources(ir, namespace, opts)
 	if err != nil {
 		return []string{}, err
 	}
 
 	for _, c := range ir.Components {
-		yaml, err := marshalComponent(ir, c, namespace, opts, verbose)
+		yaml, err := marshalComponent(ir, c, namespace, opts)
 		if err != nil {
 			return []string{}, err
 		}
@@ -41,9 +41,9 @@ func MarshalAllComponents(ir llir.LLIR, namespace string, opts common.Options, v
 
 // This is to present a single string form of all of the yaml,
 // e.g. for dry-running.
-func (backend Backend) DryRun(ir llir.LLIR, copts llir.Options, verbose bool) (string, error) {
+func (backend Backend) DryRun(ir llir.LLIR, copts llir.Options) (string, error) {
 	opts := common.Options{Options: copts}
-	if arr, err := MarshalAllComponents(ir, backend.namespace, opts, verbose); err != nil {
+	if arr, err := MarshalAllComponents(ir, backend.namespace, opts); err != nil {
 		return "", err
 	} else {
 		return util.Join(arr), nil
@@ -52,15 +52,15 @@ func (backend Backend) DryRun(ir llir.LLIR, copts llir.Options, verbose bool) (s
 
 // marshal resources for this component, including common resources
 // needed to make it function on its own in a cluster.
-func MarshalComponentAsStandalone(ir llir.LLIR, c llir.Component, namespace string, opts common.Options, verbose bool) (string, error) {
-	yamls, err := common.MarshalCommonResources(ir, namespace, opts, verbose)
+func MarshalComponentAsStandalone(ir llir.LLIR, c llir.Component, namespace string, opts common.Options) (string, error) {
+	yamls, err := common.MarshalCommonResources(ir, namespace, opts)
 	if err != nil {
 		return "", err
 	}
 
 	// yamls = append(yamls, c.Config)
 
-	yaml, err := marshalComponent(ir, c, namespace, opts, verbose)
+	yaml, err := marshalComponent(ir, c, namespace, opts)
 	if err != nil {
 		return "", err
 	}

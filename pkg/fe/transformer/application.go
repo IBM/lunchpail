@@ -9,14 +9,14 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options, verbose bool) ([]llir.Component, error) {
+func lowerApplications(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	if workstealer.IsNeeded(model) {
 		// Note, the actual worker resources will be dealt
 		// with when a WorkerPool is created. Here, we only
 		// need to specify a WorkStealer.
-		c, err := workstealer.Lower(compilationName, runname, ir, opts, verbose)
+		c, err := workstealer.Lower(compilationName, runname, ir, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -26,7 +26,7 @@ func lowerApplications(compilationName, runname string, model hlir.AppModel, ir 
 	// Then, for every non-Worker, we lower it as a "shell"
 	for _, app := range model.Applications {
 		if app.Spec.Role != hlir.WorkerRole {
-			c, err := shell.Lower(compilationName, runname, app, ir, opts, verbose)
+			c, err := shell.Lower(compilationName, runname, app, ir, opts)
 			if err != nil {
 				return nil, err
 			}

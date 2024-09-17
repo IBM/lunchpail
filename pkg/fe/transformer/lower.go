@@ -13,10 +13,10 @@ import (
 )
 
 // HLIR -> LLIR
-func Lower(compilationName, runname string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options, verbose bool) (llir.LLIR, error) {
+func Lower(compilationName, runname string, model hlir.AppModel, queueSpec queue.Spec, opts compilation.Options) (llir.LLIR, error) {
 	ir := llir.LLIR{AppName: compilationName, RunName: runname, Queue: queueSpec}
 
-	minio, err := minio.Lower(compilationName, runname, model, ir, opts, verbose)
+	minio, err := minio.Lower(compilationName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
@@ -24,17 +24,17 @@ func Lower(compilationName, runname string, model hlir.AppModel, queueSpec queue
 		ir.Components = slices.Concat([]llir.Component{minio})
 	}
 
-	apps, err := lowerApplications(compilationName, runname, model, ir, opts, verbose)
+	apps, err := lowerApplications(compilationName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := dispatch.Lower(compilationName, runname, model, ir, opts, verbose)
+	dispatchers, err := dispatch.Lower(compilationName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	pools, err := workerpool.LowerAll(compilationName, runname, model, ir, opts, verbose)
+	pools, err := workerpool.LowerAll(compilationName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}

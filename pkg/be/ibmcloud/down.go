@@ -6,8 +6,8 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func (backend Backend) Down(ctx context.Context, ir llir.LLIR, opts llir.Options, verbose bool) error {
-	if err := backend.SetAction(ctx, opts, ir, Delete, verbose); err != nil {
+func (backend Backend) Down(ctx context.Context, ir llir.LLIR, opts llir.Options) error {
+	if err := backend.SetAction(ctx, opts, ir, Delete); err != nil {
 		return err
 	}
 

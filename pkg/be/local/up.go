@@ -13,7 +13,7 @@ import (
 )
 
 // Bring up the linked application
-func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options, verbose bool) error {
+func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options) error {
 	if err := backend.IsCompatible(ir); err != nil {
 		return err
 	}

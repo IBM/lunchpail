@@ -5,7 +5,7 @@ import (
 )
 
 // Return a string to convey relevant dry-run info
-func (backend Backend) DryRun(ir llir.LLIR, opts llir.Options, verbose bool) (string, error) {
+func (backend Backend) DryRun(ir llir.LLIR, opts llir.Options) (string, error) {
 	if err := backend.IsCompatible(ir); err != nil {
 		return "", err
 	}

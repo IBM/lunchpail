@@ -12,7 +12,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts compilation.Options) (llir.Component, error) {
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
 	spec.RunAsJob = true
@@ -29,11 +29,8 @@ func Lower(compilationName, runname string, app hlir.Application, pool hlir.Work
 	}
 	app.Spec.Env["LUNCHPAIL_STARTUP_DELAY"] = strconv.Itoa(startupDelay)
 
-	// for now, we don't distinguish the two...
-	debug := verbose
-
 	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE worker prestop" EXIT
-$LUNCHPAIL_EXE worker run --debug=%v -- %s`, debug, app.Spec.Command)
+$LUNCHPAIL_EXE worker run --debug=%v -- %s`, opts.Log.Debug, app.Spec.Command)
 
 	return shell.LowerAsComponent(
 		compilationName,
@@ -42,6 +39,5 @@ $LUNCHPAIL_EXE worker run --debug=%v -- %s`, debug, app.Spec.Command)
 		ir,
 		spec,
 		opts,
-		verbose,
 	)
 }

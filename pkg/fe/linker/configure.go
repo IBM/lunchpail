@@ -12,11 +12,10 @@ import (
 
 type ConfigureOptions struct {
 	CompilationOptions compilation.Options
-	Verbose            bool
 }
 
 func Configure(appname, runname, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
-	if opts.Verbose {
+	if opts.CompilationOptions.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
 
@@ -63,7 +62,7 @@ lunchpail:
 		appname,                 // (16)
 	)
 
-	if opts.Verbose {
+	if opts.CompilationOptions.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.CompilationOptions.OverrideValues)
 		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.CompilationOptions.OverrideFileValues)

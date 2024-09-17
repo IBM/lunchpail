@@ -6,6 +6,6 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func (backend Backend) DryRun(ir llir.LLIR, opts llir.Options, verbose bool) (string, error) {
+func (backend Backend) DryRun(ir llir.LLIR, opts llir.Options) (string, error) {
 	return "", fmt.Errorf("Unsupported operation: 'DryRun'")
 }

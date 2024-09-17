@@ -7,7 +7,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname string, ir llir.LLIR, opts compilation.Options, verbose bool) (llir.Component, error) {
+func Lower(compilationName, runname string, ir llir.LLIR, opts compilation.Options) (llir.Component, error) {
 	app, err := transpile(runname)
 	if err != nil {
 		return nil, err
@@ -20,6 +20,5 @@ func Lower(compilationName, runname string, ir llir.LLIR, opts compilation.Optio
 		ir,
 		llir.ShellComponent{Component: lunchpail.WorkStealerComponent},
 		opts,
-		verbose,
 	)
 }
