@@ -26,3 +26,9 @@ go test -timeout=0 -v ./...
 echo "Checking go vet..."
 go vet ./...
 echo "✅ PASS: go vet looks good"
+
+echo "Checking for context.Background|TODO in pkg"
+if grep --include '*.go' -Er 'context.[TB]' pkg/
+then echo "❌ FAIL: found calls to context.TODO or context.Background in pkg/"
+else echo "✅ PASS: found no calls to context.TODO or context.Background in pkg/"
+fi
