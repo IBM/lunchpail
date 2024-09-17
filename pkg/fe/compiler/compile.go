@@ -29,7 +29,7 @@ func stageLunchpailItself() (string, error) {
 	}
 }
 
-func Compile(sourcePath string, opts Options) error {
+func Compile(ctx context.Context, sourcePath string, opts Options) error {
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
 		// } else if err == nil {
@@ -78,7 +78,7 @@ func Compile(sourcePath string, opts Options) error {
 			archs = []string{runtime.GOARCH}
 		}
 
-		group, _ := errgroup.WithContext(context.Background())
+		group, _ := errgroup.WithContext(ctx)
 		for _, targetOs := range oss {
 			for _, targetArch := range archs {
 				group.Go(func() error {
