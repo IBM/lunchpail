@@ -36,12 +36,12 @@ func groupByRun(pods *v1.PodList) []runs.Run {
 func listRuns(ctx context.Context, all bool, appName, namespace string, client kubernetes.Interface) ([]runs.Run, error) {
 	label := "app.kubernetes.io/part-of=" + appName
 
-	opts := &metav1.ListOptions{LabelSelector: label}
+	opts := metav1.ListOptions{LabelSelector: label}
 	if !all {
 		opts.FieldSelector = "status.phase=Running"
 	}
 
-	pods, err := client.CoreV1().Pods(namespace).List(ctx, *opts)
+	pods, err := client.CoreV1().Pods(namespace).List(ctx, opts)
 	if err != nil {
 		return []runs.Run{}, err
 	}
