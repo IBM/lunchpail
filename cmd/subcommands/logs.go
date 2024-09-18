@@ -27,7 +27,7 @@ func newLogsCommand() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
 
-	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer)")
+	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer|minio)")
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
 	cmd.Flags().IntVarP(&tailFlag, "tail", "T", -1, "Lines of recent log file to display, with -1 showing all available log data")
 	runOpts := options.AddRunOptions(cmd)
@@ -48,13 +48,16 @@ func newLogsCommand() *cobra.Command {
 
 		comps := []comp.Component{}
 		for _, component := range components {
-			if component == "workers" {
+			switch component {
+			case "workers":
 				comps = append(comps, comp.WorkersComponent)
-			} else if component == "dispatcher" {
+			case "dispatcher":
 				comps = append(comps, comp.DispatcherComponent)
-			} else if component == "workstealer" {
+			case "workstealer":
 				comps = append(comps, comp.WorkStealerComponent)
-			} else {
+			case "minio":
+				comps = append(comps, comp.MinioComponent)
+			default:
 				return fmt.Errorf("Unsupported component %s", component)
 			}
 		}

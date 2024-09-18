@@ -19,6 +19,8 @@ func ComponentShortName(c Component) string {
 		return "Dispatch"
 	case WorkStealerComponent:
 		return "Runtime"
+	case MinioComponent:
+		return "Minio"
 	default:
 		return string(c)
 	}
