@@ -37,9 +37,9 @@ func Server(ctx context.Context, port int) error {
 		return fmt.Errorf("Missing env var lunchpail_queue_secretAccessKey")
 	}
 
-	group, gctx := errgroup.WithContext(ctx)
+	group, _ := errgroup.WithContext(ctx)
 
-	c, err := queue.NewS3ClientFromOptions(gctx, queue.S3ClientOptions{
+	c, err := queue.NewS3ClientFromOptions(ctx, queue.S3ClientOptions{
 		Endpoint:        fmt.Sprintf("localhost:%d", port),
 		AccessKeyID:     accessKey,
 		SecretAccessKey: secretKey,
@@ -60,7 +60,7 @@ func Server(ctx context.Context, port int) error {
 
 	fmt.Fprintf(os.Stderr, "Launching Minio server with minio=%s bucket=%s prefix=%s\n", minio, bucket, prefix)
 	// NOT CommandContext, as group.Wait() below will otherwise kill the minio server
-	cmd := exec.CommandContext(gctx, "minio", "server", datadir, "--address", fmt.Sprintf(":%d", port))
+	cmd := exec.CommandContext(ctx, "minio", "server", datadir, "--address", fmt.Sprintf(":%d", port))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = slices.Concat(os.Environ(), []string{
@@ -71,41 +71,39 @@ func Server(ctx context.Context, port int) error {
 		return err
 	}
 
-	// This watches for minio server death
-	gotKillFile := false
-	group.Go(func() error {
-		err := cmd.Wait()
-		if err != nil {
-			// Below, we intentionally kill the minio
-			// server; make sure we don't report that as
-			// an unintended error
-			if !gotKillFile || !strings.Contains(err.Error(), "signal: killed") {
-				return err
-			}
-		}
-		return nil
-	})
-
 	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s\n", bucket)
 	if err := c.Mkdirp(bucket); err != nil {
 		return err
 	}
 	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s <-- READY!\n", bucket)
 
-	fmt.Fprintf(os.Stderr, "Waiting for kill file %s\n", prefix)
-	if err := waitForKillFile(c, bucket, prefix); err != nil {
-		return err
+	// This watches for minio server death
+	gotKillFile := false
+	group.Go(func() error {
+		fmt.Fprintf(os.Stderr, "Waiting for kill file %s\n", prefix)
+		if err := waitForKillFile(c, bucket, prefix); err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "Waiting for kill file <-- got it\n")
+		gotKillFile = true
+		if err := cmd.Process.Kill(); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := cmd.Wait(); err != nil {
+		// Below, we intentionally kill the minio
+		// server; make sure we don't report that as
+		// an unintended error
+		if !gotKillFile || !strings.Contains(err.Error(), "signal: killed") {
+			return err
+		}
 	}
-	gotKillFile = true
-	fmt.Fprintf(os.Stderr, "Waiting for kill file <-- got it\n")
 
 	util.SleepBeforeExit()
-	if err := cmd.Process.Kill(); err != nil {
-		return err
-	}
 
-	// Wait for minio server to die
-	return group.Wait()
+	return nil
 }
 
 func waitForKillFile(c queue.S3Client, bucket, prefix string) error {
