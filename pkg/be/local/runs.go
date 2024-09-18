@@ -58,11 +58,11 @@ func isRunning(runname string) (bool, error) {
 		return false, err
 	}
 
-	pid, err := strconv.Atoi(string(pidb))
+	pid64, err := strconv.ParseInt(string(pidb), 10, 32)
 	if err != nil {
 		return false, err
 	}
-
+	pid := int32(pid64)
 	// TODO O(N*M)? should we factor out a single call to gopsutil.Pids()?
-	return process.PidExists(int32(pid))
+	return process.PidExists(pid)
 }
