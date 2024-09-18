@@ -27,7 +27,7 @@ func DownList(ctx context.Context, runnames []string, backend be.Backend, opts D
 
 	if len(runnames) == 0 {
 		if opts.DeleteAll {
-			remainingRuns, err := backend.ListRuns(ctx, true)
+			remainingRuns, err := backend.ListRuns(ctx, true) // true: include Done runs
 			if err != nil {
 				return err
 			}
@@ -90,7 +90,7 @@ func toUpOpts(runname string, opts DownOptions) UpOptions {
 
 func Down(ctx context.Context, runname string, backend be.Backend, opts DownOptions) error {
 	if runname == "" {
-		singletonRun, err := util.Singleton(ctx, backend)
+		singletonRun, err := util.SingletonP(ctx, backend, true) // true: include Done runs
 		if err != nil {
 			return err
 		}
