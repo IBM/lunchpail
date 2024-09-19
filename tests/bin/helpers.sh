@@ -33,7 +33,13 @@ function waitForIt {
     local api=$3
     local dones=("${@:4}") # an array formed from everything from the fourth argument on... 
 
-    if [[ -n "$DEBUG" ]]; then set -x; fi
+    if [[ -n "$DEBUG" ]]
+    then
+        set -x
+        LP_VERBOSE=true
+    else
+        LP_VERBOSE=false
+    fi
 
     echo "$(tput setaf 2)🧪 Checking job output app=$appname$(tput sgr0)" 1>&2
     for done in "${dones[@]}"; do
@@ -42,7 +48,7 @@ function waitForIt {
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set -x
             fi
-            $testapp logs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers -c dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            $testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers -c dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set +x
             fi
@@ -55,8 +61,8 @@ function waitForIt {
                 then TAIL=1000
                 else TAIL=10
                 fi
-                ($testapp logs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers --tail=$TAIL || exit 0)
-                ($testapp logs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c dispatcher --tail=$TAIL || exit 0)
+                ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers --tail=$TAIL || exit 0)
+                ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c dispatcher --tail=$TAIL || exit 0)
             fi
             idx=$((idx + 1))
             sleep 4
