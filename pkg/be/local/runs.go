@@ -2,6 +2,7 @@ package local
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strconv"
 
@@ -62,7 +63,12 @@ func isRunning(runname string) (bool, error) {
 func isPidRunning(pidfile string) (bool, error) {
 	pidb, err := os.ReadFile(pidfile)
 	if err != nil {
-		return false, err
+		if errors.Is(err, os.ErrNotExist) {
+			// pid file doesn't exist, so not running!
+			return false, nil
+		} else {
+			return false, err
+		}
 	}
 
 	pid64, err := strconv.ParseInt(string(pidb), 10, 32)

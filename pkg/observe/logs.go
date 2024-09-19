@@ -2,12 +2,10 @@ package observe
 
 import (
 	"context"
-	"fmt"
 
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -25,16 +23,12 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 		return err
 	}
 
-	group, lctx := errgroup.WithContext(ctx)
-	streamer := backend.Streamer(lctx, runname)
+	if len(opts.Components) == 0 {
+		opts.Components = lunchpail.AllUserComponents
+	}
 
-	c := make(chan events.Message)
-	go func() {
-		for msg := range c {
-			fmt.Println(msg.Message)
-		}
-	}()
-
+	group, _ := errgroup.WithContext(ctx)
+	streamer := backend.Streamer(ctx, runname)
 	for _, component := range opts.Components {
 		group.Go(func() error {
 			return streamer.ComponentLogs(component, opts.Tail, opts.Follow, opts.Verbose)

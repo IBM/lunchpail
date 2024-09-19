@@ -11,6 +11,8 @@ const (
 	MinioComponent                 = "minio"
 )
 
+var AllUserComponents = []Component{WorkersComponent, DispatcherComponent}
+
 func ComponentShortName(c Component) string {
 	switch c {
 	case WorkersComponent:

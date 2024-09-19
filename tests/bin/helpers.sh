@@ -72,7 +72,10 @@ function waitForIt {
     # Note: we will use --run $run_name in a few places, but not all
     # -- intentionally so we have test coverage of both code paths
     local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
-    echo "✅ PASS run-controller found run test=$name run_name=$run_name"
+    if [ -n "$run_name" ]
+    then echo "✅ PASS found run_name test=$name run_name=$run_name"
+    else echo "❌ FAIL empty run_name test=$name" && return 1
+    fi
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run-controller run api=$api test=$name"
