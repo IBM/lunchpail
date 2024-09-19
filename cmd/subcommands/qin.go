@@ -24,11 +24,16 @@ func newQcopyinCmd() *cobra.Command {
 	var runname string
 	cmd.Flags().StringVarP(&runname, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
 
-	tgtOpts := options.AddTargetOptions(cmd)
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}

@@ -6,10 +6,10 @@ import (
 )
 
 func AddLogOptions(cmd *cobra.Command) *compilation.LogOptions {
-	return addLogOptionsTo(cmd, &compilation.Options{})
+	return AddLogOptionsTo(cmd, &compilation.Options{})
 }
 
-func addLogOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.LogOptions {
+func AddLogOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.LogOptions {
 	if opts.Log == nil {
 		opts.Log = &compilation.LogOptions{}
 	}

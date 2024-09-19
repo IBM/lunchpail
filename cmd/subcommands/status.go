@@ -33,8 +33,13 @@ func newStatusCommand() *cobra.Command {
 	// interval for polling cpu etc.
 	cmd.Flags().IntVarP(&intervalFlag, "interval", "i", 5, "Polling interval in seconds for resource utilization stats")
 
-	tgtOpts := options.AddTargetOptions(cmd)
-	logOpts := options.AddLogOptions(cmd)
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
+	options.AddLogOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -43,12 +48,12 @@ func newStatusCommand() *cobra.Command {
 		}
 
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}
 
-		return status.UI(ctx, maybeRun, backend, status.Options{Watch: watchFlag, Verbose: logOpts.Verbose, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
+		return status.UI(ctx, maybeRun, backend, status.Options{Watch: watchFlag, Verbose: opts.Log.Verbose, Summary: summaryFlag, Nloglines: loglinesFlag, IntervalSeconds: intervalFlag})
 	}
 
 	return cmd

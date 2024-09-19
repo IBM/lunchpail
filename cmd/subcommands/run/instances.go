@@ -13,7 +13,6 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -29,15 +28,21 @@ func Instances() *cobra.Command {
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for at least one instance to be ready")
 	cmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Only respond via exit code")
 
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
 	runOpts := options.AddRunOptions(cmd)
-	tgtOpts := options.AddTargetOptions(cmd)
+	options.AddTargetOptionsTo(cmd, &opts)
+
 	component := options.AddComponentOption(cmd)
 	cmd.MarkFlagRequired("component")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		for {
-			backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+			backend, err := be.New(ctx, opts)
 			if err != nil {
 				if wait {
 					waitItOut(*component, -1, err)

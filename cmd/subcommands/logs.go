@@ -30,13 +30,19 @@ func newLogsCommand() *cobra.Command {
 	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer|minio)")
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
 	cmd.Flags().IntVarP(&tailFlag, "tail", "T", -1, "Lines of recent log file to display, with -1 showing all available log data")
+
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
 	runOpts := options.AddRunOptions(cmd)
-	tgtOpts := options.AddTargetOptions(cmd)
-	logOpts := options.AddLogOptions(cmd)
+	options.AddTargetOptionsTo(cmd, &opts)
+	options.AddLogOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, compilation.Options{Target: opts.Target})
 		if err != nil {
 			return err
 		}
@@ -62,7 +68,7 @@ func newLogsCommand() *cobra.Command {
 			}
 		}
 
-		return observe.Logs(ctx, runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: logOpts.Verbose, Components: comps})
+		return observe.Logs(ctx, runOpts.Run, backend, observe.LogsOptions{Follow: followFlag, Tail: tailFlag, Verbose: opts.Log.Verbose, Components: comps})
 	}
 
 	return cmd

@@ -9,7 +9,6 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/cpu"
 )
 
@@ -23,8 +22,13 @@ func Newcmd() *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(&intervalSecondsFlag, "interval", "i", 2, "Sampling interval")
-	tgtOpts := options.AddTargetOptions(cmd)
-	logOpts := options.AddLogOptions(cmd)
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
+	options.AddLogOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -33,12 +37,12 @@ func Newcmd() *cobra.Command {
 		}
 
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts, Log: logOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}
 
-		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Namespace: tgtOpts.Namespace, Verbose: logOpts.Verbose, IntervalSeconds: intervalSecondsFlag})
+		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Namespace: opts.Target.Namespace, Verbose: opts.Log.Verbose, IntervalSeconds: intervalSecondsFlag})
 	}
 
 	return cmd
