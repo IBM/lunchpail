@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/sync/errgroup"
+
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/runs/util"
@@ -20,10 +22,13 @@ func Qlast(ctx context.Context, marker, opt string, backend be.Backend, opts Qla
 		return "", err
 	}
 
-	c, err := backend.Streamer(ctx, runname).QueueStats(qstat.Options{Tail: int64(1000)})
-	if err != nil {
-		return strconv.Itoa(0), err
-	}
+	c := make(chan qstat.Model)
+
+	group, _ := errgroup.WithContext(ctx)
+	group.Go(func() error {
+		defer close(c)
+		return backend.Streamer(ctx, runname).QueueStats(c, qstat.Options{Tail: int64(1000)})
+	})
 
 	var lastmodel qstat.Model
 	for model := range c {

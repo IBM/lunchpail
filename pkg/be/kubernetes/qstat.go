@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/sync/errgroup"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -50,18 +48,9 @@ func (streamer Streamer) streamModel(follow bool, tail int64, quiet bool, c chan
 		}
 	}
 
-	return streamerCommon.QstatFromStream(stream, c)
+	return streamerCommon.QstatFromStream(streamer.Context, stream, c)
 }
 
-func (streamer Streamer) QueueStats(opts qstat.Options) (chan qstat.Model, error) {
-	c := make(chan qstat.Model)
-
-	errs, _ := errgroup.WithContext(streamer.Context)
-	errs.Go(func() error {
-		err := streamer.streamModel(opts.Follow, opts.Tail, opts.Quiet, c)
-		close(c)
-		return err
-	})
-
-	return c, nil
+func (streamer Streamer) QueueStats(c chan qstat.Model, opts qstat.Options) error {
+	return streamer.streamModel(opts.Follow, opts.Tail, opts.Quiet, c)
 }

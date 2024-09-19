@@ -2,6 +2,7 @@ package streamer
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"slices"
 	"strconv"
@@ -11,23 +12,20 @@ import (
 	"lunchpail.io/pkg/fe/transformer/api"
 )
 
-func QstatFromStream(stream io.ReadCloser, c chan qstat.Model) error {
+func QstatFromStream(ctx context.Context, stream io.ReadCloser, c chan qstat.Model) error {
 	lines := make(chan string)
-	done := make(chan struct{})
+	go func() {
+		sc := bufio.NewScanner(stream)
+		for sc.Scan() {
+			lines <- sc.Text()
+		}
+		close(lines)
+	}()
 
-	go QstatFromChan(lines, c, done)
-
-	sc := bufio.NewScanner(stream)
-	for sc.Scan() {
-		lines <- sc.Text()
-	}
-
-	close(lines)
-	<-done
-	return nil
+	return QstatFromChan(ctx, lines, c)
 }
 
-func QstatFromChan(lines chan string, c chan qstat.Model, done chan struct{}) {
+func QstatFromChan(ctx context.Context, lines chan string, c chan qstat.Model) error {
 	model := qstat.Model{}
 	for line := range lines {
 		if !strings.HasPrefix(line, "lunchpail.io") {
@@ -41,7 +39,13 @@ func QstatFromChan(lines chan string, c chan qstat.Model, done chan struct{}) {
 
 		marker := fields[1]
 		if marker == "---" && model.Valid {
-			c <- model
+			select {
+			case <-ctx.Done():
+				break
+			default:
+				c <- model
+			}
+
 			model = qstat.Model{Valid: true}
 			continue
 		} else if len(fields) >= 3 {
@@ -120,5 +124,5 @@ func QstatFromChan(lines chan string, c chan qstat.Model, done chan struct{}) {
 		}
 	}
 
-	done <- struct{}{}
+	return nil
 }

@@ -113,21 +113,18 @@ func (s localStreamer) Utilization(intervalSeconds int) (chan utilization.Model,
 }
 
 // Stream queue statistics
-func (s localStreamer) QueueStats(opts qstat.Options) (chan qstat.Model, error) {
+func (s localStreamer) QueueStats(c chan qstat.Model, opts qstat.Options) error {
 	f, err := files.LogsForComponent(s.runname, lunchpail.WorkStealerComponent)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	tail, err := tailfChan(f, opts.Follow)
+	tail, err := tailfChan(f, opts.Follow, opts.Verbose)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	c := make(chan qstat.Model)
-	done := make(chan struct{})
 	lines := make(chan string)
-
 	errs, _ := errgroup.WithContext(s.Context)
 	errs.Go(func() error {
 		for line := range tail.Lines {
@@ -138,18 +135,10 @@ func (s localStreamer) QueueStats(opts qstat.Options) (chan qstat.Model, error) 
 			lines <- line.Text[x+2:]
 		}
 		close(lines)
-
-		<-done
-		close(c)
 		return nil
 	})
 
-	errs.Go(func() error {
-		streamer.QstatFromChan(lines, c, done)
-		return nil
-	})
-
-	return c, nil
+	return streamer.QstatFromChan(s.Context, lines, c)
 }
 
 // Stream logs from a given Component to os.Stdout
@@ -168,25 +157,31 @@ func (s localStreamer) ComponentLogs(c lunchpail.Component, taillines int, follo
 		group, _ := errgroup.WithContext(s.Context)
 		for _, f := range fs {
 			if strings.HasPrefix(f.Name(), "workerpool-") {
-				group.Go(func() error { return tailf(filepath.Join(logdir, f.Name()), follow) })
+				group.Go(func() error { return tailf(filepath.Join(logdir, f.Name()), follow, verbose) })
 			}
 		}
 		return group.Wait()
 	default:
 		// TODO allow caller to select stderr versus stdout
 		group, _ := errgroup.WithContext(s.Context)
-		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".out"), follow) })
-		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".err"), follow) })
+		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".out"), follow, verbose) })
+		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".err"), follow, verbose) })
 		return group.Wait()
 	}
 }
 
-func tailfChan(outfile string, follow bool) (*tail.Tail, error) {
-	return tail.TailFile(outfile, tail.Config{Follow: follow, ReOpen: follow})
+func tailfChan(outfile string, follow, verbose bool) (*tail.Tail, error) {
+	Logger := tail.DiscardingLogger
+	if verbose {
+		// this tells tailf to use its default logger
+		Logger = nil
+	}
+
+	return tail.TailFile(outfile, tail.Config{Follow: follow, ReOpen: follow, Logger: Logger})
 }
 
-func tailf(outfile string, follow bool) error {
-	c, err := tailfChan(outfile, follow)
+func tailf(outfile string, follow, verbose bool) error {
+	c, err := tailfChan(outfile, follow, verbose)
 	if err != nil {
 		return err
 	}

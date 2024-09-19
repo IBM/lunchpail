@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/term"
 
 	"lunchpail.io/pkg/be"
@@ -23,10 +24,13 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 		return err
 	}
 
-	c, err := backend.Streamer(ctx, runname).QueueStats(opts)
-	if err != nil {
-		return err
-	}
+	c := make(chan qstat.Model)
+
+	group, _ := errgroup.WithContext(ctx)
+	group.Go(func() error {
+		defer close(c)
+		return backend.Streamer(ctx, runname).QueueStats(c, opts)
+	})
 
 	purple := lipgloss.Color("99")
 	re := lipgloss.NewRenderer(os.Stdout)
