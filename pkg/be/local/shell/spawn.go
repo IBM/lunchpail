@@ -3,7 +3,6 @@ package shell
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,8 +32,6 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 	if len(instance) > 0 {
 		logfile = logfile + "-" + instance
 	}
-	outfile := filepath.Join(logdir, logfile+".out")
-	errfile := filepath.Join(logdir, logfile+".err")
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Launching process with commandline: %s\n", command)
@@ -43,24 +40,16 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", command)
 	cmd.Dir = workdir
 
-	stdout := io.Discard
-	if verbose {
-		stdout = os.Stdout
-	}
-	outdone, err := pipe(cmd.StdoutPipe, stdout, outfile, c)
-	if err != nil {
+	if outfile, err := os.Create(filepath.Join(logdir, logfile+".out")); err != nil {
 		return err
+	} else {
+		cmd.Stdout = outfile
 	}
 
-	stderr := io.Discard
-	if verbose {
-		stderr = os.Stderr
-	} else {
-		stderr = nonVerboseFilter{os.Stderr}
-	}
-	errdone, err := pipe(cmd.StderrPipe, stderr, errfile, c)
-	if err != nil {
+	if errfile, err := os.Create(filepath.Join(logdir, logfile+".err")); err != nil {
 		return err
+	} else {
+		cmd.Stderr = errfile
 	}
 
 	if env, err := addEnv(c, q); err != nil {
@@ -75,12 +64,6 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 
 	if err := WritePid(pidfile, cmd.Process.Pid); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
-	}
-
-	select {
-	case <-outdone:
-	case <-errdone:
-	case <-ctx.Done():
 	}
 
 	return cmd.Wait()

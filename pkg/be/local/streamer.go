@@ -79,27 +79,30 @@ func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm ch
 							event = events.Deleted
 						}
 
+						var update events.ComponentUpdate
 						switch component {
 						case lunchpail.WorkersComponent:
 							dashIdx := strings.LastIndex(instanceName, "-")
 							poolName := instanceName[:dashIdx]
 							workerName := instanceName
-							cc <- events.WorkerUpdate(workerName, poolName, ctrl, state, event)
+							update = events.WorkerUpdate(workerName, poolName, ctrl, state, event)
 						case lunchpail.WorkStealerComponent:
-							cc <- events.WorkStealerUpdate(ctrl, state, event)
+							update = events.WorkStealerUpdate(ctrl, state, event)
 						case lunchpail.DispatcherComponent:
-							cc <- events.DispatcherUpdate(ctrl, state, event)
+							update = events.DispatcherUpdate(ctrl, state, event)
+						}
+
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						default:
+							cc <- update
 						}
 					}
 				}
 			}
 
 			time.Sleep(1 * time.Second)
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			}
 		}
 	})
 
@@ -130,8 +133,7 @@ func (s localStreamer) QueueStats(c chan qstat.Model, opts qstat.Options) error 
 			if line.Err != nil {
 				return line.Err
 			}
-			x := strings.Index(line.Text, "] ") // strip off prefix added by pipe.go
-			lines <- line.Text[x+2:]
+			lines <- line.Text
 		}
 		close(lines)
 		return nil
@@ -140,26 +142,59 @@ func (s localStreamer) QueueStats(c chan qstat.Model, opts qstat.Options) error 
 	return streamer.QstatFromChan(s.Context, lines, c)
 }
 
+func (s localStreamer) watchForWorkerPools(logdir string, follow, verbose bool) error {
+	watching := make(map[string]bool)
+	group, _ := errgroup.WithContext(s.Context)
+
+	// TODO fsnotify/fsnotify doesn't seem to work on macos
+	for {
+		fs, err := os.ReadDir(logdir)
+		if err != nil {
+			return err
+		}
+
+		for _, f := range fs {
+			file := f.Name()
+			if strings.HasPrefix(file, "workerpool-") {
+				alreadyWatching, exists := watching[file]
+				if !alreadyWatching || !exists {
+					watching[file] = true
+					group.Go(func() error {
+						return tailf(filepath.Join(logdir, file), follow, verbose)
+					})
+				}
+			}
+		}
+
+		running, err := isRunning(s.runname)
+		if err != nil {
+			return err
+		} else if !running || !follow {
+			break
+		}
+
+		select {
+		case <-s.Context.Done():
+			return nil
+		default:
+			time.Sleep(2 * time.Second)
+		}
+	}
+
+	return group.Wait()
+}
+
 // Stream logs from a given Component to os.Stdout
 func (s localStreamer) ComponentLogs(c lunchpail.Component, taillines int, follow, verbose bool) error {
-	logdir, err := files.LogDir(s.runname, false)
+	logdir, err := files.LogDir(s.runname, true)
 	if err != nil {
 		return err
 	}
 
 	switch c {
 	case lunchpail.WorkersComponent:
-		fs, err := os.ReadDir(logdir)
-		if err != nil {
-			return err
-		}
-		group, _ := errgroup.WithContext(s.Context)
-		for _, f := range fs {
-			if strings.HasPrefix(f.Name(), "workerpool-") {
-				group.Go(func() error { return tailf(filepath.Join(logdir, f.Name()), follow, verbose) })
-			}
-		}
-		return group.Wait()
+		return s.watchForWorkerPools(logdir, follow, verbose)
+
 	default:
 		// TODO allow caller to select stderr versus stdout
 		group, _ := errgroup.WithContext(s.Context)

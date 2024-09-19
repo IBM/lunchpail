@@ -9,7 +9,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/fe"
-	"lunchpail.io/pkg/observe/status"
+	"lunchpail.io/pkg/observe"
 	"lunchpail.io/pkg/util"
 )
 
@@ -32,11 +32,19 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 		fmt.Printf(backend.DryRun(ir, copts))
 		return nil
 	} else if isUp {
-		if err := backend.Up(ctx, ir, copts); err != nil {
-			return err
-		} else if opts.Watch {
-			return status.UI(ctx, ir.RunName, backend, status.Options{Watch: true, Verbose: opts.CompilationOptions.Log.Verbose, Summary: false, Nloglines: 500, IntervalSeconds: 5})
+		cancellable, cancel := context.WithCancel(ctx)
+
+		if opts.Watch {
+			go func() {
+				if err := observe.Logs(cancellable, ir.RunName, backend, observe.LogsOptions{Follow: true, Verbose: opts.CompilationOptions.Log.Verbose}); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+			}()
 		}
+
+		err := backend.Up(ctx, ir, copts)
+		cancel()
+		return err
 	} else if err := backend.Down(ctx, ir, copts); err != nil {
 		return err
 	}
