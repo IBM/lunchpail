@@ -17,7 +17,7 @@ func Lower(compilationName, runname string, app hlir.Application, pool hlir.Work
 
 	spec.RunAsJob = true
 	spec.Sizing = api.WorkerpoolSizing(pool, app, opts)
-	spec.InstanceName = pool.Metadata.Name
+	spec.InstanceName = fmt.Sprintf("%s-%s", pool.Metadata.Name, runname)
 	spec.QueuePrefixPath = api.QueuePrefixPathForWorker(ir.Queue, runname, pool.Metadata.Name)
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
