@@ -19,6 +19,8 @@
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
+    - name: VIRTUAL_ENV
+      value: {{ .Values.venvPath }}
   {{- if .Values.env }}
     {{ .Values.env | b64dec | fromJsonArray | toYaml | nindent 4 }}
   {{- end }}

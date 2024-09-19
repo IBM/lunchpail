@@ -7,6 +7,12 @@ type Code struct {
 	Source string
 }
 
+type Needs struct {
+	Name         string
+	Version      string
+	Requirements string
+}
+
 type Application struct {
 	ApiVersion string `yaml:"apiVersion"`
 	Kind       string
@@ -25,6 +31,7 @@ type Application struct {
 		Datasets                 []Dataset                `yaml:"datasets,omitempty"`
 		SecurityContext          SecurityContext          `yaml:"securityContext,omitempty"`
 		ContainerSecurityContext ContainerSecurityContext `yaml:"containerSecurityContext,omitempty"`
+		Needs                    []Needs                  `yaml:"needs,omitempty"`
 	}
 }
 

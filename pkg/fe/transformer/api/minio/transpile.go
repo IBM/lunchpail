@@ -20,6 +20,8 @@ func transpile(runname string, ir llir.LLIR) (hlir.Application, error) {
 	app.Spec.Expose = []string{fmt.Sprintf("%d:%d", ir.Queue.Port, ir.Queue.Port)}
 	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component minio server --port %d", ir.Queue.Port)
 
+	/*app.Spec.Needs = []hlir.Needs{
+	{Name: "minio", Version: "latest"}}*/
 	prefixIncludingBucket := api.QueuePrefixPath(ir.Queue, runname)
 	A := strings.Split(prefixIncludingBucket, "/")
 	prefixExcludingBucket := filepath.Join(A[1:]...)

@@ -29,6 +29,7 @@ eval $testapp up \
          --create-cluster \
          --target=${LUNCHPAIL_TARGET:-kubernetes} \
          --watch=false \
+         --set venvPath=$VIRTUAL_ENV \
          --set kubernetes.context=kind-lunchpail \
          --set cosAccessKey=$COS_ACCESS_KEY \
          --set cosSecretKey=$COS_SECRET_KEY

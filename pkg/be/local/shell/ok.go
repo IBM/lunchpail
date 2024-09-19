@@ -13,7 +13,8 @@ import (
 func isCompatibleImage(image string) bool {
 	return strings.HasPrefix(image, lunchpail.ImageRegistry+"/"+lunchpail.ImageRepo+"/lunchpail") ||
 		strings.Contains(image, "alpine") ||
-		strings.Contains(image, "minio/minio")
+		strings.Contains(image, "minio/minio") ||
+		strings.Contains(image, "python")
 }
 
 func IsCompatible(c llir.ShellComponent) error {
