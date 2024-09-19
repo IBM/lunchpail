@@ -77,7 +77,7 @@ func (streamer Streamer) updateFromPod(pod *v1.Pod, what watch.EventType, cc cha
 				return err
 			}
 		}
-		cc <- events.WorkStealerUpdate(pod.Namespace, streamer.backend, workerStatus, events.EventType(what))
+		cc <- events.WorkStealerUpdate(streamer.backend, workerStatus, events.EventType(what))
 	case string(lunchpail.DispatcherComponent):
 		if what == watch.Added {
 			// new dispatcher pod. start streaming its logs
@@ -85,11 +85,11 @@ func (streamer Streamer) updateFromPod(pod *v1.Pod, what watch.EventType, cc cha
 				return err
 			}
 		}
-		cc <- events.DispatcherUpdate(pod.Namespace, streamer.backend, workerStatus, events.EventType(what))
+		cc <- events.DispatcherUpdate(streamer.backend, workerStatus, events.EventType(what))
 	case string(lunchpail.WorkersComponent):
 		if what == watch.Added {
 			// new worker pod. start streaming its logs
-			if err := streamLogUpdatesForWorker(streamer.Context, pod.Name, pod.Namespace, cm); err != nil {
+			if err := streamLogUpdatesForWorker(streamer.Context, pod.Name, streamer.backend.namespace, cm); err != nil {
 				return err
 			} else {
 				// TODO: are we leaking something
@@ -104,7 +104,7 @@ func (streamer Streamer) updateFromPod(pod *v1.Pod, what watch.EventType, cc cha
 			return fmt.Errorf("Worker without pool name label %s\n", pod.Name)
 		}
 
-		cc <- events.WorkerUpdate(pod.Name, pod.Namespace, poolName, streamer.backend, workerStatus, events.EventType(what))
+		cc <- events.WorkerUpdate(pod.Name, poolName, streamer.backend, workerStatus, events.EventType(what))
 	}
 
 	return nil

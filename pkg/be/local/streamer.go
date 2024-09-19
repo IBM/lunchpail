@@ -84,11 +84,11 @@ func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm ch
 							dashIdx := strings.LastIndex(instanceName, "-")
 							poolName := instanceName[:dashIdx]
 							workerName := instanceName
-							cc <- events.WorkerUpdate(workerName, "", poolName, ctrl, state, event)
+							cc <- events.WorkerUpdate(workerName, poolName, ctrl, state, event)
 						case lunchpail.WorkStealerComponent:
-							cc <- events.WorkStealerUpdate("", ctrl, state, event)
+							cc <- events.WorkStealerUpdate(ctrl, state, event)
 						case lunchpail.DispatcherComponent:
-							cc <- events.DispatcherUpdate("", ctrl, state, event)
+							cc <- events.DispatcherUpdate(ctrl, state, event)
 						}
 					}
 				}

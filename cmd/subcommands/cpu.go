@@ -42,7 +42,7 @@ func Newcmd() *cobra.Command {
 			return err
 		}
 
-		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Namespace: opts.Target.Namespace, Verbose: opts.Log.Verbose, IntervalSeconds: intervalSecondsFlag})
+		return cpu.UI(ctx, maybeRun, backend, cpu.CpuOptions{Verbose: opts.Log.Verbose, IntervalSeconds: intervalSecondsFlag})
 	}
 
 	return cmd

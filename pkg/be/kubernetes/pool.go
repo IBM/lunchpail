@@ -11,7 +11,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func (backend Backend) ChangeWorkers(ctx context.Context, poolName, poolNamespace, poolContext string, delta int) error {
+func (backend Backend) ChangeWorkers(ctx context.Context, poolName, poolContext string, delta int) error {
 	// TODO handle poolContext!!!
 	clientset, _, err := Client()
 	if err != nil {
@@ -20,7 +20,7 @@ func (backend Backend) ChangeWorkers(ctx context.Context, poolName, poolNamespac
 
 	k8sName := shell.ResourceName(poolName, lunchpail.WorkersComponent)
 
-	jobsClient := clientset.BatchV1().Jobs(poolNamespace)
+	jobsClient := clientset.BatchV1().Jobs(backend.namespace)
 	job, err := jobsClient.Get(ctx, k8sName, metav1.GetOptions{})
 	if err != nil {
 		return err
