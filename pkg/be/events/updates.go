@@ -13,16 +13,16 @@ const (
 	Modified           = "modified"
 )
 
-func DispatcherUpdate(namespace string, ctrl controller.Controller, status WorkerStatus, event EventType) ComponentUpdate {
+func DispatcherUpdate(ctrl controller.Controller, status WorkerStatus, event EventType) ComponentUpdate {
 	name := lunchpail.ComponentShortName(lunchpail.DispatcherComponent)
-	return ComponentUpdate{lunchpail.DispatcherComponent, status, event, name, namespace, "", ctrl}
+	return ComponentUpdate{lunchpail.DispatcherComponent, status, event, name, "", ctrl}
 }
 
-func WorkStealerUpdate(namespace string, ctrl controller.Controller, status WorkerStatus, event EventType) ComponentUpdate {
+func WorkStealerUpdate(ctrl controller.Controller, status WorkerStatus, event EventType) ComponentUpdate {
 	name := lunchpail.ComponentShortName(lunchpail.WorkStealerComponent)
-	return ComponentUpdate{lunchpail.WorkStealerComponent, status, event, name, namespace, "", ctrl}
+	return ComponentUpdate{lunchpail.WorkStealerComponent, status, event, name, "", ctrl}
 }
 
-func WorkerUpdate(name, namespace, pool string, ctrl controller.Controller, status WorkerStatus, event EventType) ComponentUpdate {
-	return ComponentUpdate{lunchpail.WorkersComponent, status, event, name, namespace, pool, ctrl}
+func WorkerUpdate(name, pool string, ctrl controller.Controller, status WorkerStatus, event EventType) ComponentUpdate {
+	return ComponentUpdate{lunchpail.WorkersComponent, status, event, name, pool, ctrl}
 }

@@ -10,7 +10,6 @@ import (
 )
 
 type CpuOptions struct {
-	Namespace       string
 	Verbose         bool
 	IntervalSeconds int
 }

@@ -20,7 +20,6 @@ type Worker struct {
 
 type Pool struct {
 	Name        string
-	Namespace   string
 	Parallelism int
 	Ctrl        controller.Controller
 	Workers     []Worker
@@ -138,5 +137,5 @@ func (pool *Pool) qsummary() (int, int, int, int) {
 
 func (pool *Pool) changeWorkers(ctx context.Context, delta int) error {
 	context := "" // TODO
-	return pool.Ctrl.ChangeWorkers(ctx, pool.Name, pool.Namespace, context, delta)
+	return pool.Ctrl.ChangeWorkers(ctx, pool.Name, context, delta)
 }

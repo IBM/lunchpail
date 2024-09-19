@@ -6,12 +6,11 @@ import (
 )
 
 type ComponentUpdate struct {
-	Component lunchpail.Component
-	Status    WorkerStatus
-	Type      EventType
+	lunchpail.Component
+	Status WorkerStatus
+	Type   EventType
 
-	Name      string
-	Namespace string
-	Pool      string
-	Ctrl      controller.Controller
+	Name string
+	Pool string
+	Ctrl controller.Controller
 }

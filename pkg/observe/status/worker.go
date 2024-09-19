@@ -24,7 +24,7 @@ func updateWorker(update events.ComponentUpdate, pools []Pool) ([]Pool, error) {
 			// Added or Modified a Worker in a Pool we
 			// haven't seen yet; create a record of both
 			// the Pool and the Worker
-			pool := Pool{update.Pool, update.Namespace, 1, update.Ctrl, []Worker{Worker{name, workerStatus, qstat.Worker{}}}}
+			pool := Pool{update.Pool, 1, update.Ctrl, []Worker{Worker{name, workerStatus, qstat.Worker{}}}}
 			return append(pools, pool), nil
 		}
 	}
