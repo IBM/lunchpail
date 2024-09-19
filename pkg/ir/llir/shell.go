@@ -14,8 +14,11 @@ type ShellComponent struct {
 	// Use a Job-style (versus Pod-style) of deployment?
 	RunAsJob bool
 
-	// Defaults to run name
+	// Identifies this component instance
 	InstanceName string
+
+	// Identifies the group this component is part of, e.g. the original name of the workerpool (i.e. without run id, component, ...)
+	GroupName string
 
 	// Where runners of this instance should pick up or dispatch queue data
 	QueuePrefixPath string

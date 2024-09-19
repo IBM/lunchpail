@@ -6,7 +6,7 @@ labels:
 {{- define "labels" }}
 app.kubernetes.io/component: {{ $.Values.lunchpail.component }}
 app.kubernetes.io/part-of: {{ $.Values.lunchpail.partOf }}
-app.kubernetes.io/name: {{ $.Values.lunchpail.instanceName }}
-app.kubernetes.io/instance: {{ $.Values.lunchpail.name }}
+app.kubernetes.io/name: {{ $.Values.lunchpail.groupName }} # e.g. orig. name of workerpool
+app.kubernetes.io/instance: {{ $.Values.lunchpail.name }} # run name
 app.kubernetes.io/managed-by: lunchpail.io
 {{- end }}
