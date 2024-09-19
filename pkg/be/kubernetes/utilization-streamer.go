@@ -93,7 +93,13 @@ func (streamer Streamer) execIntoPod(pod *v1.Pod, component lunchpail.Component,
 
 				if changed {
 					model.Workers = slices.Concat(model.Workers[:workerIdx], []utilization.Worker{worker}, model.Workers[workerIdx+1:])
-					c <- *model
+
+					select {
+					case <-streamer.Context.Done():
+						return
+					default:
+						c <- *model
+					}
 				}
 			}
 		}
