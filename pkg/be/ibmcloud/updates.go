@@ -10,6 +10,6 @@ func (streamer Streamer) RunEvents() (chan events.Message, error) {
 	return nil, fmt.Errorf("Unsupported operation: StreamRunEvents")
 }
 
-func (streamer Streamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
-	return nil, nil, fmt.Errorf("Unsupported operation: StreamRunComponentUpdates")
+func (streamer Streamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm chan events.Message) error {
+	return fmt.Errorf("Unsupported operation: StreamRunComponentUpdates")
 }

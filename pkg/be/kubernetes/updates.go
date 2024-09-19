@@ -2,7 +2,6 @@ package kubernetes
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -123,25 +122,24 @@ func timeOf(pod *v1.Pod) time.Time {
 	return last
 }
 
-func (streamer Streamer) streamPodUpdates(watcher watch.Interface, cc chan events.ComponentUpdate, cm chan events.Message) {
+func (streamer Streamer) streamPodUpdates(watcher watch.Interface, cc chan events.ComponentUpdate, cm chan events.Message) error {
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
 			if err := streamer.updateFromPod(pod, event.Type, cc, cm); err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
+				return err
 			}
 		}
 	}
+
+	return nil
 }
 
-func (streamer Streamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
+func (streamer Streamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm chan events.Message) error {
 	watcher, err := streamer.startWatching(streamer.runname, streamer.backend.namespace)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
-	cc := make(chan events.ComponentUpdate)
-	cm := make(chan events.Message)
-	go streamer.streamPodUpdates(watcher, cc, cm)
-	return cc, cm, nil
+	return streamer.streamPodUpdates(watcher, cc, cm)
 }

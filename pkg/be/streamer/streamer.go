@@ -12,7 +12,7 @@ type Streamer interface {
 	RunEvents() (chan events.Message, error)
 
 	//
-	RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error)
+	RunComponentUpdates(chan events.ComponentUpdate, chan events.Message) error
 
 	// Stream cpu and memory statistics
 	Utilization(intervalSeconds int) (chan utilization.Model, error)
