@@ -10,19 +10,13 @@ import (
 )
 
 // Stream cpu and memory statistics
-func (streamer Streamer) Utilization(intervalSeconds int) (chan utilization.Model, error) {
-	c := make(chan utilization.Model)
-	model := utilization.Model{}
-
+func (streamer Streamer) Utilization(c chan utilization.Model, intervalSeconds int) error {
 	podWatcher, err := streamer.startWatchingUtilization()
 	if err != nil {
-		return c, err
+		return err
 	}
 
-	// TODO errgroup
-	go streamer.streamPodUtilizationUpdates(podWatcher, intervalSeconds, c, &model)
-
-	return c, nil
+	return streamer.streamPodUtilizationUpdates(podWatcher, intervalSeconds, c)
 }
 
 func (streamer Streamer) startWatchingUtilization() (watch.Interface, error) {

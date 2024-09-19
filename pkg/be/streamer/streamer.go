@@ -15,7 +15,7 @@ type Streamer interface {
 	RunComponentUpdates(chan events.ComponentUpdate, chan events.Message) error
 
 	// Stream cpu and memory statistics
-	Utilization(intervalSeconds int) (chan utilization.Model, error)
+	Utilization(c chan utilization.Model, intervalSeconds int) error
 
 	// Stream queue statistics
 	QueueStats(c chan qstat.Model, opts qstat.Options) error

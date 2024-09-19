@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/sync/errgroup"
+
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/observe/colors"
 )
@@ -20,10 +23,13 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts CpuOptio
 		return err
 	}
 
-	c, err := backend.Streamer(ctx, runname).Utilization(opts.IntervalSeconds)
-	if err != nil {
-		return err
-	}
+	group, sctx := errgroup.WithContext(ctx)
+
+	c := make(chan utilization.Model)
+	group.Go(func() error {
+		defer close(c)
+		return backend.Streamer(sctx, runname).Utilization(c, opts.IntervalSeconds)
+	})
 
 	for model := range c {
 		if !opts.Verbose {

@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
+	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -30,10 +31,11 @@ func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose
 		return streamer.QueueStats(qc, qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
 	})
 
-	cpuc, err := streamer.Utilization(intervalSeconds)
-	if err != nil {
-		return c, err
-	}
+	cpuc := make(chan utilization.Model)
+	errgroup.Go(func() error {
+		defer close(cpuc)
+		return streamer.Utilization(cpuc, intervalSeconds)
+	})
 
 	updates := make(chan events.ComponentUpdate)
 	messages := make(chan events.Message)
