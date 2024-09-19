@@ -51,7 +51,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 
 	// values for this component
 	myValues := []string{
-		"lunchpail.instanceName=" + c.InstanceName,
+		"lunchpail.instanceName=" + util.TrimToMax(c.InstanceName, 63), // in kubernetes, labels must have a max length of 63 chars
 		"lunchpail.component=" + string(c.Component),
 		"image=" + c.Application.Spec.Image,
 		"command=" + updateTestQueueEndpoint(c.Application.Spec.Command, ir.Queue),

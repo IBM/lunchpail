@@ -5,12 +5,10 @@ import (
 	"strings"
 )
 
-// See https://kubernetes.io/docs/concepts/overview/working-with-objects/names/
-// See https://datatracker.ietf.org/doc/html/rfc1035
-func Dns1035(name string) string {
-	// trim to have at most 53 characters
-	if len(name) > 53 {
-		name = name[len(name)-53:]
+// Trim `name` to have at most `maxlen` characters
+func TrimToMax(name string, maxlen int) string {
+	if len(name) > maxlen {
+		name = name[len(name)-maxlen:]
 	}
 
 	// trim off leading numbers, dashes, and dots
@@ -19,4 +17,11 @@ func Dns1035(name string) string {
 
 	// trim off trailing dashes
 	return strings.Trim(name, "-")
+
+}
+
+// See https://kubernetes.io/docs/concepts/overview/working-with-objects/names/
+// See https://datatracker.ietf.org/doc/html/rfc1035
+func Dns1035(name string) string {
+	return TrimToMax(name, 53)
 }
