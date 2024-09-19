@@ -2,6 +2,7 @@ package shell
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"lunchpail.io/pkg/build"
@@ -34,6 +35,30 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 	}
 	if component.InstanceName == "" {
 		component.InstanceName = runname
+	}
+
+	for _, needs := range app.Spec.Needs {
+		var file *os.File
+		var err error
+		var req string
+
+		if needs.Requirements != "" {
+			file, err = os.CreateTemp("", "requirements.txt")
+			if err != nil {
+				return nil, err
+			}
+
+			if err := os.WriteFile(file.Name(), []byte(needs.Requirements), 0644); err != nil {
+				return nil, err
+			}
+			req = "--requirements " + file.Name()
+			if opts.Log.Verbose {
+				fmt.Printf("Setting requirements %s in %s \n", needs.Requirements, file.Name())
+			}
+		}
+		component.Spec.Command = fmt.Sprintf(`$LUNCHPAIL_EXE needs %s %s %s --verbose=%v
+%s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
+
 	}
 
 	for _, dataset := range app.Spec.Datasets {

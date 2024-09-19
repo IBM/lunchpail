@@ -84,6 +84,7 @@ then
         fi
     fi
 
+    build $testname $app $branch $deployname
 
     if [[ -e "$1"/preinit.sh ]]; then
         # the preinit.sh may return a PATH it wants us to use (e.g. for a python venv)
@@ -92,8 +93,6 @@ then
         then export PATH="$P"
         fi
     fi
-    
-    build $testname $app $branch $deployname
 
     if [[ -n "$expectBuildFailure" ]]
     then

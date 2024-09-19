@@ -4,6 +4,7 @@ metadata:
   name: tokenization
 spec:
   role: worker
+  image: docker.io/python:3.12
   command: python3 ./main.py
   code:
     - name: main.py
