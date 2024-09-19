@@ -30,18 +30,23 @@ func newDownCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&apiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
 
-	tgtOpts := options.AddTargetOptions(cmd)
-	logOpts := options.AddLogOptions(cmd)
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
+	options.AddLogOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts, ApiKey: apiKey})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}
 
 		return boot.DownList(ctx, args, backend, boot.DownOptions{
-			Namespace: tgtOpts.Namespace, Verbose: logOpts.Verbose, DeleteNamespace: deleteNamespaceFlag,
+			Namespace: opts.Target.Namespace, Verbose: opts.Log.Verbose, DeleteNamespace: deleteNamespaceFlag,
 			DeleteAll: deleteAllRunsFlag,
 			ApiKey:    apiKey, DeleteCloudResources: deleteCloudResourcesFlag})
 	}

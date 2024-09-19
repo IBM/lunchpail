@@ -11,7 +11,6 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs"
-	"lunchpail.io/pkg/compilation"
 )
 
 func List() *cobra.Command {
@@ -27,11 +26,16 @@ func List() *cobra.Command {
 	cmd.Flags().BoolVarP(&all, "all", "a", false, "Include terminated runs (if false, include only live runs)")
 	cmd.Flags().BoolVarP(&name, "name", "N", false, "Show only the run name")
 	cmd.Flags().BoolVarP(&latest, "latest", "l", false, "Show only the most recent run")
-	tgtOpts := options.AddTargetOptions(cmd)
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}

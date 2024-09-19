@@ -10,10 +10,10 @@ import (
 )
 
 func AddTargetOptions(cmd *cobra.Command) *compilation.TargetOptions {
-	return addTargetOptionsTo(cmd, &compilation.Options{})
+	return AddTargetOptionsTo(cmd, &compilation.Options{})
 }
 
-func addTargetOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.TargetOptions {
+func AddTargetOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.TargetOptions {
 	if opts.Target == nil {
 		opts.Target = &compilation.TargetOptions{}
 	}

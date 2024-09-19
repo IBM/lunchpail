@@ -26,8 +26,14 @@ func newQstatCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Track updates (rather than printing once)")
 	cmd.Flags().Int64VarP(&tailFlag, "tail", "T", -1, "Number of lines to tail")
 	cmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Silence extraneous output")
-	tgtOpts := options.AddTargetOptions(cmd)
-	logOpts := options.AddLogOptions(cmd)
+
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
+	options.AddLogOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -36,12 +42,12 @@ func newQstatCommand() *cobra.Command {
 		}
 
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}
 
-		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: logOpts.Verbose, Quiet: quietFlag})
+		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: opts.Log.Verbose, Quiet: quietFlag})
 	}
 
 	return cmd

@@ -21,12 +21,17 @@ func newQcatCmd() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
 	runOpts := options.AddRunOptions(cmd)
-	tgtOpts := options.AddTargetOptions(cmd)
+	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}

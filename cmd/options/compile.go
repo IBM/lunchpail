@@ -9,14 +9,9 @@ import (
 )
 
 func AddCompilationOptions(cmd *cobra.Command) (*compilation.Options, error) {
-	var options compilation.Options
-
-	if compilation.IsCompiled() {
-		if o, err := compilation.RestoreOptions(); err != nil {
-			return nil, err
-		} else {
-			options = o
-		}
+	options, err := RestoreCompilationOptions()
+	if err != nil {
+		return nil, err
 	}
 
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", options.ImagePullSecret, "Of the form <user>:<token>@ghcr.io")
@@ -37,7 +32,7 @@ func AddCompilationOptions(cmd *cobra.Command) (*compilation.Options, error) {
 	cmd.Flags().StringVar(&options.ImageID, "image-id", options.ImageID, "Identifier of a catalog or custom image to be used for instance creation")
 	cmd.Flags().BoolVarP(&options.CreateNamespace, "create-namespace", "N", options.CreateNamespace, "Create a new namespace, if needed")
 
-	addTargetOptionsTo(cmd, &options)
-	addLogOptionsTo(cmd, &options)
+	AddTargetOptionsTo(cmd, &options)
+	AddLogOptionsTo(cmd, &options)
 	return &options, nil
 }

@@ -21,7 +21,12 @@ func newQlastCommand() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	}
 
-	tgtOpts := options.AddTargetOptions(cmd)
+	opts, err := options.RestoreCompilationOptions()
+	if err != nil {
+		return nil
+	}
+
+	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		marker := args[0]
@@ -31,7 +36,7 @@ func newQlastCommand() *cobra.Command {
 		}
 
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: tgtOpts})
+		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}
