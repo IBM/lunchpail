@@ -107,9 +107,8 @@ func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm ch
 }
 
 // Stream cpu and memory statistics
-func (s localStreamer) Utilization(intervalSeconds int) (chan utilization.Model, error) {
-	c := make(chan utilization.Model)
-	return c, nil
+func (s localStreamer) Utilization(c chan utilization.Model, intervalSeconds int) error {
+	return nil
 }
 
 // Stream queue statistics

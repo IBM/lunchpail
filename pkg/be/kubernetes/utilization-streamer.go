@@ -138,12 +138,14 @@ func (streamer Streamer) alreadyExecdIntoPod(pod *v1.Pod, model *utilization.Mod
 	return slices.IndexFunc(model.Workers, func(worker utilization.Worker) bool { return worker.Name == pod.Name }) >= 0
 }
 
-func (streamer Streamer) streamPodUtilizationUpdates(watcher watch.Interface, intervalSeconds int, c chan utilization.Model, model *utilization.Model) error {
+func (streamer Streamer) streamPodUtilizationUpdates(watcher watch.Interface, intervalSeconds int, c chan utilization.Model) error {
+	model := utilization.Model{}
+
 	for event := range watcher.ResultChan() {
 		if event.Type == watch.Added || event.Type == watch.Deleted || event.Type == watch.Modified {
 			pod := event.Object.(*v1.Pod)
-			if err := streamer.utilizationUpdateFromPod(pod, event.Type, intervalSeconds, c, model); err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
+			if err := streamer.utilizationUpdateFromPod(pod, event.Type, intervalSeconds, c, &model); err != nil {
+				return err
 			}
 		}
 	}
