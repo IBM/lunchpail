@@ -7,6 +7,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/lunchpail"
@@ -33,10 +34,11 @@ func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose
 		return c, err
 	}
 
-	updates, messages, err := streamer.RunComponentUpdates()
-	if err != nil {
-		return c, err
-	}
+	updates := make(chan events.ComponentUpdate)
+	messages := make(chan events.Message)
+	errgroup.Go(func() error {
+		return streamer.RunComponentUpdates(updates, messages)
+	})
 	errgroup.Go(func() error {
 		for update := range updates {
 			switch update.Component {

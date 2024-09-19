@@ -37,13 +37,10 @@ func (s localStreamer) RunEvents() (chan events.Message, error) {
 	return c, nil
 }
 
-func (s localStreamer) RunComponentUpdates() (chan events.ComponentUpdate, chan events.Message, error) {
-	cc := make(chan events.ComponentUpdate)
-	cm := make(chan events.Message)
-
+func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm chan events.Message) error {
 	pidsDir, err := files.PidfileDir(s.runname)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	group, ctx := errgroup.WithContext(s.Context)
@@ -106,7 +103,7 @@ func (s localStreamer) RunComponentUpdates() (chan events.ComponentUpdate, chan 
 		}
 	})
 
-	return cc, cm, nil
+	return nil
 }
 
 // Stream cpu and memory statistics
