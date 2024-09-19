@@ -18,7 +18,7 @@ type Streamer interface {
 	Utilization(intervalSeconds int) (chan utilization.Model, error)
 
 	// Stream queue statistics
-	QueueStats(opts qstat.Options) (chan qstat.Model, error)
+	QueueStats(c chan qstat.Model, opts qstat.Options) error
 
 	// Stream logs from a given Component to os.Stdout
 	ComponentLogs(component lunchpail.Component, tail int, follow, verbose bool) error

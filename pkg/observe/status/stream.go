@@ -24,10 +24,11 @@ func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose
 	errgroup, sctx := errgroup.WithContext(ctx)
 	streamer := backend.Streamer(sctx, run)
 
-	qc, err := streamer.QueueStats(qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
-	if err != nil {
-		return c, err
-	}
+	qc := make(chan qstat.Model)
+	errgroup.Go(func() error {
+		defer close(qc)
+		return streamer.QueueStats(qc, qstat.Options{Follow: true, Tail: int64(-1), Verbose: verbose, Quiet: true})
+	})
 
 	cpuc, err := streamer.Utilization(intervalSeconds)
 	if err != nil {
@@ -37,6 +38,8 @@ func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose
 	updates := make(chan events.ComponentUpdate)
 	messages := make(chan events.Message)
 	errgroup.Go(func() error {
+		defer close(updates)
+		defer close(messages)
 		return streamer.RunComponentUpdates(updates, messages)
 	})
 	errgroup.Go(func() error {
