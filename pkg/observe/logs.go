@@ -2,12 +2,15 @@ package observe
 
 import (
 	"context"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/be/streamer"
 	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe/colors"
 )
 
 type LogsOptions struct {
@@ -27,11 +30,26 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 		opts.Components = lunchpail.AllUserComponents
 	}
 
+	useComponentPrefix := len(opts.Components) > 1
+
 	group, _ := errgroup.WithContext(ctx)
-	streamer := backend.Streamer(ctx, runname)
+	s := backend.Streamer(ctx, runname)
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			return streamer.ComponentLogs(component, opts.Tail, opts.Follow, opts.Verbose)
+			prefix := ""
+			if useComponentPrefix {
+				prefix = colors.ComponentStyle(component).Render(fmt.Sprintf("%-8s", lunchpail.ComponentShortName(component)))
+			}
+
+			return s.ComponentLogs(
+				component,
+				streamer.LogOptions{
+					Tail:       opts.Tail,
+					Follow:     opts.Follow,
+					Verbose:    opts.Verbose,
+					LinePrefix: prefix,
+				},
+			)
 		})
 	}
 
