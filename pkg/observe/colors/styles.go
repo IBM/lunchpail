@@ -33,8 +33,10 @@ var WorkersComponentStyle = lipgloss.NewStyle().Background(lightblueColor).Foreg
 var WorkStealerMessageStyle = lipgloss.NewStyle().Foreground(lightbrownColor).Faint(true)
 var WorkStealerComponentStyle = lipgloss.NewStyle().Background(lightbrownColor).Foreground(blackColor).Padding(0, 1)
 
+var MinioComponentStyle = lipgloss.NewStyle().Background(lightyellowColor).Foreground(blackColor).Padding(0, 1)
+
 var ClusterComponentStyle = lipgloss.NewStyle().Background(grayColor).Foreground(blackColor).Padding(0, 1)
-var OtherComponentStyle = lipgloss.NewStyle().Bold(true).Padding(0, 1)
+var OtherComponentStyle = lipgloss.NewStyle().Padding(0, 1)
 var ErrorComponentStyle = lipgloss.NewStyle().Background(redColor).Foreground(blackColor).Padding(0, 1)
 
 func ComponentStyle(c lunchpail.Component) lipgloss.Style {
@@ -43,6 +45,10 @@ func ComponentStyle(c lunchpail.Component) lipgloss.Style {
 		return DispatcherComponentStyle
 	case lunchpail.WorkersComponent:
 		return WorkersComponentStyle
+	case lunchpail.WorkStealerComponent:
+		return WorkStealerComponentStyle
+	case lunchpail.MinioComponent:
+		return MinioComponentStyle
 	}
 
 	return OtherComponentStyle

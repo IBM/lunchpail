@@ -9,10 +9,11 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/runs/util"
-	"lunchpail.io/pkg/observe/colors"
+	"lunchpail.io/pkg/observe/status"
 )
 
 type CpuOptions struct {
+	NoClearScreen   bool
 	Verbose         bool
 	IntervalSeconds int
 }
@@ -32,14 +33,13 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts CpuOptio
 	})
 
 	for model := range c {
-		if !opts.Verbose {
+		if !opts.Verbose && !opts.NoClearScreen {
 			fmt.Print("\033[H\033[2J")
 		}
 
-		for _, worker := range model.Sorted() {
-			util := fmt.Sprintf("%8.2f%%", worker.CpuUtil)
-			fmt.Printf("%s %s %s\n", colors.Component(worker.Component), colors.Bold.Render(util), worker.Name)
-		}
+		workers := model.Sorted()
+		fmt.Println(status.Cpuline(workers, status.Cpu))
+		fmt.Println(status.Cpuline(workers, status.Mem))
 	}
 
 	return nil
