@@ -3,8 +3,7 @@
 set -e
 #set -o pipefail
 
-echo -n "Started TaskDispatcher "
-echo "min=$__LUNCHPAIL_SWEEP_MIN max=$__LUNCHPAIL_SWEEP_MAX step=$__LUNCHPAIL_SWEEP_STEP"
+echo "Started TaskDispatcher min=$__LUNCHPAIL_SWEEP_MIN max=$__LUNCHPAIL_SWEEP_MAX step=$__LUNCHPAIL_SWEEP_STEP"
 
 # test injected values from -f values.yaml
 # taskprefix2 can be used to test that e.g. numerical values are processed correctly
@@ -12,10 +11,11 @@ if [ -n "$taskprefix" ]
 then taskprefix=${taskprefix}${taskprefix2}
 else taskprefix=task
 fi
-echo "got value taskprefix=$taskprefix"
 
 if [ -n "$DEBUG" ]
-then printenv
+then
+    echo "got value taskprefix=$taskprefix"
+    printenv
 fi
 
 # how many tasks we've injected so far; it is useful to keep the
