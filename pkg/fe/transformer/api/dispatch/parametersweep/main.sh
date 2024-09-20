@@ -6,8 +6,6 @@ set -e
 echo -n "Started TaskDispatcher "
 echo "min=$__LUNCHPAIL_SWEEP_MIN max=$__LUNCHPAIL_SWEEP_MAX step=$__LUNCHPAIL_SWEEP_STEP"
 
-printenv
-
 # test injected values from -f values.yaml
 # taskprefix2 can be used to test that e.g. numerical values are processed correctly
 if [ -n "$taskprefix" ]
