@@ -184,6 +184,7 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 // Helps with situations where the s3 server is still coming up
 func (s3 S3Client) retryOnError(err error) bool {
 	if !(strings.Contains(err.Error(), "connection refused") ||
+		strings.Contains(err.Error(), "Server not initialized yet") ||
 		strings.Contains(err.Error(), "i/o timeout")) {
 		return false
 	}
