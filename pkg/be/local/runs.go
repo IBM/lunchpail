@@ -33,14 +33,17 @@ func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, erro
 
 		runname := e.Name()
 
-		include := all
-		if !include {
-			running, err := isRunning(runname)
-			if err != nil {
+		running := true
+		if !all {
+			if r, err := isRunning(runname); err != nil {
 				return nil, err
-			} else if running {
-				L = append(L, runs.Run{Name: e.Name(), CreationTimestamp: info.ModTime()})
+			} else {
+				running = r
 			}
+		}
+
+		if running {
+			L = append(L, runs.Run{Name: e.Name(), CreationTimestamp: info.ModTime()})
 		}
 	}
 
