@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/nxadm/tail"
+	"github.com/shirou/gopsutil/v4/process"
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be/controller"
@@ -111,7 +112,52 @@ func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm ch
 
 // Stream cpu and memory statistics
 func (s localStreamer) Utilization(c chan utilization.Model, intervalSeconds int) error {
-	return nil
+	for {
+		ps, err := process.ProcessesWithContext(s.Context)
+		if err != nil {
+			return err
+		}
+
+		var m utilization.Model
+
+		parts, err := partsOfRun(s.runname)
+		if err != nil {
+			return err
+		}
+
+		for _, p := range ps {
+			part, ok := parts[p.Pid]
+			if !ok {
+				continue
+			}
+
+			worker := utilization.Worker{Name: part.InstanceName, Component: part.Component}
+			cpu, err := p.CPUPercentWithContext(s.Context)
+			if err != nil {
+				return err
+			}
+			worker.CpuUtil = cpu
+
+			mem, err := p.MemoryInfoWithContext(s.Context)
+			if err != nil {
+				return err
+			}
+			worker.MemoryBytes = mem.RSS
+
+			m.Workers = append(m.Workers, worker)
+		}
+
+		if len(m.Workers) > 0 {
+			c <- m
+		}
+
+		select {
+		case <-s.Context.Done():
+			return nil
+		default:
+			time.Sleep(time.Duration(intervalSeconds) * time.Second)
+		}
+	}
 }
 
 // Stream queue statistics
@@ -166,10 +212,10 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 			}
 		}
 
-		running, err := isRunning(s.runname)
+		runStillGoing, err := isRunning(s.runname)
 		if err != nil {
 			return err
-		} else if !running || !opts.Follow {
+		} else if !runStillGoing || !opts.Follow {
 			break
 		}
 

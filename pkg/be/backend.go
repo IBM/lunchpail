@@ -14,7 +14,7 @@ type Backend interface {
 	Ok(ctx context.Context, initOk bool) error
 
 	// Bring up the linked application
-	Up(ctx context.Context, linked llir.LLIR, opts llir.Options) error
+	Up(ctx context.Context, linked llir.LLIR, opts llir.Options, isRunning chan struct{}) error
 
 	// Bring down the linked application
 	Down(ctx context.Context, linked llir.LLIR, opts llir.Options) error
