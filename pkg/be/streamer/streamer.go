@@ -7,6 +7,13 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
+type LogOptions struct {
+	Tail       int
+	Follow     bool
+	Verbose    bool
+	LinePrefix string
+}
+
 type Streamer interface {
 	//
 	RunEvents() (chan events.Message, error)
@@ -21,5 +28,5 @@ type Streamer interface {
 	QueueStats(c chan qstat.Model, opts qstat.Options) error
 
 	// Stream logs from a given Component to os.Stdout
-	ComponentLogs(component lunchpail.Component, tail int, follow, verbose bool) error
+	ComponentLogs(component lunchpail.Component, opts LogOptions) error
 }
