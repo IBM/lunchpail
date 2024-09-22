@@ -1,0 +1,40 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: test-python
+spec:
+  role: worker
+  code:
+    - name: main.py
+      source: |
+        import os
+        import sys
+        import time
+
+        # $1 input filepath
+        # $2 output filepath
+        input=sys.argv[1]
+        output=sys.argv[2]
+
+        dataset_name="test" # match with below!
+        bucket_name="test-python"
+        folder_name="test-python"
+        dir=os.path.join(dataset_name,bucket_name,folder_name)
+        N=len(os.listdir(dir))
+
+        print(f"Processing {N} {os.path.basename(input)}")
+        time.sleep(5)
+
+        print(f"Done with {os.path.basename(input)}")
+
+  command: python3 ./main.py
+  minSize: auto
+
+  datasets:
+    - name: test
+      s3:
+        rclone:
+          remoteName: rcloneremotetest # see preinit.sh
+        copyIn:
+          path: "test-python/"
+          delay: 8 # tests/bin/run.sh only copies in the data that we will copy out *after* the test has begun

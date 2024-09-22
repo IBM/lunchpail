@@ -1,0 +1,8 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: WorkerPool
+metadata:
+  name: test-python-pool1
+spec:
+  workers:
+    count: 1
+    size: auto
