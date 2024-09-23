@@ -14,10 +14,10 @@ import (
 )
 
 type CompileOptions struct {
-	linker.ConfigureOptions
-	DryRun         bool
-	Watch          bool
-	UseThisRunName string
+	CompilationOptions compilation.Options
+	DryRun             bool
+	Watch              bool
+	UseThisRunName     string
 }
 
 func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) {
@@ -43,7 +43,7 @@ func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) 
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, templatePath, internalS3Port, opts.ConfigureOptions)
+	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, templatePath, internalS3Port, opts.CompilationOptions)
 	if err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
 	}
@@ -58,7 +58,7 @@ func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) 
 		return llir.LLIR{}, opts.CompilationOptions, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
-	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts.ConfigureOptions.CompilationOptions); err != nil {
+	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts.CompilationOptions); err != nil {
 		return llir.LLIR{}, opts.CompilationOptions, err
 	} else {
 		return ir, opts.CompilationOptions, nil

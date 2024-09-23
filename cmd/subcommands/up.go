@@ -11,7 +11,6 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/util"
 )
 
@@ -58,15 +57,13 @@ func newUpCmd() *cobra.Command {
 		compilationOpts.OverrideValues = append(compilationOpts.OverrideValues, overrideValues...)
 		compilationOpts.OverrideFileValues = append(compilationOpts.OverrideFileValues, overrideFileValues...)
 
-		configureOptions := linker.ConfigureOptions{CompilationOptions: *compilationOpts}
-
 		ctx := context.Background()
 		backend, err := be.NewInitOk(ctx, createCluster, *compilationOpts)
 		if err != nil {
 			return err
 		}
 
-		return boot.Up(ctx, backend, boot.UpOptions{ConfigureOptions: configureOptions, DryRun: dryrunFlag, Watch: watchFlag})
+		return boot.Up(ctx, backend, boot.UpOptions{CompilationOptions: *compilationOpts, DryRun: dryrunFlag, Watch: watchFlag})
 	}
 
 	return cmd

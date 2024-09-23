@@ -10,16 +10,12 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-type ConfigureOptions struct {
-	CompilationOptions compilation.Options
-}
-
-func Configure(appname, runname, templatePath string, internalS3Port int, opts ConfigureOptions) (string, []string, []string, queue.Spec, error) {
-	if opts.CompilationOptions.Log.Verbose {
+func Configure(appname, runname, templatePath string, internalS3Port int, opts compilation.Options) (string, []string, []string, queue.Spec, error) {
+	if opts.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
 
-	queueSpec, err := queue.ParseFlag(opts.CompilationOptions.Queue, runname, internalS3Port)
+	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
 	if err != nil {
 		return "", nil, nil, queue.Spec{}, err
 	}
@@ -62,14 +58,14 @@ lunchpail:
 		appname,                 // (16)
 	)
 
-	if opts.CompilationOptions.Log.Verbose {
+	if opts.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.CompilationOptions.OverrideValues)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.CompilationOptions.OverrideFileValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.OverrideFileValues)
 	}
 
-	overrides := opts.CompilationOptions.OverrideValues
-	fileOverrides := opts.CompilationOptions.OverrideFileValues
+	overrides := opts.OverrideValues
+	fileOverrides := opts.OverrideFileValues
 
 	return yaml, overrides, fileOverrides, queueSpec, nil
 }
