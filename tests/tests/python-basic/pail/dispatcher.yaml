@@ -1,7 +1,7 @@
 apiVersion: lunchpail.io/v1alpha1
 kind: ParameterSweep
 metadata:
-  name: test-python
+  name: python-basic
 spec:
   min: 1
   max: {{ .Values.nTasks | default 10 }}
