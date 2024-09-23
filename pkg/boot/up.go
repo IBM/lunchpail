@@ -20,25 +20,26 @@ type UpOptions struct {
 	CompilationOptions compilation.Options
 }
 
-func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) error {
+func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	ir, err := fe.PrepareForRun(opts.UseThisRunName, opts.CompilationOptions)
 	if err != nil {
 		return err
 	}
 
-	if opts.Watch && !util.StdoutIsTty() {
-		// if stdout is not a tty, then we can't support
-		// watch, no matter what the user asked for
-		fmt.Fprintf(os.Stderr, "Warning: disabling watch mode because stdout is not a tty\n")
-		opts.Watch = false
-	}
-
-	if opts.DryRun {
+	switch {
+	case opts.DryRun:
 		fmt.Printf(backend.DryRun(ir, opts.CompilationOptions))
 		return nil
-	} else if isUp {
+	default:
 		var isRunning chan struct{}
 		cancellable, cancel := context.WithCancel(ctx)
+
+		if opts.Watch && !util.StdoutIsTty() {
+			// if stdout is not a tty, then we can't support
+			// watch, no matter what the user asked for
+			fmt.Fprintf(os.Stderr, "Warning: disabling watch mode because stdout is not a tty\n")
+			opts.Watch = false
+		}
 
 		if opts.Watch {
 			isRunning = make(chan struct{})
@@ -50,20 +51,7 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 			}()
 		}
 
-		err := backend.Up(ctx, ir, opts.CompilationOptions, isRunning)
-		cancel()
-		return err
-	} else if err := backend.Down(ctx, ir, opts.CompilationOptions); err != nil {
-		return err
+		defer cancel()
+		return backend.Up(ctx, ir, opts.CompilationOptions, isRunning)
 	}
-
-	return nil
-}
-
-func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
-	if err := upDown(ctx, backend, opts, true); err != nil {
-		return err
-	}
-
-	return nil
 }
