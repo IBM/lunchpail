@@ -8,14 +8,20 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/util"
 )
 
-type UpOptions = fe.CompileOptions
+type UpOptions struct {
+	UseThisRunName     string
+	DryRun             bool
+	Watch              bool
+	CompilationOptions compilation.Options
+}
 
 func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) error {
-	ir, copts, err := fe.PrepareForRun(opts)
+	ir, copts, err := fe.PrepareForRun(opts.UseThisRunName, opts.CompilationOptions)
 	if err != nil {
 		return err
 	}
