@@ -12,7 +12,9 @@ func (backend Backend) Up(ctx context.Context, ir llir.LLIR, opts llir.Options, 
 	}
 
 	// Indicate that we are off to the races
-	isRunning <- struct{}{}
+	if isRunning != nil {
+		isRunning <- struct{}{}
+	}
 
 	return nil
 }
