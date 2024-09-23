@@ -13,20 +13,20 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, compilation.Options, error) {
+func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) {
 	verbose := opts.Log.Verbose
 
 	stageOpts := compilation.StageOptions{Verbose: verbose}
 	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
 	if err != nil {
-		return llir.LLIR{}, opts, err
+		return llir.LLIR{}, err
 	} else if opts.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
 
 	if runname == "" {
 		if generatedRunname, err := linker.GenerateRunName(compilationName); err != nil {
-			return llir.LLIR{}, opts, err
+			return llir.LLIR{}, err
 		} else {
 			runname = generatedRunname
 		}
@@ -39,7 +39,7 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, compila
 
 	yamlValues, queueSpec, err := linker.Configure(compilationName, runname, internalS3Port, opts)
 	if err != nil {
-		return llir.LLIR{}, opts, err
+		return llir.LLIR{}, err
 	}
 
 	if !verbose {
@@ -52,12 +52,12 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, compila
 	// we need to instantiate the application's templates first...
 	namespace := "" // intentionally not passing Target.Namespace to application templates
 	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: opts.OverrideValues, OverrideFileValues: opts.OverrideFileValues, Verbose: verbose}); err != nil {
-		return llir.LLIR{}, opts, err
+		return llir.LLIR{}, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
-		return llir.LLIR{}, opts, err
+		return llir.LLIR{}, err
 	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts); err != nil {
-		return llir.LLIR{}, opts, err
+		return llir.LLIR{}, err
 	} else {
-		return ir, opts, nil
+		return ir, nil
 	}
 }
