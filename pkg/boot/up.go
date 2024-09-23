@@ -21,7 +21,7 @@ type UpOptions struct {
 }
 
 func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) error {
-	ir, copts, err := fe.PrepareForRun(opts.UseThisRunName, opts.CompilationOptions)
+	ir, err := fe.PrepareForRun(opts.UseThisRunName, opts.CompilationOptions)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 	}
 
 	if opts.DryRun {
-		fmt.Printf(backend.DryRun(ir, copts))
+		fmt.Printf(backend.DryRun(ir, opts.CompilationOptions))
 		return nil
 	} else if isUp {
 		var isRunning chan struct{}
@@ -50,10 +50,10 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 			}()
 		}
 
-		err := backend.Up(ctx, ir, copts, isRunning)
+		err := backend.Up(ctx, ir, opts.CompilationOptions, isRunning)
 		cancel()
 		return err
-	} else if err := backend.Down(ctx, ir, copts); err != nil {
+	} else if err := backend.Down(ctx, ir, opts.CompilationOptions); err != nil {
 		return err
 	}
 
