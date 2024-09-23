@@ -47,7 +47,9 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 	}
 
 	// Indicate that we are off to the races
-	isRunning <- struct{}{}
+	if isRunning != nil {
+		isRunning <- struct{}{}
+	}
 
 	// Wait for all of the components to finish
 	return group.Wait()

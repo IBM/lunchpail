@@ -31,10 +31,11 @@ func upDown(ctx context.Context, backend be.Backend, opts UpOptions, isUp bool) 
 		fmt.Printf(backend.DryRun(ir, copts))
 		return nil
 	} else if isUp {
-		isRunning := make(chan struct{})
+		var isRunning chan struct{}
 		cancellable, cancel := context.WithCancel(ctx)
 
 		if opts.Watch {
+			isRunning = make(chan struct{})
 			verbose := opts.CompilationOptions.Log.Verbose
 			go func() {
 				<-isRunning
