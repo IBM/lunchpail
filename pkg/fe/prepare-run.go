@@ -13,26 +13,18 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-type CompileOptions struct {
-	CompilationOptions compilation.Options
-	DryRun             bool
-	Watch              bool
-	UseThisRunName     string
-}
-
-func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) {
+func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, compilation.Options, error) {
 	stageOpts := compilation.StageOptions{}
-	verbose := opts.CompilationOptions.Log.Verbose
+	verbose := opts.Log.Verbose
 	stageOpts.Verbose = verbose
 	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
 	if err != nil {
-		return llir.LLIR{}, opts.CompilationOptions, err
+		return llir.LLIR{}, opts, err
 	}
 
-	runname := opts.UseThisRunName
 	if runname == "" {
 		if generatedRunname, err := linker.GenerateRunName(compilationName); err != nil {
-			return llir.LLIR{}, opts.CompilationOptions, err
+			return llir.LLIR{}, opts, err
 		} else {
 			runname = generatedRunname
 		}
@@ -43,9 +35,9 @@ func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) 
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, templatePath, internalS3Port, opts.CompilationOptions)
+	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, templatePath, internalS3Port, opts)
 	if err != nil {
-		return llir.LLIR{}, opts.CompilationOptions, err
+		return llir.LLIR{}, opts, err
 	}
 
 	if !verbose {
@@ -55,12 +47,12 @@ func PrepareForRun(opts CompileOptions) (llir.LLIR, compilation.Options, error) 
 	// we need to instantiate the application's templates first...
 	namespace := "" // intentionally not passing Target.Namespace to application templates
 	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: verbose}); err != nil {
-		return llir.LLIR{}, opts.CompilationOptions, err
+		return llir.LLIR{}, opts, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
-		return llir.LLIR{}, opts.CompilationOptions, err
-	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts.CompilationOptions); err != nil {
-		return llir.LLIR{}, opts.CompilationOptions, err
+		return llir.LLIR{}, opts, err
+	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts); err != nil {
+		return llir.LLIR{}, opts, err
 	} else {
-		return ir, opts.CompilationOptions, nil
+		return ir, opts, nil
 	}
 }
