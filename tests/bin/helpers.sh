@@ -138,25 +138,27 @@ function waitForIt {
             fi
         done
 
-        waitForEveryoneToDie
+        waitForEveryoneToDie $run_name
     fi
 
     return 0
 }
 
 function waitForEveryoneToDie {
-    waitForNoInstances workdispatcher
-    waitForNoInstances workerpool
-    waitForNoInstances workstealer
-    waitForNoInstances minio
+    local run_name=$1
+    waitForNoInstances $run_name workdispatcher
+    waitForNoInstances $run_name workerpool
+    waitForNoInstances $run_name workstealer
+    waitForNoInstances $run_name minio
 }
 
 function waitForNoInstances {
-    local component=$1
-    echo "Checking that no $component remain running"
+    local run_name=$1
+    local component=$2
+    echo "Checking that no $component remain running for run=$run_name"
     while true
     do
-        nRunning=$($testapp run instances --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
+        nRunning=$($testapp run instances --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
         if [[ $nRunning == 0 ]]
         then echo "✅ PASS run-controller test=$name no $component remain running" && break
         else echo "$nRunning ${component}(s) remaining running" && sleep 2
@@ -244,7 +246,7 @@ function waitForUnassignedAndOutbox {
     local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
     echo "✅ PASS run-controller found run test=$name"
 
-    waitForEveryoneToDie
+    waitForEveryoneToDie $run_name
 }
 
 function compile {
