@@ -14,12 +14,14 @@ import (
 )
 
 func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, compilation.Options, error) {
-	stageOpts := compilation.StageOptions{}
 	verbose := opts.Log.Verbose
-	stageOpts.Verbose = verbose
+
+	stageOpts := compilation.StageOptions{Verbose: verbose}
 	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
 	if err != nil {
 		return llir.LLIR{}, opts, err
+	} else if opts.Log.Verbose {
+		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
 
 	if runname == "" {
@@ -35,18 +37,21 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, compila
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
-	yamlValues, dashdashSetValues, dashdashSetFileValues, queueSpec, err := linker.Configure(compilationName, runname, templatePath, internalS3Port, opts)
+	yamlValues, queueSpec, err := linker.Configure(compilationName, runname, internalS3Port, opts)
 	if err != nil {
 		return llir.LLIR{}, opts, err
 	}
 
 	if !verbose {
 		defer os.RemoveAll(templatePath)
+	} else {
+		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
+		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.OverrideFileValues)
 	}
 
 	// we need to instantiate the application's templates first...
 	namespace := "" // intentionally not passing Target.Namespace to application templates
-	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: dashdashSetValues, OverrideFileValues: dashdashSetFileValues, Verbose: verbose}); err != nil {
+	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: opts.OverrideValues, OverrideFileValues: opts.OverrideFileValues, Verbose: verbose}); err != nil {
 		return llir.LLIR{}, opts, err
 	} else if hlir, err := parser.Parse(yaml); err != nil {
 		return llir.LLIR{}, opts, err
