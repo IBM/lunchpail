@@ -3,6 +3,7 @@ package local
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"lunchpail.io/pkg/be/local/files"
@@ -24,7 +25,11 @@ func (backend Backend) InstanceCount(ctx context.Context, c lunchpail.Component,
 	count := 0
 	for _, file := range fs {
 		if strings.Contains(file.Name(), string(c)) {
-			count++
+			if running, err := isPidRunning(filepath.Join(dir, file.Name())); err != nil {
+				return 0, err
+			} else if running {
+				count++
+			}
 		}
 	}
 
