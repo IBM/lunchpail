@@ -10,7 +10,6 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/compilation"
-	"lunchpail.io/pkg/fe/linker"
 )
 
 type DownOptions struct {
@@ -74,18 +73,13 @@ func toCompilationOpts(opts DownOptions) compilation.Options {
 }
 
 func toUpOpts(runname string, opts DownOptions) UpOptions {
-	configureOptions := linker.ConfigureOptions{}
-	configureOptions.CompilationOptions = toCompilationOpts(opts)
-	if configureOptions.CompilationOptions.Log == nil {
-		configureOptions.CompilationOptions.Log = &compilation.LogOptions{}
+	compilationOptions := toCompilationOpts(opts)
+	if compilationOptions.Log == nil {
+		compilationOptions.Log = &compilation.LogOptions{}
 	}
-	configureOptions.CompilationOptions.Log.Verbose = opts.Verbose
+	compilationOptions.Log.Verbose = opts.Verbose
 
-	upOptions := UpOptions{}
-	upOptions.ConfigureOptions = configureOptions
-	upOptions.UseThisRunName = runname
-
-	return upOptions
+	return UpOptions{CompilationOptions: compilationOptions, UseThisRunName: runname}
 }
 
 func Down(ctx context.Context, runname string, backend be.Backend, opts DownOptions) error {
