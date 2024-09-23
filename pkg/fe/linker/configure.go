@@ -10,19 +10,15 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Configure(appname, runname, templatePath string, internalS3Port int, opts compilation.Options) (string, []string, []string, queue.Spec, error) {
-	if opts.Log.Verbose {
-		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
-	}
-
+func Configure(appname, runname string, internalS3Port int, opts compilation.Options) (string, queue.Spec, error) {
 	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
+		return "", queue.Spec{}, err
 	}
 
 	user, err := user.Current()
 	if err != nil {
-		return "", nil, nil, queue.Spec{}, err
+		return "", queue.Spec{}, err
 	}
 
 	if queueSpec.Endpoint == "" {
@@ -60,12 +56,7 @@ lunchpail:
 
 	if opts.Log.Verbose {
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app overrides=%v\n", opts.OverrideValues)
-		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.OverrideFileValues)
 	}
 
-	overrides := opts.OverrideValues
-	fileOverrides := opts.OverrideFileValues
-
-	return yaml, overrides, fileOverrides, queueSpec, nil
+	return yaml, queueSpec, nil
 }
