@@ -11,11 +11,12 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/runtime/queue/upload"
 )
 
-func newQcopyinCmd() *cobra.Command {
+func newUploadCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "qin <srcDir> <bucket>",
+		Use:   "upload <srcDir> <bucket>",
 		Short: "Copy data into queue",
 		Long:  "Copy data into queue",
 		Args:  cobra.MatchAll(cobra.ExactArgs(2), cobra.OnlyValidArgs),
@@ -38,7 +39,7 @@ func newQcopyinCmd() *cobra.Command {
 			return err
 		}
 
-		return queue.CopyIn(ctx, backend, runname, []queue.CopyInSpec{queue.CopyInSpec{Path: args[0], Bucket: args[1]}})
+		return queue.UploadFiles(ctx, backend, runname, []upload.Upload{upload.Upload{Path: args[0], Bucket: args[1]}})
 	}
 
 	return cmd
@@ -46,6 +47,6 @@ func newQcopyinCmd() *cobra.Command {
 
 func init() {
 	if compilation.IsCompiled() {
-		rootCmd.AddCommand(newQcopyinCmd())
+		rootCmd.AddCommand(newUploadCmd())
 	}
 }

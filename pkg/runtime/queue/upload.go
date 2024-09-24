@@ -11,14 +11,10 @@ import (
 	"time"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/runtime/queue/upload"
 )
 
-type CopyInSpec struct {
-	Path   string
-	Bucket string
-}
-
-func CopyIn(ctx context.Context, backend be.Backend, runname string, specs []CopyInSpec) error {
+func UploadFiles(ctx context.Context, backend be.Backend, runname string, specs []upload.Upload) error {
 	s3, stop, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return err
@@ -54,7 +50,7 @@ func CopyIn(ctx context.Context, backend be.Backend, runname string, specs []Cop
 	return nil
 }
 
-func (s3 S3Client) copyInDir(spec CopyInSpec) error {
+func (s3 S3Client) copyInDir(spec upload.Upload) error {
 	return filepath.WalkDir(spec.Path, func(path string, dir fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -65,7 +61,7 @@ func (s3 S3Client) copyInDir(spec CopyInSpec) error {
 	})
 }
 
-func (s3 S3Client) copyInFile(path string, spec CopyInSpec) error {
+func (s3 S3Client) copyInFile(path string, spec upload.Upload) error {
 	for i := range 10 {
 		dst := strings.Replace(path, spec.Path+"/", "", 1)
 		fmt.Fprintf(os.Stderr, "Uploading %s to s3 %s\n", path, dst)
