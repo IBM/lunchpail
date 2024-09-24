@@ -13,9 +13,13 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
+type PrepareOptions struct {
+	NoDispatchers bool
+}
+
 // Return the low-level intermediate representation (LLIR) for a run
 // of this application. If runname is "", one will be generated.
-func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) {
+func PrepareForRun(runname string, popts PrepareOptions, opts compilation.Options) (llir.LLIR, error) {
 	verbose := opts.Log.Verbose
 
 	// Stage this application to a local directory
@@ -70,12 +74,14 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) 
 		return llir.LLIR{}, err
 	}
 
-	// Finally we can transform the HLIR to the low-level
-	// intermediate representation (LLIR).
-	ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts)
-	if err != nil {
-		return llir.LLIR{}, err
+	if popts.NoDispatchers {
+		if verbose {
+			fmt.Fprintln(os.Stderr, "Removing application-provided dispatchers in favor of command line inputs")
+		}
+		hlir = hlir.RemoveDispatchers()
 	}
 
-	return ir, nil
+	// Finally we can transform the HLIR to the low-level
+	// intermediate representation (LLIR).
+	return transformer.Lower(compilationName, runname, hlir, queueSpec, opts)
 }

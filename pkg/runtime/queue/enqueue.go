@@ -11,42 +11,53 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/lunchpail"
+	"lunchpail.io/pkg/observe"
 )
 
 type EnqueueFileOptions struct {
 	compilation.LogOptions
+	S3Client
 
 	// Wait for the enqueued task to be completed
 	Wait bool
+
+	// If uploading from a named pipe, use this as the file name
+	AsIfNamedPipe string
 }
 
 type EnqueueS3Options struct {
 	compilation.LogOptions
 }
 
-func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (int, error) {
-	c, err := NewS3Client(ctx)
+func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (code int, err error) {
+	c := opts.S3Client
+
+	if c.client == nil {
+		// Then we try to pull the client config from environment variables
+		c, err = NewS3Client(ctx)
+		if err != nil {
+			return
+		}
+	}
+
+	err = c.Mkdirp(c.Paths.Bucket)
 	if err != nil {
-		return 0, err
+		return
 	}
 
-	if err := c.Mkdirp(c.Paths.Bucket); err != nil {
-		return 0, err
-	}
+	fmt.Fprintf(os.Stderr, "%sEnqueuing task %s '%s'\n", observe.LogsComponentPrefix(lunchpail.DispatcherComponent), task, c.Paths.PoolPrefix)
 
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Enqueuing task %s\n", task)
-	}
-
-	if err := c.Upload(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task))); err != nil {
-		return 0, err
+	err = c.UploadAs(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task)), opts.AsIfNamedPipe)
+	if err != nil {
+		return
 	}
 
 	if opts.Wait {
 		return c.WaitForCompletion(filepath.Base(task), opts.Verbose)
 	}
 
-	return 0, nil
+	return
 }
 
 func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts EnqueueS3Options) error {

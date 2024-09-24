@@ -1,0 +1,37 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: test7-up-dispatch
+spec:
+  role: worker
+  code:
+    - name: main.sh
+      source: |
+        #!/usr/bin/env sh
+
+        # $1 input filepath
+        # $2 output filepath
+        in="$1"
+        out="$2"
+
+        dataset_name=test # match with below!
+        bucket_name=test7-up-dispatch
+        folder_name=test7-up-dispatch
+        N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
+
+        echo "Processing $N $(basename $in)"
+        sleep 5
+
+        echo "Done with $(basename $in)"
+
+  command: ./main.sh
+  minSize: auto
+
+  datasets:
+    - name: test
+      s3:
+        rclone:
+          remoteName: rcloneremotetest # see preinit.sh
+        copyIn:
+          path: "test7-up-dispatch/"
+          delay: 8 # tests/bin/run.sh only copies in the data that we will copy out *after* the test has begun

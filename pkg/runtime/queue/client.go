@@ -70,7 +70,7 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) 
 		runname = run.Name
 	}
 
-	endpoint, accessKeyId, secretAccessKey, bucket, prefixPath, stop, err := backend.AccessQueue(ctx, runname)
+	endpoint, accessKeyId, secretAccessKey, _, prefixPath, stop, err := backend.AccessQueue(ctx, runname)
 	if err != nil {
 		return S3Client{}, nil, err
 	}
@@ -80,7 +80,11 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) 
 		return S3Client{}, nil, err
 	}
 
-	c.Paths.Bucket = bucket
-	c.Paths.Prefix = strings.Replace(prefixPath, bucket+"/", "", 1)
+	if paths, err := pathsFor(prefixPath); err != nil {
+		return S3Client{}, nil, err
+	} else {
+		c.Paths = paths
+	}
+
 	return c, stop, nil
 }
