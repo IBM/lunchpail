@@ -38,7 +38,7 @@ func newQcopyinCmd() *cobra.Command {
 			return err
 		}
 
-		return queue.CopyIn(ctx, backend, runname, []queue.CopyInSpec{queue.CopyInSpec{SrcDir: args[0], Bucket: args[1]}})
+		return queue.CopyIn(ctx, backend, runname, []queue.CopyInSpec{queue.CopyInSpec{Path: args[0], Bucket: args[1]}})
 	}
 
 	return cmd
