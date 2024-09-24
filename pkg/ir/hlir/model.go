@@ -10,8 +10,8 @@ type HLIR struct {
 	Others           []UnknownResource
 }
 
-func (model *HLIR) GetApplicationByName(appname string) (Application, bool) {
-	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Metadata.Name == appname })
+func (model HLIR) GetApplicationByRole(role Role) (Application, bool) {
+	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Spec.Role == role })
 	if idx < 0 {
 		return Application{}, false
 	}
@@ -19,11 +19,9 @@ func (model *HLIR) GetApplicationByName(appname string) (Application, bool) {
 	return model.Applications[idx], true
 }
 
-func (model *HLIR) GetApplicationByRole(role Role) (Application, bool) {
-	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Spec.Role == role })
-	if idx < 0 {
-		return Application{}, false
-	}
+func (ir HLIR) RemoveDispatchers() HLIR {
+	ir.ParameterSweeps = []ParameterSweep{}
+	ir.ProcessS3Objects = []ProcessS3Objects{}
 
-	return model.Applications[idx], true
+	return ir
 }

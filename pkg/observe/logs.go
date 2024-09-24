@@ -38,7 +38,7 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 		group.Go(func() error {
 			prefix := ""
 			if useComponentPrefix {
-				prefix = colors.ComponentStyle(component).Render(fmt.Sprintf("%-8s", lunchpail.ComponentShortName(component)))
+				prefix = LogsComponentPrefix(component)
 			}
 
 			return s.ComponentLogs(
@@ -54,4 +54,8 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 	}
 
 	return group.Wait()
+}
+
+func LogsComponentPrefix(component lunchpail.Component) string {
+	return colors.ComponentStyle(component).Render(fmt.Sprintf("%-8s", lunchpail.ComponentShortName(component)))
 }

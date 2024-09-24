@@ -88,7 +88,7 @@ func Down(ctx context.Context, runname string, backend be.Backend, opts DownOpti
 	}
 
 	copts := toCompilationOpts(opts)
-	ir, err := fe.PrepareForRun(runname, copts)
+	ir, err := fe.PrepareForRun(runname, fe.PrepareOptions{}, copts)
 	if err != nil {
 		return err
 	}

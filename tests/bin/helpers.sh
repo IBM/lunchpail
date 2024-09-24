@@ -41,6 +41,14 @@ function waitForIt {
         LP_VERBOSE=false
     fi
 
+    local dashc_dispatcher="-c dispatcher"
+    local dashc_workers="-c workers"
+
+    # don't track dispatcher logs if we are dispatching via the command line
+    if [[ -n "$up_args" ]]
+    then dashc_dispatcher=""
+    fi
+
     echo "$(tput setaf 2)🧪 Checking job output app=$appname$(tput sgr0)" 1>&2
     for done in "${dones[@]}"; do
         idx=0
@@ -48,7 +56,7 @@ function waitForIt {
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set -x
             fi
-            $testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers -c dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
+            $testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns $dashc_workers $dashc_dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
             if [[ -n $DEBUG ]] || (( $idx > 10 ))
             then set +x
             fi
@@ -61,8 +69,10 @@ function waitForIt {
                 then TAIL=1000
                 else TAIL=10
                 fi
-                ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c workers --tail=$TAIL || exit 0)
-                ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns -c dispatcher --tail=$TAIL || exit 0)
+                ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns $dashc_workers --tail=$TAIL || exit 0)
+                if [[ -z "$up_args" ]]
+                then ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns $dashc_dispatcher --tail=$TAIL || exit 0)
+                fi
             fi
             idx=$((idx + 1))
             sleep 4

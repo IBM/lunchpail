@@ -31,7 +31,11 @@ type filepaths struct {
 }
 
 func pathsForRun() (filepaths, error) {
-	fullPrefix := strings.Split(os.Getenv("LUNCHPAIL_QUEUE_PATH"), "/")
+	return pathsFor(os.Getenv("LUNCHPAIL_QUEUE_PATH"))
+}
+
+func pathsFor(queuePrefixPath string) (filepaths, error) {
+	fullPrefix := strings.Split(queuePrefixPath, "/")
 	bucket := fullPrefix[0]
 	poolPrefix := filepath.Join(fullPrefix[1:]...)
 	prefix := strings.Replace(filepath.Join(fullPrefix[1:]...), "$LUNCHPAIL_WORKER_NAME", os.Getenv("LUNCHPAIL_POD_NAME"), 1)

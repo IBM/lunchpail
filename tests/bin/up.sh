@@ -19,8 +19,9 @@ if which lspci && lspci | grep -iq nvidia; then
 fi
 
 echo "Calling up using target=${LUNCHPAIL_TARGET:-kubernetes}"
-$testapp up \
+eval $testapp up \
          -v \
+         $up_args \
          $QUEUE \
          $APP \
          $GPU \

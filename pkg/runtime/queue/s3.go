@@ -92,12 +92,45 @@ func (s3 S3Client) Moveto(bucket, source, destination string) error {
 }
 
 func (s3 S3Client) Upload(bucket, source, destination string) error {
+	return s3.UploadAs(bucket, source, destination, "")
+}
+
+func (s3 S3Client) UploadAs(bucket, source, destination, asIfNamedPipe string) error {
 	for {
-		_, err := s3.client.FPutObject(s3.context, bucket, destination, source, minio.PutObjectOptions{})
-		if err != nil && !s3.retryOnError(err) {
+		info, err := os.Stat(source)
+		if err != nil {
 			return err
-		} else if err == nil {
-			break
+		} else if info.Mode().IsRegular() {
+			_, err := s3.client.FPutObject(s3.context, bucket, destination, source, minio.PutObjectOptions{})
+			if err != nil && !s3.retryOnError(err) {
+				return err
+			} else if err == nil {
+				break
+			}
+		} else {
+			// TODO i think this doesn't work with
+			// e.g. symlinks. We need a better check for
+			// just named pipe.
+			stream, err := os.OpenFile(source, os.O_RDONLY, os.ModeNamedPipe)
+			if err != nil {
+				return err
+			}
+			defer stream.Close()
+
+			// We can't use the name of the fifo named
+			// pipe file, as that is unpredictable and
+			// fairly meaningless.
+			destination = filepath.Join(filepath.Dir(destination), asIfNamedPipe)
+
+			// Note: we have to pass -1 for size,
+			// otherwise the minio client-go tries to seek
+			// on the stream, which most streams don't
+			// support
+			if _, err := s3.client.PutObject(s3.context, bucket, destination, stream, -1, minio.PutObjectOptions{}); err != nil && !s3.retryOnError(err) {
+				return err
+			} else if err == nil {
+				break
+			}
 		}
 	}
 	return nil
