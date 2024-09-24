@@ -9,25 +9,19 @@ import (
 	"time"
 
 	"golang.org/x/sync/errgroup"
+
+	"lunchpail.io/pkg/compilation"
 )
 
 type EnqueueFileOptions struct {
+	compilation.LogOptions
+
 	// Wait for the enqueued task to be completed
 	Wait bool
-
-	// Verbose output
-	Verbose bool
-
-	// Debug output
-	Debug bool
 }
 
 type EnqueueS3Options struct {
-	// Verbose output
-	Verbose bool
-
-	// Debug output
-	Debug bool
+	compilation.LogOptions
 }
 
 func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (int, error) {
