@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -253,8 +254,7 @@ func (s localStreamer) ComponentLogs(c lunchpail.Component, opts streamer.LogOpt
 func tailfChan(outfile string, opts streamer.LogOptions) (*tail.Tail, error) {
 	Logger := tail.DiscardingLogger
 	if opts.Verbose {
-		// this tells tailf to use its default logger
-		Logger = nil
+		Logger = log.New(os.Stderr, "", log.LstdFlags)
 	}
 
 	return tail.TailFile(outfile, tail.Config{Follow: opts.Follow, ReOpen: opts.Follow, Logger: Logger})
