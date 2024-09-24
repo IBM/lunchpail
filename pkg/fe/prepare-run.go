@@ -13,9 +13,12 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
+// Return the low-level intermediate representation (LLIR) for a run
+// of this application. If runname is "", one will be generated.
 func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) {
 	verbose := opts.Log.Verbose
 
+	// Stage this application to a local directory
 	stageOpts := compilation.StageOptions{Verbose: verbose}
 	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
 	if err != nil {
@@ -24,6 +27,7 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) 
 		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
 	}
 
+	// Assign a runname if not given
 	if runname == "" {
 		if generatedRunname, err := linker.GenerateRunName(compilationName); err != nil {
 			return llir.LLIR{}, err
@@ -32,11 +36,14 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) 
 		}
 	}
 
+	// Assign a port for the internal S3 (TODO: we only need to do
+	// this if this run will be using an internal S3)
 	internalS3Port := rand.Intn(65536) + 1
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
 
+	// Set up values that will be given to the application YAML
 	yamlValues, queueSpec, err := linker.Configure(compilationName, runname, internalS3Port, opts)
 	if err != nil {
 		return llir.LLIR{}, err
@@ -49,15 +56,26 @@ func PrepareForRun(runname string, opts compilation.Options) (llir.LLIR, error) 
 		fmt.Fprintf(os.Stderr, "shrinkwrap app file overrides=%v\n", opts.OverrideFileValues)
 	}
 
-	// we need to instantiate the application's templates first...
-	namespace := "" // intentionally not passing Target.Namespace to application templates
-	if yaml, err := helm.Template(runname, namespace, templatePath, yamlValues, helm.TemplateOptions{OverrideValues: opts.OverrideValues, OverrideFileValues: opts.OverrideFileValues, Verbose: verbose}); err != nil {
+	// Instantiate the application's templates. We allow application YAML to have go/helm templates.
+	yaml, err := helm.Template(runname, "", templatePath, yamlValues, helm.TemplateOptions{OverrideValues: opts.OverrideValues, OverrideFileValues: opts.OverrideFileValues, Verbose: verbose})
+	if err != nil {
 		return llir.LLIR{}, err
-	} else if hlir, err := parser.Parse(yaml); err != nil {
-		return llir.LLIR{}, err
-	} else if ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts); err != nil {
-		return llir.LLIR{}, err
-	} else {
-		return ir, nil
 	}
+
+	// Now that we're instantiated any templates, we can parse the
+	// application YAML. We parse into the high-level intermediate
+	// representation (HLIR).
+	hlir, err := parser.Parse(yaml)
+	if err != nil {
+		return llir.LLIR{}, err
+	}
+
+	// Finally we can transform the HLIR to the low-level
+	// intermediate representation (LLIR).
+	ir, err := transformer.Lower(compilationName, runname, hlir, queueSpec, opts)
+	if err != nil {
+		return llir.LLIR{}, err
+	}
+
+	return ir, nil
 }

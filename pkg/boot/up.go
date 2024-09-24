@@ -14,6 +14,7 @@ import (
 )
 
 type UpOptions struct {
+	Inputs             []string
 	DryRun             bool
 	Watch              bool
 	CompilationOptions compilation.Options
