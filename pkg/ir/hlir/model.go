@@ -2,7 +2,7 @@ package hlir
 
 import "slices"
 
-type AppModel struct {
+type HLIR struct {
 	Applications     []Application
 	ParameterSweeps  []ParameterSweep
 	ProcessS3Objects []ProcessS3Objects
@@ -10,7 +10,7 @@ type AppModel struct {
 	Others           []UnknownResource
 }
 
-func (model *AppModel) GetApplicationByName(appname string) (Application, bool) {
+func (model *HLIR) GetApplicationByName(appname string) (Application, bool) {
 	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Metadata.Name == appname })
 	if idx < 0 {
 		return Application{}, false
@@ -19,7 +19,7 @@ func (model *AppModel) GetApplicationByName(appname string) (Application, bool) 
 	return model.Applications[idx], true
 }
 
-func (model *AppModel) GetApplicationByRole(role Role) (Application, bool) {
+func (model *HLIR) GetApplicationByRole(role Role) (Application, bool) {
 	idx := slices.IndexFunc(model.Applications, func(app Application) bool { return app.Spec.Role == role })
 	if idx < 0 {
 		return Application{}, false
