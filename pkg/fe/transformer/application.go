@@ -9,7 +9,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options) ([]llir.Component, error) {
+func lowerApplications(compilationName, runname string, model hlir.HLIR, ir llir.LLIR, opts compilation.Options) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	if workstealer.IsNeeded(model) {

@@ -9,7 +9,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.ParameterSweep, ...
-func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options) ([]llir.Component, error) {
+func Lower(compilationName, runname string, model hlir.HLIR, ir llir.LLIR, opts compilation.Options) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	for _, r := range model.ParameterSweeps {

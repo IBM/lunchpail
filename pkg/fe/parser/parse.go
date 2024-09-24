@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-func Parse(yamls string) (hlir.AppModel, error) {
-	model := hlir.AppModel{}
+func Parse(yamls string) (hlir.HLIR, error) {
+	model := hlir.HLIR{}
 	d := yaml.NewDecoder(strings.NewReader(yamls))
 
 	for {

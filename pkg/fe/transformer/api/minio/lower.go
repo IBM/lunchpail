@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname string, model hlir.AppModel, ir llir.LLIR, opts compilation.Options) (llir.Component, error) {
+func Lower(compilationName, runname string, model hlir.HLIR, ir llir.LLIR, opts compilation.Options) (llir.Component, error) {
 	if !ir.Queue.Auto {
 		return nil, nil
 	}
