@@ -1,4 +1,4 @@
-package subcommands
+package queue
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func newQdoneCmd() *cobra.Command {
+func Done() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "qdone",
+		Use:   "done",
 		Short: "Indicate that dispatching is done",
 		Long:  "Indicate that dispatching is done",
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
@@ -21,8 +21,4 @@ func newQdoneCmd() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	rootCmd.AddCommand(newQdoneCmd())
 }

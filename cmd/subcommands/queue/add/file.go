@@ -1,4 +1,4 @@
-package enqueue
+package add
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func NewEnqueueFileCmd() *cobra.Command {
+func File() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "file <file>",
 		Short: "Enqueue a single file as a work task",

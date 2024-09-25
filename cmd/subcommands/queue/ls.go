@@ -1,6 +1,6 @@
 //go:build full || observe
 
-package subcommands
+package queue
 
 import (
 	"context"
@@ -9,16 +9,15 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func newQcatCmd() *cobra.Command {
-	var cmd = &cobra.Command{
-		Use:   "qcat <file>",
-		Short: "Show the contents of a file in the queue",
-		Long:  "Show the contents of a file in the queue",
-		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+func Ls() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "ls [path]",
+		Short: "List queue path",
+		Long:  "List queue path",
+		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
 	}
 
 	opts, err := options.RestoreCompilationOptions()
@@ -30,20 +29,19 @@ func newQcatCmd() *cobra.Command {
 	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		path := ""
+		if len(args) == 1 {
+			path = args[0]
+		}
+
 		ctx := context.Background()
 		backend, err := be.New(ctx, opts)
 		if err != nil {
 			return err
 		}
 
-		return queue.Qcat(ctx, backend, runOpts.Run, args[0])
+		return queue.Qls(ctx, backend, runOpts.Run, path)
 	}
 
 	return cmd
-}
-
-func init() {
-	if compilation.IsCompiled() {
-		rootCmd.AddCommand(newQcatCmd())
-	}
 }

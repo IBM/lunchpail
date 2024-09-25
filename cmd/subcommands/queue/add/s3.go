@@ -1,4 +1,4 @@
-package enqueue
+package add
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func NewEnqueueFromS3Cmd() *cobra.Command {
+func S3() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "s3 <path> <envVarPrefix>",
 		Short: "Enqueue a files in a given S3 path",

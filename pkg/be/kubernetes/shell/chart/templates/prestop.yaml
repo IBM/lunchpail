@@ -9,6 +9,6 @@ terminationGracePeriodSeconds: 5 # give time for the preStop in the container
 lifecycle:
   preStop:
     exec:
-      command: ["lunchpail", "qdone"]
+      command: ["lunchpail", "queue", "done"]
 {{- end }}
 {{- end }}

@@ -1,6 +1,6 @@
 //go:build full || observe
 
-package subcommands
+package queue
 
 import (
 	"context"
@@ -10,13 +10,12 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/qstat"
 )
 
-func newQlastCommand() *cobra.Command {
+func Last() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "qlast",
+		Use:   "last",
 		Short: "Stream queue statistics to console",
 		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	}
@@ -51,10 +50,4 @@ func newQlastCommand() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	if compilation.IsCompiled() {
-		rootCmd.AddCommand(newQlastCommand())
-	}
 }
