@@ -81,7 +81,7 @@ function waitForIt {
 
     # Note: we will use --run $run_name in a few places, but not all
     # -- intentionally so we have test coverage of both code paths
-    local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
+    local run_name=$($testapp runs list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
     if [ -n "$run_name" ]
     then echo "✅ PASS found run_name test=$name run_name=$run_name"
     else echo "❌ FAIL empty run_name test=$name" && return 1
@@ -168,7 +168,7 @@ function waitForNoInstances {
     echo "Checking that no $component remain running for run=$run_name"
     while true
     do
-        nRunning=$($testapp run instances --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
+        nRunning=$($testapp runs instances --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
         if [[ $nRunning == 0 ]]
         then echo "✅ PASS run-controller test=$name no $component remain running" && break
         else echo "$nRunning ${component}(s) remaining running" && sleep 2
@@ -253,7 +253,7 @@ function waitForUnassignedAndOutbox {
     done
     echo "✅ PASS run-controller run test $name"
 
-    local run_name=$($testapp run list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
+    local run_name=$($testapp runs list --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
     echo "✅ PASS run-controller found run test=$name"
 
     waitForEveryoneToDie $run_name
