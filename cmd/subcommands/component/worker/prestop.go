@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/runtime/worker"
 )
 
-func NewPreStopCmd() *cobra.Command {
+func PreStop() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "prestop",
 		Short: "Mark this worker as dead",

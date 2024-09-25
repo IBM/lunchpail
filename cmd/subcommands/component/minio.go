@@ -1,21 +1,19 @@
-package subcommands
+package component
 
 import (
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/cmd/subcommands/minio"
+	"lunchpail.io/cmd/subcommands/component/minio"
 )
 
-func newMinioCmd() *cobra.Command {
-	return &cobra.Command{
+func Minio() *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "minio",
 		Short: "Commands for running minio components",
 		Long:  "Commands for running minio components",
 	}
-}
 
-func init() {
-	cmd := newMinioCmd()
-	rootCmd.AddCommand(cmd)
 	cmd.AddCommand(minio.Server())
+
+	return cmd
 }
