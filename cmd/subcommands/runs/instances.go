@@ -1,6 +1,6 @@
 //go:build full || observe
 
-package run
+package runs
 
 import (
 	"context"
