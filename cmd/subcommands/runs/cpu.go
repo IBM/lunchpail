@@ -1,6 +1,6 @@
 //go:build full || observe
 
-package subcommands
+package runs
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"lunchpail.io/pkg/observe/cpu"
 )
 
-func Newcmd() *cobra.Command {
+func Cpu() *cobra.Command {
 	var intervalSecondsFlag int
 
 	var cmd = &cobra.Command{
@@ -46,8 +46,4 @@ func Newcmd() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	rootCmd.AddCommand(Newcmd())
 }
