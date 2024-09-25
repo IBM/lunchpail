@@ -1,23 +1,19 @@
 package component
 
 import (
-	"context"
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/runtime/workstealer"
+	"lunchpail.io/cmd/subcommands/component/workstealer"
 )
 
 func WorkStealer() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "workstealer",
-		Short: "Run a work stealer",
-		Long:  "Run a work stealer",
-		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
+		Short: "Commands for running work stealer components",
+		Long:  "Commands for running work stealer components",
 	}
 
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return workstealer.Run(context.Background())
-	}
+	cmd.AddCommand(workstealer.Run())
 
 	return cmd
 }
