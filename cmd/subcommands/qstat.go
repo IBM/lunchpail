@@ -29,7 +29,7 @@ func newQstatCommand() *cobra.Command {
 
 	opts, err := options.RestoreCompilationOptions()
 	if err != nil {
-		return nil
+		panic(err)
 	}
 
 	options.AddTargetOptionsTo(cmd, &opts)
