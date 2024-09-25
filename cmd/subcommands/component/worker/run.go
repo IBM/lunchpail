@@ -10,7 +10,7 @@ import (
 	"lunchpail.io/pkg/runtime/worker"
 )
 
-func NewRunCmd() *cobra.Command {
+func Run() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "run [-- workerCommand workerCommandArg1 workerCommandArg2 ...]",
 		Short: "Run as an application worker",

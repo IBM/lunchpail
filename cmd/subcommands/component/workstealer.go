@@ -1,4 +1,4 @@
-package subcommands
+package component
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"lunchpail.io/pkg/runtime/workstealer"
 )
 
-func newWorkstealerCmd() *cobra.Command {
+func WorkStealer() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "workstealer",
 		Short: "Run a work stealer",
@@ -20,8 +20,4 @@ func newWorkstealerCmd() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	rootCmd.AddCommand(newWorkstealerCmd())
 }
