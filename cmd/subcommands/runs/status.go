@@ -1,6 +1,6 @@
 //go:build full || observe
 
-package subcommands
+package runs
 
 import (
 	"context"
@@ -9,11 +9,10 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/observe/status"
 )
 
-func newStatusCommand() *cobra.Command {
+func Status() *cobra.Command {
 	var watchFlag bool
 	var summaryFlag bool
 	var loglinesFlag int
@@ -57,10 +56,4 @@ func newStatusCommand() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	if compilation.IsCompiled() {
-		rootCmd.AddCommand(newStatusCommand())
-	}
 }
