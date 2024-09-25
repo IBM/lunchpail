@@ -28,7 +28,7 @@ func List() *cobra.Command {
 	cmd.Flags().BoolVarP(&latest, "latest", "l", false, "Show only the most recent run")
 	opts, err := options.RestoreCompilationOptions()
 	if err != nil {
-		return nil
+		panic(err)
 	}
 
 	options.AddTargetOptionsTo(cmd, &opts)

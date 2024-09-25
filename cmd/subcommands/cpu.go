@@ -24,7 +24,7 @@ func Newcmd() *cobra.Command {
 	cmd.Flags().IntVarP(&intervalSecondsFlag, "interval", "i", 2, "Sampling interval")
 	opts, err := options.RestoreCompilationOptions()
 	if err != nil {
-		return nil
+		panic(err)
 	}
 
 	options.AddTargetOptionsTo(cmd, &opts)

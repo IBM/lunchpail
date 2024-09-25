@@ -23,7 +23,7 @@ func newQcatCmd() *cobra.Command {
 
 	opts, err := options.RestoreCompilationOptions()
 	if err != nil {
-		return nil
+		panic(err)
 	}
 
 	runOpts := options.AddRunOptions(cmd)
