@@ -51,7 +51,7 @@ func LowerAsComponent(compilationName, runname string, app hlir.Application, ir 
 
 			// sleep to delay the copy-out, if requested
 			component.Spec.Command = fmt.Sprintf(`sleep %d
-env lunchpail_queue_endpoint=%s lunchpail_queue_accessKeyID=%s lunchpail_queue_secretAccessKey=%s $LUNCHPAIL_EXE qout %s %s/%s
+env lunchpail_queue_endpoint=%s lunchpail_queue_accessKeyID=%s lunchpail_queue_secretAccessKey=%s $LUNCHPAIL_EXE queue download %s %s/%s
 %s`, dataset.S3.CopyIn.Delay, spec.Endpoint, spec.AccessKey, spec.SecretKey, dataset.S3.CopyIn.Path, dataset.Name, filepath.Base(dataset.S3.CopyIn.Path), component.Spec.Command)
 		}
 	}

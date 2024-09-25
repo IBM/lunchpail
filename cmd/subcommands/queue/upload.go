@@ -1,6 +1,6 @@
 //go:build full || observe
 
-package subcommands
+package queue
 
 import (
 	"context"
@@ -9,12 +9,11 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
 	"lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/runtime/queue/upload"
 )
 
-func newUploadCmd() *cobra.Command {
+func Upload() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "upload <srcDir> <bucket>",
 		Short: "Copy data into queue",
@@ -43,10 +42,4 @@ func newUploadCmd() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	if compilation.IsCompiled() {
-		rootCmd.AddCommand(newUploadCmd())
-	}
 }

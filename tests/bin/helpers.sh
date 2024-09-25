@@ -93,25 +93,25 @@ function waitForIt {
         while true
         do
             echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name namespace=$ns num_desired_outputs=${NUM_DESIRED_OUTPUTS:-1}$(tput sgr0)" 1>&2
-            nOutputs=$($testapp qls --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+            nOutputs=$($testapp queue ls --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
 
             if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
             then break
             fi
 
             echo "$(tput setaf 2)🧪 Still waiting test=$name for expectedNumOutputs=${NUM_DESIRED_OUTPUTS:-1} actualNumOutputs=$nOutputs$(tput sgr0)"
-            echo "Current output files: $($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)"
+            echo "Current output files: $($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)"
             sleep 1
         done
             echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
+            outputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
-            allOutputs=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)
+            allOutputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)
             echo "AllOutputs: $allOutputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
-                code=$($testapp qcat --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
+                code=$($testapp queue cat --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
                 then echo "✅ PASS run-controller test=$name output=$output code=0"
                 else 
@@ -125,13 +125,13 @@ function waitForIt {
                     fi
                 fi
 
-                stdout=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stdout | wc -l | xargs)
+                stdout=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stdout | wc -l | xargs)
                 if [[ $stdout != 1 ]]
                 then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stdout file test=$name output=$output"
                 fi
 
-                stderr=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stderr | wc -l | xargs)
+                stderr=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stderr | wc -l | xargs)
                 if [[ $stderr != 1 ]]
                 then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
                 else echo "✅ PASS run-controller got stderr file test=$name output=$output"
@@ -141,7 +141,7 @@ function waitForIt {
         echo "Checking for done file (from dispatcher)"
         while true
         do
-            donefilecount=$($testapp qls --target ${LUNCHPAIL_TARGET:-kubernetes} done | wc -l | xargs)
+            donefilecount=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} done | wc -l | xargs)
             if [[ $donefilecount == 1 ]]
             then echo "✅ PASS run-controller test=$name donefile exists" && break
             else echo "still waiting for dispatcher donefile" && sleep 2
@@ -196,7 +196,7 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
-        actualUnassignedTasks=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} unassigned)
+        actualUnassignedTasks=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} unassigned)
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
 
@@ -217,8 +217,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} workers)
-        actualNumInOutbox=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} success)
+        numQueues=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} workers)
+        actualNumInOutbox=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} success)
 
         if [[ -z "$waitForMix" ]]
         then
@@ -229,7 +229,7 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
-            gotMix=$($testapp qlast --target ${LUNCHPAIL_TARGET:-kubernetes} worker.success)
+            gotMix=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} worker.success)
             gotMixFrom=0
             gotMixTotal=0
             for actual in $gotMix

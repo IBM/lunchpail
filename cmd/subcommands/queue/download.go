@@ -1,4 +1,4 @@
-package subcommands
+package queue
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func newQcopyoutCmd() *cobra.Command {
+func Download() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "qout <bucket/path> <localDir>",
+		Use:   "download <bucket/path> <localDir>",
 		Short: "Copy data out of queue",
 		Long:  "Copy data out of queue",
 		Args:  cobra.MatchAll(cobra.ExactArgs(2), cobra.OnlyValidArgs),
@@ -21,8 +21,4 @@ func newQcopyoutCmd() *cobra.Command {
 	}
 
 	return cmd
-}
-
-func init() {
-	rootCmd.AddCommand(newQcopyoutCmd())
 }

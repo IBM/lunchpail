@@ -17,7 +17,7 @@ func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 	app.Spec.Role = "dispatcher"
 
 	app.Spec.Command = strings.Join([]string{
-		`trap "$LUNCHPAIL_EXE qdone" EXIT`,
+		`trap "$LUNCHPAIL_EXE queue done" EXIT`,
 		"./main.sh",
 	}, "\n")
 

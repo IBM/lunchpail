@@ -19,6 +19,6 @@ for bucket_path in $@; do
     if [[ -d $bucket_path ]]; then
         bucket=$(basename $bucket_path)
         echo "$(tput setaf 2)Populating s3 app=$testapp target=${LUNCHPAIL_TARGET:-kubernetes} bucket=$bucket from $bucket_path$(tput sgr0)"
-        $testapp upload $bucket_path $bucket --target ${LUNCHPAIL_TARGET:-kubernetes}
+        $testapp queue upload $bucket_path $bucket --target ${LUNCHPAIL_TARGET:-kubernetes}
     fi
 done
