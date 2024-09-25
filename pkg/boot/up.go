@@ -10,27 +10,27 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/util"
 )
 
 type UpOptions struct {
-	Inputs             []string
-	DryRun             bool
-	Watch              bool
-	CompilationOptions compilation.Options
+	Inputs       []string
+	DryRun       bool
+	Watch        bool
+	BuildOptions build.Options
 }
 
 func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
-	ir, err := fe.PrepareForRun("", fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.CompilationOptions)
+	ir, err := fe.PrepareForRun("", fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
 		return err
 	}
 
 	if opts.DryRun {
-		fmt.Printf(backend.DryRun(ir, opts.CompilationOptions))
+		fmt.Printf(backend.DryRun(ir, opts.BuildOptions))
 		return nil
 	}
 
@@ -70,7 +70,7 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 
 			qopts := queue.EnqueueFileOptions{
 				S3Client:   client,
-				LogOptions: *opts.CompilationOptions.Log,
+				LogOptions: *opts.BuildOptions.Log,
 			}
 			if err := enqueue(cancellable, backend, opts.Inputs, qopts); err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -87,7 +87,7 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	}
 
 	if opts.Watch {
-		verbose := opts.CompilationOptions.Log.Verbose
+		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
 			<-isRunning2
 			go watchLogs(cancellable, backend, ir, WatchOptions{Verbose: verbose})
@@ -96,7 +96,7 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	}
 
 	defer cancel()
-	err = backend.Up(cancellable, ir, opts.CompilationOptions, isRunning)
+	err = backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
 	if len(opts.Inputs) > 0 {
 		// wait till we've enqueued before exiting
 		<-enqueueDone

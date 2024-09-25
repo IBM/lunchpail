@@ -20,7 +20,7 @@ func Last() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 	}
 
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}

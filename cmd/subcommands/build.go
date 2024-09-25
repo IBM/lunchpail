@@ -1,4 +1,4 @@
-//go:build full || compile
+//go:build full || build
 
 package subcommands
 
@@ -9,16 +9,16 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
-	"lunchpail.io/pkg/fe/compiler"
+	"lunchpail.io/pkg/fe/builder"
 )
 
-func newCompileCmd() *cobra.Command {
+func newBuildCmd() *cobra.Command {
 	var outputFlag string
 	var branchFlag string
 	var allFlag bool
 
 	cmd := &cobra.Command{
-		Use:   "compile [path-or-git]",
+		Use:   "build [path-or-git]",
 		Short: "Generate a binary specialized to a given application",
 		Long:  "Generate a binary specialized to a given application",
 		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
@@ -32,7 +32,7 @@ func newCompileCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
 
-	compilationOptions, err := options.AddCompilationOptions(cmd)
+	buildOptions, err := options.AddBuildOptions(cmd)
 	if err != nil {
 		panic(err)
 	}
@@ -47,21 +47,21 @@ func newCompileCmd() *cobra.Command {
 		if err != nil {
 			return err
 		} else {
-			compilationOptions.OverrideValues = overrideValues
+			buildOptions.OverrideValues = overrideValues
 		}
 
 		overrideFileValues, err := cmd.Flags().GetStringSlice("set-file")
 		if err != nil {
 			return err
 		} else {
-			compilationOptions.OverrideFileValues = overrideFileValues
+			buildOptions.OverrideFileValues = overrideFileValues
 		}
 
-		return compiler.Compile(context.Background(), sourcePath, compiler.Options{
-			Name:               outputFlag,
-			Branch:             branchFlag,
-			AllPlatforms:       allFlag,
-			CompilationOptions: *compilationOptions,
+		return builder.Build(context.Background(), sourcePath, builder.Options{
+			Name:         outputFlag,
+			Branch:       branchFlag,
+			AllPlatforms: allFlag,
+			BuildOptions: *buildOptions,
 		})
 	}
 
@@ -69,5 +69,5 @@ func newCompileCmd() *cobra.Command {
 }
 
 func init() {
-	rootCmd.AddCommand(newCompileCmd())
+	rootCmd.AddCommand(newBuildCmd())
 }

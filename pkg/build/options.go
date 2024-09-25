@@ -1,4 +1,4 @@
-package compilation
+package build
 
 import (
 	_ "embed"
@@ -38,34 +38,34 @@ type Options struct {
 	CreateNamespace    bool     `yaml:"createNamespace,omitempty"`
 }
 
-//go:embed compilationOptions.json
+//go:embed buildOptions.json
 var valuesJson []byte
 
 func saveOptions(stagedir string, opts Options) error {
 	if serialized, err := json.Marshal(opts); err != nil {
 		return err
 	} else {
-		return os.WriteFile(filepath.Join(stagedir, "pkg/compilation/compilationOptions.json"), serialized, 0644)
+		return os.WriteFile(filepath.Join(stagedir, "pkg/build/buildOptions.json"), serialized, 0644)
 	}
 }
 
 func RestoreOptions() (Options, error) {
-	var compilationOptions Options
+	var buildOptions Options
 
-	if err := json.Unmarshal(valuesJson, &compilationOptions); err != nil {
-		return compilationOptions, err
+	if err := json.Unmarshal(valuesJson, &buildOptions); err != nil {
+		return buildOptions, err
 	}
 
-	return compilationOptions, nil
+	return buildOptions, nil
 }
 
 // Overlay command line args with options from shrinkwrap (i.e. RestoreOptions)
 func RestoreOptionsWithCliOverlay(cliOpts Options) (Options, error) {
-	compiledOpts, err := RestoreOptions()
+	builtOpts, err := RestoreOptions()
 	if err != nil {
 		return cliOpts, err
 	} else {
-		return cliOpts.overlay(compiledOpts), nil
+		return cliOpts.overlay(builtOpts), nil
 	}
 }
 
@@ -87,23 +87,23 @@ func eitherB(a bool, b bool) bool {
 	return b || a
 }
 
-func (cliOpts Options) overlay(compiledOpts Options) Options {
-	cliOpts.Queue = either(compiledOpts.Queue, cliOpts.Queue)
-	cliOpts.ImagePullSecret = either(compiledOpts.ImagePullSecret, cliOpts.ImagePullSecret)
+func (cliOpts Options) overlay(builtOpts Options) Options {
+	cliOpts.Queue = either(builtOpts.Queue, cliOpts.Queue)
+	cliOpts.ImagePullSecret = either(builtOpts.ImagePullSecret, cliOpts.ImagePullSecret)
 	cliOpts.Target = &TargetOptions{
-		Platform:  eitherPlatform(compiledOpts.Target.Platform, cliOpts.Target.Platform),
-		Namespace: either(compiledOpts.Target.Namespace, cliOpts.Target.Namespace),
+		Platform:  eitherPlatform(builtOpts.Target.Platform, cliOpts.Target.Platform),
+		Namespace: either(builtOpts.Target.Namespace, cliOpts.Target.Namespace),
 	}
 
 	// TODO here... how do we determine that boolean values were unset?
-	cliOpts.HasGpuSupport = eitherB(compiledOpts.HasGpuSupport, cliOpts.HasGpuSupport)
-	cliOpts.CreateNamespace = eitherB(compiledOpts.CreateNamespace, cliOpts.CreateNamespace)
+	cliOpts.HasGpuSupport = eitherB(builtOpts.HasGpuSupport, cliOpts.HasGpuSupport)
+	cliOpts.CreateNamespace = eitherB(builtOpts.CreateNamespace, cliOpts.CreateNamespace)
 
 	// careful: `--set x=3 --set x=4` results in x having
-	// value 4, so we need to place the compiled
+	// value 4, so we need to place the built
 	// options first in the list
-	cliOpts.OverrideValues = append(compiledOpts.OverrideValues, cliOpts.OverrideValues...)
-	cliOpts.OverrideFileValues = append(compiledOpts.OverrideFileValues, cliOpts.OverrideFileValues...)
+	cliOpts.OverrideValues = append(builtOpts.OverrideValues, cliOpts.OverrideValues...)
+	cliOpts.OverrideFileValues = append(builtOpts.OverrideFileValues, cliOpts.OverrideFileValues...)
 
 	return cliOpts
 }

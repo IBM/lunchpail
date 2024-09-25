@@ -4,12 +4,12 @@ import (
 	"context"
 	"sort"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"lunchpail.io/pkg/be/runs"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 func groupByRun(pods *v1.PodList) []runs.Run {
@@ -56,5 +56,5 @@ func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, erro
 		return []runs.Run{}, err
 	}
 
-	return listRuns(ctx, all, compilation.Name(), backend.namespace, clientset)
+	return listRuns(ctx, all, build.Name(), backend.namespace, clientset)
 }

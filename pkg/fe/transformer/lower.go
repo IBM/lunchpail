@@ -3,7 +3,7 @@ package transformer
 import (
 	"slices"
 
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/dispatch"
 	"lunchpail.io/pkg/fe/transformer/api/minio"
@@ -13,10 +13,10 @@ import (
 )
 
 // HLIR -> LLIR
-func Lower(compilationName, runname string, model hlir.HLIR, queueSpec queue.Spec, opts compilation.Options) (llir.LLIR, error) {
-	ir := llir.LLIR{AppName: compilationName, RunName: runname, Queue: queueSpec}
+func Lower(buildName, runname string, model hlir.HLIR, queueSpec queue.Spec, opts build.Options) (llir.LLIR, error) {
+	ir := llir.LLIR{AppName: buildName, RunName: runname, Queue: queueSpec}
 
-	minio, err := minio.Lower(compilationName, runname, model, ir, opts)
+	minio, err := minio.Lower(buildName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
@@ -24,22 +24,22 @@ func Lower(compilationName, runname string, model hlir.HLIR, queueSpec queue.Spe
 		ir.Components = slices.Concat([]llir.Component{minio})
 	}
 
-	apps, err := lowerApplications(compilationName, runname, model, ir, opts)
+	apps, err := lowerApplications(buildName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := dispatch.Lower(compilationName, runname, model, ir, opts)
+	dispatchers, err := dispatch.Lower(buildName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	pools, err := workerpool.LowerAll(compilationName, runname, model, ir, opts)
+	pools, err := workerpool.LowerAll(buildName, runname, model, ir, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	appProvidedKubernetes, err := lowerAppProvidedKubernetesResources(compilationName, runname, model)
+	appProvidedKubernetes, err := lowerAppProvidedKubernetesResources(buildName, runname, model)
 	if err != nil {
 		return llir.LLIR{}, err
 	}

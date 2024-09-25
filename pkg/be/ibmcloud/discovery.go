@@ -10,7 +10,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"golang.org/x/crypto/ssh"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 type resourceGroup struct {
@@ -47,7 +47,7 @@ func loadConfig() (ibmConfig, error) {
 }
 
 // Replace the config file values with user specificed values from command line
-func loadConfigWithCommandLineOverrides(aopts compilation.Options) ibmConfig {
+func loadConfigWithCommandLineOverrides(aopts build.Options) ibmConfig {
 	// intentionally ignoring error, as we have fallbacks if we couldn't find or load the config
 	config, _ := loadConfig()
 
@@ -75,7 +75,7 @@ func getRandomizedZone(config ibmConfig, vpcService *vpcv1.VpcV1) (string, error
 
 // Retrieve public key from user's ssh dir, if exists
 // Looks for two ssh key types: “rsa” and “ed25519" (ibmcloud supported)
-func loadPublicKey(config ibmConfig, aopts compilation.Options) (string, string, error) {
+func loadPublicKey(config ibmConfig, aopts build.Options) (string, string, error) {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
 		return "", "", err

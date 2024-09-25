@@ -10,7 +10,7 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/util"
 )
 
@@ -32,7 +32,7 @@ func newUpCmd() *cobra.Command {
 	}
 
 	cmd.Flags().SortFlags = false
-	compilationOpts, err := options.AddCompilationOptions(cmd)
+	buildOpts, err := options.AddBuildOptions(cmd)
 	if err != nil {
 		panic(err)
 	}
@@ -52,25 +52,25 @@ func newUpCmd() *cobra.Command {
 		}
 
 		// careful: `--set x=3 --set x=4` results in x having
-		// value 4, so we need to place the compiled options
+		// value 4, so we need to place the built options
 		// first in the list
-		compilationOpts.OverrideValues = append(compilationOpts.OverrideValues, overrideValues...)
-		compilationOpts.OverrideFileValues = append(compilationOpts.OverrideFileValues, overrideFileValues...)
+		buildOpts.OverrideValues = append(buildOpts.OverrideValues, overrideValues...)
+		buildOpts.OverrideFileValues = append(buildOpts.OverrideFileValues, overrideFileValues...)
 
 		ctx := context.Background()
-		backend, err := be.NewInitOk(ctx, createCluster, *compilationOpts)
+		backend, err := be.NewInitOk(ctx, createCluster, *buildOpts)
 		if err != nil {
 			return err
 		}
 
-		return boot.Up(ctx, backend, boot.UpOptions{CompilationOptions: *compilationOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args})
+		return boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args})
 	}
 
 	return cmd
 }
 
 func init() {
-	if compilation.IsCompiled() {
+	if build.IsBuilt() {
 		rootCmd.AddCommand(newUpCmd())
 	}
 }

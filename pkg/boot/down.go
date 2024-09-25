@@ -9,7 +9,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
 )
 
@@ -65,17 +65,17 @@ func DownList(ctx context.Context, runnames []string, backend be.Backend, opts D
 	return nil
 }
 
-func toCompilationOpts(opts DownOptions) compilation.Options {
-	compilationOptions := compilation.Options{}
-	compilationOptions.Target = &compilation.TargetOptions{Namespace: opts.Namespace}
-	compilationOptions.ApiKey = opts.ApiKey
+func toBuildOpts(opts DownOptions) build.Options {
+	buildOptions := build.Options{}
+	buildOptions.Target = &build.TargetOptions{Namespace: opts.Namespace}
+	buildOptions.ApiKey = opts.ApiKey
 
-	if compilationOptions.Log == nil {
-		compilationOptions.Log = &compilation.LogOptions{}
+	if buildOptions.Log == nil {
+		buildOptions.Log = &build.LogOptions{}
 	}
-	compilationOptions.Log.Verbose = opts.Verbose
+	buildOptions.Log.Verbose = opts.Verbose
 
-	return compilationOptions
+	return buildOptions
 }
 
 func Down(ctx context.Context, runname string, backend be.Backend, opts DownOptions) error {
@@ -87,7 +87,7 @@ func Down(ctx context.Context, runname string, backend be.Backend, opts DownOpti
 		runname = singletonRun.Name
 	}
 
-	copts := toCompilationOpts(opts)
+	copts := toBuildOpts(opts)
 	ir, err := fe.PrepareForRun(runname, fe.PrepareOptions{}, copts)
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package compilation
+package build
 
 import "embed"
 
@@ -9,4 +9,4 @@ var appTemplate embed.FS
 const appTemplateFile = "app.tar.gz"
 
 // NOTE: keep this in sync with ... this directory and appTemplateFile
-const embededTemplatePath = "pkg/compilation/app.tar.gz"
+const embededTemplatePath = "pkg/build/app.tar.gz"

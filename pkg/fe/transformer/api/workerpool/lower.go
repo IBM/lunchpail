@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/fe/transformer/api/shell"
 	"lunchpail.io/pkg/ir/hlir"
@@ -12,7 +12,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(compilationName, runname string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts compilation.Options) (llir.Component, error) {
+func Lower(buildName, runname string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts build.Options) (llir.Component, error) {
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
 	spec.RunAsJob = true
@@ -34,7 +34,7 @@ func Lower(compilationName, runname string, app hlir.Application, pool hlir.Work
 $LUNCHPAIL_EXE component worker run --debug=%v -- %s`, opts.Log.Debug, app.Spec.Command)
 
 	return shell.LowerAsComponent(
-		compilationName,
+		buildName,
 		runname,
 		app,
 		ir,

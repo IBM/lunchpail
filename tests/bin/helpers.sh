@@ -259,8 +259,8 @@ function waitForUnassignedAndOutbox {
     waitForEveryoneToDie $run_name
 }
 
-function compile {
-    "$SCRIPTDIR"/compile.sh $@
+function build {
+    "$SCRIPTDIR"/build.sh $@
 }
 
 function undeploy {

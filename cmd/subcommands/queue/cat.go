@@ -20,7 +20,7 @@ func Cat() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}

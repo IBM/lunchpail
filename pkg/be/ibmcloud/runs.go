@@ -9,11 +9,11 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"lunchpail.io/pkg/be/runs"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, error) {
-	appName := compilation.Name()
+	appName := build.Name()
 	resourceGroupID := backend.config.ResourceGroup.GUID
 	vpcRuns := []runs.Run{}
 

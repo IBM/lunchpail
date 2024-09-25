@@ -1,11 +1,11 @@
-//go:build full || compile || manage
+//go:build full || build || manage
 
 package subcommands
 
 import (
 	"github.com/spf13/cobra"
 	"lunchpail.io/cmd/subcommands/images"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 func newImagesCommand() *cobra.Command {
@@ -17,7 +17,7 @@ func newImagesCommand() *cobra.Command {
 }
 
 func init() {
-	if !compilation.IsCompiled() {
+	if !build.IsBuilt() {
 		imagesCmd := newImagesCommand()
 		rootCmd.AddCommand(imagesCmd)
 		imagesCmd.AddCommand(images.NewBuildCmd())

@@ -16,7 +16,7 @@ func init() {
 	rootCmd.AddCommand(cmd)
 
 	// Currently components rely on these operations, and in
-	// Kubernetes, we currently use the "uncompiled" raw
+	// Kubernetes, we currently use the "unbuilt" raw
 	// `lunchpail` executable for these operations:
 	cmd.AddCommand(queue.Add())
 	cmd.AddCommand(queue.Done())

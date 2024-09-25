@@ -50,12 +50,12 @@ test rebuilding the images:
 Be careful about passing `--production` to this command, as this will
 result in images being pushed to the default image repository.
 
-## Step 4: Compile and Run a Demo
+## Step 4: Build and Run a Demo
 
-Now you can compile your first application:
+Now you can build your first application:
 
 ```shell
-./lunchpail compile https://github.com/IBM/lunchpail-demo -o demo -N
+./lunchpail build https://github.com/IBM/lunchpail-demo -o demo -N
 ```
 
 And try it out!

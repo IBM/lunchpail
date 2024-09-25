@@ -26,7 +26,7 @@ func Stat() *cobra.Command {
 	cmd.Flags().Int64VarP(&tailFlag, "tail", "T", -1, "Number of lines to tail")
 	cmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Silence extraneous output")
 
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}

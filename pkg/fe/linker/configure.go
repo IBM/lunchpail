@@ -5,12 +5,12 @@ import (
 	"os"
 	"os/user"
 
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Configure(appname, runname string, internalS3Port int, opts compilation.Options) (string, queue.Spec, error) {
+func Configure(appname, runname string, internalS3Port int, opts build.Options) (string, queue.Spec, error) {
 	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
 	if err != nil {
 		return "", queue.Spec{}, err

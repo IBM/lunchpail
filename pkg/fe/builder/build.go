@@ -1,4 +1,4 @@
-package compiler
+package builder
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"runtime"
 
 	"golang.org/x/sync/errgroup"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/util"
 )
 
@@ -29,7 +29,7 @@ func stageLunchpailItself() (string, error) {
 	}
 }
 
-func Compile(ctx context.Context, sourcePath string, opts Options) error {
+func Build(ctx context.Context, sourcePath string, opts Options) error {
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
 		// } else if err == nil {
@@ -37,7 +37,7 @@ func Compile(ctx context.Context, sourcePath string, opts Options) error {
 	}
 
 	lunchpailStageDir, err := stageLunchpailItself()
-	verbose := opts.CompilationOptions.Log.Verbose
+	verbose := opts.BuildOptions.Log.Verbose
 	if err != nil {
 		return err
 	} else if verbose {
@@ -45,27 +45,27 @@ func Compile(ctx context.Context, sourcePath string, opts Options) error {
 	}
 
 	// TODO... how do we really want to get a good name for the app?
-	compilationName := compilation.Name()
+	buildName := build.Name()
 	if sourcePath != "" {
-		compilationName = filepath.Base(trimExt(sourcePath))
+		buildName = filepath.Base(trimExt(sourcePath))
 	}
-	if compilationName == "pail" {
-		compilationName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
-		if compilationName == "pail" {
+	if buildName == "pail" {
+		buildName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
+		if buildName == "pail" {
 			// probably a trailing slash
-			compilationName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
+			buildName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
 		}
 	}
 
 	if verbose {
-		fmt.Fprintf(os.Stderr, "Using compilationName=%s\n", compilationName)
+		fmt.Fprintf(os.Stderr, "Using buildName=%s\n", buildName)
 	}
 
-	if appTemplatePath, appVersion, err := compilation.StagePath(compilationName, sourcePath, compilation.StageOptions{Branch: opts.Branch, Verbose: verbose}); err != nil {
+	if appTemplatePath, appVersion, err := build.StagePath(buildName, sourcePath, build.StageOptions{Branch: opts.Branch, Verbose: verbose}); err != nil {
 		return err
-	} else if err := compilation.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, verbose); err != nil {
+	} else if err := build.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, verbose); err != nil {
 		return err
-	} else if err := compilation.DropBreadcrumb(compilationName, appVersion, opts.CompilationOptions, lunchpailStageDir); err != nil {
+	} else if err := build.DropBreadcrumb(buildName, appVersion, opts.BuildOptions, lunchpailStageDir); err != nil {
 		return err
 	} else {
 		if !opts.AllPlatforms {
