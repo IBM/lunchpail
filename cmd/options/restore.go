@@ -1,18 +1,18 @@
-//go:build full || compile
+//go:build full || build
 
 package options
 
 import (
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
-func RestoreCompilationOptions() (compilation.Options, error) {
-	if compilation.IsCompiled() {
-		if o, err := compilation.RestoreOptions(); err != nil {
-			return compilation.Options{}, err
+func RestoreBuildOptions() (build.Options, error) {
+	if build.IsBuilt() {
+		if o, err := build.RestoreOptions(); err != nil {
+			return build.Options{}, err
 		} else {
 			return o, nil
 		}
 	}
-	return compilation.Options{}, nil
+	return build.Options{}, nil
 }

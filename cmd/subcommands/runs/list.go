@@ -26,7 +26,7 @@ func List() *cobra.Command {
 	cmd.Flags().BoolVarP(&all, "all", "a", false, "Include terminated runs (if false, include only live runs)")
 	cmd.Flags().BoolVarP(&name, "name", "N", false, "Show only the run name")
 	cmd.Flags().BoolVarP(&latest, "latest", "l", false, "Show only the most recent run")
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}

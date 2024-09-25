@@ -1,4 +1,4 @@
-//go:build full || compile || manage
+//go:build full || build || manage
 
 package subcommands
 

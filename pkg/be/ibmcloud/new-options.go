@@ -1,8 +1,8 @@
 package ibmcloud
 
-import "lunchpail.io/pkg/compilation"
+import "lunchpail.io/pkg/build"
 
 type NewOptions struct {
-	Options   compilation.Options
+	Options   build.Options
 	Namespace string
 }

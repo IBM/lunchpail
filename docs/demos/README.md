@@ -38,7 +38,7 @@ release](https://github.com/IBM/lunchpail/releases/latest) and then
 ran:
 
 ```shell
-lunchpail compile https://github.com/IBM/lunchpail-demo -o /tmp/lunchpail-demo -N
+lunchpail build https://github.com/IBM/lunchpail-demo -o /tmp/lunchpail-demo -N
 ```
 
 Here, we used the `-N` flag (short for `--create-namespace`) so that
@@ -78,7 +78,7 @@ release](https://github.com/IBM/lunchpail/releases/latest) and then
 ran:
 
 ```shell
-lunchpail compile https://github.com/IBM/lunchpail-openroad-max-utilization -o /tmp/lunchpail-openroad -N
+lunchpail build https://github.com/IBM/lunchpail-openroad-max-utilization -o /tmp/lunchpail-openroad -N
 ```
 
 See the [above commentary](#how-we-built-lunchpail-demo) for details.

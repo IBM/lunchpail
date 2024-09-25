@@ -4,7 +4,7 @@ package subcommands
 
 import (
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/observe/info"
 )
 
@@ -21,7 +21,7 @@ func newInfoCommand() *cobra.Command {
 }
 
 func init() {
-	if compilation.IsCompiled() {
+	if build.IsBuilt() {
 		rootCmd.AddCommand(newInfoCommand())
 	}
 }

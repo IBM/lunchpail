@@ -10,7 +10,7 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 func newDownCmd() *cobra.Command {
@@ -30,7 +30,7 @@ func newDownCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&apiKey, "api-key", "a", "", "IBM Cloud api key")
 	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
 
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func newDownCmd() *cobra.Command {
 }
 
 func init() {
-	if compilation.IsCompiled() {
+	if build.IsBuilt() {
 		rootCmd.AddCommand(newDownCmd())
 	}
 }

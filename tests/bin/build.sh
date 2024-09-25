@@ -33,10 +33,10 @@ fi
 
 repo_secret="" # e.g. user:pat@https://github.mycompany.com
               
-# intentionally setting some critical values at compile time to the
+# intentionally setting some critical values at build time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
-/tmp/lunchpail compile -v \
+/tmp/lunchpail build -v \
                -o $testapp.tmp \
                $branch \
                $repo_secret \
@@ -46,7 +46,7 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
 # Pull in a `values` file if it exists. This allows for test coverage
 # of `--set` command line values, e.g. that they are correctly
 # propagated to the running code. Note that we intentionally attach
-# these values at compile rather than up time (though up time would
+# these values at build rather than up time (though up time would
 # work, too) so that `down` calls can pick up those values, too.
 if [[ -e "$2"/../values ]]
 then
@@ -56,27 +56,27 @@ then
     echo "Using these values from the application definition: $values_from_pail"
 fi
 
-# intentionally test passing a valid target at compile time that is
+# intentionally test passing a valid target at build time that is
 # different from the desired target, to test that the ./up.sh --target
-# options overrides this compile-time one
-compileTimeTarget=local
+# options overrides this build-time one
+buildTimeTarget=local
 if [ "$LUNCHPAIL_TARGET" = "local" ]
-then compileTimeTarget=kubernetes
+then buildTimeTarget=kubernetes
 fi
 
-# test coverage for re-compile
-$testapp.tmp compile -v \
+# test coverage for re-build
+$testapp.tmp build -v \
              -o $testapp \
              $values_from_pail \
-             --target=$compileTimeTarget \
+             --target=$buildTimeTarget \
              --create-namespace
 rm -f $testapp.tmp
 
-# validate the compiled-in target (TODO add a '$testapp values platform' command?)
-actualCompileTimeTarget=$($testapp info | grep platform: | awk '{print $2}')
-if [ "$compileTimeTarget" = "$actualCompileTimeTarget" ]
-then echo "✅ PASS Compile-time target $compileTimeTarget"
-else echo "❌ FAIL Compile-time target expected!=actual '$$compileTimeTarget'!='$actualCompileTimeTarget'" && exit 1
+# validate the built-in target (TODO add a '$testapp values platform' command?)
+actualBuildTimeTarget=$($testapp info | grep platform: | awk '{print $2}')
+if [ "$buildTimeTarget" = "$actualBuildTimeTarget" ]
+then echo "✅ PASS Build-time target $buildTimeTarget"
+else echo "❌ FAIL Build-time target expected!=actual '$$buildTimeTarget'!='$actualBuildTimeTarget'" && exit 1
 fi
 
 if [[ -d "$2" ]] && [[ -f "$2"/version ]]

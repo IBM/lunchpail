@@ -6,11 +6,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/subcommands/runs"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 func init() {
-	if compilation.IsCompiled() {
+	if build.IsBuilt() {
 		cmd := &cobra.Command{
 			Use:   "runs",
 			Short: "Commands related to runs",

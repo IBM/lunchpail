@@ -87,22 +87,22 @@ then
         fi
     fi
 
-    compile $testname $app $branch $deployname
+    build $testname $app $branch $deployname
 
-    if [[ -n "$expectCompilationFailure" ]]
+    if [[ -n "$expectBuildFailure" ]]
     then
         set +e
         out=$("$SCRIPTDIR"/up.sh $testname 2>&1)
         if [[ $? = 0 ]]
-        then echo "Expected compilation failure, but compilation succeeded" 1>&2 && exit 1
+        then echo "Expected build failure, but build succeeded" 1>&2 && exit 1
         else
-            echo "Got expected compilation failure"
+            echo "Got expected build failure"
             for e in "${expected[@]}"; do
                 if [[ ! "$out" =~ $e ]]
-                then echo "Missing expected compilation failure output from out=$out" && exit 1
+                then echo "Missing expected build failure output from out=$out" && exit 1
                 fi
             done
-            echo "Got all expected compilation failure outputs"
+            echo "Got all expected build failure outputs"
             exit 0
         fi
     else

@@ -28,7 +28,7 @@ func Instances() *cobra.Command {
 	cmd.Flags().BoolVarP(&wait, "wait", "w", false, "Wait for at least one instance to be ready")
 	cmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Only respond via exit code")
 
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}

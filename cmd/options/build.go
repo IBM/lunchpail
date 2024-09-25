@@ -1,15 +1,15 @@
-//go:build full || compile
+//go:build full || build
 
 package options
 
 import (
 	"github.com/spf13/cobra"
 
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
-func AddCompilationOptions(cmd *cobra.Command) (*compilation.Options, error) {
-	options, err := RestoreCompilationOptions()
+func AddBuildOptions(cmd *cobra.Command) (*build.Options, error) {
+	options, err := RestoreBuildOptions()
 	if err != nil {
 		return nil, err
 	}

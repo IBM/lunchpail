@@ -1,5 +1,5 @@
 package llir
 
-import "lunchpail.io/pkg/compilation"
+import "lunchpail.io/pkg/build"
 
-type Options = compilation.Options
+type Options = build.Options

@@ -7,7 +7,7 @@ import (
 )
 
 // HLIR -> LLIR for non-lunchpail resources
-func lowerAppProvidedKubernetesResources(compilationName, runname string, model hlir.HLIR) (string, error) {
+func lowerAppProvidedKubernetesResources(buildName, runname string, model hlir.HLIR) (string, error) {
 	components := []string{}
 
 	for _, r := range model.Others {
@@ -23,7 +23,7 @@ func lowerAppProvidedKubernetesResources(compilationName, runname string, model 
 				}
 
 				if labels != nil {
-					labels["app.kubernetes.io/part-of"] = compilationName
+					labels["app.kubernetes.io/part-of"] = buildName
 					labels["app.kubernetes.io/instance"] = runname
 					labels["app.kubernetes.io/managed-by"] = "lunchpail.io"
 

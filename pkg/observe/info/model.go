@@ -1,7 +1,7 @@
 package info
 
 import (
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 type Info struct {
@@ -9,14 +9,14 @@ type Info struct {
 	Date                 string
 	By                   string
 	On                   string
-	ShrinkwrappedOptions compilation.Options
+	ShrinkwrappedOptions build.Options
 }
 
 func Model() (Info, error) {
-	shrinkwrappedOptions, err := compilation.RestoreOptions()
+	shrinkwrappedOptions, err := build.RestoreOptions()
 	if err != nil {
 		return Info{}, err
 	}
 
-	return Info{compilation.Name(), compilation.Date(), compilation.By(), compilation.On(), shrinkwrappedOptions}, nil
+	return Info{build.Name(), build.Date(), build.By(), build.On(), shrinkwrappedOptions}, nil
 }

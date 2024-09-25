@@ -6,19 +6,19 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/pkg/be/target"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
-func AddTargetOptions(cmd *cobra.Command) *compilation.TargetOptions {
-	return AddTargetOptionsTo(cmd, &compilation.Options{})
+func AddTargetOptions(cmd *cobra.Command) *build.TargetOptions {
+	return AddTargetOptionsTo(cmd, &build.Options{})
 }
 
-func AddTargetOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.TargetOptions {
+func AddTargetOptionsTo(cmd *cobra.Command, opts *build.Options) *build.TargetOptions {
 	if opts.Target == nil {
-		opts.Target = &compilation.TargetOptions{}
+		opts.Target = &build.TargetOptions{}
 	}
-	if compilation.IsCompiled() && opts.Target.Namespace == "" {
-		opts.Target.Namespace = compilation.Name()
+	if build.IsBuilt() && opts.Target.Namespace == "" {
+		opts.Target.Namespace = build.Name()
 	}
 	if opts.Target.Platform == "" {
 		opts.Target.Platform = target.Kubernetes

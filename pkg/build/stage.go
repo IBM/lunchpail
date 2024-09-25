@@ -1,4 +1,4 @@
-package compilation
+package build
 
 import (
 	"fmt"

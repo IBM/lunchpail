@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -34,7 +34,7 @@ func thisAppDir() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(dir, compilation.Name()), nil
+	return filepath.Join(dir, build.Name()), nil
 }
 
 func RunsDir() (string, error) {
@@ -52,7 +52,7 @@ func runDir(runname string) (string, error) {
 		return "", err
 	}
 
-	//strings.Replace(runname, compilation.Name()+"-", "", 1),
+	//strings.Replace(runname, build.Name()+"-", "", 1),
 	return filepath.Join(dir, runname), nil
 }
 

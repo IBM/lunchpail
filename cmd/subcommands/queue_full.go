@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/subcommands/queue"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 func init() {
@@ -16,7 +16,7 @@ func init() {
 	}
 	rootCmd.AddCommand(cmd)
 
-	if compilation.IsCompiled() {
+	if build.IsBuilt() {
 		cmd.AddCommand(queue.Cat())
 		cmd.AddCommand(queue.Last())
 		cmd.AddCommand(queue.Ls())
@@ -25,7 +25,7 @@ func init() {
 	}
 
 	// Currently components rely on these operations, and in
-	// Kubernetes, we currently use the "uncompiled" raw
+	// Kubernetes, we currently use the "unbuilt" raw
 	// `lunchpail` executable for these operations:
 	cmd.AddCommand(queue.Add())
 	cmd.AddCommand(queue.Done())

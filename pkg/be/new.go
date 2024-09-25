@@ -10,10 +10,10 @@ import (
 	"lunchpail.io/pkg/be/kubernetes"
 	"lunchpail.io/pkg/be/local"
 	"lunchpail.io/pkg/be/target"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
-func makeIt(opts compilation.Options) (Backend, error) {
+func makeIt(opts build.Options) (Backend, error) {
 	switch opts.Target.Platform {
 	case target.Local:
 		return local.New(), nil
@@ -26,7 +26,7 @@ func makeIt(opts compilation.Options) (Backend, error) {
 	}
 }
 
-func NewInitOk(ctx context.Context, initOk bool, opts compilation.Options) (Backend, error) {
+func NewInitOk(ctx context.Context, initOk bool, opts build.Options) (Backend, error) {
 	be, err := makeIt(opts)
 	if err != nil {
 		return nil, err
@@ -39,6 +39,6 @@ func NewInitOk(ctx context.Context, initOk bool, opts compilation.Options) (Back
 	return be, nil
 }
 
-func New(ctx context.Context, opts compilation.Options) (Backend, error) {
+func New(ctx context.Context, opts build.Options) (Backend, error) {
 	return NewInitOk(ctx, false, opts)
 }

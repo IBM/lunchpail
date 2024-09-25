@@ -10,7 +10,7 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	comp "lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe"
 )
@@ -31,7 +31,7 @@ func newLogsCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Stream the logs")
 	cmd.Flags().IntVarP(&tailFlag, "tail", "T", -1, "Lines of recent log file to display, with -1 showing all available log data")
 
-	opts, err := options.RestoreCompilationOptions()
+	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +42,7 @@ func newLogsCommand() *cobra.Command {
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		backend, err := be.New(ctx, compilation.Options{Target: opts.Target})
+		backend, err := be.New(ctx, build.Options{Target: opts.Target})
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func newLogsCommand() *cobra.Command {
 }
 
 func init() {
-	if compilation.IsCompiled() {
+	if build.IsBuilt() {
 		rootCmd.AddCommand(newLogsCommand())
 	}
 }

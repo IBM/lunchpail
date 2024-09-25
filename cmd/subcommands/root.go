@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -13,8 +13,8 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	if compilation.IsCompiled() {
-		rootCmd.Use = compilation.Name()
+	if build.IsBuilt() {
+		rootCmd.Use = build.Name()
 	}
 
 	if err := rootCmd.Execute(); err != nil {

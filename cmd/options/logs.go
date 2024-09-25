@@ -2,16 +2,16 @@ package options
 
 import (
 	"github.com/spf13/cobra"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 )
 
-func AddLogOptions(cmd *cobra.Command) *compilation.LogOptions {
-	return AddLogOptionsTo(cmd, &compilation.Options{})
+func AddLogOptions(cmd *cobra.Command) *build.LogOptions {
+	return AddLogOptionsTo(cmd, &build.Options{})
 }
 
-func AddLogOptionsTo(cmd *cobra.Command, opts *compilation.Options) *compilation.LogOptions {
+func AddLogOptionsTo(cmd *cobra.Command, opts *build.Options) *build.LogOptions {
 	if opts.Log == nil {
-		opts.Log = &compilation.LogOptions{}
+		opts.Log = &build.LogOptions{}
 	}
 
 	cmd.Flags().BoolVarP(&opts.Log.Debug, "debug", "d", opts.Log.Debug, "Debug output")

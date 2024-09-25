@@ -10,7 +10,7 @@ import (
 	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -18,7 +18,7 @@ func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose
 	c := make(chan Model)
 
 	model := NewModel()
-	model.AppName = compilation.Name()
+	model.AppName = build.Name()
 	model.RunName = run
 	model.LastNMessages = ring.New(nLoglinesMax)
 

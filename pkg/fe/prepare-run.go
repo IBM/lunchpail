@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/be/helm"
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/linker"
 	"lunchpail.io/pkg/fe/parser"
 	"lunchpail.io/pkg/fe/transformer"
@@ -19,12 +19,12 @@ type PrepareOptions struct {
 
 // Return the low-level intermediate representation (LLIR) for a run
 // of this application. If runname is "", one will be generated.
-func PrepareForRun(runname string, popts PrepareOptions, opts compilation.Options) (llir.LLIR, error) {
+func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (llir.LLIR, error) {
 	verbose := opts.Log.Verbose
 
 	// Stage this application to a local directory
-	stageOpts := compilation.StageOptions{Verbose: verbose}
-	compilationName, templatePath, _, err := compilation.Stage(stageOpts)
+	stageOpts := build.StageOptions{Verbose: verbose}
+	buildName, templatePath, _, err := build.Stage(stageOpts)
 	if err != nil {
 		return llir.LLIR{}, err
 	} else if opts.Log.Verbose {
@@ -33,7 +33,7 @@ func PrepareForRun(runname string, popts PrepareOptions, opts compilation.Option
 
 	// Assign a runname if not given
 	if runname == "" {
-		if generatedRunname, err := linker.GenerateRunName(compilationName); err != nil {
+		if generatedRunname, err := linker.GenerateRunName(buildName); err != nil {
 			return llir.LLIR{}, err
 		} else {
 			runname = generatedRunname
@@ -48,7 +48,7 @@ func PrepareForRun(runname string, popts PrepareOptions, opts compilation.Option
 	}
 
 	// Set up values that will be given to the application YAML
-	yamlValues, queueSpec, err := linker.Configure(compilationName, runname, internalS3Port, opts)
+	yamlValues, queueSpec, err := linker.Configure(buildName, runname, internalS3Port, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
@@ -83,5 +83,5 @@ func PrepareForRun(runname string, popts PrepareOptions, opts compilation.Option
 
 	// Finally we can transform the HLIR to the low-level
 	// intermediate representation (LLIR).
-	return transformer.Lower(compilationName, runname, hlir, queueSpec, opts)
+	return transformer.Lower(buildName, runname, hlir, queueSpec, opts)
 }

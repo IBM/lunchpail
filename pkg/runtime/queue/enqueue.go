@@ -10,13 +10,13 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/compilation"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe"
 )
 
 type EnqueueFileOptions struct {
-	compilation.LogOptions
+	build.LogOptions
 	S3Client
 
 	// Wait for the enqueued task to be completed
@@ -27,7 +27,7 @@ type EnqueueFileOptions struct {
 }
 
 type EnqueueS3Options struct {
-	compilation.LogOptions
+	build.LogOptions
 }
 
 func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (code int, err error) {

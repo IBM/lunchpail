@@ -1,4 +1,4 @@
-package compiler
+package builder
 
 func supportedOs() []string {
 	return []string{
