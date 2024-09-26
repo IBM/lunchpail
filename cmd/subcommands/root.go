@@ -25,6 +25,11 @@ func Execute() error {
 }
 
 func init() {
+	// To tell Cobra to mark the default completion command as
+	// hidden (see
+	// https://github.com/spf13/cobra/blob/main/site/content/completions/_index.md#adapting-the-default-completion-command)
+	rootCmd.CompletionOptions.HiddenDefaultCmd = true
+
 	// We still want usage errors for legitimate usage errors
 	// (e.g. passing an unsupported dash option). We don't want it
 	// for random errors emitted by RunE handlers. This trick
