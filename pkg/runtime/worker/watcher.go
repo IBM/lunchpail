@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/util"
 )
 
 func killfileExists(client queue.S3Client, bucket, prefix string) bool {
@@ -43,7 +44,23 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 		return err
 	}
 
-	for !killfileExists(client, bucket, prefix) {
+	s, err := util.SleepyTime("QUEUE_POLL_INTERVAL_SECONDS", 3)
+	if err != nil {
+		return err
+	}
+
+	for notification := range client.Listen(client.Paths.Bucket, prefix, "") {
+		if killfileExists(client, bucket, prefix) {
+			break
+		} else if notification.Err != nil {
+			if debug {
+				fmt.Fprintln(os.Stderr, notification.Err)
+			}
+
+			// sleep for a bit
+			time.Sleep(s)
+		}
+
 		tasks, err := client.Lsf(bucket, filepath.Join(prefix, inbox))
 		if err != nil {
 			return err
@@ -175,8 +192,6 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				}
 			}
 		}
-
-		time.Sleep(3 * time.Second)
 	}
 
 	fmt.Println("DEBUG Worker exiting normally")
