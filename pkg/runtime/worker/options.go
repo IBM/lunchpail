@@ -1,5 +1,5 @@
 package worker
 
-type Options struct {
-	Debug bool
-}
+import "lunchpail.io/pkg/build"
+
+type Options = build.LogOptions

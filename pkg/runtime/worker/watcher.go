@@ -30,14 +30,14 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 	// dead := client.Paths.dead
 
 	if debug {
-		fmt.Fprintf(os.Stderr, "DEBUG Mkdirp bucket=%s\n", bucket)
+		fmt.Fprintf(os.Stderr, "Mkdirp bucket=%s\n", bucket)
 	}
 	if err := client.Mkdirp(bucket); err != nil {
 		return err
 	}
 
 	if debug {
-		fmt.Fprintf(os.Stderr, "DEBUG Lunchpail worker touching alive file bucket=%s path=%s\n", bucket, alive)
+		fmt.Fprintf(os.Stderr, "Lunchpail worker touching alive file bucket=%s path=%s\n", bucket, alive)
 	}
 	err := client.Touch(bucket, alive)
 	if err != nil {
@@ -194,6 +194,9 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 		}
 	}
 
-	fmt.Println("DEBUG Worker exiting normally")
+	if debug {
+		fmt.Println("Worker exiting normally")
+	}
+
 	return nil
 }

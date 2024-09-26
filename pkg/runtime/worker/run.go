@@ -17,7 +17,7 @@ func delay() error {
 			return err
 		}
 		if delay > 0 {
-			fmt.Fprintf(os.Stderr, "INFO Delaying startup by %d seconds\n", delay)
+			fmt.Fprintf(os.Stderr, "Delaying startup by %d seconds\n", delay)
 			time.Sleep(delay)
 		}
 	}
@@ -26,11 +26,13 @@ func delay() error {
 }
 
 func Run(ctx context.Context, handler []string, opts Options) error {
-	fmt.Fprintf(os.Stderr, "INFO Lunchpail worker starting up\n")
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Lunchpail worker starting up\n")
+	}
 
 	if opts.Debug {
 		// helpful for debugging
-		fmt.Fprintf(os.Stderr, "DEBUG env=%v\n", os.Environ())
+		fmt.Fprintf(os.Stderr, "env=%v\n", os.Environ())
 	}
 
 	if err := delay(); err != nil {
