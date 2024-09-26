@@ -12,15 +12,15 @@ import (
 	"lunchpail.io/pkg/observe/status"
 )
 
-func Status() *cobra.Command {
+func Dashboard() *cobra.Command {
 	var watchFlag bool
 	var summaryFlag bool
 	var loglinesFlag int
 	var intervalFlag int
 
 	var cmd = &cobra.Command{
-		Use:   "status",
-		Short: "Status of a run",
+		Use:   "dashboard",
+		Short: "Show a console-based dashboard for a run",
 	}
 
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Track updates to run status")
