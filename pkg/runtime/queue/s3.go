@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/notification"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -278,11 +279,11 @@ func (s3 S3Client) Mkdirp(bucket string) error {
 	return nil
 }
 
-func (s3 S3Client) WaitTillExists(bucket, object string) error {
+func (s3 S3Client) WaitForEvent(bucket, object, event string) error {
+	defer s3.client.RemoveAllBucketNotification(s3.context, bucket)
+
 	suffix := ""
-	for notificationInfo := range s3.client.ListenBucketNotification(s3.context, bucket, object, suffix, []string{
-		"s3:ObjectCreated:*",
-	}) {
+	for notificationInfo := range s3.client.ListenBucketNotification(s3.context, bucket, object, suffix, []string{event}) {
 		if notificationInfo.Err != nil {
 			return notificationInfo.Err
 		}
@@ -291,4 +292,16 @@ func (s3 S3Client) WaitTillExists(bucket, object string) error {
 	}
 
 	return nil
+}
+
+func (s3 S3Client) WaitTillExists(bucket, object string) error {
+	return s3.WaitForEvent(bucket, object, "s3:ObjectCreated:*")
+}
+
+func (s3 S3Client) Listen(bucket, prefix, suffix string) <-chan notification.Info {
+	return s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, []string{"s3:ObjectCreated:*"})
+}
+
+func (s3 S3Client) StopListening(bucket string) error {
+	return s3.client.RemoveAllBucketNotification(s3.context, bucket)
 }

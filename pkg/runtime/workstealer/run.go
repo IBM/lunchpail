@@ -49,7 +49,15 @@ func Run(ctx context.Context) error {
 		return err
 	}
 
-	for {
+	defer s3.StopListening(s3.Paths.Bucket)
+	for notification := range s3.Listen(s3.Paths.Bucket, "", "") {
+		if notification.Err != nil {
+			fmt.Fprintln(os.Stderr, notification.Err)
+
+			// sleep for a bit
+			time.Sleep(s)
+		}
+
 		// fetch model
 		m := c.fetchModel()
 
