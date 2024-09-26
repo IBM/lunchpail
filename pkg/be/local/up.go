@@ -19,8 +19,9 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 		return err
 	}
 
-	// This may no longer be needed?
-	ir.Queue = ir.Queue.UpdateEndpoint(fmt.Sprintf("localhost:%d", ir.Queue.Port))
+	if ir.Queue.Auto {
+		ir.Queue = ir.Queue.UpdateEndpoint(fmt.Sprintf("localhost:%d", ir.Queue.Port))
+	}
 
 	// This is where component logs will go
 	logdir, err := files.LogDir(ir.RunName, true)
