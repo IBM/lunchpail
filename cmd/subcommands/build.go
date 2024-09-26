@@ -18,10 +18,11 @@ func newBuildCmd() *cobra.Command {
 	var allFlag bool
 
 	cmd := &cobra.Command{
-		Use:   "build [path-or-git]",
-		Short: "Generate a binary specialized to a given application",
-		Long:  "Generate a binary specialized to a given application",
-		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
+		Use:     "build [path-or-git]",
+		GroupID: applicationGroup.ID,
+		Short:   "Generate a binary specialized to a given application",
+		Long:    "Generate a binary specialized to a given application",
+		Args:    cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
 	}
 
 	cmd.Flags().StringVarP(&outputFlag, "output", "o", "", "Path to store output binary")

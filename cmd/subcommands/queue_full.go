@@ -11,8 +11,9 @@ import (
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "queue",
-		Short: "Commands related to the queue",
+		Use:     "queue",
+		GroupID: internalGroup.ID,
+		Short:   "Commands related to the queue",
 	}
 	rootCmd.AddCommand(cmd)
 

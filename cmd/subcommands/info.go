@@ -10,8 +10,9 @@ import (
 
 func newInfoCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "info",
-		Short: "Summary information of the application",
+		Use:     "info",
+		GroupID: applicationGroup.ID,
+		Short:   "Summary information of the application",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return info.UI()
 		},

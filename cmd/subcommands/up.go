@@ -20,10 +20,11 @@ func newUpCmd() *cobra.Command {
 	var createCluster bool
 
 	var cmd = &cobra.Command{
-		Use:   "up [inputFilesOrDirectories...]",
-		Short: "Deploy the application",
-		Long:  "Deploy the application",
-		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
+		Use:     "up [inputFilesOrDirectories...]",
+		GroupID: applicationGroup.ID,
+		Short:   "Deploy the application",
+		Long:    "Deploy the application",
+		Args:    cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
 	if util.StdoutIsTty() {

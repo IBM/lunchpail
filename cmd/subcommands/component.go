@@ -8,8 +8,9 @@ import (
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "component",
-		Short: "Commands related to specific components",
+		Use:     "component",
+		GroupID: internalGroup.ID,
+		Short:   "Commands related to specific components",
 	}
 	rootCmd.AddCommand(cmd)
 
