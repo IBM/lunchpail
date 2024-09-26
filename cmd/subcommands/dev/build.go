@@ -1,13 +1,14 @@
-package images
+package dev
 
 import (
 	"github.com/spf13/cobra"
+
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/lunchpail/images"
 	"lunchpail.io/pkg/lunchpail/images/build"
 )
 
-func NewBuildCmd() *cobra.Command {
+func Build() *cobra.Command {
 	var productionFlag bool
 	var forceFlag bool
 

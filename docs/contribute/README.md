@@ -35,7 +35,7 @@ Kubernetes cluster. If you do not already have these set up on your
 laptop, you may run:
 
 ```shell
-./lunchpail init local --build-images
+./lunchpail dev init --build-images
 ```
 
 This will install [Podman](https://podman.io/), create a Podman
@@ -44,7 +44,7 @@ create a Kind cluster named `lunchpail`. Later, if you only want to
 test rebuilding the images:
 
 ```shell
-./lunchpail images build --verbose
+./lunchpail dev build --verbose
 ```
 
 Be careful about passing `--production` to this command, as this will
@@ -85,5 +85,5 @@ After making a change, you can run a test, e.g.:
 
 The "re" part of `rerun.sh` means that all of the above steps will be
 repeated. This includes rebuilding base images (which is included in
-`lunchpail init local --build-images` or `./lunchpail images build`)
+`lunchpail dev init --build-images` or `./lunchpail dev build`)
 and rebuilding the CLI.
