@@ -8,18 +8,22 @@ import (
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func PreStop(ctx context.Context) error {
+func PreStop(ctx context.Context, opts Options) error {
 	client, err := queue.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("DEBUG Marking worker as done...")
+	if opts.Debug {
+		fmt.Println("Marking worker as done...")
+	}
 
 	client.Rm(client.Paths.Bucket, client.Paths.Alive)
 	client.Touch(client.Paths.Bucket, client.Paths.Dead)
 
-	fmt.Printf("INFO This worker is shutting down %s\n", os.Getenv("LUNCHPAIL_POD_NAME"))
+	if opts.Verbose {
+		fmt.Printf("This worker is shutting down %s\n", os.Getenv("LUNCHPAIL_POD_NAME"))
+	}
 
 	return nil
 }

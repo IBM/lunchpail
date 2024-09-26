@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/runtime/worker"
 )
 
@@ -15,8 +16,10 @@ func PreStop() *cobra.Command {
 		Long:  "Mark this worker as dead",
 	}
 
+	logOpts := options.AddLogOptions(cmd)
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return worker.PreStop(context.Background())
+		return worker.PreStop(context.Background(), worker.Options(*logOpts))
 	}
 
 	return cmd

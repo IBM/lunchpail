@@ -25,7 +25,7 @@ func Run() *cobra.Command {
 			return fmt.Errorf("Nothing to run. Specify the worker command line after a --: %v", args)
 		}
 
-		return worker.Run(context.Background(), args, worker.Options{Debug: logOpts.Debug})
+		return worker.Run(context.Background(), args, worker.Options(*logOpts))
 	}
 
 	return cmd
