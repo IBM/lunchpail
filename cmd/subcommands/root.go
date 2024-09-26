@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
 	"lunchpail.io/pkg/build"
 )
 
@@ -11,6 +12,10 @@ import (
 var rootCmd = &cobra.Command{
 	Use: "lunchpail",
 }
+
+var applicationGroup = &cobra.Group{ID: "Application", Title: "Application Commands"}
+var runGroup = &cobra.Group{ID: "Run", Title: "Run Commands"}
+var internalGroup = &cobra.Group{ID: "Internal", Title: "Advanced/Internal Commands"}
 
 func Execute() error {
 	if build.IsBuilt() {
@@ -25,6 +30,12 @@ func Execute() error {
 }
 
 func init() {
+	rootCmd.AddGroup(applicationGroup)
+	if build.IsBuilt() {
+		rootCmd.AddGroup(runGroup)
+	}
+	rootCmd.AddGroup(internalGroup)
+
 	// To tell Cobra to mark the default completion command as
 	// hidden (see
 	// https://github.com/spf13/cobra/blob/main/site/content/completions/_index.md#adapting-the-default-completion-command)

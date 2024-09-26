@@ -20,9 +20,10 @@ func newDownCmd() *cobra.Command {
 	var deleteCloudResourcesFlag bool
 
 	var cmd = &cobra.Command{
-		Use:   "down [run1] [run2] ...",
-		Short: "Undeploy the application",
-		Long:  "Undeploy the application",
+		Use:     "down [run1] [run2] ...",
+		GroupID: runGroup.ID,
+		Short:   "Undeploy a run",
+		Long:    "Undeploy a run",
 	}
 
 	cmd.Flags().BoolVarP(&deleteNamespaceFlag, "delete-namespace", "N", false, "Also delete namespace (only for empty namespaces)")

@@ -12,8 +12,9 @@ import (
 func init() {
 	if build.IsBuilt() {
 		cmd := &cobra.Command{
-			Use:   "status",
-			Short: "Commands related to run status",
+			Use:     "status",
+			GroupID: runGroup.ID,
+			Short:   "Commands related to the status of a run",
 		}
 
 		rootCmd.AddCommand(cmd)

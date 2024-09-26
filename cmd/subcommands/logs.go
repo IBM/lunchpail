@@ -21,10 +21,11 @@ func newLogsCommand() *cobra.Command {
 	var tailFlag int
 
 	var cmd = &cobra.Command{
-		Use:   "logs",
-		Short: "Print or stream logs from the application",
-		Long:  "Print or stream logs from the application",
-		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
+		Use:     "logs",
+		GroupID: runGroup.ID,
+		Short:   "Print or stream logs from a run",
+		Long:    "Print or stream logs from a run",
+		Args:    cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
 
 	cmd.Flags().StringSliceVarP(&componentsFlag, "component", "c", []string{"workers"}, "Components to track (workers|dispatcher|workstealer|minio)")

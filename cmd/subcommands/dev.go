@@ -10,9 +10,10 @@ import (
 
 func init() {
 	var cmd = &cobra.Command{
-		Use:   "dev",
-		Short: "Commands related to local Lunchpail development",
-		Long:  "Commands related to local Lunchpail development",
+		Use:     "dev",
+		GroupID: internalGroup.ID,
+		Short:   "Commands related to local Lunchpail development",
+		Long:    "Commands related to local Lunchpail development",
 	}
 
 	cmd.AddCommand(dev.Init())
