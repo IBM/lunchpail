@@ -41,8 +41,12 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 	}
 
 	// Assign a port for the internal S3 (TODO: we only need to do
-	// this if this run will be using an internal S3)
-	internalS3Port := rand.Intn(65536) + 1
+	// this if this run will be using an internal S3). We use the
+	// range of "ephemeral"
+	// ports. https://en.wikipedia.org/wiki/Ephemeral_bbport
+	portMin := 49152
+	portMax := 65535
+	internalS3Port := rand.Intn(portMax-portMin+1) + portMin
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
 	}
