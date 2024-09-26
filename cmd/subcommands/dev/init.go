@@ -1,18 +1,19 @@
-package init
+package dev
 
 import (
 	"context"
 
 	"github.com/spf13/cobra"
+
 	"lunchpail.io/cmd/options"
 	initialize "lunchpail.io/pkg/lunchpail/init"
 )
 
-func NewInitLocalCmd() *cobra.Command {
+func Init() *cobra.Command {
 	var buildFlag bool
 
 	var cmd = &cobra.Command{
-		Use:   "local",
+		Use:   "init",
 		Short: "Initialize a local control plane",
 		Long:  "Initialize a local control plane",
 	}

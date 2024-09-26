@@ -14,7 +14,7 @@ rm -f /tmp/lunchpail
 if [ ${LUNCHPAIL_TARGET:-kubernetes} = "kubernetes" ]
 then
     "$TOP"/hack/setup/cli.sh /tmp/lunchpail
-    /tmp/lunchpail images build -v
+    /tmp/lunchpail dev build -v
     export LUNCHPAIL_BUILD_NOT_NEEDED=1
 fi
 
