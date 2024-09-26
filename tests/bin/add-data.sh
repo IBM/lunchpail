@@ -9,7 +9,7 @@ set -eo pipefail
 
 # Wait for minio component
 echo "$(tput setaf 2)Pre-Populating s3 app=$testapp target=${LUNCHPAIL_TARGET:-kubernetes} (waiting for s3 to be ready)$(tput sgr0)"
-$testapp runs instances \
+$testapp status instances \
          --namespace $NAMESPACE \
          --target ${LUNCHPAIL_TARGET:-kubernetes} \
          --component minio \

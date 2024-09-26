@@ -13,13 +13,13 @@ import (
 	"lunchpail.io/pkg/be/runs"
 )
 
-func List() *cobra.Command {
+func ListRuns() *cobra.Command {
 	var all bool
 	var name bool
 	var latest bool
 
 	var cmd = &cobra.Command{
-		Use:   "list",
+		Use:   "runs",
 		Short: "List recent runs",
 		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
