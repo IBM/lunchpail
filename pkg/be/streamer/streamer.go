@@ -7,11 +7,13 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
+type LinePrefixFunction = func(instanceName string) string
+
 type LogOptions struct {
 	Tail       int
 	Follow     bool
 	Verbose    bool
-	LinePrefix string
+	LinePrefix LinePrefixFunction
 }
 
 type Streamer interface {

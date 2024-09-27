@@ -71,6 +71,10 @@ func LogDir(runname string, mkdir bool) (string, error) {
 	return logdir, nil
 }
 
+func LogFileForComponent(c lunchpail.Component) string {
+	return lunchpail.ComponentShortName(c)
+}
+
 func LogsForComponent(runname string, c lunchpail.Component) (string, error) {
 	dir, err := LogDir(runname, false)
 	if err != nil {
@@ -81,7 +85,7 @@ func LogsForComponent(runname string, c lunchpail.Component) (string, error) {
 		return "", fmt.Errorf("Invalid request for log file for workers")
 	}
 
-	return filepath.Join(dir, string(c)+".out"), nil
+	return filepath.Join(dir, LogFileForComponent(c)+".out"), nil
 }
 
 func componentsDir(runname string) (string, error) {

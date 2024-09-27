@@ -36,7 +36,7 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 	s := backend.Streamer(ctx, runname)
 	for _, component := range opts.Components {
 		group.Go(func() error {
-			prefix := ""
+			var prefix streamer.LinePrefixFunction
 			if useComponentPrefix {
 				prefix = LogsComponentPrefix(component)
 			}
@@ -56,6 +56,8 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 	return group.Wait()
 }
 
-func LogsComponentPrefix(component lunchpail.Component) string {
-	return colors.ComponentStyle(component).Render(fmt.Sprintf("%-8s", lunchpail.ComponentShortName(component)))
+func LogsComponentPrefix(component lunchpail.Component) streamer.LinePrefixFunction {
+	return func(instanceName string) string {
+		return colors.ComponentStyle(component).Render(fmt.Sprintf("%-8s", instanceName))
+	}
 }

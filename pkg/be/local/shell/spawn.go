@@ -27,8 +27,8 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 	}
 
 	// tee command output to the logdir
-	instance := strings.Replace(c.InstanceName, runname, "", 1)
-	logfile := string(c.C())
+	instance := strings.Replace(strings.Replace(c.InstanceName, runname, "", 1), "--", "-", 1)
+	logfile := files.LogFileForComponent(c.C())
 	if len(instance) > 0 {
 		logfile = logfile + "-" + instance
 	}
