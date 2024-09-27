@@ -202,7 +202,7 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 
 		for _, f := range fs {
 			file := f.Name()
-			if strings.HasPrefix(file, "workerpool-") {
+			if strings.HasPrefix(file, lunchpail.ComponentShortName(lunchpail.WorkersComponent)) {
 				alreadyWatching, exists := watching[file]
 				if !alreadyWatching || !exists {
 					watching[file] = true
@@ -245,8 +245,8 @@ func (s localStreamer) ComponentLogs(c lunchpail.Component, opts streamer.LogOpt
 	default:
 		// TODO allow caller to select stderr versus stdout
 		group, _ := errgroup.WithContext(s.Context)
-		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".out"), opts) })
-		group.Go(func() error { return tailf(filepath.Join(logdir, string(c)+".err"), opts) })
+		group.Go(func() error { return tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".out"), opts) })
+		group.Go(func() error { return tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".err"), opts) })
 		return group.Wait()
 	}
 }
@@ -267,7 +267,11 @@ func tailf(outfile string, opts streamer.LogOptions) error {
 	}
 
 	for line := range c.Lines {
-		fmt.Printf("%s%s\n", opts.LinePrefix, line.Text)
+		prefix := ""
+		if opts.LinePrefix != nil {
+			prefix = opts.LinePrefix(strings.TrimSuffix(filepath.Base(outfile), filepath.Ext(outfile)))
+		}
+		fmt.Printf("%s%s\n", prefix, line.Text)
 	}
 
 	return nil
