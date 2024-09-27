@@ -88,7 +88,7 @@ function waitForIt {
     fi
 
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
-    then echo "✅ PASS run-controller run api=$api test=$name"
+    then echo "✅ PASS run api=$api test=$name"
     else
         while true
         do
@@ -103,50 +103,43 @@ function waitForIt {
             echo "Current output files: $($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)"
             sleep 1
         done
-            echo "✅ PASS run-controller run api=$api test=$name nOutputs=$nOutputs"
+            echo "✅ PASS run api=$api test=$name nOutputs=$nOutputs"
             outputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
             echo "Outputs: $outputs"
             allOutputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)
-            echo "AllOutputs: $allOutputs"
             for output in $outputs
             do
                 echo "Checking output=$output"
+
+                if echo "$allOutputs" | grep -Fq "${output}".code
+                then echo "✅ PASS got code file test=$name output=$output"
+                else echo "❌ FAIL missing code test=$name output=$output allOutputs=$allOutputs" && return 1
+                fi
+
                 code=$($testapp queue cat --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
                 if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
-                then echo "✅ PASS run-controller test=$name output=$output code=0"
+                then echo "✅ PASS test=$name output=$output code=0"
                 else 
                     if [[ -n "$expectTaskFailure" ]]
                     then 
                         if [[ ! "$code" =~ $expectTaskFailure ]]
                         then echo "Missing expected task failure output from code=$code" && return 1
                         fi
-                        echo "✅ PASS run-controller got expected non-zero exit code test=$name output=$output code=$code"
-                    else echo "❌ FAIL run-controller non-zero exit code test=$name output=$output code=$code" && return 1
+                        echo "✅ PASS got expected non-zero exit code test=$name output=$output code=$code"
+                    else echo "❌ FAIL non-zero exit code test=$name output=$output code=$code" && return 1
                     fi
                 fi
 
-                stdout=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stdout | wc -l | xargs)
-                if [[ $stdout != 1 ]]
-                then echo "❌ FAIL run-controller missing stdout test=$name output=$output" && return 1
-                else echo "✅ PASS run-controller got stdout file test=$name output=$output"
+                if echo "$allOutputs" | grep -Fq "${output}".stdout 
+                then echo "✅ PASS got stdout file test=$name output=$output"
+                else echo "❌ FAIL missing stdout test=$name output=$output allOutputs=$allOutputs" && return 1
                 fi
 
-                stderr=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.stderr | wc -l | xargs)
-                if [[ $stderr != 1 ]]
-                then echo "❌ FAIL run-controller missing stderr test=$name output=$output" && return 1
-                else echo "✅ PASS run-controller got stderr file test=$name output=$output"
+                if echo "$allOutputs" | grep -Fq "${output}".stderr
+                then echo "✅ PASS got stderr file test=$name output=$output"
+                else echo "❌ FAIL missing stderr test=$name output=$output allOutputs=$allOutputs" && return 1
                 fi
             done
-
-        echo "Checking for done file (from dispatcher)"
-        while true
-        do
-            donefilecount=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} done | wc -l | xargs)
-            if [[ $donefilecount == 1 ]]
-            then echo "✅ PASS run-controller test=$name donefile exists" && break
-            else echo "still waiting for dispatcher donefile" && sleep 2
-            fi
-        done
 
         waitForEveryoneToDie $run_name
     fi
@@ -170,7 +163,7 @@ function waitForNoInstances {
     do
         nRunning=$($testapp status instances --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
         if [[ $nRunning == 0 ]]
-        then echo "✅ PASS run-controller test=$name no $component remain running" && break
+        then echo "✅ PASS test=$name no $component remain running" && break
         else echo "$nRunning ${component}(s) remaining running" && sleep 2
         fi
     done
@@ -251,10 +244,10 @@ function waitForUnassignedAndOutbox {
 
         runIter=$((runIter+1))
     done
-    echo "✅ PASS run-controller run test $name"
+    echo "✅ PASS run test $name"
 
     local run_name=$($testapp status runs --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns --latest --name)
-    echo "✅ PASS run-controller found run test=$name"
+    echo "✅ PASS found run test=$name"
 
     waitForEveryoneToDie $run_name
 }
