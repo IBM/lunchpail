@@ -3,7 +3,7 @@
 set -eo pipefail
 
 # Allows us to capture workstealer info before it auto-terminates
-export LUNCHPAIL_SLEEP_BEFORE_EXIT=10
+export LUNCHPAIL_SLEEP_BEFORE_EXIT=5
 
 if [[ -n "$1" ]]
 then APP="--set app=$1"
