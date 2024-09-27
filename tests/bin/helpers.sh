@@ -116,18 +116,13 @@ function waitForIt {
                 else echo "❌ FAIL missing code test=$name output=$output allOutputs=$allOutputs" && return 1
                 fi
 
-                code=$($testapp queue cat --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox/${output}.code)
-                if [[ $code = 0 ]] || [[ $code = -1 ]] || [[ $code = 143 ]] || [[ $code = 137 ]]
-                then echo "✅ PASS test=$name output=$output code=0"
-                else 
-                    if [[ -n "$expectTaskFailure" ]]
-                    then 
-                        if [[ ! "$code" =~ $expectTaskFailure ]]
-                        then echo "Missing expected task failure output from code=$code" && return 1
-                        fi
-                        echo "✅ PASS got expected non-zero exit code test=$name output=$output code=$code"
-                    else echo "❌ FAIL non-zero exit code test=$name output=$output code=$code" && return 1
-                    fi
+                local ofile="succeeded"
+                if [ -n "$expectTaskFailure" ]
+                then ofile="failed"
+                fi
+                if echo "$allOutputs" | grep -Fq "${output}.$ofile"
+                then echo "✅ PASS got expected $ofile file test=$name output=$output"
+                else echo "❌ FAIL missing expected $ofile file test=$name output=$output ofile=${output}.$ofile allOutputs=$allOutputs" && return 1
                 fi
 
                 if echo "$allOutputs" | grep -Fq "${output}".stdout 

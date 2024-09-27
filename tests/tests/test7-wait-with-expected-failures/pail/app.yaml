@@ -1,7 +1,7 @@
 apiVersion: lunchpail.io/v1alpha1
 kind: Application
 metadata:
-  name: test7-wait
+  name: test7-wait-with-expected-failures
 spec:
   role: worker
   code:
@@ -15,12 +15,15 @@ spec:
         out="$2"
 
         dataset_name=test # match with below!
-        bucket_name=test7-wait
-        folder_name=test7-wait
+        bucket_name=test7-wait-with-expected-failures
+        folder_name=test7-wait-with-expected-failures
         N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
 
         echo "Processing $N $(basename $in)"
 
+        echo "Error!" 1>&2
+        exit 64
+        
         echo "Done with $(basename $in)"
 
   command: ./main.sh
@@ -32,5 +35,5 @@ spec:
         rclone:
           remoteName: rcloneremotetest # see preinit.sh
         copyIn:
-          path: "test7-wait/"
+          path: "test7-wait-with-expected-failures/"
           delay: 8 # tests/bin/run.sh only copies in the data that we will copy out *after* the test has begun
