@@ -44,7 +44,7 @@ func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (cod
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, "Enqueuing task %s '%s'\n", task, c.Paths.PoolPrefix)
+	fmt.Fprintf(os.Stderr, "Enqueuing task %s\n", task)
 
 	err = c.UploadAs(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task)), opts.AsIfNamedPipe)
 	if err != nil {
@@ -134,7 +134,7 @@ func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretA
 	}
 
 	if err != nil {
-		return fmt.Errorf("Error enqueueing from s3: %v", err)
+		return fmt.Errorf("Error enqueuing from s3: %v", err)
 	}
 
 	return nil
