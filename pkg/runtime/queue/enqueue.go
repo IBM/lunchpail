@@ -11,8 +11,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/lunchpail"
-	"lunchpail.io/pkg/observe"
 )
 
 type EnqueueFileOptions struct {
@@ -46,7 +44,7 @@ func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (cod
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, "%sEnqueuing task %s '%s'\n", observe.LogsComponentPrefix(lunchpail.DispatcherComponent), task, c.Paths.PoolPrefix)
+	fmt.Fprintf(os.Stderr, "Enqueuing task %s '%s'\n", task, c.Paths.PoolPrefix)
 
 	err = c.UploadAs(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task)), opts.AsIfNamedPipe)
 	if err != nil {
