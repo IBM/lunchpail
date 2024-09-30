@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 
 	"golang.org/x/sync/errgroup"
@@ -54,6 +55,8 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 			buildName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
 		}
 	}
+	// replace _ with -
+	buildName = regexp.MustCompile("_").ReplaceAllString(buildName, "-")
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Using buildName=%s\n", buildName)
