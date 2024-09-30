@@ -59,7 +59,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	}
 
 	// Fifth, tell the build about itself (its name, version)
-	if err := build.DropBreadcrumb(buildName, appVersion, opts.BuildOptions, lunchpailStageDir); err != nil {
+	if err := build.DropBreadcrumbs(buildName, appVersion, opts.BuildOptions, lunchpailStageDir); err != nil {
 		return err
 	}
 
