@@ -49,7 +49,7 @@ func IsBuilt() bool {
 	return Name() != "<none>"
 }
 
-func DropBreadcrumb(buildName, appVersion string, opts Options, stagedir string) error {
+func DropBreadcrumbs(buildName, appVersion string, opts Options, stagedir string) error {
 	user, err := user.Current()
 	if err != nil {
 		return err
