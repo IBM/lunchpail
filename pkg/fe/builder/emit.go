@@ -1,10 +1,13 @@
 package builder
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func goget(dir string) error {
@@ -61,6 +64,7 @@ func gobuild(dir, name, targetOs, targetArch string) error {
 	return nil
 }
 
+// Emit application binary for the given os and arch
 func emit(dir, name, targetOs, targetArch string) error {
 	fmt.Fprintln(os.Stderr, "Generating application binary "+targetOs+" "+targetArch)
 	if err := goget(dir); err != nil {
@@ -76,4 +80,19 @@ func emit(dir, name, targetOs, targetArch string) error {
 	}
 
 	return nil
+}
+
+// emit() but for all supported os and arch
+func emitAll(ctx context.Context, dir, name string) error {
+	group, _ := errgroup.WithContext(ctx)
+
+	for _, targetOs := range supportedOs() {
+		for _, targetArch := range supportedArch() {
+			group.Go(func() error {
+				return emit(dir, name, targetOs, targetArch)
+			})
+		}
+	}
+
+	return group.Wait()
 }

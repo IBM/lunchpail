@@ -23,8 +23,7 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 	verbose := opts.Log.Verbose
 
 	// Stage this application to a local directory
-	stageOpts := build.StageOptions{Verbose: verbose}
-	buildName, templatePath, _, err := build.Stage(stageOpts)
+	templatePath, err := build.StageForRun(build.StageOptions{Verbose: verbose})
 	if err != nil {
 		return llir.LLIR{}, err
 	} else if opts.Log.Verbose {
@@ -33,7 +32,7 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 
 	// Assign a runname if not given
 	if runname == "" {
-		if generatedRunname, err := linker.GenerateRunName(buildName); err != nil {
+		if generatedRunname, err := linker.GenerateRunName(build.Name()); err != nil {
 			return llir.LLIR{}, err
 		} else {
 			runname = generatedRunname
@@ -52,7 +51,7 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 	}
 
 	// Set up values that will be given to the application YAML
-	yamlValues, queueSpec, err := linker.Configure(buildName, runname, internalS3Port, opts)
+	yamlValues, queueSpec, err := linker.Configure(build.Name(), runname, internalS3Port, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
@@ -87,5 +86,5 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 
 	// Finally we can transform the HLIR to the low-level
 	// intermediate representation (LLIR).
-	return transformer.Lower(buildName, runname, hlir, queueSpec, opts)
+	return transformer.Lower(build.Name(), runname, hlir, queueSpec, opts)
 }
