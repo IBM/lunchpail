@@ -7,65 +7,49 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"lunchpail.io/pkg/build/stage"
 	"lunchpail.io/pkg/util"
 )
 
 type StageOptions struct {
-	Branch  string
 	Verbose bool
 }
 
-// return (templatePath, appVersion, error)
-func StagePath(appname, sourcePath string, opts StageOptions) (string, string, error) {
-	appVersion := AppVersion()
-
+// return (templatePath, error)
+func StageForBuilder(appname string, opts StageOptions) (string, error) {
 	// TODO overlay on kube/common?
 	templatePath, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
-		return "", "", err
+		return "", err
 
 	} else if err := util.Expand(templatePath, appTemplate, appTemplateFile); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Application source stage dir=%s\n", templatePath)
+		fmt.Fprintf(os.Stderr, "Finished staging application template to %s\n", templatePath)
 	}
 
-	if sourcePath != "" {
-		if version, err := stage.CopyAppIntoTemplate(appname, sourcePath, templatePath, opts.Branch, opts.Verbose); err != nil {
-			return "", "", err
-		} else {
-			appVersion = version
-		}
-	}
-
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Finished staging application to %s\n", templatePath)
-	}
-
-	return templatePath, appVersion, nil
+	return templatePath, nil
 }
 
-// return (appname, templatePath, appVersion, error)
-func Stage(opts StageOptions) (string, string, string, error) {
+// return (templatePath, error)
+func StageForRun(opts StageOptions) (string, error) {
 	appname := Name()
-	templatePath, appVersion, err := StagePath(appname, "", opts)
+	templatePath, err := StageForBuilder(appname, opts)
 
-	// TODO parallelize these two
-	if err := dropChartYaml(templatePath); err != nil {
-		return "", "", "", err
+	// TODO we could parallelize these two, but the overhead is probably not worth it
+	if err := emitPlaceholderChartYaml(templatePath); err != nil {
+		return "", err
 	}
-	if err := dropHelmIgnore(templatePath); err != nil {
-		return "", "", "", err
+	if err := emitPlaceholderHelmIgnore(templatePath); err != nil {
+		return "", err
 	}
 
-	return appname, templatePath, appVersion, err
+	return templatePath, err
 }
 
 // This is just to make helmClient.Template happy.
-func dropChartYaml(templatePath string) error {
+func emitPlaceholderChartYaml(templatePath string) error {
 	chartYaml := `
 apiVersion: v1
 name: lunchpail
@@ -76,7 +60,7 @@ appVersion: 0.0.1`
 }
 
 // This is just to make helmClient.Template happy.
-func dropHelmIgnore(templatePath string) error {
+func emitPlaceholderHelmIgnore(templatePath string) error {
 	ignore := `
 *.md
 *~

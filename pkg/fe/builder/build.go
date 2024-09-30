@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"regexp"
-	"runtime"
 
-	"golang.org/x/sync/errgroup"
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/fe/builder/overlay"
 	"lunchpail.io/pkg/util"
 )
 
@@ -31,64 +28,44 @@ func stageLunchpailItself() (string, error) {
 }
 
 func Build(ctx context.Context, sourcePath string, opts Options) error {
+	verbose := opts.BuildOptions.Log.Verbose
+
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
 	}
 
+	// First, copy out lunchpail itself
 	lunchpailStageDir, err := stageLunchpailItself()
-	verbose := opts.BuildOptions.Log.Verbose
 	if err != nil {
 		return err
 	} else if verbose {
 		fmt.Fprintf(os.Stderr, "Stage directory: %s\n", lunchpailStageDir)
 	}
 
-	// TODO... how do we really want to get a good name for the app?
-	buildName := build.Name()
-	if sourcePath != "" {
-		buildName = filepath.Base(trimExt(sourcePath))
-	}
-	if buildName == "pail" {
-		buildName = filepath.Base(filepath.Dir(trimExt(sourcePath)))
-		if buildName == "pail" {
-			// probably a trailing slash
-			buildName = filepath.Base(filepath.Dir(filepath.Dir(trimExt(sourcePath))))
-		}
-	}
-	// replace _ with -
-	buildName = regexp.MustCompile("_").ReplaceAllString(buildName, "-")
+	// Second, pick a name for the resulting build. TODO: allow command line override?
+	buildName := buildNameFrom(sourcePath)
 
-	if verbose {
-		fmt.Fprintf(os.Stderr, "Using buildName=%s\n", buildName)
-	}
-
-	if appTemplatePath, appVersion, err := build.StagePath(buildName, sourcePath, build.StageOptions{Branch: opts.Branch, Verbose: verbose}); err != nil {
+	// Third, overlay source (if given)
+	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{Branch: opts.Branch, Verbose: verbose})
+	if err != nil {
 		return err
-	} else if err := build.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, verbose); err != nil {
-		return err
-	} else if err := build.DropBreadcrumb(buildName, appVersion, opts.BuildOptions, lunchpailStageDir); err != nil {
-		return err
-	} else {
-		if !opts.AllPlatforms {
-			return emit(lunchpailStageDir, opts.Name, "", "")
-		}
-
-		oss := supportedOs()
-		archs := supportedArch()
-		if !opts.AllPlatforms {
-			oss = []string{runtime.GOOS}
-			archs = []string{runtime.GOARCH}
-		}
-
-		group, _ := errgroup.WithContext(ctx)
-		for _, targetOs := range oss {
-			for _, targetArch := range archs {
-				group.Go(func() error {
-					return emit(lunchpailStageDir, opts.Name, targetOs, targetArch)
-				})
-			}
-		}
-
-		return group.Wait()
 	}
+
+	// Fourth, copy that overlay into the lunchpail stage (TODO:
+	// why do we need two stages? cannot overlay.Overlay... copy
+	// directly into the lunchpail stage??)
+	if err := build.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, verbose); err != nil {
+		return err
+	}
+
+	// Fifth, tell the build about itself (its name, version)
+	if err := build.DropBreadcrumb(buildName, appVersion, opts.BuildOptions, lunchpailStageDir); err != nil {
+		return err
+	}
+
+	// Finally, emit a new binary
+	if opts.AllPlatforms {
+		return emitAll(ctx, lunchpailStageDir, opts.Name)
+	}
+	return emit(lunchpailStageDir, opts.Name, "", "")
 }
