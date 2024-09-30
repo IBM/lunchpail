@@ -77,7 +77,7 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 				cancel()
 			}
 
-			if err := queue.QdoneClient(cancellable, client); err != nil {
+			if err := queue.QdoneClient(cancellable, client, *opts.BuildOptions.Log); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				cancel()
 			}
