@@ -12,23 +12,19 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func stage(c llir.ShellComponent) (string, string, error) {
+func PrepareWorkdirForComponent(c llir.ShellComponent) (string, string, error) {
 	workdir, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
 		return "", "", err
 	}
 
 	for _, code := range c.Application.Spec.Code {
-		if err := saveToWorkdir(workdir, code); err != nil {
+		if err := saveCodeToWorkdir(workdir, code); err != nil {
 			return "", "", err
 		}
 	}
 
 	command := c.Application.Spec.Command
-	//command = strings.Replace(command, "/workdir/lunchpail", os.Args[0] + " ", 1)
-	//if strings.HasPrefix(command, "lunchpail") {
-	//command = strings.Replace(command, "lunchpail", os.Args[0] + " ", 1)
-	//}
 
 	// hmm, hacky attempts to get intrinsic prereqs
 	switch c.C() {
@@ -41,7 +37,7 @@ func stage(c llir.ShellComponent) (string, string, error) {
 	return workdir, command, nil
 }
 
-func saveToWorkdir(workdir string, code hlir.Code) error {
+func saveCodeToWorkdir(workdir string, code hlir.Code) error {
 	return os.WriteFile(filepath.Join(workdir, code.Name), []byte(code.Source), 0700)
 }
 
