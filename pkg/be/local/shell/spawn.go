@@ -21,7 +21,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 		return err
 	}
 
-	workdir, command, err := stage(c)
+	workdir, command, err := PrepareWorkdirForComponent(c)
 	if err != nil {
 		return err
 	}
