@@ -32,8 +32,6 @@ func stageLunchpailItself() (string, error) {
 func Build(ctx context.Context, sourcePath string, opts Options) error {
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
-		// } else if err == nil {
-		// return fmt.Errorf("Output path already exists: %s", opts.Name)
 	}
 
 	lunchpailStageDir, err := stageLunchpailItself()

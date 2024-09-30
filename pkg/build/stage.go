@@ -59,6 +59,12 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath, branch string, verbo
 		}
 		fmt.Fprintln(os.Stderr, " done")
 	} else {
+		if f, err := os.Stat(sourcePath); err != nil {
+			return "", err
+		} else if !f.IsDir() {
+			return "", fmt.Errorf("Input path is not a directory: %s", sourcePath)
+		}
+
 		// TODO port this to pure go?
 		verboseFlag := ""
 		if verbose {
