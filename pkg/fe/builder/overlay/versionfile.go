@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,7 +11,11 @@ import (
 func handleVersionFile(templatePath string, verbose bool) (string, error) {
 	appVersion := ""
 	appVersionFile := filepath.Join(appdir(templatePath), "version")
-	if _, err := os.Stat(appVersionFile); err == nil {
+	if f, err := os.Stat(appVersionFile); err == nil {
+		if f.IsDir() {
+			return "", fmt.Errorf("version should be a file, not a directory")
+		}
+
 		versionBytes, err := os.ReadFile(appVersionFile)
 		if err != nil {
 			return "", err

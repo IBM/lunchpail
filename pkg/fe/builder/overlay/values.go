@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -9,7 +10,11 @@ import (
 // Join app-provided values.yaml with our common one
 func handleValuesYaml(templatePath string, verbose bool) error {
 	appValues := filepath.Join(appdir(templatePath), "values.yaml")
-	if _, err := os.Stat(appValues); err == nil {
+	if f, err := os.Stat(appValues); err == nil {
+		if f.IsDir() {
+			return fmt.Errorf("values.yaml should be a file, not a directory")
+		}
+
 		// then there is a values.yaml that we need to
 		// consolidate
 		if reader, err := os.Open(appValues); err != nil {
