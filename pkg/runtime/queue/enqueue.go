@@ -13,7 +13,7 @@ import (
 	"lunchpail.io/pkg/build"
 )
 
-type EnqueueFileOptions struct {
+type AddOptions struct {
 	build.LogOptions
 	S3Client
 
@@ -28,7 +28,8 @@ type EnqueueS3Options struct {
 	build.LogOptions
 }
 
-func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (code int, err error) {
+// Enqueue a given `task` file
+func Add(ctx context.Context, task string, opts AddOptions) (code int, err error) {
 	c := opts.S3Client
 
 	if c.client == nil {
@@ -58,6 +59,27 @@ func EnqueueFile(ctx context.Context, task string, opts EnqueueFileOptions) (cod
 	return
 }
 
+// Enqueue a list of given files
+func AddList(ctx context.Context, inputs []string, opts AddOptions) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	group, gctx := errgroup.WithContext(ctx)
+	for idx, input := range inputs {
+		group.Go(func() error {
+			opts.AsIfNamedPipe = fmt.Sprintf("task.%d.txt", idx+1)
+			if _, err := Add(gctx, input, opts); err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+
+	return group.Wait()
+}
+
+// Enqueue tasks from a path in an s3 bucket
 func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts EnqueueS3Options) error {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)

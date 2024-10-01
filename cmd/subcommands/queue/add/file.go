@@ -19,7 +19,7 @@ func File() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	}
 
-	var opts queue.EnqueueFileOptions
+	var opts queue.AddOptions
 	var ignoreWorkerErrors bool
 	cmd.Flags().BoolVarP(&opts.Wait, "wait", "w", false, "Wait for the task to be completed, and exit with the exit code of that task")
 	cmd.Flags().BoolVar(&ignoreWorkerErrors, "ignore-worker-errors", false, "When --wait, ignore any errors from the workers processing the tasks")
@@ -33,7 +33,7 @@ func File() *cobra.Command {
 
 		opts.Verbose = logOpts.Verbose
 		opts.Debug = logOpts.Debug
-		exitcode, err := queue.EnqueueFile(context.Background(), args[0], opts)
+		exitcode, err := queue.Add(context.Background(), args[0], opts)
 
 		switch {
 		case err != nil:
