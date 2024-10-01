@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/sync/errgroup"
-
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
@@ -64,6 +62,7 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	enqueueDone := make(chan struct{})
 	if len(opts.Inputs) > 0 {
 		go func() {
+			// wait for the run to be ready for us to enqueue
 			<-isRunning2
 			client, stop, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
 			if err != nil {
@@ -72,11 +71,11 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 			}
 			defer stop()
 
-			qopts := queue.EnqueueFileOptions{
+			qopts := queue.AddOptions{
 				S3Client:   client,
 				LogOptions: *opts.BuildOptions.Log,
 			}
-			if err := enqueue(cancellable, backend, opts.Inputs, qopts); err != nil {
+			if err := queue.AddList(cancellable, opts.Inputs, qopts); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				cancel()
 			}
@@ -106,23 +105,4 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		<-enqueueDone
 	}
 	return err
-}
-
-func enqueue(ctx context.Context, backend be.Backend, inputs []string, opts queue.EnqueueFileOptions) error {
-	if len(inputs) == 0 {
-		return nil
-	}
-
-	group, gctx := errgroup.WithContext(ctx)
-	for idx, input := range inputs {
-		group.Go(func() error {
-			opts.AsIfNamedPipe = fmt.Sprintf("task.%d.txt", idx+1)
-			if _, err := queue.EnqueueFile(gctx, input, opts); err != nil {
-				return err
-			}
-			return nil
-		})
-	}
-
-	return group.Wait()
 }
