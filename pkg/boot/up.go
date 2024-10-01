@@ -30,7 +30,11 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	}
 
 	if opts.DryRun {
-		fmt.Printf(backend.DryRun(ir, opts.BuildOptions))
+		out, err := backend.DryRun(ir, opts.BuildOptions)
+		if err != nil {
+			return err
+		}
+		fmt.Printf(out)
 		return nil
 	}
 
