@@ -4,6 +4,7 @@ package queue
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -40,7 +41,16 @@ func Ls() *cobra.Command {
 			return err
 		}
 
-		return queue.Qls(ctx, backend, runOpts.Run, path)
+		c, err := queue.Ls(ctx, backend, runOpts.Run, path)
+		if err != nil {
+			return err
+		}
+
+		for f := range c {
+			fmt.Println(f)
+		}
+
+		return nil
 	}
 
 	return cmd
