@@ -41,13 +41,18 @@ func Ls() *cobra.Command {
 			return err
 		}
 
-		c, err := queue.Ls(ctx, backend, runOpts.Run, path)
+		files, errors, err := queue.Ls(ctx, backend, runOpts.Run, path)
 		if err != nil {
 			return err
 		}
 
-		for f := range c {
-			fmt.Println(f)
+		for {
+			select {
+			case err := <-errors:
+				return err
+			case file := <-files:
+				fmt.Println(file)
+			}
 		}
 
 		return nil
