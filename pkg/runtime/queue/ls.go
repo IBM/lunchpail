@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/be"
 )
 
-func Ls(ctx context.Context, backend be.Backend, runname, path string) (chan string, chan error, error) {
+func Ls(ctx context.Context, backend be.Backend, runname, path string) (<-chan string, <-chan error, error) {
 	c, stop, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return nil, nil, err
