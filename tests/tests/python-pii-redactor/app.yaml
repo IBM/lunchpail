@@ -1,0 +1,20 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: pii_redactor
+spec:
+  role: worker
+  command: python3 ./main.py
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
+    - name: flair_recognizer.py
+      source: |
+{{ .Files.Get "src/flair_recognizer.py" | indent 8 }}
+    - name: pii_analyzer.py
+      source: |
+{{ .Files.Get "src/pii_analyzer.py" | indent 8 }}
+    - name: pii_anonymizer.py
+      source: |
+{{ .Files.Get "src/pii_anonymizer.py" | indent 8 }}
