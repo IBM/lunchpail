@@ -192,8 +192,11 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 					fmt.Println("Worker error exit code " + strconv.Itoa(EC) + ": " + in)
 				}
 
-				err = client.Moveto(bucket, inprogress, out)
-				if err != nil {
+				if _, err := os.Stat(localoutbox); err == nil {
+					if err := client.Upload(bucket, localoutbox, out); err != nil {
+						fmt.Printf("Internal Error uploading task to global outbox %s->%s: %v\n", localoutbox, out, err)
+					}
+				} else if err := client.Moveto(bucket, inprogress, out); err != nil {
 					fmt.Printf("Internal Error moving task to global outbox %s->%s: %v\n", inprogress, out, err)
 				}
 			}
