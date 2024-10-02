@@ -52,10 +52,9 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string) (<-chan string, <-chan 
 
 	os := make(map[string]bool)
 	report := func(key string) {
-		p := filepath.Join(prefix, key)
-		if !os[p] {
-			os[p] = true
-			c <- p
+		if !os[key] {
+			os[key] = true
+			c <- key
 		}
 	}
 	once := func() {
