@@ -31,3 +31,13 @@ type LLIR struct {
 	// One Component per WorkerPool, one for WorkerStealer, etc.
 	Components []Component
 }
+
+func (ir LLIR) HasDispatcher() bool {
+	for _, c := range ir.Components {
+		if c.C() == lunchpail.DispatcherComponent {
+			return true
+		}
+	}
+
+	return false
+}

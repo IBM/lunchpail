@@ -1,11 +1,10 @@
 package util
 
-import "os"
+import (
+	"golang.org/x/term"
+	"os"
+)
 
 func StdoutIsTty() bool {
-	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
-		return true
-	} else {
-		return false
-	}
+	return term.IsTerminal(int(os.Stdout.Fd()))
 }

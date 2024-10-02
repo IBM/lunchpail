@@ -37,16 +37,24 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 		}
 		fmt.Fprintf(os.Stderr, "Opening port forward to pod=%s\n", podName)
 
-		localPort := 50001
-		for localPort < 1000 {
+		var localPort int
+		for {
 			localPort = rand.Intn(65535) + 1
-		}
+			if localPort < 1000 {
+				continue
+			}
 
-		if s, perr := backend.portForward(ctx, podName, localPort, podPort); perr != nil {
-			err = perr
-			return
-		} else {
-			stop = s
+			if s, perr := backend.portForward(ctx, podName, localPort, podPort); perr != nil {
+				if strings.Contains(perr.Error(), "already in use") {
+					// Oops, someone else grabbed the port. Try again.
+					continue
+				}
+				err = perr
+				return
+			} else {
+				stop = s
+				break
+			}
 		}
 
 		oendpoint := endpoint

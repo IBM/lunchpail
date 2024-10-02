@@ -8,3 +8,6 @@ __pycache__
 /lunchpail
 /lunchpail-demo
 .cache
+
+# up copyout test leftovers
+task.*.output.txt
