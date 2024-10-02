@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/minio/minio-go/v7/pkg/notification"
+	"github.com/minio/minio-go/v7"
 )
 
 func (s3 S3Client) waitForBucket(bucket string) error {
@@ -46,8 +46,49 @@ func (s3 S3Client) WaitTillExists(bucket, object string) error {
 	return s3.WaitForEvent(bucket, object, "s3:ObjectCreated:*")
 }
 
-func (s3 S3Client) Listen(bucket, prefix, suffix string) <-chan notification.Info {
-	return s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, []string{"s3:ObjectCreated:*"})
+func (s3 S3Client) Listen(bucket, prefix, suffix string) (<-chan string, <-chan error) {
+	c := make(chan string)
+	e := make(chan error)
+
+	os := make(map[string]bool)
+	report := func(key string) {
+		p := filepath.Join(prefix, key)
+		if !os[p] {
+			os[p] = true
+			c <- p
+		}
+	}
+	once := func() {
+		for o := range s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true}) {
+			if o.Err != nil {
+				e <- o.Err
+			} else {
+				report(o.Key)
+			}
+		}
+	}
+
+	go func() {
+		defer close(c)
+		defer close(e)
+		once()
+		already := false
+		for n := range s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, []string{"s3:ObjectCreated:*"}) {
+			if n.Err != nil {
+				e <- n.Err
+				continue
+			}
+
+			if !already {
+				once()
+			}
+			for _, r := range n.Records {
+				report(r.S3.Object.Key)
+			}
+		}
+	}()
+
+	return c, e
 }
 
 func (s3 S3Client) StopListening(bucket string) error {
@@ -57,7 +98,7 @@ func (s3 S3Client) StopListening(bucket string) error {
 // Wait for the given enqueued task to appear in the outbox
 func (c S3Client) WaitForCompletion(task string, verbose bool) (int, error) {
 	bucket := c.Paths.Bucket
-	outbox := filepath.Join(c.Paths.PoolPrefix, c.Paths.Outbox)
+	outbox := c.Outbox()
 	outFile := filepath.Join(outbox, task)
 	codeFile := filepath.Join(outbox, task+".code")
 

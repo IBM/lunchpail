@@ -49,16 +49,22 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 		return err
 	}
 
-	for notification := range client.Listen(client.Paths.Bucket, prefix, "") {
+	tasks, errs := client.Listen(client.Paths.Bucket, prefix, "")
+	for {
 		if killfileExists(client, bucket, prefix) {
 			break
-		} else if notification.Err != nil {
+		}
+
+		select {
+		case err := <-errs:
 			if debug {
-				fmt.Fprintln(os.Stderr, notification.Err)
+				fmt.Fprintln(os.Stderr, err)
 			}
 
 			// sleep for a bit
 			time.Sleep(s)
+
+		case <-tasks:
 		}
 
 		tasks, err := client.Lsf(bucket, filepath.Join(prefix, inbox))
