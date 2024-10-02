@@ -50,12 +50,15 @@ func Run(ctx context.Context) error {
 	}
 
 	defer s3.StopListening(s3.Paths.Bucket)
-	for notification := range s3.Listen(s3.Paths.Bucket, "", "") {
-		if notification.Err != nil {
-			fmt.Fprintln(os.Stderr, notification.Err)
+	o, errs := s3.Listen(s3.Paths.Bucket, "", "")
+	for {
+		select {
+		case err := <-errs:
+			fmt.Fprintln(os.Stderr, err)
 
 			// sleep for a bit
 			time.Sleep(s)
+		case <-o:
 		}
 
 		// fetch model
