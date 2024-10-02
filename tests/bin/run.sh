@@ -121,4 +121,8 @@ then
     if [[ $EC != 0 ]]
     then exit $EC
     fi
+
+    if [[ -e "$1"/post.sh ]]; then
+        TEST_NAME=$testname "$1"/post.sh $namespace
+    fi
 fi

@@ -10,7 +10,6 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
-	"lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/util"
 )
 
@@ -36,6 +35,10 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		return nil
 	}
 
+	if !ir.HasDispatcher() && len(opts.Inputs) == 0 {
+		return fmt.Errorf("please provide input files on the command line")
+	}
+
 	isRunning := make(chan struct{})
 	cancellable, cancel := context.WithCancel(ctx)
 
@@ -59,34 +62,9 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		}
 	}()
 
-	enqueueDone := make(chan struct{})
+	copyoutDone := make(chan struct{})
 	if len(opts.Inputs) > 0 {
-		go func() {
-			// wait for the run to be ready for us to enqueue
-			<-isRunning2
-			client, stop, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				cancel()
-			}
-			defer stop()
-
-			qopts := queue.AddOptions{
-				S3Client:   client,
-				LogOptions: *opts.BuildOptions.Log,
-			}
-			if err := queue.AddList(cancellable, opts.Inputs, qopts); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				cancel()
-			}
-
-			if err := queue.QdoneClient(cancellable, client, *opts.BuildOptions.Log); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				cancel()
-			}
-
-			enqueueDone <- struct{}{}
-		}()
+		go enqueue(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log, isRunning2, copyoutDone, cancel)
 	}
 
 	if opts.Watch {
@@ -100,9 +78,10 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 
 	defer cancel()
 	err = backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
+
 	if len(opts.Inputs) > 0 {
-		// wait till we've enqueued before exiting
-		<-enqueueDone
+		<-copyoutDone
 	}
+
 	return err
 }
