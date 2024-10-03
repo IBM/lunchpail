@@ -1,0 +1,17 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: lang_id
+spec:
+  role: worker
+  command: python3 ./main.py
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
+    - name: lang_models.py
+      source: |
+{{ .Files.Get "src/lang_models.py" | indent 8 }}
+    - name: nlp.py
+      source: |
+{{ .Files.Get "src/nlp.py" | indent 8 }}
