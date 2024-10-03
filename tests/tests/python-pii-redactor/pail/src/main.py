@@ -39,7 +39,7 @@ def _redact_pii(text: str):
 try:
     print(f"Reading in parquet file {sys.argv[1]}")
     table = pq.read_table(sys.argv[1])
-except e:
+except Exception as e:
     logger.error(f"Error reading table from {path}: {e}")
     exit(1)
     

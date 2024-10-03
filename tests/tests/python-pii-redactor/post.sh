@@ -17,5 +17,3 @@ if [ "$actual_sha256" = "$expected_sha256" ]
 then echo "✅ PASS found local task output file=$f test=$TEST_NAME" && rm -f $f
 else echo "❌ FAIL cannot find local task output file=$f test=$TEST_NAME" && exit 1
 fi
-
-deactivate
