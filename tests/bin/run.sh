@@ -45,6 +45,7 @@ unset testname
 unset deployname
 expected=()
 
+export TEST_PATH=$(cd "$1" && pwd)
 . "$1"/settings.sh
 
 testname="${testname-$(basename $1)}"
