@@ -12,12 +12,9 @@
 
 from typing import Any
 
-import logging
 import pyarrow as pa
 from lang_models import LangModel
 
-
-logger = logging.getLogger(__name__)
 
 def add_column(table: pa.Table, name: str, content: list[Any]) -> pa.Table:
     """
