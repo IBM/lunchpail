@@ -68,7 +68,11 @@ then
     undeploy $testname $deployname
 
     if [[ -e "$1"/preinit.sh ]]; then
-        TEST_NAME=$testname "$1"/preinit.sh
+        # the preinit.sh may return a PATH it wants us to use (e.g. for a python venv)
+        P=$("$1"/preinit.sh)
+        if [[ -n "$P" ]]
+        then export PATH="$P"
+        fi
     fi
 
     export appname="${deployname-$testname}"
@@ -108,6 +112,7 @@ then
         fi
     else
         "$SCRIPTDIR"/up.sh $testname &
+        "$testapp" logs -c workers -t $LUNCHPAIL_TARGET -f &
     fi
 
     if [[ -e "$1"/init.sh ]]; then

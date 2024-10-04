@@ -1,3 +1,6 @@
+# hmm, needed for tests at least on macos
+setuptools
+
 presidio-analyzer>=2.2.355
 presidio-anonymizer>=2.2.355
 flair>=0.14.0

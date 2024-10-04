@@ -12,7 +12,7 @@ set -eo pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 
-echo "$(tput setaf 2)Deploying test Runs for arch=$ARCH$(tput sgr0) testapp=$testapp $HELM_INSTALL_FLAGS"
+echo "$(tput setaf 2)Deploying testname=$testname testapp=$testapp$(tput sgr0)"
 
 if [[ -n "$3" ]]
 then branch="-b $3"
@@ -32,7 +32,7 @@ then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 fi
 
 repo_secret="" # e.g. user:pat@https://github.mycompany.com
-              
+
 # intentionally setting some critical values at build time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time

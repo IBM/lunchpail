@@ -40,7 +40,7 @@ try:
     print(f"Reading in parquet file {sys.argv[1]}")
     table = pq.read_table(sys.argv[1])
 except Exception as e:
-    print(f"Error reading table from {path}: {e}", file=sys.stderr)
+    print(f"Error reading table: {e}", file=sys.stderr)
     exit(1)
     
 metadata = {"original_table_rows": table.num_rows, "original_column_count": len(table.column_names)}

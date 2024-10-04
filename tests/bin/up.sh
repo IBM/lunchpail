@@ -14,7 +14,7 @@ then QUEUE="--queue $taskqueue"
 fi
 
 if which lspci && lspci | grep -iq nvidia; then
-    echo "$(tput setaf 2)Detected GPU support for arch=$ARCH$(tput sgr0)"
+    echo "$(tput setaf 2)Detected GPU support$(tput sgr0)"
     GPU="--set supportsGpu=true"
 fi
 
@@ -29,7 +29,6 @@ eval $testapp up \
          --create-cluster \
          --target=${LUNCHPAIL_TARGET:-kubernetes} \
          --watch=false \
-         --set global.arch=$ARCH \
          --set kubernetes.context=kind-lunchpail \
          --set cosAccessKey=$COS_ACCESS_KEY \
          --set cosSecretKey=$COS_SECRET_KEY
