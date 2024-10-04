@@ -86,7 +86,7 @@ func enqueue(ctx context.Context, inputs []string, backend be.Backend, ir llir.L
 	for !done {
 		select {
 		case err := <-errs:
-			if strings.Contains(err.Error(), "EOF") {
+			if err == nil || strings.Contains(err.Error(), "EOF") {
 				done = true
 			} else {
 				fmt.Fprintln(os.Stderr, err)
