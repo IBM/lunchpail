@@ -1,6 +1,6 @@
 api=workqueue
 
-expected=("SequenceTagger predicts")
-NUM_DESIRED_OUTPUTS=1
+expected=("SequenceTagger predicts" "Done. Writing output to")
+NUM_DESIRED_OUTPUTS=0
 
-up_args='<(gzcat "$TEST_PATH"/pail/test-data/xs/1.parquet.gz)'
+up_args='<(gunzip -c "$TEST_PATH"/pail/test-data/xs/1.parquet.gz)'
