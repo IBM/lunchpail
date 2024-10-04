@@ -14,7 +14,6 @@ import sys
 import pyarrow.parquet as pq
 
 from os import getenv
-import logging
 
 import pyarrow as pa
 from lang_models import LangModelFactory
@@ -63,7 +62,6 @@ def validate_columns(table: pa.Table, required: list[str]) -> None:
             f"Not all required columns are present in the table - " f"required {required}, present {columns}"
         )
 
-logger=logging.getLogger(__name__)
 nlp_langid = LangModelFactory.create_model(
     model_kind, model_url, model_credential
 )
