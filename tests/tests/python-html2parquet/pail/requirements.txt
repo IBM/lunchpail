@@ -1,0 +1,4 @@
+trafilatura==1.12.2
+lxml-html-clean==0.2.2
+
+pyarrow
