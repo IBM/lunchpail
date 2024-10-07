@@ -1,0 +1,4 @@
+docling-core==1.3.0
+llama-index-core>=0.11.0,<0.12.0
+
+pyarrow
