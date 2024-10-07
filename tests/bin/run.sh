@@ -112,7 +112,7 @@ then
         fi
     else
         "$SCRIPTDIR"/up.sh $testname &
-        "$testapp" logs -c workers -t $LUNCHPAIL_TARGET -f &
+        # for debugging: "$testapp" logs -c workers -t $LUNCHPAIL_TARGET -f &
     fi
 
     if [[ -e "$1"/init.sh ]]; then
