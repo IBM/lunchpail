@@ -61,7 +61,12 @@ func copyAppIntoTemplate(appname, sourcePath, templatePath string, opts Options)
 		return
 	}
 
-	err = handleSrcDir(templatePath, opts.Verbose)
+	err = handleDataDir(templatePath, "src", opts.Verbose)
+	if err != nil {
+		return
+	}
+
+	err = handleDataDir(templatePath, "data", opts.Verbose)
 	if err != nil {
 		return
 	}

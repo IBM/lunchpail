@@ -21,7 +21,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 		return err
 	}
 
-	workdir, command, err := PrepareWorkdirForComponent(c)
+	workdir, command, err := PrepareWorkdirForComponent(c, verbose)
 	if err != nil {
 		return err
 	}

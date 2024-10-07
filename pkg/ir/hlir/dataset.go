@@ -22,8 +22,12 @@ type S3 struct {
 type Dataset struct {
 	Name      string
 	MountPath string `yaml:"mountPath,omitempty"`
-	S3        S3     `yaml:"s3,omitempty"`
-	Nfs       struct {
+	Blob      struct {
+		Content  string
+		Encoding string
+	}
+	S3  S3 `yaml:"s3,omitempty"`
+	Nfs struct {
 		Server string
 		Path   string
 	} `yaml:"nfs,omitempty"`
