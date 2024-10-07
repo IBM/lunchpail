@@ -1,7 +1,9 @@
 package shell
 
 import (
+	base64 "encoding/base64"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -12,7 +14,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func PrepareWorkdirForComponent(c llir.ShellComponent) (string, string, error) {
+func PrepareWorkdirForComponent(c llir.ShellComponent, verbose bool) (string, string, error) {
 	workdir, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
 		return "", "", err
@@ -22,6 +24,10 @@ func PrepareWorkdirForComponent(c llir.ShellComponent) (string, string, error) {
 		if err := saveCodeToWorkdir(workdir, code); err != nil {
 			return "", "", err
 		}
+	}
+
+	if err := writeBlobsToWorkdir(c, workdir, verbose); err != nil {
+		return "", "", err
 	}
 
 	command := c.Application.Spec.Command
@@ -51,6 +57,45 @@ func ensureMinio() error {
 			return installMinio()
 		} else if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func writeBlobsToWorkdir(c llir.ShellComponent, workdir string, verbose bool) error {
+	for idx, dataset := range c.Application.Spec.Datasets {
+		if dataset.Blob.Content != "" {
+			if dataset.Name == "" {
+				return fmt.Errorf("Blob %d is missing 'name' in %s", idx, c.Application.Metadata.Name)
+			}
+
+			target := filepath.Join(workdir, dataset.Name)
+			if dataset.MountPath != "" {
+				target = dataset.MountPath
+			}
+
+			content := []byte(dataset.Blob.Content)
+			switch dataset.Blob.Encoding {
+			case "application/base64":
+				if c, err := base64.StdEncoding.DecodeString(dataset.Blob.Content); err != nil {
+					return err
+				} else {
+					content = c
+				}
+			}
+
+			if verbose {
+				fmt.Fprintf(os.Stderr, "Writing blob %s\n", target)
+			}
+
+			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+				return err
+			}
+
+			if err := os.WriteFile(target, []byte(content), 0644); err != nil {
+				return err
+			}
 		}
 	}
 
