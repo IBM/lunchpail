@@ -1,0 +1,14 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: tokenization
+spec:
+  role: worker
+  command: python3 ./main.py
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
+    - name: tokenization_utils.py
+      source: |
+{{ .Files.Get "src/tokenization_utils.py" | indent 8 }}
