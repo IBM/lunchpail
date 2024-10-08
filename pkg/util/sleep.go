@@ -24,9 +24,9 @@ func SleepyTime(envvar string, defaultValue int) (time.Duration, error) {
 // increase this. Otherwise, we will have a default grace period to
 // allow for UIs e.g. to do a last poll of queue info.
 func SleepBeforeExit() error {
-	if duration, err := SleepyTime("LUNCHPAIL_SLEEP_BEFORE_EXIT", 10); err != nil {
+	if duration, err := SleepyTime("LUNCHPAIL_SLEEP_BEFORE_EXIT", 0); err != nil {
 		return err
-	} else {
+	} else if duration > 0 {
 		time.Sleep(duration)
 	}
 	return nil
