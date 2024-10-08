@@ -21,7 +21,7 @@ jobs:
           - kubernetes
           - local
         SCRIPT:
-          - ./tests/bin/ci.sh -e 'test(7.*|8.*)' # baseline tests
+          - ./tests/bin/ci.sh -e 'test(7.*|8.*)|python.*' # baseline tests
           - ./tests/bin/ci.sh -i 'test7.*' -e 'test7(b.*|c.*|d.*|e.*|f.*|g.*|h.*)'
           - ./tests/bin/ci.sh -i 'test7(b.*|c.*|d.*|e.*|g.*|h.*)' 
           - ./tests/bin/ci.sh -i 'test7f.*'
