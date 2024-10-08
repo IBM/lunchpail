@@ -192,7 +192,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 					if err != nil {
 						fmt.Println("Internal Error creating failed marker:", err)
 					}
-					fmt.Println("Worker error exit code " + strconv.Itoa(EC) + ": " + in)
+					fmt.Println("Worker error with exit code " + strconv.Itoa(EC) + " while processing " + filepath.Base(in))
 				}
 
 				if _, err := os.Stat(localoutbox); err == nil {
