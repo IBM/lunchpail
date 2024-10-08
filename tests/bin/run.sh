@@ -67,14 +67,6 @@ then
     # Undeploy any prior test runs in progress
     undeploy $testname $deployname
 
-    if [[ -e "$1"/preinit.sh ]]; then
-        # the preinit.sh may return a PATH it wants us to use (e.g. for a python venv)
-        P=$("$1"/preinit.sh)
-        if [[ -n "$P" ]]
-        then export PATH="$P"
-        fi
-    fi
-
     export appname="${deployname-$testname}"
     export TARGET="$TOP"/builds/test/$appname
     export testapp="$TARGET"/test
@@ -92,6 +84,15 @@ then
         fi
     fi
 
+
+    if [[ -e "$1"/preinit.sh ]]; then
+        # the preinit.sh may return a PATH it wants us to use (e.g. for a python venv)
+        P=$("$1"/preinit.sh)
+        if [[ -n "$P" ]]
+        then export PATH="$P"
+        fi
+    fi
+    
     build $testname $app $branch $deployname
 
     if [[ -n "$expectBuildFailure" ]]
