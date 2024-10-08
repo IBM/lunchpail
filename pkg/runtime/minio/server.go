@@ -84,8 +84,13 @@ func Server(ctx context.Context, port int) error {
 		if err := waitForKillFile(c, bucket, prefix); err != nil {
 			return err
 		}
-		fmt.Fprintf(os.Stderr, "Waiting for kill file <-- got it\n")
+		fmt.Fprintf(os.Stderr, "Got kill file\n")
 		gotKillFile = true
+
+		fmt.Fprintf(os.Stderr, "About to self-destruct...\n")
+		util.SleepBeforeExit()
+		fmt.Fprintf(os.Stderr, "Initiating self-destruct\n")
+
 		if err := cmd.Process.Kill(); err != nil {
 			return err
 		}
@@ -101,8 +106,7 @@ func Server(ctx context.Context, port int) error {
 		}
 	}
 
-	util.SleepBeforeExit()
-
+	fmt.Fprintf(os.Stderr, "Exiting\n")
 	return nil
 }
 
