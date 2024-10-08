@@ -315,6 +315,8 @@ func (c client) readyToBye(model Model) bool {
 
 // Assess and potentially update queue state. Return true when we are all done.
 func (c client) assess(m Model) bool {
+	c.cleanupCompletedTasks(m)
+
 	if c.readyToBye(m) {
 		fmt.Fprintln(os.Stderr, "INFO All work has been completed, all workers have terminated")
 		return true
@@ -322,7 +324,6 @@ func (c client) assess(m Model) bool {
 		c.assignNewTasks(m)
 		c.touchKillFiles(m)
 		c.reassignDeadWorkerTasks(m)
-		c.cleanupCompletedTasks(m)
 	}
 
 	return false
