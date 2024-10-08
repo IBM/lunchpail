@@ -180,6 +180,9 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				}
 
 				if EC == 0 {
+					if debug {
+						fmt.Printf("Worker succeeded on task %s\n", localprocessing)
+					}
 					err = client.Touch(bucket, succeeded)
 					if err != nil {
 						fmt.Println("Internal Error creating succeeded marker:", err)
@@ -193,6 +196,9 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				}
 
 				if _, err := os.Stat(localoutbox); err == nil {
+					if debug {
+						fmt.Printf("Uploading worker-produced outbox file %s->%s\n", localoutbox, out)
+					}
 					if err := client.Upload(bucket, localoutbox, out); err != nil {
 						fmt.Printf("Internal Error uploading task to global outbox %s->%s: %v\n", localoutbox, out, err)
 					}
