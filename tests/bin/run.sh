@@ -128,7 +128,14 @@ then
     then exit $EC
     fi
 
-    if [[ -e "$1"/post.sh ]]; then
-        TEST_NAME=$testname "$1"/post.sh $namespace
+    if [[ -e "$1"/post.sh ]]
+    then TEST_NAME=$testname "$1"/post.sh $namespace
+    fi
+
+    # clean up python venvs if we are in travis or github actions
+    if [[ -n "$CI" ]] && [[ -d "$1"/.venv ]]
+    then
+        echo "Cleaning up Python venv"
+        rm -rf "$1"/.venv
     fi
 fi
