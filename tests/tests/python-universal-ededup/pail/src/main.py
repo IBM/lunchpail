@@ -41,3 +41,4 @@ if __name__ == "__main__":
     table_list, metadata = transform.transform(table)
     print(f"\noutput table has {table_list[0].num_rows} rows and {table_list[0].num_columns} columns")
     print(f"output metadata : {metadata}")
+    pq.write_table(table_list[0], sys.argv[2])
