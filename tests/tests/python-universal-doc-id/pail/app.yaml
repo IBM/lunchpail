@@ -1,0 +1,17 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: doc_id
+spec:
+  role: worker
+  command: python3 ./main.py
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
+    - name: doc_id_transform_base.py
+      source: |
+{{ .Files.Get "src/doc_id_transform_base.py" | indent 8 }}
+    - name: doc_id_transform_python.py
+      source: |
+{{ .Files.Get "src/doc_id_transform_python.py" | indent 8 }}
