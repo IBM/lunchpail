@@ -5,6 +5,11 @@ metadata:
 spec:
   role: worker
   command: python3 ./main.py
+  needs:
+    - name: python
+      version: latest
+      requirements: |
+{{ .Files.Get "data/requirements.txt" | indent 8 }} 
   code:
     - name: main.py
       source: |

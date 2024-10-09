@@ -11,9 +11,8 @@ import (
 
 func Python() *cobra.Command {
 	var requirementsPath string
-	var virtualEnvPath string
 	cmd := &cobra.Command{
-		Use:   "python <version> [-r /path/to/requirements.txt] [-v /path/to/.venv]",
+		Use:   "python <version> [-r /path/to/requirements.txt]",
 		Short: "Install python environment",
 		Long:  "Install python environment",
 		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
@@ -21,7 +20,6 @@ func Python() *cobra.Command {
 
 	logOpts := options.AddLogOptions(cmd)
 	cmd.Flags().StringVarP(&requirementsPath, "requirements", "r", requirementsPath, "Install from the given requirements file")
-	cmd.Flags().StringVarP(&virtualEnvPath, "venv", "d", virtualEnvPath, "Path to virtual environment dir")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		version := "latest"
@@ -29,7 +27,7 @@ func Python() *cobra.Command {
 			version = args[0]
 		}
 
-		return needs.InstallPython(context.Background(), version, virtualEnvPath, requirementsPath, needs.Options{LogOptions: *logOpts})
+		return needs.InstallPython(context.Background(), version, requirementsPath, needs.Options{LogOptions: *logOpts})
 	}
 
 	return cmd
