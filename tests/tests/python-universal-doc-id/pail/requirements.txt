@@ -1,0 +1,4 @@
+data-prep-toolkit==0.2.2.dev0
+
+pyarrow
+setuptools

@@ -1,0 +1,11 @@
+{{- range until (.Values.pools | default 1 | int) }}
+---
+apiVersion: lunchpail.io/v1alpha1
+kind: WorkerPool
+metadata:
+  name: {{ print "pool" (add 1 .) }}
+spec:
+  workers:
+    count: {{ $.Values.workers | default 1 }}
+    size: {{ $.Values.size | default "xxs" }}
+{{- end }}
