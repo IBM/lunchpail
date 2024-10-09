@@ -80,10 +80,12 @@ func addEnv(c llir.ShellComponent, q llir.Queue) ([]string, error) {
 	// TODO: how much of user's env do we really want to expose? maybe just PATH?
 	env := []string{
 		"PATH=" + os.Getenv("PATH"),
+		"HOME=" + os.Getenv("HOME"),
 		"LUNCHPAIL_COMPONENT=" + string(c.C()),
 		"LUNCHPAIL_EXE=" + absPathToThisExe,
 		"LUNCHPAIL_QUEUE_PATH=" + c.QueuePrefixPath,
 		"LUNCHPAIL_POD_NAME=" + c.InstanceName,
+		"LUNCHPAIL_VENV_CACHEDIR=" + os.Getenv("LUNCHPAIL_VENV_CACHEDIR"),
 		"TEST_QUEUE_ENDPOINT=" + q.Endpoint,
 		"LUNCHPAIL_TARGET=local",
 		"PYTHONUNBUFFERED=1",

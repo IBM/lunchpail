@@ -53,12 +53,11 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 			}
 			req = "--requirements " + file.Name()
 			if opts.Log.Verbose {
-				fmt.Printf("Setting requirements %s in %s \n", needs.Requirements, file.Name())
+				fmt.Printf("Setting requirements in %s", file.Name())
 			}
 		}
-		component.Spec.Command = fmt.Sprintf(`$LUNCHPAIL_EXE needs %s %s %s --verbose=%v
-%s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
 
+		component.Spec.Command = fmt.Sprintf(`PATH=$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v)/bin:$PATH %s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
 	}
 
 	for _, dataset := range app.Spec.Datasets {
