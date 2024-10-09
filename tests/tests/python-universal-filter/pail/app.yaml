@@ -1,0 +1,11 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: filter
+spec:
+  role: worker
+  command: python3 ./main.py
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
