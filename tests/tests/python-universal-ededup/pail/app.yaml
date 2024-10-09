@@ -1,0 +1,17 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: ededup
+spec:
+  role: worker
+  command: python3 ./main.py
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
+    - name: ededup_transform_base.py
+      source: |
+{{ .Files.Get "src/ededup_transform_base.py" | indent 8 }}
+    - name: ededup_transform_python.py
+      source: |
+{{ .Files.Get "src/ededup_transform_python.py" | indent 8 }}
