@@ -1,1 +1,0 @@
-../python-pii-redactor/preinit.sh
