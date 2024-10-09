@@ -1,1 +1,1 @@
-../python-pii-redactor/preinit.sh
+../python-language-pii-redactor/preinit.sh

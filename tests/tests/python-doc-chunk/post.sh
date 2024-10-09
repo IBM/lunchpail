@@ -1,1 +1,0 @@
-../python-doc-quality/post.sh
