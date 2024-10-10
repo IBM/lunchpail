@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"lunchpail.io/pkg/runtime/queue"
@@ -42,6 +43,16 @@ func Run(ctx context.Context, handler []string, opts Options) error {
 	client, err := queue.NewS3Client(ctx)
 	if err != nil {
 		return err
+	}
+
+	venvPath := os.Getenv("LUNCHPAIL_VENV_CACHEDIR")
+	if d, err := os.Stat(venvPath); err == nil && d.IsDir() {
+		venvBin := filepath.Join(venvPath, "bin")
+		if d, err := os.Stat(venvBin); err == nil && d.IsDir() {
+			if err := os.Setenv("PATH", venvBin+":"+os.Getenv("PATH")); err != nil {
+				return fmt.Errorf("PATH cannot be updated with: %s", venvBin)
+			}
+		}
 	}
 
 	return startWatch(ctx, handler, client, opts.Debug)
