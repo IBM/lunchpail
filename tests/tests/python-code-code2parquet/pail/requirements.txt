@@ -1,0 +1,4 @@
+parameterized
+pandas
+
+pyarrow

@@ -10,7 +10,7 @@ do
     fi
 
     ext=${b##*.}
-    bb=${b%%.*}
+    bb=${b%.*}
     actual="$(dirname $i)"/"$bb".output.$ext
     expected="$DATA"/expected/$bb.parquet.gz
 
