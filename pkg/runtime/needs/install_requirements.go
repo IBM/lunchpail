@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-func requirementsInstall(ctx context.Context, requirementsPath string, verbose bool) error {
+func requirementsInstall(ctx context.Context, requirementsPath string, verbose bool) (string, error) {
 	var cmd *exec.Cmd
 	var verboseFlag string
 
@@ -21,17 +21,17 @@ func requirementsInstall(ctx context.Context, requirementsPath string, verbose b
 
 	sha, err := getSHA256Sum(requirementsPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	venvsDir, err := venvsdir()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	venvPath := filepath.Join(venvsDir, hex.EncodeToString(sha))
 	if err := os.MkdirAll(venvPath, os.ModePerm); err != nil {
-		return err
+		return "", err
 	}
 
 	dir := filepath.Dir(venvPath)
@@ -46,10 +46,10 @@ pip3 install -r %s %s 1>&2`, venvPath, requirementsPath, venvPath, venvPath, ver
 	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
 	cmd.Dir = dir
 	if verbose {
-		cmd.Stdout = os.Stdout
+		cmd.Stdout = os.Stderr
 	}
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return venvPath, cmd.Run()
 }
 
 func getSHA256Sum(filePath string) ([]byte, error) {

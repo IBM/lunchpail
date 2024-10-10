@@ -2,6 +2,7 @@ package needs
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -27,7 +28,13 @@ func Python() *cobra.Command {
 			version = args[0]
 		}
 
-		return needs.InstallPython(context.Background(), version, requirementsPath, needs.Options{LogOptions: *logOpts})
+		out, err := needs.InstallPython(context.Background(), version, requirementsPath, needs.Options{LogOptions: *logOpts})
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(out)
+		return nil
 	}
 
 	return cmd
