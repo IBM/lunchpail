@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
-	"path/filepath"
 )
 
 func homedir() (string, error) {
@@ -42,31 +41,6 @@ func brewInstall(ctx context.Context, pkg string, version string, verbose bool) 
 		cmd.Stdout = os.Stdout
 	} else {
 		cmd = exec.Command("brew", "install", pkg)
-	}
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
-func requirementsInstall(ctx context.Context, venvPath string, requirementsPath string, verbose bool) error {
-	var cmd *exec.Cmd
-	var verboseFlag string
-	dir := filepath.Dir(venvPath)
-
-	if verbose {
-		verboseFlag = "--verbose"
-	}
-
-	venvRequirementsPath := filepath.Join(venvPath, filepath.Base(requirementsPath))
-	cmds := fmt.Sprintf(`python3 -m venv %s 1>&2
-cp %s %s
-source %s/bin/activate
-python3 -m pip install --upgrade pip %s
-pip3 install -r %s %s 1>&2`, venvPath, requirementsPath, venvPath, venvPath, verboseFlag, venvRequirementsPath, verboseFlag)
-
-	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
-	cmd.Dir = dir
-	if verbose {
-		cmd.Stdout = os.Stdout
 	}
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
