@@ -1,0 +1,20 @@
+apiVersion: lunchpail.io/v1alpha1
+kind: Application
+metadata:
+  name: code2parquet
+spec:
+  role: worker
+  command: python3 ./main.py
+  datasets:
+    {{ range $path, $_ :=  .Files.Glob  "data/languages/*" }}
+    - name: {{ $path }}
+      blob:
+        encoding: application/base64
+        content: {{ $.Files.Get $path | b64enc }}
+    {{ end }}
+  env:
+    supported_langs_file: "data/languages/lang_extensions.json"
+  code:
+    - name: main.py
+      source: |
+{{ .Files.Get "src/main.py" | indent 8 }}
