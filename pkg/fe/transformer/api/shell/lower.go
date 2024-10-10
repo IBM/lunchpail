@@ -1,7 +1,10 @@
 package shell
 
 import (
+	"crypto/sha256"
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -53,12 +56,11 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 			}
 			req = "--requirements " + file.Name()
 			if opts.Log.Verbose {
-				fmt.Printf("Setting requirements %s in %s \n", needs.Requirements, file.Name())
+				fmt.Printf("Setting requirements in %s", file.Name())
 			}
 		}
-		component.Spec.Command = fmt.Sprintf(`$LUNCHPAIL_EXE needs %s %s %s --verbose=%v
-%s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
 
+		component.Spec.Command = fmt.Sprintf(`PATH=$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v)/bin:$PATH %s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
 	}
 
 	for _, dataset := range app.Spec.Datasets {
@@ -81,4 +83,27 @@ env lunchpail_queue_endpoint=%s lunchpail_queue_accessKeyID=%s lunchpail_queue_s
 		}
 	}
 	return component, nil
+}
+
+func getSHA256Sum(fileName string) ([]byte, error) {
+	f, err := os.Open(fileName)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, f); err != nil {
+		log.Fatal(err)
+	}
+	return hash.Sum(nil), nil
+}
+
+func venvsdir() (string, error) {
+	cachedir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(cachedir, "lunchpail", "venvs"), nil
 }
