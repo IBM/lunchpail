@@ -28,8 +28,9 @@ func delay() error {
 
 func Run(ctx context.Context, handler []string, opts Options) error {
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Lunchpail worker starting up\n")
+		fmt.Fprintf(os.Stderr, "Lunchpail worker starting up PATH=%s\n", os.Getenv("PATH"))
 	}
+	fmt.Fprintf(os.Stderr, "Lunchpail worker starting up PATH=%s\n", os.Getenv("PATH"))
 
 	if opts.Debug {
 		// helpful for debugging

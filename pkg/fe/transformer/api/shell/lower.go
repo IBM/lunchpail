@@ -2,7 +2,6 @@ package shell
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -45,7 +44,6 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 		var file *os.File
 		var err error
 		var req string
-		var venvPath string
 
 		if needs.Requirements != "" {
 			file, err = os.CreateTemp("", "requirements.txt")
@@ -60,22 +58,9 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 			if opts.Log.Verbose {
 				fmt.Printf("Setting requirements in %s", file.Name())
 			}
-
-			sha, err := getSHA256Sum(file.Name())
-			if err != nil {
-				return nil, err
-			}
-
-			venvsDir, err := venvsdir()
-			if err != nil {
-				return nil, err
-			}
-
-			venvPath = filepath.Join(venvsDir, hex.EncodeToString(sha))
 		}
-		component.Spec.Command = fmt.Sprintf(`$LUNCHPAIL_EXE needs %s %s %s --verbose=%v
-LUNCHPAIL_VENV_CACHEDIR=%s %s`, needs.Name, needs.Version, req, opts.Log.Verbose, venvPath, component.Spec.Command)
 
+		component.Spec.Command = fmt.Sprintf(`PATH=$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v)/bin:$PATH %s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
 	}
 
 	for _, dataset := range app.Spec.Datasets {
