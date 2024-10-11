@@ -9,24 +9,32 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func PrepareWorkdirForComponent(c llir.ShellComponent, verbose bool) (string, string, error) {
+func PrepareWorkdirForComponent(c llir.ShellComponent, opts build.LogOptions) (string, string, error) {
 	workdir, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
 		return "", "", err
 	}
 
+	if opts.Debug {
+		fmt.Fprintf(os.Stderr, "Component %v using workdir %s\n", c.C(), workdir)
+	}
+
 	for _, code := range c.Application.Spec.Code {
+		if opts.Debug {
+			fmt.Fprintf(os.Stderr, "Component %v saving code %s (%d bytes)\n", c.C(), code.Name, len(code.Source))
+		}
 		if err := saveCodeToWorkdir(workdir, code); err != nil {
 			return "", "", err
 		}
 	}
 
-	if err := writeBlobsToWorkdir(c, workdir, verbose); err != nil {
+	if err := writeBlobsToWorkdir(c, workdir, opts); err != nil {
 		return "", "", err
 	}
 
@@ -63,7 +71,7 @@ func ensureMinio() error {
 	return nil
 }
 
-func writeBlobsToWorkdir(c llir.ShellComponent, workdir string, verbose bool) error {
+func writeBlobsToWorkdir(c llir.ShellComponent, workdir string, opts build.LogOptions) error {
 	for idx, dataset := range c.Application.Spec.Datasets {
 		if dataset.Blob.Content != "" {
 			if dataset.Name == "" {
@@ -85,7 +93,7 @@ func writeBlobsToWorkdir(c llir.ShellComponent, workdir string, verbose bool) er
 				}
 			}
 
-			if verbose {
+			if opts.Verbose {
 				fmt.Fprintf(os.Stderr, "Writing blob %s\n", target)
 			}
 

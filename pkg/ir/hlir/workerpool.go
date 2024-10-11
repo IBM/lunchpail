@@ -18,3 +18,15 @@ type WorkerPool struct {
 		}
 	}
 }
+
+func NewPool(name string, count int) WorkerPool {
+	p := WorkerPool{
+		ApiVersion: "v1alpha1",
+		Kind:       "WorkerPool",
+		Metadata:   Metadata{Name: name},
+	}
+
+	p.Spec.Workers.Count = count
+
+	return p
+}

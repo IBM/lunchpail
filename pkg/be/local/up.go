@@ -44,7 +44,7 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 	// Launch each of the components
 	group, ctx := errgroup.WithContext(octx)
 	for _, c := range ir.Components {
-		group.Go(func() error { return backend.spawn(ctx, c, ir.Queue, ir.RunName, logdir, opts.Log.Verbose) })
+		group.Go(func() error { return backend.spawn(ctx, c, ir.Queue, ir.RunName, logdir, *opts.Log) })
 	}
 
 	// Indicate that we are off to the races

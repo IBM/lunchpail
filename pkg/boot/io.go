@@ -13,9 +13,7 @@ import (
 )
 
 // Behave like `cat inputs | ... > outputs`
-func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions, copyoutDone chan<- struct{}) error {
-	defer func() { copyoutDone <- struct{}{} }()
-
+func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions) error {
 	client, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
 	if err != nil {
 		return err

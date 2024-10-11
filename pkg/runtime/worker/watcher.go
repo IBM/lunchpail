@@ -159,6 +159,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				err = handlercmd.Run()
 				if err != nil {
 					fmt.Println("Internal Error running the handler:", err)
+					multierr.Write([]byte(err.Error()))
 				}
 				EC := handlercmd.ProcessState.ExitCode()
 
