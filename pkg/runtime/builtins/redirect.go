@@ -30,9 +30,10 @@ func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(objec
 	// have receipt of success and were notified that the output
 	// file (the one to be downloaded) exists, then downloadNow!
 	succeeded := false
+	failed := false
+	stderr := ""
 	downloadFile := ""
-	downloadNow := func() {
-		object := downloadFile
+	downloadNow := func(object string) {
 		dstFolder := folderFor(filepath.Base(object))
 
 		ext := filepath.Ext(object)
@@ -60,21 +61,41 @@ func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(objec
 		case object := <-objects:
 			ext := filepath.Ext(object)
 			switch ext {
-			case ".code", ".failed", ".stdout", ".stderr":
+			case ".code", ".stdout":
 				// ignore
+			case ".stderr":
+				stderr = object
+				if failed {
+					done = true
+				}
+			case ".failed":
+				failed = true
+				if stderr != "" {
+					done = true
+				}
 			case ".succeeded":
 				succeeded = true
 				if downloadFile != "" {
-					downloadNow()
+					downloadNow(downloadFile)
 				}
 			default:
 				downloadFile = object
 				if succeeded {
-					downloadNow()
+					downloadNow(downloadFile)
 				}
 			}
 		}
 	}
 
-	return group.Wait()
+	if err := group.Wait(); err != nil {
+		return err
+	} else if failed && stderr != "" {
+		errorContent, err := client.Get(client.Paths.Bucket, stderr)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Task failed %d %s\n%s", len(errorContent), stderr, errorContent)
+	}
+
+	return nil
 }

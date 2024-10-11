@@ -10,18 +10,19 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/be/local/files"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, logdir string, verbose bool) error {
+func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, logdir string, opts build.LogOptions) error {
 	pidfile, err := files.Pidfile(runname, c.InstanceName, c.C(), true)
 	if err != nil {
 		return err
 	}
 
-	workdir, command, err := PrepareWorkdirForComponent(c, verbose)
+	workdir, command, err := PrepareWorkdirForComponent(c, opts)
 	if err != nil {
 		return err
 	}
@@ -33,7 +34,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 		logfile = logfile + "-" + instance
 	}
 
-	if verbose {
+	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Launching process with commandline: %s\n", command)
 	}
 

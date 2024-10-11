@@ -10,6 +10,8 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
+	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 )
 
@@ -26,6 +28,19 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		return err
 	}
 
+	return upLLIR(ctx, backend, ir, opts)
+}
+
+func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOptions) error {
+	llir, err := fe.PrepareHLIRForRun(ir, "", fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
+	if err != nil {
+		return err
+	}
+
+	return upLLIR(ctx, backend, llir, opts)
+}
+
+func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOptions) error {
 	if opts.DryRun {
 		out, err := backend.DryRun(ir, opts.BuildOptions)
 		if err != nil {
@@ -34,6 +49,12 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		fmt.Printf(out)
 		return nil
 	}
+
+	pipelineMeta, err := handlePipelineStdin(ir)
+	if err != nil {
+		return err
+	}
+	ir.Queue = pipelineMeta.Queue
 
 	if !ir.HasDispatcher() && len(opts.Inputs) == 0 {
 		return fmt.Errorf("please provide input files on the command line")
@@ -51,14 +72,15 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 
 	// We need to chain the isRunning channel to our 0-2 consumers
 	// below. This is because golang channels are not multicast.
-	isRunning2 := make(chan struct{})
+	isRunning3 := make(chan struct{})
 	go func() {
 		<-isRunning
+		isRunning3 <- struct{}{}
 		if len(opts.Inputs) > 0 {
-			isRunning2 <- struct{}{}
+			isRunning3 <- struct{}{}
 		}
 		if opts.Watch {
-			isRunning2 <- struct{}{}
+			isRunning3 <- struct{}{}
 		}
 	}()
 
@@ -67,8 +89,10 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		// Behave like `cat inputs | ... > outputs`
 		go func() {
 			// wait for the run to be ready for us to enqueue
-			<-isRunning2
-			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log, copyoutDone); err != nil {
+			<-isRunning3
+			defer func() { copyoutDone <- struct{}{} }()
+
+			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				cancel()
 			}
@@ -78,11 +102,23 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	if opts.Watch {
 		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
-			<-isRunning2
+			<-isRunning3
 			go watchLogs(cancellable, backend, ir, WatchOptions{Verbose: verbose})
 			go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
 		}()
 	}
+
+	go func() {
+		for {
+			select {
+			case <-isRunning3:
+				pipelineMeta.Queue = ir.Queue
+				handlePipelineStdout(pipelineMeta)
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 
 	defer cancel()
 	err = backend.Up(cancellable, ir, opts.BuildOptions, isRunning)

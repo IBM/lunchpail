@@ -19,6 +19,10 @@ func (model HLIR) GetApplicationByRole(role Role) (Application, bool) {
 	return model.Applications[idx], true
 }
 
+func (ir HLIR) HasDispatchers() bool {
+	return len(ir.ParameterSweeps)+len(ir.ProcessS3Objects) > 0
+}
+
 func (ir HLIR) RemoveDispatchers() HLIR {
 	ir.ParameterSweeps = []ParameterSweep{}
 	ir.ProcessS3Objects = []ProcessS3Objects{}

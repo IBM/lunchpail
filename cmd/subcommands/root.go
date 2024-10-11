@@ -13,10 +13,6 @@ var rootCmd = &cobra.Command{
 	Use: "lunchpail",
 }
 
-var applicationGroup = &cobra.Group{ID: "Application", Title: "Application Commands"}
-var runGroup = &cobra.Group{ID: "Run", Title: "Run Commands"}
-var internalGroup = &cobra.Group{ID: "Internal", Title: "Advanced/Internal Commands"}
-
 func Execute() error {
 	if build.IsBuilt() {
 		rootCmd.Use = build.Name()
@@ -30,11 +26,7 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.AddGroup(applicationGroup)
-	if build.IsBuilt() {
-		rootCmd.AddGroup(runGroup)
-	}
-	rootCmd.AddGroup(internalGroup)
+	initGroups(rootCmd)
 
 	// To tell Cobra to mark the default completion command as
 	// hidden (see

@@ -26,7 +26,11 @@ var on string
 var appVersion string
 
 func Name() string {
-	return strings.TrimSpace(name)
+	n := os.Getenv("LUNCHPAIL_NAME")
+	if n == "" {
+		n = strings.TrimSpace(name)
+	}
+	return n
 }
 
 func Date() string {
@@ -46,7 +50,7 @@ func AppVersion() string {
 }
 
 func IsBuilt() bool {
-	return Name() != "<none>"
+	return strings.TrimSpace(name) != "<none>"
 }
 
 func DropBreadcrumbs(buildName, appVersion string, opts Options, stagedir string) error {
