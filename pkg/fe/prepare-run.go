@@ -2,14 +2,15 @@ package fe
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 
 	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/linker"
+	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/parser"
 	"lunchpail.io/pkg/fe/transformer"
+	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 )
 
@@ -39,19 +40,8 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 		}
 	}
 
-	// Assign a port for the internal S3 (TODO: we only need to do
-	// this if this run will be using an internal S3). We use the
-	// range of "ephemeral"
-	// ports. https://en.wikipedia.org/wiki/Ephemeral_bbport
-	portMin := 49152
-	portMax := 65535
-	internalS3Port := rand.Intn(portMax-portMin+1) + portMin
-	if verbose {
-		fmt.Fprintf(os.Stderr, "Using internal S3 port %d\n", internalS3Port)
-	}
-
 	// Set up values that will be given to the application YAML
-	yamlValues, queueSpec, err := linker.Configure(build.Name(), runname, internalS3Port, opts)
+	yamlValues, err := linker.Configure(build.Name(), runname, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
@@ -77,14 +67,23 @@ func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (ll
 		return llir.LLIR{}, err
 	}
 
+	return PrepareHLIRForRun(hlir, runname, popts, opts)
+}
+
+func PrepareHLIRForRun(ir hlir.HLIR, runname string, popts PrepareOptions, opts build.Options) (llir.LLIR, error) {
+	queueSpec, err := queue.ParseFlag(opts.Queue, runname)
+	if err != nil {
+		return llir.LLIR{}, err
+	}
+
 	if popts.NoDispatchers {
-		if verbose {
+		if opts.Log.Verbose {
 			fmt.Fprintln(os.Stderr, "Removing application-provided dispatchers in favor of command line inputs")
 		}
-		hlir = hlir.RemoveDispatchers()
+		ir = ir.RemoveDispatchers()
 	}
 
 	// Finally we can transform the HLIR to the low-level
 	// intermediate representation (LLIR).
-	return transformer.Lower(build.Name(), runname, hlir, queueSpec, opts)
+	return transformer.Lower(build.Name(), runname, ir, queueSpec, opts)
 }

@@ -6,31 +6,13 @@ import (
 	"os/user"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Configure(appname, runname string, internalS3Port int, opts build.Options) (string, queue.Spec, error) {
-	queueSpec, err := queue.ParseFlag(opts.Queue, runname, internalS3Port)
-	if err != nil {
-		return "", queue.Spec{}, err
-	}
-
+func Configure(appname, runname string, opts build.Options) (string, error) {
 	user, err := user.Current()
 	if err != nil {
-		return "", queue.Spec{}, err
-	}
-
-	if queueSpec.Endpoint == "" {
-		// see charts/workstealer/templates/s3/service... the hostname of the service has a max length
-		queueSpec.Auto = true
-		queueSpec.Port = internalS3Port
-		queueSpec.Endpoint = fmt.Sprintf("localhost:%d", internalS3Port)
-		queueSpec.AccessKey = "lunchpail"
-		queueSpec.SecretKey = "lunchpail"
-	}
-	if queueSpec.Bucket == "" {
-		queueSpec.Bucket = queueSpec.Name
+		return "", err
 	}
 
 	yaml := fmt.Sprintf(`
@@ -58,5 +40,5 @@ lunchpail:
 		fmt.Fprintf(os.Stderr, "shrinkwrap app values=%s\n", yaml)
 	}
 
-	return yaml, queueSpec, nil
+	return yaml, nil
 }
