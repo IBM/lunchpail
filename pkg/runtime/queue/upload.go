@@ -15,11 +15,11 @@ import (
 )
 
 func UploadFiles(ctx context.Context, backend be.Backend, runname string, specs []upload.Upload) error {
-	s3, stop, err := NewS3ClientForRun(ctx, backend, runname)
+	s3, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return err
 	}
-	defer stop()
+	defer s3.Stop()
 
 	for _, spec := range specs {
 		fmt.Fprintf(os.Stderr, "Preparing upload with mkdirp on s3 bucket=%s\n", spec.Bucket)

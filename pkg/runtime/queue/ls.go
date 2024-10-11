@@ -9,7 +9,7 @@ import (
 )
 
 func Ls(ctx context.Context, backend be.Backend, runname, path string) (<-chan string, <-chan error, error) {
-	c, stop, err := NewS3ClientForRun(ctx, backend, runname)
+	c, err := NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -19,7 +19,7 @@ func Ls(ctx context.Context, backend be.Backend, runname, path string) (<-chan s
 	prefix := filepath.Join(c.Paths.Prefix, path)
 
 	go func() {
-		defer stop()
+		defer c.Stop()
 		defer close(files)
 		defer close(errors)
 		for o := range c.ListObjects(c.Paths.Bucket, prefix, true) {

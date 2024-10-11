@@ -23,15 +23,15 @@ func enqueue(ctx context.Context, inputs []string, backend be.Backend, ir llir.L
 
 	// wait for the run to be ready for us to enqueue
 	<-isRunning
-	client, stop, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
+	client, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		cancel()
 	}
-	defer stop()
+	defer client.Stop()
 
 	qopts := queue.AddOptions{
-		S3Client:   client,
+		S3Client:   client.S3Client,
 		LogOptions: opts,
 	}
 	if err := queue.AddList(ctx, inputs, qopts); err != nil {
@@ -39,7 +39,7 @@ func enqueue(ctx context.Context, inputs []string, backend be.Backend, ir llir.L
 		cancel()
 	}
 
-	if err := queue.QdoneClient(ctx, client, opts); err != nil {
+	if err := queue.QdoneClient(ctx, client.S3Client, opts); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		cancel()
 	}
