@@ -19,6 +19,11 @@ type S3Client struct {
 	Paths    filepaths
 }
 
+type S3ClientStop struct {
+	S3Client
+	Stop func()
+}
+
 // Initialize minio client object
 func NewS3Client(ctx context.Context) (S3Client, error) {
 	endpoint := os.Getenv("lunchpail_queue_endpoint")
@@ -61,30 +66,30 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 }
 
 // Client for a given run in the given backend
-func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) (S3Client, func(), error) {
+func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) (S3ClientStop, error) {
 	if runname == "" {
 		run, err := util.Singleton(ctx, backend)
 		if err != nil {
-			return S3Client{}, nil, err
+			return S3ClientStop{}, err
 		}
 		runname = run.Name
 	}
 
 	endpoint, accessKeyId, secretAccessKey, _, prefixPath, stop, err := backend.AccessQueue(ctx, runname)
 	if err != nil {
-		return S3Client{}, nil, err
+		return S3ClientStop{}, err
 	}
 
 	c, err := NewS3ClientFromOptions(ctx, S3ClientOptions{Endpoint: endpoint, AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey})
 	if err != nil {
-		return S3Client{}, nil, err
+		return S3ClientStop{}, err
 	}
 
 	if paths, err := pathsFor(prefixPath); err != nil {
-		return S3Client{}, nil, err
+		return S3ClientStop{}, err
 	} else {
 		c.Paths = paths
 	}
 
-	return c, stop, nil
+	return S3ClientStop{c, stop}, nil
 }
