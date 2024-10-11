@@ -64,7 +64,15 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 
 	copyoutDone := make(chan struct{})
 	if len(opts.Inputs) > 0 {
-		go enqueue(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log, isRunning2, copyoutDone, cancel)
+		// Behave like `cat inputs | ... > outputs`
+		go func() {
+			// wait for the run to be ready for us to enqueue
+			<-isRunning2
+			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log, copyoutDone); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				cancel()
+			}
+		}()
 	}
 
 	if opts.Watch {
