@@ -85,6 +85,7 @@ func addEnv(c llir.ShellComponent, q llir.Queue) ([]string, error) {
 		"LUNCHPAIL_EXE=" + absPathToThisExe,
 		"LUNCHPAIL_QUEUE_PATH=" + c.QueuePrefixPath,
 		"LUNCHPAIL_POD_NAME=" + c.InstanceName,
+		"LUNCHPAIL_VENV_CACHEDIR=" + os.Getenv("LUNCHPAIL_VENV_CACHEDIR"),
 		"TEST_QUEUE_ENDPOINT=" + q.Endpoint,
 		"LUNCHPAIL_TARGET=local",
 		"PYTHONUNBUFFERED=1",

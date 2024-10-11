@@ -40,7 +40,7 @@ func requirementsInstall(ctx context.Context, requirementsPath string, verbose b
 	cmds := fmt.Sprintf(`python3 -m venv %s
 cp %s %s
 source %s/bin/activate
-python3 -m pip install --upgrade pip %s
+if ! which pip3; then python3 -m pip install pip %s; fi
 pip3 install -r %s %s 1>&2`, venvPath, requirementsPath, venvPath, venvPath, verboseFlag, venvRequirementsPath, verboseFlag)
 
 	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
@@ -67,10 +67,15 @@ func getSHA256Sum(filePath string) ([]byte, error) {
 }
 
 func venvsdir() (string, error) {
-	cachedir, err := os.UserCacheDir()
-	if err != nil {
-		return "", err
+	venvPath := os.Getenv("LUNCHPAIL_VENV_CACHEDIR")
+	if venvPath == "" {
+		cachedir, err := os.UserCacheDir()
+		if err != nil {
+			return "", err
+		}
+
+		venvPath = filepath.Join(cachedir, "lunchpail", "venvs")
 	}
 
-	return filepath.Join(cachedir, "lunchpail", "venvs"), nil
+	return venvPath, nil
 }

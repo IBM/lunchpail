@@ -86,15 +86,11 @@ then
 
     build $testname $app $branch $deployname
 
-    if [[ -e "$1"/preinit.sh ]]; then
-        # the preinit.sh may return a virtual env dir it wants us to use (e.g. for a python venv)
-        V=$("$1"/preinit.sh)
-        if [[ -n "$V" ]]
-        then
-            export PATH="$V/bin:$PATH"
-            export VIRTUAL_ENV="$V"
-        fi
+    if [[ -e "$1"/preinit.sh ]]
+    then "$1"/preinit.sh
     fi
+
+    export LUNCHPAIL_VENV_CACHEDIR="$TEST_PATH"/.venv
 
     if [[ -n "$expectBuildFailure" ]]
     then
@@ -137,6 +133,6 @@ then
     if [[ -n "$CI" ]] && [[ -d "$1"/.venv ]]
     then
         echo "Cleaning up Python venv"
-        rm -rf "$1"/.venv
+        rm -rf "$LUNCHPAIL_VENV_CACHEDIR"
     fi
 fi
