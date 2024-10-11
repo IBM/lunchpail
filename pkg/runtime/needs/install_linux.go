@@ -2,7 +2,6 @@ package needs
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,39 +16,35 @@ func bindir() (string, error) {
 	return filepath.Join(cachedir, "lunchpail", "bin"), nil
 }
 
-func installMinio(ctx context.Context, version string, verbose bool) error {
-	if verbose {
-		fmt.Printf("Installing %s release of minio \n", version)
-	}
-
+func installMinio(ctx context.Context, version string, verbose bool) (string, error) {
 	dir, err := bindir()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	//Todo: versions other than latest
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", "apt update; apt -y install wget; wget https://dl.min.io/server/minio/release/linux-amd64/minio")
+	cmd := exec.CommandContext(ctx, "wget", "https://dl.min.io/server/minio/release/linux-amd64/minio")
 	cmd.Dir = dir
 	if verbose {
 		cmd.Stdout = os.Stdout
 	}
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return err
+		return "", err
 	}
 
 	if err := setenv(dir); err != nil { //setting $PATH
-		return err
+		return "", err
 	}
 
-	return os.Chmod(filepath.Join(dir, "minio"), 0755)
+	return dir, os.Chmod(filepath.Join(dir, "minio"), 0755)
 }
 
-func installPython(ctx context.Context, version string, verbose bool) error {
+func installPython(ctx context.Context, version string, verbose bool) (string, error) {
 	/*
 			if verbose {
 			fmt.Fprintf(os.Stdout, "Installing %s release of python \n", version)
@@ -92,7 +87,7 @@ func installPython(ctx context.Context, version string, verbose bool) error {
 			os.Chmod(filepath.Join(dir, "python"), 0755)
 	*/
 
-	return nil
+	return "", nil
 }
 
 func setenv(dir string) error {

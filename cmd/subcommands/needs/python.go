@@ -28,12 +28,12 @@ func Python() *cobra.Command {
 			version = args[0]
 		}
 
-		out, err := needs.InstallPython(context.Background(), version, requirements, needs.Options{LogOptions: *logOpts})
+		path, err := needs.InstallPython(context.Background(), version, requirements, needs.Options{LogOptions: *logOpts})
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(out)
+		fmt.Println(path)
 		return nil
 	}
 

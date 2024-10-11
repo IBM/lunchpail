@@ -17,20 +17,20 @@ func homedir() (string, error) {
 	return currentUser.HomeDir, nil
 }
 
-func installMinio(ctx context.Context, version string, verbose bool) error {
+func installMinio(ctx context.Context, version string, verbose bool) (string, error) {
 	if err := setenv(); err != nil { //$HOME must be set for brew
-		return err
+		return "", err
 	}
 
-	return brewInstall(ctx, "minio/stable/minio", version, verbose) //Todo: versions other than latest
+	return "", brewInstall(ctx, "minio/stable/minio", version, verbose) //Todo: versions other than latest
 }
 
-func installPython(ctx context.Context, version string, verbose bool) error {
+func installPython(ctx context.Context, version string, verbose bool) (string, error) {
 	if err := setenv(); err != nil { //$HOME must be set for brew
-		return err
+		return "", err
 	}
 
-	return brewInstall(ctx, "python3", version, verbose) //Todo: versions other than latest
+	return "", brewInstall(ctx, "python3", version, verbose) //Todo: versions other than latest
 }
 
 func brewInstall(ctx context.Context, pkg string, version string, verbose bool) error {
