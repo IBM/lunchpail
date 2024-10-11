@@ -24,7 +24,7 @@ type AddOptions struct {
 	AsIfNamedPipe string
 }
 
-type EnqueueS3Options struct {
+type AddS3Options struct {
 	build.LogOptions
 }
 
@@ -80,7 +80,7 @@ func AddList(ctx context.Context, inputs []string, opts AddOptions) error {
 }
 
 // Enqueue tasks from a path in an s3 bucket
-func EnqueueFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts EnqueueS3Options) error {
+func AddFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts AddS3Options) error {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
 	}
