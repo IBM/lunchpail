@@ -19,7 +19,7 @@ func S3() *cobra.Command {
 	}
 
 	var repeat int
-	var opts queue.EnqueueS3Options
+	var opts queue.AddS3Options
 	cmd.Flags().IntVarP(&repeat, "repeat", "r", 1, "Upload N copies of the task")
 
 	logOpts := options.AddLogOptions(cmd)
@@ -31,7 +31,7 @@ func S3() *cobra.Command {
 		secretAccessKey := os.Getenv(envvarPrefix + "secretAccessKey")
 		opts.Verbose = logOpts.Verbose
 		opts.Debug = logOpts.Debug
-		return queue.EnqueueFromS3(context.Background(), args[0], endpoint, accessKeyID, secretAccessKey, repeat, opts)
+		return queue.AddFromS3(context.Background(), args[0], endpoint, accessKeyID, secretAccessKey, repeat, opts)
 	}
 
 	return cmd
