@@ -60,7 +60,7 @@ pip3 install -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, reqmtsFile.Name(),
 		cmd.Stdout = os.Stderr
 	}
 	cmd.Stderr = os.Stderr
-	return venvPath, cmd.Run()
+	return filepath.Join(venvPath, "bin"), cmd.Run()
 }
 
 func getSHA256Sum(requirements []byte) (string, error) {

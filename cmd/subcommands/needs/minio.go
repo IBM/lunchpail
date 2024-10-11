@@ -2,6 +2,7 @@ package needs
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -25,7 +26,13 @@ func Minio() *cobra.Command {
 			version = args[0]
 		}
 
-		return needs.InstallMinio(context.Background(), version, needs.Options{LogOptions: *logOpts})
+		path, err := needs.InstallMinio(context.Background(), version, needs.Options{LogOptions: *logOpts})
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(path)
+		return nil
 	}
 
 	return cmd

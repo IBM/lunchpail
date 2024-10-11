@@ -17,8 +17,7 @@ func transpile(ctx llir.Context) (hlir.Application, error) {
 	app.Spec.Expose = []string{fmt.Sprintf("%d:%d", ctx.Queue.Port, ctx.Queue.Port)}
 	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component minio server --port %d --bucket %s --run %s", ctx.Queue.Port, ctx.Queue.Bucket, ctx.Run.RunName)
 
-	/*app.Spec.Needs = []hlir.Needs{
-	{Name: "minio", Version: "latest"}}*/
+	app.Spec.Needs = []hlir.Needs{{Name: "minio", Version: "latest"}}
 
 	app.Spec.Env = hlir.Env{}
 	app.Spec.Env["USE_MINIO_EXTENSIONS"] = "true"
