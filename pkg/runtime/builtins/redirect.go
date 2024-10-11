@@ -1,53 +1,19 @@
-package boot
+package builtins
 
 import (
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-// Add the given `inputs` to the queue and copy the corresponding
-// outputs back as their processing is completed.
-func enqueue(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions, isRunning <-chan struct{}, copyoutDone chan<- struct{}, cancel func()) {
-	defer func() { copyoutDone <- struct{}{} }()
-
-	// wait for the run to be ready for us to enqueue
-	<-isRunning
-	client, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		cancel()
-	}
-	defer client.Stop()
-
-	qopts := queue.AddOptions{
-		S3Client:   client.S3Client,
-		LogOptions: opts,
-	}
-	if err := queue.AddList(ctx, inputs, qopts); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		cancel()
-	}
-
-	if err := queue.QdoneClient(ctx, client.S3Client, opts); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		cancel()
-	}
-
-	// TODO: backend.Wait(ir)? which would be a no-op for local
-
-	// If we aren't piped into anything, then copy out the outbox files
-	copyout := true // TODO: util.StdoutIsTty()
+func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(object string) string, opts build.LogOptions) error {
 	objects, errs := client.Listen(client.Paths.Bucket, client.Outbox(), "")
 	group, _ := errgroup.WithContext(ctx)
 	done := false
@@ -67,12 +33,7 @@ func enqueue(ctx context.Context, inputs []string, backend be.Backend, ir llir.L
 	downloadFile := ""
 	downloadNow := func() {
 		object := downloadFile
-		b := filepath.Base(object)
-		inIdx := slices.IndexFunc(inputs, func(in string) bool { return filepath.Base(in) == b })
-		dstFolder := "."
-		if inIdx >= 0 {
-			dstFolder = filepath.Dir(inputs[inIdx])
-		}
+		dstFolder := folderFor(filepath.Base(object))
 
 		ext := filepath.Ext(object)
 		withoutExt := object[0 : len(object)-len(ext)]
@@ -102,21 +63,13 @@ func enqueue(ctx context.Context, inputs []string, backend be.Backend, ir llir.L
 					downloadNow()
 				}
 			default:
-				switch {
-				case copyout:
-					downloadFile = object
-					if succeeded {
-						downloadNow()
-					}
-				default:
-					// Otherwise, report on out stdout references to those outbox files
-					fmt.Println(object)
+				downloadFile = object
+				if succeeded {
+					downloadNow()
 				}
 			}
 		}
 	}
 
-	if err := group.Wait(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-	}
+	return group.Wait()
 }
