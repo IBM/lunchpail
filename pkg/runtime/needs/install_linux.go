@@ -32,7 +32,7 @@ func installMinio(ctx context.Context, version string, verbose bool) error {
 	}
 
 	//Todo: versions other than latest
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", "apt update; apt -y install wget; wget https://dl.min.io/server/minio/release/linux-amd64/minio")
+	cmd := exec.CommandContext(ctx, "wget", "https://dl.min.io/server/minio/release/linux-amd64/minio")
 	cmd.Dir = dir
 	if verbose {
 		cmd.Stdout = os.Stdout
