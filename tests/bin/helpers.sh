@@ -137,7 +137,11 @@ function waitForIt {
             done
     fi
 
-    waitForEveryoneToDie $run_name
+    # Some tests may be very slow if we wait for them to run to completion
+    if [[ -z "$NO_WAIT_FOR_COMPLETION" ]]
+    then waitForEveryoneToDie $run_name
+    fi
+
     return 0
 }
 
