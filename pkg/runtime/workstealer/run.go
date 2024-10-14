@@ -73,9 +73,6 @@ func Run(ctx context.Context) error {
 			// all done
 			break
 		}
-
-		// sleep for a bit
-		time.Sleep(s)
 	}
 
 	// Drop a final breadcrumb indicating we are ready to tear
