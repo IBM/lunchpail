@@ -22,6 +22,7 @@ type WhatChanged int
 const (
 	UnassignedTask WhatChanged = iota
 	DispatcherDone
+	ConsumedTask
 	FinishedTask
 
 	LiveWorker
@@ -38,6 +39,7 @@ const (
 
 var unassignedTaskPattern = regexp.MustCompile("^inbox/(.+)$")
 var dispatcherDonePattern = regexp.MustCompile("^done$")
+var consumedTaskPattern = regexp.MustCompile("^consumed/(.+)$")
 var finishedTaskPattern = regexp.MustCompile("^finished/(.+)$")
 var liveWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]alive$")
 var deadWorkerPattern = regexp.MustCompile("^queues/(.+)/inbox/[.]dead$")
@@ -52,6 +54,8 @@ func whatChanged(line string) (WhatChanged, string, string) {
 		return UnassignedTask, match[1], ""
 	} else if match := dispatcherDonePattern.FindStringSubmatch(line); len(match) == 1 {
 		return DispatcherDone, "", ""
+	} else if match := consumedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
+		return ConsumedTask, match[1], ""
 	} else if match := finishedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return FinishedTask, match[1], ""
 	} else if match := liveWorkerPattern.FindStringSubmatch(line); len(match) == 2 {
@@ -77,14 +81,6 @@ func whatChanged(line string) (WhatChanged, string, string) {
 
 // We will be passed a stream of diffs
 func (m *Model) update(filepath string, workersLookup map[string]Worker) {
-	/*unassignedTasks := []string{}
-	dispatcherDone := false
-	finishedTasks := []string{}
-	assignedTasks := []AssignedTask{}
-	processingTasks := []AssignedTask{}
-	successfulTasks := []AssignedTask{}
-	failedTasks := []AssignedTask{}*/
-
 	what, thing, thing2 := whatChanged(filepath)
 
 	switch what {
@@ -92,6 +88,8 @@ func (m *Model) update(filepath string, workersLookup map[string]Worker) {
 		m.UnassignedTasks = append(m.UnassignedTasks, thing)
 	case DispatcherDone:
 		m.DispatcherDone = true
+	case ConsumedTask:
+		m.ConsumedTasks = append(m.ConsumedTasks, thing)
 	case FinishedTask:
 		m.FinishedTasks = append(m.FinishedTasks, thing)
 	case LiveWorker:
@@ -140,7 +138,6 @@ func (m *Model) update(filepath string, workersLookup map[string]Worker) {
 			fmt.Fprintf(os.Stderr, "ERROR unable to find worker=%s\n", thing)
 		}
 	}
-	//eturn Model{dispatcherDone, unassignedTasks, finishedTasks, liveWorkers, deadWorkers, assignedTasks, processingTasks, successfulTasks, failedTasks}
 }
 
 func (m *Model) finishUp(workersLookup map[string]Worker) {

@@ -64,3 +64,11 @@ func pathsFor(queuePrefixPath string) (filepaths, error) {
 func (c S3Client) Outbox() string {
 	return filepath.Join(c.Paths.PoolPrefix, c.Paths.Outbox)
 }
+
+func (c S3Client) finishedMarkers() string {
+	return filepath.Join(c.Paths.PoolPrefix, "finished")
+}
+
+func (c S3Client) ConsumedMarker(task string) string {
+	return filepath.Join(c.Paths.PoolPrefix, "consumed", filepath.Base(task))
+}

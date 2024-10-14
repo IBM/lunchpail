@@ -147,22 +147,37 @@ function waitForIt {
 
 function waitForEveryoneToDie {
     local run_name=$1
-    waitForNoInstances $run_name workdispatcher
-    waitForNoInstances $run_name workerpool
-    waitForNoInstances $run_name workstealer
-    waitForNoInstances $run_name minio
+    waitForNInstances 0 $run_name workdispatcher
+    waitForNInstances 0 $run_name workerpool
+
+    if [[ "$NUM_DESIRED_OUTPUTS:-1" != "0" ]]
+    then
+        # workstealer should not auto-self-destruct
+        waitForNInstances 1 $run_name workstealer
+
+        # drain the output
+        $testapp queue drain --target ${LUNCHPAIL_TARGET:-kubernetes} --run $run_name
+
+        # now the workstealer should self-destruct
+        waitForNInstances 0 $run_name workstealer
+    else
+        waitForNInstances 0 $run_name workstealer
+    fi
+
+    waitForNInstances 0 $run_name minio
 }
 
-function waitForNoInstances {
-    local run_name=$1
-    local component=$2
-    echo "Checking that no $component remain running for run=$run_name"
+function waitForNInstances {
+    local N=$1
+    local run_name=$2
+    local component=$3
+    echo "Checking that N=$N $component are running for run=$run_name"
     while true
     do
         nRunning=$($testapp status instances --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
-        if [[ $nRunning == 0 ]]
-        then echo "✅ PASS test=$name no $component remain running" && break
-        else echo "$nRunning ${component}(s) remaining running" && sleep 2
+        if [[ $nRunning == $N ]]
+        then echo "✅ PASS test=$name n=$N $component remain running" && break
+        else echo "Waiting because $nRunning (expected $N) ${component}(s) running" && sleep 2
         fi
     done
 }

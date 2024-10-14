@@ -42,6 +42,13 @@ func (c client) reportChangedFile(filepath string) error {
 	return c.s3.Upload(c.s3.Paths.Bucket, filepath, remotefile)
 }
 
+// Has a Task already been marked as completed?
+func (c client) isMarkedDone(task string) bool {
+	finishedMarker := filepath.Join(finished, task)
+	p := c.localPathToRemote(finishedMarker)
+	return c.s3.Exists(c.s3.Paths.Bucket, filepath.Dir(p), filepath.Base(p))
+}
+
 // A Task has been fully completed by a Worker
 func (c client) markDone(task string) error {
 	finishedMarker := filepath.Join(finished, task)
@@ -152,11 +159,15 @@ func (c client) cleanupForDeadWorker(worker Worker) error {
 
 // A Task has completed
 func (c client) cleanupForCompletedTask(completedTask AssignedTask, success TaskCode) error {
-	if err := c.markDone(completedTask.task); err != nil {
-		return err
+	if !c.isMarkedDone(completedTask.task) {
+		if err := c.markDone(completedTask.task); err != nil {
+			return err
+		}
+
+		return c.copyToFinalOutbox(completedTask.task, completedTask.worker, success)
 	}
 
-	return c.copyToFinalOutbox(completedTask.task, completedTask.worker, success)
+	return nil
 }
 
 type Apportionment struct {
@@ -294,35 +305,33 @@ func (c client) rebalance(model Model) bool {
 	return false
 }
 
-// If the dispatcher is done and there are no more outstanding tasks,
-// then touch kill files in the worker inboxes.
+// Touch kill files in the worker inboxes.
 func (c client) touchKillFiles(model Model) {
-	if model.DispatcherDone && model.nFinishedTasks() > 0 && model.nTasksRemaining() == 0 {
-		for _, worker := range model.LiveWorkers {
-			if !worker.killfilePresent {
-				if err := c.touchKillFile(worker); err != nil {
-					log.Fatalf(err.Error())
-				}
+	for _, worker := range model.LiveWorkers {
+		if !worker.killfilePresent {
+			if err := c.touchKillFile(worker); err != nil {
+				log.Fatalf(err.Error())
 			}
 		}
 	}
-}
-
-// Is everything well and done: dispatcher, workers, us?
-func (c client) readyToBye(model Model) bool {
-	return model.DispatcherDone && model.nFinishedTasks() > 0 && model.nTasksRemaining() == 0 && len(model.LiveWorkers) == 0
 }
 
 // Assess and potentially update queue state. Return true when we are all done.
 func (c client) assess(m Model) bool {
 	c.cleanupCompletedTasks(m)
 
-	if c.readyToBye(m) {
+	if m.readyToBye() {
 		fmt.Fprintln(os.Stderr, "INFO All work has been completed, all workers have terminated")
 		return true
 	} else if !c.rebalance(m) {
 		c.assignNewTasks(m)
-		c.touchKillFiles(m)
+
+		if m.isAllWorkDone() {
+			// If the dispatcher is done and there are no more outstanding tasks,
+			// then touch kill files in the worker inboxes.
+			c.touchKillFiles(m)
+		}
+
 		c.reassignDeadWorkerTasks(m)
 	}
 

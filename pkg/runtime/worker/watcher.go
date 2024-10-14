@@ -49,7 +49,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 		return err
 	}
 
-	tasks, errs := client.Listen(client.Paths.Bucket, prefix, "")
+	tasks, errs := client.Listen(client.Paths.Bucket, prefix, "", false)
 	for {
 		if killfileExists(client, bucket, prefix) {
 			break

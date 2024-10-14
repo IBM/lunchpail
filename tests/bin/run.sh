@@ -77,7 +77,7 @@ then
 
     if [[ -e "$1"/target ]]
     then
-        if [[ $(cat "$1"/target) != "$LUNCHPAIL_TARGET" ]]
+        if [[ $(cat "$1"/target) != "${LUNCHPAIL_TARGET:-kubernetes}" ]]
         then
             echo "$(tput setaf 3)🧪 Skipping due to unsupported target $(basename $1)$(tput sgr0)"
             exit 0
