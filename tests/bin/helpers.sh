@@ -135,10 +135,9 @@ function waitForIt {
                 else echo "❌ FAIL missing stderr test=$name output=$output allOutputs=$allOutputs" && return 1
                 fi
             done
-
-        waitForEveryoneToDie $run_name
     fi
 
+    waitForEveryoneToDie $run_name
     return 0
 }
 
