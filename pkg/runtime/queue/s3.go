@@ -183,6 +183,10 @@ func (s3 S3Client) Rm(bucket, filePath string) error {
 	return s3.client.RemoveObject(s3.context, bucket, filePath, minio.RemoveObjectOptions{})
 }
 
+func (s3 S3Client) MarkConsumed(filePath string) error {
+	return s3.Mark(s3.Paths.Bucket, s3.ConsumedMarker(filePath), "consumed")
+}
+
 func (s3 S3Client) Mark(bucket, filePath, marker string) error {
 	_, err := s3.client.PutObject(s3.context, bucket, filePath, strings.NewReader(marker), int64(len(marker)), minio.PutObjectOptions{})
 	return err

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -46,14 +47,19 @@ func (s3 S3Client) WaitTillExists(bucket, object string) error {
 	return s3.WaitForEvent(bucket, object, "s3:ObjectCreated:*")
 }
 
-func (s3 S3Client) Listen(bucket, prefix, suffix string) (<-chan string, <-chan error) {
+func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) (<-chan string, <-chan error) {
 	c := make(chan string)
 	e := make(chan error)
 
 	os := make(map[string]bool)
-	report := func(key string) {
-		if !os[key] {
-			os[key] = true
+	report := func(key string, isCreate bool) {
+		if isCreate {
+			if !os[key] {
+				os[key] = true
+				c <- key
+			}
+		} else {
+			delete(os, key)
 			c <- key
 		}
 	}
@@ -62,7 +68,7 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string) (<-chan string, <-chan 
 			if o.Err != nil {
 				e <- o.Err
 			} else {
-				report(o.Key)
+				report(o.Key, true)
 			}
 		}
 	}
@@ -72,17 +78,24 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string) (<-chan string, <-chan 
 		defer close(e)
 		once()
 		already := false
-		for n := range s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, []string{"s3:ObjectCreated:*"}) {
+
+		events := []string{"s3:ObjectCreated:*"}
+		if includeDeletions {
+			events = append(events, "s3:ObjectRemoved:*")
+		}
+
+		for n := range s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, events) {
 			if n.Err != nil {
 				e <- n.Err
 				continue
 			}
 
 			if !already {
+				already = true
 				once()
 			}
 			for _, r := range n.Records {
-				report(r.S3.Object.Key)
+				report(r.S3.Object.Key, strings.HasPrefix(r.EventName, "s3:ObjectCreated:"))
 			}
 		}
 	}()

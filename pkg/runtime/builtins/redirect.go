@@ -14,7 +14,7 @@ import (
 )
 
 func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(object string) string, opts build.LogOptions) error {
-	objects, errs := client.Listen(client.Paths.Bucket, client.Outbox(), "")
+	objects, errs := client.Listen(client.Paths.Bucket, client.Outbox(), "", false)
 	group, _ := errgroup.WithContext(ctx)
 	done := false
 
@@ -41,7 +41,12 @@ func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(objec
 		if opts.Verbose {
 			fmt.Fprintf(os.Stderr, "Downloading output to %s\n", dst)
 		}
-		group.Go(func() error { return client.Download(client.Paths.Bucket, object, dst) })
+		group.Go(func() error {
+			if err := client.Download(client.Paths.Bucket, object, dst); err != nil {
+				return err
+			}
+			return client.MarkConsumed(object)
+		})
 	}
 
 	for !done {

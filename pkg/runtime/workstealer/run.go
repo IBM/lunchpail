@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	q "lunchpail.io/pkg/runtime/queue"
@@ -50,7 +51,7 @@ func Run(ctx context.Context) error {
 	}
 
 	defer s3.StopListening(s3.Paths.Bucket)
-	o, errs := s3.Listen(s3.Paths.Bucket, "", "")
+	o, errs := s3.Listen(s3.Paths.Bucket, "", "", true)
 	for {
 		select {
 		case err := <-errs:
@@ -58,10 +59,16 @@ func Run(ctx context.Context) error {
 
 			// sleep for a bit
 			time.Sleep(s)
-		case <-o:
+		case obj := <-o:
+			// TODO update model incrementally rather than
+			// re-fetching and re-parsing the entire model
+			// every time there is a single change
+			if strings.Contains(obj, "/logs/") {
+				continue
+			}
 		}
 
-		// fetch model
+		// fetch and parse model
 		m := c.fetchModel()
 
 		if err := m.report(c); err != nil {

@@ -11,3 +11,9 @@ func AddRunOptions(cmd *cobra.Command) *RunOptions {
 	cmd.Flags().StringVarP(&options.Run, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
 	return &options
 }
+
+func AddRequiredRunOptions(cmd *cobra.Command) *RunOptions {
+	opts := AddRunOptions(cmd)
+	cmd.MarkFlagRequired("run")
+	return opts
+}

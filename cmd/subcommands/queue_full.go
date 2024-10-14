@@ -19,6 +19,7 @@ func init() {
 
 	if build.IsBuilt() {
 		cmd.AddCommand(queue.Cat())
+		cmd.AddCommand(queue.Drain())
 		cmd.AddCommand(queue.Last())
 		cmd.AddCommand(queue.Ls())
 		cmd.AddCommand(queue.Stat())
