@@ -24,8 +24,28 @@ export LUNCHPAIL_NAME="pipeline-test"
 function tester {
     input="$2"
     cmdline="$1 $2 -t ${LUNCHPAIL_TARGET:-local}"
+    expected_ec=${3:-0}
 
+    echo ""
+    echo "------------------------------------------------------------------------------------"
+    echo "  $(tput bold)Test:$(tput sgr0) $1"
+    echo "  $(tput bold)Input:$(tput sgr0) $input"
+    echo "  $(tput bold)Expected exit code$(tput sgr0): $expected_ec"
+    echo "------------------------------------------------------------------------------------"
+    
+    set +e
     $1 $2 -t ${LUNCHPAIL_TARGET:-local}
+    actual_ec=$?
+    set -e
+    if [[ $actual_ec = $expected_ec ]]
+    then echo "✅ PASS the exit code matches actual_ec=$actual_ec expected_ec=$expected_ec test=$1"
+    else echo "❌ FAIL mismatched exit code actual_ec=$actual_ec expected_ec=$expected_ec test=$1" && return 1
+    fi
+
+    if [[ $expected_ec != 0 ]]
+    then return
+    fi
+
     b=$(basename "$input")
     ext=${b##*.}
     bb=${b%%.*}
@@ -40,3 +60,4 @@ function tester {
 }
 
 tester "/tmp/lunchpail cat" $IN1
+tester "/tmp/lunchpail cat" nopenopenopenopenope 1
