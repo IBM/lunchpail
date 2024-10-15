@@ -34,6 +34,11 @@ func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, erro
 			return nil, err
 		}
 
+		if !info.IsDir() {
+			// Handle odd situations, bugs, etc.
+			continue
+		}
+
 		runname := e.Name()
 
 		running := true
