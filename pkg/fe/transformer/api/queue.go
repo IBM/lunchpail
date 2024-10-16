@@ -41,3 +41,47 @@ func QueuePrefixPathForWorker(queueSpec queue.Spec, runname, poolName string) st
 		QueueSubPathForWorker(poolName, "$LUNCHPAIL_WORKER_NAME"),
 	)
 }
+
+func UnassignedPath(queueSpec queue.Spec, runname string) string {
+	return filepath.Join(QueuePrefixPath(queueSpec, runname), "inbox")
+}
+
+func OutboxPath(queueSpec queue.Spec, runname string) string {
+	return filepath.Join(QueuePrefixPath(queueSpec, runname), "outbox")
+}
+
+func FinishedPath(queueSpec queue.Spec, runname string) string {
+	return filepath.Join(QueuePrefixPath(queueSpec, runname), "finished")
+}
+
+func WorkerKillfilePathBase(queueSpec queue.Spec, runname string) string {
+	return WorkerInboxPathBase(queueSpec, runname)
+}
+
+func WorkerKillfile(base, worker string) string {
+	return filepath.Join(base, worker, "kill")
+}
+
+func WorkerInboxPathBase(queueSpec queue.Spec, runname string) string {
+	return filepath.Join(QueuePrefixPath(queueSpec, runname), "queues")
+}
+
+func WorkerInbox(base, worker, task string) string {
+	return filepath.Join(base, worker, "inbox", task)
+}
+
+func WorkerProcessingPathBase(queueSpec queue.Spec, runname string) string {
+	return WorkerInboxPathBase(queueSpec, runname)
+}
+
+func WorkerProcessing(base, worker, task string) string {
+	return filepath.Join(base, worker, "processing", task)
+}
+
+func WorkerOutboxPathBase(queueSpec queue.Spec, runname string) string {
+	return WorkerInboxPathBase(queueSpec, runname)
+}
+
+func WorkerOutbox(base, worker, task string) string {
+	return filepath.Join(base, worker, "outbox", task)
+}

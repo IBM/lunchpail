@@ -8,7 +8,7 @@ import (
 )
 
 func Lower(buildName, runname string, ir llir.LLIR, opts build.Options) (llir.Component, error) {
-	app, err := transpile(runname)
+	app, err := transpile(runname, ir, *opts.Log)
 	if err != nil {
 		return nil, err
 	}

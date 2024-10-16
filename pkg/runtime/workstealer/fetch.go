@@ -49,7 +49,7 @@ var processingTaskPattern = regexp.MustCompile("^queues/(.+)/processing/(.+)$")
 var completedTaskPattern = regexp.MustCompile("^queues/(.+)/outbox/(.+)[.](succeeded|failed)$")
 
 // Determine from a changed line the nature of `WhatChanged`
-func whatChanged(line string) (WhatChanged, string, string) {
+func (m *Model) whatChanged(line string) (WhatChanged, string, string) {
 	if match := unassignedTaskPattern.FindStringSubmatch(line); len(match) == 2 {
 		return UnassignedTask, match[1], ""
 	} else if match := dispatcherDonePattern.FindStringSubmatch(line); len(match) == 1 {
@@ -81,7 +81,7 @@ func whatChanged(line string) (WhatChanged, string, string) {
 
 // We will be passed a stream of diffs
 func (m *Model) update(filepath string, workersLookup map[string]Worker) {
-	what, thing, thing2 := whatChanged(filepath)
+	what, thing, thing2 := m.whatChanged(filepath)
 
 	switch what {
 	case UnassignedTask:
@@ -167,7 +167,7 @@ func (c client) fetchModel() Model {
 
 	for o := range c.s3.ListObjects(c.s3.Paths.Bucket, c.s3.Paths.Prefix, true) {
 		if len(o.Key) > l {
-			if debug {
+			if c.LogOptions.Debug {
 				fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key[l:])
 			}
 			m.update(o.Key[l:], workersLookup)
