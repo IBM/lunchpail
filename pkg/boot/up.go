@@ -108,20 +108,14 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		}()
 	}
 
-	go func() {
-		for {
-			select {
-			case <-isRunning3:
-				pipelineMeta.Queue = ir.Queue
-				handlePipelineStdout(pipelineMeta)
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
-
 	defer cancel()
 	err = backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
+
+	<-isRunning3
+	pipelineMeta.Queue = ir.Queue
+	if err := handlePipelineStdout(pipelineMeta); err != nil {
+		return err
+	}
 
 	if len(opts.Inputs) > 0 {
 		<-copyoutDone

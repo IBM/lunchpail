@@ -67,7 +67,15 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
-	return cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Process exited with commandline: %s\n", command)
+	}
+
+	return nil
 }
 
 func addEnv(c llir.ShellComponent, q llir.Queue) ([]string, error) {

@@ -28,23 +28,16 @@ func (s3 S3Client) waitForBucket(bucket string) error {
 	return nil
 }
 
-func (s3 S3Client) WaitForEvent(bucket, object, event string) error {
-	defer s3.StopListening(bucket)
-
-	suffix := ""
-	for notificationInfo := range s3.client.ListenBucketNotification(s3.context, bucket, object, suffix, []string{event}) {
-		if notificationInfo.Err != nil {
-			return notificationInfo.Err
-		}
-
-		break
-	}
-
-	return nil
-}
-
 func (s3 S3Client) WaitTillExists(bucket, object string) error {
-	return s3.WaitForEvent(bucket, object, "s3:ObjectCreated:*")
+	objs, errs := s3.Listen(bucket, object, "", false)
+	for {
+		select {
+		case err := <-errs:
+			return err
+		case <-objs:
+			return nil
+		}
+	}
 }
 
 func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) (<-chan string, <-chan error) {
