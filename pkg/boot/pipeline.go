@@ -2,6 +2,7 @@ package boot
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -30,6 +31,7 @@ func handlePipelineStdin(ir llir.LLIR) (PipelineMeta, error) {
 		}
 
 		if meta.Queue.Endpoint != "" {
+			meta.RunName = fmt.Sprintf("%s-%d", meta.RunName, meta.Step)
 			return meta, nil
 		}
 	}
@@ -39,6 +41,7 @@ func handlePipelineStdin(ir llir.LLIR) (PipelineMeta, error) {
 
 func handlePipelineStdout(meta PipelineMeta) error {
 	if !util.StdoutIsTty() {
+		meta.Step++
 		b, err := json.Marshal(meta)
 		if err != nil {
 			return err

@@ -18,7 +18,7 @@ func init() {
 		Use:     "cat input1 [input2 ...]",
 		GroupID: dataGroup.ID,
 		Short:   "Inject one or more files into a pipeline execution",
-		Args:    cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
+		Args:    cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
 	buildOpts, err := options.AddBuildOptions(cmd)
