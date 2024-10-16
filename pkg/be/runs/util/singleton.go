@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"runtime/debug"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs"
@@ -22,7 +21,6 @@ func SingletonP(ctx context.Context, backend be.Backend, includeDone bool) (runs
 	} else if len(list) > 1 {
 		return runs.Run{}, fmt.Errorf("More than one run found:\n%s", runs.Pretty(list))
 	} else {
-		debug.PrintStack()
 		return runs.Run{}, fmt.Errorf("No runs found %v", os.Args)
 	}
 }
