@@ -1,0 +1,5 @@
+data-prep-toolkit==0.2.2.dev1
+scancode-toolkit ; platform_system != 'Darwin'
+
+pyarrow
+setuptools

@@ -6,6 +6,6 @@ metadata:
   name: {{ print "pool" (add 1 .) }}
 spec:
   workers:
-    count: 2
+    count: {{ $.Values.workers | default 1 }}
     size: "sm"
 {{- end }}
