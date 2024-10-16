@@ -56,7 +56,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	}
 	ir.Queue = pipelineMeta.Queue
 
-	if !ir.HasDispatcher() && len(opts.Inputs) == 0 {
+	if !ir.HasDispatcher() && len(opts.Inputs) == 0 && pipelineMeta.Step == 0 {
 		return fmt.Errorf("please provide input files on the command line")
 	}
 
