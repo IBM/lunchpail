@@ -15,9 +15,12 @@ import (
 // Specification of where we should find and store objects
 type Spec struct {
 	RunName          string
+	Bucket           string
+	ListenPrefix     string
 	Unassigned       string
 	Outbox           string
 	Finished         string
+	AllDone          string
 	WorkerInbox      string
 	WorkerProcessing string
 	WorkerOutbox     string
@@ -54,12 +57,8 @@ func Run(ctx context.Context, spec Spec, opts build.LogOptions) error {
 		printenv()
 	}
 
-	if err := c.s3.Mkdirp(s3.Paths.Bucket); err != nil {
-		return err
-	}
-
-	defer s3.StopListening(s3.Paths.Bucket)
-	o, errs := s3.Listen(s3.Paths.Bucket, "", "", true)
+	defer s3.StopListening(spec.Bucket)
+	o, errs := s3.Listen(spec.Bucket, spec.ListenPrefix, "", true)
 	for {
 		select {
 		case err := <-errs:
@@ -92,7 +91,7 @@ func Run(ctx context.Context, spec Spec, opts build.LogOptions) error {
 
 	// Drop a final breadcrumb indicating we are ready to tear
 	// down all associated resources
-	if err := s3.Touch(s3.Paths.Bucket, s3.Paths.AllDone); err != nil {
+	if err := s3.Touch(spec.Bucket, spec.AllDone); err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to touch AllDone file\n%v\n", err)
 	}
 
