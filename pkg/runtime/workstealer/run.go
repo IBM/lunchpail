@@ -84,7 +84,9 @@ func Run(ctx context.Context) error {
 
 	// Drop a final breadcrumb indicating we are ready to tear
 	// down all associated resources
-	s3.Touch(s3.Paths.Bucket, s3.Paths.AllDone)
+	if err := s3.Touch(s3.Paths.Bucket, s3.Paths.AllDone); err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to touch AllDone file\n%v\n", err)
+	}
 
 	util.SleepBeforeExit()
 	fmt.Fprintln(os.Stderr, "INFO The job should be all done now")

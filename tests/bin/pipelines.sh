@@ -21,6 +21,10 @@ fi
 
 export LUNCHPAIL_NAME="pipeline-test"
 
+if [[ -n "$CI" ]]
+then VERBOSE="--verbose"
+fi
+
 function tester {
     input="$2"
     cmdline="$1 $2 -t ${LUNCHPAIL_TARGET:-local}"
@@ -34,7 +38,7 @@ function tester {
     echo "------------------------------------------------------------------------------------"
     
     set +e
-    $1 $2 -t ${LUNCHPAIL_TARGET:-local}
+    $1 $2 -t ${LUNCHPAIL_TARGET:-local} $VERBOSE
     actual_ec=$?
     set -e
     if [[ $actual_ec = $expected_ec ]]

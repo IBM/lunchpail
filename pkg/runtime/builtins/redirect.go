@@ -39,14 +39,26 @@ func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(objec
 		ext := filepath.Ext(object)
 		withoutExt := object[0 : len(object)-len(ext)]
 		dst := filepath.Join(dstFolder, strings.Replace(withoutExt, client.Outbox()+"/", "", 1)+".output"+ext)
-		if opts.Verbose {
-			fmt.Fprintf(os.Stderr, "Downloading output to %s\n", dst)
-		}
 		group.Go(func() error {
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Downloading output to %s\n", dst)
+			}
 			if err := client.Download(client.Paths.Bucket, object, dst); err != nil {
+				if opts.Verbose {
+					fmt.Fprintf(os.Stderr, "Error Downloading output %s\n%v\n", object, err)
+				}
 				return err
 			}
-			return client.MarkConsumed(object)
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Marking output consumed %s\n", object)
+			}
+			if err := client.MarkConsumed(object); err != nil {
+				return err
+			}
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Downloading output done %s\n", object)
+			}
+			return nil
 		})
 	}
 

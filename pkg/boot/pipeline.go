@@ -43,7 +43,9 @@ func handlePipelineStdout(meta PipelineMeta) error {
 		if err != nil {
 			return err
 		}
-		os.Stdout.Write(b)
+		if _, err := os.Stdout.Write(b); err != nil {
+			return err
+		}
 	}
 
 	return nil
