@@ -4,25 +4,30 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
+	"lunchpail.io/pkg/build"
 	q "lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/util"
 )
 
-var debug = os.Getenv("DEBUG") != ""
-var run = os.Getenv("LUNCHPAIL_RUN_NAME")
-var queue = os.Getenv("LUNCHPAIL_QUEUE_PATH")
-var logDir = filepath.Join(queue, "logs")
-var inbox = filepath.Join(queue, "inbox")
-var finished = filepath.Join(queue, "finished")
-var outbox = filepath.Join(queue, "outbox")
-var queues = filepath.Join(queue, "queues")
+// Specification of where we should find and store objects
+type Spec struct {
+	RunName          string
+	Unassigned       string
+	Outbox           string
+	Finished         string
+	WorkerInbox      string
+	WorkerProcessing string
+	WorkerOutbox     string
+	WorkerKillfile   string
+}
 
 type client struct {
 	s3 q.S3Client
+	Spec
+	build.LogOptions
 }
 
 func printenv() {
@@ -31,20 +36,23 @@ func printenv() {
 	}
 }
 
-func Run(ctx context.Context) error {
+func Run(ctx context.Context, spec Spec, opts build.LogOptions) error {
 	s3, err := q.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
-	c := client{s3}
+	c := client{s3, spec, opts}
 
 	s, err := util.SleepyTime("QUEUE_POLL_INTERVAL_SECONDS", 3)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("INFO Workstealer starting")
-	printenv()
+	fmt.Fprintln(os.Stderr, "Workstealer starting")
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Spec: %v\n", spec)
+		printenv()
+	}
 
 	if err := c.s3.Mkdirp(s3.Paths.Bucket); err != nil {
 		return err
@@ -89,6 +97,6 @@ func Run(ctx context.Context) error {
 	}
 
 	util.SleepBeforeExit()
-	fmt.Fprintln(os.Stderr, "INFO The job should be all done now")
+	fmt.Fprintln(os.Stderr, "The job should be all done now")
 	return nil
 }

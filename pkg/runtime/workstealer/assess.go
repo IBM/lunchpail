@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize/english"
+
+	"lunchpail.io/pkg/fe/transformer/api"
 )
 
 func (c client) localPathToRemote(path string) string {
@@ -25,7 +27,7 @@ func (c client) reportLinkedFile(src, dst string) error {
 func (c client) reportMovedFile(src, dst string) error {
 	rsrc := c.localPathToRemote(src)
 	rdst := c.localPathToRemote(dst)
-	if debug {
+	if c.LogOptions.Debug {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading moved file: %s -> %s\n", rsrc, rdst)
 	}
 
@@ -35,7 +37,7 @@ func (c client) reportMovedFile(src, dst string) error {
 // Emit the path to the file we changed
 func (c client) reportChangedFile(filepath string) error {
 	remotefile := c.localPathToRemote(filepath)
-	if debug {
+	if c.LogOptions.Debug {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading changed file: %s -> %s\n", filepath, remotefile)
 	}
 
@@ -44,34 +46,34 @@ func (c client) reportChangedFile(filepath string) error {
 
 // Has a Task already been marked as completed?
 func (c client) isMarkedDone(task string) bool {
-	finishedMarker := filepath.Join(finished, task)
+	finishedMarker := filepath.Join(c.Spec.Finished, task)
 	p := c.localPathToRemote(finishedMarker)
 	return c.s3.Exists(c.s3.Paths.Bucket, filepath.Dir(p), filepath.Base(p))
 }
 
 // A Task has been fully completed by a Worker
 func (c client) markDone(task string) error {
-	finishedMarker := filepath.Join(finished, task)
+	finishedMarker := filepath.Join(c.Spec.Finished, task)
 	return c.s3.Mark(c.s3.Paths.Bucket, c.localPathToRemote(finishedMarker), "done")
 }
 
 // Touch killfile for the given Worker
 func (c client) touchKillFile(worker Worker) error {
-	workerKillFileFilePath := filepath.Join(queues, worker.name, "kill")
+	workerKillFileFilePath := api.WorkerKillfile(c.Spec.WorkerKillfile, worker.name)
 	return c.s3.Mark(c.s3.Paths.Bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
 func (c client) moveToWorkerInbox(task string, worker Worker) error {
-	unassignedFilePath := filepath.Join(inbox, task)
-	workerInboxFilePath := filepath.Join(queues, worker.name, "inbox", task)
+	unassignedFilePath := filepath.Join(c.Spec.Unassigned, task)
+	workerInboxFilePath := api.WorkerInbox(c.Spec.WorkerInbox, worker.name, task)
 	return c.reportMovedFile(unassignedFilePath, workerInboxFilePath)
 }
 
 // As part of finishing up a Task, copy it from the Worker's Outbox to the final Outbox
 func (c client) copyToFinalOutbox(task string, worker string, success TaskCode) error {
-	fileInWorkerOutbox := filepath.Join(queues, worker, "outbox", task)
-	fullyDoneOutputFilePath := filepath.Join(outbox, task)
+	fileInWorkerOutbox := api.WorkerOutbox(c.Spec.WorkerOutbox, worker, task)
+	fullyDoneOutputFilePath := filepath.Join(c.Spec.Outbox, task)
 
 	codeFileInWorkerOutbox := fileInWorkerOutbox + ".code"
 	fullyDoneCodeFilePath := fullyDoneOutputFilePath + ".code"
@@ -110,7 +112,9 @@ func (c client) copyToFinalOutbox(task string, worker string, success TaskCode) 
 
 // Assign an unassigned Task to one of the given LiveWorkers
 func (c client) assignNewTaskToWorker(task string, worker Worker) error {
-	fmt.Fprintf(os.Stderr, "DEBUG Assigning task=%s to worker=%s \n", task, worker.name)
+	if c.LogOptions.Debug {
+		fmt.Fprintf(os.Stderr, "DEBUG Assigning task=%s to worker=%s \n", task, worker.name)
+	}
 	return c.moveToWorkerInbox(task, worker)
 }
 
@@ -123,9 +127,16 @@ const (
 )
 
 // A Worker has died. Unassign this task that it owns
-func (c client) moveTaskBackToUnassigned(task string, worker Worker, box Box) error {
-	inWorkerFilePath := filepath.Join(queues, worker.name, string(box), task)
-	unassignedFilePath := filepath.Join(inbox, task)
+func (c client) moveAssignedTaskBackToUnassigned(task string, worker Worker) error {
+	inWorkerFilePath := api.WorkerInbox(c.Spec.WorkerInbox, worker.name, task)
+	unassignedFilePath := filepath.Join(c.Spec.Unassigned, task)
+	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
+}
+
+// A Worker has died. Unassign this task that it owns
+func (c client) moveProcessingTaskBackToUnassigned(task string, worker Worker) error {
+	inWorkerFilePath := api.WorkerProcessing(c.Spec.WorkerInbox, worker.name, task)
+	unassignedFilePath := filepath.Join(c.Spec.Unassigned, task)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
@@ -144,12 +155,12 @@ func (c client) cleanupForDeadWorker(worker Worker) error {
 	}
 
 	for _, assignedTask := range worker.assignedTasks {
-		if err := c.moveTaskBackToUnassigned(assignedTask, worker, "inbox"); err != nil {
+		if err := c.moveAssignedTaskBackToUnassigned(assignedTask, worker); err != nil {
 			log.Fatalf(err.Error())
 		}
 	}
 	for _, assignedTask := range worker.processingTasks {
-		if err := c.moveTaskBackToUnassigned(assignedTask, worker, "processing"); err != nil {
+		if err := c.moveProcessingTaskBackToUnassigned(assignedTask, worker); err != nil {
 			log.Fatalf(err.Error())
 		}
 	}
@@ -186,13 +197,15 @@ func (c client) apportion(model Model) []Apportionment {
 
 	desiredLevel := max(1, len(model.UnassignedTasks)/len(model.LiveWorkers))
 
-	fmt.Fprintf(
-		os.Stderr,
-		"DEBUG Allocating %s to %s. Seeking %s per worker.\n",
-		english.Plural(len(model.UnassignedTasks), "task", ""),
-		english.Plural(len(model.LiveWorkers), "worker", ""),
-		english.Plural(desiredLevel, "task", ""),
-	)
+	if c.LogOptions.Verbose {
+		fmt.Fprintf(
+			os.Stderr,
+			"Allocating %s to %s. Seeking %s per worker.\n",
+			english.Plural(len(model.UnassignedTasks), "task", ""),
+			english.Plural(len(model.LiveWorkers), "worker", ""),
+			english.Plural(desiredLevel, "task", ""),
+		)
+	}
 
 	startIdx := 0
 	for _, worker := range model.LiveWorkers {
@@ -215,7 +228,7 @@ func (c client) apportion(model Model) []Apportionment {
 func (c client) assignNewTasks(model Model) {
 	for _, A := range c.apportion(model) {
 		nTasks := A.endIdx - A.startIdx
-		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, run+"-", "", 1))
+		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, c.Spec.RunName+"-", "", 1))
 		for idx := range nTasks {
 			task := model.UnassignedTasks[A.startIdx+idx]
 			if err := c.assignNewTaskToWorker(task, A.worker); err != nil {
@@ -291,7 +304,7 @@ func (c client) rebalance(model Model) bool {
 					for i := range stealThisMany {
 						j := len(workerWithWork.assignedTasks) - i - 1
 						taskToSteal := workerWithWork.assignedTasks[j]
-						c.moveTaskBackToUnassigned(taskToSteal, workerWithWork, "inbox")
+						c.moveAssignedTaskBackToUnassigned(taskToSteal, workerWithWork)
 					}
 				}
 			}
