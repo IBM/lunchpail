@@ -9,8 +9,13 @@ import (
 )
 
 // Path in s3 to store the queue for the given run
+func QueuePrefixPath0(queueSpec queue.Spec, runname string) string {
+	return filepath.Join("lunchpail", runname)
+}
+
+// Path in s3 to store the queue for the given run
 func QueuePrefixPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(queueSpec.Bucket, "lunchpail", runname)
+	return filepath.Join(queueSpec.Bucket, QueuePrefixPath0(queueSpec, runname))
 }
 
 // The queue path for a worker that specifies the pool name and the worker name
@@ -43,15 +48,15 @@ func QueuePrefixPathForWorker(queueSpec queue.Spec, runname, poolName string) st
 }
 
 func UnassignedPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath(queueSpec, runname), "inbox")
+	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "inbox")
 }
 
 func OutboxPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath(queueSpec, runname), "outbox")
+	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "outbox")
 }
 
 func FinishedPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath(queueSpec, runname), "finished")
+	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "finished")
 }
 
 func WorkerKillfilePathBase(queueSpec queue.Spec, runname string) string {
@@ -63,7 +68,7 @@ func WorkerKillfile(base, worker string) string {
 }
 
 func WorkerInboxPathBase(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath(queueSpec, runname), "queues")
+	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "queues")
 }
 
 func WorkerInbox(base, worker, task string) string {
@@ -84,4 +89,8 @@ func WorkerOutboxPathBase(queueSpec queue.Spec, runname string) string {
 
 func WorkerOutbox(base, worker, task string) string {
 	return filepath.Join(base, worker, "outbox", task)
+}
+
+func AllDone(queueSpec queue.Spec, runname string) string {
+	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "alldone")
 }

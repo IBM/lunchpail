@@ -13,14 +13,14 @@ import (
 )
 
 func (c client) localPathToRemote(path string) string {
-	return strings.Replace(path, c.s3.Paths.Bucket+"/", "", 1)
+	return strings.Replace(path, c.Spec.Bucket+"/", "", 1)
 }
 
 // Emit the path to the file we linked
 func (c client) reportLinkedFile(src, dst string) error {
 	rsrc := c.localPathToRemote(src)
 	rdst := c.localPathToRemote(dst)
-	return c.s3.Copyto(c.s3.Paths.Bucket, rsrc, c.s3.Paths.Bucket, rdst)
+	return c.s3.Copyto(c.Spec.Bucket, rsrc, c.Spec.Bucket, rdst)
 }
 
 // Emit the path to the file we deleted
@@ -31,7 +31,7 @@ func (c client) reportMovedFile(src, dst string) error {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading moved file: %s -> %s\n", rsrc, rdst)
 	}
 
-	return c.s3.Moveto(c.s3.Paths.Bucket, rsrc, rdst)
+	return c.s3.Moveto(c.Spec.Bucket, rsrc, rdst)
 }
 
 // Emit the path to the file we changed
@@ -41,26 +41,26 @@ func (c client) reportChangedFile(filepath string) error {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading changed file: %s -> %s\n", filepath, remotefile)
 	}
 
-	return c.s3.Upload(c.s3.Paths.Bucket, filepath, remotefile)
+	return c.s3.Upload(c.Spec.Bucket, filepath, remotefile)
 }
 
 // Has a Task already been marked as completed?
 func (c client) isMarkedDone(task string) bool {
 	finishedMarker := filepath.Join(c.Spec.Finished, task)
 	p := c.localPathToRemote(finishedMarker)
-	return c.s3.Exists(c.s3.Paths.Bucket, filepath.Dir(p), filepath.Base(p))
+	return c.s3.Exists(c.Spec.Bucket, filepath.Dir(p), filepath.Base(p))
 }
 
 // A Task has been fully completed by a Worker
 func (c client) markDone(task string) error {
 	finishedMarker := filepath.Join(c.Spec.Finished, task)
-	return c.s3.Mark(c.s3.Paths.Bucket, c.localPathToRemote(finishedMarker), "done")
+	return c.s3.Mark(c.Spec.Bucket, c.localPathToRemote(finishedMarker), "done")
 }
 
 // Touch killfile for the given Worker
 func (c client) touchKillFile(worker Worker) error {
 	workerKillFileFilePath := api.WorkerKillfile(c.Spec.WorkerKillfile, worker.name)
-	return c.s3.Mark(c.s3.Paths.Bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
+	return c.s3.Mark(c.Spec.Bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox

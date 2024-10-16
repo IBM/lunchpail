@@ -22,17 +22,11 @@ type filepaths struct {
 	// Dispatcher is done
 	Done string
 
-	// Ready to tear everything done
-	AllDone string
-
 	// Worker is alive
 	Alive string
 
 	// Worker is dead
 	Dead string
-
-	// Where we will stash any locally downloaded tasks
-	Local string
 }
 
 func pathsForRun() (filepaths, error) {
@@ -48,17 +42,10 @@ func pathsFor(queuePrefixPath string) (filepaths, error) {
 	processing := "processing"
 	outbox := outboxFolder
 	done := filepath.Join(poolPrefix, "done")
-	alldone := filepath.Join(poolPrefix, "alldone")
 	alive := filepath.Join(prefix, inbox, ".alive")
 	dead := filepath.Join(prefix, inbox, ".dead")
 
-	tmpdir, err := os.MkdirTemp("", "lunchpail_local_queue_")
-	if err != nil {
-		return filepaths{}, err
-	}
-	local := tmpdir
-
-	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alldone, alive, dead, local}, nil
+	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alive, dead}, nil
 }
 
 func (c S3Client) Outbox() string {

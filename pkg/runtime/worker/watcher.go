@@ -49,6 +49,11 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 		return err
 	}
 
+	localdir, err := os.MkdirTemp("", "lunchpail_local_queue_")
+	if err != nil {
+		return err
+	}
+
 	tasks, errs := client.Listen(client.Paths.Bucket, prefix, "", false)
 	for {
 		if killfileExists(client, bucket, prefix) {
@@ -86,9 +91,9 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				stdout := filepath.Join(prefix, outbox, task+".stdout")
 				stderr := filepath.Join(prefix, outbox, task+".stderr")
 
-				localinbox := filepath.Join(client.Paths.Local, inbox)
-				localprocessing := filepath.Join(client.Paths.Local, processing, task)
-				localoutbox := filepath.Join(client.Paths.Local, outbox, task)
+				localinbox := filepath.Join(localdir, inbox)
+				localprocessing := filepath.Join(localdir, processing, task)
+				localoutbox := filepath.Join(localdir, outbox, task)
 				localec := localoutbox + ".code"
 				localstdout := localoutbox + ".stdout"
 				localstderr := localoutbox + ".stderr"

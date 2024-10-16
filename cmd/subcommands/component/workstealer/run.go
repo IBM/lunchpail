@@ -16,13 +16,22 @@ func Run() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 	}
 
+	bucket := ""
+	listenPrefix := ""
 	unassigned := ""
 	outbox := ""
 	finished := ""
+	alldone := ""
 	workerInbox := ""
 	workerProcessing := ""
 	workerOutbox := ""
 	workerKillfile := ""
+
+	cmd.Flags().StringVar(&bucket, "bucket", "", "Which S3 bucket to use")
+	cmd.MarkFlagRequired("bucket")
+
+	cmd.Flags().StringVar(&listenPrefix, "listen-prefix", "", "Which S3 listen-prefix to use")
+	cmd.MarkFlagRequired("listen-prefix")
 
 	cmd.Flags().StringVar(&unassigned, "unassigned", "", "Where to find unassigned tasks")
 	cmd.MarkFlagRequired("unassigned")
@@ -32,6 +41,9 @@ func Run() *cobra.Command {
 
 	cmd.Flags().StringVar(&finished, "finished", "", "Where to find finished tasks")
 	cmd.MarkFlagRequired("finished")
+
+	cmd.Flags().StringVar(&alldone, "all-done", "", "Where to place the final kill file")
+	cmd.MarkFlagRequired("all-done")
 
 	cmd.Flags().StringVar(&workerInbox, "worker-inbox-base", "", "Where to find workerInbox tasks")
 	cmd.MarkFlagRequired("worker-inbox-base")
@@ -46,7 +58,7 @@ func Run() *cobra.Command {
 	ropts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return workstealer.Run(context.Background(), workstealer.Spec{RunName: ropts.Run, Unassigned: unassigned, Outbox: outbox, Finished: finished, WorkerInbox: workerInbox, WorkerProcessing: workerProcessing, WorkerOutbox: workerOutbox, WorkerKillfile: workerKillfile}, *lopts)
+		return workstealer.Run(context.Background(), workstealer.Spec{RunName: ropts.Run, Bucket: bucket, ListenPrefix: listenPrefix, Unassigned: unassigned, Outbox: outbox, Finished: finished, WorkerInbox: workerInbox, WorkerProcessing: workerProcessing, WorkerOutbox: workerOutbox, WorkerKillfile: workerKillfile, AllDone: alldone}, *lopts)
 	}
 
 	return cmd
