@@ -31,7 +31,13 @@ func PreStop() *cobra.Command {
 	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return worker.PreStop(context.Background(), worker.Options{Bucket: bucket, Dead: dead, LogOptions: *logOpts})
+		return worker.PreStop(context.Background(), worker.Options{
+			LogOptions: *logOpts,
+			Queue: worker.Queue{
+				Bucket: bucket,
+				Dead:   dead,
+			},
+		})
 	}
 
 	return cmd

@@ -2,7 +2,6 @@ package workerpool
 
 import (
 	"fmt"
-	"strconv"
 
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/transformer/api"
@@ -28,10 +27,9 @@ func Lower(buildName, runname string, app hlir.Application, pool hlir.WorkerPool
 	if app.Spec.Env == nil {
 		app.Spec.Env = make(map[string]string)
 	}
-	app.Spec.Env["LUNCHPAIL_STARTUP_DELAY"] = strconv.Itoa(startupDelay)
 
 	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop --verbose=%v --debug=%v --bucket %s --alive %s --dead %s" EXIT
-$LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v --bucket %s --alive %s -- %s`,
+$LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v --bucket %s --alive %s --listen-prefix %s --delay %d -- %s`,
 		opts.Log.Verbose,
 		opts.Log.Debug,
 		ir.Queue.Bucket,
@@ -41,6 +39,8 @@ $LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v --bucket %s --alive 
 		opts.Log.Debug,
 		ir.Queue.Bucket,
 		api.WorkerAlive(ir.Queue, runname, pool.Metadata.Name),
+		api.QueuePrefixPathForWorker0(ir.Queue, runname, pool.Metadata.Name),
+		startupDelay,
 		app.Spec.Command,
 	)
 
