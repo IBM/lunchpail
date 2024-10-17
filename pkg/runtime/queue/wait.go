@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/minio/minio-go/v7"
+
+	"lunchpail.io/pkg/fe/transformer/api"
 )
 
 func (s3 S3Client) waitForBucket(bucket string) error {
@@ -101,34 +103,45 @@ func (s3 S3Client) StopListening(bucket string) error {
 }
 
 // Wait for the given enqueued task to appear in the outbox
-func (c S3Client) WaitForCompletion(task string, verbose bool) (int, error) {
-	bucket := c.Paths.Bucket
-	outbox := c.Outbox()
-	outFile := filepath.Join(outbox, task)
-	codeFile := filepath.Join(outbox, task+".code")
-
-	if err := c.WaitTillExists(bucket, outFile); err != nil {
-		if err := c.waitTillExistsViaPolling(bucket, outFile, verbose); err != nil {
-			return 0, err
-		}
-	}
+func (c S3Client) WaitForCompletion(runname, task string, verbose bool) (int, error) {
+	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0, Task: task} // FIXME
+	codesDir := args.TemplateDir(api.FinishedWithCode)
 
 	if verbose {
-		fmt.Fprintf(os.Stderr, "Task completed %s\n", task)
+		fmt.Fprintf(os.Stderr, "Waiting for task completion %s -> %s\n", task, codesDir)
 	}
 
-	if code, err := c.Get(bucket, codeFile); err != nil {
-		return 0, err
-	} else {
-		if verbose {
-			fmt.Fprintf(os.Stderr, "Task completed %s with return code %s\n", task, code)
-		}
+	defer c.StopListening(args.Bucket)
+	objs, errs := c.Listen(args.Bucket, codesDir, "", false)
+	for {
+		select {
+		case err := <-errs:
+			if verbose {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			time.Sleep(3 * time.Second)
 
-		exitcode, err := strconv.Atoi(code)
-		if err != nil {
-			return 0, err
+		case obj := <-objs:
+			if filepath.Base(obj) == task {
+				if verbose {
+					fmt.Fprintf(os.Stderr, "Task completed %s\n", task)
+				}
+
+				if code, err := c.Get(args.Bucket, obj); err != nil {
+					return 0, err
+				} else {
+					if verbose {
+						fmt.Fprintf(os.Stderr, "Task completed %s with return code %s\n", task, code)
+					}
+
+					exitcode, err := strconv.Atoi(code)
+					if err != nil {
+						return 0, err
+					}
+					return exitcode, nil
+				}
+			}
 		}
-		return exitcode, nil
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 )
 
 func Lower(buildName, runname string, app hlir.Application, pool hlir.WorkerPool, ir llir.LLIR, opts build.Options) (llir.Component, error) {
+	step := 0 // TODO
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
 	spec.RunAsJob = true
@@ -28,19 +29,21 @@ func Lower(buildName, runname string, app hlir.Application, pool hlir.WorkerPool
 		app.Spec.Env = make(map[string]string)
 	}
 
-	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop --verbose=%v --debug=%v --bucket %s --alive %s --dead %s" EXIT
-$LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v --bucket %s --alive %s --listen-prefix %s --delay %d -- %s`,
+	queueArgs := fmt.Sprintf("--bucket %s --run %s --step %d --pool %s --worker $LUNCHPAIL_POD_NAME",
+		ir.Queue.Bucket,
+		runname,
+		step,
+		pool.Metadata.Name,
+	)
+	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop --verbose=%v --debug=%v %s" EXIT
+$LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v --delay %d %s -- %s`,
 		opts.Log.Verbose,
 		opts.Log.Debug,
-		ir.Queue.Bucket,
-		api.WorkerAlive(ir.Queue, runname, pool.Metadata.Name),
-		api.WorkerDead(ir.Queue, runname, pool.Metadata.Name),
+		queueArgs,
 		opts.Log.Verbose,
 		opts.Log.Debug,
-		ir.Queue.Bucket,
-		api.WorkerAlive(ir.Queue, runname, pool.Metadata.Name),
-		api.QueuePrefixPathForWorker0(ir.Queue, runname, pool.Metadata.Name),
 		startupDelay,
+		queueArgs,
 		app.Spec.Command,
 	)
 

@@ -93,47 +93,41 @@ function waitForIt {
         while true
         do
             echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name namespace=$ns num_desired_outputs=${NUM_DESIRED_OUTPUTS:-1}$(tput sgr0)" 1>&2
-            nOutputs=$($testapp queue ls --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}' | wc -l | xargs)
+            nOutputs=$($testapp queue ls --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode | wc -l | xargs)
 
             if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
             then break
             fi
 
             echo "$(tput setaf 2)🧪 Still waiting test=$name for expectedNumOutputs=${NUM_DESIRED_OUTPUTS:-1} actualNumOutputs=$nOutputs$(tput sgr0)"
-            echo "Current output files: $($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)"
+            echo "Current output files: $($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)"
             sleep 1
         done
             echo "✅ PASS run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox | grep -Evs '(\.code|\.stderr|\.stdout|\.succeeded|\.failed)$' | grep -sv '/' | awk '{print $NF}')
+            outputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)
             echo "Outputs: $outputs"
-            allOutputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} outbox)
             for output in $outputs
             do
                 echo "Checking output=$output"
-
-                if echo "$allOutputs" | grep -Fq "${output}".code
-                then echo "✅ PASS got code file test=$name output=$output"
-                else echo "❌ FAIL missing code test=$name output=$output allOutputs=$allOutputs" && return 1
-                fi
 
                 local ofile="succeeded"
                 if [ -n "$expectTaskFailure" ]
                 then ofile="failed"
                 fi
-                if echo "$allOutputs" | grep -Fq "${output}.$ofile"
-                then echo "✅ PASS got expected $ofile file test=$name output=$output"
-                else echo "❌ FAIL missing expected $ofile file test=$name output=$output ofile=${output}.$ofile allOutputs=$allOutputs" && return 1
-                fi
+                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} $ofile | grep -Fq "${output}"
+                do echo "Still waiting for $ofile test=$name output=$output" && sleep 1
+                done
+                echo "✅ PASS got expected $ofile file test=$name output=$output"
 
-                if echo "$allOutputs" | grep -Fq "${output}".stdout 
-                then echo "✅ PASS got stdout file test=$name output=$output"
-                else echo "❌ FAIL missing stdout test=$name output=$output allOutputs=$allOutputs" && return 1
-                fi
+                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stdout | grep -Fq "${output}"
+                do echo "Still waiting for stdout test=$name output=$output" && sleep 1
+                done
+                echo "✅ PASS got stdout file test=$name output=$output"
 
-                if echo "$allOutputs" | grep -Fq "${output}".stderr
-                then echo "✅ PASS got stderr file test=$name output=$output"
-                else echo "❌ FAIL missing stderr test=$name output=$output allOutputs=$allOutputs" && return 1
-                fi
+                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stderr | grep -Fq "${output}"
+                do echo "Still waiting for stderr test=$name output=$output" && sleep 1
+                done
+                echo "✅ PASS got stderr file test=$name output=$output"
             done
     fi
 

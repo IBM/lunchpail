@@ -3,10 +3,7 @@ package minio
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
-	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 )
@@ -18,18 +15,13 @@ func transpile(runname string, ir llir.LLIR) (hlir.Application, error) {
 	app.Spec.Image = "docker.io/minio/minio:RELEASE.2024-07-04T14-25-45Z"
 	app.Spec.Role = "queue"
 	app.Spec.Expose = []string{fmt.Sprintf("%d:%d", ir.Queue.Port, ir.Queue.Port)}
-	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component minio server --port %d", ir.Queue.Port)
+	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component minio server --port %d --bucket %s --run %s", ir.Queue.Port, ir.Queue.Bucket, runname)
 
 	/*app.Spec.Needs = []hlir.Needs{
 	{Name: "minio", Version: "latest"}}*/
-	prefixIncludingBucket := api.QueuePrefixPath(ir.Queue, runname)
-	A := strings.Split(prefixIncludingBucket, "/")
-	prefixExcludingBucket := filepath.Join(A[1:]...)
 
 	app.Spec.Env = hlir.Env{}
 	app.Spec.Env["USE_MINIO_EXTENSIONS"] = "true"
-	app.Spec.Env["LUNCHPAIL_QUEUE_BUCKET"] = ir.Queue.Bucket
-	app.Spec.Env["LUNCHPAIL_QUEUE_PREFIX"] = prefixExcludingBucket
 
 	// This can help with tests
 	app.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = os.Getenv("LUNCHPAIL_SLEEP_BEFORE_EXIT")
