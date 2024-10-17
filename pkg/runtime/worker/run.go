@@ -17,7 +17,7 @@ func printenv() {
 
 func Run(ctx context.Context, handler []string, opts Options) error {
 	if opts.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Lunchpail worker starting up\n")
+		fmt.Fprintf(os.Stderr, "Worker starting up\n")
 		printenv()
 	}
 
@@ -27,6 +27,9 @@ func Run(ctx context.Context, handler []string, opts Options) error {
 	}
 
 	if opts.StartupDelay > 0 {
+		if opts.LogOptions.Verbose {
+			fmt.Fprintf(os.Stderr, "Worker delaying for %d seconds\n", opts.StartupDelay)
+		}
 		time.Sleep(time.Duration(opts.StartupDelay) * time.Second)
 	}
 

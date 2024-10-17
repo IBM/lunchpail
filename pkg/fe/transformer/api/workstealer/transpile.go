@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
@@ -13,11 +12,18 @@ import (
 
 // Transpile workstealer to hlir.Application
 func transpile(runname string, ir llir.LLIR, opts build.LogOptions) (hlir.Application, error) {
+	step := 0 // TODO
 	app := hlir.NewApplication(runname + "-workstealer")
 
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "workstealer"
-	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component workstealer run --verbose=%v --debug=%v --run %s --bucket %s --listen-prefix %s --unassigned %s --outbox %s --finished %s --worker-inbox-base %s --worker-processing-base %s --worker-outbox-base %s --worker-killfile-base %s --all-done %s", opts.Verbose, opts.Debug, runname, ir.Queue.Bucket, api.QueuePrefixPath0(ir.Queue, runname), api.UnassignedPath(ir.Queue, runname), api.OutboxPath(ir.Queue, runname), api.FinishedPath(ir.Queue, runname), api.WorkerInboxPathBase(ir.Queue, runname), api.WorkerProcessingPathBase(ir.Queue, runname), api.WorkerOutboxPathBase(ir.Queue, runname), api.WorkerKillfilePathBase(ir.Queue, runname), api.AllDone(ir.Queue, runname))
+	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component workstealer run --verbose=%v --debug=%v --bucket %s --run %s --step %d",
+		opts.Verbose,
+		opts.Debug,
+		ir.Queue.Bucket,
+		runname,
+		step,
+	)
 
 	app.Spec.Env = hlir.Env{}
 	app.Spec.Env["LUNCHPAIL_RUN_NAME"] = runname

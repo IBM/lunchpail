@@ -9,7 +9,7 @@ import (
 )
 
 // Transpile hlir.ProcessS3Objects to hlir.Application
-func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
+func transpile(runname string, s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 	app := hlir.NewApplication(s3.Metadata.Name)
 
 	if s3.Spec.Rclone.RemoteName == "" {
@@ -39,8 +39,8 @@ func transpile(s3 hlir.ProcessS3Objects) (hlir.Application, error) {
 
 	envPrefix := "LUNCHPAIL_PROCESS_S3_OBJECTS_"
 	app.Spec.Command = strings.Join([]string{
-		`trap "$LUNCHPAIL_EXE queue done" EXIT`,
-		fmt.Sprintf("$LUNCHPAIL_EXE queue add s3 --repeat %d %s %s %s %s", repeat, verbose, debug, s3.Spec.Path, envPrefix),
+		fmt.Sprintf(`trap "$LUNCHPAIL_EXE queue done --run %s" EXIT`, runname),
+		fmt.Sprintf("$LUNCHPAIL_EXE queue add s3 --run %s --repeat %d %s %s %s %s", runname, repeat, verbose, debug, s3.Spec.Path, envPrefix),
 	}, "\n")
 
 	app.Spec.Env = hlir.Env{}

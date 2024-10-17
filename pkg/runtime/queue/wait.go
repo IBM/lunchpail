@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/minio/minio-go/v7"
+
+	"lunchpail.io/pkg/fe/transformer/api"
 )
 
 func (s3 S3Client) waitForBucket(bucket string) error {
@@ -33,7 +35,8 @@ func (s3 S3Client) WaitTillExists(bucket, object string) error {
 	for {
 		select {
 		case err := <-errs:
-			return err
+			fmt.Fprintf(os.Stderr, "s3.WaitTillExists falling back on polling due to listen error: %v\n", err)
+			return s3.waitTillExistsViaPolling(bucket, object, false)
 		case <-objs:
 			return nil
 		}
@@ -44,32 +47,41 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 	c := make(chan string)
 	e := make(chan error)
 
-	objs := make(map[string]bool)
-	report := func(key string, isCreate bool) {
-		if isCreate {
-			if !objs[key] {
-				objs[key] = true
-				c <- key
-			}
-		} else {
-			delete(objs, key)
+	watcherIsAlive := false
+	reported := make(map[string]bool)
+	reportCreate := func(key string) {
+		if !reported[key] {
+			reported[key] = true
 			c <- key
 		}
+	}
+	reportDelete := func(key string) {
+		// delete(reported, key)
+		c <- key
 	}
 	once := func() {
 		for o := range s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true}) {
 			if o.Err != nil {
 				e <- o.Err
 			} else {
-				report(o.Key, true)
+				reportCreate(o.Key)
 			}
 		}
 	}
 
 	go func() {
+		for !watcherIsAlive {
+			once()
+
+			if !watcherIsAlive {
+				time.Sleep(1 * time.Second)
+			}
+		}
+	}()
+
+	go func() {
 		defer close(c)
 		defer close(e)
-		once()
 		already := false
 
 		events := []string{"s3:ObjectCreated:*"}
@@ -78,6 +90,7 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 		}
 
 		for n := range s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, events) {
+			watcherIsAlive = true
 			if n.Err != nil {
 				e <- n.Err
 				continue
@@ -88,9 +101,16 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 				once()
 			}
 			for _, r := range n.Records {
-				report(r.S3.Object.Key, strings.HasPrefix(r.EventName, "s3:ObjectCreated:"))
+				if strings.HasPrefix(r.EventName, "s3:ObjectCreated:") {
+					reportCreate(r.S3.Object.Key)
+				} else {
+					reportDelete(r.S3.Object.Key)
+				}
 			}
 		}
+
+		// in case the Listen itself fails, avoid once() sending on a closed channel
+		watcherIsAlive = true
 	}()
 
 	return c, e
@@ -101,34 +121,45 @@ func (s3 S3Client) StopListening(bucket string) error {
 }
 
 // Wait for the given enqueued task to appear in the outbox
-func (c S3Client) WaitForCompletion(task string, verbose bool) (int, error) {
-	bucket := c.Paths.Bucket
-	outbox := c.Outbox()
-	outFile := filepath.Join(outbox, task)
-	codeFile := filepath.Join(outbox, task+".code")
-
-	if err := c.WaitTillExists(bucket, outFile); err != nil {
-		if err := c.waitTillExistsViaPolling(bucket, outFile, verbose); err != nil {
-			return 0, err
-		}
-	}
+func (c S3Client) WaitForCompletion(runname, task string, verbose bool) (int, error) {
+	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0, Task: task} // FIXME
+	codesDir := args.TemplateDir(api.FinishedWithCode)
 
 	if verbose {
-		fmt.Fprintf(os.Stderr, "Task completed %s\n", task)
+		fmt.Fprintf(os.Stderr, "Waiting for task completion %s -> %s\n", task, codesDir)
 	}
 
-	if code, err := c.Get(bucket, codeFile); err != nil {
-		return 0, err
-	} else {
-		if verbose {
-			fmt.Fprintf(os.Stderr, "Task completed %s with return code %s\n", task, code)
-		}
+	defer c.StopListening(args.Bucket)
+	objs, errs := c.Listen(args.Bucket, codesDir, "", false)
+	for {
+		select {
+		case err := <-errs:
+			if verbose {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			time.Sleep(3 * time.Second)
 
-		exitcode, err := strconv.Atoi(code)
-		if err != nil {
-			return 0, err
+		case obj := <-objs:
+			if filepath.Base(obj) == task {
+				if verbose {
+					fmt.Fprintf(os.Stderr, "Task completed %s\n", task)
+				}
+
+				if code, err := c.Get(args.Bucket, obj); err != nil {
+					return 0, err
+				} else {
+					if verbose {
+						fmt.Fprintf(os.Stderr, "Task completed %s with return code %s\n", task, code)
+					}
+
+					exitcode, err := strconv.Atoi(code)
+					if err != nil {
+						return 0, err
+					}
+					return exitcode, nil
+				}
+			}
 		}
-		return exitcode, nil
 	}
 }
 

@@ -1,16 +1,12 @@
 package worker
 
-import "lunchpail.io/pkg/build"
-
-type Queue struct {
-	Bucket       string
-	ListenPrefix string
-	Alive        string
-	Dead         string
-}
+import (
+	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/fe/transformer/api"
+)
 
 type Options struct {
-	Queue
+	api.PathArgs
 	StartupDelay    int
 	PollingInterval int
 	build.LogOptions

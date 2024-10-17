@@ -1,16 +1,120 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"text/template"
 
 	"lunchpail.io/pkg/fe/linker/queue"
 )
 
+// i.e. "/run/{{.RunName}}/step/{{.Step}}"
+func (q PathArgs) ListenPrefix() string {
+	A := strings.Split(q.TemplateP(Unassigned), "/")
+	return filepath.Join(A[0:5]...)
+}
+
+type QueuePath string
+
+const (
+	Unassigned            QueuePath = "lunchpail/run/{{.RunName}}/step/{{.Step}}/unassigned/{{.Task}}"
+	AssignedAndPending              = "lunchpail/run/{{.RunName}}/step/{{.Step}}/inbox/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	AssignedAndProcessing           = "lunchpail/run/{{.RunName}}/step/{{.Step}}/processing/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	AssignedAndFinished             = `lunchpail/run/{{.RunName}}/step/{{len (printf "a%*s" .Step "")}}/unassigned/{{.Task}}` // i.e. step 1's output is step 2's input; the len is magic for +1 https://stackoverflow.com/a/72465098/5270773
+	FinishedWithCode                = "lunchpail/run/{{.RunName}}/step/{{.Step}}/exitcode/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	FinishedWithStdout              = "lunchpail/run/{{.RunName}}/step/{{.Step}}/stdout/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	FinishedWithStderr              = "lunchpail/run/{{.RunName}}/step/{{.Step}}/stderr/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	FinishedWithSucceeded           = "lunchpail/run/{{.RunName}}/step/{{.Step}}/succeeded/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	FinishedWithFailed              = "lunchpail/run/{{.RunName}}/step/{{.Step}}/failed/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
+	WorkerKillFile                  = "lunchpail/run/{{.RunName}}/step/{{.Step}}/killfiles/pool/{{.PoolName}}/worker/{{.WorkerName}}"
+	AllDoneMarker                   = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/alldone"
+	DispatcherDoneMarker            = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/dispatcherdone"
+	WorkerAliveMarker               = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/alive/pool/{{.PoolName}}/worker/{{.WorkerName}}"
+	WorkerDeadMarker                = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/dead/pool/{{.PoolName}}/worker/{{.WorkerName}}"
+)
+
+type PathArgs struct {
+	Bucket     string
+	RunName    string
+	Step       int
+	PoolName   string
+	WorkerName string
+	Task       string
+}
+
+func (q PathArgs) ForPool(name string) PathArgs {
+	q.PoolName = name
+	return q
+}
+
+func (q PathArgs) ForWorker(name string) PathArgs {
+	q.WorkerName = name
+	return q
+}
+
+func (q PathArgs) ForTask(name string) PathArgs {
+	q.Task = name
+	return q
+}
+
+// Instantiate the given `path` template with the values of `q`
+func (q PathArgs) Template(path QueuePath) (string, error) {
+	tmpl, err := template.New("tmp").Parse(string(path))
+	if err != nil {
+		return "", err
+	}
+
+	var b bytes.Buffer
+	if err := tmpl.Execute(&b, q); err != nil {
+		return "", err
+	}
+
+	// Clean will remove trailing slashes
+	return filepath.Clean(b.String()), nil
+}
+
+// As with Template() but returning "" in case of errors
+func (q PathArgs) TemplateP(path QueuePath) string {
+	s, err := q.Template(path)
+	if err != nil {
+		return ""
+	}
+	return s
+}
+
+// As with TemplateP() but returning the enclosing directory (i.e. not
+// specific to a pool, a worker, or a task)
+func (q PathArgs) TemplateDir(path QueuePath) string {
+	return filepath.Dir(filepath.Dir(q.ForPool("").ForWorker("").ForTask("").TemplateP(path)))
+}
+
+var placeholder = "xxxxxxxxxxxxxx"
+var placeholderR = regexp.MustCompile(placeholder)
+
+func (q PathArgs) PatternFor(s QueuePath) *regexp.Regexp {
+	pattern := q.ForPool(placeholder).ForWorker(placeholder).ForTask(placeholder).TemplateP(s)
+	return regexp.MustCompile(placeholderR.ReplaceAllString(pattern, "(.+)"))
+}
+
+// This parses `object` using the given `path` template, expects to
+// extract a task instance, and uses that the return a specialized
+// PathArgs that uses that Task. This is helpful if you e.g. want to
+// find the ExitCode file that matches a given AssignedAndFinished
+// file.
+func (q PathArgs) ForObject(path QueuePath, object string) (PathArgs, error) {
+	match := q.PatternFor(path).FindStringSubmatch(object)
+	if len(match) != 4 {
+		return q, fmt.Errorf("ForObjectTask bad match %s %v", object, match)
+	}
+	return q.ForPool(match[1]).ForWorker(match[2]).ForTask(match[1]), nil
+}
+
 // Path in s3 to store the queue for the given run
 func QueuePrefixPath0(queueSpec queue.Spec, runname string) string {
-	return filepath.Join("lunchpail", runname)
+	return filepath.Join("lunchpail", "runs", runname)
 }
 
 // Path in s3 to store the queue for the given run
@@ -56,115 +160,4 @@ func QueuePrefixPathForWorker(queueSpec queue.Spec, runname, poolName string) st
 		queueSpec.Bucket,
 		QueuePrefixPathForWorker0(queueSpec, runname, poolName),
 	)
-}
-
-func UnassignedPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "inbox")
-}
-
-func OutboxPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "outbox")
-}
-
-func FinishedPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "finished")
-}
-
-func WorkerKillfilePathBase(queueSpec queue.Spec, runname string) string {
-	return WorkerInboxPathBase(queueSpec, runname)
-}
-
-func WorkerKillfile(base, worker string) string {
-	return filepath.Join(base, worker, "kill")
-}
-
-func WorkerInboxPathBase(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "queues")
-}
-
-func WorkerInbox(base, worker, task string) string {
-	return filepath.Join(base, worker, "inbox", task)
-}
-
-// for Worker
-func Inbox(base string) string {
-	return filepath.Join(base, "inbox")
-}
-
-// for Worker
-func InboxTask(base, task string) string {
-	return filepath.Join(Inbox(base), task)
-}
-
-func WorkerProcessingPathBase(queueSpec queue.Spec, runname string) string {
-	return WorkerInboxPathBase(queueSpec, runname)
-}
-
-func WorkerProcessing(base, worker, task string) string {
-	return filepath.Join(base, worker, "processing", task)
-}
-
-// for Worker
-func Processing(base string) string {
-	return filepath.Join(base, "processing")
-}
-
-// for Worker
-func ProcessingTask(base, task string) string {
-	return filepath.Join(Processing(base), task)
-}
-
-func WorkerOutboxPathBase(queueSpec queue.Spec, runname string) string {
-	return WorkerInboxPathBase(queueSpec, runname)
-}
-
-func WorkerOutbox(base, worker, task string) string {
-	return filepath.Join(base, worker, "outbox", task)
-}
-
-// for Worker
-func Outbox(base string) string {
-	return filepath.Join(base, "outbox")
-}
-
-// for Worker
-func OutboxTask(base, task string) string {
-	return filepath.Join(Outbox(base), task)
-}
-
-// for Worker
-func ExitCodeTask(base, task string) string {
-	return filepath.Join(Outbox(base), task+".code")
-}
-
-// for Worker
-func SucceededTask(base, task string) string {
-	return filepath.Join(Outbox(base), task+".succeeded")
-}
-
-// for Worker
-func FailedTask(base, task string) string {
-	return filepath.Join(Outbox(base), task+".failed")
-}
-
-// for Worker
-func StdoutTask(base, task string) string {
-	return filepath.Join(Outbox(base), task+".stdout")
-}
-
-// for Worker
-func StderrTask(base, task string) string {
-	return filepath.Join(Outbox(base), task+".stderr")
-}
-
-func WorkerAlive(queueSpec queue.Spec, runname, poolname string) string {
-	return WorkerInbox(WorkerInboxPathBase(queueSpec, runname), filepath.Join(poolname, "$LUNCHPAIL_POD_NAME"), ".alive")
-}
-
-func WorkerDead(queueSpec queue.Spec, runname, poolname string) string {
-	return WorkerInbox(WorkerInboxPathBase(queueSpec, runname), filepath.Join(poolname, "$LUNCHPAIL_POD_NAME"), ".dead")
-}
-
-func AllDone(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "alldone")
 }

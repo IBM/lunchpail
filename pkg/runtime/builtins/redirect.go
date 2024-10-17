@@ -10,35 +10,28 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(object string) string, opts build.LogOptions) error {
-	objects, errs := client.Listen(client.Paths.Bucket, client.Outbox(), "", false)
+func RedirectTo(ctx context.Context, client queue.S3Client, runname string, folderFor func(object string) string, opts build.LogOptions) error {
+	args := api.PathArgs{Bucket: client.Paths.Bucket, RunName: runname, Step: 0} // FIXME
+
+	failures := args.TemplateP(api.FinishedWithFailed)
+	outbox := args.TemplateP(api.AssignedAndFinished)
+
+	outboxObjects, outboxErrs := client.Listen(client.Paths.Bucket, outbox, "", false)
+	failuresObjects, failuresErrs := client.Listen(client.Paths.Bucket, failures, "", false)
+
 	group, _ := errgroup.WithContext(ctx)
 	done := false
 
-	// A bit of complexity here: we only want to download the file
-	// if the task succeeded. But, there is no defined order of
-	// arrival of the .succeeded file (from which we can infer
-	// that the task processing succeeded) and the actual output
-	// file (the one we want to download). So... we keep track of
-	// whether we got the .succeeded file, and which file we want
-	// to download in these two variables. Then, if we get a
-	// .succeeded file and already have receipt of the existence
-	// of the file to download... downloadNow! Or, if we already
-	// have receipt of success and were notified that the output
-	// file (the one to be downloaded) exists, then downloadNow!
-	succeeded := false
-	failed := false
-	stderr := ""
-	downloadFile := ""
 	downloadNow := func(object string) {
 		dstFolder := folderFor(filepath.Base(object))
 
 		ext := filepath.Ext(object)
 		withoutExt := object[0 : len(object)-len(ext)]
-		dst := filepath.Join(dstFolder, strings.Replace(withoutExt, client.Outbox()+"/", "", 1)+".output"+ext)
+		dst := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".output"+ext)
 		group.Go(func() error {
 			if opts.Verbose {
 				fmt.Fprintf(os.Stderr, "Downloading output to %s\n", dst)
@@ -52,7 +45,7 @@ func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(objec
 			if opts.Verbose {
 				fmt.Fprintf(os.Stderr, "Marking output consumed %s\n", object)
 			}
-			if err := client.MarkConsumed(object); err != nil {
+			if err := client.Rm(args.Bucket, object); err != nil {
 				return err
 			}
 			if opts.Verbose {
@@ -62,51 +55,55 @@ func RedirectTo(ctx context.Context, client queue.S3Client, folderFor func(objec
 		})
 	}
 
+	nFailures := 0
 	for !done {
 		select {
-		case err := <-errs:
+		case err := <-outboxErrs:
 			if err == nil || strings.Contains(err.Error(), "EOF") {
 				done = true
 			} else {
 				fmt.Fprintln(os.Stderr, err)
 			}
-		case object := <-objects:
-			ext := filepath.Ext(object)
-			switch ext {
-			case ".code", ".stdout":
-				// ignore
-			case ".stderr":
-				stderr = object
-				if failed {
-					done = true
-				}
-			case ".failed":
-				failed = true
-				if stderr != "" {
-					done = true
-				}
-			case ".succeeded":
-				succeeded = true
-				if downloadFile != "" {
-					downloadNow(downloadFile)
-				}
-			default:
-				downloadFile = object
-				if succeeded {
-					downloadNow(downloadFile)
-				}
+		case err := <-failuresErrs:
+			if err == nil || strings.Contains(err.Error(), "EOF") {
+				done = true
+			} else {
+				fmt.Fprintln(os.Stderr, err)
 			}
+		case object := <-outboxObjects:
+			downloadNow(object)
+		case object := <-failuresObjects:
+			// Oops, a task failed. Fetch the stderr and show it.
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Got indication of task failure %s\n", object)
+			}
+
+			// We need to find the FinishedWithStderr file
+			// that corresponds to the given object, which
+			// is an AssignedAndFinished file. To do so,
+			// we can parse the object to extract the task
+			// instance (`ForObjectTask`) and then use
+			// that `fortask` to templatize the
+			// FinishedWithCode
+			forobject, err := args.ForObject(api.AssignedAndFinished, object)
+			if err != nil {
+				return err
+			}
+			errorContent, err := client.Get(args.Bucket, forobject.TemplateP(api.FinishedWithStderr))
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(os.Stderr, errorContent)
+			nFailures++
 		}
 	}
 
 	if err := group.Wait(); err != nil {
 		return err
-	} else if failed && stderr != "" {
-		errorContent, err := client.Get(client.Paths.Bucket, stderr)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("Task failed %d %s\n%s", len(errorContent), stderr, errorContent)
+	}
+
+	if nFailures > 0 {
+		return fmt.Errorf("Error: %d tasks failed", nFailures)
 	}
 
 	return nil

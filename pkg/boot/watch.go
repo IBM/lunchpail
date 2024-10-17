@@ -7,6 +7,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe"
 	"lunchpail.io/pkg/observe/cpu"
 )
@@ -16,7 +17,12 @@ type WatchOptions struct {
 }
 
 func watchLogs(ctx context.Context, backend be.Backend, ir llir.LLIR, opts WatchOptions) {
-	err := observe.Logs(ctx, ir.RunName, backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose})
+	components := lunchpail.AllUserComponents
+	if opts.Verbose && os.Getenv("CI") != "" {
+		components = lunchpail.AllComponents
+	}
+
+	err := observe.Logs(ctx, ir.RunName, backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}

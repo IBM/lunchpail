@@ -12,6 +12,7 @@ const (
 )
 
 var AllUserComponents = []Component{WorkersComponent, DispatcherComponent}
+var AllComponents = []Component{WorkersComponent, DispatcherComponent, WorkStealerComponent, MinioComponent}
 
 func ComponentShortName(c Component) string {
 	switch c {
