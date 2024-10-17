@@ -9,7 +9,7 @@ import (
 )
 
 func Lower(buildName, runname string, sweep hlir.ParameterSweep, ir llir.LLIR, opts build.Options) (llir.Component, error) {
-	app, err := transpile(sweep)
+	app, err := transpile(runname, sweep)
 	if err != nil {
 		return nil, err
 	}

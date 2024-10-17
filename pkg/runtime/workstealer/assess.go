@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -14,14 +13,7 @@ import (
 )
 
 func (c client) localPathToRemote(path string) string {
-	return strings.Replace(path, c.Spec.Bucket+"/", "", 1)
-}
-
-// Emit the path to the file we linked
-func (c client) reportLinkedFile(src, dst string) error {
-	rsrc := c.localPathToRemote(src)
-	rdst := c.localPathToRemote(dst)
-	return c.s3.Copyto(c.Spec.Bucket, rsrc, c.Spec.Bucket, rdst)
+	return strings.Replace(path, c.PathArgs.Bucket+"/", "", 1)
 }
 
 // Emit the path to the file we deleted
@@ -32,89 +24,25 @@ func (c client) reportMovedFile(src, dst string) error {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading moved file: %s -> %s\n", rsrc, rdst)
 	}
 
-	return c.s3.Moveto(c.Spec.Bucket, rsrc, rdst)
-}
-
-// Emit the path to the file we changed
-func (c client) reportChangedFile(filepath string) error {
-	remotefile := c.localPathToRemote(filepath)
-	if c.LogOptions.Debug {
-		fmt.Fprintf(os.Stderr, "DEBUG Uploading changed file: %s -> %s\n", filepath, remotefile)
-	}
-
-	return c.s3.Upload(c.Spec.Bucket, filepath, remotefile)
-}
-
-// Has a Task already been marked as completed?
-func (c client) isMarkedDone(task string) bool {
-	finishedMarker := filepath.Join(c.Spec.Finished, task)
-	p := c.localPathToRemote(finishedMarker)
-	return c.s3.Exists(c.Spec.Bucket, filepath.Dir(p), filepath.Base(p))
-}
-
-// A Task has been fully completed by a Worker
-func (c client) markDone(task string) error {
-	finishedMarker := filepath.Join(c.Spec.Finished, task)
-	return c.s3.Mark(c.Spec.Bucket, c.localPathToRemote(finishedMarker), "done")
+	return c.s3.Moveto(c.PathArgs.Bucket, rsrc, rdst)
 }
 
 // Touch killfile for the given Worker
 func (c client) touchKillFile(worker Worker) error {
-	workerKillFileFilePath := api.WorkerKillfile(c.Spec.WorkerKillfile, worker.name)
-	return c.s3.Mark(c.Spec.Bucket, c.localPathToRemote(workerKillFileFilePath), "kill")
+	return c.s3.Mark(c.PathArgs.Bucket, c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).TemplateP(api.WorkerKillFile), "kill")
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
 func (c client) moveToWorkerInbox(task string, worker Worker) error {
-	unassignedFilePath := filepath.Join(c.Spec.Unassigned, task)
-	workerInboxFilePath := api.WorkerInbox(c.Spec.WorkerInbox, worker.name, task)
+	unassignedFilePath := c.PathArgs.ForTask(task).TemplateP(api.Unassigned)
+	workerInboxFilePath := c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).TemplateP(api.AssignedAndPending)
 	return c.reportMovedFile(unassignedFilePath, workerInboxFilePath)
-}
-
-// As part of finishing up a Task, copy it from the Worker's Outbox to the final Outbox
-func (c client) copyToFinalOutbox(task string, worker string, success TaskCode) error {
-	fileInWorkerOutbox := api.WorkerOutbox(c.Spec.WorkerOutbox, worker, task)
-	fullyDoneOutputFilePath := filepath.Join(c.Spec.Outbox, task)
-
-	codeFileInWorkerOutbox := fileInWorkerOutbox + ".code"
-	fullyDoneCodeFilePath := fullyDoneOutputFilePath + ".code"
-
-	stdoutFileInWorkerOutbox := fileInWorkerOutbox + ".stdout"
-	fullyDoneStdoutFilePath := fullyDoneOutputFilePath + ".stdout"
-
-	stderrFileInWorkerOutbox := fileInWorkerOutbox + ".stderr"
-	fullyDoneStderrFilePath := fullyDoneOutputFilePath + ".stderr"
-
-	successFileInWorkerOutbox := fileInWorkerOutbox + "." + string(success)
-	fullyDoneSuccessFilePath := fullyDoneOutputFilePath + "." + string(success)
-
-	if err := c.reportLinkedFile(fileInWorkerOutbox, fullyDoneOutputFilePath); err != nil {
-		return err
-	}
-
-	if err := c.reportLinkedFile(codeFileInWorkerOutbox, fullyDoneCodeFilePath); err != nil {
-		return err
-	}
-
-	if err := c.reportLinkedFile(stdoutFileInWorkerOutbox, fullyDoneStdoutFilePath); err != nil {
-		return err
-	}
-
-	if err := c.reportLinkedFile(stderrFileInWorkerOutbox, fullyDoneStderrFilePath); err != nil {
-		return err
-	}
-
-	if err := c.reportLinkedFile(successFileInWorkerOutbox, fullyDoneSuccessFilePath); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // Assign an unassigned Task to one of the given LiveWorkers
 func (c client) assignNewTaskToWorker(task string, worker Worker) error {
-	if c.LogOptions.Debug {
-		fmt.Fprintf(os.Stderr, "DEBUG Assigning task=%s to worker=%s \n", task, worker.name)
+	if c.LogOptions.Verbose {
+		fmt.Fprintf(os.Stderr, "Assigning task=%s to worker=%s \n", task, worker.name)
 	}
 	return c.moveToWorkerInbox(task, worker)
 }
@@ -129,15 +57,15 @@ const (
 
 // A Worker has died. Unassign this task that it owns
 func (c client) moveAssignedTaskBackToUnassigned(task string, worker Worker) error {
-	inWorkerFilePath := api.WorkerInbox(c.Spec.WorkerInbox, worker.name, task)
-	unassignedFilePath := filepath.Join(c.Spec.Unassigned, task)
+	inWorkerFilePath := c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).TemplateP(api.AssignedAndPending)
+	unassignedFilePath := c.PathArgs.ForTask(task).TemplateP(api.Unassigned)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
 // A Worker has died. Unassign this task that it owns
 func (c client) moveProcessingTaskBackToUnassigned(task string, worker Worker) error {
-	inWorkerFilePath := api.WorkerProcessing(c.Spec.WorkerInbox, worker.name, task)
-	unassignedFilePath := filepath.Join(c.Spec.Unassigned, task)
+	inWorkerFilePath := c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).TemplateP(api.AssignedAndProcessing)
+	unassignedFilePath := c.PathArgs.ForTask(task).TemplateP(api.Unassigned)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
@@ -171,13 +99,13 @@ func (c client) cleanupForDeadWorker(worker Worker) error {
 
 // A Task has completed
 func (c client) cleanupForCompletedTask(completedTask AssignedTask, success TaskCode) error {
-	if !c.isMarkedDone(completedTask.task) {
+	/*if !c.isMarkedDone(completedTask.task) {
 		if err := c.markDone(completedTask.task); err != nil {
 			return err
 		}
 
-		return c.copyToFinalOutbox(completedTask.task, completedTask.worker, success)
-	}
+		return nil
+	}*/
 
 	return nil
 }
@@ -229,7 +157,7 @@ func (c client) apportion(model Model) []Apportionment {
 func (c client) assignNewTasks(model Model) {
 	for _, A := range c.apportion(model) {
 		nTasks := A.endIdx - A.startIdx
-		fmt.Fprintf(os.Stderr, "INFO Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, c.Spec.RunName+"-", "", 1))
+		fmt.Fprintf(os.Stderr, "Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, c.PathArgs.RunName+"-", "", 1))
 		for idx := range nTasks {
 			task := model.UnassignedTasks[A.startIdx+idx]
 			if err := c.assignNewTaskToWorker(task, A.worker); err != nil {
@@ -297,7 +225,7 @@ func (c client) rebalance(model Model) bool {
 					stoleSomeTasks = true
 					fmt.Fprintf(
 						os.Stderr,
-						"INFO Stealing %s from %s\n",
+						"Stealing %s from %s\n",
 						english.Plural(stealThisMany, "task", ""),
 						workerWithWork.name,
 					)
@@ -323,6 +251,9 @@ func (c client) rebalance(model Model) bool {
 func (c client) touchKillFiles(model Model) {
 	for _, worker := range model.LiveWorkers {
 		if !worker.killfilePresent {
+			if c.LogOptions.Verbose {
+				fmt.Fprintf(os.Stderr, "Touching kill file for worker %s/%s\n", worker.pool, worker.name)
+			}
 			if err := c.touchKillFile(worker); err != nil {
 				log.Fatalf(err.Error())
 			}
@@ -335,7 +266,7 @@ func (c client) assess(m Model) bool {
 	c.cleanupCompletedTasks(m)
 
 	if m.readyToBye() {
-		fmt.Fprintln(os.Stderr, "INFO All work has been completed, all workers have terminated")
+		fmt.Fprintln(os.Stderr, "All work has been completed, all workers have terminated")
 		return true
 	} else if !c.rebalance(m) {
 		if c.LogOptions.Debug {

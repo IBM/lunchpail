@@ -17,9 +17,10 @@ func Done() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 	logOpts := options.AddLogOptions(cmd)
+	runOpts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return queue.Qdone(context.Background(), *logOpts)
+		return queue.Qdone(context.Background(), runOpts.Run, *logOpts)
 	}
 
 	return cmd

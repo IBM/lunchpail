@@ -25,15 +25,15 @@ func File() *cobra.Command {
 	cmd.Flags().BoolVar(&ignoreWorkerErrors, "ignore-worker-errors", false, "When --wait, ignore any errors from the workers processing the tasks")
 
 	logOpts := options.AddLogOptions(cmd)
+	runOpts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if !opts.Wait && ignoreWorkerErrors {
 			return fmt.Errorf("Invalid combination of options, not --wait and --ignore-worker-errors")
 		}
 
-		opts.Verbose = logOpts.Verbose
-		opts.Debug = logOpts.Debug
-		exitcode, err := queue.Add(context.Background(), args[0], opts)
+		opts.LogOptions = *logOpts
+		exitcode, err := queue.Add(context.Background(), runOpts.Run, args[0], opts)
 
 		switch {
 		case err != nil:

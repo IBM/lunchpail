@@ -37,6 +37,11 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 		component.InstanceName = runname
 	}
 
+	if app.Spec.Env == nil {
+		app.Spec.Env = hlir.Env{}
+	}
+	app.Spec.Env["LUNCHPAIL_RUN"] = runname
+
 	for _, needs := range app.Spec.Needs {
 		var file *os.File
 		var err error

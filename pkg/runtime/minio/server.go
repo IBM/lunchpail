@@ -5,28 +5,20 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"slices"
 	"strings"
 
 	"golang.org/x/sync/errgroup"
 
+	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/util"
 )
 
-func Server(ctx context.Context, port int) error {
+func Server(ctx context.Context, port int, args api.PathArgs) error {
 	fmt.Fprintf(os.Stderr, "Lunchpail Minio component starting up\n")
 	fmt.Fprintf(os.Stderr, "%v\n", os.Environ())
 
-	bucket := os.Getenv("LUNCHPAIL_QUEUE_BUCKET")
-	if bucket == "" {
-		return fmt.Errorf("Missing env var LUNCHPAIL_QUEUE_BUCKET")
-	}
-	prefix := os.Getenv("LUNCHPAIL_QUEUE_PREFIX")
-	if prefix == "" {
-		return fmt.Errorf("Missing env var LUNCHPAIL_QUEUE_PREFIX")
-	}
 	accessKey := os.Getenv("lunchpail_queue_accessKeyID")
 	if accessKey == "" {
 		return fmt.Errorf("Missing env var lunchpail_queue_accessKeyID")
@@ -58,7 +50,7 @@ func Server(ctx context.Context, port int) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "Launching Minio server with minio=%s bucket=%s prefix=%s\n", minio, bucket, prefix)
+	fmt.Fprintf(os.Stderr, "Launching Minio server with minio=%s bucket=%s run=%s\n", minio, args.Bucket, args.RunName)
 	// NOT CommandContext, as group.Wait() below will otherwise kill the minio server
 	cmd := exec.CommandContext(ctx, "minio", "server", datadir, "--address", fmt.Sprintf(":%d", port))
 	cmd.Stdout = os.Stdout
@@ -71,17 +63,17 @@ func Server(ctx context.Context, port int) error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s\n", bucket)
-	if err := c.Mkdirp(bucket); err != nil {
+	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s\n", args.Bucket)
+	if err := c.Mkdirp(args.Bucket); err != nil {
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s <-- READY!\n", bucket)
+	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s <-- READY!\n", args.Bucket)
 
 	// This watches for minio server death
 	gotKillFile := false
 	group.Go(func() error {
-		fmt.Fprintf(os.Stderr, "Waiting for kill file %s\n", prefix)
-		if err := waitForKillFile(c, bucket, prefix); err != nil {
+		fmt.Fprintf(os.Stderr, "Waiting for kill file\n")
+		if err := waitForKillFile(c, args); err != nil {
 			return err
 		}
 		fmt.Fprintf(os.Stderr, "Got kill file\n")
@@ -110,6 +102,6 @@ func Server(ctx context.Context, port int) error {
 	return nil
 }
 
-func waitForKillFile(c queue.S3Client, bucket, prefix string) error {
-	return c.WaitTillExists(bucket, filepath.Join(prefix, "alldone"))
+func waitForKillFile(c queue.S3Client, args api.PathArgs) error {
+	return c.WaitTillExists(args.Bucket, args.TemplateP(api.AllDoneMarker))
 }

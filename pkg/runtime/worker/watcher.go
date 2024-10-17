@@ -3,32 +3,30 @@ package worker
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"slices"
-	"strconv"
-	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func killfileExists(client queue.S3Client, bucket, prefix string) bool {
-	return client.Exists(bucket, prefix, "kill")
-}
-
 func startWatch(ctx context.Context, handler []string, client queue.S3Client, opts Options) error {
-	if err := client.Mkdirp(opts.Queue.Bucket); err != nil {
+	if opts.LogOptions.Verbose {
+		defer func() { fmt.Fprintln(os.Stderr, "Exiting") }()
+	}
+
+	if err := client.Mkdirp(opts.PathArgs.Bucket); err != nil {
 		return err
 	}
 
+	alive := opts.PathArgs.TemplateP(api.WorkerAliveMarker)
 	if opts.LogOptions.Debug {
-		fmt.Fprintf(os.Stderr, "Lunchpail worker touching alive file bucket=%s path=%s\n", opts.Queue.Bucket, opts.Queue.Alive)
+		fmt.Fprintf(os.Stderr, "Touching alive file bucket=%s path=%s\n", opts.PathArgs.Bucket, alive)
 	}
-	err := client.Touch(opts.Queue.Bucket, opts.Queue.Alive)
+	err := client.Touch(opts.PathArgs.Bucket, alive)
 	if err != nil {
 		return err
 	}
@@ -38,13 +36,42 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 		return err
 	}
 
-	tasks, errs := client.Listen(opts.Queue.Bucket, opts.Queue.ListenPrefix, "", false)
-	for {
-		if killfileExists(client, opts.Queue.Bucket, opts.Queue.ListenPrefix) {
-			if opts.LogOptions.Verbose {
-				fmt.Fprintln(os.Stderr, "Worker got kill file. Shutting down now.")
-			}
-			break
+	killFile := opts.PathArgs.TemplateP(api.WorkerKillFile)
+	inboxPrefix := opts.PathArgs.TemplateP(api.AssignedAndPending)
+	if opts.LogOptions.Debug {
+		fmt.Fprintf(os.Stderr, "Listening bucket=%s inboxPrefix=%s killFile=%s\n", opts.PathArgs.Bucket, inboxPrefix, killFile)
+	}
+
+	// Future readers: adjust SetLimit to allow "pod packing",
+	// i.e. concurrent processing of tasks in a single Lunchpail
+	// worker (see #25)
+	group, gctx := errgroup.WithContext(ctx)
+	group.SetLimit(1)
+
+	// Wait for a kill file and then cancel the watcher (that runs in the for{} loop below)
+	cancellable, cancel := context.WithCancel(gctx)
+	go func() {
+		client.WaitTillExists(opts.PathArgs.Bucket, killFile)
+		if opts.LogOptions.Verbose {
+			fmt.Fprintln(os.Stderr, "Got kill file, cleaning up")
+		}
+		cancel()
+	}()
+
+	s := opts.PollingInterval
+	if s == 0 {
+		s = 3
+	}
+
+	backgroundS3Tasks, _ := errgroup.WithContext(ctx)
+	p := taskProcessor{ctx, client, handler, localdir, opts, backgroundS3Tasks}
+
+	sleepNextTime := false
+	tasks, errs := client.Listen(opts.PathArgs.Bucket, inboxPrefix, "", false)
+	done := false
+	for !done {
+		if sleepNextTime {
+			time.Sleep(time.Duration(s) * time.Second)
 		}
 
 		select {
@@ -52,161 +79,40 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 			if opts.LogOptions.Verbose {
 				fmt.Fprintln(os.Stderr, err)
 			}
+			sleepNextTime = true
 
-			// sleep for a bit
-			s := opts.PollingInterval
-			if s == 0 {
-				s = 3
+		case task := <-tasks:
+			if opts.LogOptions.Debug {
+				fmt.Fprintf(os.Stderr, "Got push notification of task %s\n", filepath.Base(task))
 			}
-			time.Sleep(time.Duration(s) * time.Second)
+			// we got a push notification, handle it here, and continue to the next for{} select
+			group.Go(func() error { return p.process(task) })
+			continue
 
-		case <-tasks:
+		case <-cancellable.Done():
+			done = true
+			continue
 		}
 
-		tasks, err := client.Lsf(opts.Queue.Bucket, api.Inbox(opts.Queue.ListenPrefix))
+		// If we fall through here, it is probably because the S3 queue does not support push notifications
+		if opts.LogOptions.Debug {
+			fmt.Fprintf(os.Stderr, "Listing unassigned tasks bucket=%s inboxPrefix=%s\n", opts.PathArgs.Bucket, inboxPrefix)
+		}
+		tasks, err := client.Lsf(opts.PathArgs.Bucket, inboxPrefix)
 		if err != nil {
 			return err
 		}
-
 		for _, task := range tasks {
-			if task != "" {
-				// TODO: re-check if task still exists in our inbox before starting on it
-				in := api.InboxTask(opts.Queue.ListenPrefix, task)
-				inprogress := api.ProcessingTask(opts.Queue.ListenPrefix, task)
-				out := api.OutboxTask(opts.Queue.ListenPrefix, task)
-
-				// capture exit code, stdout and stderr of the handler
-				ec := api.ExitCodeTask(opts.Queue.ListenPrefix, task)
-				succeeded := api.SucceededTask(opts.Queue.ListenPrefix, task)
-				stdout := api.StdoutTask(opts.Queue.ListenPrefix, task)
-				stderr := api.StderrTask(opts.Queue.ListenPrefix, task)
-
-				localinbox := filepath.Join(localdir, "inbox")
-				localprocessing := filepath.Join(localdir, "processing", task)
-				localoutbox := filepath.Join(localdir, "outbox", task)
-				localec := localoutbox + ".code"
-				localstdout := localoutbox + ".stdout"
-				localstderr := localoutbox + ".stderr"
-
-				err := os.MkdirAll(localinbox, os.ModePerm)
-				if err != nil {
-					fmt.Println("Internal Error creating local inbox:", err)
-					continue
-				}
-				err = os.MkdirAll(filepath.Dir(localprocessing), os.ModePerm)
-				if err != nil {
-					fmt.Println("Internal Error creating local processing:", err)
-					continue
-				}
-				err = os.MkdirAll(filepath.Dir(localoutbox), os.ModePerm)
-				if err != nil {
-					fmt.Println("Internal Error creating local outbox:", err)
-					continue
-				}
-
-				err = client.Download(opts.Queue.Bucket, in, localprocessing)
-				if err != nil {
-					if !strings.Contains(err.Error(), "key does not exist") {
-						// we ignore "key does not exist" errors, as these result from the work
-						// we thought we were assigned having been stolen by the workstealer
-						fmt.Printf("Internal Error copying task to worker processing %s %s->%s: %v\n", opts.Queue.Bucket, in, localprocessing, err)
-					}
-					continue
-				}
-
-				// fmt.Println("sending file to handler: " + in)
-				err = os.Remove(localoutbox)
-				if err != nil && !os.IsNotExist(err) {
-					fmt.Println("Internal Error removing task from local outbox:", err)
-					continue
-				}
-
-				err = client.Moveto(opts.Queue.Bucket, in, inprogress)
-				if err != nil {
-					fmt.Printf("Internal Error moving task to global processing %s->%s: %v\n", in, inprogress, err)
-					continue
-				}
-
-				// signify that the process is still going... or prematurely terminated
-				os.WriteFile(localec, []byte("-1"), os.ModePerm)
-
-				handlercmd := exec.CommandContext(ctx, handler[0], slices.Concat(handler[1:], []string{localprocessing, localoutbox})...)
-
-				// open stdout/err files for writing
-				stdoutfile, err := os.Create(localstdout)
-				if err != nil {
-					fmt.Println("Internal Error creating stdout file:", err)
-					continue
-				}
-				defer stdoutfile.Close()
-
-				stderrfile, err := os.Create(localstderr)
-				if err != nil {
-					fmt.Println("Internal Error creating stderr file:", err)
-					continue
-				}
-				defer stderrfile.Close()
-
-				multiout := io.MultiWriter(os.Stdout, stdoutfile)
-				multierr := io.MultiWriter(os.Stderr, stderrfile)
-				handlercmd.Stdout = multiout
-				handlercmd.Stderr = multierr
-				err = handlercmd.Run()
-				if err != nil {
-					fmt.Println("Internal Error running the handler:", err)
-					multierr.Write([]byte(err.Error()))
-				}
-				EC := handlercmd.ProcessState.ExitCode()
-
-				os.WriteFile(localec, []byte(fmt.Sprintf("%d", EC)), os.ModePerm)
-
-				err = client.Upload(opts.Queue.Bucket, localec, ec)
-				if err != nil {
-					fmt.Println("Internal Error moving exitcode to remote:", err)
-				}
-
-				err = client.Upload(opts.Queue.Bucket, localstdout, stdout)
-				if err != nil {
-					fmt.Println("Internal Error moving stdout to remote:", err)
-				}
-
-				err = client.Upload(opts.Queue.Bucket, localstderr, stderr)
-				if err != nil {
-					fmt.Println("Internal Error moving stderr to remote:", err)
-				}
-
-				if EC == 0 {
-					if opts.LogOptions.Debug {
-						fmt.Printf("Worker succeeded on task %s\n", localprocessing)
-					}
-					err = client.Touch(opts.Queue.Bucket, succeeded)
-					if err != nil {
-						fmt.Println("Internal Error creating succeeded marker:", err)
-					}
-				} else {
-					err = client.Touch(opts.Queue.Bucket, api.FailedTask(opts.Queue.ListenPrefix, task))
-					if err != nil {
-						fmt.Println("Internal Error creating failed marker:", err)
-					}
-					fmt.Println("Worker error with exit code " + strconv.Itoa(EC) + " while processing " + filepath.Base(in))
-				}
-
-				if _, err := os.Stat(localoutbox); err == nil {
-					if opts.LogOptions.Debug {
-						fmt.Printf("Uploading worker-produced outbox file %s->%s\n", localoutbox, out)
-					}
-					if err := client.Upload(opts.Queue.Bucket, localoutbox, out); err != nil {
-						fmt.Printf("Internal Error uploading task to global outbox %s->%s: %v\n", localoutbox, out, err)
-					}
-				} else if err := client.Moveto(opts.Queue.Bucket, inprogress, out); err != nil {
-					fmt.Printf("Internal Error moving task to global outbox %s->%s: %v\n", inprogress, out, err)
-				}
-			}
+			group.Go(func() error { return p.process(task) })
 		}
 	}
 
-	if opts.LogOptions.Verbose {
-		fmt.Println("Worker exiting normally")
+	if err := group.Wait(); err != nil {
+		return err
+	}
+
+	if err := backgroundS3Tasks.Wait(); err != nil {
+		return err
 	}
 
 	return nil

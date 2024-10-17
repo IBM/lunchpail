@@ -55,10 +55,16 @@ function tester {
     bb=${b%%.*}
     actual=$(dirname "$input")/"$bb".output.$ext
     expected="$input"
+
+    if [[ -e "$actual" ]]
+    then echo "✅ PASS the output file exists test=$1"
+    else echo "❌ FAIL missing output file test=$1" && exit 1
+    fi
+    
     actual_sha256=$(cat "$actual" | sha256sum)
     expected_sha256=$(cat "$expected" | sha256sum)
     if [[ "$actual_sha256" = "$expected_sha256" ]]
-    then echo "✅ PASS the output file is valid file=$actual test=$TEST_NAME"
+    then echo "✅ PASS the output file is valid file=$actual test=$1"
     else echo "❌ FAIL mismatched sha256 on output file file=$actual actual_sha256=$actual_sha256 expected_sha256=$expected_sha256 test=$1" && exit 1
     fi
 }

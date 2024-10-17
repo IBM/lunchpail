@@ -20,7 +20,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	}
 	defer client.Stop()
 
-	if err := builtins.Cat(ctx, client.S3Client, inputs, opts); err != nil {
+	if err := builtins.Cat(ctx, client.S3Client, ir.RunName, inputs, opts); err != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 			}
 			return "."
 		}
-		if err := builtins.RedirectTo(ctx, client.S3Client, folderFor, opts); err != nil {
+		if err := builtins.RedirectTo(ctx, client.S3Client, ir.RunName, folderFor, opts); err != nil {
 			return err
 		}
 	}
