@@ -44,15 +44,15 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 	c := make(chan string)
 	e := make(chan error)
 
-	os := make(map[string]bool)
+	objs := make(map[string]bool)
 	report := func(key string, isCreate bool) {
 		if isCreate {
-			if !os[key] {
-				os[key] = true
+			if !objs[key] {
+				objs[key] = true
 				c <- key
 			}
 		} else {
-			delete(os, key)
+			delete(objs, key)
 			c <- key
 		}
 	}
