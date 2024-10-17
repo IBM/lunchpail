@@ -3,7 +3,6 @@ package workstealer
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"text/tabwriter"
 	"time"
 )
@@ -35,12 +34,12 @@ func (model Model) report(c client) error {
 			len(worker.assignedTasks), len(worker.processingTasks), worker.nSuccess, worker.nFail, worker.name, c.Spec.RunName,
 		)
 	}
-	fmt.Fprintf(writer, "lunchpail.io\t---\n")
+	fmt.Fprintln(writer, "lunchpail.io\t---")
 
 	writer.Flush()
 
 	// for now, also log to stdout
-	fmt.Fprintf(os.Stdout, b.String())
+	fmt.Printf(b.String())
 
 	// and write to the log file
 	/*if err := os.MkdirAll(logDir, 0700); err != nil {

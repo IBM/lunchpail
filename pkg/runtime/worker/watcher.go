@@ -41,6 +41,9 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 	tasks, errs := client.Listen(opts.Queue.Bucket, opts.Queue.ListenPrefix, "", false)
 	for {
 		if killfileExists(client, opts.Queue.Bucket, opts.Queue.ListenPrefix) {
+			if opts.LogOptions.Verbose {
+				fmt.Fprintln(os.Stderr, "Worker got kill file. Shutting down now.")
+			}
 			break
 		}
 

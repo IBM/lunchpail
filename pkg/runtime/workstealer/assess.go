@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/dustin/go-humanize/english"
@@ -337,6 +338,15 @@ func (c client) assess(m Model) bool {
 		fmt.Fprintln(os.Stderr, "INFO All work has been completed, all workers have terminated")
 		return true
 	} else if !c.rebalance(m) {
+		if c.LogOptions.Debug {
+			fmt.Fprintf(os.Stderr, "Not bye time allWorkDone=%v areAllWorkersQuiesced=%v missingKillFile?=%d isAllOutputConsumed=%v\n",
+				m.isAllWorkDone(),
+				m.areAllWorkersQuiesced(),
+				slices.IndexFunc(m.DeadWorkers, func(w Worker) bool { return !w.killfilePresent }),
+				m.isAllOutputConsumed(),
+			)
+		}
+
 		c.assignNewTasks(m)
 
 		if m.isAllWorkDone() {

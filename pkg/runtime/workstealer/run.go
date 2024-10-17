@@ -27,6 +27,11 @@ type Spec struct {
 	WorkerKillfile   string
 }
 
+type Options struct {
+	PollingInterval int
+	build.LogOptions
+}
+
 type client struct {
 	s3 q.S3Client
 	Spec
@@ -39,17 +44,12 @@ func printenv() {
 	}
 }
 
-func Run(ctx context.Context, spec Spec, opts build.LogOptions) error {
+func Run(ctx context.Context, spec Spec, opts Options) error {
 	s3, err := q.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
-	c := client{s3, spec, opts}
-
-	s, err := util.SleepyTime("QUEUE_POLL_INTERVAL_SECONDS", 3)
-	if err != nil {
-		return err
-	}
+	c := client{s3, spec, opts.LogOptions}
 
 	fmt.Fprintln(os.Stderr, "Workstealer starting")
 	if opts.Verbose {
@@ -57,22 +57,58 @@ func Run(ctx context.Context, spec Spec, opts build.LogOptions) error {
 		printenv()
 	}
 
-	defer s3.StopListening(spec.Bucket)
-	o, errs := s3.Listen(spec.Bucket, spec.ListenPrefix, "", true)
-	for {
+	done := false
+	for !done {
+		err = run(ctx, c, opts)
+		if err == nil || !strings.Contains(err.Error(), "connection refused") {
+			done = true
+		} else {
+			// wait for s3 to be ready
+			time.Sleep(1 * time.Second)
+		}
+	}
+
+	// Drop a final breadcrumb indicating we are ready to tear
+	// down all associated resources
+	if err := s3.Touch(c.Spec.Bucket, c.Spec.AllDone); err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to touch AllDone file\n%v\n", err)
+	}
+
+	util.SleepBeforeExit()
+	fmt.Fprintln(os.Stderr, "The job should be all done now")
+
+	return err
+}
+
+func run(ctx context.Context, c client, opts Options) error {
+	objs, errs := c.s3.Listen(c.Spec.Bucket, c.Spec.ListenPrefix, "", true)
+	defer c.s3.StopListening(c.Spec.Bucket)
+
+	done := false
+	for !done {
 		select {
 		case err := <-errs:
-			fmt.Fprintln(os.Stderr, err)
+			if err != nil && strings.Contains(err.Error(), "connection refused") {
+				return err
+			}
+
+			fmt.Fprintf(os.Stderr, "Got push notification error: %v\n", err)
 
 			// sleep for a bit
-			time.Sleep(s)
-		case obj := <-o:
+			time.Sleep(time.Duration(opts.PollingInterval) * time.Second)
+		case obj := <-objs:
 			// TODO update model incrementally rather than
 			// re-fetching and re-parsing the entire model
 			// every time there is a single change
 			if strings.Contains(obj, "/logs/") {
 				continue
 			}
+
+			if c.LogOptions.Debug {
+				fmt.Fprintf(os.Stderr, "Got push notification object=%s\n", obj)
+			}
+		case <-ctx.Done():
+			done = true
 		}
 
 		// fetch and parse model
@@ -83,19 +119,8 @@ func Run(ctx context.Context, spec Spec, opts build.LogOptions) error {
 		}
 
 		// assess it
-		if c.assess(m) {
-			// all done
-			break
-		}
+		done = c.assess(m)
 	}
 
-	// Drop a final breadcrumb indicating we are ready to tear
-	// down all associated resources
-	if err := s3.Touch(spec.Bucket, spec.AllDone); err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to touch AllDone file\n%v\n", err)
-	}
-
-	util.SleepBeforeExit()
-	fmt.Fprintln(os.Stderr, "The job should be all done now")
 	return nil
 }

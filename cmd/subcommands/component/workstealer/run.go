@@ -27,6 +27,9 @@ func Run() *cobra.Command {
 	workerOutbox := ""
 	workerKillfile := ""
 
+	var pollingInterval int
+	cmd.Flags().IntVar(&pollingInterval, "polling-interval", 3, "If polling is employed, the interval between probes")
+
 	cmd.Flags().StringVar(&bucket, "bucket", "", "Which S3 bucket to use")
 	cmd.MarkFlagRequired("bucket")
 
@@ -58,7 +61,7 @@ func Run() *cobra.Command {
 	ropts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return workstealer.Run(context.Background(), workstealer.Spec{RunName: ropts.Run, Bucket: bucket, ListenPrefix: listenPrefix, Unassigned: unassigned, Outbox: outbox, Finished: finished, WorkerInbox: workerInbox, WorkerProcessing: workerProcessing, WorkerOutbox: workerOutbox, WorkerKillfile: workerKillfile, AllDone: alldone}, *lopts)
+		return workstealer.Run(context.Background(), workstealer.Spec{RunName: ropts.Run, Bucket: bucket, ListenPrefix: listenPrefix, Unassigned: unassigned, Outbox: outbox, Finished: finished, WorkerInbox: workerInbox, WorkerProcessing: workerProcessing, WorkerOutbox: workerOutbox, WorkerKillfile: workerKillfile, AllDone: alldone}, workstealer.Options{PollingInterval: pollingInterval, LogOptions: *lopts})
 	}
 
 	return cmd
