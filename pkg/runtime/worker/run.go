@@ -25,12 +25,19 @@ func delay() error {
 	return nil
 }
 
+func printenv() {
+	for _, e := range os.Environ() {
+		fmt.Fprintf(os.Stderr, "%v\n", e)
+	}
+}
+
 func Run(ctx context.Context, handler []string, opts Options) error {
-	if opts.Verbose {
+	if opts.LogOptions.Verbose {
 		fmt.Fprintf(os.Stderr, "Lunchpail worker starting up\n")
+		printenv()
 	}
 
-	if opts.Debug {
+	if opts.LogOptions.Debug {
 		// helpful for debugging
 		fmt.Fprintf(os.Stderr, "env=%v\n", os.Environ())
 	}
@@ -44,5 +51,5 @@ func Run(ctx context.Context, handler []string, opts Options) error {
 		return err
 	}
 
-	return startWatch(ctx, handler, client, opts.Debug)
+	return startWatch(ctx, handler, client, opts)
 }

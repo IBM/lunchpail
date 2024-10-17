@@ -14,14 +14,14 @@ func PreStop(ctx context.Context, opts Options) error {
 		return err
 	}
 
-	if opts.Debug {
+	if opts.LogOptions.Debug {
 		fmt.Println("Marking worker as done...")
 	}
 
-	client.Rm(client.Paths.Bucket, client.Paths.Alive)
-	client.Touch(client.Paths.Bucket, client.Paths.Dead)
+	client.Rm(opts.Bucket, opts.Alive)
+	client.Touch(opts.Bucket, opts.Dead)
 
-	if opts.Verbose {
+	if opts.LogOptions.Verbose {
 		fmt.Printf("This worker is shutting down %s\n", os.Getenv("LUNCHPAIL_POD_NAME"))
 	}
 

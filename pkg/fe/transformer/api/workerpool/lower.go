@@ -30,8 +30,19 @@ func Lower(buildName, runname string, app hlir.Application, pool hlir.WorkerPool
 	}
 	app.Spec.Env["LUNCHPAIL_STARTUP_DELAY"] = strconv.Itoa(startupDelay)
 
-	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop" EXIT
-$LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v -- %s`, opts.Log.Verbose, opts.Log.Debug, app.Spec.Command)
+	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop --verbose=%v --debug=%v --bucket %s --alive %s --dead %s" EXIT
+$LUNCHPAIL_EXE component worker run --verbose=%v --debug=%v --bucket %s --alive %s -- %s`,
+		opts.Log.Verbose,
+		opts.Log.Debug,
+		ir.Queue.Bucket,
+		api.WorkerAlive(ir.Queue, runname, pool.Metadata.Name),
+		api.WorkerDead(ir.Queue, runname, pool.Metadata.Name),
+		opts.Log.Verbose,
+		opts.Log.Debug,
+		ir.Queue.Bucket,
+		api.WorkerAlive(ir.Queue, runname, pool.Metadata.Name),
+		app.Spec.Command,
+	)
 
 	return shell.LowerAsComponent(
 		buildName,

@@ -91,6 +91,14 @@ func WorkerOutbox(base, worker, task string) string {
 	return filepath.Join(base, worker, "outbox", task)
 }
 
+func WorkerAlive(queueSpec queue.Spec, runname, poolname string) string {
+	return WorkerInbox(WorkerInboxPathBase(queueSpec, runname), filepath.Join(poolname, "$LUNCHPAIL_POD_NAME"), ".alive")
+}
+
+func WorkerDead(queueSpec queue.Spec, runname, poolname string) string {
+	return WorkerInbox(WorkerInboxPathBase(queueSpec, runname), filepath.Join(poolname, "$LUNCHPAIL_POD_NAME"), ".dead")
+}
+
 func AllDone(queueSpec queue.Spec, runname string) string {
 	return filepath.Join(QueuePrefixPath0(queueSpec, runname), "alldone")
 }

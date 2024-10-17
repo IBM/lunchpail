@@ -20,23 +20,20 @@ func killfileExists(client queue.S3Client, bucket, prefix string) bool {
 	return client.Exists(bucket, prefix, "kill")
 }
 
-func startWatch(ctx context.Context, handler []string, client queue.S3Client, debug bool) error {
-	bucket := client.Paths.Bucket
+func startWatch(ctx context.Context, handler []string, client queue.S3Client, opts Options) error {
+	bucket := opts.Bucket
 	prefix := client.Paths.Prefix
 	inbox := client.Paths.Inbox
 	processing := client.Paths.Processing
 	outbox := client.Paths.Outbox
-	alive := client.Paths.Alive
+	alive := opts.Alive
 	// dead := client.Paths.dead
 
-	if debug {
-		fmt.Fprintf(os.Stderr, "Mkdirp bucket=%s\n", bucket)
-	}
 	if err := client.Mkdirp(bucket); err != nil {
 		return err
 	}
 
-	if debug {
+	if opts.LogOptions.Debug {
 		fmt.Fprintf(os.Stderr, "Lunchpail worker touching alive file bucket=%s path=%s\n", bucket, alive)
 	}
 	err := client.Touch(bucket, alive)
@@ -62,7 +59,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 
 		select {
 		case err := <-errs:
-			if debug {
+			if opts.LogOptions.Verbose {
 				fmt.Fprintln(os.Stderr, err)
 			}
 
@@ -186,7 +183,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				}
 
 				if EC == 0 {
-					if debug {
+					if opts.LogOptions.Debug {
 						fmt.Printf("Worker succeeded on task %s\n", localprocessing)
 					}
 					err = client.Touch(bucket, succeeded)
@@ -202,7 +199,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 				}
 
 				if _, err := os.Stat(localoutbox); err == nil {
-					if debug {
+					if opts.LogOptions.Debug {
 						fmt.Printf("Uploading worker-produced outbox file %s->%s\n", localoutbox, out)
 					}
 					if err := client.Upload(bucket, localoutbox, out); err != nil {
@@ -215,7 +212,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, de
 		}
 	}
 
-	if debug {
+	if opts.LogOptions.Verbose {
 		fmt.Println("Worker exiting normally")
 	}
 

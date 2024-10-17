@@ -16,10 +16,22 @@ func PreStop() *cobra.Command {
 		Long:  "Mark this worker as dead",
 	}
 
+	bucket := ""
+	cmd.Flags().StringVar(&bucket, "bucket", "", "Which S3 bucket to use")
+	cmd.MarkFlagRequired("bucket")
+
+	alive := ""
+	cmd.Flags().StringVar(&alive, "alive", "", "Where to place our alive file")
+	cmd.MarkFlagRequired("alive")
+
+	dead := ""
+	cmd.Flags().StringVar(&dead, "dead", "", "Where to place our dead file")
+	cmd.MarkFlagRequired("dead")
+
 	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return worker.PreStop(context.Background(), worker.Options(*logOpts))
+		return worker.PreStop(context.Background(), worker.Options{Bucket: bucket, Dead: dead, LogOptions: *logOpts})
 	}
 
 	return cmd

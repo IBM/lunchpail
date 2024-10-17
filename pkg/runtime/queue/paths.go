@@ -21,12 +21,6 @@ type filepaths struct {
 
 	// Dispatcher is done
 	Done string
-
-	// Worker is alive
-	Alive string
-
-	// Worker is dead
-	Dead string
 }
 
 func pathsForRun() (filepaths, error) {
@@ -42,10 +36,8 @@ func pathsFor(queuePrefixPath string) (filepaths, error) {
 	processing := "processing"
 	outbox := outboxFolder
 	done := filepath.Join(poolPrefix, "done")
-	alive := filepath.Join(prefix, inbox, ".alive")
-	dead := filepath.Join(prefix, inbox, ".dead")
 
-	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done, alive, dead}, nil
+	return filepaths{bucket, poolPrefix, prefix, inbox, processing, outbox, done}, nil
 }
 
 func (c S3Client) Outbox() string {
