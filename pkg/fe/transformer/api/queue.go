@@ -38,12 +38,23 @@ func ExtractNamesFromSubPathForWorker(combo string) (poolName string, workerName
 // Path in s3 to store the queue data for a particular worker in a
 // particular pool for a particular run. Note how we need to defer the
 // worker name until run time, which we do via a
-// $LUNCHPAIL_WORKER_NAME env var.
+// $LUNCHPAIL_POD_NAME env var.
+func QueuePrefixPathForWorker0(queueSpec queue.Spec, runname, poolName string) string {
+	return filepath.Join(
+		QueuePrefixPath0(queueSpec, runname),
+		"queues",
+		QueueSubPathForWorker(poolName, "$LUNCHPAIL_POD_NAME"),
+	)
+}
+
+// Path in s3 to store the queue data for a particular worker in a
+// particular pool for a particular run. Note how we need to defer the
+// worker name until run time, which we do via a
+// $LUNCHPAIL_POD_NAME env var.
 func QueuePrefixPathForWorker(queueSpec queue.Spec, runname, poolName string) string {
 	return filepath.Join(
-		QueuePrefixPath(queueSpec, runname),
-		"queues",
-		QueueSubPathForWorker(poolName, "$LUNCHPAIL_WORKER_NAME"),
+		queueSpec.Bucket,
+		QueuePrefixPathForWorker0(queueSpec, runname, poolName),
 	)
 }
 
@@ -75,6 +86,16 @@ func WorkerInbox(base, worker, task string) string {
 	return filepath.Join(base, worker, "inbox", task)
 }
 
+// for Worker
+func Inbox(base string) string {
+	return filepath.Join(base, "inbox")
+}
+
+// for Worker
+func InboxTask(base, task string) string {
+	return filepath.Join(Inbox(base), task)
+}
+
 func WorkerProcessingPathBase(queueSpec queue.Spec, runname string) string {
 	return WorkerInboxPathBase(queueSpec, runname)
 }
@@ -83,12 +104,57 @@ func WorkerProcessing(base, worker, task string) string {
 	return filepath.Join(base, worker, "processing", task)
 }
 
+// for Worker
+func Processing(base string) string {
+	return filepath.Join(base, "processing")
+}
+
+// for Worker
+func ProcessingTask(base, task string) string {
+	return filepath.Join(Processing(base), task)
+}
+
 func WorkerOutboxPathBase(queueSpec queue.Spec, runname string) string {
 	return WorkerInboxPathBase(queueSpec, runname)
 }
 
 func WorkerOutbox(base, worker, task string) string {
 	return filepath.Join(base, worker, "outbox", task)
+}
+
+// for Worker
+func Outbox(base string) string {
+	return filepath.Join(base, "outbox")
+}
+
+// for Worker
+func OutboxTask(base, task string) string {
+	return filepath.Join(Outbox(base), task)
+}
+
+// for Worker
+func ExitCodeTask(base, task string) string {
+	return filepath.Join(Outbox(base), task+".code")
+}
+
+// for Worker
+func SucceededTask(base, task string) string {
+	return filepath.Join(Outbox(base), task+".succeeded")
+}
+
+// for Worker
+func FailedTask(base, task string) string {
+	return filepath.Join(Outbox(base), task+".failed")
+}
+
+// for Worker
+func StdoutTask(base, task string) string {
+	return filepath.Join(Outbox(base), task+".stdout")
+}
+
+// for Worker
+func StderrTask(base, task string) string {
+	return filepath.Join(Outbox(base), task+".stderr")
 }
 
 func WorkerAlive(queueSpec queue.Spec, runname, poolname string) string {
