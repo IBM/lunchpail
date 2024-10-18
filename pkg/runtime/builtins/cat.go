@@ -9,16 +9,16 @@ import (
 	"lunchpail.io/pkg/runtime/queue"
 )
 
-func Cat(ctx context.Context, client queue.S3Client, inputs []string, opts build.LogOptions) error {
+func Cat(ctx context.Context, client queue.S3Client, runname string, inputs []string, opts build.LogOptions) error {
 	qopts := queue.AddOptions{
 		S3Client:   client,
 		LogOptions: opts,
 	}
-	if err := queue.AddList(ctx, inputs, qopts); err != nil {
+	if err := queue.AddList(ctx, runname, inputs, qopts); err != nil {
 		return err
 	}
 
-	if err := queue.QdoneClient(ctx, client, opts); err != nil {
+	if err := queue.QdoneClient(ctx, client, runname, opts); err != nil {
 		return err
 	}
 
@@ -32,7 +32,7 @@ func CatClient(ctx context.Context, backend be.Backend, runname string, inputs [
 	}
 	defer client.Stop()
 
-	return Cat(ctx, client.S3Client, inputs, opts)
+	return Cat(ctx, client.S3Client, runname, inputs, opts)
 }
 
 func CatApp() hlir.HLIR {

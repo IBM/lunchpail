@@ -9,7 +9,7 @@ import (
 )
 
 func Lower(buildName, runname string, s3 hlir.ProcessS3Objects, ir llir.LLIR, opts build.Options) (llir.Component, error) {
-	app, err := transpile(s3)
+	app, err := transpile(runname, s3)
 	if err != nil {
 		return nil, err
 	}

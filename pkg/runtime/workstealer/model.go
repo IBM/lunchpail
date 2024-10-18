@@ -4,6 +4,7 @@ import "slices"
 
 // A Task that was assigned to a given Worker
 type AssignedTask struct {
+	pool   string
 	worker string
 	task   string
 }
@@ -12,6 +13,7 @@ type Worker struct {
 	alive           bool
 	nSuccess        uint
 	nFail           uint
+	pool            string
 	name            string
 	assignedTasks   []string
 	processingTasks []string
@@ -32,24 +34,27 @@ type Model struct {
 	DispatcherDone bool
 
 	UnassignedTasks []string
-	ConsumedTasks   []string
-	FinishedTasks   []string
 	LiveWorkers     []Worker
 	DeadWorkers     []Worker
 
 	AssignedTasks   []AssignedTask
 	ProcessingTasks []AssignedTask
+	OutboxTasks     []AssignedTask
 
 	SuccessfulTasks []AssignedTask
 	FailedTasks     []AssignedTask
 }
 
+func (model Model) nOutboxTasks() int {
+	return len(model.OutboxTasks)
+}
+
 func (model Model) nFinishedTasks() int {
-	return len(model.FinishedTasks)
+	return len(model.SuccessfulTasks) + len(model.FailedTasks)
 }
 
 func (model Model) nConsumedTasks() int {
-	return len(model.ConsumedTasks)
+	return model.nFinishedTasks() - model.nOutboxTasks()
 }
 
 func (model Model) nUnassignedTasks() int {

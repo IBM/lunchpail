@@ -11,6 +11,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/fe/transformer/api"
 )
 
 type AddOptions struct {
@@ -29,7 +30,7 @@ type AddS3Options struct {
 }
 
 // Enqueue a given `task` file
-func Add(ctx context.Context, task string, opts AddOptions) (code int, err error) {
+func Add(ctx context.Context, runname string, task string, opts AddOptions) (code int, err error) {
 	c := opts.S3Client
 
 	if c.client == nil {
@@ -40,27 +41,32 @@ func Add(ctx context.Context, task string, opts AddOptions) (code int, err error
 		}
 	}
 
-	err = c.Mkdirp(c.Paths.Bucket)
+	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
+	inbox := args.TemplateP(api.Unassigned)
+
+	err = c.Mkdirp(args.Bucket)
 	if err != nil {
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, "Enqueuing task %s\n", task)
+	if opts.LogOptions.Verbose {
+		fmt.Fprintf(os.Stderr, "Enqueuing task %s\n", task)
+	}
 
-	err = c.UploadAs(c.Paths.Bucket, task, filepath.Join(c.Paths.PoolPrefix, c.Paths.Inbox, filepath.Base(task)), opts.AsIfNamedPipe)
+	err = c.UploadAs(args.Bucket, task, filepath.Join(inbox, filepath.Base(task)), opts.AsIfNamedPipe)
 	if err != nil {
 		return
 	}
 
 	if opts.Wait {
-		return c.WaitForCompletion(filepath.Base(task), opts.Verbose)
+		return c.WaitForCompletion(runname, filepath.Base(task), opts.Verbose)
 	}
 
 	return
 }
 
 // Enqueue a list of given files
-func AddList(ctx context.Context, inputs []string, opts AddOptions) error {
+func AddList(ctx context.Context, runname string, inputs []string, opts AddOptions) error {
 	if len(inputs) == 0 {
 		return nil
 	}
@@ -69,7 +75,7 @@ func AddList(ctx context.Context, inputs []string, opts AddOptions) error {
 	for idx, input := range inputs {
 		group.Go(func() error {
 			opts.AsIfNamedPipe = fmt.Sprintf("task.%d.txt", idx+1)
-			if _, err := Add(gctx, input, opts); err != nil {
+			if _, err := Add(gctx, runname, input, opts); err != nil {
 				return err
 			}
 			return nil
@@ -80,7 +86,7 @@ func AddList(ctx context.Context, inputs []string, opts AddOptions) error {
 }
 
 // Enqueue tasks from a path in an s3 bucket
-func AddFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts AddS3Options) error {
+func AddFromS3(ctx context.Context, runname, fullpath, endpoint, accessKeyId, secretAccessKey string, repeat int, opts AddS3Options) error {
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
 	}
@@ -123,7 +129,9 @@ func AddFromS3(ctx context.Context, fullpath, endpoint, accessKeyId, secretAcces
 
 	srcBucket := bucket
 	dstBucket := queue.Paths.Bucket
-	inbox := filepath.Join(queue.Paths.PoolPrefix, queue.Paths.Inbox)
+
+	args := api.PathArgs{Bucket: dstBucket, RunName: runname, Step: 0} // FIXME
+	inbox := args.TemplateP(api.Unassigned)
 
 	for o := range origin.ListObjects(bucket, path, true) {
 		if o.Err != nil {

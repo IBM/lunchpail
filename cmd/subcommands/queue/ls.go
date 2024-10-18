@@ -10,6 +10,7 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -41,7 +42,15 @@ func Ls() *cobra.Command {
 			return err
 		}
 
-		files, errors, err := queue.Ls(ctx, backend, runOpts.Run, path)
+		run := runOpts.Run
+		if run == "" {
+			rrun, err := util.Singleton(ctx, backend)
+			if err != nil {
+				return err
+			}
+			run = rrun.Name
+		}
+		files, errors, err := queue.Ls(ctx, backend, run, path)
 		if err != nil {
 			return err
 		}
