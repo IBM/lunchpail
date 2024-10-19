@@ -78,6 +78,11 @@ func isPidRunning(pidfile string) (bool, error) {
 		}
 	}
 
+	if len(pidb) == 0 {
+		// protect against race window
+		return false, nil
+	}
+
 	pid64, err := strconv.ParseInt(string(pidb), 10, 32)
 	if err != nil {
 		return false, err
