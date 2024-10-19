@@ -16,4 +16,4 @@ eval $testapp up \
          $QUEUE \
          --create-cluster \
          --target=${LUNCHPAIL_TARGET:-kubernetes} \
-         --watch=false
+         --watch=true
