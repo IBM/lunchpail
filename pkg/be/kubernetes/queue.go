@@ -40,7 +40,7 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 		var localPort int
 		for {
 			localPort = rand.Intn(65535) + 1
-			if localPort < 1000 {
+			if localPort < 1024 {
 				continue
 			}
 
