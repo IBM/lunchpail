@@ -30,9 +30,6 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 	if component.Sizing.Workers == 0 {
 		component.Sizing = api.ApplicationSizing(app, opts)
 	}
-	if component.QueuePrefixPath == "" {
-		component.QueuePrefixPath = api.QueuePrefixPath(ir.Queue, runname)
-	}
 	if component.InstanceName == "" {
 		component.InstanceName = runname
 	}

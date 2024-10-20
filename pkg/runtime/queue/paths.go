@@ -1,26 +1,15 @@
 package queue
 
-import (
-	"os"
-	"strings"
-)
-
-const (
-	inboxFolder  = "inbox"
-	outboxFolder = "outbox"
-)
+import "os"
 
 type filepaths struct {
 	Bucket string
 }
 
 func pathsForRun() (filepaths, error) {
-	return pathsFor(os.Getenv("LUNCHPAIL_QUEUE_PATH"))
+	return pathsFor(os.Getenv("LUNCHPAIL_QUEUE_BUCKET"))
 }
 
-func pathsFor(queuePrefixPath string) (filepaths, error) {
-	fullPrefix := strings.Split(queuePrefixPath, "/")
-	bucket := fullPrefix[0]
-
+func pathsFor(bucket string) (filepaths, error) {
 	return filepaths{bucket}, nil
 }

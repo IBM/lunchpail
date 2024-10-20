@@ -3,13 +3,13 @@ package streamer
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
 	"slices"
 	"strconv"
 	"strings"
 
 	"lunchpail.io/pkg/be/events/qstat"
-	"lunchpail.io/pkg/fe/transformer/api"
 )
 
 func QstatFromStream(ctx context.Context, stream io.ReadCloser, c chan qstat.Model) error {
@@ -85,13 +85,10 @@ func QstatFromChan(ctx context.Context, lines chan string, c chan qstat.Model) e
 				}
 
 				// The workstealer labels workers with
-				// the suffix of the queue path that
-				// we gave it via
-				// api.QueuePrefixPathForWorker(). See
-				// e.g. `assignedWorkPattern`. Here,
-				// we reverse that to extract the
-				// worker and pool name.
-				poolName, workerName, err := api.ExtractNamesFromSubPathForWorker(fields[6])
+				// "poolName/workerName". TODO figure
+				// out how to avoid this abstraction
+				// violation?
+				poolName, workerName, err := extractNamesFromSubPathForWorker(fields[6])
 				if err != nil {
 					continue
 				}
@@ -125,4 +122,18 @@ func QstatFromChan(ctx context.Context, lines chan string, c chan qstat.Model) e
 	}
 
 	return nil
+}
+
+// The workstealer labels workers with "poolName/workerName". TODO
+// figure out how to avoid this abstraction violation?
+// e.g. test7f-pool1/w96bh -> (test7f-pool1,w96bh)
+func extractNamesFromSubPathForWorker(combo string) (poolName string, workerName string, err error) {
+	if idx := strings.Index(combo, "/"); idx < 0 {
+		// TODO error handling here. what do we want to do?
+		err = fmt.Errorf("Invalid subpath %s", combo)
+	} else {
+		poolName = combo[:idx]
+		workerName = combo[idx+1:]
+	}
+	return
 }
