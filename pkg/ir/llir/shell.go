@@ -20,9 +20,6 @@ type ShellComponent struct {
 	// Identifies the group this component is part of, e.g. the original name of the workerpool (i.e. without run id, component, ...)
 	GroupName string
 
-	// Where runners of this instance should pick up or dispatch queue data
-	QueuePrefixPath string
-
 	// Sizing of this instance
 	Sizing RunSizeConfig
 }

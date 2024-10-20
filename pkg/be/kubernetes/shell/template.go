@@ -69,7 +69,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"workers.gpu=" + strconv.Itoa(c.Sizing.Gpu),
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
-		"taskqueue.prefixPath=" + c.QueuePrefixPath,
+		"taskqueue.bucket=" + ir.Queue.Bucket,
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
 		"initContainers=" + initContainers,

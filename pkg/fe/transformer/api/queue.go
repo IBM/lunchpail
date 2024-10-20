@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
-
-	"lunchpail.io/pkg/fe/linker/queue"
 )
 
 // i.e. "/run/{{.RunName}}/step/{{.Step}}"
@@ -110,54 +108,4 @@ func (q PathArgs) ForObject(path QueuePath, object string) (PathArgs, error) {
 		return q, fmt.Errorf("ForObjectTask bad match %s %v", object, match)
 	}
 	return q.ForPool(match[1]).ForWorker(match[2]).ForTask(match[1]), nil
-}
-
-// Path in s3 to store the queue for the given run
-func QueuePrefixPath0(queueSpec queue.Spec, runname string) string {
-	return filepath.Join("lunchpail", "runs", runname)
-}
-
-// Path in s3 to store the queue for the given run
-func QueuePrefixPath(queueSpec queue.Spec, runname string) string {
-	return filepath.Join(queueSpec.Bucket, QueuePrefixPath0(queueSpec, runname))
-}
-
-// The queue path for a worker that specifies the pool name and the worker name
-func QueueSubPathForWorker(poolName, workerName string) string {
-	return filepath.Join(poolName, workerName)
-}
-
-// Opposite of `QueueSubPathForWorker`, e.g. test7f-pool1/w96bh -> (test7f-pool1,w96bh)
-func ExtractNamesFromSubPathForWorker(combo string) (poolName string, workerName string, err error) {
-	if idx := strings.Index(combo, "/"); idx < 0 {
-		// TODO error handling here. what do we want to do?
-		err = fmt.Errorf("Invalid subpath %s", combo)
-	} else {
-		poolName = combo[:idx]
-		workerName = combo[idx+1:]
-	}
-	return
-}
-
-// Path in s3 to store the queue data for a particular worker in a
-// particular pool for a particular run. Note how we need to defer the
-// worker name until run time, which we do via a
-// $LUNCHPAIL_POD_NAME env var.
-func QueuePrefixPathForWorker0(queueSpec queue.Spec, runname, poolName string) string {
-	return filepath.Join(
-		QueuePrefixPath0(queueSpec, runname),
-		"queues",
-		QueueSubPathForWorker(poolName, "$LUNCHPAIL_POD_NAME"),
-	)
-}
-
-// Path in s3 to store the queue data for a particular worker in a
-// particular pool for a particular run. Note how we need to defer the
-// worker name until run time, which we do via a
-// $LUNCHPAIL_POD_NAME env var.
-func QueuePrefixPathForWorker(queueSpec queue.Spec, runname, poolName string) string {
-	return filepath.Join(
-		queueSpec.Bucket,
-		QueuePrefixPathForWorker0(queueSpec, runname, poolName),
-	)
 }

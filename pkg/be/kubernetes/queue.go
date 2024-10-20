@@ -15,8 +15,8 @@ import (
 )
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
-func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, stop func(), err error) {
-	endpoint, accessKeyID, secretAccessKey, bucket, prefixPath, err = backend.Queue(ctx, runname)
+func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
+	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.Queue(ctx, runname)
 	if err != nil {
 		return
 	}
@@ -79,12 +79,11 @@ func portFromEndpoint(endpoint string) (int, error) {
 	return port, nil
 }
 
-func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket, prefixPath string, err error) {
+func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
 	endpoint = os.Getenv("lunchpail_queue_endpoint")
 	accessKeyID = os.Getenv("lunchpail_queue_accessKeyID")
 	secretAccessKey = os.Getenv("lunchpail_queue_secretAccessKey")
 	bucket = os.Getenv("LUNCHPAIL_QUEUE_BUCKET")
-	prefixPath = os.Getenv("LUNCHPAIL_QUEUE_PATH")
 	err = nil
 
 	if endpoint == "" {
@@ -119,13 +118,6 @@ func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, acc
 			return
 		} else {
 			secretAccessKey = string(bytes)
-		}
-
-		if bytes, ok := secret.Data["queuePrefixPath"]; !ok {
-			err = fmt.Errorf("Secret is missing 'queuePrefixPath'")
-			return
-		} else {
-			prefixPath = string(bytes)
 		}
 
 		if bytes, ok := secret.Data["bucket"]; !ok {
