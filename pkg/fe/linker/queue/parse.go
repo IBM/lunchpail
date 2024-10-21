@@ -3,9 +3,11 @@ package queue
 import (
 	"fmt"
 	"math/rand"
+
+	"lunchpail.io/pkg/ir/queue"
 )
 
-func ParseFlag(flag, runname string) (Spec, error) {
+func ParseFlag(flag, runname string) (queue.Spec, error) {
 	// Assign a port for the internal S3 (TODO: we only need to do
 	// this if this run will be using an internal S3). We use the
 	// range of "ephemeral"
@@ -17,9 +19,9 @@ func ParseFlag(flag, runname string) (Spec, error) {
 	isRclone, spec, err := parseFlagAsRclone(flag, runname, internalS3Port)
 
 	if err != nil {
-		return Spec{}, err
+		return queue.Spec{}, err
 	} else if flag != "" && !isRclone {
-		return Spec{}, fmt.Errorf("Unsupported scheme for queue: '%s'", flag)
+		return queue.Spec{}, fmt.Errorf("Unsupported scheme for queue: '%s'", flag)
 	}
 
 	if spec.Endpoint == "" {

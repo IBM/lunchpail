@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -75,8 +76,13 @@ func (p taskProcessor) process(task string) error {
 
 		doneMovingToProcessing := make(chan struct{})
 		go func() {
-			if client.Moveto(opts.RunContext.Bucket, in, inprogress) != nil {
-				fmt.Fprintf(os.Stderr, "Internal Error moving task to processing %s->%s: %v\n", in, inprogress, err)
+			for {
+				if err := client.Moveto(opts.RunContext.Bucket, in, inprogress); err != nil {
+					fmt.Fprintf(os.Stderr, "Internal Error moving task to processing %s->%s: %v\n", in, inprogress, err)
+					time.Sleep(1 * time.Second)
+				} else {
+					break
+				}
 			}
 			doneMovingToProcessing <- struct{}{}
 		}()

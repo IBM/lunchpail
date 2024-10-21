@@ -4,12 +4,12 @@ import (
 	"slices"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api/dispatch"
 	"lunchpail.io/pkg/fe/transformer/api/minio"
 	"lunchpail.io/pkg/fe/transformer/api/workerpool"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 // HLIR -> LLIR
