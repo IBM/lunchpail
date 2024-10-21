@@ -16,8 +16,8 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, logdir string, opts build.LogOptions) error {
-	pidfile, err := files.Pidfile(runname, c.InstanceName, c.C(), true)
+func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir string, opts build.LogOptions) error {
+	pidfile, err := files.Pidfile(ir.RunName(), c.InstanceName, c.C(), true)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 	}
 
 	// tee command output to the logdir
-	instance := strings.Replace(strings.Replace(c.InstanceName, runname, "", 1), "--", "-", 1)
+	instance := strings.Replace(strings.Replace(c.InstanceName, ir.RunName(), "", 1), "--", "-", 1)
 	logfile := files.LogFileForComponent(c.C())
 	if len(instance) > 0 {
 		logfile = logfile + "-" + instance
@@ -53,7 +53,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 		cmd.Stderr = errfile
 	}
 
-	if env, err := addEnv(c, q); err != nil {
+	if env, err := addEnv(c, ir); err != nil {
 		return err
 	} else {
 		cmd.Env = env
@@ -78,7 +78,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, lo
 	return nil
 }
 
-func addEnv(c llir.ShellComponent, q llir.Queue) ([]string, error) {
+func addEnv(c llir.ShellComponent, ir llir.LLIR) ([]string, error) {
 	var err error
 	var absPathToThisExe string
 	absPathToThisExe, err = filepath.Abs(os.Args[0])
@@ -92,10 +92,9 @@ func addEnv(c llir.ShellComponent, q llir.Queue) ([]string, error) {
 		"HOME=" + os.Getenv("HOME"),
 		"LUNCHPAIL_COMPONENT=" + string(c.C()),
 		"LUNCHPAIL_EXE=" + absPathToThisExe,
-		"LUNCHPAIL_QUEUE_BUCKET=" + q.Bucket,
 		"LUNCHPAIL_POD_NAME=" + c.InstanceName,
 		"LUNCHPAIL_VENV_CACHEDIR=" + os.Getenv("LUNCHPAIL_VENV_CACHEDIR"),
-		"TEST_QUEUE_ENDPOINT=" + q.Endpoint,
+		"TEST_QUEUE_ENDPOINT=" + ir.Context.Queue.Endpoint,
 		"LUNCHPAIL_TARGET=local",
 		"PYTHONUNBUFFERED=1",
 	}
@@ -105,12 +104,12 @@ func addEnv(c llir.ShellComponent, q llir.Queue) ([]string, error) {
 		return env, err
 	}
 
-	env, err = addQueueEnv(env, q)
+	env, err = addQueueEnv(env, ir)
 	if err != nil {
 		return env, err
 	}
 
-	return addAllSecrets(env, c.Application.Spec.Datasets, q)
+	return addAllSecrets(env, c.Application.Spec.Datasets, ir)
 }
 
 func addAppEnv(env []string, c llir.ShellComponent) ([]string, error) {
@@ -121,20 +120,20 @@ func addAppEnv(env []string, c llir.ShellComponent) ([]string, error) {
 	return env, nil
 }
 
-func addQueueEnv(env []string, q llir.Queue) ([]string, error) {
+func addQueueEnv(env []string, ir llir.LLIR) ([]string, error) {
 	prefix := "lunchpail_queue_" // TODO share with be/kubernetes/shell.envForQueue()
 
-	env = append(env, prefix+"endpoint="+q.Endpoint)
-	env = append(env, prefix+"accessKeyID="+q.AccessKey)
-	env = append(env, prefix+"secretAccessKey="+q.SecretKey)
+	env = append(env, prefix+"endpoint="+ir.Context.Queue.Endpoint)
+	env = append(env, prefix+"accessKeyID="+ir.Context.Queue.AccessKey)
+	env = append(env, prefix+"secretAccessKey="+ir.Context.Queue.SecretKey)
 
 	return env, nil
 }
 
-func addAllSecrets(env []string, datasets []hlir.Dataset, q llir.Queue) ([]string, error) {
+func addAllSecrets(env []string, datasets []hlir.Dataset, ir llir.LLIR) ([]string, error) {
 	var err error
 	for _, d := range datasets {
-		env, err = addSecret(env, d, q)
+		env, err = addSecret(env, d, ir)
 		if err != nil {
 			return env, err
 		}
@@ -142,7 +141,7 @@ func addAllSecrets(env []string, datasets []hlir.Dataset, q llir.Queue) ([]strin
 	return env, nil
 }
 
-func addSecret(env []string, dataset hlir.Dataset, q llir.Queue) ([]string, error) {
+func addSecret(env []string, dataset hlir.Dataset, ir llir.LLIR) ([]string, error) {
 	if dataset.S3.EnvFrom.Prefix != "" && dataset.S3.Rclone.RemoteName != "" {
 		isValid, spec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", "", 0)
 		if err != nil {
@@ -151,7 +150,7 @@ func addSecret(env []string, dataset hlir.Dataset, q llir.Queue) ([]string, erro
 			return env, fmt.Errorf("Invalid or missing rclone config for given remote=%s", dataset.S3.Rclone.RemoteName)
 		}
 
-		env = append(env, dataset.S3.EnvFrom.Prefix+"endpoint="+strings.Replace(spec.Endpoint, "$TEST_QUEUE_ENDPOINT", q.Endpoint, -1))
+		env = append(env, dataset.S3.EnvFrom.Prefix+"endpoint="+strings.Replace(spec.Endpoint, "$TEST_QUEUE_ENDPOINT", ir.Context.Queue.Endpoint, -1))
 		env = append(env, dataset.S3.EnvFrom.Prefix+"accessKeyID="+spec.AccessKey)
 		env = append(env, dataset.S3.EnvFrom.Prefix+"secretAccessKey="+spec.SecretKey)
 	}

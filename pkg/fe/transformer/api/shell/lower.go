@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/linker/queue"
+	q "lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(buildName, runname string, app hlir.Application, ir llir.LLIR, opts build.Options) (llir.Component, error) {
+func Lower(buildName string, run queue.RunContext, app hlir.Application, ir llir.LLIR, opts build.Options) (llir.Component, error) {
 	var component lunchpail.Component
 	switch app.Spec.Role {
 	case "worker":
@@ -22,22 +24,24 @@ func Lower(buildName, runname string, app hlir.Application, ir llir.LLIR, opts b
 		component = lunchpail.DispatcherComponent
 	}
 
-	return LowerAsComponent(buildName, runname, app, ir, llir.ShellComponent{Component: component}, opts)
+	return LowerAsComponent(buildName, run, app, ir, llir.ShellComponent{Component: component}, opts)
 }
 
-func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.LLIR, component llir.ShellComponent, opts build.Options) (llir.Component, error) {
+func LowerAsComponent(buildName string, run queue.RunContext, app hlir.Application, ir llir.LLIR, component llir.ShellComponent, opts build.Options) (llir.Component, error) {
 	component.Application = app
 	if component.Sizing.Workers == 0 {
 		component.Sizing = api.ApplicationSizing(app, opts)
 	}
 	if component.InstanceName == "" {
-		component.InstanceName = runname
+		component.InstanceName = run.RunName
 	}
 
 	if app.Spec.Env == nil {
 		app.Spec.Env = hlir.Env{}
 	}
-	app.Spec.Env["LUNCHPAIL_RUN"] = runname
+	app.Spec.Env["LUNCHPAIL_RUN_NAME"] = run.RunName
+	app.Spec.Env["LUNCHPAIL_STEP"] = strconv.Itoa(run.Step)
+	app.Spec.Env["LUNCHPAIL_QUEUE_BUCKET"] = ir.Queue().Bucket
 
 	for _, needs := range app.Spec.Needs {
 		var file *os.File
@@ -67,7 +71,7 @@ func LowerAsComponent(buildName, runname string, app hlir.Application, ir llir.L
 			// We were asked to copy data in from s3, so
 			// we will use the secrets attached to an
 			// initContainer
-			isValid, spec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, ir.Queue.Port)
+			isValid, spec, err := q.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", run.RunName, ir.Queue().Port)
 
 			if err != nil {
 				return nil, err

@@ -8,14 +8,13 @@ import (
 	"lunchpail.io/pkg/ir/queue"
 )
 
-func Qcat(ctx context.Context, backend be.Backend, runname, path string) error {
-	c, err := NewS3ClientForRun(ctx, backend, runname)
+func Qcat(ctx context.Context, backend be.Backend, run queue.RunContext, path string) error {
+	c, err := NewS3ClientForRun(ctx, backend, run.RunName)
 	if err != nil {
 		return err
 	}
 	defer c.Stop()
 
-	run := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
 	fullPath := filepath.Join(run.ListenPrefix(), path)
 
 	if err := c.Cat(run.Bucket, fullPath); err != nil {

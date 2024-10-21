@@ -9,6 +9,7 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -24,7 +25,6 @@ func Drain() *cobra.Command {
 		panic(err)
 	}
 
-	runOpts := options.AddRequiredRunOptions(cmd)
 	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -34,7 +34,12 @@ func Drain() *cobra.Command {
 			return err
 		}
 
-		return queue.Drain(ctx, backend, runOpts.Run)
+		run, err := q.LoadRunContextInsideComponent()
+		if err != nil {
+			return err
+		}
+
+		return queue.Drain(ctx, backend, run)
 	}
 
 	return cmd

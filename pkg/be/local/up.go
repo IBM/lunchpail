@@ -19,32 +19,35 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 		return err
 	}
 
-	if ir.Queue.Auto {
-		ir.Queue = ir.Queue.UpdateEndpoint(fmt.Sprintf("localhost:%d", ir.Queue.Port))
+	if ir.Queue().Auto {
+		ir.Context = llir.Context{
+			Run:   ir.Context.Run,
+			Queue: ir.Queue().UpdateEndpoint(fmt.Sprintf("localhost:%d", ir.Queue().Port)),
+		}
 	}
 
 	// This is where component logs will go
-	logdir, err := files.LogDir(ir.RunName, true)
+	logdir, err := files.LogDir(ir.RunName(), true)
 	if err != nil {
 		return err
 	}
 
 	// Write a pid file to indicate the pid of this process
-	if pidfile, err := files.PidfileForMain(ir.RunName); err != nil {
+	if pidfile, err := files.PidfileForMain(ir.RunName()); err != nil {
 		return err
 	} else {
 		shell.WritePid(pidfile, os.Getpid())
 	}
 
 	// Write a breadcrumb that describes the queue this run is using
-	if err := saveQueue(ir); err != nil {
+	if err := saveContext(ir); err != nil {
 		return err
 	}
 
 	// Launch each of the components
 	group, ctx := errgroup.WithContext(octx)
 	for _, c := range ir.Components {
-		group.Go(func() error { return backend.spawn(ctx, c, ir.Queue, ir.RunName, logdir, *opts.Log) })
+		group.Go(func() error { return backend.spawn(ctx, c, ir, logdir, *opts.Log) })
 	}
 
 	// Indicate that we are off to the races
