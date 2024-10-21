@@ -11,7 +11,7 @@ import (
 )
 
 // Run the component as a "job", with multiple workers
-func SpawnJob(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname, logdir string, opts build.LogOptions) error {
+func SpawnJob(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir string, opts build.LogOptions) error {
 	if c.Sizing.Workers < 1 {
 		return fmt.Errorf("Invalid worker count for %v: %d", c, c.Sizing.Workers)
 	}
@@ -20,7 +20,7 @@ func SpawnJob(ctx context.Context, c llir.ShellComponent, q llir.Queue, runname,
 
 	for workerIdx := range c.Sizing.Workers {
 		group.Go(func() error {
-			return Spawn(jobCtx, c.WithInstanceNameSuffix(fmt.Sprintf("-w%d", workerIdx)), q, runname, logdir, opts)
+			return Spawn(jobCtx, c.WithInstanceNameSuffix(fmt.Sprintf("-w%d", workerIdx)), ir, logdir, opts)
 		})
 	}
 

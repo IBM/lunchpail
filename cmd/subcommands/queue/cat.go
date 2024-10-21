@@ -9,6 +9,7 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -25,7 +26,6 @@ func Cat() *cobra.Command {
 		panic(err)
 	}
 
-	runOpts := options.AddRunOptions(cmd)
 	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -35,7 +35,12 @@ func Cat() *cobra.Command {
 			return err
 		}
 
-		return queue.Qcat(ctx, backend, runOpts.Run, args[0])
+		run, err := q.LoadRunContextInsideComponent()
+		if err != nil {
+			return err
+		}
+
+		return queue.Qcat(ctx, backend, run, args[0])
 	}
 
 	return cmd

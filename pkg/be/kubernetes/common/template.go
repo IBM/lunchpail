@@ -28,7 +28,7 @@ func templateLunchpailCommonResources(ir llir.LLIR, namespace string, opts Optio
 	}
 
 	return helm.Template(
-		ir.RunName+"-common",
+		ir.RunName()+"-common",
 		namespace,
 		templatePath,
 		"", // no yaml values at the moment

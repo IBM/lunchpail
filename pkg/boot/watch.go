@@ -22,14 +22,14 @@ func watchLogs(ctx context.Context, backend be.Backend, ir llir.LLIR, opts Watch
 		components = lunchpail.AllComponents
 	}
 
-	err := observe.Logs(ctx, ir.RunName, backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components})
+	err := observe.Logs(ctx, ir.RunName(), backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
 }
 
 func watchUtilization(ctx context.Context, backend be.Backend, ir llir.LLIR, opts WatchOptions) {
-	err := cpu.UI(ctx, ir.RunName, backend, cpu.CpuOptions{Verbose: opts.Verbose, NoClearScreen: true, IntervalSeconds: 10})
+	err := cpu.UI(ctx, ir.RunName(), backend, cpu.CpuOptions{Verbose: opts.Verbose, NoClearScreen: true, IntervalSeconds: 10})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}

@@ -14,19 +14,20 @@ type Component interface {
 	SetWorkers(w int) Component
 }
 
-// Specification of the queue, e.g. endpoint
-type Queue = queue.Spec
+type Context struct {
+	Run   queue.RunContext
+	Queue queue.Spec
+}
 
 type LLIR struct {
 	AppName string
-	RunName string
+
+	// The context that defines a run (run name, step, etc.)
+	Context
 
 	// Applications may provide their own Kubernetes resources
 	// that will be deployed once per run
 	AppProvidedKubernetesResources string
-
-	// Details of how to reach the queue endpoint
-	Queue
 
 	// One Component per WorkerPool, one for WorkerStealer, etc.
 	Components []Component
@@ -40,4 +41,12 @@ func (ir LLIR) HasDispatcher() bool {
 	}
 
 	return false
+}
+
+func (ir LLIR) RunName() string {
+	return ir.Context.Run.RunName
+}
+
+func (ir LLIR) Queue() queue.Spec {
+	return ir.Context.Queue
 }
