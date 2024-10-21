@@ -8,35 +8,34 @@ import (
 
 	rcloneConfig "github.com/rclone/rclone/fs/config"
 	rcloneConfigFile "github.com/rclone/rclone/fs/config/configfile"
+
+	"lunchpail.io/pkg/ir/queue"
 )
 
-func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port int) (bool, Spec, error) {
-	spec := Spec{
+func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port int) (bool, queue.Spec, error) {
+	spec := queue.Spec{
 		// re: name of taskqueue Secret; dashes are
 		// not valid in bash variable names, so we avoid those
 		// here
-		Name(runname),  // Name
-		true,           // Auto
-		bucket,         // Bucket
-		"",             // Endpoint
-		internalS3Port, // Port
-		"",             // AccessKey
-		"",             // SecretKey
+		Name:   Name(runname),
+		Auto:   true,
+		Bucket: bucket,
+		Port:   internalS3Port,
 	}
 
 	if os.Getenv("RCLONE_CONFIG") != "" {
 		// sigh, rclone doesn't seem to support this except at the level of the rclone CLI
 		if err := rcloneConfig.SetConfigPath(os.Getenv("RCLONE_CONFIG")); err != nil {
-			return false, Spec{}, err
+			return false, queue.Spec{}, err
 		}
 	}
 	rcloneConfigFile.Install() // otherwise, DumpRcRemote() yields an empty map
 	config := rcloneConfig.DumpRcRemote(remoteName)
 
 	if maybe, ok := config["endpoint"]; !ok {
-		return false, Spec{}, fmt.Errorf("Rclone config '%s' is missing endpoint %v || %v", remoteName, config, rcloneConfig.LoadedData())
+		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' is missing endpoint %v || %v", remoteName, config, rcloneConfig.LoadedData())
 	} else if s, ok := maybe.(string); !ok {
-		return false, Spec{}, fmt.Errorf("Rclone config '%s' has invalid endpoint value: '%s'", remoteName, maybe)
+		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' has invalid endpoint value: '%s'", remoteName, maybe)
 	} else {
 		spec.Endpoint = s
 		if !isInternalS3(s) {
@@ -45,17 +44,17 @@ func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port
 	}
 
 	if maybe, ok := config["access_key_id"]; !ok {
-		return false, Spec{}, fmt.Errorf("Rclone config '%s' is missing access_key_id", remoteName)
+		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' is missing access_key_id", remoteName)
 	} else if s, ok := maybe.(string); !ok {
-		return false, Spec{}, fmt.Errorf("Rclone config '%s' has invalid access_key_id value: '%s'", remoteName, maybe)
+		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' has invalid access_key_id value: '%s'", remoteName, maybe)
 	} else {
 		spec.AccessKey = s
 	}
 
 	if maybe, ok := config["secret_access_key"]; !ok {
-		return false, Spec{}, fmt.Errorf("Rclone config '%s' is missing secret_access_key", remoteName)
+		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' is missing secret_access_key", remoteName)
 	} else if s, ok := maybe.(string); !ok {
-		return false, Spec{}, fmt.Errorf("Rclone config '%s' has invalid secret_access_key value: '%s'", remoteName, maybe)
+		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' has invalid secret_access_key value: '%s'", remoteName, maybe)
 	} else {
 		spec.SecretKey = s
 	}
@@ -82,15 +81,15 @@ func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port
 }
 
 // return (isSpecValidAsRclone?, error)
-func parseFlagAsRclone(flag, runname string, internalS3Port int) (bool, Spec, error) {
+func parseFlagAsRclone(flag, runname string, internalS3Port int) (bool, queue.Spec, error) {
 	rclonePattern := regexp.MustCompile("^rclone://([^/]+)/(.+)$")
 	if match := rclonePattern.FindStringSubmatch(flag); len(match) == 3 {
 		return SpecFromRcloneRemoteName(match[1], match[2], runname, internalS3Port)
 	} else if strings.HasPrefix(flag, "rclone:") {
-		return false, Spec{}, fmt.Errorf("Invalid --queue option. Must be of the form 'rclone://configname/bucketname'")
+		return false, queue.Spec{}, fmt.Errorf("Invalid --queue option. Must be of the form 'rclone://configname/bucketname'")
 	}
 
-	return false, Spec{Name: strings.Replace(runname, "-", "", -1) + "queue"}, nil
+	return false, queue.Spec{Name: strings.Replace(runname, "-", "", -1) + "queue"}, nil
 }
 
 // Follow convention for internalS3 name in charts/workstealer/templates/s3 below.

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"lunchpail.io/pkg/fe/linker/queue"
+	q "lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/util"
 )
 
@@ -76,7 +77,7 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 			volumeMounts = append(volumeMounts, volumeMount{name, dataset.MountPath})
 		}
 		if dataset.S3.Rclone.RemoteName != "" {
-			isValid, remoteSpec, err := queue.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, queueSpec.Port)
+			isValid, remoteSpec, err := q.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, queueSpec.Port)
 
 			if err != nil {
 				return nil, nil, nil, nil, secrets, err

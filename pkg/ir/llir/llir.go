@@ -1,7 +1,7 @@
 package llir
 
 import (
-	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 

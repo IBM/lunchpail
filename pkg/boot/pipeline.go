@@ -6,8 +6,8 @@ import (
 	"io"
 	"os"
 
-	"lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/util"
 )
 
