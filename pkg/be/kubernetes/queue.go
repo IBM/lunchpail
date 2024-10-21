@@ -11,7 +11,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"lunchpail.io/pkg/fe/linker/queue"
+	"lunchpail.io/pkg/be/kubernetes/names"
 )
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
@@ -93,7 +93,7 @@ func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, acc
 			return
 		}
 
-		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, queue.Name(runname), metav1.GetOptions{})
+		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, names.Queue(runname), metav1.GetOptions{})
 		if cerr != nil {
 			err = cerr
 			return

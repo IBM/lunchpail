@@ -32,8 +32,9 @@ func ParseFlag(flag, runname string) (queue.Spec, error) {
 		spec.AccessKey = "lunchpail"
 		spec.SecretKey = "lunchpail"
 	}
+
 	if spec.Bucket == "" {
-		spec.Bucket = spec.Name
+		spec.Bucket = "lunchpail.io"
 	}
 
 	return spec, nil

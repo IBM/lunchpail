@@ -14,10 +14,6 @@ import (
 
 func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port int) (bool, queue.Spec, error) {
 	spec := queue.Spec{
-		// re: name of taskqueue Secret; dashes are
-		// not valid in bash variable names, so we avoid those
-		// here
-		Name:   Name(runname),
 		Auto:   true,
 		Bucket: bucket,
 		Port:   internalS3Port,
@@ -89,7 +85,7 @@ func parseFlagAsRclone(flag, runname string, internalS3Port int) (bool, queue.Sp
 		return false, queue.Spec{}, fmt.Errorf("Invalid --queue option. Must be of the form 'rclone://configname/bucketname'")
 	}
 
-	return false, queue.Spec{Name: strings.Replace(runname, "-", "", -1) + "queue"}, nil
+	return false, queue.Spec{}, nil
 }
 
 // Follow convention for internalS3 name in charts/workstealer/templates/s3 below.
