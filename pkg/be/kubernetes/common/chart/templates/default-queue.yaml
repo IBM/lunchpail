@@ -12,4 +12,3 @@ stringData:
   endpoint: {{ .Values.lunchpail.taskqueue.endpoint }}
   accessKeyID: {{ .Values.lunchpail.taskqueue.accessKey }}
   secretAccessKey: {{ .Values.lunchpail.taskqueue.secretKey }}
-  queuePrefixPath: {{ .Values.lunchpail.taskqueue.prefixPath }}

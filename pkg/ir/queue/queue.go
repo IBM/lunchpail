@@ -1,7 +1,6 @@
 package queue
 
 type Spec struct {
-	Name      string `json:"name"`
 	Auto      bool   `json:"auto"`
 	Bucket    string `json:"bucket"`
 	Endpoint  string `json:"endpoint"`

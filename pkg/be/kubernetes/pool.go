@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"lunchpail.io/pkg/be/kubernetes/shell"
+	"lunchpail.io/pkg/be/kubernetes/names"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -18,7 +18,7 @@ func (backend Backend) ChangeWorkers(ctx context.Context, poolName, poolContext 
 		return err
 	}
 
-	k8sName := shell.ResourceName(poolName, lunchpail.WorkersComponent)
+	k8sName := names.Resource(poolName, lunchpail.WorkersComponent)
 
 	jobsClient := clientset.BatchV1().Jobs(backend.namespace)
 	job, err := jobsClient.Get(ctx, k8sName, metav1.GetOptions{})

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"lunchpail.io/pkg/be/kubernetes/names"
 	q "lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/queue"
@@ -55,7 +56,7 @@ type envFrom struct {
 func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, []initContainer, []map[string]string, error) {
 	volumes := []volume{}
 	volumeMounts := []volumeMount{}
-	envFroms := []envFrom{envForQueue(queueSpec)}
+	envFroms := []envFrom{envForQueue(runname)}
 	secrets := []map[string]string{}
 	initContainers := []initContainer{}
 
@@ -138,10 +139,10 @@ func datasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (st
 }
 
 // Inject queue secrets
-func envForQueue(queueSpec queue.Spec) envFrom {
+func envForQueue(runname string) envFrom {
 	return envFrom{
 		Prefix:    "lunchpail_queue_",
-		SecretRef: secretRef{queueSpec.Name},
+		SecretRef: secretRef{names.Queue(runname)},
 	}
 }
 

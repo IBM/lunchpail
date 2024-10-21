@@ -9,6 +9,7 @@ import (
 
 	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/be/kubernetes/common"
+	"lunchpail.io/pkg/be/kubernetes/names"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/util"
 )
@@ -108,7 +109,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 	}
 
 	return helm.Template(
-		ResourceName(c.InstanceName, c.Component),
+		names.Resource(c.InstanceName, c.Component),
 		namespace,
 		templatePath,
 		"", // no yaml values at the moment
