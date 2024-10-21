@@ -9,6 +9,7 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/runtime/queue/upload"
 )
@@ -21,14 +22,12 @@ func Upload() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.ExactArgs(2), cobra.OnlyValidArgs),
 	}
 
-	var runname string
-	cmd.Flags().StringVarP(&runname, "run", "r", "", "Inspect the given run, defaulting to using the singleton run")
-
 	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}
 
+	runOpts := options.AddRunOptions(cmd)
 	options.AddTargetOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -38,7 +37,8 @@ func Upload() *cobra.Command {
 			return err
 		}
 
-		return queue.UploadFiles(ctx, backend, runname, []upload.Upload{upload.Upload{Path: args[0], Bucket: args[1]}})
+		run := q.RunContext{RunName: runOpts.Run}
+		return queue.UploadFiles(ctx, backend, run, []upload.Upload{upload.Upload{Path: args[0], Bucket: args[1]}})
 	}
 
 	return cmd

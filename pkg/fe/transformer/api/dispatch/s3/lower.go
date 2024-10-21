@@ -8,17 +8,16 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(buildName, runname string, s3 hlir.ProcessS3Objects, ir llir.LLIR, opts build.Options) (llir.Component, error) {
-	app, err := transpile(runname, s3)
+func Lower(buildName string, ctx llir.Context, s3 hlir.ProcessS3Objects, opts build.Options) (llir.Component, error) {
+	app, err := transpile(s3)
 	if err != nil {
 		return nil, err
 	}
 
 	return shell.LowerAsComponent(
 		buildName,
-		runname,
+		ctx,
 		app,
-		ir,
 		llir.ShellComponent{Component: lunchpail.DispatcherComponent},
 		opts,
 	)

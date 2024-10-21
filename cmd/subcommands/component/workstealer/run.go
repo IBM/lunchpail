@@ -20,16 +20,15 @@ func Run() *cobra.Command {
 	var pollingInterval int
 	cmd.Flags().IntVar(&pollingInterval, "polling-interval", 3, "If polling is employed, the interval between probes")
 
-	runOpts := options.AddBucketAndRunOptions(cmd)
-
-	var step int
-	cmd.Flags().IntVar(&step, "step", 0, "Which step are we part of")
-	cmd.MarkFlagRequired("step")
-
 	lopts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return workstealer.Run(context.Background(), queue.RunContext{Bucket: runOpts.Bucket, RunName: runOpts.Run, Step: step}, workstealer.Options{PollingInterval: pollingInterval, LogOptions: *lopts})
+		run, err := queue.LoadRunContextInsideComponent("")
+		if err != nil {
+			return err
+		}
+
+		return workstealer.Run(context.Background(), run, workstealer.Options{PollingInterval: pollingInterval, LogOptions: *lopts})
 	}
 
 	return cmd

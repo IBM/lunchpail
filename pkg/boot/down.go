@@ -11,6 +11,8 @@ import (
 	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
+	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 type DownOptions struct {
@@ -87,8 +89,10 @@ func Down(ctx context.Context, runname string, backend be.Backend, opts DownOpti
 		runname = singletonRun.Name
 	}
 
+	context := llir.Context{Run: queue.RunContext{RunName: runname}}
+
 	copts := toBuildOpts(opts)
-	ir, err := fe.PrepareForRun(runname, fe.PrepareOptions{}, copts)
+	ir, err := fe.PrepareForRun(context, fe.PrepareOptions{}, copts)
 	if err != nil {
 		return err
 	}

@@ -17,12 +17,6 @@ func PreStop() *cobra.Command {
 		Long:  "Mark this worker as dead",
 	}
 
-	runOpts := options.AddBucketAndRunOptions(cmd)
-
-	var step int
-	cmd.Flags().IntVar(&step, "step", 0, "Which step are we part of")
-	cmd.MarkFlagRequired("step")
-
 	var poolName string
 	cmd.Flags().StringVar(&poolName, "pool", "", "Which worker pool are we part of")
 	cmd.MarkFlagRequired("pool")
@@ -34,15 +28,14 @@ func PreStop() *cobra.Command {
 	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		run, err := queue.LoadRunContextInsideComponent("")
+		if err != nil {
+			return err
+		}
+
 		return worker.PreStop(context.Background(), worker.Options{
 			LogOptions: *logOpts,
-			RunContext: queue.RunContext{
-				Bucket:     runOpts.Bucket,
-				RunName:    runOpts.Run,
-				Step:       step,
-				PoolName:   poolName,
-				WorkerName: workerName,
-			},
+			RunContext: run.ForPool(poolName).ForWorker(workerName),
 		})
 	}
 

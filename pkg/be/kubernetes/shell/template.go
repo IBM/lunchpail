@@ -40,7 +40,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		return "", err
 	}
 
-	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasetsB64(c.Application, ir.RunName, ir.Queue)
+	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasetsB64(c.Application, ir.RunName(), ir.Queue())
 	if err != nil {
 		return "", err
 	}
@@ -57,11 +57,12 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 
 	// values for this component
 	myValues := []string{
+		fmt.Sprintf("lunchpail.step=%d", ir.Context.Run.Step),
 		"lunchpail.groupName=" + util.TrimToMax(groupName, 63),         // in kubernetes, labels must have a max length of 63 chars
 		"lunchpail.instanceName=" + util.TrimToMax(c.InstanceName, 63), // in kubernetes, labels must have a max length of 63 chars
 		"lunchpail.component=" + string(c.Component),
 		"image=" + c.Application.Spec.Image,
-		"command=" + updateTestQueueEndpoint(c.Application.Spec.Command, ir.Queue),
+		"command=" + updateTestQueueEndpoint(c.Application.Spec.Command, ir.Queue()),
 		fmt.Sprintf("lunchpail.runAsJob=%v", c.RunAsJob),
 		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),
 		"workers.count=" + strconv.Itoa(c.Sizing.Workers),
@@ -70,7 +71,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"workers.gpu=" + strconv.Itoa(c.Sizing.Gpu),
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
-		"taskqueue.bucket=" + ir.Queue.Bucket,
+		"taskqueue.bucket=" + ir.Queue().Bucket,
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
 		"initContainers=" + initContainers,
@@ -81,7 +82,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 
 	if len(secrets) > 0 {
 		myValues = append(myValues, "lunchpail.secrets="+util.ToB64Array(secrets))
-		myValues = append(myValues, "lunchpail.secretPrefix="+ir.RunName+"-")
+		myValues = append(myValues, "lunchpail.secretPrefix="+ir.RunName()+"-")
 	}
 
 	if len(c.Application.Spec.Env) > 0 {

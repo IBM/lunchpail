@@ -6,33 +6,34 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/hlir"
-	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/ir/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func Cat(ctx context.Context, client queue.S3Client, runname string, inputs []string, opts build.LogOptions) error {
-	qopts := queue.AddOptions{
+func Cat(ctx context.Context, client s3.S3Client, run queue.RunContext, inputs []string, opts build.LogOptions) error {
+	qopts := s3.AddOptions{
 		S3Client:   client,
 		LogOptions: opts,
 	}
-	if err := queue.AddList(ctx, runname, inputs, qopts); err != nil {
+	if err := s3.AddList(ctx, run, inputs, qopts); err != nil {
 		return err
 	}
 
-	if err := queue.QdoneClient(ctx, client, runname, opts); err != nil {
+	if err := s3.QdoneClient(ctx, client, run, opts); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func CatClient(ctx context.Context, backend be.Backend, runname string, inputs []string, opts build.LogOptions) error {
-	client, err := queue.NewS3ClientForRun(ctx, backend, runname)
+func CatClient(ctx context.Context, backend be.Backend, run queue.RunContext, inputs []string, opts build.LogOptions) error {
+	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName)
 	if err != nil {
 		return err
 	}
 	defer client.Stop()
 
-	return Cat(ctx, client.S3Client, runname, inputs, opts)
+	return Cat(ctx, client.S3Client, run, inputs, opts)
 }
 
 func CatApp() hlir.HLIR {

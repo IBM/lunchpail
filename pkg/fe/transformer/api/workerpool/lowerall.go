@@ -9,7 +9,7 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.WorkerPool
-func LowerAll(buildName, runname string, model hlir.HLIR, ir llir.LLIR, opts build.Options) ([]llir.Component, error) {
+func LowerAll(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.Component, error) {
 	components := []llir.Component{}
 
 	app, found := model.GetApplicationByRole(hlir.WorkerRole)
@@ -18,7 +18,7 @@ func LowerAll(buildName, runname string, model hlir.HLIR, ir llir.LLIR, opts bui
 	}
 
 	for _, pool := range model.WorkerPools {
-		if component, err := Lower(buildName, runname, app, pool, ir, opts); err != nil {
+		if component, err := Lower(buildName, ctx, app, pool, opts); err != nil {
 			return components, err
 		} else {
 			components = append(components, component)

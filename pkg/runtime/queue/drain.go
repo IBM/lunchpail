@@ -10,14 +10,14 @@ import (
 )
 
 // Drain the output tasks, allowing graceful termination
-func Drain(ctx context.Context, backend be.Backend, runname string) error {
-	c, err := NewS3ClientForRun(ctx, backend, runname)
+func Drain(ctx context.Context, backend be.Backend, run queue.RunContext) error {
+	c, err := NewS3ClientForRun(ctx, backend, run.RunName)
 	if err != nil {
 		return err
 	}
 	defer c.Stop()
+	run.Bucket = c.Paths.Bucket // TODO
 
-	run := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
 	outbox := run.AsFile(queue.AssignedAndFinished)
 
 	group, _ := errgroup.WithContext(ctx)

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -24,8 +25,8 @@ func File() *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.Wait, "wait", "w", false, "Wait for the task to be completed, and exit with the exit code of that task")
 	cmd.Flags().BoolVar(&ignoreWorkerErrors, "ignore-worker-errors", false, "When --wait, ignore any errors from the workers processing the tasks")
 
+	runOpts := options.AddRunOptions(cmd)
 	logOpts := options.AddLogOptions(cmd)
-	runOpts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if !opts.Wait && ignoreWorkerErrors {
@@ -33,7 +34,13 @@ func File() *cobra.Command {
 		}
 
 		opts.LogOptions = *logOpts
-		exitcode, err := queue.Add(context.Background(), runOpts.Run, args[0], opts)
+
+		run, err := q.LoadRunContextInsideComponent(runOpts.Run)
+		if err != nil {
+			return err
+		}
+
+		exitcode, err := queue.Add(context.Background(), run, args[0], opts)
 
 		switch {
 		case err != nil:

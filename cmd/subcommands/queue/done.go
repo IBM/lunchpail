@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -17,10 +18,14 @@ func Done() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 	logOpts := options.AddLogOptions(cmd)
-	runOpts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return queue.Qdone(context.Background(), runOpts.Run, *logOpts)
+		run, err := q.LoadRunContextInsideComponent("")
+		if err != nil {
+			return err
+		}
+
+		return queue.Qdone(context.Background(), run, *logOpts)
 	}
 
 	return cmd

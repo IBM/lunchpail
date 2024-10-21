@@ -14,9 +14,7 @@ import (
 	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func RedirectTo(ctx context.Context, client s3.S3Client, runname string, folderFor func(object string) string, opts build.LogOptions) error {
-	run := queue.RunContext{Bucket: client.Paths.Bucket, RunName: runname, Step: 0} // FIXME
-
+func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, folderFor func(object string) string, opts build.LogOptions) error {
 	failures := run.AsFile(queue.FinishedWithFailed)
 	outbox := run.AsFile(queue.AssignedAndFinished)
 

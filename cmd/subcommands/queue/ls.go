@@ -11,6 +11,7 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -50,7 +51,13 @@ func Ls() *cobra.Command {
 			}
 			run = rrun.Name
 		}
-		files, errors, err := queue.Ls(ctx, backend, run, path)
+
+		runContext, err := q.LoadRunContextInsideComponent(run)
+		if err != nil {
+			return err
+		}
+
+		files, errors, err := queue.Ls(ctx, backend, runContext, path)
 		if err != nil {
 			return err
 		}
