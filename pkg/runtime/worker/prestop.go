@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"lunchpail.io/pkg/fe/transformer/api"
-	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/ir/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
 func PreStop(ctx context.Context, opts Options) error {
-	client, err := queue.NewS3Client(ctx)
+	client, err := s3.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
@@ -19,8 +19,8 @@ func PreStop(ctx context.Context, opts Options) error {
 		fmt.Println("Marking worker as done...")
 	}
 
-	client.Rm(opts.PathArgs.Bucket, opts.PathArgs.TemplateP(api.WorkerAliveMarker))
-	client.Touch(opts.PathArgs.Bucket, opts.PathArgs.TemplateP(api.WorkerDeadMarker))
+	client.Rm(opts.RunContext.Bucket, opts.RunContext.AsFile(queue.WorkerAliveMarker))
+	client.Touch(opts.RunContext.Bucket, opts.RunContext.AsFile(queue.WorkerDeadMarker))
 
 	if opts.LogOptions.Verbose {
 		fmt.Printf("This worker is shutting down %s\n", os.Getenv("LUNCHPAIL_POD_NAME"))

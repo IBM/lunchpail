@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/worker"
 )
 
@@ -36,7 +36,7 @@ func PreStop() *cobra.Command {
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		return worker.PreStop(context.Background(), worker.Options{
 			LogOptions: *logOpts,
-			PathArgs: api.PathArgs{
+			RunContext: queue.RunContext{
 				Bucket:     runOpts.Bucket,
 				RunName:    runOpts.Run,
 				Step:       step,

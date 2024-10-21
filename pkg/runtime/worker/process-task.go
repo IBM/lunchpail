@@ -13,13 +13,13 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/fe/transformer/api"
-	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/ir/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
 type taskProcessor struct {
 	ctx               context.Context
-	client            queue.S3Client
+	client            s3.S3Client
 	handler           []string
 	localdir          string
 	opts              Options
@@ -39,15 +39,15 @@ func (p taskProcessor) process(task string) error {
 			fmt.Fprintf(os.Stderr, "Worker starting task %s\n", task)
 		}
 
-		a := opts.PathArgs.ForTask(task)
-		in := a.TemplateP(api.AssignedAndPending)
-		inprogress := a.TemplateP(api.AssignedAndProcessing)
-		out := a.TemplateP(api.AssignedAndFinished)
-		ec := a.TemplateP(api.FinishedWithCode)
-		failed := a.TemplateP(api.FinishedWithFailed)
-		succeeded := a.TemplateP(api.FinishedWithSucceeded)
-		stdout := a.TemplateP(api.FinishedWithStdout)
-		stderr := a.TemplateP(api.FinishedWithStderr)
+		a := opts.RunContext.ForTask(task)
+		in := a.AsFile(queue.AssignedAndPending)
+		inprogress := a.AsFile(queue.AssignedAndProcessing)
+		out := a.AsFile(queue.AssignedAndFinished)
+		ec := a.AsFile(queue.FinishedWithCode)
+		failed := a.AsFile(queue.FinishedWithFailed)
+		succeeded := a.AsFile(queue.FinishedWithSucceeded)
+		stdout := a.AsFile(queue.FinishedWithStdout)
+		stderr := a.AsFile(queue.FinishedWithStderr)
 
 		localprocessing := filepath.Join(p.localdir, task)
 		localoutbox := filepath.Join(p.localdir, "outbox", task)
@@ -63,19 +63,19 @@ func (p taskProcessor) process(task string) error {
 			return nil
 		}
 
-		err = client.Download(opts.PathArgs.Bucket, in, localprocessing)
+		err = client.Download(opts.RunContext.Bucket, in, localprocessing)
 		if err != nil {
 			if !strings.Contains(err.Error(), "key does not exist") {
 				// we ignore "key does not exist" errors, as these result from the work
 				// we thought we were assigned having been stolen by the workstealer
-				fmt.Fprintf(os.Stderr, "Internal Error copying task to worker processing %s %s->%s: %v\n", opts.PathArgs.Bucket, in, localprocessing, err)
+				fmt.Fprintf(os.Stderr, "Internal Error copying task to worker processing %s %s->%s: %v\n", opts.RunContext.Bucket, in, localprocessing, err)
 			}
 			return nil
 		}
 
 		doneMovingToProcessing := make(chan struct{})
 		go func() {
-			if client.Moveto(opts.PathArgs.Bucket, in, inprogress) != nil {
+			if client.Moveto(opts.RunContext.Bucket, in, inprogress) != nil {
 				fmt.Fprintf(os.Stderr, "Internal Error moving task to processing %s->%s: %v\n", in, inprogress, err)
 			}
 			doneMovingToProcessing <- struct{}{}
@@ -107,27 +107,27 @@ func (p taskProcessor) process(task string) error {
 
 		exitCode := handlercmd.ProcessState.ExitCode()
 
-		p.backgroundS3Tasks.Go(func() error { return client.Mark(opts.PathArgs.Bucket, ec, strconv.Itoa(exitCode)) })
-		p.backgroundS3Tasks.Go(func() error { return client.Upload(opts.PathArgs.Bucket, localstdout, stdout) })
-		p.backgroundS3Tasks.Go(func() error { return client.Upload(opts.PathArgs.Bucket, localstderr, stderr) })
+		p.backgroundS3Tasks.Go(func() error { return client.Mark(opts.RunContext.Bucket, ec, strconv.Itoa(exitCode)) })
+		p.backgroundS3Tasks.Go(func() error { return client.Upload(opts.RunContext.Bucket, localstdout, stdout) })
+		p.backgroundS3Tasks.Go(func() error { return client.Upload(opts.RunContext.Bucket, localstderr, stderr) })
 		if exitCode == 0 {
 			if opts.LogOptions.Debug {
 				fmt.Fprintf(os.Stderr, "Succeeded on task %s\n", localprocessing)
 			}
-			p.backgroundS3Tasks.Go(func() error { return client.Touch(opts.PathArgs.Bucket, succeeded) })
+			p.backgroundS3Tasks.Go(func() error { return client.Touch(opts.RunContext.Bucket, succeeded) })
 		} else {
 			fmt.Fprintln(os.Stderr, "Error with exit code "+strconv.Itoa(exitCode)+" while processing "+filepath.Base(in))
-			p.backgroundS3Tasks.Go(func() error { return client.Touch(opts.PathArgs.Bucket, failed) })
+			p.backgroundS3Tasks.Go(func() error { return client.Touch(opts.RunContext.Bucket, failed) })
 		}
 
 		if _, err := os.Stat(localoutbox); err == nil {
 			if opts.LogOptions.Verbose {
 				fmt.Fprintf(os.Stderr, "Uploading worker-produced outbox file %s->%s\n", localoutbox, out)
 			}
-			p.backgroundS3Tasks.Go(func() error { return client.Upload(opts.PathArgs.Bucket, localoutbox, out) })
+			p.backgroundS3Tasks.Go(func() error { return client.Upload(opts.RunContext.Bucket, localoutbox, out) })
 			p.backgroundS3Tasks.Go(func() error {
 				<-doneMovingToProcessing
-				return client.Rm(opts.PathArgs.Bucket, inprogress)
+				return client.Rm(opts.RunContext.Bucket, inprogress)
 			})
 		} else {
 			if opts.LogOptions.Verbose {
@@ -135,7 +135,7 @@ func (p taskProcessor) process(task string) error {
 			}
 			p.backgroundS3Tasks.Go(func() error {
 				<-doneMovingToProcessing
-				return client.Moveto(opts.PathArgs.Bucket, inprogress, out)
+				return client.Moveto(opts.RunContext.Bucket, inprogress, out)
 			})
 		}
 

@@ -3,7 +3,7 @@ package workstealer
 import (
 	"regexp"
 
-	"lunchpail.io/pkg/fe/transformer/api"
+	q "lunchpail.io/pkg/ir/queue"
 )
 
 type pathPatterns struct {
@@ -19,17 +19,17 @@ type pathPatterns struct {
 	dispatcherDone *regexp.Regexp
 }
 
-func newPathPatterns(a api.PathArgs) pathPatterns {
+func newPathPatterns(run q.RunContext) pathPatterns {
 	return pathPatterns{
-		liveWorker:     a.PatternFor(api.WorkerAliveMarker),
-		deadWorker:     a.PatternFor(api.WorkerDeadMarker),
-		killfile:       a.PatternFor(api.WorkerKillFile),
-		unassignedTask: a.PatternFor(api.Unassigned),
-		assignedTask:   a.PatternFor(api.AssignedAndPending),
-		processingTask: a.PatternFor(api.AssignedAndProcessing),
-		outboxTask:     a.PatternFor(api.AssignedAndFinished),
-		succeededTask:  a.PatternFor(api.FinishedWithSucceeded),
-		failedTask:     a.PatternFor(api.FinishedWithFailed),
-		dispatcherDone: a.PatternFor(api.DispatcherDoneMarker),
+		liveWorker:     run.PatternFor(q.WorkerAliveMarker),
+		deadWorker:     run.PatternFor(q.WorkerDeadMarker),
+		killfile:       run.PatternFor(q.WorkerKillFile),
+		unassignedTask: run.PatternFor(q.Unassigned),
+		assignedTask:   run.PatternFor(q.AssignedAndPending),
+		processingTask: run.PatternFor(q.AssignedAndProcessing),
+		outboxTask:     run.PatternFor(q.AssignedAndFinished),
+		succeededTask:  run.PatternFor(q.FinishedWithSucceeded),
+		failedTask:     run.PatternFor(q.FinishedWithFailed),
+		dispatcherDone: run.PatternFor(q.DispatcherDoneMarker),
 	}
 }

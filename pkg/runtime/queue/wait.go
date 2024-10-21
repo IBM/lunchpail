@@ -10,7 +10,7 @@ import (
 
 	"github.com/minio/minio-go/v7"
 
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 func (s3 S3Client) waitForBucket(bucket string) error {
@@ -122,15 +122,15 @@ func (s3 S3Client) StopListening(bucket string) error {
 
 // Wait for the given enqueued task to appear in the outbox
 func (c S3Client) WaitForCompletion(runname, task string, verbose bool) (int, error) {
-	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0, Task: task} // FIXME
-	codesDir := args.TemplateDir(api.FinishedWithCode)
+	run := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0, Task: task} // FIXME
+	codesDir := run.AsDir(queue.FinishedWithCode)
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Waiting for task completion %s -> %s\n", task, codesDir)
 	}
 
-	defer c.StopListening(args.Bucket)
-	objs, errs := c.Listen(args.Bucket, codesDir, "", false)
+	defer c.StopListening(run.Bucket)
+	objs, errs := c.Listen(run.Bucket, codesDir, "", false)
 	for {
 		select {
 		case err := <-errs:
@@ -145,7 +145,7 @@ func (c S3Client) WaitForCompletion(runname, task string, verbose bool) (int, er
 					fmt.Fprintf(os.Stderr, "Task completed %s\n", task)
 				}
 
-				if code, err := c.Get(args.Bucket, obj); err != nil {
+				if code, err := c.Get(run.Bucket, obj); err != nil {
 					return 0, err
 				} else {
 					if verbose {

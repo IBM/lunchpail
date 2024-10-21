@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"lunchpail.io/pkg/runtime/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
 func printenv() {
@@ -33,7 +33,7 @@ func Run(ctx context.Context, handler []string, opts Options) error {
 		time.Sleep(time.Duration(opts.StartupDelay) * time.Second)
 	}
 
-	client, err := queue.NewS3Client(ctx)
+	client, err := s3.NewS3Client(ctx)
 	if err != nil {
 		return err
 	}

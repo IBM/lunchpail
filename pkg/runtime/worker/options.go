@@ -2,11 +2,11 @@ package worker
 
 import (
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 type Options struct {
-	api.PathArgs
+	queue.RunContext
 	StartupDelay    int
 	PollingInterval int
 	build.LogOptions

@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/worker"
 )
 
@@ -50,7 +50,7 @@ func Run() *cobra.Command {
 			StartupDelay:    startupDelay,
 			PollingInterval: pollingInterval,
 			LogOptions:      *logOpts,
-			PathArgs: api.PathArgs{
+			RunContext: queue.RunContext{
 				Bucket:     runOpts.Bucket,
 				RunName:    runOpts.Run,
 				Step:       step,

@@ -9,24 +9,24 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/fe/transformer/api"
-	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/ir/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func startWatch(ctx context.Context, handler []string, client queue.S3Client, opts Options) error {
+func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts Options) error {
 	if opts.LogOptions.Verbose {
 		defer func() { fmt.Fprintln(os.Stderr, "Exiting") }()
 	}
 
-	if err := client.Mkdirp(opts.PathArgs.Bucket); err != nil {
+	if err := client.Mkdirp(opts.RunContext.Bucket); err != nil {
 		return err
 	}
 
-	alive := opts.PathArgs.TemplateP(api.WorkerAliveMarker)
+	alive := opts.RunContext.AsFile(queue.WorkerAliveMarker)
 	if opts.LogOptions.Debug {
-		fmt.Fprintf(os.Stderr, "Touching alive file bucket=%s path=%s\n", opts.PathArgs.Bucket, alive)
+		fmt.Fprintf(os.Stderr, "Touching alive file bucket=%s path=%s\n", opts.RunContext.Bucket, alive)
 	}
-	err := client.Touch(opts.PathArgs.Bucket, alive)
+	err := client.Touch(opts.RunContext.Bucket, alive)
 	if err != nil {
 		return err
 	}
@@ -36,10 +36,10 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 		return err
 	}
 
-	killFile := opts.PathArgs.TemplateP(api.WorkerKillFile)
-	inboxPrefix := opts.PathArgs.TemplateP(api.AssignedAndPending)
+	killFile := opts.RunContext.AsFile(queue.WorkerKillFile)
+	inboxPrefix := opts.RunContext.AsFile(queue.AssignedAndPending)
 	if opts.LogOptions.Debug {
-		fmt.Fprintf(os.Stderr, "Listening bucket=%s inboxPrefix=%s killFile=%s\n", opts.PathArgs.Bucket, inboxPrefix, killFile)
+		fmt.Fprintf(os.Stderr, "Listening bucket=%s inboxPrefix=%s killFile=%s\n", opts.RunContext.Bucket, inboxPrefix, killFile)
 	}
 
 	// Future readers: adjust SetLimit to allow "pod packing",
@@ -51,7 +51,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 	// Wait for a kill file and then cancel the watcher (that runs in the for{} loop below)
 	cancellable, cancel := context.WithCancel(gctx)
 	go func() {
-		client.WaitTillExists(opts.PathArgs.Bucket, killFile)
+		client.WaitTillExists(opts.RunContext.Bucket, killFile)
 		if opts.LogOptions.Verbose {
 			fmt.Fprintln(os.Stderr, "Got kill file, cleaning up")
 		}
@@ -67,7 +67,7 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 	p := taskProcessor{ctx, client, handler, localdir, opts, backgroundS3Tasks}
 
 	sleepNextTime := false
-	tasks, errs := client.Listen(opts.PathArgs.Bucket, inboxPrefix, "", false)
+	tasks, errs := client.Listen(opts.RunContext.Bucket, inboxPrefix, "", false)
 	done := false
 	for !done {
 		if sleepNextTime {
@@ -96,9 +96,9 @@ func startWatch(ctx context.Context, handler []string, client queue.S3Client, op
 
 		// If we fall through here, it is probably because the S3 queue does not support push notifications
 		if opts.LogOptions.Debug {
-			fmt.Fprintf(os.Stderr, "Listing unassigned tasks bucket=%s inboxPrefix=%s\n", opts.PathArgs.Bucket, inboxPrefix)
+			fmt.Fprintf(os.Stderr, "Listing unassigned tasks bucket=%s inboxPrefix=%s\n", opts.RunContext.Bucket, inboxPrefix)
 		}
-		tasks, err := client.Lsf(opts.PathArgs.Bucket, inboxPrefix)
+		tasks, err := client.Lsf(opts.RunContext.Bucket, inboxPrefix)
 		if err != nil {
 			return err
 		}
