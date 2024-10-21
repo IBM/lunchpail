@@ -2,6 +2,7 @@
 /images
 /builds
 /tests
+/lunchpail
 .git
 *.log
 **/*~
