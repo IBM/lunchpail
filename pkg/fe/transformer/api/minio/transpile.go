@@ -9,13 +9,13 @@ import (
 )
 
 // Transpile minio to hlir.Application
-func transpile(runname string, ir llir.LLIR) (hlir.Application, error) {
-	app := hlir.NewApplication(runname + "-minio")
+func transpile(ctx llir.Context) (hlir.Application, error) {
+	app := hlir.NewApplication(ctx.Run.RunName + "-minio")
 
 	app.Spec.Image = "docker.io/minio/minio:RELEASE.2024-07-04T14-25-45Z"
 	app.Spec.Role = "queue"
-	app.Spec.Expose = []string{fmt.Sprintf("%d:%d", ir.Queue.Port, ir.Queue.Port)}
-	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component minio server --port %d --bucket %s --run %s", ir.Queue.Port, ir.Queue.Bucket, runname)
+	app.Spec.Expose = []string{fmt.Sprintf("%d:%d", ctx.Queue.Port, ctx.Queue.Port)}
+	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component minio server --port %d --bucket %s --run %s", ctx.Queue.Port, ctx.Queue.Bucket, ctx.Run.RunName)
 
 	/*app.Spec.Needs = []hlir.Needs{
 	{Name: "minio", Version: "latest"}}*/

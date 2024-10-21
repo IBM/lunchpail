@@ -7,11 +7,12 @@ import (
 	"lunchpail.io/pkg/be/helm"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/linker"
-	"lunchpail.io/pkg/fe/linker/queue"
+	q "lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/fe/parser"
 	"lunchpail.io/pkg/fe/transformer"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 type PrepareOptions struct {
@@ -20,39 +21,40 @@ type PrepareOptions struct {
 
 // Return the low-level intermediate representation (LLIR) for a run
 // of this application. If runname is "", one will be generated.
-func PrepareForRun(runname string, popts PrepareOptions, opts build.Options) (llir.LLIR, error) {
-	hlir, err := prepareHLIR(runname, popts, opts)
+func PrepareForRun(ctx llir.Context, popts PrepareOptions, opts build.Options) (llir.LLIR, error) {
+	hlir, runOut, err := prepareHLIR(ctx.Run, popts, opts)
 	if err != nil {
 		return llir.LLIR{}, err
 	}
 
-	return PrepareHLIRForRun(hlir, runname, popts, opts)
+	ctx.Run = runOut
+	return PrepareHLIRForRun(hlir, ctx, popts, opts)
 }
 
-func prepareHLIR(runname string, popts PrepareOptions, opts build.Options) (hlir.HLIR, error) {
+func prepareHLIR(run queue.RunContext, popts PrepareOptions, opts build.Options) (hlir.HLIR, queue.RunContext, error) {
 	verbose := opts.Log.Verbose
 
 	// Stage this application to a local directory
 	templatePath, err := build.StageForRun(build.StageOptions{Verbose: verbose})
 	if err != nil {
-		return hlir.HLIR{}, err
+		return hlir.HLIR{}, run, err
 	} else if opts.Log.Verbose {
-		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", runname, templatePath)
+		fmt.Fprintf(os.Stderr, "Stage directory for runname=%s is %s\n", run.RunName, templatePath)
 	}
 
-	// Assign a runname if not given
-	if runname == "" {
+	// Assign a run.RunName if not given
+	if run.RunName == "" {
 		if generatedRunname, err := linker.GenerateRunName(build.Name()); err != nil {
-			return hlir.HLIR{}, err
+			return hlir.HLIR{}, run, err
 		} else {
-			runname = generatedRunname
+			run.RunName = generatedRunname
 		}
 	}
 
 	// Set up values that will be given to the application YAML
-	yamlValues, err := linker.Configure(build.Name(), runname, opts)
+	yamlValues, err := linker.Configure(build.Name(), run.RunName, opts)
 	if err != nil {
-		return hlir.HLIR{}, err
+		return hlir.HLIR{}, run, err
 	}
 
 	if !verbose {
@@ -63,9 +65,9 @@ func prepareHLIR(runname string, popts PrepareOptions, opts build.Options) (hlir
 	}
 
 	// Instantiate the application's templates. We allow application YAML to have go/helm templates.
-	yaml, err := helm.Template(runname, "", templatePath, yamlValues, helm.TemplateOptions{OverrideValues: opts.OverrideValues, OverrideFileValues: opts.OverrideFileValues, Verbose: verbose})
+	yaml, err := helm.Template(run.RunName, "", templatePath, yamlValues, helm.TemplateOptions{OverrideValues: opts.OverrideValues, OverrideFileValues: opts.OverrideFileValues, Verbose: verbose})
 	if err != nil {
-		return hlir.HLIR{}, err
+		return hlir.HLIR{}, run, err
 	}
 
 	// Now that we're instantiated any templates, we can parse the
@@ -73,25 +75,34 @@ func prepareHLIR(runname string, popts PrepareOptions, opts build.Options) (hlir
 	// representation (HLIR).
 	ir, err := parser.Parse(yaml)
 	if err != nil {
-		return hlir.HLIR{}, err
+		return hlir.HLIR{}, run, err
 	}
 
-	return ir, nil
+	return ir, run, nil
 }
 
-func PrepareHLIRForRun(ir hlir.HLIR, runname string, popts PrepareOptions, opts build.Options) (llir.LLIR, error) {
+func PrepareHLIRForRun(ir hlir.HLIR, ctx llir.Context, popts PrepareOptions, opts build.Options) (llir.LLIR, error) {
 	// Assign a runname if not given
-	if runname == "" {
+	if ctx.Run.RunName == "" {
 		if generatedRunname, err := linker.GenerateRunName(build.Name()); err != nil {
 			return llir.LLIR{}, err
 		} else {
-			runname = generatedRunname
+			r := ctx.Run
+			r.RunName = generatedRunname
+			ctx.Run = r
 		}
 	}
 
-	queueSpec, err := queue.ParseFlag(opts.Queue, runname)
-	if err != nil {
-		return llir.LLIR{}, err
+	if ctx.Queue.Endpoint == "" {
+		spec, err := q.ParseFlag(opts.Queue, ctx.Run.RunName)
+		if err != nil {
+			return llir.LLIR{}, err
+		}
+		ctx.Queue = spec
+
+		r := ctx.Run
+		r.Bucket = ctx.Queue.Bucket
+		ctx.Run = r
 	}
 
 	if popts.NoDispatchers {
@@ -105,5 +116,5 @@ func PrepareHLIRForRun(ir hlir.HLIR, runname string, popts PrepareOptions, opts 
 
 	// Finally we can transform the HLIR to the low-level
 	// intermediate representation (LLIR).
-	return transformer.Lower(build.Name(), runname, ir, queueSpec, opts)
+	return transformer.Lower(build.Name(), ir, ctx, opts)
 }

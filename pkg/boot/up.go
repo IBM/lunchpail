@@ -23,7 +23,12 @@ type UpOptions struct {
 }
 
 func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
-	ir, err := fe.PrepareForRun("", fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
+	pipelineContext, err := handlePipelineStdin()
+	if err != nil {
+		return err
+	}
+
+	ir, err := fe.PrepareForRun(pipelineContext, fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
 		return err
 	}
@@ -32,7 +37,12 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 }
 
 func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOptions) error {
-	llir, err := fe.PrepareHLIRForRun(ir, "", fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
+	pipelineContext, err := handlePipelineStdin()
+	if err != nil {
+		return err
+	}
+
+	llir, err := fe.PrepareHLIRForRun(ir, pipelineContext, fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
 		return err
 	}
@@ -50,13 +60,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		return nil
 	}
 
-	pipelineMeta, err := handlePipelineStdin(ir)
-	if err != nil {
-		return err
-	}
-	ir.Queue = pipelineMeta.Queue
-
-	if !ir.HasDispatcher() && len(opts.Inputs) == 0 && pipelineMeta.Step == 0 {
+	if !ir.HasDispatcher() && len(opts.Inputs) == 0 && ir.Context.Run.Step == 0 {
 		return fmt.Errorf("please provide input files on the command line")
 	}
 
@@ -109,11 +113,10 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	}
 
 	defer cancel()
-	err = backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
+	err := backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
 
 	<-isRunning3
-	pipelineMeta.Queue = ir.Queue
-	if err := handlePipelineStdout(pipelineMeta); err != nil {
+	if err := handlePipelineStdout(ir.Context); err != nil {
 		return err
 	}
 

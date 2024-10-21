@@ -19,12 +19,6 @@ func Run() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
-	runOpts := options.AddBucketAndRunOptions(cmd)
-
-	var step int
-	cmd.Flags().IntVar(&step, "step", 0, "Which step are we part of")
-	cmd.MarkFlagRequired("step")
-
 	var poolName string
 	cmd.Flags().StringVar(&poolName, "pool", "", "Which worker pool are we part of")
 	cmd.MarkFlagRequired("pool")
@@ -46,17 +40,16 @@ func Run() *cobra.Command {
 			return fmt.Errorf("Nothing to run. Specify the worker command line after a --: %v", args)
 		}
 
+		run, err := queue.LoadRunContextInsideComponent("")
+		if err != nil {
+			return err
+		}
+
 		return worker.Run(context.Background(), args, worker.Options{
 			StartupDelay:    startupDelay,
 			PollingInterval: pollingInterval,
 			LogOptions:      *logOpts,
-			RunContext: queue.RunContext{
-				Bucket:     runOpts.Bucket,
-				RunName:    runOpts.Run,
-				Step:       step,
-				PoolName:   poolName,
-				WorkerName: workerName,
-			},
+			RunContext:      run.ForPool(poolName).ForWorker(workerName),
 		})
 	}
 

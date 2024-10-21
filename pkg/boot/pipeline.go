@@ -2,47 +2,43 @@ package boot
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 
 	"lunchpail.io/pkg/ir/llir"
-	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/util"
 )
 
-type PipelineMeta struct {
-	Step    int        `json:"step"`
-	RunName string     `json:"runName"`
-	Queue   queue.Spec `json:"queue"`
-}
-
-func handlePipelineStdin(ir llir.LLIR) (PipelineMeta, error) {
+func handlePipelineStdin() (llir.Context, error) {
 	if !util.StdinIsTty() {
-		var meta PipelineMeta
+		var context llir.Context
 		dec := json.NewDecoder(os.Stdin)
 		for {
-			err := dec.Decode(&meta)
+			err := dec.Decode(&context)
 			if err == io.EOF {
 				break
 			} else if err != nil {
-				return meta, err
+				return context, err
 			}
 		}
 
-		if meta.Queue.Endpoint != "" {
-			meta.RunName = fmt.Sprintf("%s-%d", meta.RunName, meta.Step)
-			return meta, nil
+		if context.Queue.Endpoint != "" {
+			// context.Run.RunName = fmt.Sprintf("%s-%d", context.Run.RunName, context.Run.Step)
+			return context, nil
 		}
 	}
 
-	return PipelineMeta{RunName: ir.RunName, Step: 0, Queue: ir.Queue}, nil
+	// Otherwise, we are step 0
+	return llir.Context{}, nil
 }
 
-func handlePipelineStdout(meta PipelineMeta) error {
+func handlePipelineStdout(context llir.Context) error {
 	if !util.StdoutIsTty() {
-		meta.Step++
-		b, err := json.Marshal(meta)
+		r := context.Run
+		r.Step++
+		context.Run = r
+
+		b, err := json.Marshal(context)
 		if err != nil {
 			return err
 		}

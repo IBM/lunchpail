@@ -10,15 +10,15 @@ import (
 )
 
 // Transpile hlir.ParameterSweep to hlir.Application
-func transpile(runname string, sweep hlir.ParameterSweep) (hlir.Application, error) {
+func transpile(sweep hlir.ParameterSweep) (hlir.Application, error) {
 	app := hlir.NewApplication(sweep.Metadata.Name)
 
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "dispatcher"
 
 	app.Spec.Command = strings.Join([]string{
-		fmt.Sprintf(`trap "$LUNCHPAIL_EXE queue done --run %s" EXIT`, runname),
-		fmt.Sprintf("./main.sh %s", runname),
+		`trap "$LUNCHPAIL_EXE queue done" EXIT`,
+		"./main.sh",
 	}, "\n")
 
 	app.Spec.Code = []hlir.Code{

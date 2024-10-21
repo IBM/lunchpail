@@ -17,27 +17,27 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 }
 
 func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
-	spec, rerr := restoreQueue(runname)
+	spec, rerr := restoreContext(runname)
 	if rerr != nil {
 		err = rerr
 		return
 	}
 
 	// TODO this is hard-wired to local minio
-	endpoint = spec.Endpoint
-	accessKeyID = spec.AccessKey
-	secretAccessKey = spec.SecretKey
-	bucket = spec.Bucket
+	endpoint = spec.Queue.Endpoint
+	accessKeyID = spec.Queue.AccessKey
+	secretAccessKey = spec.Queue.SecretKey
+	bucket = spec.Queue.Bucket
 	return
 }
 
-func saveQueue(ir llir.LLIR) error {
-	f, err := files.QueueFile(ir.RunName)
+func saveContext(ir llir.LLIR) error {
+	f, err := files.QueueFile(ir.RunName())
 	if err != nil {
 		return err
 	}
 
-	b, err := json.Marshal(ir.Queue)
+	b, err := json.Marshal(ir.Context)
 	if err != nil {
 		return err
 	}
@@ -45,8 +45,8 @@ func saveQueue(ir llir.LLIR) error {
 	return os.WriteFile(f, b, 0644)
 }
 
-func restoreQueue(runname string) (llir.Queue, error) {
-	var spec llir.Queue
+func restoreContext(runname string) (llir.Context, error) {
+	var spec llir.Context
 
 	f, err := files.QueueFile(runname)
 	if err != nil {

@@ -391,7 +391,7 @@ func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, 
 }
 
 func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir.LLIR, action Action) error {
-	runname := ir.RunName
+	runname := ir.RunName()
 
 	if action == Stop || action == Delete {
 		if err := stopOrDeleteVM(backend.vpcService, runname, backend.config.ResourceGroup.GUID, action == Delete); err != nil {

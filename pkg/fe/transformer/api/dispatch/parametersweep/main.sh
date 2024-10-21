@@ -50,6 +50,6 @@ do
     # If we were asked to wait, then `queue add file` will exit with the
     # exit code of the underlying worker. Here, we intentionally
     # ignore any errors from the task.
-    $LUNCHPAIL_EXE queue add file $task $waitflag $verboseflag $debugflag --run $1
+    $LUNCHPAIL_EXE queue add file $task $waitflag $verboseflag $debugflag
     rm -f "$task"
 done

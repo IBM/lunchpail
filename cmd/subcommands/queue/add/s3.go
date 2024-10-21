@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
+	q "lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue"
 )
 
@@ -22,8 +23,8 @@ func S3() *cobra.Command {
 	var opts queue.AddS3Options
 	cmd.Flags().IntVar(&repeat, "repeat", 1, "Upload N copies of the task")
 
+	runOpts := options.AddRunOptions(cmd)
 	logOpts := options.AddLogOptions(cmd)
-	runOpts := options.AddRequiredRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		envvarPrefix := args[1]
@@ -31,7 +32,13 @@ func S3() *cobra.Command {
 		accessKeyID := os.Getenv(envvarPrefix + "accessKeyID")
 		secretAccessKey := os.Getenv(envvarPrefix + "secretAccessKey")
 		opts.LogOptions = *logOpts
-		return queue.AddFromS3(context.Background(), runOpts.Run, args[0], endpoint, accessKeyID, secretAccessKey, repeat, opts)
+
+		run, err := q.LoadRunContextInsideComponent(runOpts.Run)
+		if err != nil {
+			return err
+		}
+
+		return queue.AddFromS3(context.Background(), run, args[0], endpoint, accessKeyID, secretAccessKey, repeat, opts)
 	}
 
 	return cmd

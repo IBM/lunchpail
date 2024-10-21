@@ -14,13 +14,13 @@ import (
 
 // Behave like `cat inputs | ... > outputs`
 func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions) error {
-	client, err := queue.NewS3ClientForRun(ctx, backend, ir.RunName)
+	client, err := queue.NewS3ClientForRun(ctx, backend, ir.Context.Run.RunName)
 	if err != nil {
 		return err
 	}
 	defer client.Stop()
 
-	if err := builtins.Cat(ctx, client.S3Client, ir.RunName, inputs, opts); err != nil {
+	if err := builtins.Cat(ctx, client.S3Client, ir.Context.Run, inputs, opts); err != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 			}
 			return "."
 		}
-		if err := builtins.RedirectTo(ctx, client.S3Client, ir.RunName, folderFor, opts); err != nil {
+		if err := builtins.RedirectTo(ctx, client.S3Client, ir.Context.Run, folderFor, opts); err != nil {
 			return err
 		}
 	}

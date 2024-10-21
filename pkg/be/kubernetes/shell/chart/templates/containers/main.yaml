@@ -8,8 +8,6 @@
       touch /tmp/alive # for readiness probe
 {{ .Values.command | indent 6 }}
   env:
-    - name: LUNCHPAIL_QUEUE_BUCKET
-      value: {{ .Values.taskqueue.bucket }}
     {{- include "workdir/env" . | indent 4 }}
     {{- if .Values.lunchpail.debug }}
     - name: DEBUG
