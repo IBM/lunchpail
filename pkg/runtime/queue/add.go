@@ -11,7 +11,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 type AddOptions struct {
@@ -41,8 +41,8 @@ func Add(ctx context.Context, runname string, task string, opts AddOptions) (cod
 		}
 	}
 
-	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
-	inbox := args.TemplateP(api.Unassigned)
+	args := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
+	inbox := args.AsFile(queue.Unassigned)
 
 	err = c.Mkdirp(args.Bucket)
 	if err != nil {
@@ -91,12 +91,12 @@ func AddFromS3(ctx context.Context, runname, fullpath, endpoint, accessKeyId, se
 		fmt.Fprintf(os.Stderr, "Enqueue from s3 fullpath=%s endpoint=%s repeat=%d\n", fullpath, endpoint, repeat)
 	}
 
-	queue, err := NewS3Client(ctx)
+	queueClient, err := NewS3Client(ctx)
 	if err != nil {
 		return err
 	}
 
-	if err := queue.Mkdirp(queue.Paths.Bucket); err != nil {
+	if err := queueClient.Mkdirp(queueClient.Paths.Bucket); err != nil {
 		return err
 	}
 
@@ -128,10 +128,10 @@ func AddFromS3(ctx context.Context, runname, fullpath, endpoint, accessKeyId, se
 	}
 
 	srcBucket := bucket
-	dstBucket := queue.Paths.Bucket
+	dstBucket := queueClient.Paths.Bucket
 
-	args := api.PathArgs{Bucket: dstBucket, RunName: runname, Step: 0} // FIXME
-	inbox := args.TemplateP(api.Unassigned)
+	args := queue.RunContext{Bucket: dstBucket, RunName: runname, Step: 0} // FIXME
+	inbox := args.AsFile(queue.Unassigned)
 
 	for o := range origin.ListObjects(bucket, path, true) {
 		if o.Err != nil {
@@ -149,7 +149,7 @@ func AddFromS3(ctx context.Context, runname, fullpath, endpoint, accessKeyId, se
 				if opts.Verbose {
 					fmt.Fprintf(os.Stderr, "Enqueue task from s3 srcBucket=%s src=%s dstBucket=%s dst=%s\n", srcBucket, src, dstBucket, dst)
 				}
-				return origin.CopyToRemote(queue, srcBucket, src, dstBucket, dst)
+				return origin.CopyToRemote(queueClient, srcBucket, src, dstBucket, dst)
 			})
 		}
 	}
@@ -159,7 +159,7 @@ func AddFromS3(ctx context.Context, runname, fullpath, endpoint, accessKeyId, se
 	if opts.Verbose {
 		fmt.Printf("Here is what we enqueued to %s:\n", inbox)
 	}
-	for o := range queue.ListObjects(dstBucket, inbox, true) {
+	for o := range queueClient.ListObjects(dstBucket, inbox, true) {
 		fmt.Println(o.Key)
 	}
 

@@ -10,15 +10,15 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api"
-	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/ir/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func RedirectTo(ctx context.Context, client queue.S3Client, runname string, folderFor func(object string) string, opts build.LogOptions) error {
-	args := api.PathArgs{Bucket: client.Paths.Bucket, RunName: runname, Step: 0} // FIXME
+func RedirectTo(ctx context.Context, client s3.S3Client, runname string, folderFor func(object string) string, opts build.LogOptions) error {
+	run := queue.RunContext{Bucket: client.Paths.Bucket, RunName: runname, Step: 0} // FIXME
 
-	failures := args.TemplateP(api.FinishedWithFailed)
-	outbox := args.TemplateP(api.AssignedAndFinished)
+	failures := run.AsFile(queue.FinishedWithFailed)
+	outbox := run.AsFile(queue.AssignedAndFinished)
 
 	outboxObjects, outboxErrs := client.Listen(client.Paths.Bucket, outbox, "", false)
 	failuresObjects, failuresErrs := client.Listen(client.Paths.Bucket, failures, "", false)
@@ -45,7 +45,7 @@ func RedirectTo(ctx context.Context, client queue.S3Client, runname string, fold
 			if opts.Verbose {
 				fmt.Fprintf(os.Stderr, "Marking output consumed %s\n", object)
 			}
-			if err := client.Rm(args.Bucket, object); err != nil {
+			if err := client.Rm(run.Bucket, object); err != nil {
 				return err
 			}
 			if opts.Verbose {
@@ -85,11 +85,11 @@ func RedirectTo(ctx context.Context, client queue.S3Client, runname string, fold
 			// instance (`ForObjectTask`) and then use
 			// that `fortask` to templatize the
 			// FinishedWithCode
-			forobject, err := args.ForObject(api.AssignedAndFinished, object)
+			forobject, err := run.ForObject(queue.AssignedAndFinished, object)
 			if err != nil {
 				return err
 			}
-			errorContent, err := client.Get(args.Bucket, forobject.TemplateP(api.FinishedWithStderr))
+			errorContent, err := client.Get(run.Bucket, forobject.AsFile(queue.FinishedWithStderr))
 			if err != nil {
 				return err
 			}

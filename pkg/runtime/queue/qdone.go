@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 // Indicate dispatching is done, with given client
@@ -15,8 +15,8 @@ func QdoneClient(ctx context.Context, c S3Client, runname string, opts build.Log
 		fmt.Fprintf(os.Stderr, "Done with dispatching\n")
 	}
 
-	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
-	return c.Touch(args.Bucket, args.TemplateP(api.DispatcherDoneMarker))
+	run := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
+	return c.Touch(run.Bucket, run.AsFile(queue.DispatcherDoneMarker))
 }
 
 // Indicate dispatching is done

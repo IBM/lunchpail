@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 func Qcat(ctx context.Context, backend be.Backend, runname, path string) error {
@@ -15,10 +15,10 @@ func Qcat(ctx context.Context, backend be.Backend, runname, path string) error {
 	}
 	defer c.Stop()
 
-	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
-	fullPath := filepath.Join(args.ListenPrefix(), path)
+	run := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0} // FIXME
+	fullPath := filepath.Join(run.ListenPrefix(), path)
 
-	if err := c.Cat(args.Bucket, fullPath); err != nil {
+	if err := c.Cat(run.Bucket, fullPath); err != nil {
 		return err
 	}
 

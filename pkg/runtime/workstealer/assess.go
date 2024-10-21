@@ -9,11 +9,11 @@ import (
 
 	"github.com/dustin/go-humanize/english"
 
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 func (c client) localPathToRemote(path string) string {
-	return strings.Replace(path, c.PathArgs.Bucket+"/", "", 1)
+	return strings.Replace(path, c.RunContext.Bucket+"/", "", 1)
 }
 
 // Emit the path to the file we deleted
@@ -24,18 +24,18 @@ func (c client) reportMovedFile(src, dst string) error {
 		fmt.Fprintf(os.Stderr, "DEBUG Uploading moved file: %s -> %s\n", rsrc, rdst)
 	}
 
-	return c.s3.Moveto(c.PathArgs.Bucket, rsrc, rdst)
+	return c.s3.Moveto(c.RunContext.Bucket, rsrc, rdst)
 }
 
 // Touch killfile for the given Worker
 func (c client) touchKillFile(worker Worker) error {
-	return c.s3.Mark(c.PathArgs.Bucket, c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).TemplateP(api.WorkerKillFile), "kill")
+	return c.s3.Mark(c.RunContext.Bucket, c.RunContext.ForPool(worker.pool).ForWorker(worker.name).AsFile(queue.WorkerKillFile), "kill")
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
 func (c client) moveToWorkerInbox(task string, worker Worker) error {
-	unassignedFilePath := c.PathArgs.ForTask(task).TemplateP(api.Unassigned)
-	workerInboxFilePath := c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).TemplateP(api.AssignedAndPending)
+	unassignedFilePath := c.RunContext.ForTask(task).AsFile(queue.Unassigned)
+	workerInboxFilePath := c.RunContext.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).AsFile(queue.AssignedAndPending)
 	return c.reportMovedFile(unassignedFilePath, workerInboxFilePath)
 }
 
@@ -57,15 +57,15 @@ const (
 
 // A Worker has died. Unassign this task that it owns
 func (c client) moveAssignedTaskBackToUnassigned(task string, worker Worker) error {
-	inWorkerFilePath := c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).TemplateP(api.AssignedAndPending)
-	unassignedFilePath := c.PathArgs.ForTask(task).TemplateP(api.Unassigned)
+	inWorkerFilePath := c.RunContext.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).AsFile(queue.AssignedAndPending)
+	unassignedFilePath := c.RunContext.ForTask(task).AsFile(queue.Unassigned)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
 // A Worker has died. Unassign this task that it owns
 func (c client) moveProcessingTaskBackToUnassigned(task string, worker Worker) error {
-	inWorkerFilePath := c.PathArgs.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).TemplateP(api.AssignedAndProcessing)
-	unassignedFilePath := c.PathArgs.ForTask(task).TemplateP(api.Unassigned)
+	inWorkerFilePath := c.RunContext.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).AsFile(queue.AssignedAndProcessing)
+	unassignedFilePath := c.RunContext.ForTask(task).AsFile(queue.Unassigned)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
@@ -157,7 +157,7 @@ func (c client) apportion(model Model) []Apportionment {
 func (c client) assignNewTasks(model Model) {
 	for _, A := range c.apportion(model) {
 		nTasks := A.endIdx - A.startIdx
-		fmt.Fprintf(os.Stderr, "Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, c.PathArgs.RunName+"-", "", 1))
+		fmt.Fprintf(os.Stderr, "Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.name, c.RunContext.RunName+"-", "", 1))
 		for idx := range nTasks {
 			task := model.UnassignedTasks[A.startIdx+idx]
 			if err := c.assignNewTaskToWorker(task, A.worker); err != nil {

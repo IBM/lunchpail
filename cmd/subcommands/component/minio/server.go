@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"lunchpail.io/cmd/options"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/minio"
 )
 
@@ -24,7 +24,7 @@ func Server() *cobra.Command {
 	runOpts := options.AddBucketAndRunOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return minio.Server(context.Background(), port, api.PathArgs{
+		return minio.Server(context.Background(), port, queue.RunContext{
 			Bucket:  runOpts.Bucket,
 			RunName: runOpts.Run,
 		})

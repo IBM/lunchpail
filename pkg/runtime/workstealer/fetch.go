@@ -180,7 +180,7 @@ func (c client) fetchModel() Model {
 	var m Model
 	workersLookup := make(map[string]*Worker)
 
-	for o := range c.s3.ListObjects(c.PathArgs.Bucket, c.PathArgs.ListenPrefix(), true) {
+	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.ListenPrefix(), true) {
 		if c.LogOptions.Debug {
 			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
 		}

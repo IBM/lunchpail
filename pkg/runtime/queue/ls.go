@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/fe/transformer/api"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 func Ls(ctx context.Context, backend be.Backend, runname, path string) (<-chan string, <-chan error, error) {
@@ -18,8 +18,8 @@ func Ls(ctx context.Context, backend be.Backend, runname, path string) (<-chan s
 	files := make(chan string)
 	errors := make(chan error)
 
-	args := api.PathArgs{Bucket: c.Paths.Bucket, RunName: runname, Step: 0}
-	prefix := filepath.Join(args.ListenPrefix(), path)
+	run := queue.RunContext{Bucket: c.Paths.Bucket, RunName: runname, Step: 0}
+	prefix := filepath.Join(run.ListenPrefix(), path)
 
 	go func() {
 		defer c.Stop()
