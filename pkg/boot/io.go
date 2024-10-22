@@ -2,6 +2,7 @@ package boot
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"slices"
 
@@ -10,6 +11,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/runtime/builtins"
 	"lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/util"
 )
 
 // Behave like `cat inputs | ... > outputs`
@@ -27,7 +29,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	// TODO: backend.Wait(ir)? which would be a no-op for local
 
 	// If we aren't piped into anything, then copy out the outbox files
-	if true /*!util.StdoutIsTty()*/ {
+	if util.StdoutIsTty() || os.Getenv("LUNCHPAIL_FORCE_TTY") != "" {
 		folderFor := func(output string) string {
 			inIdx := slices.IndexFunc(inputs, func(in string) bool { return filepath.Base(in) == output })
 			if inIdx >= 0 {
