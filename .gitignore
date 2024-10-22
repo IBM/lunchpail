@@ -12,3 +12,4 @@ __pycache__
 
 # up copyout test leftovers
 task.*.output.txt
+tmp.output.*

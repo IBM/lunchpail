@@ -5,7 +5,8 @@ set -eo pipefail
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 
-"$TOP"/hack/setup/cli.sh /tmp/lunchpail
+lp=/tmp/lunchpail
+"$TOP"/hack/setup/cli.sh $lp
 
 IN1=$(mktemp)
 echo "hello world" > $IN1
@@ -73,10 +74,15 @@ function tester {
     fi
 }
 
-tester "/tmp/lunchpail cat $IN1 $VERBOSE | LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat $VERBOSE" "$IN1" $(actual "$IN1" .) # input should still equal output
+lpcat="$lp cat $VERBOSE"
+lpcatfinal="LUNCHPAIL_FORCE_TTY=1 $lp cat $VERBOSE"
 
-tester "LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat $IN1 $VERBOSE" "$IN1" $(actual "$IN1") # input should equal output
-tester "LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat nopenopenopenopenope $VERBOSE" n/a n/a 1 # expect failure trying to cat a non-existent file
+tester "$lpcatfinal $IN1" "$IN1" $(actual "$IN1") # input should equal output
+tester "$lpcatfinal nopenopenopenopenope" n/a n/a 1 # expect failure trying to cat a non-existent file
+
+tester "$lpcat $IN1 | $lpcatfinal" "$IN1" $(actual "$IN1" .) # cat | cat: input should still equal output
+tester "$lpcat $IN1 | $lpcat | $lpcatfinal" "$IN1" $(actual "$IN1" .) # cat | cat | cat: input should still equal output
+tester "$lpcat $IN1 | $lpcat | $lpcat | $lpcatfinal" "$IN1" $(actual "$IN1" .) # cat | cat | cat | cat: input should still equal output
 
 
 echo "✅ PASS all pipeline tests have passed!"
