@@ -73,10 +73,10 @@ function tester {
     fi
 }
 
-tester "/tmp/lunchpail cat $IN1 $VERBOSE | LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat $VERBOSE" "$IN1" $(actual "$IN1" .) # input should still equal output
+tester "/tmp/lunchpail cat $IN1 $VERBOSE | /tmp/lunchpail cat $VERBOSE" "$IN1" $(actual "$IN1" .) # input should still equal output
 
-tester "LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat $IN1 $VERBOSE" "$IN1" $(actual "$IN1") # input should equal output
-tester "LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat nopenopenopenopenope $VERBOSE" n/a n/a 1 # expect failure trying to cat a non-existent file
+tester "/tmp/lunchpail cat $IN1 $VERBOSE" "$IN1" $(actual "$IN1") # input should equal output
+tester "/tmp/lunchpail cat nopenopenopenopenope $VERBOSE" n/a n/a 1 # expect failure trying to cat a non-existent file
 
 
 echo "✅ PASS all pipeline tests have passed!"
