@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func InstallPython(ctx context.Context, version string, requirementsPath string, opts Options) (string, error) {
+func InstallPython(ctx context.Context, version string, requirements string, opts Options) (string, error) {
 	if _, err := exec.LookPath("python3"); err != nil {
 		if errors.Is(err, exec.ErrNotFound) {
 			if err := installPython(ctx, version, opts.Verbose); err != nil {
@@ -15,8 +15,8 @@ func InstallPython(ctx context.Context, version string, requirementsPath string,
 		}
 		return "", err
 	}
-	if requirementsPath != "" {
-		return requirementsInstall(ctx, requirementsPath, opts.Verbose)
+	if requirements != "" {
+		return requirementsInstall(ctx, requirements, opts.Verbose)
 	}
 	return "", nil
 }

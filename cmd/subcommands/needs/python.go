@@ -11,16 +11,16 @@ import (
 )
 
 func Python() *cobra.Command {
-	var requirementsPath string
+	var requirements string
 	cmd := &cobra.Command{
-		Use:   "python <version> [-r /path/to/requirements.txt]",
+		Use:   "python <version> [-r base64EncodedRequirements]",
 		Short: "Install python environment",
 		Long:  "Install python environment",
 		Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
 	}
 
 	logOpts := options.AddLogOptions(cmd)
-	cmd.Flags().StringVarP(&requirementsPath, "requirements", "r", requirementsPath, "Install from the given requirements file")
+	cmd.Flags().StringVarP(&requirements, "requirements", "r", requirements, "Install the given requirements")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		version := "latest"
@@ -28,7 +28,7 @@ func Python() *cobra.Command {
 			version = args[0]
 		}
 
-		out, err := needs.InstallPython(context.Background(), version, requirementsPath, needs.Options{LogOptions: *logOpts})
+		out, err := needs.InstallPython(context.Background(), version, requirements, needs.Options{LogOptions: *logOpts})
 		if err != nil {
 			return err
 		}
