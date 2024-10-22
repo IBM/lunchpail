@@ -3,48 +3,59 @@ package needs
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
 
-func requirementsInstall(ctx context.Context, requirementsPath string, verbose bool) (string, error) {
+func requirementsInstall(ctx context.Context, requirements string, verbose bool) (string, error) {
 	var cmd *exec.Cmd
 	var verboseFlag string
+	var reqmtsByte []byte
+	var reqmtsFile *os.File
+	var err error
 
 	if verbose {
 		verboseFlag = "--verbose"
 	}
 
-	sha, err := getSHA256Sum(requirementsPath)
-	if err != nil {
+	if reqmtsByte, err = base64.StdEncoding.DecodeString(requirements); err != nil {
 		return "", err
 	}
 
+	//Main cache dir for all virtual envs
 	venvsDir, err := venvsdir()
 	if err != nil {
 		return "", err
 	}
 
-	venvPath := filepath.Join(venvsDir, hex.EncodeToString(sha))
+	//Create a cache venv dir for this run using SHA256 of requirements content
+	sha, err := getSHA256Sum(reqmtsByte)
+	if err != nil {
+		return "", err
+	}
+	venvPath := filepath.Join(venvsDir, sha)
 	if err := os.MkdirAll(venvPath, os.ModePerm); err != nil {
 		return "", err
 	}
 
-	dir := filepath.Dir(venvPath)
-	venvRequirementsPath := filepath.Join(venvPath, filepath.Base(requirementsPath))
+	//Create a requirements file in cache venv dir
+	if reqmtsFile, err = os.Create(filepath.Join(venvPath, "requirements.txt")); err != nil {
+		return "", err
+	}
+	if _, err = reqmtsFile.Write(reqmtsByte); err != nil {
+		return "", err
+	}
 
 	cmds := fmt.Sprintf(`python3 -m venv %s
-cp %s %s
 source %s/bin/activate
 if ! which pip3; then python3 -m pip install pip %s; fi
-pip3 install -r %s %s 1>&2`, venvPath, requirementsPath, venvPath, venvPath, verboseFlag, venvRequirementsPath, verboseFlag)
+pip3 install -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, reqmtsFile.Name(), verboseFlag)
 
 	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
-	cmd.Dir = dir
+	cmd.Dir = filepath.Dir(venvPath)
 	if verbose {
 		cmd.Stdout = os.Stderr
 	}
@@ -52,18 +63,13 @@ pip3 install -r %s %s 1>&2`, venvPath, requirementsPath, venvPath, venvPath, ver
 	return venvPath, cmd.Run()
 }
 
-func getSHA256Sum(filePath string) ([]byte, error) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
+func getSHA256Sum(requirements []byte) (string, error) {
 	hash := sha256.New()
-	if _, err := io.Copy(hash, f); err != nil {
-		return nil, err
+	if _, err := hash.Write(requirements); err != nil {
+		return "", err
 	}
-	return hash.Sum(nil), nil
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
 func venvsdir() (string, error) {
@@ -75,6 +81,9 @@ func venvsdir() (string, error) {
 		}
 
 		venvPath = filepath.Join(cachedir, "lunchpail", "venvs")
+		if err := os.MkdirAll(venvPath, os.ModePerm); err != nil {
+			return "", err
+		}
 	}
 
 	return venvPath, nil

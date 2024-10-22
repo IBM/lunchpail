@@ -119,7 +119,6 @@ then
 
     ${handler-waitForIt} ${deployname:-$testname} ${namespace} $api "${expected[@]}"
     EC=$?
-    undeploy $testname $deployname
 
     if [[ $EC != 0 ]]
     then exit $EC
@@ -128,6 +127,8 @@ then
     if [[ -e "$1"/post.sh ]]
     then TEST_NAME=$testname "$1"/post.sh $namespace
     fi
+
+    undeploy $testname $deployname
 
     # clean up python venvs if we are in travis or github actions
     if [[ -n "$CI" ]] && [[ -d "$1"/.venv ]]

@@ -32,7 +32,9 @@ jobs:
           - ./tests/bin/ci.sh -i 'test7(b.*|c.*|d.*|e.*|g.*|h.*)' 
           - ./tests/bin/ci.sh -i 'test7f.*'
           - ./tests/bin/ci.sh -i 'test8.*'
-          - ./tests/bin/ci.sh -i 'python.*'
+          - ./tests/bin/ci.sh -i 'python-code.*'
+          - ./tests/bin/ci.sh -i 'python-language.*'
+          - ./tests/bin/ci.sh -i 'python-universal.*'
           - ./tests/bin/go.sh
           - ./tests/bin/pipelines.sh
         os: [ubuntu-latest]
