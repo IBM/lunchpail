@@ -42,7 +42,7 @@ func (streamer Streamer) podLogs(podName string, component lunchpail.Component, 
 // TODO port this to use client-go
 func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts streamer.LogOptions) error {
 	containers := "main"
-	runSelector := ",app.kubernetes.io/instance=" + streamer.runname
+	runSelector := ",app.kubernetes.io/instance=" + streamer.run.RunName
 
 	followFlag := ""
 	if opts.Follow {

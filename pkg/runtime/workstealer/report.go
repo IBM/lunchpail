@@ -18,6 +18,7 @@ func (model Model) report(c client) error {
 	fmt.Fprintf(writer, "lunchpail.io\tdispatcherDone\t%v\t\t\t\t\t%s\n", model.DispatcherDone, c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tassigned\t%d\t\t\t\t\t%s\n", len(model.AssignedTasks), c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tprocessing\t\t%d\t\t\t\t%s\n", len(model.ProcessingTasks), c.RunContext.RunName)
+	fmt.Fprintf(writer, "lunchpail.io\toutbox\t\t\t%d\t\t\t%s\n", len(model.OutboxTasks), c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tdone\t\t\t%d\t%d\t\t%s\n", len(model.SuccessfulTasks), len(model.FailedTasks), c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tliveworkers\t%d\t\t\t\t\t%s\n", len(model.LiveWorkers), c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tdeadworkers\t%d\t\t\t\t\t%s\n", len(model.DeadWorkers), c.RunContext.RunName)

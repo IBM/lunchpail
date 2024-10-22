@@ -27,13 +27,13 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 	}
 
 	// This is where component logs will go
-	logdir, err := files.LogDir(ir.RunName(), true)
+	logdir, err := files.LogDir(ir.Context.Run, true)
 	if err != nil {
 		return err
 	}
 
 	// Write a pid file to indicate the pid of this process
-	if pidfile, err := files.PidfileForMain(ir.RunName()); err != nil {
+	if pidfile, err := files.PidfileForMain(ir.Context.Run); err != nil {
 		return err
 	} else {
 		shell.WritePid(pidfile, os.Getpid())

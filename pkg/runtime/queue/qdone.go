@@ -15,6 +15,10 @@ func QdoneClient(ctx context.Context, c S3Client, run queue.RunContext, opts bui
 		fmt.Fprintf(os.Stderr, "Done with dispatching\n")
 	}
 
+	if err := c.Mkdirp(run.Bucket); err != nil {
+		return err
+	}
+
 	return c.Touch(run.Bucket, run.AsFile(queue.DispatcherDoneMarker))
 }
 

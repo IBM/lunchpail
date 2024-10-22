@@ -47,14 +47,6 @@ func (c client) assignNewTaskToWorker(task string, worker Worker) error {
 	return c.moveToWorkerInbox(task, worker)
 }
 
-type Box string
-
-const (
-	Inbox      = "inbox"
-	Processing = "processing"
-	Outbox     = "outbox"
-)
-
 // A Worker has died. Unassign this task that it owns
 func (c client) moveAssignedTaskBackToUnassigned(task string, worker Worker) error {
 	inWorkerFilePath := c.RunContext.ForPool(worker.pool).ForWorker(worker.name).ForTask(task).AsFile(queue.AssignedAndPending)

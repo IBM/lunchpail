@@ -11,6 +11,7 @@ import (
 
 	"lunchpail.io/pkg/be/local/files"
 	"lunchpail.io/pkg/be/runs"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -59,7 +60,7 @@ func (backend Backend) ListRuns(ctx context.Context, all bool) ([]runs.Run, erro
 }
 
 func isRunning(runname string) (bool, error) {
-	pidfile, err := files.PidfileForMain(runname)
+	pidfile, err := files.PidfileForMain(queue.RunContext{RunName: runname})
 	if err != nil {
 		return false, err
 	}
@@ -99,7 +100,7 @@ type Part struct {
 type Parts = map[int32]Part
 
 func partsOfRun(runname string) (Parts, error) {
-	dir, err := files.PidfileDir(runname)
+	dir, err := files.PidfileDir(queue.RunContext{RunName: runname})
 	if err != nil {
 		return nil, err
 	}

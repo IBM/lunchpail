@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/be/streamer"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/observe/colors"
 )
@@ -33,7 +34,7 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 	useComponentPrefix := len(opts.Components) > 1
 
 	group, _ := errgroup.WithContext(ctx)
-	s := backend.Streamer(ctx, runname)
+	s := backend.Streamer(ctx, queue.RunContext{RunName: runname})
 	for _, component := range opts.Components {
 		group.Go(func() error {
 			var prefix streamer.LinePrefixFunction

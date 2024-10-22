@@ -21,7 +21,17 @@ func AddTargetOptionsTo(cmd *cobra.Command, opts *build.Options) *build.TargetOp
 		opts.Target.Namespace = build.Name()
 	}
 	if opts.Target.Platform == "" {
-		opts.Target.Platform = target.Kubernetes
+		// consult env var for target
+		if t, err := target.FromEnv(); err != nil {
+			panic(err)
+		} else if t != "" {
+			opts.Target.Platform = t
+		}
+
+		if opts.Target.Platform == "" {
+			// hard-wired default target
+			opts.Target.Platform = target.Kubernetes
+		}
 	}
 
 	cmd.Flags().VarP(&opts.Target.Platform, "target", "t", "Deployment target [local, kubernetes, ibmcloud, skypilot]")

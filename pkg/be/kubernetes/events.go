@@ -40,7 +40,7 @@ func (streamer Streamer) RunEvents() (chan events.Message, error) {
 	}
 
 	c := make(chan events.Message)
-	go stream(streamer.runname, eventWatcher, c)
+	go stream(streamer.run.RunName, eventWatcher, c)
 
 	return c, nil
 }

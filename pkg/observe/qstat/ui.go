@@ -14,6 +14,7 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 type Options = qstat.Options
@@ -29,7 +30,7 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 	group, _ := errgroup.WithContext(ctx)
 	group.Go(func() error {
 		defer close(c)
-		return backend.Streamer(ctx, runname).QueueStats(c, opts)
+		return backend.Streamer(ctx, queue.RunContext{RunName: runname}).QueueStats(c, opts)
 	})
 
 	purple := lipgloss.Color("99")

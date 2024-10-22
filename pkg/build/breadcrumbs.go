@@ -30,6 +30,16 @@ func Name() string {
 	if n == "" {
 		n = strings.TrimSpace(name)
 	}
+
+	// avoid complications with downstream shell executions
+	n = strings.Replace(n, "<", "", -1)
+	n = strings.Replace(n, ">", "", -1)
+	n = strings.Replace(n, "|", "", -1)
+	n = strings.Replace(n, ";", "", -1)
+	n = strings.Replace(n, "$", "", -1)
+	n = strings.Replace(n, "{", "", -1)
+	n = strings.Replace(n, "}", "", -1)
+
 	return n
 }
 

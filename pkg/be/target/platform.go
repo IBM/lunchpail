@@ -1,6 +1,9 @@
 package target
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type Platform string
 
@@ -24,6 +27,18 @@ func lookup(maybe string) (Platform, error) {
 	}
 
 	return "", fmt.Errorf("Unsupported target platform %s\n", maybe)
+}
+
+func FromEnv() (Platform, error) {
+	if os.Getenv("LUNCHPAIL_TARGET") != "" {
+		t, err := lookup(os.Getenv("LUNCHPAIL_TARGET"))
+		if err != nil {
+			return "", err
+		}
+		return t, nil
+	}
+
+	return "", nil
 }
 
 // String is used both by fmt.Print and by Cobra in help text

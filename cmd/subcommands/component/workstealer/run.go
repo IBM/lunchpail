@@ -20,6 +20,9 @@ func Run() *cobra.Command {
 	var pollingInterval int
 	cmd.Flags().IntVar(&pollingInterval, "polling-interval", 3, "If polling is employed, the interval between probes")
 
+	var selfDestruct bool
+	cmd.Flags().BoolVar(&selfDestruct, "self-destruct", false, "Automatically tear down the run when all output has been consumed?")
+
 	lopts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -28,7 +31,7 @@ func Run() *cobra.Command {
 			return err
 		}
 
-		return workstealer.Run(context.Background(), run, workstealer.Options{PollingInterval: pollingInterval, LogOptions: *lopts})
+		return workstealer.Run(context.Background(), run, workstealer.Options{PollingInterval: pollingInterval, SelfDestruct: selfDestruct, LogOptions: *lopts})
 	}
 
 	return cmd

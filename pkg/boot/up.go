@@ -28,7 +28,7 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 		return err
 	}
 
-	ir, err := fe.PrepareForRun(pipelineContext, fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
+	ir, err := fe.PrepareForRun(pipelineContext, fe.PrepareOptions{NoDispatchers: pipelineContext.Run.Step > 0 || len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOption
 		return err
 	}
 
-	llir, err := fe.PrepareHLIRForRun(ir, pipelineContext, fe.PrepareOptions{NoDispatchers: len(opts.Inputs) > 0}, opts.BuildOptions)
+	llir, err := fe.PrepareHLIRForRun(ir, pipelineContext, fe.PrepareOptions{NoDispatchers: pipelineContext.Run.Step > 0 || len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
 		return err
 	}
@@ -77,10 +77,11 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	// We need to chain the isRunning channel to our 0-2 consumers
 	// below. This is because golang channels are not multicast.
 	isRunning3 := make(chan struct{})
+	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0
 	go func() {
 		<-isRunning
 		isRunning3 <- struct{}{}
-		if len(opts.Inputs) > 0 {
+		if needsCatAndRedirect {
 			isRunning3 <- struct{}{}
 		}
 		if opts.Watch {
@@ -88,22 +89,20 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		}
 	}()
 
-	copyoutDone := make(chan struct{})
-	if len(opts.Inputs) > 0 {
+	redirectDone := make(chan struct{})
+	if needsCatAndRedirect {
 		// Behave like `cat inputs | ... > outputs`
 		go func() {
 			// wait for the run to be ready for us to enqueue
 			<-isRunning3
-			defer func() { copyoutDone <- struct{}{} }()
 
+			defer func() { redirectDone <- struct{}{} }()
 			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				cancel()
 			}
 		}()
-	}
-
-	if opts.Watch {
+	} else if opts.Watch {
 		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
 			<-isRunning3
@@ -112,16 +111,18 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		}()
 	}
 
+	go func() {
+		<-isRunning3
+		if err := handlePipelineStdout(ir.Context); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
+
 	defer cancel()
 	err := backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
 
-	<-isRunning3
-	if err := handlePipelineStdout(ir.Context); err != nil {
-		return err
-	}
-
-	if len(opts.Inputs) > 0 {
-		<-copyoutDone
+	if needsCatAndRedirect {
+		<-redirectDone
 	}
 
 	return err

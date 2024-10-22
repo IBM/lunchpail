@@ -10,6 +10,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 type S3Client struct {
@@ -75,7 +76,7 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) 
 		runname = run.Name
 	}
 
-	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, runname)
+	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, queue.RunContext{RunName: runname})
 	if err != nil {
 		return S3ClientStop{}, err
 	}

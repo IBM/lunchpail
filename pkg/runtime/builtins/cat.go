@@ -39,10 +39,11 @@ func CatClient(ctx context.Context, backend be.Backend, run queue.RunContext, in
 func CatApp() hlir.HLIR {
 	app := hlir.NewApplication("cat")
 	app.Spec.Role = "worker"
-	app.Spec.Command = "/bin/sh -c ./main.sh"
+	app.Spec.Command = "./main.sh"
 	app.Spec.Image = "docker.io/alpine:3"
 	app.Spec.Code = []hlir.Code{
-		hlir.Code{Name: "main.sh", Source: "echo hi"},
+		hlir.Code{Name: "main.sh", Source: `#!/bin/sh
+mv $1 $2`},
 	}
 
 	return hlir.HLIR{

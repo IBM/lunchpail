@@ -13,3 +13,8 @@ func (spec Spec) UpdateEndpoint(endpoint string) Spec {
 	spec.Endpoint = endpoint
 	return spec
 }
+
+func (spec Spec) NoAuto() Spec {
+	spec.Auto = false
+	return spec
+}

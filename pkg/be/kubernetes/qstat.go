@@ -24,7 +24,7 @@ func (streamer Streamer) streamModel(follow bool, tail int64, quiet bool, c chan
 		return err
 	}
 
-	pods, err := clientset.CoreV1().Pods(streamer.backend.namespace).List(streamer.Context, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + streamer.runname})
+	pods, err := clientset.CoreV1().Pods(streamer.backend.namespace).List(streamer.Context, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=workstealer,app.kubernetes.io/instance=" + streamer.run.RunName})
 	if err != nil {
 		return err
 	} else if len(pods.Items) == 0 {

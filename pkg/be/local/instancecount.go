@@ -7,12 +7,13 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/be/local/files"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
 // Number of instances of the given component for the given run
-func (backend Backend) InstanceCount(ctx context.Context, c lunchpail.Component, runname string) (int, error) {
-	dir, err := files.PidfileDir(runname)
+func (backend Backend) InstanceCount(ctx context.Context, c lunchpail.Component, run queue.RunContext) (int, error) {
+	dir, err := files.PidfileDir(run)
 	if err != nil {
 		return 0, err
 	}

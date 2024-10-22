@@ -9,6 +9,7 @@ import (
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/observe/status"
 )
 
@@ -29,7 +30,7 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts CpuOptio
 	c := make(chan utilization.Model)
 	group.Go(func() error {
 		defer close(c)
-		return backend.Streamer(sctx, runname).Utilization(c, opts.IntervalSeconds)
+		return backend.Streamer(sctx, queue.RunContext{RunName: runname}).Utilization(c, opts.IntervalSeconds)
 	})
 
 	for model := range c {

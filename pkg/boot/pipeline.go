@@ -10,33 +10,41 @@ import (
 )
 
 func handlePipelineStdin() (llir.Context, error) {
+	var context llir.Context
+
 	if !util.StdinIsTty() {
-		var context llir.Context
+		// Then we are not the first step. Load the context
+		// from stdin.
+		var stdinContext llir.Context
 		dec := json.NewDecoder(os.Stdin)
 		for {
-			err := dec.Decode(&context)
+			err := dec.Decode(&stdinContext)
 			if err == io.EOF {
 				break
 			} else if err != nil {
 				return context, err
+			} else {
+				break
 			}
 		}
 
-		if context.Queue.Endpoint != "" {
+		if stdinContext.Queue.Endpoint != "" {
 			// context.Run.RunName = fmt.Sprintf("%s-%d", context.Run.RunName, context.Run.Step)
-			return context, nil
+			context = stdinContext
 		}
 	}
 
-	// Otherwise, we are step 0
-	return llir.Context{}, nil
+	context.Run = context.Run.AsFinalStep(util.StdoutIsTty())
+	return context, nil
 }
 
 func handlePipelineStdout(context llir.Context) error {
 	if !util.StdoutIsTty() {
-		r := context.Run
-		r.Step++
-		context.Run = r
+		// The next step is +1 our step
+		context.Run = context.Run.IncrStep()
+
+		// The next steps should not create ("Auto") their own queue endpoint
+		context.Queue = context.Queue.NoAuto()
 
 		b, err := json.Marshal(context)
 		if err != nil {
@@ -48,4 +56,5 @@ func handlePipelineStdout(context llir.Context) error {
 	}
 
 	return nil
+
 }
