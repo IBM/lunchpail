@@ -20,6 +20,7 @@ then
 fi
 
 export LUNCHPAIL_NAME="pipeline-test"
+export LUNCHPAIL_FORCE_TTY=1
 
 if [[ -n "$CI" ]]
 then VERBOSE="--verbose"
