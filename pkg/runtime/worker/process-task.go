@@ -36,10 +36,6 @@ func (p taskProcessor) process(task string) error {
 	if task != "" {
 		task = filepath.Base(task)
 
-		if opts.LogOptions.Verbose {
-			fmt.Fprintf(os.Stderr, "Worker starting task %s\n", task)
-		}
-
 		a := opts.RunContext.ForTask(task)
 		in := a.AsFile(queue.AssignedAndPending)
 		inprogress := a.AsFile(queue.AssignedAndProcessing)
@@ -54,6 +50,10 @@ func (p taskProcessor) process(task string) error {
 		localoutbox := filepath.Join(p.localdir, "outbox", task)
 		localstdout := localprocessing + ".stdout"
 		localstderr := localprocessing + ".stderr"
+
+		if opts.LogOptions.Verbose {
+			fmt.Fprintf(os.Stderr, "Worker starting task %s with f(%s,%s)\n", task, localprocessing, localoutbox)
+		}
 
 		// Currently, we don't need localoutbox to be a
 		// directory. This is future-proofing for handling

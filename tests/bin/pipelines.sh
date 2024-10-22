@@ -8,38 +8,47 @@ TOP="$SCRIPTDIR"/../..
 "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 
 IN1=$(mktemp)
-IN2=$(mktemp)
-IN3=$(mktemp)
+echo "hello world" > $IN1
+trap "rm -f $IN1" EXIT
 
-trap "rm -f $IN1 $IN2 $IN3" EXIT
+export LUNCHPAIL_NAME="pipeline-test"
+export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
 
-if [[ "${LUNCHPAIL_TARGET:-local}" != "local" ]]
+if [[ "$LUNCHPAIL_TARGET" != "local" ]]
 then
     echo "Skipping pipelines test for target=$LUNCHPAIL_TARGET"
     exit
 fi
 
-export LUNCHPAIL_NAME="pipeline-test"
-export LUNCHPAIL_FORCE_TTY=1
-
 if [[ -n "$CI" ]]
 then VERBOSE="--verbose"
 fi
 
+function actual {
+    b=$(basename "$1")
+    ext=${b##*.}
+    bb=${b%%.*}
+
+    dir="${2-$(dirname "$1")}"
+    echo "$dir"/"$bb".output.$ext
+}
+
 function tester {
-    input="$2"
-    cmdline="$1 $2 -t ${LUNCHPAIL_TARGET:-local}"
-    expected_ec=${3:-0}
+    cmdline="$1"
+    expected="$2"
+    actual="$3"
+    expected_ec=${4:-0}
 
     echo ""
     echo "------------------------------------------------------------------------------------"
     echo "  $(tput bold)Test:$(tput sgr0) $1"
-    echo "  $(tput bold)Input:$(tput sgr0) $input"
+    echo "  $(tput bold)Expected:$(tput sgr0) $expected"
+    echo "  $(tput bold)Actual:$(tput sgr0) $actual"
     echo "  $(tput bold)Expected exit code$(tput sgr0): $expected_ec"
     echo "------------------------------------------------------------------------------------"
     
     set +e
-    $1 $2 -t ${LUNCHPAIL_TARGET:-local} $VERBOSE
+    eval "$1 $input"
     actual_ec=$?
     set -e
     if [[ $actual_ec = $expected_ec ]]
@@ -50,12 +59,6 @@ function tester {
     if [[ $expected_ec != 0 ]]
     then return
     fi
-
-    b=$(basename "$input")
-    ext=${b##*.}
-    bb=${b%%.*}
-    actual=$(dirname "$input")/"$bb".output.$ext
-    expected="$input"
 
     if [[ -e "$actual" ]]
     then echo "✅ PASS the output file exists test=$1"
@@ -70,5 +73,10 @@ function tester {
     fi
 }
 
-tester "/tmp/lunchpail cat" $IN1
-tester "/tmp/lunchpail cat" nopenopenopenopenope 1
+tester "/tmp/lunchpail cat $IN1 $VERBOSE | LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat $VERBOSE" "$IN1" $(actual "$IN1" .) # input should still equal output
+
+tester "LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat $IN1 $VERBOSE" "$IN1" $(actual "$IN1") # input should equal output
+tester "LUNCHPAIL_FORCE_TTY=1 /tmp/lunchpail cat nopenopenopenopenope $VERBOSE" n/a n/a 1 # expect failure trying to cat a non-existent file
+
+
+echo "✅ PASS all pipeline tests have passed!"

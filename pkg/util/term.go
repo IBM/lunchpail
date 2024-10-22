@@ -10,5 +10,5 @@ func StdinIsTty() bool {
 }
 
 func StdoutIsTty() bool {
-	return term.IsTerminal(int(os.Stdout.Fd()))
+	return term.IsTerminal(int(os.Stdout.Fd())) || os.Getenv("LUNCHPAIL_FORCE_TTY") != ""
 }

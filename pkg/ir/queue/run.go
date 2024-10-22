@@ -11,6 +11,9 @@ type RunContext struct {
 	// Which step of the run are we participating in?
 	Step int
 
+	// Are we the final step of a pipeline?
+	IsFinalStep bool
+
 	// Which worker pool are we part of?
 	PoolName string
 
@@ -19,4 +22,14 @@ type RunContext struct {
 
 	// Which task are we processing?
 	Task string
+}
+
+func (r RunContext) IncrStep() RunContext {
+	r.Step++
+	return r
+}
+
+func (r RunContext) AsFinalStep(isFinalStep bool) RunContext {
+	r.IsFinalStep = isFinalStep
+	return r
 }

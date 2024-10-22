@@ -20,18 +20,19 @@ import (
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/local/files"
 	"lunchpail.io/pkg/be/streamer"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
 type localStreamer struct {
 	context.Context
-	runname string
+	run     queue.RunContext
 	backend Backend
 }
 
 // Return a streamer
-func (backend Backend) Streamer(ctx context.Context, runname string) streamer.Streamer {
-	return localStreamer{ctx, runname, backend}
+func (backend Backend) Streamer(ctx context.Context, run queue.RunContext) streamer.Streamer {
+	return localStreamer{ctx, run, backend}
 }
 
 func (s localStreamer) RunEvents() (chan events.Message, error) {
@@ -40,7 +41,7 @@ func (s localStreamer) RunEvents() (chan events.Message, error) {
 }
 
 func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm chan events.Message) error {
-	pidsDir, err := files.PidfileDir(s.runname)
+	pidsDir, err := files.PidfileDir(s.run)
 	if err != nil {
 		return err
 	}
@@ -121,7 +122,7 @@ func (s localStreamer) Utilization(c chan utilization.Model, intervalSeconds int
 
 		var m utilization.Model
 
-		parts, err := partsOfRun(s.runname)
+		parts, err := partsOfRun(s.run.RunName)
 		if err != nil {
 			return err
 		}
@@ -163,7 +164,7 @@ func (s localStreamer) Utilization(c chan utilization.Model, intervalSeconds int
 
 // Stream queue statistics
 func (s localStreamer) QueueStats(c chan qstat.Model, opts qstat.Options) error {
-	f, err := files.LogsForComponent(s.runname, lunchpail.WorkStealerComponent)
+	f, err := files.LogsForComponent(s.run, lunchpail.WorkStealerComponent)
 	if err != nil {
 		return err
 	}
@@ -213,7 +214,7 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 			}
 		}
 
-		runStillGoing, err := isRunning(s.runname)
+		runStillGoing, err := isRunning(s.run.RunName)
 		if err != nil {
 			return err
 		} else if !runStillGoing || !opts.Follow {
@@ -233,7 +234,7 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 
 // Stream logs from a given Component to os.Stdout
 func (s localStreamer) ComponentLogs(c lunchpail.Component, opts streamer.LogOptions) error {
-	logdir, err := files.LogDir(s.runname, true)
+	logdir, err := files.LogDir(s.run, true)
 	if err != nil {
 		return err
 	}

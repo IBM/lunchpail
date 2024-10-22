@@ -29,7 +29,7 @@ func (streamer Streamer) startWatchingUtilization() (watch.Interface, error) {
 
 	podWatcher, err := clientset.CoreV1().Pods(streamer.backend.namespace).Watch(streamer.Context, metav1.ListOptions{
 		TimeoutSeconds: &timeoutSeconds,
-		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + streamer.runname,
+		LabelSelector:  "app.kubernetes.io/component,app.kubernetes.io/instance=" + streamer.run.RunName,
 	})
 	if err != nil {
 		return nil, err

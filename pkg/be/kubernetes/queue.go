@@ -12,11 +12,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"lunchpail.io/pkg/be/kubernetes/names"
+	"lunchpail.io/pkg/ir/queue"
 )
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
-func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
-	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.Queue(ctx, runname)
+func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
+	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.Queue(ctx, run)
 	if err != nil {
 		return
 	}
@@ -24,7 +25,7 @@ func (backend Backend) AccessQueue(ctx context.Context, runname string) (endpoin
 	if strings.Contains(endpoint, "cluster.local") {
 		// Then the queue is running inside the cluster. We
 		// will need to open a port forward.
-		podName, perr := backend.getMinioPodName(ctx, runname)
+		podName, perr := backend.getMinioPodName(ctx, run)
 		if perr != nil {
 			err = perr
 			return
@@ -79,7 +80,7 @@ func portFromEndpoint(endpoint string) (int, error) {
 	return port, nil
 }
 
-func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
+func (backend Backend) Queue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
 	endpoint = os.Getenv("lunchpail_queue_endpoint")
 	accessKeyID = os.Getenv("lunchpail_queue_accessKeyID")
 	secretAccessKey = os.Getenv("lunchpail_queue_secretAccessKey")
@@ -93,7 +94,7 @@ func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, acc
 			return
 		}
 
-		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, names.Queue(runname), metav1.GetOptions{})
+		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, names.Queue(run.RunName), metav1.GetOptions{})
 		if cerr != nil {
 			err = cerr
 			return
@@ -131,23 +132,23 @@ func (backend Backend) Queue(ctx context.Context, runname string) (endpoint, acc
 	return
 }
 
-func (backend Backend) getMinioPodName(ctx context.Context, runname string) (string, error) {
+func (backend Backend) getMinioPodName(ctx context.Context, run queue.RunContext) (string, error) {
 	client, _, err := Client()
 	if err != nil {
 		return "", err
 	}
 
-	pods, err := client.CoreV1().Pods(backend.namespace).List(ctx, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=minio,app.kubernetes.io/instance=" + runname})
+	pods, err := client.CoreV1().Pods(backend.namespace).List(ctx, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=minio,app.kubernetes.io/instance=" + run.RunName})
 	if err != nil {
 		return "", err
 	} else if len(pods.Items) == 0 {
-		return "", fmt.Errorf("Cannot find minio component pod for run=%s", runname)
+		return "", fmt.Errorf("Cannot find minio component pod for run=%s", run.RunName)
 	} else if len(pods.Items) > 1 {
 		names := []string{}
 		for _, pod := range pods.Items {
 			names = append(names, pod.Name)
 		}
-		return "", fmt.Errorf("Found multiple minio component pods for run=%s. Found %v", runname, names)
+		return "", fmt.Errorf("Found multiple minio component pods for run=%s. Found %v", run.RunName, names)
 	}
 
 	return pods.Items[0].Name, nil

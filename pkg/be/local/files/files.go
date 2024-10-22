@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -46,18 +47,18 @@ func RunsDir() (string, error) {
 	return filepath.Join(dir, "runs"), nil
 }
 
-func runDir(runname string) (string, error) {
+func runDir(run queue.RunContext) (string, error) {
 	dir, err := RunsDir()
 	if err != nil {
 		return "", err
 	}
 
 	//strings.Replace(runname, build.Name()+"-", "", 1),
-	return filepath.Join(dir, runname), nil
+	return filepath.Join(dir, run.RunName, "step", fmt.Sprintf("%d", run.Step)), nil
 }
 
-func LogDir(runname string, mkdir bool) (string, error) {
-	dir, err := runDir(runname)
+func LogDir(run queue.RunContext, mkdir bool) (string, error) {
+	dir, err := runDir(run)
 	if err != nil {
 		return "", err
 	}
@@ -75,8 +76,8 @@ func LogFileForComponent(c lunchpail.Component) string {
 	return lunchpail.ComponentShortName(c)
 }
 
-func LogsForComponent(runname string, c lunchpail.Component) (string, error) {
-	dir, err := LogDir(runname, false)
+func LogsForComponent(run queue.RunContext, c lunchpail.Component) (string, error) {
+	dir, err := LogDir(run, false)
 	if err != nil {
 		return "", err
 	}
@@ -88,8 +89,8 @@ func LogsForComponent(runname string, c lunchpail.Component) (string, error) {
 	return filepath.Join(dir, LogFileForComponent(c)+".out"), nil
 }
 
-func componentsDir(runname string) (string, error) {
-	dir, err := runDir(runname)
+func componentsDir(run queue.RunContext) (string, error) {
+	dir, err := runDir(run)
 	if err != nil {
 		return "", err
 	}
@@ -97,8 +98,8 @@ func componentsDir(runname string) (string, error) {
 	return filepath.Join(dir, "components"), nil
 }
 
-func PidfileForMain(runname string) (string, error) {
-	dir, err := componentsDir(runname)
+func PidfileForMain(run queue.RunContext) (string, error) {
+	dir, err := componentsDir(run)
 	if err != nil {
 		return "", err
 	}
@@ -114,8 +115,8 @@ func IsMainPidfile(pidfile string) bool {
 	return pidfile == "main.pid"
 }
 
-func PidfileDir(runname string) (string, error) {
-	return componentsDir(runname)
+func PidfileDir(run queue.RunContext) (string, error) {
+	return componentsDir(run)
 }
 
 func ComponentForPidfile(pidfile string) (lunchpail.Component, string, error) {
@@ -138,8 +139,8 @@ func ComponentForPidfile(pidfile string) (lunchpail.Component, string, error) {
 	}
 }
 
-func Pidfile(runname, instanceName string, c lunchpail.Component, mkdir bool) (string, error) {
-	dir, err := PidfileDir(runname)
+func Pidfile(run queue.RunContext, instanceName string, c lunchpail.Component, mkdir bool) (string, error) {
+	dir, err := PidfileDir(run)
 	if err != nil {
 		return "", err
 	}
@@ -153,8 +154,8 @@ func Pidfile(runname, instanceName string, c lunchpail.Component, mkdir bool) (s
 	return filepath.Join(dir, string(c)+"-"+instanceName+".pid"), nil
 }
 
-func QueueFile(runname string) (string, error) {
-	dir, err := runDir(runname)
+func QueueFile(run queue.RunContext) (string, error) {
+	dir, err := runDir(run)
 	if err != nil {
 		return "", err
 	}

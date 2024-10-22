@@ -13,7 +13,7 @@ const (
 	FinishedWithSucceeded      = "lunchpail/run/{{.RunName}}/step/{{.Step}}/succeeded/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
 	FinishedWithFailed         = "lunchpail/run/{{.RunName}}/step/{{.Step}}/failed/pool/{{.PoolName}}/worker/{{.WorkerName}}/{{.Task}}"
 	WorkerKillFile             = "lunchpail/run/{{.RunName}}/step/{{.Step}}/killfiles/pool/{{.PoolName}}/worker/{{.WorkerName}}"
-	AllDoneMarker              = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/alldone"
+	AllDoneMarker              = "lunchpail/run/{{.RunName}}/alldone" // Note: not step-specific!
 	DispatcherDoneMarker       = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/dispatcherdone"
 	WorkerAliveMarker          = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/alive/pool/{{.PoolName}}/worker/{{.WorkerName}}"
 	WorkerDeadMarker           = "lunchpail/run/{{.RunName}}/step/{{.Step}}/marker/dead/pool/{{.PoolName}}/worker/{{.WorkerName}}"

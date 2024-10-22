@@ -13,6 +13,7 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -69,7 +70,7 @@ func Instances() *cobra.Command {
 				}
 			}
 
-			count, err := backend.InstanceCount(ctx, *component, runname)
+			count, err := backend.InstanceCount(ctx, *component, queue.RunContext{RunName: runname})
 			if err != nil {
 				if wait {
 					waitItOut(*component, -1, err)

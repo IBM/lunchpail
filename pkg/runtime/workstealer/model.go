@@ -34,12 +34,13 @@ type Model struct {
 	DispatcherDone bool
 
 	UnassignedTasks []string
-	LiveWorkers     []Worker
-	DeadWorkers     []Worker
+	OutboxTasks     []string
+
+	LiveWorkers []Worker
+	DeadWorkers []Worker
 
 	AssignedTasks   []AssignedTask
 	ProcessingTasks []AssignedTask
-	OutboxTasks     []AssignedTask
 
 	SuccessfulTasks []AssignedTask
 	FailedTasks     []AssignedTask

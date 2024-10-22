@@ -17,7 +17,7 @@ import (
 )
 
 func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir string, opts build.LogOptions) error {
-	pidfile, err := files.Pidfile(ir.RunName(), c.InstanceName, c.C(), true)
+	pidfile, err := files.Pidfile(ir.Context.Run, c.InstanceName, c.C(), true)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 	}
 
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Launching process with commandline: %s\n", command)
+		fmt.Fprintf(os.Stderr, "Launching process for component %v instance %s with commandline: %s\n", c.C(), c.InstanceName, command)
 	}
 
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", command)

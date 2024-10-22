@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"slices"
+
+	"lunchpail.io/pkg/ir/queue"
 )
 
 // We want to identify four classes of changes:
@@ -20,6 +22,8 @@ type WhatChanged int
 
 const (
 	UnassignedTask WhatChanged = iota
+	OutboxTask
+
 	DispatcherDone
 
 	LiveWorker
@@ -28,7 +32,6 @@ const (
 	KillFileForWorker
 	AssignedTaskByWorker
 	ProcessingTaskByWorker
-	OutboxTaskByWorker
 	SuccessfulTaskByWorker
 	FailedTaskByWorker
 
@@ -41,6 +44,9 @@ func (m *Model) whatChanged(line string, patterns pathPatterns) (what WhatChange
 
 	if match := patterns.unassignedTask.FindStringSubmatch(line); len(match) == 2 {
 		what = UnassignedTask
+		task = match[1]
+	} else if match := patterns.outboxTask.FindStringSubmatch(line); len(match) == 2 {
+		what = OutboxTask
 		task = match[1]
 	} else if match := patterns.dispatcherDone.FindStringSubmatch(line); len(match) == 1 {
 		what = DispatcherDone
@@ -63,11 +69,6 @@ func (m *Model) whatChanged(line string, patterns pathPatterns) (what WhatChange
 		task = match[3]
 	} else if match := patterns.processingTask.FindStringSubmatch(line); len(match) == 4 {
 		what = ProcessingTaskByWorker
-		pool = match[1]
-		worker = match[2]
-		task = match[3]
-	} else if match := patterns.outboxTask.FindStringSubmatch(line); len(match) == 4 {
-		what = OutboxTaskByWorker
 		pool = match[1]
 		worker = match[2]
 		task = match[3]
@@ -98,6 +99,8 @@ func (m *Model) update(filepath string, workersLookup map[string]*Worker, patter
 	switch what {
 	case UnassignedTask:
 		m.UnassignedTasks = append(m.UnassignedTasks, task)
+	case OutboxTask:
+		m.OutboxTasks = append(m.OutboxTasks, task)
 	case DispatcherDone:
 		m.DispatcherDone = true
 	case LiveWorker:
@@ -137,8 +140,6 @@ func (m *Model) update(filepath string, workersLookup map[string]*Worker, patter
 			workersLookup[k] = w
 		}
 		w.processingTasks = append(w.processingTasks, task)
-	case OutboxTaskByWorker:
-		m.OutboxTasks = append(m.OutboxTasks, AssignedTask{pool, worker, task})
 	case SuccessfulTaskByWorker:
 		m.SuccessfulTasks = append(m.SuccessfulTasks, AssignedTask{pool, worker, task})
 		w, ok := workersLookup[k]
@@ -182,6 +183,12 @@ func (c client) fetchModel() Model {
 
 	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.ListenPrefix(), true) {
 		if c.LogOptions.Debug {
+			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
+		}
+		m.update(o.Key, workersLookup, c.pathPatterns)
+	}
+	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), true) {
+		if c.LogOptions.Verbose {
 			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
 		}
 		m.update(o.Key, workersLookup, c.pathPatterns)

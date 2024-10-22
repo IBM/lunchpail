@@ -11,6 +11,7 @@ import (
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/lunchpail"
 )
 
@@ -23,7 +24,7 @@ func StatusStreamer(ctx context.Context, run string, backend be.Backend, verbose
 	model.LastNMessages = ring.New(nLoglinesMax)
 
 	errgroup, sctx := errgroup.WithContext(ctx)
-	streamer := backend.Streamer(sctx, run)
+	streamer := backend.Streamer(sctx, queue.RunContext{RunName: run})
 
 	qc := make(chan qstat.Model)
 	errgroup.Go(func() error {
