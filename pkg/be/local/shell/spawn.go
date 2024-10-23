@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"lunchpail.io/pkg/be/local/files"
 	"lunchpail.io/pkg/build"
@@ -40,6 +41,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", command)
 	cmd.Dir = workdir
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	if outfile, err := os.Create(filepath.Join(logdir, logfile+".out")); err != nil {
 		return err
@@ -66,6 +68,10 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 	if err := WritePid(pidfile, cmd.Process.Pid); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
+
+	// by default, Go does not kill the entire process tree on
+	// context cancellation, sigh
+	go killProcessGroupOnContextCancellation(ctx, cmd)
 
 	if err := cmd.Wait(); err != nil {
 		return err
@@ -164,4 +170,22 @@ func WritePid(file string, pid int) error {
 	}
 
 	return nil
+}
+
+func killProcessGroupOnContextCancellation(ctx context.Context, cmd *exec.Cmd) {
+	for {
+		select {
+		case <-ctx.Done():
+			pgid, err := syscall.Getpgid(cmd.Process.Pid)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to get process group id: %v", err)
+				return
+			}
+			// note the minus sign
+			if err := syscall.Kill(-pgid, 15); err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to kill process group %d: %v", pgid, err)
+			}
+			return
+		}
+	}
 }
