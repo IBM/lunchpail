@@ -33,6 +33,9 @@ func newBuildCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
 	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
 
+	var eval string
+	cmd.Flags().StringVarP(&eval, "eval", "e", eval, "Run the given command line")
+
 	buildOptions, err := options.AddBuildOptions(cmd)
 	if err != nil {
 		panic(err)
@@ -61,6 +64,7 @@ func newBuildCmd() *cobra.Command {
 		return builder.Build(context.Background(), sourcePath, builder.Options{
 			Name:         outputFlag,
 			Branch:       branchFlag,
+			Eval:         eval,
 			AllPlatforms: allFlag,
 			BuildOptions: *buildOptions,
 		})

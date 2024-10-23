@@ -30,6 +30,10 @@ func stageLunchpailItself() (string, error) {
 func Build(ctx context.Context, sourcePath string, opts Options) error {
 	verbose := opts.BuildOptions.Log.Verbose
 
+	if sourcePath != "" && opts.Eval != "" {
+		return fmt.Errorf("Both a source path and --eval options were provided. Choose one or the other.")
+	}
+
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
 		return fmt.Errorf("Output path already exists and is a directory: %s", opts.Name)
 	}
@@ -46,7 +50,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	buildName := buildNameFrom(sourcePath)
 
 	// Third, overlay source (if given)
-	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{Branch: opts.Branch, Verbose: verbose})
+	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{Branch: opts.Branch, Eval: opts.Eval, Verbose: verbose})
 	if err != nil {
 		return err
 	}

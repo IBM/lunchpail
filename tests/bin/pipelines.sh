@@ -10,7 +10,7 @@ lp=/tmp/lunchpail
 
 IN1=$(mktemp)
 echo "1" > $IN1
-trap "rm -f $IN1" EXIT
+trap "rm -f $IN1 $add1b" EXIT
 
 export LUNCHPAIL_NAME="pipeline-test"
 export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
@@ -76,31 +76,36 @@ function validate {
     else echo "❌ FAIL mismatched exit code actual_ec=$actual_ec expected_ec=$expected_ec" && return 1
     fi
 
+    # validate no loitering processes remain
+    noLoitering 'minio server'
+    noLoitering 'worker run'
+
     if [[ $expected_ec != 0 ]]
-    then return
+    then return 1
     fi
 
     if [[ -e "$actual" ]]
     then echo "✅ PASS the output file exists"
-    else echo "❌ FAIL missing output file" && exit 1
+    else echo "❌ FAIL missing output file" && return 1
     fi
     
     actual_sha256=$(cat "$actual" | sha256sum)
     expected_sha256=$(cat "$expected" | sha256sum)
     if [[ "$actual_sha256" = "$expected_sha256" ]]
     then echo "✅ PASS the output file is valid file=$actual"
-    else echo "❌ FAIL mismatched sha256 on output file file=$actual actual_sha256=$actual_sha256 expected_sha256=$expected_sha256" && exit 1
+    else echo "❌ FAIL mismatched sha256 on output file file=$actual actual_sha256=$actual_sha256 expected_sha256=$expected_sha256" && return 1
     fi
 
     rm -f "$actual"
-
-    # validate no loitering processes remain
-    noLoitering 'minio server'
-    noLoitering 'worker run'
 }
+
+# build an add1 using `build -e/--eval`
+add1b=$(mktemp)
+/tmp/lunchpail build -e 'printf "%d" $((1+$(cat $1))) > $2' -o $add1b
 
 lpcat="$lp cat $VERBOSE"
 lpadd1="$lp add1 $VERBOSE"
+lpadd1b="$add1b up $VERBOSE"
 
 start "cat"
 $lpcat $IN1
@@ -129,12 +134,24 @@ start "add1"
 $lpadd1 $IN1
 validate $? $(add 1 "$IN1") "$IN1"
 
+start "add1b"
+$lpadd1b $IN1
+validate $? $(add 1 "$IN1") "$IN1"
+
 start "add1 | add1"
 $lpadd1 $IN1 | $lpadd1
 validate $? $(add 2 "$IN1") "$IN1"
 
+start "add1b | add1b"
+$lpadd1b $IN1 | $lpadd1b
+validate $? $(add 2 "$IN1") "$IN1"
+
 start "add1 | add1 | add1 | add1 | add1 | add1 | add1 | add1 | add1 | add1"
 $lpadd1 $IN1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1
+validate $? $(add 10 "$IN1") "$IN1"
+
+start "add1b | add1b | add1b | add1b | add1b | add1b | add1b | add1b | add1b | add1b"
+$lpadd1b $IN1 | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b
 validate $? $(add 10 "$IN1") "$IN1"
 
 echo

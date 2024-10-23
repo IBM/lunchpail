@@ -7,4 +7,7 @@ type Options struct {
 	Branch       string
 	AllPlatforms bool
 	BuildOptions build.Options
+
+	// Run the given command line
+	Eval string
 }
