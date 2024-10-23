@@ -16,11 +16,14 @@ func PreStop(ctx context.Context, opts Options) error {
 	}
 
 	if opts.LogOptions.Debug {
-		fmt.Println("Marking worker as done...")
+		fmt.Fprintln(os.Stderr, "Marking worker as done...")
 	}
 
-	client.Rm(opts.RunContext.Bucket, opts.RunContext.AsFile(queue.WorkerAliveMarker))
-	client.Touch(opts.RunContext.Bucket, opts.RunContext.AsFile(queue.WorkerDeadMarker))
+	if err := client.Rm(opts.RunContext.Bucket, opts.RunContext.AsFile(queue.WorkerAliveMarker)); err != nil {
+		fmt.Fprintf(os.Stderr, "Error removing alive file %v\n", err)
+	} else if err := client.TouchP(opts.RunContext.Bucket, opts.RunContext.AsFile(queue.WorkerDeadMarker), false); err != nil {
+		fmt.Fprintf(os.Stderr, "Error touching dead file %v\n", err)
+	}
 
 	if opts.LogOptions.Verbose {
 		fmt.Fprintf(os.Stderr, "This worker is shutting down pool=%s worker=%s\n", opts.RunContext.PoolName, opts.RunContext.WorkerName)

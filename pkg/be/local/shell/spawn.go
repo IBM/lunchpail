@@ -71,7 +71,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 
 	// by default, Go does not kill the entire process tree on
 	// context cancellation, sigh
-	go killProcessGroupOnContextCancellation(ctx, cmd)
+	go killProcessGroupOnContextCancellation(ctx, cmd, opts)
 
 	if err := cmd.Wait(); err != nil {
 		return err
@@ -172,19 +172,24 @@ func WritePid(file string, pid int) error {
 	return nil
 }
 
-func killProcessGroupOnContextCancellation(ctx context.Context, cmd *exec.Cmd) {
+func killProcessGroupOnContextCancellation(ctx context.Context, cmd *exec.Cmd, opts build.LogOptions) {
 	for {
 		select {
 		case <-ctx.Done():
 			pgid, err := syscall.Getpgid(cmd.Process.Pid)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Unable to get process group id: %v", err)
-				return
+				if opts.Debug {
+					fmt.Fprintf(os.Stderr, "Unable to get process group id for %d: %v\n", cmd.Process.Pid, err)
+				}
 			}
+
 			// note the minus sign
 			if err := syscall.Kill(-pgid, 15); err != nil {
-				fmt.Fprintf(os.Stderr, "Unable to kill process group %d: %v", pgid, err)
+				if opts.Debug {
+					fmt.Fprintf(os.Stderr, "Unable to kill process group %d: %v\n", pgid, err)
+				}
 			}
+
 			return
 		}
 	}
