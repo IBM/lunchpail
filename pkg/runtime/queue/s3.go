@@ -166,11 +166,15 @@ func (s3 S3Client) Download(bucket, source, destination string) error {
 }
 
 func (s3 S3Client) Touch(bucket, filePath string) error {
+	return s3.TouchP(bucket, filePath, true)
+}
+
+func (s3 S3Client) TouchP(bucket, filePath string, retry bool) error {
 	r := strings.NewReader("")
 	for {
 		_, err := s3.client.PutObject(s3.context, bucket, filePath, r, 0, minio.PutObjectOptions{})
 
-		if err != nil && !s3.retryOnError(err) {
+		if err != nil && (!retry || !s3.retryOnError(err)) {
 			return err
 		} else if err == nil {
 			break

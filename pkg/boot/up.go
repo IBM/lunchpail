@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
@@ -64,8 +65,38 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		return fmt.Errorf("please provide input files on the command line")
 	}
 
-	isRunning := make(chan struct{})
+	isRunning := make(chan struct{}) // is the job ready for business?
+	alldone := make(chan struct{})   // is the job submission complete?
 	cancellable, cancel := context.WithCancel(ctx)
+
+	// Respond to SIGINT by cancelling our context. This will help
+	// with cleaning up any loitering subprocesses, as Golang on
+	// its own only kills the top level of a process tree. See
+	// be/local/shell/spawn.go and its handling of context
+	// cancellation by killing the process group it has created.
+	go func() {
+		sigint := make(chan os.Signal)
+		signal.Notify(sigint, os.Interrupt)
+
+		// Wait for a SIGINT
+		for {
+			select {
+			case <-sigint:
+
+				// Now cancel the context
+				cancel()
+
+				// And wait for all of the subprocesses to clean
+				// themselves up. Because as soon as we exit from this
+				// handler, the process will die. We need to wait for
+				// the process group reaping to finish up. Sigh, why
+				// is this so complicated in Golang?
+				<-alldone
+
+				return
+			}
+		}
+	}()
 
 	if opts.Watch && !util.StdoutIsTty() {
 		// if stdout is not a tty, then we can't support
@@ -123,6 +154,12 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 
 	if needsCatAndRedirect {
 		<-redirectDone
+	}
+
+	// Note the use of `select` to implement a non-blocking send
+	select {
+	case alldone <- struct{}{}:
+	default:
 	}
 
 	return err
