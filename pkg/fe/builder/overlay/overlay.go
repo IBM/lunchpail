@@ -9,6 +9,7 @@ import (
 
 type Options struct {
 	Branch  string
+	Eval    string
 	Verbose bool
 }
 
@@ -28,6 +29,13 @@ func OverlaySourceOntoPriorBuild(appname, sourcePath string, opts Options) (temp
 	// changing/adding source
 	if sourcePath != "" {
 		appVersion, err = copyAppIntoTemplate(appname, sourcePath, templatePath, opts)
+		if err != nil {
+			return
+		}
+	}
+
+	if opts.Eval != "" {
+		appVersion, err = copyEvalIntoTemplate(appname, opts.Eval, templatePath, opts.Verbose)
 		if err != nil {
 			return
 		}

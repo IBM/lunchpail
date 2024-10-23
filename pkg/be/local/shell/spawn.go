@@ -173,24 +173,28 @@ func WritePid(file string, pid int) error {
 }
 
 func killProcessGroupOnContextCancellation(ctx context.Context, cmd *exec.Cmd, opts build.LogOptions) {
+	pgid, err := syscall.Getpgid(cmd.Process.Pid)
+	if err != nil {
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Unable to get process group id for %d: %v\n", cmd.Process.Pid, err)
+		}
+		return
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
-			pgid, err := syscall.Getpgid(cmd.Process.Pid)
-			if err != nil {
-				if opts.Debug {
-					fmt.Fprintf(os.Stderr, "Unable to get process group id for %d: %v\n", cmd.Process.Pid, err)
-				}
-			}
-
-			// note the minus sign
-			if err := syscall.Kill(-pgid, 15); err != nil {
-				if opts.Debug {
-					fmt.Fprintf(os.Stderr, "Unable to kill process group %d: %v\n", pgid, err)
-				}
-			}
-
+			killProcessGroup(pgid, opts)
 			return
+		}
+	}
+}
+
+func killProcessGroup(pgid int, opts build.LogOptions) {
+	// note the minus sign
+	if err := syscall.Kill(-pgid, 15); err != nil {
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Unable to kill process group %d: %v\n", pgid, err)
 		}
 	}
 }
