@@ -34,24 +34,23 @@ function actual {
     echo "$dir"/"$bb".output.$ext
 }
 
-function tester {
-    cmdline="$1"
+function start {
+    echo
+    echo "🧪 $(tput setaf 5)Starting Pipeline Test: $(tput bold)$1$(tput sgr0)"
+    echo -n "$(tput dim)"
+}
+
+function validate {
+    echo -n "$(tput sgr0)"
+    actual_ec=$1
     expected="$2"
     actual="$3"
     expected_ec=${4:-0}
 
-    echo ""
-    echo "------------------------------------------------------------------------------------"
-    echo "  $(tput bold)Test:$(tput sgr0) $1"
-    echo "  $(tput bold)Expected:$(tput sgr0) $expected"
-    echo "  $(tput bold)Actual:$(tput sgr0) $actual"
-    echo "  $(tput bold)Expected exit code$(tput sgr0): $expected_ec"
-    echo "------------------------------------------------------------------------------------"
+    echo "🧪 $(tput setaf 5)Expected: $expected$(tput sgr0)"
+    echo "🧪 $(tput setaf 5)Actual: $actual$(tput sgr0)"
+    echo "🧪 $(tput setaf 5)Expected exit code: $expected_ec$(tput sgr0)"
     
-    set +e
-    eval "$1 $input"
-    actual_ec=$?
-    set -e
     if [[ $actual_ec = $expected_ec ]]
     then echo "✅ PASS the exit code matches actual_ec=$actual_ec expected_ec=$expected_ec test=$1"
     else echo "❌ FAIL mismatched exit code actual_ec=$actual_ec expected_ec=$expected_ec test=$1" && return 1
@@ -75,14 +74,28 @@ function tester {
 }
 
 lpcat="$lp cat $VERBOSE"
-lpcatfinal="LUNCHPAIL_FORCE_TTY=1 $lp cat $VERBOSE"
 
-tester "$lpcatfinal $IN1" "$IN1" $(actual "$IN1") # input should equal output
-tester "$lpcatfinal nopenopenopenopenope" n/a n/a 1 # expect failure trying to cat a non-existent file
+start "cat"
+$lpcat $IN1
+validate $? "$IN1" $(actual "$IN1") # input should equal output
 
-tester "$lpcat $IN1 | $lpcatfinal" "$IN1" $(actual "$IN1" .) # cat | cat: input should still equal output
-tester "$lpcat $IN1 | $lpcat | $lpcatfinal" "$IN1" $(actual "$IN1" .) # cat | cat | cat: input should still equal output
-tester "$lpcat $IN1 | $lpcat | $lpcat | $lpcatfinal" "$IN1" $(actual "$IN1" .) # cat | cat | cat | cat: input should still equal output
+start "cat expecting error"
+set +e
+$lpcat nopenopenopenopenope
+validate $? n/a n/a 1
+set -e
 
+start "cat | cat"
+$lpcat $IN1 | $lpcat
+validate $? "$IN1" $(actual "$IN1" .)
 
+start "cat | cat | cat"
+$lpcat $IN1 | $lpcat | $lpcat # cat | cat | cat
+validate $? "$IN1" $(actual "$IN1" .)
+
+start "cat | cat | cat | cat"
+$lpcat $IN1 | $lpcat | $lpcat | $lpcat # cat | cat | cat | cat
+validate $? "$IN1" $(actual "$IN1" .)
+
+echo
 echo "✅ PASS all pipeline tests have passed!"

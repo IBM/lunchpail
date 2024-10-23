@@ -67,7 +67,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	isRunning := make(chan struct{})
 	cancellable, cancel := context.WithCancel(ctx)
 
-	if opts.Watch && !util.StdoutIsTty() && os.Getenv("LUNCHPAIL_FORCE_WATCH") == "" {
+	if opts.Watch && !util.StdoutIsTty() {
 		// if stdout is not a tty, then we can't support
 		// watch, no matter what the user asked for
 		fmt.Fprintf(os.Stderr, "Warning: disabling watch mode because stdout is not a tty\n")
