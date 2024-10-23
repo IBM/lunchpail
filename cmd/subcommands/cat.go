@@ -10,14 +10,15 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/boot"
+	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/runtime/builtins"
 )
 
-func init() {
+func initBuiltin(appFn func() hlir.HLIR, use string, short string) {
 	cmd := &cobra.Command{
-		Use:     "cat input1 [input2 ...]",
+		Use:     use,
 		GroupID: dataGroup.ID,
-		Short:   "Inject one or more files into a pipeline execution",
+		Short:   short,
 		Args:    cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
@@ -33,8 +34,13 @@ func init() {
 			return err
 		}
 
-		return boot.UpHLIR(ctx, backend, builtins.CatApp(), boot.UpOptions{BuildOptions: *buildOpts, Inputs: args})
+		return boot.UpHLIR(ctx, backend, appFn(), boot.UpOptions{BuildOptions: *buildOpts, Inputs: args})
 	}
 
 	rootCmd.AddCommand(cmd)
+}
+
+func init() {
+	initBuiltin(builtins.CatApp, "cat [input1 input2 ...]", "Inject one or more files into a pipeline execution")
+	initBuiltin(builtins.Add1App, "add1 [input1 input2 ...]", "Increment the content of each file by 1")
 }
