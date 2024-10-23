@@ -7,12 +7,16 @@
   env:
     - name: LUNCHPAIL_SUBDIR
       value: {{ .Values.workdir.cm.mount_path | default "" }}
+    - name: LUNCHPAIL_BLOBDIR
+      value: {{ .Values.workdir.cm.blob_path | default "" }}
   command:
     - /bin/sh
     - "-c"
     - |
       mkdir -p /workdir/$LUNCHPAIL_SUBDIR
+      mkdir -p /workdir/$LUNCHPAIL_BLOBDIR
       cp -aH /workdir-code/* /workdir/$LUNCHPAIL_SUBDIR
+      cp -aH /workdir-code/* /workdir/$LUNCHPAIL_BLOBDIR
       find /workdir
 {{- end }}
 {{- end }}

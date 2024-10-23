@@ -45,7 +45,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		return "", err
 	}
 
-	workdirCmData, workdirCmMountPath, err := codeB64(c.Application)
+	workdirCmData, workdirCmMountPath, blobCmMountPath, err := codeB64(c.Application)
 	if err != nil {
 		return "", err
 	}
@@ -78,6 +78,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"envFroms=" + envFroms,
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
+		"workdir.cm.blob_path=" + blobCmMountPath,
 	}
 
 	if len(secrets) > 0 {
