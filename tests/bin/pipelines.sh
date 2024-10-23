@@ -50,6 +50,16 @@ function start {
     echo -n "$(tput dim)"
 }
 
+function noLoitering {
+    local which="$1"
+    if [[ -n "$CI" ]]
+    then if [[ 0 = $(ps | grep "$which" | grep -v grep | wc -l | xargs) ]]
+         then echo "✅ PASS no loitering '$which'"
+         else echo "❌ FAIL loitering '$which' process" && return 1
+         fi
+    fi
+}
+
 function validate {
     echo -n "$(tput sgr0)"
     local actual_ec=$1
@@ -83,6 +93,10 @@ function validate {
     fi
 
     rm -f "$actual"
+
+    # validate no loitering processes remain
+    noLoitering 'minio server'
+    noLoitering 'worker run'
 }
 
 lpcat="$lp cat $VERBOSE"
