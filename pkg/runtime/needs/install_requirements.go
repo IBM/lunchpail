@@ -47,6 +47,9 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 
 	if _, err := os.Stat(path); err == nil {
 		// then the venv already exists
+		if verbose {
+			fmt.Fprintf(os.Stderr, "Skipping requirements install since virtual env exists\n")
+		}
 		return path, nil
 	}
 
