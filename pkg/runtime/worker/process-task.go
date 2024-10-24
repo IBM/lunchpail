@@ -77,36 +77,58 @@ func (p taskProcessor) process(task string) error {
 	}()
 
 	// Open stdout/err streams
-	stdoutWriter, stderrWriter := p.streamStdout(taskContext)
+	stdoutWriter, stderrWriter, stdoutReader := p.streamStdout(taskContext)
 	defer stdoutWriter.Close()
 	defer stderrWriter.Close()
 
 	// Here is where we invoke the underlying task handler
 	handlercmd := exec.CommandContext(p.ctx, p.handler[0], slices.Concat(p.handler[1:], []string{localprocessing, localoutbox})...)
-	handlercmd.Stdout = io.MultiWriter(os.Stdout, stdoutWriter)
 	handlercmd.Stderr = io.MultiWriter(os.Stderr, stderrWriter)
+	handlercmd.Stdout = io.MultiWriter(os.Stdout, stdoutWriter)
+	switch p.opts.CallingConvention {
+	case "stdio":
+		if stdin, err := os.Open(localprocessing); err != nil {
+			fmt.Fprintf(os.Stderr, "Internal Error setting up stdin: %v\n", err)
+			return nil
+		} else {
+			handlercmd.Stdin = stdin
+		}
+		p.backgroundS3Tasks.Go(func() error {
+			defer stdoutReader.Close()
+			return p.client.StreamingUpload(taskContext.Bucket, taskContext.AsFile(queue.AssignedAndFinished), stdoutReader)
+		})
+		defer func() {
+			p.backgroundS3Tasks.Go(func() error {
+				<-doneMovingToProcessing
+				return p.client.Rm(taskContext.Bucket, inprogress)
+			})
+		}()
+	default:
+		defer func() { p.handleOutbox(taskContext, inprogress, localoutbox, doneMovingToProcessing) }()
+	}
 	err = handlercmd.Run()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Internal Error running the handler:", err)
+		fmt.Fprintln(os.Stderr, "Handler launch failed:", err)
 	}
 
 	// Clean things up
 	p.handleExitCode(taskContext, handlercmd.ProcessState.ExitCode())
-	p.handleOutbox(taskContext, inprogress, localoutbox, doneMovingToProcessing)
 
 	if p.opts.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Worker done with task %s\n", task)
+		fmt.Fprintf(os.Stderr, "Worker done with task %s exitCode=%d\n", task, handlercmd.ProcessState.ExitCode())
 	}
 	return nil
 }
 
 // Set up pipes to stream output of the subprocess directly to S3
-func (p taskProcessor) streamStdout(taskContext queue.RunContext) (*io.PipeWriter, *io.PipeWriter) {
+func (p taskProcessor) streamStdout(taskContext queue.RunContext) (*io.PipeWriter, *io.PipeWriter, *io.PipeReader) {
 	stdoutReader, stdoutWriter := io.Pipe()
-	p.backgroundS3Tasks.Go(func() error {
-		defer stdoutReader.Close()
-		return p.client.StreamingUpload(taskContext.Bucket, taskContext.AsFile(queue.FinishedWithStdout), stdoutReader)
-	})
+	if p.opts.CallingConvention == "files" {
+		p.backgroundS3Tasks.Go(func() error {
+			defer stdoutReader.Close()
+			return p.client.StreamingUpload(taskContext.Bucket, taskContext.AsFile(queue.FinishedWithStdout), stdoutReader)
+		})
+	}
 
 	stderrReader, stderrWriter := io.Pipe()
 	p.backgroundS3Tasks.Go(func() error {
@@ -114,7 +136,7 @@ func (p taskProcessor) streamStdout(taskContext queue.RunContext) (*io.PipeWrite
 		return p.client.StreamingUpload(taskContext.Bucket, taskContext.AsFile(queue.FinishedWithStderr), stderrReader)
 	})
 
-	return stdoutWriter, stderrWriter
+	return stdoutWriter, stderrWriter, stdoutReader
 }
 
 // Report and upload exit code
@@ -130,7 +152,6 @@ func (p taskProcessor) handleExitCode(taskContext queue.RunContext, exitCode int
 			return p.client.Touch(taskContext.Bucket, taskContext.AsFile(queue.FinishedWithSucceeded))
 		})
 	} else {
-		fmt.Fprintln(os.Stderr, "Error with exit code "+strconv.Itoa(exitCode)+" while processing "+taskContext.Task)
 		p.backgroundS3Tasks.Go(func() error { return p.client.Touch(taskContext.Bucket, taskContext.AsFile(queue.FinishedWithFailed)) })
 	}
 }

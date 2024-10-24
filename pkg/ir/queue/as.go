@@ -28,11 +28,14 @@ func (run RunContext) AsFile(path Path) string {
 	if err != nil {
 		return ""
 	}
-	return s
+	return anyPoolP.ReplaceAllString(
+		anyWorkerP.ReplaceAllString(
+			anyTaskP.ReplaceAllString(s, ""),
+			""),
+		"")
 }
 
-// As with AsFile() but returning the enclosing directory (i.e. not
-// specific to a pool, a worker, or a task)
-func (run RunContext) AsFileForAnyWorker(path Path) string {
-	return filepath.Dir(filepath.Dir(run.ForPool("").ForWorker("").ForTask("").AsFile(path)))
+// As with AsFile(), but independent of any particular worker
+func (ctx RunContext) AsFileForAnyWorker(path Path) string {
+	return ctx.ForPool(any).ForWorker(any).ForTask(any).AsFile(path)
 }
