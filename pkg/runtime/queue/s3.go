@@ -192,6 +192,13 @@ func (s3 S3Client) Mark(bucket, filePath, marker string) error {
 	return err
 }
 
+func (s3 S3Client) StreamingUpload(bucket, filePath string, reader io.Reader) error {
+	// Warning: without PartSize, the minio client-go allocates a ridiculously massive buffer.
+	// Double Warning: if you provide PartSize < 5Mi, you get immediate failure.
+	_, err := s3.client.PutObject(s3.context, bucket, filePath, reader, -1, minio.PutObjectOptions{PartSize: 5 * 1024 * 1024})
+	return err
+}
+
 func (s3 S3Client) ListObjects(bucket, filePath string, recursive bool) <-chan minio.ObjectInfo {
 	return s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{
 		Prefix:    filePath,

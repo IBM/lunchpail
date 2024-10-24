@@ -82,11 +82,13 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 			sleepNextTime = true
 
 		case task := <-tasks:
-			if opts.LogOptions.Debug {
-				fmt.Fprintf(os.Stderr, "Got push notification of task %s\n", filepath.Base(task))
+			if task != "" {
+				if opts.LogOptions.Debug {
+					fmt.Fprintf(os.Stderr, "Got push notification of task %s\n", filepath.Base(task))
+				}
+				// we got a push notification, handle it here, and continue to the next for{} select
+				group.Go(func() error { return p.process(task) })
 			}
-			// we got a push notification, handle it here, and continue to the next for{} select
-			group.Go(func() error { return p.process(task) })
 			continue
 
 		case <-cancellable.Done():
