@@ -15,7 +15,7 @@ spec:
         out="$2"
 
         echo "Processing $(basename $in) {{ .Values.test7g.nonfilevalue }} $FILEVALUE"
-        sleep 5
+        sleep 2
 
         echo "Done with $(basename $in)"
 

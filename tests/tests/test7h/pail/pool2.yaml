@@ -4,7 +4,7 @@ kind: WorkerPool
 metadata:
   name: test7h-pool2
 spec:
-  startupDelay: 5s
+  startupDelay: 2s
   workers:
     count: 1
     size: xxs
