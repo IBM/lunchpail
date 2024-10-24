@@ -19,7 +19,7 @@ func QdoneClient(ctx context.Context, c S3Client, run queue.RunContext, opts bui
 		return err
 	}
 
-	return c.Touch(run.Bucket, run.AsFile(queue.DispatcherDoneMarker))
+	return c.TouchP(run.Bucket, run.AsFile(queue.DispatcherDoneMarker), false)
 }
 
 // Indicate dispatching is done
