@@ -24,7 +24,7 @@ spec:
         N=len(os.listdir(dir))
 
         print(f"Processing {N} {os.path.basename(input)}")
-        time.sleep(5)
+        time.sleep(1)
 
         print(f"Done with {os.path.basename(input)}")
 
