@@ -33,6 +33,7 @@ func Run() *cobra.Command {
 	var startupDelay int
 	cmd.Flags().IntVar(&startupDelay, "delay", 0, "Delay (in seconds) before engaging in any work")
 
+	ccOpts := options.AddCallingConventionOptions(cmd)
 	logOpts := options.AddLogOptions(cmd)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -46,10 +47,11 @@ func Run() *cobra.Command {
 		}
 
 		return worker.Run(context.Background(), args, worker.Options{
-			StartupDelay:    startupDelay,
-			PollingInterval: pollingInterval,
-			LogOptions:      *logOpts,
-			RunContext:      run.ForPool(poolName).ForWorker(workerName),
+			CallingConvention: ccOpts.CallingConvention,
+			StartupDelay:      startupDelay,
+			PollingInterval:   pollingInterval,
+			LogOptions:        *logOpts,
+			RunContext:        run.ForPool(poolName).ForWorker(workerName),
 		})
 	}
 

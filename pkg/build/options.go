@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"lunchpail.io/pkg/be/target"
+	"lunchpail.io/pkg/ir/hlir"
 )
 
 type TargetOptions struct {
@@ -23,19 +24,20 @@ type Options struct {
 	Target *TargetOptions
 	Log    *LogOptions
 
-	ImagePullSecret    string   `yaml:"imagePullSecret,omitempty"`
-	OverrideValues     []string `yaml:"overrideValues,omitempty"`
-	OverrideFileValues []string `yaml:"overrideFileValues,omitempty"`
-	Queue              string   `yaml:",omitempty"`
-	HasGpuSupport      bool     `yaml:"hasGpuSupport,omitempty"`
-	ApiKey             string   `yaml:"apiKey,omitempty"`
-	ResourceGroupID    string   `yaml:"resourceGroupID,omitempty"`
-	SSHKeyType         string   `yaml:"SSHKeyType,omitempty"`
-	PublicSSHKey       string   `yaml:"publicSSHKey,omitempty"`
-	Zone               string   `yaml:"zone,omitempty"`
-	Profile            string   `yaml:"profile,omitempty"`
-	ImageID            string   `yaml:"imageID,omitempty"`
-	CreateNamespace    bool     `yaml:"createNamespace,omitempty"`
+	hlir.CallingConvention `yaml:"callingConvention,omitempty"`
+	ImagePullSecret        string   `yaml:"imagePullSecret,omitempty"`
+	OverrideValues         []string `yaml:"overrideValues,omitempty"`
+	OverrideFileValues     []string `yaml:"overrideFileValues,omitempty"`
+	Queue                  string   `yaml:",omitempty"`
+	HasGpuSupport          bool     `yaml:"hasGpuSupport,omitempty"`
+	ApiKey                 string   `yaml:"apiKey,omitempty"`
+	ResourceGroupID        string   `yaml:"resourceGroupID,omitempty"`
+	SSHKeyType             string   `yaml:"SSHKeyType,omitempty"`
+	PublicSSHKey           string   `yaml:"publicSSHKey,omitempty"`
+	Zone                   string   `yaml:"zone,omitempty"`
+	Profile                string   `yaml:"profile,omitempty"`
+	ImageID                string   `yaml:"imageID,omitempty"`
+	CreateNamespace        bool     `yaml:"createNamespace,omitempty"`
 }
 
 //go:embed buildOptions.json

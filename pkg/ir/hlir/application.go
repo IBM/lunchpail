@@ -32,6 +32,7 @@ type Application struct {
 		SecurityContext          SecurityContext          `yaml:"securityContext,omitempty"`
 		ContainerSecurityContext ContainerSecurityContext `yaml:"containerSecurityContext,omitempty"`
 		Needs                    []Needs                  `yaml:"needs,omitempty"`
+		CallingConvention        `yaml:"callingConvention,omitempty"`
 	}
 }
 
