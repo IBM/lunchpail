@@ -14,6 +14,8 @@ func AddBuildOptions(cmd *cobra.Command) (*build.Options, error) {
 		return nil, err
 	}
 
+	AddCallingConventionOptionsTo(cmd, &options)
+
 	cmd.Flags().StringVarP(&options.ImagePullSecret, "image-pull-secret", "s", options.ImagePullSecret, "Of the form <user>:<token>@ghcr.io")
 	cmd.Flags().StringVar(&options.Queue, "queue", options.Queue, "Use the queue defined by this Secret (data: accessKeyID, secretAccessKey, endpoint)")
 	cmd.Flags().BoolVar(&options.HasGpuSupport, "gpu", options.HasGpuSupport, "Run with GPUs (if supported by the application)")

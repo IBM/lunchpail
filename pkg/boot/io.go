@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/dustin/go-humanize/english"
+
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/llir"
@@ -29,7 +31,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	if len(inputs) > 0 {
 		// "cat" the inputs into the queue
 		if opts.Verbose {
-			fmt.Fprintf(os.Stderr, "up is using 'cat' to inject %d input files\n", len(inputs))
+			fmt.Fprintf(os.Stderr, "Using 'cat' to inject %s\n", english.Plural(len(inputs), "input file", ""))
 		}
 		if err := builtins.Cat(ctx, client.S3Client, ir.Context.Run, inputs, opts); err != nil {
 			return err
