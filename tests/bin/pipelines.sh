@@ -10,7 +10,7 @@ lp=/tmp/lunchpail
 
 IN1=$(mktemp)
 echo "1" > $IN1
-trap "rm -f $IN1 $add1b" EXIT
+trap "rm -f $IN1 $add1b $add1c $add1d" EXIT
 
 export LUNCHPAIL_NAME="pipeline-test"
 export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
@@ -93,19 +93,30 @@ function validate {
     expected_sha256=$(cat "$expected" | sha256sum)
     if [[ "$actual_sha256" = "$expected_sha256" ]]
     then echo "✅ PASS the output file is valid file=$actual"
-    else echo "❌ FAIL mismatched sha256 on output file file=$actual actual_sha256=$actual_sha256 expected_sha256=$expected_sha256" && return 1
+    else echo "❌ FAIL mismatched sha256 on output file file=$actual actual=$(cat $actual) expected=$(cat expected) actual_file=$actual expected_file=$expected" && return 1
     fi
 
     rm -f "$actual"
 }
 
-# build an add1 using `build -e/--eval`
+# build an add1 using `build -e/--eval`; printf because `echo -n` is not universally supported
 add1b=$(mktemp)
-/tmp/lunchpail build -e 'printf "%d" $((1+$(cat $1))) > $2' -o $add1b
+/tmp/lunchpail build -e 'printf "%d" $((1+$(cat $1))) > $2' -o $add1b &
+
+# ibid, for stdio calling convention
+add1c=$(mktemp)
+/tmp/lunchpail build -C stdio -e 'printf "%d" $((1+$(</dev/stdin)))' -o $add1c &
+
+# ibid, for python with stdio calling convention
+add1d=$(mktemp)
+/tmp/lunchpail build -C stdio -e 'python3 -c "import sys; print(1+int(sys.stdin.read()))"' -o $add1d &
+wait
 
 lpcat="$lp cat $VERBOSE"
 lpadd1="$lp add1 $VERBOSE"
 lpadd1b="$add1b up $VERBOSE"
+lpadd1c="$add1c up $VERBOSE"
+lpadd1d="$add1c up $VERBOSE"
 
 start "cat"
 $lpcat $IN1
@@ -138,6 +149,14 @@ start "add1b"
 $lpadd1b $IN1
 validate $? $(add 1 "$IN1") "$IN1"
 
+start "add1c"
+$lpadd1c $IN1
+validate $? $(add 1 "$IN1") "$IN1"
+
+start "add1d"
+$lpadd1d $IN1
+validate $? $(add 1 "$IN1") "$IN1"
+
 start "add1 | add1"
 $lpadd1 $IN1 | $lpadd1
 validate $? $(add 2 "$IN1") "$IN1"
@@ -145,6 +164,20 @@ validate $? $(add 2 "$IN1") "$IN1"
 start "add1b | add1b"
 $lpadd1b $IN1 | $lpadd1b
 validate $? $(add 2 "$IN1") "$IN1"
+
+start "add1c | add1c"
+$lpadd1b $IN1 | $lpadd1b
+validate $? $(add 2 "$IN1") "$IN1"
+
+# mix and match impls
+start "add1 | add1b | add1c"
+$lpadd1 $IN1 | $lpadd1b | $lpadd1c
+validate $? $(add 3 "$IN1") "$IN1"
+
+# mix and match impls and calling conventions
+start "add1 | add1b | add1c | add1d"
+$lpadd1 $IN1 | $lpadd1b | $lpadd1c | $lpadd1d
+validate $? $(add 4 "$IN1") "$IN1"
 
 start "add1 | add1 | add1 | add1 | add1 | add1 | add1 | add1 | add1 | add1"
 $lpadd1 $IN1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1 | $lpadd1

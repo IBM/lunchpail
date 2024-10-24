@@ -27,11 +27,25 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 		app.Spec.Env = make(map[string]string)
 	}
 
-	queueArgs := fmt.Sprintf("--pool %s --worker $LUNCHPAIL_POD_NAME --verbose=%v --debug=%v ", pool.Metadata.Name, opts.Log.Verbose, opts.Log.Debug)
+	queueArgs := fmt.Sprintf("--pool %s --worker $LUNCHPAIL_POD_NAME --verbose=%v --debug=%v ",
+		pool.Metadata.Name,
+		opts.Log.Verbose,
+		opts.Log.Debug,
+	)
+
+	callingConvention := opts.CallingConvention
+	if callingConvention == "" {
+		callingConvention = app.Spec.CallingConvention
+	}
+	if callingConvention == "" {
+		callingConvention = hlir.CallingConventionFiles
+	}
+
 	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop %s" EXIT
-$LUNCHPAIL_EXE component worker run --delay %d %s -- %s`,
+$LUNCHPAIL_EXE component worker run --delay %d --calling-convention %v %s -- %s`,
 		queueArgs,
 		startupDelay,
+		callingConvention,
 		queueArgs,
 		app.Spec.Command,
 	)
