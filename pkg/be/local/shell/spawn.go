@@ -193,7 +193,7 @@ func killProcessGroupOnContextCancellation(ctx context.Context, cmd *exec.Cmd, o
 func killProcessGroup(pgid int, opts build.LogOptions) {
 	// note the minus sign
 	if err := syscall.Kill(-pgid, 15); err != nil {
-		if opts.Verbose {
+		if opts.Debug {
 			fmt.Fprintf(os.Stderr, "Unable to kill process group %d: %v\n", pgid, err)
 		}
 	}
