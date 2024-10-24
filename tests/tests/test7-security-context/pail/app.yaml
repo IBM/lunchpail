@@ -20,7 +20,7 @@ spec:
         N=$(ls $dataset_name/$bucket_name/$folder_name | wc -l | xargs)
 
         echo "Processing $N $(basename $in)"
-        sleep 5
+        sleep 2
 
         echo "Done with $(basename $in)"
 

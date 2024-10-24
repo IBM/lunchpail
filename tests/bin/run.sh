@@ -90,8 +90,6 @@ then
     then "$1"/preinit.sh
     fi
 
-    export LUNCHPAIL_VENV_CACHEDIR="$TEST_PATH"/.venv
-
     if [[ -n "$expectBuildFailure" ]]
     then
         set +e
@@ -130,10 +128,16 @@ then
 
     undeploy $testname $deployname
 
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        CACHEDIR="$HOME/Library/Caches/lunchpail/venvs"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        CACHEDIR="$HOME/.cache/lunchpail/venvs"
+    fi
+
     # clean up python venvs if we are in travis or github actions
-    if [[ -n "$CI" ]] && [[ -d "$1"/.venv ]]
+    if [[ -n "$CI" ]] && [[ -d "$CACHEDIR" ]]
     then
         echo "Cleaning up Python venv"
-        rm -rf "$LUNCHPAIL_VENV_CACHEDIR"
+        rm -rf "$CACHEDIR/*"
     fi
 fi
