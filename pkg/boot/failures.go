@@ -29,16 +29,21 @@ func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunC
 	done := false
 	for !done {
 		select {
+		case <-ctx.Done():
+			done = true
 		case err := <-errc:
-			if err == nil || strings.Contains(err.Error(), "EOF") {
+			if err == nil || strings.Contains(err.Error(), "EOF") || strings.Contains(err.Error(), "connection refused") {
 				done = true
 			} else {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		case object := <-objc:
+			if object == "" {
+				continue
+			}
 			// Oops, a task failed. Fetch the stderr and show it.
 			if opts.Verbose {
-				fmt.Fprintf(os.Stderr, "Got indication of task failure %s\n", object)
+				fmt.Fprintf(os.Stderr, "Got indication of task failure '%s'\n", object)
 			}
 
 			// We need to find the FinishedWithStderr file
