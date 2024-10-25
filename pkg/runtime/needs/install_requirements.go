@@ -17,12 +17,13 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 	var reqmtsFile *os.File
 	var err error
 
-	if verbose {
-		verboseFlag = "--verbose"
-	}
-
 	if reqmtsByte, err = base64.StdEncoding.DecodeString(requirements); err != nil {
 		return "", err
+	}
+
+	if verbose {
+		verboseFlag = "--verbose"
+		fmt.Fprintf(os.Stderr, "Installing requirements\n%s\n", string(reqmtsByte))
 	}
 
 	//Main cache dir for all virtual envs
