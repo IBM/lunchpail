@@ -15,7 +15,7 @@ spec:
         out="$2"
 
         echo "Processing $(basename $in)"
-        t=${WORK_TIME-2}
+        t=${WORK_TIME-1}
         duration=$(shuf -n 1 -i $((t-3))-$((t+3)))
         sleep $duration
 
