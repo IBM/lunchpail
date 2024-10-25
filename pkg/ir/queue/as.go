@@ -33,6 +33,6 @@ func (run RunContext) AsFile(path Path) string {
 
 // As with AsFile() but returning the enclosing directory (i.e. not
 // specific to a pool, a worker, or a task)
-func (run RunContext) AsDir(path Path) string {
+func (run RunContext) AsFileForAnyWorker(path Path) string {
 	return filepath.Dir(filepath.Dir(run.ForPool("").ForWorker("").ForTask("").AsFile(path)))
 }

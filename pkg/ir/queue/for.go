@@ -27,5 +27,5 @@ func (run RunContext) ForObject(path Path, object string) (RunContext, error) {
 	if len(match) != 4 {
 		return run, fmt.Errorf("ForObjectTask bad match %s %v", object, match)
 	}
-	return run.ForPool(match[1]).ForWorker(match[2]).ForTask(match[1]), nil
+	return run.ForPool(match[1]).ForWorker(match[2]).ForTask(match[3]), nil
 }

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dustin/go-humanize/english"
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
@@ -15,8 +16,8 @@ import (
 )
 
 func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, folderFor func(object string) string, opts build.LogOptions) error {
-	failures := run.AsFile(queue.FinishedWithFailed)
 	outbox := run.AsFile(queue.AssignedAndFinished)
+	failures := run.AsFileForAnyWorker(queue.FinishedWithFailed) // we want to be notified if a task fails in *any* worker
 
 	outboxObjects, outboxErrs := client.Listen(client.Paths.Bucket, outbox, "", false)
 	failuresObjects, failuresErrs := client.Listen(client.Paths.Bucket, failures, "", false)
@@ -83,7 +84,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 			// instance (`ForObjectTask`) and then use
 			// that `fortask` to templatize the
 			// FinishedWithCode
-			forobject, err := run.ForObject(queue.AssignedAndFinished, object)
+			forobject, err := run.ForObject(queue.FinishedWithFailed, object)
 			if err != nil {
 				return err
 			}
@@ -91,7 +92,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(os.Stderr, errorContent)
+			fmt.Fprintf(os.Stderr, "\033[0;31m"+errorContent+"\033[0m")
 			nFailures++
 		}
 	}
@@ -101,7 +102,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 	}
 
 	if nFailures > 0 {
-		return fmt.Errorf("Error: %d tasks failed", nFailures)
+		return fmt.Errorf("Error: %s failed", english.PluralWord(nFailures, "task", ""))
 	}
 
 	return nil
