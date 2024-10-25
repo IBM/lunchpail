@@ -16,7 +16,7 @@ spec:
 
         # We expect $MESSAGE to flow in via values.yaml not the default value in the env.MESSAGE below
         echo "$MESSAGE $(basename $in)"
-        sleep 2
+        sleep 1
 
         echo "Done with $(basename $in)"
 

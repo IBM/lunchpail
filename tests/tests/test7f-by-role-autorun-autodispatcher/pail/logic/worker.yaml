@@ -15,7 +15,7 @@ spec:
         out="$2"
 
         echo "Processing $(basename $in)"
-        sleep 2
+        sleep 1
 
         echo "Done with $(basename $in)"
 
