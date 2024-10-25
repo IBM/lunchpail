@@ -123,7 +123,7 @@ func (s3 S3Client) StopListening(bucket string) error {
 // Wait for the given enqueued task to appear in the outbox
 func (c S3Client) WaitForCompletion(run queue.RunContext, task string, verbose bool) (int, error) {
 	run = run.ForTask(task)
-	codesDir := run.AsDir(queue.FinishedWithCode)
+	codesDir := run.AsFileForAnyWorker(queue.FinishedWithCode)
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Waiting for task completion %s -> %s\n", task, codesDir)
