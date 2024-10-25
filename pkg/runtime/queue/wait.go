@@ -69,8 +69,9 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 		}
 	}
 
+	dead := false
 	go func() {
-		for !watcherIsAlive {
+		for !watcherIsAlive && !dead {
 			once()
 
 			if !watcherIsAlive {
@@ -82,6 +83,7 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 	go func() {
 		defer close(c)
 		defer close(e)
+		defer func() { dead = true }()
 		already := false
 
 		events := []string{"s3:ObjectCreated:*"}
