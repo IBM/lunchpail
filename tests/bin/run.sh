@@ -128,16 +128,16 @@ then
 
     undeploy $testname $deployname
 
-    if [[ "$OSTYPE" == "darwin"* ]]; then
+    if [[ $(uname) == "Darwin" ]]; then
         CACHEDIR="$HOME/Library/Caches/lunchpail/venvs"
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    elif [[ $(uname) == "Linux" ]]; then
         CACHEDIR="$HOME/.cache/lunchpail/venvs"
     fi
 
     # clean up python venvs if we are in travis or github actions
     if [[ -n "$CI" ]] && [[ -d "$CACHEDIR" ]]
     then
-        echo "Cleaning up Python venv"
-        rm -rf "$CACHEDIR/*"
+        echo "Cleaning up Python venv $CACHEDIR"
+        rm -rf "$CACHEDIR"
     fi
 fi
