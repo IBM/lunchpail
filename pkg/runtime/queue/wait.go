@@ -59,23 +59,30 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 		// delete(reported, key)
 		c <- key
 	}
+	dead := false
 	once := func() {
 		for o := range s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true}) {
-			if o.Err != nil {
-				e <- o.Err
-			} else {
-				reportCreate(o.Key)
+			select {
+			case <-s3.context.Done():
+				break
+			default:
+				if dead {
+					return
+				} else if o.Err != nil {
+					e <- o.Err
+				} else {
+					reportCreate(o.Key)
+				}
 			}
 		}
 	}
 
-	dead := false
 	go func() {
 		for !watcherIsAlive && !dead {
 			once()
 
 			if !watcherIsAlive {
-				time.Sleep(1 * time.Second)
+				time.Sleep(500 * time.Millisecond)
 			}
 		}
 	}()
