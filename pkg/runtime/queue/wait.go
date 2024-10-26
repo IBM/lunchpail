@@ -81,9 +81,11 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 	}()
 
 	go func() {
-		defer close(c)
-		defer close(e)
-		defer func() { dead = true }()
+		defer func() {
+			dead = true
+			close(c)
+			close(e)
+		}()
 		already := false
 
 		events := []string{"s3:ObjectCreated:*"}
