@@ -4,6 +4,9 @@ set -eo pipefail
 
 # Allows us to capture workstealer info before it auto-terminates
 export LUNCHPAIL_SLEEP_BEFORE_EXIT=5
+if [[ ${LUNCHPAIL_TARGET:-kubernetes} = kubernetes ]]
+then LUNCHPAIL_SLEEP_BEFORE_EXIT=10 # kubernetes validators are a bit slower due to the need to open a port-forward to minio
+fi
 
 if [[ -n "$taskqueue" ]]
 then QUEUE="--queue $taskqueue"
