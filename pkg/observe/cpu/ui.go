@@ -10,7 +10,6 @@ import (
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/ir/queue"
-	"lunchpail.io/pkg/observe/status"
 )
 
 type CpuOptions struct {
@@ -39,8 +38,8 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts CpuOptio
 		}
 
 		workers := model.Sorted()
-		fmt.Println(status.Cpuline(workers, status.Cpu))
-		fmt.Println(status.Cpuline(workers, status.Mem))
+		fmt.Println(cpuline(workers, cpu))
+		fmt.Println(cpuline(workers, mem))
 	}
 
 	return nil

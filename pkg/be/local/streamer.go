@@ -2,7 +2,6 @@ package local
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,8 +13,6 @@ import (
 	"github.com/shirou/gopsutil/v4/process"
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/be/controller"
-	"lunchpail.io/pkg/be/events"
 	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/local/files"
@@ -33,83 +30,6 @@ type localStreamer struct {
 // Return a streamer
 func (backend Backend) Streamer(ctx context.Context, run queue.RunContext) streamer.Streamer {
 	return localStreamer{ctx, run, backend}
-}
-
-func (s localStreamer) RunEvents() (chan events.Message, error) {
-	c := make(chan events.Message)
-	return c, nil
-}
-
-func (s localStreamer) RunComponentUpdates(cc chan events.ComponentUpdate, cm chan events.Message) error {
-	pidsDir, err := files.PidfileDir(s.run)
-	if err != nil {
-		return err
-	}
-
-	group, ctx := errgroup.WithContext(s.Context)
-	runningLookup := make(map[string]bool)
-	group.Go(func() error {
-		ctrl := controller.Controller(nil)
-		for {
-			pidfiles, err := os.ReadDir(pidsDir)
-			if err != nil && !errors.Is(err, os.ErrNotExist) {
-				return err
-			} else if err == nil {
-				for _, pidfileEntry := range pidfiles {
-					pidfile := pidfileEntry.Name()
-					if files.IsMainPidfile(pidfile) {
-						continue
-					}
-
-					runningNow, err := isPidRunning(filepath.Join(pidsDir, pidfile))
-					if err != nil {
-						return err
-					}
-
-					runningBefore, ok := runningLookup[pidfile]
-					if !ok || runningBefore != runningNow {
-						runningLookup[pidfile] = runningNow
-						component, instanceName, err := files.ComponentForPidfile(pidfile)
-						if err != nil {
-							return err
-						}
-
-						// TODO infer events.Failed
-						state := events.WorkerStatus(events.Running)
-						event := events.EventType(events.Added)
-						if !runningNow {
-							state = events.Terminating
-							event = events.Deleted
-						}
-
-						var update events.ComponentUpdate
-						switch component {
-						case lunchpail.WorkersComponent:
-							dashIdx := strings.LastIndex(instanceName, "-")
-							poolName := instanceName[:dashIdx]
-							workerName := instanceName
-							update = events.WorkerUpdate(workerName, poolName, ctrl, state, event)
-						case lunchpail.WorkStealerComponent:
-							update = events.WorkStealerUpdate(ctrl, state, event)
-						case lunchpail.DispatcherComponent:
-							update = events.DispatcherUpdate(ctrl, state, event)
-						}
-
-						select {
-						case <-ctx.Done():
-							return ctx.Err()
-						default:
-							cc <- update
-						}
-					}
-				}
-			}
-
-			time.Sleep(1 * time.Second)
-		}
-	})
-
-	return nil
 }
 
 // Stream cpu and memory statistics
