@@ -52,7 +52,9 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 			}
 		}
 
-		component.Spec.Command = fmt.Sprintf(`PATH=$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v):$PATH %s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
+		component.Spec.Command = fmt.Sprintf(`set -e
+PATH=$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v):$PATH
+%s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
 	}
 
 	for _, dataset := range app.Spec.Datasets {

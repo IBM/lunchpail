@@ -42,6 +42,16 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 		return "", err
 	}
 
+	// PATH to our venv/bin
+	path := filepath.Join(venvPath, "bin")
+
+	if _, err := os.Stat(path); err == nil {
+		// then the venv already exists
+		return path, nil
+	}
+
+	// otherwise populate the venv
+
 	//Create a requirements file in cache venv dir
 	if reqmtsFile, err = os.Create(filepath.Join(venvPath, "requirements.txt")); err != nil {
 		return "", err
@@ -61,7 +71,7 @@ pip3 install -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, reqmtsFile.Name(),
 		cmd.Stdout = os.Stderr
 	}
 	cmd.Stderr = os.Stderr
-	return filepath.Join(venvPath, "bin"), cmd.Run()
+	return path, cmd.Run()
 }
 
 func getSHA256Sum(requirements []byte) (string, error) {
