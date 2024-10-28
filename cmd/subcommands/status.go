@@ -18,7 +18,6 @@ func init() {
 		}
 
 		rootCmd.AddCommand(cmd)
-		cmd.AddCommand(runs.Dashboard())
 		cmd.AddCommand(runs.ListRuns())
 		cmd.AddCommand(runs.Instances())
 		cmd.AddCommand(runs.Cpu())
