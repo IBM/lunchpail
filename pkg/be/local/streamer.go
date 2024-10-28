@@ -3,6 +3,7 @@ package local
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -178,7 +179,7 @@ func tailfChan(outfile string, opts streamer.LogOptions) (*tail.Tail, error) {
 		Logger = log.New(os.Stderr, "", log.LstdFlags)
 	}
 
-	return tail.TailFile(outfile, tail.Config{Follow: opts.Follow, ReOpen: opts.Follow, Logger: Logger})
+	return tail.TailFile(outfile, tail.Config{Follow: opts.Follow, ReOpen: opts.Follow, Logger: Logger, Location: &tail.SeekInfo{Whence: io.SeekEnd}})
 }
 
 func tailf(outfile string, opts streamer.LogOptions) error {
