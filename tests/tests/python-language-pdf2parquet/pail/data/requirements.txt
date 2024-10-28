@@ -4,4 +4,5 @@ deepsearch-glm==0.21.0
 docling==1.11.0
 filetype >=1.2.0, <2.0.0
 
-pyarrow
+# we can probably update to 18+, but we will have to re-generate expected output as pyarrow 18 seems to have resulted in a binary format change
+pyarrow<18
