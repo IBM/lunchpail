@@ -97,13 +97,13 @@ func (s localStreamer) QueueStats(c chan qstat.Model, opts qstat.Options) error 
 	lines := make(chan string)
 	errs, _ := errgroup.WithContext(s.Context)
 	errs.Go(func() error {
+		defer close(lines)
 		for line := range tail.Lines {
 			if line.Err != nil {
 				return line.Err
 			}
 			lines <- line.Text
 		}
-		close(lines)
 		return nil
 	})
 

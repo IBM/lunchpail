@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/term"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/events/qstat"
@@ -25,63 +24,83 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 		return err
 	}
 
+	// Start streaming qstat models into channel `c`
 	c := make(chan qstat.Model)
-
-	group, _ := errgroup.WithContext(ctx)
-	group.Go(func() error {
+	go func() {
 		defer close(c)
-		return backend.Streamer(ctx, queue.RunContext{RunName: runname}).QueueStats(c, opts)
-	})
+		if err := backend.Streamer(ctx, queue.RunContext{RunName: runname}).QueueStats(c, opts); err != nil {
+			fmt.Fprintf(os.Stderr, "Error from streamer: %v\n", err)
+		}
+	}()
 
-	purple := lipgloss.Color("99")
+	highlight := lipgloss.Color("#3C3C3C")
 	re := lipgloss.NewRenderer(os.Stdout)
-	headerStyle := re.NewStyle().Foreground(purple).Bold(true).Align(lipgloss.Center)
+	italic := re.NewStyle().Italic(true)
+	styles := []lipgloss.Style{
+		lipgloss.Style{}, // Pool
+		lipgloss.Style{}, // Worker
+		re.NewStyle().Bold(true).Background(lipgloss.Color("3")).Padding(0, 1), // Pend
+		re.NewStyle().Padding(0, 1), // Live
+		re.NewStyle().Bold(true).Background(lipgloss.Color("2")).Padding(0, 1), // Done
+		re.NewStyle().Bold(true).Background(lipgloss.Color("1")).Padding(0, 1), // Fail
+	}
 
-	first := true
+	workerRow := func(t *table.Table, pool qstat.Pool, worker qstat.Worker, suffix string) {
+		t.Row(
+			pool.Name,
+			name(runname, pool.Name, worker.Name)+suffix,
+			strconv.Itoa(worker.Inbox),
+			strconv.Itoa(worker.Processing),
+			strconv.Itoa(worker.Outbox),
+			strconv.Itoa(worker.Errorbox),
+		)
+	}
+
+	// Consume model updates from channel `c` and render them to
+	// the console as a table
 	for model := range c {
-		if !first {
-			fmt.Println()
-		} else {
-			first = false
-		}
-
-		width, _, err := term.GetSize(1)
-		if err != nil {
-			return err
-		}
-
 		t := table.New().
 			Border(lipgloss.NormalBorder()).
-			BorderStyle(lipgloss.NewStyle().Foreground(purple)).
-			Width(width).
-			Headers("", "IDLE", "WORKING", "SUCCESS", "FAILURE").
+			BorderStyle(lipgloss.NewStyle().Foreground(highlight)).
+			Headers("Pool", "Worker", "Pend", "Live", "Done", "Fail").
 			StyleFunc(func(row, col int) lipgloss.Style {
-				var style lipgloss.Style
-
 				switch {
-				case row == 0:
-					return headerStyle
+				case row == -1: // header row
+					return styles[0]
+				case row == 0: // inbox row
+					if col > 2 {
+						return styles[0]
+					}
 				}
-				return style
+				return styles[col]
 			})
 
-		t.Row("unassigned", strconv.Itoa(model.Unassigned), "", "", "")
-		t.Row("assigned", strconv.Itoa(model.Assigned), "", "", "")
-		t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
-		t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
+		t.Row("", italic.Render("inbox"), strconv.Itoa(model.Unassigned), "", "", "")
+
+		// Numbers across all pools
+		//t.Row("assigned", strconv.Itoa(model.Assigned), "", "", "")
+		//t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
+		//t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
 
 		for _, pool := range model.Pools {
 			for _, worker := range pool.LiveWorkers {
-				t.Row(worker.Name, strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
+				workerRow(t, pool, worker, "")
 			}
 			for _, worker := range pool.DeadWorkers {
-				t.Row(worker.Name+"☠", strconv.Itoa(worker.Inbox), strconv.Itoa(worker.Processing), strconv.Itoa(worker.Outbox), strconv.Itoa(worker.Errorbox))
+				workerRow(t, pool, worker, "☠")
 			}
 		}
 
-		fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
+		// fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
 		fmt.Println(t)
 	}
 
 	return nil
+}
+
+func name(runname, pool, worker string) string {
+	return strings.Replace(
+		strings.Replace(worker, runname+"-", "", 1),
+		pool+"-", "", 1,
+	)
 }
