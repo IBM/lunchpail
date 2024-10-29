@@ -1,23 +1,23 @@
-package workstealer
+package queuestreamer
 
 import "slices"
 
 // A Task that was assigned to a given Worker
 type AssignedTask struct {
-	pool   string
-	worker string
-	task   string
+	Pool   string
+	Worker string
+	Task   string
 }
 
 type Worker struct {
-	alive           bool
-	nSuccess        uint
-	nFail           uint
-	pool            string
-	name            string
-	assignedTasks   []string
-	processingTasks []string
-	killfilePresent bool
+	Alive           bool
+	NSuccess        uint
+	NFail           uint
+	Pool            string
+	Name            string
+	AssignedTasks   []string
+	ProcessingTasks []string
+	KillfilePresent bool
 }
 
 type TaskCode string
@@ -77,16 +77,16 @@ func (model Model) nTasksRemaining() int {
 }
 
 // Have we consumed all work that is ever going to be produced?
-func (model Model) isAllWorkDone() bool {
+func (model Model) IsAllWorkDone() bool {
 	return model.DispatcherDone && model.nFinishedTasks() > 0 && model.nTasksRemaining() == 0
 }
 
 // No live workers, some dead workers, and all dead workers have kill
 // file (meaning that we intentionally asked them to self-destruct).
-func (model Model) areAllWorkersQuiesced() bool {
+func (model Model) AreAllWorkersQuiesced() bool {
 	return len(model.LiveWorkers) == 0 &&
 		len(model.DeadWorkers) > 0 &&
-		slices.IndexFunc(model.DeadWorkers, func(w Worker) bool { return !w.killfilePresent }) < 0
+		slices.IndexFunc(model.DeadWorkers, func(w Worker) bool { return !w.KillfilePresent }) < 0
 }
 
 // Has some output been produced?
@@ -94,11 +94,6 @@ func (model Model) hasSomeOutputBeenProduced() bool {
 	return len(model.SuccessfulTasks)+len(model.FailedTasks) > 0
 }
 
-func (model Model) isAllOutputConsumed() bool {
+func (model Model) IsAllOutputConsumed() bool {
 	return model.hasSomeOutputBeenProduced() && model.nFinishedTasks() == model.nConsumedTasks()
-}
-
-// Is everything well and done: dispatcher, workers, us?
-func (model Model) readyToBye() bool {
-	return model.isAllWorkDone() && model.areAllWorkersQuiesced() && model.isAllOutputConsumed()
 }

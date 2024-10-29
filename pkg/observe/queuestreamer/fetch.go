@@ -1,4 +1,4 @@
-package workstealer
+package queuestreamer
 
 import (
 	"cmp"
@@ -39,7 +39,7 @@ const (
 )
 
 // Determine from a changed line the nature of `WhatChanged`
-func (m *Model) whatChanged(line string, patterns pathPatterns) (what WhatChanged, pool string, worker string, task string) {
+func (m *Model) whatChanged(line string, patterns PathPatterns) (what WhatChanged, pool string, worker string, task string) {
 	what = Nothing
 
 	if match := patterns.unassignedTask.FindStringSubmatch(line); len(match) == 2 {
@@ -92,7 +92,7 @@ func key(pool, worker string) string {
 }
 
 // We will be passed a stream of diffs
-func (m *Model) update(filepath string, workersLookup map[string]*Worker, patterns pathPatterns) {
+func (m *Model) update(filepath string, workersLookup map[string]*Worker, patterns PathPatterns) {
 	what, pool, worker, task := m.whatChanged(filepath, patterns)
 	k := key(pool, worker)
 
@@ -106,62 +106,62 @@ func (m *Model) update(filepath string, workersLookup map[string]*Worker, patter
 	case LiveWorker:
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.alive = true
+		w.Alive = true
 	case DeadWorker:
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.alive = false
+		w.Alive = false
 	case KillFileForWorker:
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.killfilePresent = true
+		w.KillfilePresent = true
 	case AssignedTaskByWorker:
 		m.AssignedTasks = append(m.AssignedTasks, AssignedTask{pool, worker, task})
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.assignedTasks = append(w.assignedTasks, task)
+		w.AssignedTasks = append(w.AssignedTasks, task)
 	case ProcessingTaskByWorker:
 		m.ProcessingTasks = append(m.ProcessingTasks, AssignedTask{pool, worker, task})
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.processingTasks = append(w.processingTasks, task)
+		w.ProcessingTasks = append(w.ProcessingTasks, task)
 	case SuccessfulTaskByWorker:
 		m.SuccessfulTasks = append(m.SuccessfulTasks, AssignedTask{pool, worker, task})
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.nSuccess++
+		w.NSuccess++
 	case FailedTaskByWorker:
 		m.FailedTasks = append(m.FailedTasks, AssignedTask{pool, worker, task})
 		w, ok := workersLookup[k]
 		if !ok {
-			w = &Worker{pool: pool, name: worker}
+			w = &Worker{Pool: pool, Name: worker}
 			workersLookup[k] = w
 		}
-		w.nFail++
+		w.NFail++
 	}
 }
 
 func (m *Model) finishUp(workersLookup map[string]*Worker) {
 	for _, worker := range workersLookup {
-		if worker.alive {
+		if worker.Alive {
 			m.LiveWorkers = append(m.LiveWorkers, *worker)
 		} else {
 			m.DeadWorkers = append(m.DeadWorkers, *worker)
@@ -169,10 +169,10 @@ func (m *Model) finishUp(workersLookup map[string]*Worker) {
 	}
 
 	slices.SortFunc(m.LiveWorkers, func(a, b Worker) int {
-		return cmp.Compare(a.name, b.name)
+		return cmp.Compare(a.Name, b.Name)
 	})
 	slices.SortFunc(m.DeadWorkers, func(a, b Worker) int {
-		return cmp.Compare(a.name, b.name)
+		return cmp.Compare(a.Name, b.Name)
 	})
 }
 
@@ -188,7 +188,7 @@ func (c client) fetchModel() Model {
 		m.update(o.Key, workersLookup, c.pathPatterns)
 	}
 	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), true) {
-		if c.LogOptions.Verbose {
+		if c.LogOptions.Debug {
 			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
 		}
 		m.update(o.Key, workersLookup, c.pathPatterns)

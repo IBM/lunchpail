@@ -1,4 +1,4 @@
-package workstealer
+package queuestreamer
 
 import (
 	"regexp"
@@ -6,7 +6,7 @@ import (
 	q "lunchpail.io/pkg/ir/queue"
 )
 
-type pathPatterns struct {
+type PathPatterns struct {
 	liveWorker     *regexp.Regexp
 	deadWorker     *regexp.Regexp
 	killfile       *regexp.Regexp
@@ -19,8 +19,8 @@ type pathPatterns struct {
 	dispatcherDone *regexp.Regexp
 }
 
-func newPathPatterns(run q.RunContext) pathPatterns {
-	return pathPatterns{
+func NewPathPatterns(run q.RunContext) PathPatterns {
+	return PathPatterns{
 		liveWorker:     run.PatternFor(q.WorkerAliveMarker),
 		deadWorker:     run.PatternFor(q.WorkerDeadMarker),
 		killfile:       run.PatternFor(q.WorkerKillFile),
