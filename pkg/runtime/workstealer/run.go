@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
-	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
+	"lunchpail.io/pkg/observe/queuestreamer"
 	s3 "lunchpail.io/pkg/runtime/queue"
 	"lunchpail.io/pkg/util"
 )
@@ -26,7 +27,7 @@ type Options struct {
 type client struct {
 	s3 s3.S3Client
 	queue.RunContext
-	pathPatterns
+	pathPatterns queuestreamer.PathPatterns
 	build.LogOptions
 }
 
@@ -41,23 +42,43 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 	if err != nil {
 		return err
 	}
-	c := client{s3, run, newPathPatterns(run), opts.LogOptions}
 
+	group, gctx := errgroup.WithContext(ctx)
+
+	// Set up a streamer of Models to modelChan. We will tell the
+	// streamer when we want it to terminate via doneChan.
+	modelChan := make(chan queuestreamer.Model)
+	doneChan := make(chan struct{})
+	defer close(doneChan)
+	group.Go(func() error {
+		defer close(modelChan)
+		return queuestreamer.StreamModel(gctx, s3, run, modelChan, doneChan, queuestreamer.StreamOptions{LogOptions: opts.LogOptions, PollingInterval: opts.PollingInterval})
+	})
+
+	c := client{s3, run, queuestreamer.NewPathPatterns(run), opts.LogOptions}
 	fmt.Fprintln(os.Stderr, "Workstealer starting")
 	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Run: %v\n", run)
-		fmt.Fprintf(os.Stderr, "PathPatterns: %v\n", c.pathPatterns.outboxTask.String())
+		// fmt.Fprintf(os.Stderr, "PathPatterns: %v\n", c.pathPatterns.outboxTask.String())
 		printenv()
 	}
 
-	done := false
-	for !done {
-		err = once(ctx, c, opts)
-		if err == nil || isFatal(err) {
-			done = true
-		} else {
-			// wait for s3 to be ready
-			time.Sleep(1 * time.Second)
+	for m := range modelChan {
+		if err := c.report(m); err != nil {
+			fmt.Fprintln(os.Stderr, "Error logging model", err)
+		}
+
+		// Assess the model. If the assessment determines we
+		// are done, notify the streamer.
+		if c.assess(m) {
+			// notify the streamer we are done
+			if opts.Verbose {
+				fmt.Fprintln(os.Stderr, "Workstealer assessor has initiated a shutdown")
+			}
+			select {
+			case doneChan <- struct{}{}:
+			default:
+			}
 		}
 	}
 
@@ -77,65 +98,5 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 	util.SleepBeforeExit()
 	fmt.Fprintln(os.Stderr, "The job should be all done now")
 
-	return err
-}
-
-func isFatal(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "unexpected EOF")
-}
-
-func once(ctx context.Context, c client, opts Options) error {
-	if err := c.s3.Mkdirp(c.RunContext.Bucket); err != nil {
-		return err
-	}
-
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Listen bucket=%s path=%s path2=%s\n", c.RunContext.Bucket, c.RunContext.ListenPrefix(), c.RunContext.AsFile(queue.AssignedAndFinished))
-	}
-	step0Objects, step0Errs := c.s3.Listen(c.RunContext.Bucket, c.RunContext.ListenPrefix(), "", true)
-	step1Objects, step1Errs := c.s3.Listen(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), "", true)
-	defer c.s3.StopListening(c.RunContext.Bucket)
-
-	done := false
-	for !done {
-		select {
-		case err := <-step1Errs:
-			if isFatal(err) {
-				return err
-			}
-		case err := <-step0Errs:
-			if isFatal(err) {
-				return err
-			}
-
-			fmt.Fprintf(os.Stderr, "Got push notification error: %v\n", err)
-
-			// sleep for a bit
-			time.Sleep(time.Duration(opts.PollingInterval) * time.Second)
-
-		case obj := <-step0Objects:
-			if c.LogOptions.Verbose {
-				fmt.Fprintf(os.Stderr, "Got push notification object=%s\n", obj)
-			}
-		case obj := <-step1Objects:
-			if c.LogOptions.Verbose {
-				fmt.Fprintf(os.Stderr, "Got push notification object=%s\n", obj)
-			}
-		case <-ctx.Done():
-			done = true
-			continue
-		}
-
-		// fetch and parse model
-		m := c.fetchModel()
-
-		if err := m.report(c); err != nil {
-			return err
-		}
-
-		// assess it
-		done = c.assess(m)
-	}
-
-	return nil
+	return group.Wait()
 }
