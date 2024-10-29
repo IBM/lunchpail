@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	github.com/IBM/go-sdk-core/v5 v5.18.1
+	github.com/bep/debounce v1.2.1
 	github.com/charmbracelet/lipgloss v0.13.1
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/uuid v1.6.0

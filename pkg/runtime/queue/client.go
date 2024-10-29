@@ -22,6 +22,7 @@ type S3Client struct {
 
 type S3ClientStop struct {
 	S3Client
+	queue.RunContext
 	Stop func()
 }
 
@@ -92,5 +93,5 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) 
 		c.Paths = paths
 	}
 
-	return S3ClientStop{c, stop}, nil
+	return S3ClientStop{c, queue.RunContext{RunName: runname, Bucket: c.Paths.Bucket}, stop}, nil
 }
