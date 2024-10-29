@@ -13,7 +13,6 @@ import (
 	"github.com/shirou/gopsutil/v4/process"
 	"golang.org/x/sync/errgroup"
 
-	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/be/local/files"
 	"lunchpail.io/pkg/be/streamer"
@@ -80,34 +79,6 @@ func (s localStreamer) Utilization(c chan utilization.Model, intervalSeconds int
 			time.Sleep(time.Duration(intervalSeconds) * time.Second)
 		}
 	}
-}
-
-// Stream queue statistics
-func (s localStreamer) QueueStats(c chan qstat.Model, opts qstat.Options) error {
-	f, err := files.LogsForComponent(s.run, lunchpail.WorkStealerComponent)
-	if err != nil {
-		return err
-	}
-
-	tail, err := tailfChan(f, streamer.LogOptions{Follow: opts.Follow, Verbose: opts.Verbose})
-	if err != nil {
-		return err
-	}
-
-	lines := make(chan string)
-	errs, _ := errgroup.WithContext(s.Context)
-	errs.Go(func() error {
-		defer close(lines)
-		for line := range tail.Lines {
-			if line.Err != nil {
-				return line.Err
-			}
-			lines <- line.Text
-		}
-		return nil
-	})
-
-	return streamer.QstatFromChan(s.Context, lines, c)
 }
 
 func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptions) error {

@@ -11,12 +11,9 @@ import (
 	"github.com/bep/debounce"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
-	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/observe/queuestreamer"
-	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
 type Options struct {
@@ -30,32 +27,11 @@ type Options struct {
 }
 
 func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {
-	runname, err := util.WaitForRun(ctx, runnameIn, true, backend)
+	runname, modelChan, doneChan, group, err := stream(ctx, runnameIn, backend, opts)
 	if err != nil {
 		return err
 	}
-
-	if opts.Verbose {
-		fmt.Fprintln(os.Stderr, "Tracking run", runname)
-	}
-
-	client, err := s3.NewS3ClientForRun(ctx, backend, runname)
-	if err != nil {
-		return err
-	}
-	defer client.Stop()
-
-	group, gctx := errgroup.WithContext(ctx)
-
-	// Set up a streamer of Models to modelChan. We will tell the
-	// streamer when we want it to terminate via doneChan.
-	modelChan := make(chan queuestreamer.Model)
-	doneChan := make(chan struct{})
 	defer close(doneChan)
-	group.Go(func() error {
-		defer close(modelChan)
-		return queuestreamer.StreamModel(gctx, client.S3Client, client.RunContext, modelChan, doneChan, opts.StreamOptions)
-	})
 
 	r := newRenderer(runname)
 
