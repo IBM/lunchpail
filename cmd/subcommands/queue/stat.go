@@ -10,21 +10,20 @@ import (
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/observe/qstat"
+	"lunchpail.io/pkg/observe/queuestreamer"
 )
 
 func Stat() *cobra.Command {
-	var tailFlag int64
-	var followFlag bool
-	var quietFlag bool
-
 	var cmd = &cobra.Command{
 		Use:   "stat",
 		Short: "Stream queue statistics to console",
 	}
 
-	cmd.Flags().BoolVarP(&followFlag, "follow", "f", false, "Track updates (rather than printing once)")
-	cmd.Flags().Int64VarP(&tailFlag, "tail", "T", -1, "Number of lines to tail")
-	cmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Silence extraneous output")
+	var followFlag bool
+	cmd.Flags().BoolVarP(&followFlag, "follow", "f", true, "Track updates (rather than printing once)")
+
+	var debounce int
+	cmd.Flags().IntVarP(&debounce, "debounce", "d", 1000, "Debounce output with this granularity in milliseconds")
 
 	opts, err := options.RestoreBuildOptions()
 	if err != nil {
@@ -32,7 +31,7 @@ func Stat() *cobra.Command {
 	}
 
 	options.AddTargetOptionsTo(cmd, &opts)
-	options.AddLogOptionsTo(cmd, &opts)
+	logOpts := options.AddLogOptionsTo(cmd, &opts)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		maybeRun := ""
@@ -46,7 +45,7 @@ func Stat() *cobra.Command {
 			return err
 		}
 
-		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Tail: tailFlag, Verbose: opts.Log.Verbose, Quiet: quietFlag})
+		return qstat.UI(ctx, maybeRun, backend, qstat.Options{Follow: followFlag, Debounce: debounce, StreamOptions: queuestreamer.StreamOptions{PollingInterval: 3, LogOptions: *logOpts}})
 	}
 
 	return cmd

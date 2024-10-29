@@ -6,17 +6,28 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/bep/debounce"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/events/qstat"
 	"lunchpail.io/pkg/be/runs/util"
-	"lunchpail.io/pkg/ir/queue"
+	"lunchpail.io/pkg/observe/queuestreamer"
+	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-type Options = qstat.Options
+type Options struct {
+	queuestreamer.StreamOptions
+
+	// Continue to track the output versus show just a one-time UI
+	Follow bool
+
+	// Debounce output with this granularity in milliseconds
+	Debounce int
+}
 
 func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {
 	runname, err := util.WaitForRun(ctx, runnameIn, true, backend)
@@ -24,15 +35,73 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 		return err
 	}
 
-	// Start streaming qstat models into channel `c`
-	c := make(chan qstat.Model)
-	go func() {
-		defer close(c)
-		if err := backend.Streamer(ctx, queue.RunContext{RunName: runname}).QueueStats(c, opts); err != nil {
-			fmt.Fprintf(os.Stderr, "Error from streamer: %v\n", err)
-		}
-	}()
+	if opts.Verbose {
+		fmt.Fprintln(os.Stderr, "Tracking run", runname)
+	}
 
+	client, err := s3.NewS3ClientForRun(ctx, backend, runname)
+	if err != nil {
+		return err
+	}
+	defer client.Stop()
+
+	group, gctx := errgroup.WithContext(ctx)
+
+	// Set up a streamer of Models to modelChan. We will tell the
+	// streamer when we want it to terminate via doneChan.
+	modelChan := make(chan queuestreamer.Model)
+	doneChan := make(chan struct{})
+	defer close(doneChan)
+	group.Go(func() error {
+		defer close(modelChan)
+		return queuestreamer.StreamModel(gctx, client.S3Client, client.RunContext, modelChan, doneChan, opts.StreamOptions)
+	})
+
+	r := newRenderer(runname)
+
+	// Debounce output to avoid quick flurries of UI output
+	dbinterval := opts.Debounce
+	if dbinterval == 0 {
+		dbinterval = 1000
+	}
+	debounced := debounce.New(time.Duration(dbinterval) * time.Millisecond)
+
+	// Consume model updates from channel `c` and render them to
+	// the console as a table
+	for model := range modelChan {
+		if opts.Debug {
+			fmt.Fprintln(os.Stderr, "Got model update", model)
+		}
+
+		debounced(func() { r.render(model) })
+
+		if !opts.Follow {
+			break
+		}
+	}
+
+	if opts.Debug {
+		fmt.Fprintln(os.Stderr, "Stopped receiving updates")
+	}
+	return group.Wait()
+}
+
+func name(runname, pool, worker string) string {
+	return strings.Replace(
+		strings.Replace(worker, runname+"-", "", 1),
+		pool+"-", "", 1,
+	)
+}
+
+type renderer struct {
+	runname      string
+	re           *lipgloss.Renderer
+	highlight    lipgloss.Color
+	italic       lipgloss.Style
+	columnStyles []lipgloss.Style
+}
+
+func newRenderer(runname string) renderer {
 	highlight := lipgloss.Color("#3C3C3C")
 	re := lipgloss.NewRenderer(os.Stdout)
 	italic := re.NewStyle().Italic(true)
@@ -45,62 +114,54 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 		re.NewStyle().Bold(true).Background(lipgloss.Color("1")).Padding(0, 1), // Fail
 	}
 
-	workerRow := func(t *table.Table, pool qstat.Pool, worker qstat.Worker, suffix string) {
-		t.Row(
-			pool.Name,
-			name(runname, pool.Name, worker.Name)+suffix,
-			strconv.Itoa(worker.Inbox),
-			strconv.Itoa(worker.Processing),
-			strconv.Itoa(worker.Outbox),
-			strconv.Itoa(worker.Errorbox),
-		)
-	}
-
-	// Consume model updates from channel `c` and render them to
-	// the console as a table
-	for model := range c {
-		t := table.New().
-			Border(lipgloss.NormalBorder()).
-			BorderStyle(lipgloss.NewStyle().Foreground(highlight)).
-			Headers("Pool", "Worker", "Pend", "Live", "Done", "Fail").
-			StyleFunc(func(row, col int) lipgloss.Style {
-				switch {
-				case row == -1: // header row
-					return styles[0]
-				case row == 0: // inbox row
-					if col > 2 {
-						return styles[0]
-					}
-				}
-				return styles[col]
-			})
-
-		t.Row("", italic.Render("inbox"), strconv.Itoa(model.Unassigned), "", "", "")
-
-		// Numbers across all pools
-		//t.Row("assigned", strconv.Itoa(model.Assigned), "", "", "")
-		//t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
-		//t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
-
-		for _, pool := range model.Pools {
-			for _, worker := range pool.LiveWorkers {
-				workerRow(t, pool, worker, "")
-			}
-			for _, worker := range pool.DeadWorkers {
-				workerRow(t, pool, worker, "☠")
-			}
-		}
-
-		// fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
-		fmt.Println(t)
-	}
-
-	return nil
+	return renderer{runname, re, highlight, italic, styles}
 }
 
-func name(runname, pool, worker string) string {
-	return strings.Replace(
-		strings.Replace(worker, runname+"-", "", 1),
-		pool+"-", "", 1,
+func (r renderer) workerRow(t *table.Table, worker queuestreamer.Worker, suffix string) {
+	t.Row(
+		worker.Pool,
+		name(r.runname, worker.Pool, worker.Name)+suffix,
+		strconv.Itoa(len(worker.AssignedTasks)),
+		strconv.Itoa(len(worker.ProcessingTasks)),
+		strconv.FormatUint(uint64(worker.NSuccess), 10),
+		strconv.FormatUint(uint64(worker.NFail), 10),
 	)
+}
+
+func (r renderer) table() *table.Table {
+	return table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(r.highlight)).
+		Headers("Pool", "Worker", "Pend", "Live", "Done", "Fail").
+		StyleFunc(func(row, col int) lipgloss.Style {
+			switch {
+			case row == -1: // header row
+				return r.columnStyles[0]
+			case row == 0: // inbox row
+				if col > 2 {
+					return r.columnStyles[0]
+				}
+			}
+			return r.columnStyles[col]
+		})
+}
+
+func (r renderer) render(model queuestreamer.Model) {
+	t := r.table()
+	t.Row("", r.italic.Render("inbox"), strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
+
+	// Numbers across all pools
+	//t.Row("assigned", strconv.Itoa(model.Assigned), "", "", "")
+	//t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
+	//t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
+
+	for _, worker := range model.LiveWorkers {
+		r.workerRow(t, worker, "")
+	}
+	for _, worker := range model.DeadWorkers {
+		r.workerRow(t, worker, "☠")
+	}
+
+	// fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
+	fmt.Println(t)
 }
