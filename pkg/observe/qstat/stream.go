@@ -9,14 +9,15 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/observe/queuestreamer"
 	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func stream(ctx context.Context, runnameIn string, backend be.Backend, opts Options) (string, chan queuestreamer.Model, chan struct{}, *errgroup.Group, error) {
+func stream(ctx context.Context, runnameIn string, backend be.Backend, opts Options) (queue.RunContext, chan queuestreamer.Model, chan struct{}, *errgroup.Group, error) {
 	runname, err := util.WaitForRun(ctx, runnameIn, true, backend)
 	if err != nil {
-		return "", nil, nil, nil, err
+		return queue.RunContext{}, nil, nil, nil, err
 	}
 
 	if opts.Verbose {
@@ -25,7 +26,7 @@ func stream(ctx context.Context, runnameIn string, backend be.Backend, opts Opti
 
 	client, err := s3.NewS3ClientForRun(ctx, backend, runname)
 	if err != nil {
-		return "", nil, nil, nil, err
+		return client.RunContext, nil, nil, nil, err
 	}
 
 	group, gctx := errgroup.WithContext(ctx)
@@ -40,5 +41,5 @@ func stream(ctx context.Context, runnameIn string, backend be.Backend, opts Opti
 		return queuestreamer.StreamModel(gctx, client.S3Client, client.RunContext, modelChan, doneChan, opts.StreamOptions)
 	})
 
-	return runname, modelChan, doneChan, group, nil
+	return client.RunContext, modelChan, doneChan, group, nil
 }
