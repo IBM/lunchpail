@@ -24,6 +24,8 @@ type renderer struct {
 }
 
 func newRenderer(run queue.RunContext) renderer {
+	black := lipgloss.AdaptiveColor{Light: "#fff", Dark: "#000"}
+
 	highlight := lipgloss.Color("#3C3C3C")
 	re := lipgloss.NewRenderer(os.Stdout)
 	italic := re.NewStyle().Italic(true)
@@ -32,10 +34,10 @@ func newRenderer(run queue.RunContext) renderer {
 		re.NewStyle().Faint(true), // Step Index
 		lipgloss.Style{},          // Pool
 		lipgloss.Style{},          // Worker
-		re.NewStyle().Bold(true).Background(lipgloss.Color("3")).Padding(0, 1), // Pend
+		re.NewStyle().Bold(true).Background(lipgloss.Color("3")).Foreground(black).Padding(0, 1), // Pend
 		re.NewStyle().Padding(0, 1), // Live
-		re.NewStyle().Bold(true).Background(lipgloss.Color("2")).Padding(0, 1), // Done
-		re.NewStyle().Bold(true).Background(lipgloss.Color("1")).Padding(0, 1), // Fail
+		re.NewStyle().Bold(true).Background(lipgloss.Color("2")).Foreground(black).Padding(0, 1), // Done
+		re.NewStyle().Bold(true).Background(lipgloss.Color("1")).Foreground(black).Padding(0, 1), // Fail
 	}
 
 	return renderer{run, re, highlight, italic, dead, styles}
