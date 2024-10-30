@@ -19,4 +19,6 @@ eval $testapp up \
          $QUEUE \
          --create-cluster \
          --target=${LUNCHPAIL_TARGET:-kubernetes} \
-         --watch=true
+         --set every=1
+
+# re: every, this configures the dispatchers to dispatch once per second
