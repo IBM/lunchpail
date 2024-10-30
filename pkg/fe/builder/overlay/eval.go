@@ -41,7 +41,7 @@ func evalApp(eval string, verbose bool) hlir.HLIR {
 
 	return hlir.HLIR{
 		Applications: []hlir.Application{app},
-		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("eval", 1)},
+		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("default", 1)},
 	}
 }
 
