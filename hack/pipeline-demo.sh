@@ -3,7 +3,7 @@
 set -eo pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-TOP="$SCRIPTDIR"/../..
+TOP="$SCRIPTDIR"/..
 
 lp=./lunchpail
 if [ ! -e $lp ]
