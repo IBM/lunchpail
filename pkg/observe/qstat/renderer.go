@@ -54,9 +54,11 @@ func (r renderer) workerRow(stepIdx int, t *table.Table, worker queuestreamer.Wo
 }
 
 func (r renderer) render(model queuestreamer.Model) *table.Table {
-	nRows := 2 // inbox+outbox rows
+	rowIdx := 0
+	inboxRows := make(map[int]bool)
 	for _, step := range model.Steps {
-		nRows += len(step.LiveWorkers) + len(step.DeadWorkers)
+		inboxRows[rowIdx] = true
+		rowIdx += 1 + len(step.LiveWorkers) + len(step.DeadWorkers)
 	}
 
 	t := table.New().
@@ -67,7 +69,7 @@ func (r renderer) render(model queuestreamer.Model) *table.Table {
 			switch {
 			case row == -1: // header row
 				return r.columnStyles[0]
-			case row == 0, row == nRows-1: // inbox, outbox rows
+			case inboxRows[row]:
 				if col > 2 {
 					return r.columnStyles[0]
 				}
@@ -77,19 +79,13 @@ func (r renderer) render(model queuestreamer.Model) *table.Table {
 	return t
 }
 
-func (r renderer) step(idx int, isFinalStep bool, model queuestreamer.Step, t *table.Table) {
+func (r renderer) step(idx int, model queuestreamer.Step, t *table.Table) {
 	// Numbers across all pools
 	//t.Row("assigned", strconv.Itoa(model.Assigned), "", "", "")
 	//t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
 	//t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
 
-	inbox := "inbox"
-	if isFinalStep {
-		// the inbox of the final step is really the final outbox
-		inbox = "outbox"
-	}
-
-	t.Row(r.italic.Render(inbox), "", "", strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
+	t.Row(r.italic.Render("inbox"), "", "", strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
 
 	for _, worker := range model.LiveWorkers {
 		r.workerRow(idx, t, worker, true)
