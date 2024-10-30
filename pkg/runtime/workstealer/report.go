@@ -10,7 +10,7 @@ import (
 )
 
 // Record the current state of Model for observability
-func (c client) report(m queuestreamer.Model) error {
+func (c client) report(m queuestreamer.Step) error {
 	now := time.Now()
 
 	var b bytes.Buffer

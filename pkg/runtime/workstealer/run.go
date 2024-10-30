@@ -63,7 +63,8 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 		printenv()
 	}
 
-	for m := range modelChan {
+	for model := range modelChan {
+		m := model.Steps[run.Step]
 		if err := c.report(m); err != nil {
 			fmt.Fprintln(os.Stderr, "Error logging model", err)
 		}

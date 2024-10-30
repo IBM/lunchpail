@@ -29,6 +29,11 @@ const (
 
 // The current state of the world
 type Model struct {
+	// One sub-model per step
+	Steps []Step
+}
+
+type Step struct {
 	// has dispatcher dropped its donefile, indicating no more
 	// work is forthcoming?
 	DispatcherDone bool
@@ -44,56 +49,58 @@ type Model struct {
 
 	SuccessfulTasks []AssignedTask
 	FailedTasks     []AssignedTask
+
+	_workersLookup map[string]*Worker
 }
 
-func (model Model) nOutboxTasks() int {
-	return len(model.OutboxTasks)
+func (step Step) nOutboxTasks() int {
+	return len(step.OutboxTasks)
 }
 
-func (model Model) nFinishedTasks() int {
-	return len(model.SuccessfulTasks) + len(model.FailedTasks)
+func (step Step) nFinishedTasks() int {
+	return len(step.SuccessfulTasks) + len(step.FailedTasks)
 }
 
-func (model Model) nConsumedTasks() int {
-	return model.nFinishedTasks() - model.nOutboxTasks()
+func (step Step) nConsumedTasks() int {
+	return step.nFinishedTasks() - step.nOutboxTasks()
 }
 
-func (model Model) nUnassignedTasks() int {
-	return len(model.UnassignedTasks)
+func (step Step) nUnassignedTasks() int {
+	return len(step.UnassignedTasks)
 }
 
-func (model Model) nAssignedTasks() int {
-	return len(model.AssignedTasks)
+func (step Step) nAssignedTasks() int {
+	return len(step.AssignedTasks)
 }
 
-func (model Model) nProcessingTasks() int {
-	return len(model.ProcessingTasks)
+func (step Step) nProcessingTasks() int {
+	return len(step.ProcessingTasks)
 }
 
 // How many outstanding tasks do we have, i.e. either Unassigned, or
 // Assigned, or still being Processed.
-func (model Model) nTasksRemaining() int {
-	return model.nUnassignedTasks() + model.nAssignedTasks() + model.nProcessingTasks()
+func (step Step) nTasksRemaining() int {
+	return step.nUnassignedTasks() + step.nAssignedTasks() + step.nProcessingTasks()
 }
 
 // Have we consumed all work that is ever going to be produced?
-func (model Model) IsAllWorkDone() bool {
-	return model.DispatcherDone && model.nFinishedTasks() > 0 && model.nTasksRemaining() == 0
+func (step Step) IsAllWorkDone() bool {
+	return step.DispatcherDone && step.nFinishedTasks() > 0 && step.nTasksRemaining() == 0
 }
 
 // No live workers, some dead workers, and all dead workers have kill
 // file (meaning that we intentionally asked them to self-destruct).
-func (model Model) AreAllWorkersQuiesced() bool {
-	return len(model.LiveWorkers) == 0 &&
-		len(model.DeadWorkers) > 0 &&
-		slices.IndexFunc(model.DeadWorkers, func(w Worker) bool { return !w.KillfilePresent }) < 0
+func (step Step) AreAllWorkersQuiesced() bool {
+	return len(step.LiveWorkers) == 0 &&
+		len(step.DeadWorkers) > 0 &&
+		slices.IndexFunc(step.DeadWorkers, func(w Worker) bool { return !w.KillfilePresent }) < 0
 }
 
 // Has some output been produced?
-func (model Model) hasSomeOutputBeenProduced() bool {
-	return len(model.SuccessfulTasks)+len(model.FailedTasks) > 0
+func (step Step) hasSomeOutputBeenProduced() bool {
+	return len(step.SuccessfulTasks)+len(step.FailedTasks) > 0
 }
 
-func (model Model) IsAllOutputConsumed() bool {
-	return model.hasSomeOutputBeenProduced() && model.nFinishedTasks() == model.nConsumedTasks()
+func (step Step) IsAllOutputConsumed() bool {
+	return step.hasSomeOutputBeenProduced() && step.nFinishedTasks() == step.nConsumedTasks()
 }

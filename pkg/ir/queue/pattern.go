@@ -1,6 +1,12 @@
 package queue
 
-import "regexp"
+import (
+	"regexp"
+	"strconv"
+)
+
+var AnyStep = -1
+var anyStepP = regexp.MustCompile("/step/\\" + strconv.Itoa(AnyStep))
 
 var any = "*"
 var anyPoolP = regexp.MustCompile("/pool/\\" + any)
@@ -8,9 +14,15 @@ var anyWorkerP = regexp.MustCompile("/worker/\\" + any)
 var anyTaskP = regexp.MustCompile("\\" + any + "$") // task comes at the end
 
 var placeholder = "xxxxxxxxxxxxxx"
-var placeholderR = regexp.MustCompile(placeholder)
+var placeholderP = regexp.MustCompile(placeholder)
 
 func (run RunContext) PatternFor(s Path) *regexp.Regexp {
-	pattern := run.ForPool(placeholder).ForWorker(placeholder).ForTask(placeholder).AsFile(s)
-	return regexp.MustCompile(placeholderR.ReplaceAllString(pattern, "(.+)"))
+	context := run.ForPool(placeholder).ForWorker(placeholder).ForTask(placeholder)
+	pattern := placeholderP.ReplaceAllString(context.AsFile(s), "(.+)")
+
+	if run.Step == AnyStep {
+		pattern = anyStepP.ReplaceAllString(pattern, "/step/(\\d+)")
+	}
+
+	return regexp.MustCompile(pattern)
 }

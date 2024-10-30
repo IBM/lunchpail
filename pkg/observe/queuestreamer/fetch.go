@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strconv"
 
 	"lunchpail.io/pkg/ir/queue"
 )
@@ -39,49 +40,59 @@ const (
 )
 
 // Determine from a changed line the nature of `WhatChanged`
-func (m *Model) whatChanged(line string, patterns PathPatterns) (what WhatChanged, pool string, worker string, task string) {
+func (m *Model) whatChanged(line string, patterns PathPatterns) (what WhatChanged, step int, pool string, worker string, task string, err error) {
 	what = Nothing
 
-	if match := patterns.unassignedTask.FindStringSubmatch(line); len(match) == 2 {
+	if match := patterns.unassignedTask.FindStringSubmatch(line); len(match) == 3 {
 		what = UnassignedTask
-		task = match[1]
-	} else if match := patterns.outboxTask.FindStringSubmatch(line); len(match) == 2 {
+		step, err = strconv.Atoi(match[1])
+		task = match[2]
+	} else if match := patterns.outboxTask.FindStringSubmatch(line); len(match) == 3 {
 		what = OutboxTask
-		task = match[1]
-	} else if match := patterns.dispatcherDone.FindStringSubmatch(line); len(match) == 1 {
+		step, err = strconv.Atoi(match[1])
+		task = match[2]
+	} else if match := patterns.dispatcherDone.FindStringSubmatch(line); len(match) == 2 {
 		what = DispatcherDone
-	} else if match := patterns.liveWorker.FindStringSubmatch(line); len(match) == 3 {
+		step, err = strconv.Atoi(match[1])
+	} else if match := patterns.liveWorker.FindStringSubmatch(line); len(match) == 4 {
 		what = LiveWorker
-		pool = match[1]
-		worker = match[2]
-	} else if match := patterns.deadWorker.FindStringSubmatch(line); len(match) == 3 {
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+	} else if match := patterns.deadWorker.FindStringSubmatch(line); len(match) == 4 {
 		what = DeadWorker
-		pool = match[1]
-		worker = match[2]
-	} else if match := patterns.killfile.FindStringSubmatch(line); len(match) == 3 {
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+	} else if match := patterns.killfile.FindStringSubmatch(line); len(match) == 4 {
 		what = KillFileForWorker
-		pool = match[1]
-		worker = match[2]
-	} else if match := patterns.assignedTask.FindStringSubmatch(line); len(match) == 4 {
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+	} else if match := patterns.assignedTask.FindStringSubmatch(line); len(match) == 5 {
 		what = AssignedTaskByWorker
-		pool = match[1]
-		worker = match[2]
-		task = match[3]
-	} else if match := patterns.processingTask.FindStringSubmatch(line); len(match) == 4 {
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+		task = match[4]
+	} else if match := patterns.processingTask.FindStringSubmatch(line); len(match) == 5 {
 		what = ProcessingTaskByWorker
-		pool = match[1]
-		worker = match[2]
-		task = match[3]
-	} else if match := patterns.succeededTask.FindStringSubmatch(line); len(match) == 4 {
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+		task = match[4]
+	} else if match := patterns.succeededTask.FindStringSubmatch(line); len(match) == 5 {
 		what = SuccessfulTaskByWorker
-		pool = match[1]
-		worker = match[2]
-		task = match[3]
-	} else if match := patterns.failedTask.FindStringSubmatch(line); len(match) == 4 {
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+		task = match[4]
+	} else if match := patterns.failedTask.FindStringSubmatch(line); len(match) == 5 {
 		what = FailedTaskByWorker
-		pool = match[1]
-		worker = match[2]
-		task = match[3]
+		step, err = strconv.Atoi(match[1])
+		pool = match[2]
+		worker = match[3]
+		task = match[4]
 	}
 
 	return
@@ -92,8 +103,27 @@ func key(pool, worker string) string {
 }
 
 // We will be passed a stream of diffs
-func (m *Model) update(filepath string, workersLookup map[string]*Worker, patterns PathPatterns) {
-	what, pool, worker, task := m.whatChanged(filepath, patterns)
+func (model *Model) update(filepath string, patterns PathPatterns) {
+	what, step, pool, worker, task, err := model.whatChanged(filepath, patterns)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Invalid path", filepath, err)
+	}
+
+	if len(model.Steps) <= step {
+		steps := make([]Step, len(model.Steps))
+		copy(steps, model.Steps)
+		i := len(model.Steps)
+		for i <= step {
+			steps = append(steps, Step{})
+			i++
+		}
+		model.Steps = steps
+	}
+	m := &model.Steps[step]
+	if m._workersLookup == nil {
+		m._workersLookup = make(map[string]*Worker)
+	}
+
 	k := key(pool, worker)
 
 	switch what {
@@ -104,96 +134,98 @@ func (m *Model) update(filepath string, workersLookup map[string]*Worker, patter
 	case DispatcherDone:
 		m.DispatcherDone = true
 	case LiveWorker:
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.Alive = true
 	case DeadWorker:
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.Alive = false
 	case KillFileForWorker:
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.KillfilePresent = true
 	case AssignedTaskByWorker:
 		m.AssignedTasks = append(m.AssignedTasks, AssignedTask{pool, worker, task})
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.AssignedTasks = append(w.AssignedTasks, task)
 	case ProcessingTaskByWorker:
 		m.ProcessingTasks = append(m.ProcessingTasks, AssignedTask{pool, worker, task})
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.ProcessingTasks = append(w.ProcessingTasks, task)
 	case SuccessfulTaskByWorker:
 		m.SuccessfulTasks = append(m.SuccessfulTasks, AssignedTask{pool, worker, task})
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.NSuccess++
 	case FailedTaskByWorker:
 		m.FailedTasks = append(m.FailedTasks, AssignedTask{pool, worker, task})
-		w, ok := workersLookup[k]
+		w, ok := m._workersLookup[k]
 		if !ok {
 			w = &Worker{Pool: pool, Name: worker}
-			workersLookup[k] = w
+			m._workersLookup[k] = w
 		}
 		w.NFail++
 	}
 }
 
-func (m *Model) finishUp(workersLookup map[string]*Worker) {
-	for _, worker := range workersLookup {
-		if worker.Alive {
-			m.LiveWorkers = append(m.LiveWorkers, *worker)
-		} else {
-			m.DeadWorkers = append(m.DeadWorkers, *worker)
+func (model *Model) finishUp() {
+	for i, _ := range model.Steps {
+		m := &model.Steps[i]
+		for _, worker := range m._workersLookup {
+			if worker.Alive {
+				m.LiveWorkers = append(m.LiveWorkers, *worker)
+			} else {
+				m.DeadWorkers = append(m.DeadWorkers, *worker)
+			}
 		}
-	}
 
-	slices.SortFunc(m.LiveWorkers, func(a, b Worker) int {
-		return cmp.Compare(a.Name, b.Name)
-	})
-	slices.SortFunc(m.DeadWorkers, func(a, b Worker) int {
-		return cmp.Compare(a.Name, b.Name)
-	})
+		slices.SortFunc(m.LiveWorkers, func(a, b Worker) int {
+			return cmp.Compare(a.Name, b.Name)
+		})
+		slices.SortFunc(m.DeadWorkers, func(a, b Worker) int {
+			return cmp.Compare(a.Name, b.Name)
+		})
+	}
 }
 
 // Return a model of the world
-func (c client) fetchModel() Model {
+func (c client) fetchModel(anyStep bool) Model {
 	var m Model
-	workersLookup := make(map[string]*Worker)
 
-	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.ListenPrefix(), true) {
+	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.ListenPrefixForAnyStep(anyStep), true) {
 		if c.LogOptions.Debug {
 			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
 		}
-		m.update(o.Key, workersLookup, c.pathPatterns)
+		m.update(o.Key, c.pathPatterns)
 	}
 	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), true) {
 		if c.LogOptions.Debug {
 			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
 		}
-		m.update(o.Key, workersLookup, c.pathPatterns)
+		m.update(o.Key, c.pathPatterns)
 	}
 
-	m.finishUp(workersLookup)
+	m.finishUp()
 	return m
 }

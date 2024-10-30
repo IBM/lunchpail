@@ -45,7 +45,12 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 			fmt.Fprintln(os.Stderr, "Got model update", model)
 		}
 
-		debounced(func() { r.render(model) })
+		debounced(func() {
+			t := r.render(model)
+			for idx, step := range model.Steps {
+				r.step(idx, idx == len(model.Steps)-1, step, t)
+			}
+		})
 
 		if !opts.Follow {
 			break

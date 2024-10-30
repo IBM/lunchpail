@@ -2,6 +2,11 @@ package queue
 
 import "fmt"
 
+func (run RunContext) ForStep(step int) RunContext {
+	run.Step = step
+	return run
+}
+
 func (run RunContext) ForPool(name string) RunContext {
 	run.PoolName = name
 	return run

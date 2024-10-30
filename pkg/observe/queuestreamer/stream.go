@@ -24,6 +24,9 @@ type StreamOptions struct {
 
 	// If we need to resort to polling of S3, this is the polling interval we will use
 	PollingInterval int
+
+	// Listen for changes to any step
+	AnyStep bool
 }
 
 func StreamModel(ctx context.Context, s3 s3.S3Client, run queue.RunContext, modelChan chan Model, doneChan chan struct{}, opts StreamOptions) error {
@@ -49,10 +52,12 @@ func isFatal(err error) bool {
 }
 
 func once(ctx context.Context, c client, modelChan chan Model, doneChan chan struct{}, opts StreamOptions) error {
+	prefix := c.RunContext.ListenPrefixForAnyStep(opts.AnyStep)
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Listen bucket=%s path=%s path2=%s\n", c.RunContext.Bucket, c.RunContext.ListenPrefix(), c.RunContext.AsFile(queue.AssignedAndFinished))
+		fmt.Fprintf(os.Stderr, "Listen bucket=%s path=%s path2=%s\n", c.RunContext.Bucket, prefix, c.RunContext.AsFile(queue.AssignedAndFinished))
 	}
-	step0Objects, step0Errs := c.s3.Listen(c.RunContext.Bucket, c.RunContext.ListenPrefix(), "", true)
+
+	step0Objects, step0Errs := c.s3.Listen(c.RunContext.Bucket, prefix, "", true)
 	step1Objects, step1Errs := c.s3.Listen(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), "", true)
 	defer c.s3.StopListening(c.RunContext.Bucket)
 
@@ -90,6 +95,6 @@ func once(ctx context.Context, c client, modelChan chan Model, doneChan chan str
 		}
 
 		// fetch and parse model
-		modelChan <- c.fetchModel()
+		modelChan <- c.fetchModel(opts.AnyStep)
 	}
 }
