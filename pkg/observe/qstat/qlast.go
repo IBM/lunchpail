@@ -14,15 +14,15 @@ type QlastOptions struct {
 }
 
 func Qlast(ctx context.Context, marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
-	_, modelChan, doneChan, _, err := stream(ctx, "", backend, Options{})
+	run, modelChan, doneChan, _, err := stream(ctx, "", backend, Options{})
 	if err != nil {
 		return "", err
 	}
 	defer close(doneChan)
 
-	var lastmodel queuestreamer.Model
+	var lastmodel queuestreamer.Step
 	for model := range modelChan {
-		lastmodel = model
+		lastmodel = model.Steps[run.Step]
 		break
 	}
 

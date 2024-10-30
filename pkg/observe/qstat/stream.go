@@ -38,6 +38,8 @@ func stream(ctx context.Context, runnameIn string, backend be.Backend, opts Opti
 	group.Go(func() error {
 		defer close(modelChan)
 		defer client.Stop()
+
+		opts.StreamOptions.AnyStep = true
 		return queuestreamer.StreamModel(gctx, client.S3Client, client.RunContext, modelChan, doneChan, opts.StreamOptions)
 	})
 

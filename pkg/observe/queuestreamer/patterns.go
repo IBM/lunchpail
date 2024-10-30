@@ -20,6 +20,8 @@ type PathPatterns struct {
 }
 
 func NewPathPatterns(run q.RunContext) PathPatterns {
+	run = run.ForStep(q.AnyStep)
+
 	return PathPatterns{
 		liveWorker:     run.PatternFor(q.WorkerAliveMarker),
 		deadWorker:     run.PatternFor(q.WorkerDeadMarker),

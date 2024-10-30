@@ -95,7 +95,7 @@ type Apportionment struct {
 	worker   queuestreamer.Worker
 }
 
-func (c client) apportion(m queuestreamer.Model) []Apportionment {
+func (c client) apportion(m queuestreamer.Step) []Apportionment {
 	As := []Apportionment{}
 
 	if len(m.LiveWorkers) == 0 || len(m.UnassignedTasks) == 0 {
@@ -133,7 +133,7 @@ func (c client) apportion(m queuestreamer.Model) []Apportionment {
 	return As
 }
 
-func (c client) assignNewTasks(m queuestreamer.Model) {
+func (c client) assignNewTasks(m queuestreamer.Step) {
 	for _, A := range c.apportion(m) {
 		nTasks := A.endIdx - A.startIdx
 		fmt.Fprintf(os.Stderr, "Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.Name, c.RunContext.RunName+"-", "", 1))
@@ -147,7 +147,7 @@ func (c client) assignNewTasks(m queuestreamer.Model) {
 }
 
 // Handle dead Workers
-func (c client) reassignDeadWorkerTasks(m queuestreamer.Model) {
+func (c client) reassignDeadWorkerTasks(m queuestreamer.Step) {
 	for _, worker := range m.DeadWorkers {
 		if err := c.cleanupForDeadWorker(worker); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
@@ -156,7 +156,7 @@ func (c client) reassignDeadWorkerTasks(m queuestreamer.Model) {
 }
 
 // See if we need to rebalance workloads
-func (c client) rebalance(m queuestreamer.Model) bool {
+func (c client) rebalance(m queuestreamer.Step) bool {
 	if len(m.UnassignedTasks) == 0 {
 		// If we had some unassigned Tasks, we probably
 		// wouldnm't need to rebalance; we could just send
@@ -211,7 +211,7 @@ func (c client) rebalance(m queuestreamer.Model) bool {
 }
 
 // Touch kill files in the worker inboxes.
-func (c client) touchKillFiles(m queuestreamer.Model) {
+func (c client) touchKillFiles(m queuestreamer.Step) {
 	for _, worker := range m.LiveWorkers {
 		if !worker.KillfilePresent {
 			if c.LogOptions.Verbose {
@@ -225,12 +225,12 @@ func (c client) touchKillFiles(m queuestreamer.Model) {
 }
 
 // Is everything well and done: dispatcher, workers, us?
-func readyToBye(m queuestreamer.Model) bool {
-	return m.IsAllWorkDone() && m.AreAllWorkersQuiesced() && m.IsAllOutputConsumed()
+func readyToBye(m queuestreamer.Step) bool {
+	return m.DispatcherDone && m.IsAllWorkDone() && m.AreAllWorkersQuiesced() && m.IsAllOutputConsumed()
 }
 
 // Assess and potentially update queue state. Return true when we are all done.
-func (c client) assess(m queuestreamer.Model) bool {
+func (c client) assess(m queuestreamer.Step) bool {
 	if readyToBye(m) {
 		fmt.Fprintln(os.Stderr, "All work has been completed, all workers have terminated")
 		return true
