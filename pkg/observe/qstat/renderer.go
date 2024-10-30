@@ -1,7 +1,6 @@
 package qstat
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -16,7 +15,6 @@ import (
 // renderer.render() Assists UI() in rendering the content of a given queuestreamer.Model
 type renderer struct {
 	queue.RunContext
-	re           *lipgloss.Renderer
 	highlight    lipgloss.Color
 	italic       lipgloss.Style
 	dead         lipgloss.Style
@@ -40,7 +38,7 @@ func newRenderer(run queue.RunContext) renderer {
 		re.NewStyle().Bold(true).Background(lipgloss.Color("1")).Foreground(black).Padding(0, 1), // Fail
 	}
 
-	return renderer{run, re, highlight, italic, dead, styles}
+	return renderer{run, highlight, italic, dead, styles}
 }
 
 func (r renderer) workerRow(stepIdx int, t *table.Table, worker queuestreamer.Worker, isAlive bool) {
@@ -55,12 +53,32 @@ func (r renderer) workerRow(stepIdx int, t *table.Table, worker queuestreamer.Wo
 	)
 }
 
+func (r renderer) isEmpty(model queuestreamer.Model) bool {
+	for _, step := range model.Steps {
+		if !r.isEmptyStep(step) {
+			return false
+		}
+	}
+	return true
+}
+
+func (r renderer) isEmptyStep(step queuestreamer.Step) bool {
+	return !r.showInbox(step) && len(step.LiveWorkers) == 0 && len(step.DeadWorkers) == 0
+}
+
+func (r renderer) showInbox(step queuestreamer.Step) bool {
+	return len(step.UnassignedTasks) > 0
+}
+
 func (r renderer) render(model queuestreamer.Model) *table.Table {
 	rowIdx := 0
 	inboxRows := make(map[int]bool)
 	for _, step := range model.Steps {
-		inboxRows[rowIdx] = true
-		rowIdx += 1 + len(step.LiveWorkers) + len(step.DeadWorkers)
+		if r.showInbox(step) {
+			inboxRows[rowIdx] = true
+			rowIdx++
+		}
+		rowIdx += len(step.LiveWorkers) + len(step.DeadWorkers)
 	}
 
 	t := table.New().
@@ -87,7 +105,9 @@ func (r renderer) step(idx int, model queuestreamer.Step, t *table.Table) {
 	//t.Row("processing", "", strconv.Itoa(model.Processing), "", "")
 	//t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
 
-	t.Row(r.italic.Render("inbox"), "", "", strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
+	if r.showInbox(model) {
+		t.Row(r.italic.Render("inbox"), "", "", strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
+	}
 
 	for _, worker := range model.LiveWorkers {
 		r.workerRow(idx, t, worker, true)
@@ -95,9 +115,6 @@ func (r renderer) step(idx int, model queuestreamer.Step, t *table.Table) {
 	for _, worker := range model.DeadWorkers {
 		r.workerRow(idx, t, worker, false)
 	}
-
-	// fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
-	fmt.Println(t)
 }
 
 func (r renderer) name(pool, worker string, isAlive bool) string {
