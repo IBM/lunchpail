@@ -45,12 +45,16 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 			fmt.Fprintln(os.Stderr, "Got model update", model)
 		}
 
-		debounced(func() {
-			t := r.render(model)
-			for idx, step := range model.Steps {
-				r.step(idx, step, t)
-			}
-		})
+		if !r.isEmpty(model) {
+			debounced(func() {
+				t := r.render(model)
+				for idx, step := range model.Steps {
+					r.step(idx, step, t)
+				}
+				// fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
+				fmt.Println(t)
+			})
+		}
 
 		if !opts.Follow {
 			break
