@@ -48,6 +48,6 @@ mv $1 $2`},
 
 	return hlir.HLIR{
 		Applications: []hlir.Application{app},
-		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("cat", 1)},
+		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("default", 1)},
 	}
 }
