@@ -34,7 +34,7 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 	// Debounce output to avoid quick flurries of UI output
 	dbinterval := opts.Debounce
 	if dbinterval == 0 {
-		dbinterval = 1000
+		dbinterval = 10
 	}
 	debounced := debounce.New(time.Duration(dbinterval) * time.Millisecond)
 

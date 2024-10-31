@@ -23,7 +23,7 @@ func Stat() *cobra.Command {
 	cmd.Flags().BoolVarP(&followFlag, "follow", "f", true, "Track updates (rather than printing once)")
 
 	var debounce int
-	cmd.Flags().IntVarP(&debounce, "debounce", "d", 1000, "Debounce output with this granularity in milliseconds")
+	cmd.Flags().IntVarP(&debounce, "debounce", "d", 10, "Debounce output with this granularity in milliseconds")
 
 	opts, err := options.RestoreBuildOptions()
 	if err != nil {
