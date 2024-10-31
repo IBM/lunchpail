@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bep/debounce"
@@ -47,12 +48,12 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 
 		if !r.isEmpty(model) {
 			debounced(func() {
-				t := r.render(model)
+				t := r.table(model)
 				for idx, step := range model.Steps {
 					r.step(idx, step, t)
 				}
 				// fmt.Printf("%s\tWorkers: %d\n", model.Timestamp, model.LiveWorkers())
-				fmt.Println(t)
+				r.render(t)
 			})
 		}
 
@@ -64,5 +65,11 @@ func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options)
 	if opts.Debug {
 		fmt.Fprintln(os.Stderr, "Stopped receiving updates")
 	}
-	return group.Wait()
+
+	err = group.Wait()
+	if err != nil && !strings.Contains(err.Error(), "unexpected EOF") {
+		// that would mean minio dead, but we don't care
+		return err
+	}
+	return nil
 }

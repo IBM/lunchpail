@@ -54,43 +54,37 @@ func isFatal(err error) bool {
 func once(ctx context.Context, c client, modelChan chan Model, doneChan chan struct{}, opts StreamOptions) error {
 	prefix := c.RunContext.ListenPrefixForAnyStep(opts.AnyStep)
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Listen bucket=%s path=%s path2=%s\n", c.RunContext.Bucket, prefix, c.RunContext.AsFile(queue.AssignedAndFinished))
+		fmt.Fprintf(os.Stderr, "Listen bucket=%s path=%s\n", c.RunContext.Bucket, prefix)
 	}
 
-	step0Objects, step0Errs := c.s3.Listen(c.RunContext.Bucket, prefix, "", true)
-	step1Objects, step1Errs := c.s3.Listen(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), "", true)
+	objects, errs := c.s3.Listen(c.RunContext.Bucket, prefix, "", true)
 	defer c.s3.StopListening(c.RunContext.Bucket)
 
 	for {
 		select {
 		case <-ctx.Done():
+			if opts.Verbose {
+				fmt.Fprintln(os.Stderr, "Queue streamer terminating due to completed context")
+			}
 			return nil
 		case <-doneChan:
 			if opts.Verbose {
-				fmt.Fprintln(os.Stderr, "Queue model streamer got done notification")
+				fmt.Fprintln(os.Stderr, "Queue streamer got done notification")
 			}
 			return nil
-		case err := <-step1Errs:
-			if isFatal(err) {
-				return err
-			}
-		case err := <-step0Errs:
+		case err := <-errs:
 			if isFatal(err) {
 				return err
 			}
 
-			fmt.Fprintf(os.Stderr, "Got push notification error: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Queue streamer got push notification error: %v\n", err)
 
 			// sleep for a bit
 			time.Sleep(time.Duration(opts.PollingInterval) * time.Second)
 
-		case obj := <-step0Objects:
+		case obj := <-objects:
 			if c.LogOptions.Verbose {
-				fmt.Fprintf(os.Stderr, "Got push notification object=%s\n", obj)
-			}
-		case obj := <-step1Objects:
-			if c.LogOptions.Verbose {
-				fmt.Fprintf(os.Stderr, "Got push notification object=%s\n", obj)
+				fmt.Fprintf(os.Stderr, "Queue streamer got push notification object=%s\n", obj)
 			}
 		}
 

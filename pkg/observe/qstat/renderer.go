@@ -1,6 +1,7 @@
 package qstat
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -15,6 +16,7 @@ import (
 // renderer.render() Assists UI() in rendering the content of a given queuestreamer.Model
 type renderer struct {
 	queue.RunContext
+	prevNumRows  int
 	highlight    lipgloss.Color
 	italic       lipgloss.Style
 	dead         lipgloss.Style
@@ -38,7 +40,7 @@ func newRenderer(run queue.RunContext) renderer {
 		re.NewStyle().Bold(true).Background(lipgloss.Color("1")).Foreground(black).Padding(0, 1), // Fail
 	}
 
-	return renderer{run, highlight, italic, dead, styles}
+	return renderer{run, 0, highlight, italic, dead, styles}
 }
 
 func (r renderer) workerRow(stepIdx int, t *table.Table, worker queuestreamer.Worker, isAlive bool) {
@@ -70,7 +72,20 @@ func (r renderer) showInbox(step queuestreamer.Step) bool {
 	return len(step.UnassignedTasks) > 0
 }
 
-func (r renderer) render(model queuestreamer.Model) *table.Table {
+func (r *renderer) render(t *table.Table) {
+	if r.prevNumRows > 0 {
+		reset := ""
+		for range r.prevNumRows + 1 {
+			reset += "\033[2K\r\033[1F" // 2K clears line; \r returns to beginning of line (maybe not needed); and 1F returns to previous line
+		}
+		fmt.Printf(reset)
+	}
+	s := t.Render()
+	r.prevNumRows = strings.Count(s, "\n")
+	fmt.Println(s)
+}
+
+func (r renderer) table(model queuestreamer.Model) *table.Table {
 	rowIdx := 0
 	inboxRows := make(map[int]bool)
 	for _, step := range model.Steps {
@@ -87,7 +102,7 @@ func (r renderer) render(model queuestreamer.Model) *table.Table {
 		Headers("Step", "Pool", "Worker", "Pend", "Live", "Done", "Fail").
 		StyleFunc(func(row, col int) lipgloss.Style {
 			switch {
-			case row == -1: // header row
+			case row == table.HeaderRow:
 				return r.columnStyles[0]
 			case inboxRows[row]:
 				if col > 2 {
@@ -106,7 +121,7 @@ func (r renderer) step(idx int, model queuestreamer.Step, t *table.Table) {
 	//t.Row("done", "", "", strconv.Itoa(model.Success), strconv.Itoa(model.Failure))
 
 	if r.showInbox(model) {
-		t.Row(r.italic.Render("inbox"), "", "", strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
+		t.Row(strconv.Itoa(idx), r.italic.Render("queued"), "", strconv.Itoa(len(model.UnassignedTasks)), "", "", "")
 	}
 
 	for _, worker := range model.LiveWorkers {

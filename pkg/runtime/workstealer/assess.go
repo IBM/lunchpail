@@ -3,7 +3,6 @@ package workstealer
 import (
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/dustin/go-humanize/english"
@@ -12,57 +11,48 @@ import (
 	"lunchpail.io/pkg/observe/queuestreamer"
 )
 
-func (c client) localPathToRemote(path string) string {
-	return strings.Replace(path, c.RunContext.Bucket+"/", "", 1)
-}
-
 // Emit the path to the file we deleted
 func (c client) reportMovedFile(src, dst string) error {
-	rsrc := c.localPathToRemote(src)
-	rdst := c.localPathToRemote(dst)
 	if c.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Uploading moved file: %s -> %s\n", rsrc, rdst)
+		fmt.Fprintf(os.Stderr, "Uploading moved file: %s -> %s\n", src, dst)
 	}
 
-	return c.s3.Moveto(c.RunContext.Bucket, rsrc, rdst)
+	return c.s3.Moveto(c.RunContext.Bucket, src, dst)
 }
 
 // Touch killfile for the given Worker
-func (c client) touchKillFile(worker queuestreamer.Worker) error {
-	return c.s3.Mark(c.RunContext.Bucket, c.RunContext.ForPool(worker.Pool).ForWorker(worker.Name).AsFile(queue.WorkerKillFile), "kill")
+func (c client) touchKillFile(step int, worker queuestreamer.Worker) error {
+	return c.s3.Mark(c.RunContext.Bucket, c.RunContext.ForStep(step).ForPool(worker.Pool).ForWorker(worker.Name).AsFile(queue.WorkerKillFile), "kill")
 }
 
 // As part of assigning a Task to a Worker, we will move the Task to its Inbox
-func (c client) moveToWorkerInbox(task string, worker queuestreamer.Worker) error {
-	unassignedFilePath := c.RunContext.ForTask(task).AsFile(queue.Unassigned)
-	workerInboxFilePath := c.RunContext.ForPool(worker.Pool).ForWorker(worker.Name).ForTask(task).AsFile(queue.AssignedAndPending)
+func (c client) moveToWorkerInbox(step int, task string, worker queuestreamer.Worker) error {
+	unassignedFilePath := c.RunContext.ForStep(step).ForTask(task).AsFile(queue.Unassigned)
+	workerInboxFilePath := c.RunContext.ForStep(step).ForPool(worker.Pool).ForWorker(worker.Name).ForTask(task).AsFile(queue.AssignedAndPending)
 	return c.reportMovedFile(unassignedFilePath, workerInboxFilePath)
 }
 
 // Assign an unassigned Task to one of the given LiveWorkers
-func (c client) assignNewTaskToWorker(task string, worker queuestreamer.Worker) error {
-	if c.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Assigning task=%s to worker=%s \n", task, worker.Name)
-	}
-	return c.moveToWorkerInbox(task, worker)
+func (c client) assignNewTaskToWorker(step int, task string, worker queuestreamer.Worker) error {
+	return c.moveToWorkerInbox(step, task, worker)
 }
 
 // A Worker has died. Unassign this task that it owns
-func (c client) moveAssignedTaskBackToUnassigned(task string, worker queuestreamer.Worker) error {
-	inWorkerFilePath := c.RunContext.ForPool(worker.Pool).ForWorker(worker.Name).ForTask(task).AsFile(queue.AssignedAndPending)
-	unassignedFilePath := c.RunContext.ForTask(task).AsFile(queue.Unassigned)
+func (c client) moveAssignedTaskBackToUnassigned(step int, task string, worker queuestreamer.Worker) error {
+	inWorkerFilePath := c.RunContext.ForStep(step).ForPool(worker.Pool).ForWorker(worker.Name).ForTask(task).AsFile(queue.AssignedAndPending)
+	unassignedFilePath := c.RunContext.ForStep(step).ForTask(task).AsFile(queue.Unassigned)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
 // A Worker has died. Unassign this task that it owns
-func (c client) moveProcessingTaskBackToUnassigned(task string, worker queuestreamer.Worker) error {
-	inWorkerFilePath := c.RunContext.ForPool(worker.Pool).ForWorker(worker.Name).ForTask(task).AsFile(queue.AssignedAndProcessing)
-	unassignedFilePath := c.RunContext.ForTask(task).AsFile(queue.Unassigned)
+func (c client) moveProcessingTaskBackToUnassigned(step int, task string, worker queuestreamer.Worker) error {
+	inWorkerFilePath := c.RunContext.ForStep(step).ForPool(worker.Pool).ForWorker(worker.Name).ForTask(task).AsFile(queue.AssignedAndProcessing)
+	unassignedFilePath := c.RunContext.ForStep(step).ForTask(task).AsFile(queue.Unassigned)
 	return c.reportMovedFile(inWorkerFilePath, unassignedFilePath)
 }
 
 // A Worker has transitioned from Live to Dead. Reassign its Tasks.
-func (c client) cleanupForDeadWorker(worker queuestreamer.Worker) error {
+func (c client) cleanupForDeadWorker(step queuestreamer.Step, worker queuestreamer.Worker) error {
 	nAssigned := len(worker.AssignedTasks)
 	nProcessing := len(worker.ProcessingTasks)
 
@@ -76,12 +66,12 @@ func (c client) cleanupForDeadWorker(worker queuestreamer.Worker) error {
 	}
 
 	for _, assignedTask := range worker.AssignedTasks {
-		if err := c.moveAssignedTaskBackToUnassigned(assignedTask, worker); err != nil {
+		if err := c.moveAssignedTaskBackToUnassigned(step.Index, assignedTask, worker); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 		}
 	}
 	for _, assignedTask := range worker.ProcessingTasks {
-		if err := c.moveProcessingTaskBackToUnassigned(assignedTask, worker); err != nil {
+		if err := c.moveProcessingTaskBackToUnassigned(step.Index, assignedTask, worker); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 		}
 	}
@@ -108,7 +98,8 @@ func (c client) apportion(m queuestreamer.Step) []Apportionment {
 	if c.LogOptions.Verbose {
 		fmt.Fprintf(
 			os.Stderr,
-			"Allocating %s to %s. Seeking %s per worker.\n",
+			"Allocating step=%d %s to %s. Seeking %s per worker.\n",
+			m.Index,
 			english.Plural(len(m.UnassignedTasks), "task", ""),
 			english.Plural(len(m.LiveWorkers), "worker", ""),
 			english.Plural(desiredLevel, "task", ""),
@@ -136,10 +127,13 @@ func (c client) apportion(m queuestreamer.Step) []Apportionment {
 func (c client) assignNewTasks(m queuestreamer.Step) {
 	for _, A := range c.apportion(m) {
 		nTasks := A.endIdx - A.startIdx
-		fmt.Fprintf(os.Stderr, "Assigning %s to %s\n", english.Plural(nTasks, "task", ""), strings.Replace(A.worker.Name, c.RunContext.RunName+"-", "", 1))
+		fmt.Fprintf(os.Stderr, "Assigning step=%d %s to worker=%s\n", m.Index, english.Plural(nTasks, "task", ""), strings.Replace(A.worker.Name, c.RunContext.RunName+"-", "", 1))
 		for idx := range nTasks {
 			task := m.UnassignedTasks[A.startIdx+idx]
-			if err := c.assignNewTaskToWorker(task, A.worker); err != nil {
+			if c.LogOptions.Verbose {
+				fmt.Fprintf(os.Stderr, "Assigning step=%d task=%s to worker=%s \n", m.Index, task, A.worker.Name)
+			}
+			if err := c.assignNewTaskToWorker(m.Index, task, A.worker); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
 		}
@@ -149,7 +143,7 @@ func (c client) assignNewTasks(m queuestreamer.Step) {
 // Handle dead Workers
 func (c client) reassignDeadWorkerTasks(m queuestreamer.Step) {
 	for _, worker := range m.DeadWorkers {
-		if err := c.cleanupForDeadWorker(worker); err != nil {
+		if err := c.cleanupForDeadWorker(m, worker); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 		}
 	}
@@ -196,7 +190,7 @@ func (c client) rebalance(m queuestreamer.Step) bool {
 					for i := range stealThisMany {
 						j := len(workerWithWork.AssignedTasks) - i - 1
 						taskToSteal := workerWithWork.AssignedTasks[j]
-						c.moveAssignedTaskBackToUnassigned(taskToSteal, workerWithWork)
+						c.moveAssignedTaskBackToUnassigned(m.Index, taskToSteal, workerWithWork)
 					}
 				}
 			}
@@ -215,35 +209,33 @@ func (c client) touchKillFiles(m queuestreamer.Step) {
 	for _, worker := range m.LiveWorkers {
 		if !worker.KillfilePresent {
 			if c.LogOptions.Verbose {
-				fmt.Fprintf(os.Stderr, "Touching kill file for worker %s/%s\n", worker.Pool, worker.Name)
+				fmt.Fprintf(os.Stderr, "Touching kill file for step=%d pool=%s worker=%s\n", m.Index, worker.Pool, worker.Name)
 			}
-			if err := c.touchKillFile(worker); err != nil {
+			if err := c.touchKillFile(m.Index, worker); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
 		}
 	}
 }
 
+func dispatcherDone(model queuestreamer.Model, step queuestreamer.Step) bool {
+	// a bit of a hack until we fully remove the notion of DispatcherDone; the last step is really the output of the pipeline
+	return step.DispatcherDone || step.Index == len(model.Steps) && len(step.LiveWorkers) == 0 && len(step.DeadWorkers) == 0
+}
+
 // Is everything well and done: dispatcher, workers, us?
-func readyToBye(m queuestreamer.Step) bool {
-	return m.DispatcherDone && m.IsAllWorkDone() && m.AreAllWorkersQuiesced() && m.IsAllOutputConsumed()
+func readyToBye(model queuestreamer.Model) bool {
+	for _, m := range model.Steps {
+		if !(dispatcherDone(model, m) && m.IsAllWorkDone() && m.AreAllWorkersQuiesced() && m.IsAllOutputConsumed()) {
+			return false
+		}
+	}
+	return true
 }
 
 // Assess and potentially update queue state. Return true when we are all done.
-func (c client) assess(m queuestreamer.Step) bool {
-	if readyToBye(m) {
-		fmt.Fprintln(os.Stderr, "All work has been completed, all workers have terminated")
-		return true
-	} else if !c.rebalance(m) {
-		if c.LogOptions.Debug {
-			fmt.Fprintf(os.Stderr, "Not bye time allWorkDone=%v areAllWorkersQuiesced=%v missingKillFile?=%d isAllOutputConsumed=%v\n",
-				m.IsAllWorkDone(),
-				m.AreAllWorkersQuiesced(),
-				slices.IndexFunc(m.DeadWorkers, func(w queuestreamer.Worker) bool { return !w.KillfilePresent }),
-				m.IsAllOutputConsumed(),
-			)
-		}
-
+func (c client) assess(model queuestreamer.Model, m queuestreamer.Step) {
+	if !c.rebalance(m) {
 		c.assignNewTasks(m)
 
 		if m.IsAllWorkDone() {
@@ -254,6 +246,4 @@ func (c client) assess(m queuestreamer.Step) bool {
 
 		c.reassignDeadWorkerTasks(m)
 	}
-
-	return false
 }

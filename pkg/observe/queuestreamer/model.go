@@ -20,13 +20,6 @@ type Worker struct {
 	KillfilePresent bool
 }
 
-type TaskCode string
-
-const (
-	succeeded TaskCode = "succeeded"
-	failed    TaskCode = "failed"
-)
-
 // The current state of the world
 type Model struct {
 	// One sub-model per step
@@ -34,6 +27,9 @@ type Model struct {
 }
 
 type Step struct {
+	// Step index
+	Index int
+
 	// has dispatcher dropped its donefile, indicating no more
 	// work is forthcoming?
 	DispatcherDone bool

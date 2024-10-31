@@ -12,7 +12,7 @@ import (
 func lowerApplications(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.Component, error) {
 	components := []llir.Component{}
 
-	if workstealer.IsNeeded(model) {
+	if ctx.Run.Step == 0 && workstealer.IsNeeded(model) {
 		// Note, the actual worker resources will be dealt
 		// with when a WorkerPool is created. Here, we only
 		// need to specify a WorkStealer.

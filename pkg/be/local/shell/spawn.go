@@ -27,6 +27,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(workdir)
 
 	// tee command output to the logdir
 	instance := strings.Replace(strings.Replace(c.InstanceName, ir.RunName(), "", 1), "--", "-", 1)

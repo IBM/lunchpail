@@ -108,7 +108,7 @@ then
         fi
     else
         "$SCRIPTDIR"/up.sh $testname &
-        # "$testapp" logs -c workstealer -t $LUNCHPAIL_TARGET -f &
+        "$testapp" logs -c workstealer -t $LUNCHPAIL_TARGET -f &
     fi
 
     if [[ -e "$1"/init.sh ]]; then
