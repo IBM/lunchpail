@@ -124,7 +124,7 @@ func (r renderer) name(pool, worker string, isAlive bool) string {
 	)
 
 	if !isAlive {
-		return r.dead.Render(label + "☠")
+		return r.dead.Render(label) + " ☠"
 	}
 
 	return label
