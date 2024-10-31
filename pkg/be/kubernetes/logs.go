@@ -59,6 +59,10 @@ func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts strea
 
 	cmd := exec.Command("/bin/sh", "-c", cmdline)
 	cmd.Stdout = os.Stdout
+	if opts.Writer != nil {
+		cmd.Stdout = opts.Writer
+	}
+
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return err

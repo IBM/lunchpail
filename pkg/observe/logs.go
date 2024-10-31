@@ -3,6 +3,7 @@ package observe
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"golang.org/x/sync/errgroup"
 
@@ -19,6 +20,7 @@ type LogsOptions struct {
 	Follow     bool
 	Verbose    bool
 	Components []lunchpail.Component
+	io.Writer
 }
 
 func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOptions) error {
@@ -49,6 +51,7 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 					Follow:     opts.Follow,
 					Verbose:    opts.Verbose,
 					LinePrefix: prefix,
+					Writer:     opts.Writer,
 				},
 			)
 		})

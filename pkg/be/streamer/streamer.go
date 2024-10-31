@@ -1,6 +1,8 @@
 package streamer
 
 import (
+	"io"
+
 	"lunchpail.io/pkg/be/events/utilization"
 	"lunchpail.io/pkg/lunchpail"
 )
@@ -12,6 +14,7 @@ type LogOptions struct {
 	Follow     bool
 	Verbose    bool
 	LinePrefix LinePrefixFunction
+	io.Writer
 }
 
 type Streamer interface {
