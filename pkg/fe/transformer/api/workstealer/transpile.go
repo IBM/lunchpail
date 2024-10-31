@@ -16,10 +16,9 @@ func transpile(ctx llir.Context, opts build.LogOptions) (hlir.Application, error
 
 	app.Spec.Image = fmt.Sprintf("%s/%s/lunchpail:%s", lunchpail.ImageRegistry, lunchpail.ImageRepo, lunchpail.Version())
 	app.Spec.Role = "workstealer"
-	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component workstealer run --verbose=%v --debug=%v --self-destruct=%v",
+	app.Spec.Command = fmt.Sprintf("$LUNCHPAIL_EXE component workstealer run --verbose=%v --debug=%v --self-destruct=true",
 		opts.Verbose,
 		opts.Debug,
-		ctx.Run.IsFinalStep,
 	)
 
 	app.Spec.Env = hlir.Env{}

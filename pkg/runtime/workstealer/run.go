@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/bep/debounce"
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/build"
@@ -52,7 +54,12 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 	defer close(doneChan)
 	group.Go(func() error {
 		defer close(modelChan)
-		return queuestreamer.StreamModel(gctx, s3, run, modelChan, doneChan, queuestreamer.StreamOptions{LogOptions: opts.LogOptions, PollingInterval: opts.PollingInterval})
+
+		err := queuestreamer.StreamModel(gctx, s3, run, modelChan, doneChan, queuestreamer.StreamOptions{LogOptions: opts.LogOptions, PollingInterval: opts.PollingInterval, AnyStep: true})
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Workstealer queue streamer has exited err=%v\n", err)
+		}
+		return err
 	})
 
 	c := client{s3, run, queuestreamer.NewPathPatterns(run), opts.LogOptions}
@@ -63,24 +70,36 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 		printenv()
 	}
 
-	for model := range modelChan {
-		m := model.Steps[run.Step]
-		if err := c.report(m); err != nil {
-			fmt.Fprintln(os.Stderr, "Error logging model", err)
-		}
+	// There is no need to respond to every single update, as long
+	// as we respond to updates eventually... This will reduce
+	// chatter to S3.
+	debounced := debounce.New(100 * time.Millisecond)
 
-		// Assess the model. If the assessment determines we
-		// are done, notify the streamer.
-		if c.assess(m) {
-			// notify the streamer we are done
-			if opts.Verbose {
-				fmt.Fprintln(os.Stderr, "Workstealer assessor has initiated a shutdown")
+	for model := range modelChan {
+		debounced(func() {
+			if readyToBye(model) {
+				fmt.Fprintln(os.Stderr, "All work for this run has been completed, all workers have terminated")
+				// notify the streamer we are done
+				if opts.Verbose {
+					fmt.Fprintln(os.Stderr, "Workstealer assessor has initiated a shutdown")
+				}
+				select {
+				case doneChan <- struct{}{}:
+				default:
+				}
+
+				return
 			}
-			select {
-			case doneChan <- struct{}{}:
-			default:
+
+			for _, m := range model.Steps {
+				if err := c.report(m); err != nil {
+					fmt.Fprintln(os.Stderr, "Error logging model", err)
+				}
+
+				// Assess the model to determine new work assignments, etc.
+				c.assess(model, m)
 			}
-		}
+		})
 	}
 
 	// Drop a final breadcrumb indicating we are ready to tear
@@ -97,7 +116,7 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 	}
 
 	util.SleepBeforeExit()
-	fmt.Fprintln(os.Stderr, "The job should be all done now")
+	fmt.Fprintln(os.Stderr, "This run should be all done now")
 
 	return group.Wait()
 }

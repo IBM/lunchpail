@@ -114,7 +114,7 @@ func (model *Model) update(filepath string, patterns PathPatterns) {
 		copy(steps, model.Steps)
 		i := len(model.Steps)
 		for i <= step {
-			steps = append(steps, Step{})
+			steps = append(steps, Step{Index: step})
 			i++
 		}
 		model.Steps = steps

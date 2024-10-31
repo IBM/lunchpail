@@ -146,7 +146,7 @@ function waitForEveryoneToDie {
 
     if [[ "$NUM_DESIRED_OUTPUTS:-1" != "0" ]]
     then
-        # workstealer should not auto-self-destruct
+        # workstealer should not auto-self-destruct since we have not drained the output
         waitForNInstances 1 $run_name workstealer
 
         # drain the output

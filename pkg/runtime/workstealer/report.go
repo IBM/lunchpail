@@ -16,7 +16,7 @@ func (c client) report(m queuestreamer.Step) error {
 	var b bytes.Buffer
 	writer := tabwriter.NewWriter(&b, 0, 8, 1, '\t', tabwriter.AlignRight)
 
-	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%s\n", len(m.UnassignedTasks), c.RunContext.RunName, now.Format(time.UnixDate))
+	fmt.Fprintf(writer, "lunchpail.io\tunassigned\t%d\t\t\t\t\t%s\t%s\tstep=%d\n", len(m.UnassignedTasks), c.RunContext.RunName, now.Format(time.UnixDate), m.Index)
 	fmt.Fprintf(writer, "lunchpail.io\tdispatcherDone\t%v\t\t\t\t\t%s\n", m.DispatcherDone, c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tassigned\t%d\t\t\t\t\t%s\n", len(m.AssignedTasks), c.RunContext.RunName)
 	fmt.Fprintf(writer, "lunchpail.io\tprocessing\t\t%d\t\t\t\t%s\n", len(m.ProcessingTasks), c.RunContext.RunName)

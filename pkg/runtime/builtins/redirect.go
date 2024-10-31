@@ -29,7 +29,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 		dst := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".output"+ext)
 		group.Go(func() error {
 			if opts.Verbose {
-				fmt.Fprintf(os.Stderr, "Downloading output to %s\n", dst)
+				fmt.Fprintf(os.Stderr, "Downloading output %s to %s\n", object, dst)
 			}
 			if err := client.Download(client.Paths.Bucket, object, dst); err != nil {
 				if opts.Verbose {

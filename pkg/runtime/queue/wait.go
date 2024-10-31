@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -48,42 +49,70 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 	e := make(chan error)
 
 	watcherIsAlive := false
-	reported := make(map[string]bool)
-	reportCreate := func(key string) {
-		if !reported[key] {
+	greported := make(map[string]bool)
+	reportCreate := func(key string, reported map[string]bool) {
+		if !reported[key] && !greported[key] {
 			reported[key] = true
 			c <- key
 		}
 	}
 	reportDelete := func(key string) {
-		// delete(reported, key)
+		delete(greported, key)
 		c <- key
 	}
 	dead := false
+	var mu sync.Mutex
 	once := func() {
+		mu.Lock()
+		defer mu.Unlock()
+		myreported := make(map[string]bool)
 		for o := range s3.client.ListObjects(s3.context, bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true}) {
 			select {
 			case <-s3.context.Done():
-				break
+				return
 			default:
 				if dead {
 					return
 				} else if o.Err != nil {
 					e <- o.Err
 				} else {
-					reportCreate(o.Key)
+					reportCreate(o.Key, myreported)
 				}
 			}
 		}
+
+		if includeDeletions {
+			for k := range greported {
+				if !myreported[k] {
+					reportDelete(k)
+				}
+			}
+		}
+		greported = myreported
 	}
 
+	// minio push notifications are ... buggy. plus, even if they
+	// were reliable, we would still need to do a full ListObjects
+	// in advance and after the first push notification (these are
+	// the two time windows that ListenBucketNotification would
+	// miss; i.e. the interval between now and when our
+	// ListenBucketNotification is registered with the minio
+	// server)
 	go func() {
-		for !watcherIsAlive && !dead {
+		for !dead {
+			select {
+			case <-s3.context.Done():
+				return
+			default:
+			}
+
 			once()
 
+			interval := 5 * time.Second
 			if !watcherIsAlive {
-				time.Sleep(500 * time.Millisecond)
+				interval = 500 * time.Millisecond
 			}
+			time.Sleep(interval)
 		}
 	}()
 
@@ -101,23 +130,25 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 		}
 
 		for n := range s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, events) {
-			watcherIsAlive = true
 			if n.Err != nil {
 				e <- n.Err
 				continue
 			}
+			watcherIsAlive = true
 
 			if !already {
 				already = true
 				once()
 			}
+			mu.Lock()
 			for _, r := range n.Records {
-				if strings.HasPrefix(r.EventName, "s3:ObjectCreated:") {
-					reportCreate(r.S3.Object.Key)
+				if !includeDeletions || strings.HasPrefix(r.EventName, "s3:ObjectCreated:") {
+					reportCreate(r.S3.Object.Key, greported)
 				} else {
 					reportDelete(r.S3.Object.Key)
 				}
 			}
+			mu.Unlock()
 		}
 
 		// in case the Listen itself fails, avoid once() sending on a closed channel

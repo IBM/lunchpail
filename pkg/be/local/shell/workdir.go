@@ -1,9 +1,8 @@
 package shell
 
 import (
-	base64 "encoding/base64"
+	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -13,7 +12,15 @@ import (
 )
 
 func PrepareWorkdirForComponent(c llir.ShellComponent, opts build.LogOptions) (string, string, error) {
-	workdir, err := ioutil.TempDir("", "lunchpail")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", "", err
+	}
+	tmp := filepath.Join(home, ".lunchpail", "tmp")
+	if err := os.MkdirAll(tmp, os.ModePerm); err != nil {
+		return "", "", err
+	}
+	workdir, err := os.MkdirTemp(tmp, string(c.C()))
 	if err != nil {
 		return "", "", err
 	}
