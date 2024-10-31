@@ -13,6 +13,9 @@ import (
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
+	q "lunchpail.io/pkg/ir/queue"
+	s3 "lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/runtime/queue/upload"
 	"lunchpail.io/pkg/util"
 )
 
@@ -21,6 +24,7 @@ type UpOptions struct {
 	DryRun       bool
 	Watch        bool
 	BuildOptions build.Options
+	Executable   string
 }
 
 func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
@@ -177,6 +181,13 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			// fail fast? cancel()
 		}
 	}()
+
+	//inject executable into s3
+	if opts.Executable != "" {
+		if err := s3.UploadFiles(ctx, backend, ir.Context.Run, []upload.Upload{upload.Upload{Path: q.Executable, Bucket: ir.Context.Run.Bucket}}); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}
 
 	defer cancel()
 	errorFromUp := backend.Up(cancellable, ir, opts.BuildOptions, isRunning)

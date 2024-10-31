@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -64,7 +65,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args})
+		return boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args, Executable: os.Args[0]})
 	}
 
 	return cmd
