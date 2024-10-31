@@ -22,7 +22,7 @@ func watchLogs(ctx context.Context, backend be.Backend, ir llir.LLIR, opts Watch
 		components = lunchpail.AllComponents
 	}
 
-	err := observe.Logs(ctx, ir.RunName(), backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components})
+	err := observe.Logs(ctx, ir.RunName(), backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components, Writer: os.Stderr})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}

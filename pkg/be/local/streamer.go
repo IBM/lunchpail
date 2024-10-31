@@ -158,12 +158,16 @@ func tailf(outfile string, opts streamer.LogOptions) error {
 		return err
 	}
 
+	w := opts.Writer
+	if w == nil {
+		w = os.Stdout
+	}
 	for line := range c.Lines {
 		prefix := ""
 		if opts.LinePrefix != nil {
 			prefix = opts.LinePrefix(strings.TrimSuffix(filepath.Base(outfile), filepath.Ext(outfile)))
 		}
-		fmt.Printf("%s%s\n", prefix, line.Text)
+		fmt.Fprintf(w, "%s%s\n", prefix, line.Text)
 	}
 
 	return nil
