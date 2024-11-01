@@ -57,6 +57,9 @@ func once(ctx context.Context, c client, modelChan chan Model, doneChan chan str
 		fmt.Fprintf(os.Stderr, "Listen bucket=%s path=%s\n", c.RunContext.Bucket, prefix)
 	}
 
+	// We'll keep an eye out for this marker. If we see it, the run is done.
+	allDoneMarker := c.RunContext.AsFile(queue.AllDoneMarker)
+
 	objects, errs := c.s3.Listen(c.RunContext.Bucket, prefix, "", true)
 	defer c.s3.StopListening(c.RunContext.Bucket)
 
@@ -85,6 +88,13 @@ func once(ctx context.Context, c client, modelChan chan Model, doneChan chan str
 		case obj := <-objects:
 			if c.LogOptions.Verbose {
 				fmt.Fprintf(os.Stderr, "Queue streamer got push notification object=%s\n", obj)
+			}
+
+			if obj == allDoneMarker {
+				if c.LogOptions.Verbose {
+					fmt.Fprintln(os.Stderr, "Queue streamer got all done")
+				}
+				return nil
 			}
 		}
 
