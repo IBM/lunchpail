@@ -17,6 +17,11 @@ func homedir() (string, error) {
 	return currentUser.HomeDir, nil
 }
 
+// We use `brew` and so don't require a special PATH
+func bindir() (string, error) {
+	return "", nil
+}
+
 func installMinio(ctx context.Context, version string, verbose bool) (string, error) {
 	if err := setenv(); err != nil { //$HOME must be set for brew
 		return "", err
