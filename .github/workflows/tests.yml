@@ -43,15 +43,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-go@v5
-      with:
-        go-version: '1.23.2'
-        cache-dependency-path: go.sum
     - name: Cache minio
       uses: actions/cache@v3
       id: cache-minio
       with:
         path: /home/runner/.cache/lunchpail/bin
         key: ${{ runner.os }}-minio
+    - name: Build Lunchpail CLI
+      run: ./hack/setup/cli.sh /tmp/lunchpail
 
     # we will also be testing installing kind, so we don't want to do
     # this as part of the github action workflow
@@ -60,11 +59,9 @@ jobs:
     #  with:
     #    install_only: true
 
-    - name: Check Docker
-      run: docker version && podman version
-
     - name: Run Test with args ${{ matrix.ARGS }}
       env:
         TERM: xterm-256color
         LUNCHPAIL_TARGET: ${{ matrix.LUNCHPAIL_TARGET }}
+        LUNCHPAIL_BUILD_NOT_NEEDED: true # we did this in the "Build Lunchpail CLI" step above
       run: bash -c "${{matrix.SCRIPT}} ${{matrix.ARGS }}"
