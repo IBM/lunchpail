@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// i.e. "/run/{{.RunName}}/step/{{.Step}}"
+// i.e. "/run/{{.RunName}}/queue/step/{{.Step}}"
 func (run RunContext) ListenPrefix() string {
 	return run.ListenPrefixForAnyStep(false)
 }
