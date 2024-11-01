@@ -114,17 +114,17 @@ function waitForIt {
                 if [ -n "$expectTaskFailure" ]
                 then ofile="failed"
                 fi
-                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} $ofile | grep -Fq "${output}"
-                do echo "Still waiting for $ofile test=$name output=$output" && sleep 1
+                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} $ofile | grep -Fq "$(basename $output)"
+                do echo "Still waiting for $ofile test=$name output=$(basename $output)" && sleep 1
                 done
-                echo "✅ PASS got expected $ofile file test=$name output=$output"
+                echo "✅ PASS got expected $ofile file test=$name output=$(basename $output)"
 
-                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stdout | grep -Fq "${output}"
+                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stdout | grep -Fq "$(basename $output)"
                 do echo "Still waiting for stdout test=$name output=$output" && sleep 1
                 done
                 echo "✅ PASS got stdout file test=$name output=$output"
 
-                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stderr | grep -Fq "${output}"
+                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stderr | grep -Fq "$(basename $output)"
                 do echo "Still waiting for stderr test=$name output=$output" && sleep 1
                 done
                 echo "✅ PASS got stderr file test=$name output=$output"

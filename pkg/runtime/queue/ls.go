@@ -2,7 +2,7 @@ package queue
 
 import (
 	"context"
-	"path/filepath"
+	"fmt"
 	"strings"
 
 	"lunchpail.io/pkg/be"
@@ -16,7 +16,23 @@ func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path stri
 	}
 	run.Bucket = c.Paths.Bucket // TODO
 
-	prefix := filepath.Join(run.ListenPrefix(), path)
+	wildcard := run.ForPool("*").ForWorker("*").ForTask("*")
+
+	var prefix string
+	switch path {
+	case "exitcode":
+		prefix = wildcard.AsFile(queue.FinishedWithCode)
+	case "stdout":
+		prefix = wildcard.AsFile(queue.FinishedWithStdout)
+	case "stderr":
+		prefix = wildcard.AsFile(queue.FinishedWithStderr)
+	case "succeeded":
+		prefix = wildcard.AsFile(queue.FinishedWithSucceeded)
+	case "failed":
+		prefix = wildcard.AsFile(queue.FinishedWithFailed)
+	default:
+		return nil, nil, fmt.Errorf("Unsupported path %s", path)
+	}
 
 	files := make(chan string)
 	errors := make(chan error)
