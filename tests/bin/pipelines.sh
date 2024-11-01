@@ -6,7 +6,9 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 
 lp=/tmp/lunchpail
-"$TOP"/hack/setup/cli.sh $lp
+if [ -z "$LUNCHPAIL_BUILD_NOT_NEEDED" ]
+then "$TOP"/hack/setup/cli.sh $lp
+fi
 
 IN1=$(mktemp)
 echo "1" > $IN1

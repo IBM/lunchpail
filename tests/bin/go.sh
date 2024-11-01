@@ -18,8 +18,11 @@ else
     echo "✅ PASS: go fmt looks good"
 fi
 
+if [ -z "$LUNCHPAIL_BUILD_NOT_NEEDED" ]
+then ./hack/setup/cli.sh
+fi
+
 echo "Running go tests..."
-./hack/setup/cli.sh
 go test -timeout=0 -v ./...
 
 # Note go vet requires go generate, which is done by hack/setup/cli.sh (above)

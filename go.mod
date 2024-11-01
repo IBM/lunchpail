@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hairyhenderson/go-which v0.2.0
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
-	github.com/minio/minio-go/v7 v7.0.79
+	github.com/minio/minio-go/v7 v7.0.80
 	github.com/mittwald/go-helm-client v0.12.14
 	github.com/nxadm/tail v1.4.11
 	github.com/rclone/rclone v1.68.1
