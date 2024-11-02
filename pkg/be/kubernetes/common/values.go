@@ -27,7 +27,7 @@ func Values(ir llir.LLIR, opts Options) ([]string, error) {
 		fmt.Sprintf("lunchpail.namespace.create=%v", opts.CreateNamespace),
 		"lunchpail.rbac.serviceaccount=" + serviceAccount,
 		fmt.Sprintf("lunchpail.taskqueue.auto=%v", ir.Queue().Auto),
-		"lunchpail.taskqueue.dataset=" + names.Queue(ir.RunName()),
+		"lunchpail.taskqueue.dataset=" + names.Queue(ir.Context.Run),
 		"lunchpail.taskqueue.endpoint=" + ir.Queue().Endpoint,
 		"lunchpail.taskqueue.bucket=" + ir.Queue().Bucket,
 		"lunchpail.taskqueue.accessKey=" + ir.Queue().AccessKey,

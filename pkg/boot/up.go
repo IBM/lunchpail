@@ -28,6 +28,11 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	if err != nil {
 		return err
 	}
+	if pipelineContext.Run.Step > 0 {
+		o := opts.BuildOptions
+		o.CreateNamespace = false
+		opts.BuildOptions = o
+	}
 
 	ir, err := fe.PrepareForRun(pipelineContext, fe.PrepareOptions{NoDispatchers: pipelineContext.Run.Step > 0 || len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
@@ -41,6 +46,11 @@ func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOption
 	pipelineContext, err := handlePipelineStdin()
 	if err != nil {
 		return err
+	}
+	if pipelineContext.Run.Step > 0 {
+		o := opts.BuildOptions
+		o.CreateNamespace = false
+		opts.BuildOptions = o
 	}
 
 	llir, err := fe.PrepareHLIRForRun(ir, pipelineContext, fe.PrepareOptions{NoDispatchers: pipelineContext.Run.Step > 0 || len(opts.Inputs) > 0}, opts.BuildOptions)
@@ -65,8 +75,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		return fmt.Errorf("please provide input files on the command line")
 	}
 
-	isRunning := make(chan struct{}) // is the job ready for business?
-	alldone := make(chan struct{})   // is the job submission complete?
+	alldone := make(chan struct{}) // is the job submission complete?
 	cancellable, cancel := context.WithCancel(ctx)
 
 	// Respond to SIGINT by cancelling our context. This will help
@@ -74,6 +83,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	// its own only kills the top level of a process tree. See
 	// be/local/shell/spawn.go and its handling of context
 	// cancellation by killing the process group it has created.
+	var gotSigInt bool
 	go func() {
 		sigint := make(chan os.Signal)
 		signal.Notify(sigint, os.Interrupt)
@@ -82,9 +92,14 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		for {
 			select {
 			case <-sigint:
+				gotSigInt = true
 
 				// Now cancel the context
 				cancel()
+
+				if err := backend.Down(ctx, ir, opts.BuildOptions); err != nil {
+					fmt.Fprintln(os.Stderr, "Error bringing down run", err)
+				}
 
 				// And wait for all of the subprocesses to clean
 				// themselves up. Because as soon as we exit from this
@@ -107,17 +122,18 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 
 	// We need to chain the isRunning channel to our 0-2 consumers
 	// below. This is because golang channels are not multicast.
-	isRunning4 := make(chan struct{})
+	isRunning := make(chan llir.Context) // is the job ready for business?
+	isRunning4 := make(chan llir.Context)
 	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0
 	go func() {
-		<-isRunning
-		isRunning4 <- struct{}{}
-		isRunning4 <- struct{}{}
+		ctx := <-isRunning
+		isRunning4 <- ctx
+		isRunning4 <- ctx
 		if needsCatAndRedirect {
-			isRunning4 <- struct{}{}
+			isRunning4 <- ctx
 		}
 		if opts.Watch {
-			isRunning4 <- struct{}{}
+			isRunning4 <- ctx
 		}
 	}()
 
@@ -145,8 +161,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	}
 
 	go func() {
-		<-isRunning4
-		if err := handlePipelineStdout(ir.Context); err != nil {
+		if err := handlePipelineStdout(<-isRunning4); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}()
@@ -167,17 +182,34 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		<-redirectDone
 	}
 
+	/* TODO defer func() {
+		err := backend.Down(cancellable, ir, opts.BuildOptions)
+	}()*/
+
+	var errorFromAllDone error
+	if ir.Context.Run.Step == 0 {
+		errorFromAllDone = waitForAllDone(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log)
+	}
+
 	// Note the use of `select` to implement a non-blocking send
 	select {
 	case alldone <- struct{}{}:
 	default:
 	}
 
-	if errorFromTask != nil {
+	switch {
+	case gotSigInt:
+		// then squash any other errors as they are likely
+		// side-effects of the user-initiated cancellation
+	case errorFromTask != nil:
 		return errorFromTask
-	}
-	if errorFromIo != nil {
+	case errorFromIo != nil:
 		return errorFromIo
+	case errorFromUp != nil:
+		return errorFromUp
+	case errorFromAllDone != nil:
+		return errorFromAllDone
 	}
-	return errorFromUp
+
+	return nil
 }

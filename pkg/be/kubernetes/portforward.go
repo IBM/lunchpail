@@ -86,13 +86,11 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 	}()
 
 	// wait for it to be ready
-	select {
-	case <-readyCh:
-		break
-	}
+	<-readyCh
 
 	stop := func() {
-		close(stopCh)
+		// hmm... for kubernetes backends, this can result in a panic: close on closed channel
+		// close(stopCh)
 	}
 
 	return stop, nil

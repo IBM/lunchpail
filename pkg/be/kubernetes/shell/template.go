@@ -11,6 +11,7 @@ import (
 	"lunchpail.io/pkg/be/kubernetes/common"
 	"lunchpail.io/pkg/be/kubernetes/names"
 	"lunchpail.io/pkg/ir/llir"
+	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
@@ -40,7 +41,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		return "", err
 	}
 
-	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasetsB64(c.Application, ir.RunName(), ir.Queue())
+	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasetsB64(c.Application, ir.Context)
 	if err != nil {
 		return "", err
 	}
@@ -87,6 +88,12 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 	}
 
 	if len(c.Application.Spec.Env) > 0 {
+		if c.C() == lunchpail.MinioComponent {
+			// we'll need a bit of extra time to download
+			// files before minio server terminates
+			c.Application.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = "5"
+		}
+
 		if env, err := util.ToJsonEnvB64(c.Application.Spec.Env); err != nil {
 			return "", err
 		} else {

@@ -57,7 +57,7 @@ func createKindCluster() error {
 	if err := cmd.Run(); err != nil {
 		args := []string{"create", "cluster", "--wait", "10m", "--name", lunchpail.LocalClusterName}
 
-		fmt.Printf("Creating kind cluster %s\n", lunchpail.LocalClusterName)
+		fmt.Fprintf(os.Stderr, "Creating kind cluster %s\n", lunchpail.LocalClusterName)
 
 		cmd := exec.Command("kind", args...)
 		cmd.Stdout = os.Stdout

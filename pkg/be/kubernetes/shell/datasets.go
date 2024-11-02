@@ -7,6 +7,7 @@ import (
 	"lunchpail.io/pkg/be/kubernetes/names"
 	q "lunchpail.io/pkg/fe/linker/queue"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/util"
 )
@@ -53,10 +54,10 @@ type envFrom struct {
 	Prefix string `json:"prefix,omitempty"`
 }
 
-func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]volume, []volumeMount, []envFrom, []initContainer, []map[string]string, error) {
+func datasets(app hlir.Application, context llir.Context) ([]volume, []volumeMount, []envFrom, []initContainer, []map[string]string, error) {
 	volumes := []volume{}
 	volumeMounts := []volumeMount{}
-	envFroms := []envFrom{envForQueue(runname)}
+	envFroms := []envFrom{envForQueue(context)}
 	secrets := []map[string]string{}
 	initContainers := []initContainer{}
 
@@ -78,16 +79,16 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 			volumeMounts = append(volumeMounts, volumeMount{name, dataset.MountPath})
 		}
 		if dataset.S3.Rclone.RemoteName != "" {
-			isValid, remoteSpec, err := q.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", runname, queueSpec.Port)
+			isValid, remoteSpec, err := q.SpecFromRcloneRemoteName(dataset.S3.Rclone.RemoteName, "", context.Run.RunName, context.Queue.Port)
 
 			if err != nil {
 				return nil, nil, nil, nil, secrets, err
 			} else if !isValid {
 				return nil, nil, nil, nil, secrets, fmt.Errorf("Error: invalid or missing rclone config for given remote=%s for Application=%s", dataset.S3.Rclone.RemoteName, app.Metadata.Name)
 			} else if dataset.S3.EnvFrom.Prefix != "" {
-				secretName := fmt.Sprintf("%s-%d", runname, didx)
+				secretName := fmt.Sprintf("%s-%d", context.Run.RunName, didx)
 				secrets = append(secrets, map[string]string{
-					"endpoint":        updateTestQueueEndpoint(remoteSpec.Endpoint, queueSpec),
+					"endpoint":        updateTestQueueEndpoint(remoteSpec.Endpoint, context.Queue),
 					"accessKeyID":     remoteSpec.AccessKey,
 					"secretAccessKey": remoteSpec.SecretKey,
 				})
@@ -99,10 +100,10 @@ func datasets(app hlir.Application, runname string, queueSpec queue.Spec) ([]vol
 	return volumes, volumeMounts, envFroms, initContainers, secrets, nil
 }
 
-func datasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (string, string, string, string, []string, error) {
+func datasetsB64(app hlir.Application, context llir.Context) (string, string, string, string, []string, error) {
 	secretsB64 := []string{}
 
-	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasets(app, runname, queueSpec)
+	volumes, volumeMounts, envFroms, initContainers, secrets, err := datasets(app, context)
 	if err != nil {
 		return "", "", "", "", secretsB64, err
 	}
@@ -139,10 +140,10 @@ func datasetsB64(app hlir.Application, runname string, queueSpec queue.Spec) (st
 }
 
 // Inject queue secrets
-func envForQueue(runname string) envFrom {
+func envForQueue(context llir.Context) envFrom {
 	return envFrom{
 		Prefix:    "lunchpail_queue_",
-		SecretRef: secretRef{names.Queue(runname)},
+		SecretRef: secretRef{names.Queue(context.Run)},
 	}
 }
 

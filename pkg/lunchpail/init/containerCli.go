@@ -28,7 +28,7 @@ func podmanMachineExists() bool {
 }
 
 func createPodmanMachine() error {
-	fmt.Println("Creating podman machine")
+	fmt.Fprintln(os.Stderr, "Creating podman machine")
 
 	cmd := exec.Command("podman", "machine", "init", "--memory", "8192", "--now")
 	cmd.Stdout = os.Stdout
@@ -53,7 +53,7 @@ func podmanMachineRunning() bool {
 }
 
 func startPodmanMachine() error {
-	fmt.Printf("Starting podman machine")
+	fmt.Fprintln(os.Stderr, "Starting podman machine")
 
 	cmd := exec.Command("podman", "machine", "start")
 	cmd.Stdout = os.Stdout

@@ -57,7 +57,7 @@ func apply(ctx context.Context, yaml, namespace, context string, operation Opera
 	// namespace spec and also use that namespace spec; same for
 	// service accounts. Thus, we may need to apply twice (n=2)
 	cmd := exec.CommandContext(ctx, "kubectl", args...)
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = os.Stderr // intentionally so as to avoid polluting pipeline output
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }

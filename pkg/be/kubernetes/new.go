@@ -5,5 +5,9 @@ type NewOptions struct {
 }
 
 func New(opts NewOptions) Backend {
-	return Backend{opts.Namespace}
+	ns := opts.Namespace
+	if ns == "" {
+		ns = "default"
+	}
+	return Backend{ns}
 }

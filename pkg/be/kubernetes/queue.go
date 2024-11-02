@@ -94,7 +94,7 @@ func (backend Backend) Queue(ctx context.Context, run queue.RunContext) (endpoin
 			return
 		}
 
-		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, names.Queue(run.RunName), metav1.GetOptions{})
+		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, names.Queue(run), metav1.GetOptions{})
 		if cerr != nil {
 			err = cerr
 			return

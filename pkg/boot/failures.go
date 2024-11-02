@@ -17,6 +17,7 @@ func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunC
 	if err != nil {
 		return err
 	}
+	run.Bucket = client.RunContext.Bucket
 	defer client.Stop()
 
 	if err := client.Mkdirp(run.Bucket); err != nil {
@@ -43,7 +44,7 @@ func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunC
 			}
 			// Oops, a task failed. Fetch the stderr and show it.
 			if opts.Verbose {
-				fmt.Fprintf(os.Stderr, "Got indication of task failure '%s'\n", object)
+				fmt.Fprintf(os.Stderr, "Got indication of task failure for step=%d: '%s'\n", run.Step, object)
 			}
 
 			// We need to find the FinishedWithStderr file
@@ -63,6 +64,9 @@ func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunC
 				return err
 			}
 
+			if errorContent == "" {
+				errorContent = "A task completed with no error output, but a non-zero exit code"
+			}
 			return fmt.Errorf("\033[0;31m" + errorContent + "\033[0m\n")
 		}
 	}

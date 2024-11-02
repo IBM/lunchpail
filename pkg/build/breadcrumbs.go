@@ -28,10 +28,11 @@ var appVersion string
 func Name() string {
 	n := os.Getenv("LUNCHPAIL_NAME")
 	if n == "" {
-		n = strings.TrimSpace(name)
+		n = name
 	}
 
 	// avoid complications with downstream shell executions
+	n = strings.TrimSpace(n)
 	n = strings.Replace(n, "<", "", -1)
 	n = strings.Replace(n, ">", "", -1)
 	n = strings.Replace(n, "|", "", -1)

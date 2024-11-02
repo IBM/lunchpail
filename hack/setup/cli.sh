@@ -25,5 +25,10 @@ echo "$msg" && go generate ./... && go generate ./...
 msg="Building CLI to $DST"
 echo "$msg" && CGO_ENABLED=0 go build -tags full -ldflags="-s -w" -o "$DST" cmd/main.go
 
+if [ "${LUNCHPAIL_TARGET}" = "kubernetes" ]
+then
+    "$DST" dev build -v
+fi
+
 echo "✅ Done"
 ls -lh "$DST"

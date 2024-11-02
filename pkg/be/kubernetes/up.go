@@ -8,7 +8,7 @@ import (
 	"lunchpail.io/pkg/util"
 )
 
-func (backend Backend) Up(ctx context.Context, ir llir.LLIR, opts llir.Options, isRunning chan struct{}) error {
+func (backend Backend) Up(ctx context.Context, ir llir.LLIR, opts llir.Options, isRunning chan llir.Context) error {
 	if ir.Queue().Auto {
 		ir.Context = llir.Context{
 			Run:   ir.Context.Run,
@@ -22,7 +22,7 @@ func (backend Backend) Up(ctx context.Context, ir llir.LLIR, opts llir.Options, 
 
 	// Indicate that we are off to the races
 	if isRunning != nil {
-		isRunning <- struct{}{}
+		isRunning <- ir.Context
 	}
 
 	return nil

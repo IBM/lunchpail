@@ -17,18 +17,13 @@ func printenv() {
 
 func Run(ctx context.Context, handler []string, opts Options) error {
 	if opts.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Worker starting up\n")
+		fmt.Fprintf(os.Stderr, "Worker starting up run=%s bucket=%s pool=%s worker=%s\n", opts.RunContext.RunName, opts.RunContext.Bucket, opts.RunContext.PoolName, opts.RunContext.WorkerName)
 		printenv()
-	}
-
-	if opts.LogOptions.Debug {
-		// helpful for debugging
-		fmt.Fprintf(os.Stderr, "env=%v\n", os.Environ())
 	}
 
 	if opts.StartupDelay > 0 {
 		if opts.LogOptions.Verbose {
-			fmt.Fprintf(os.Stderr, "Worker delaying for %d seconds\n", opts.StartupDelay)
+			fmt.Fprintf(os.Stderr, "Worker delaying startup for %d seconds\n", opts.StartupDelay)
 		}
 		time.Sleep(time.Duration(opts.StartupDelay) * time.Second)
 	}

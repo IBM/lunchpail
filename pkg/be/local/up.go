@@ -13,7 +13,7 @@ import (
 )
 
 // Bring up the linked application
-func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options, isRunning chan struct{}) error {
+func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options, isRunning chan llir.Context) error {
 	// Fail fast if this backend doesn't support the given IR
 	if err := backend.IsCompatible(ir); err != nil {
 		return err
@@ -52,7 +52,7 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 
 	// Indicate that we are off to the races
 	if isRunning != nil {
-		isRunning <- struct{}{}
+		isRunning <- ir.Context
 	}
 
 	// Wait for all of the components to finish
