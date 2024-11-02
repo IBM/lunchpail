@@ -11,8 +11,8 @@ import (
 )
 
 // Support for build --eval
-func copyEvalIntoTemplate(appname, eval, templatePath string, verbose bool) (appVersion string, err error) {
-	if verbose {
+func copyEvalIntoTemplate(appname, eval, templatePath string, opts Options) (appVersion string, err error) {
+	if opts.Verbose {
 		fmt.Fprintf(os.Stderr, "Copying eval into %s\n", appdir(templatePath))
 	}
 
@@ -21,22 +21,27 @@ func copyEvalIntoTemplate(appname, eval, templatePath string, verbose bool) (app
 		return
 	}
 
-	app := evalApp(eval, verbose)
+	app := evalApp(eval, opts)
 
-	err = writeAppToTemplateDir(app, appdir(templatePath), verbose)
+	err = writeAppToTemplateDir(app, appdir(templatePath), opts.Verbose)
 
 	return
 }
 
-func evalApp(eval string, verbose bool) hlir.HLIR {
+func evalApp(eval string, opts Options) hlir.HLIR {
 	app := hlir.NewApplication("eval")
 	app.Spec.Role = "worker"
 	app.Spec.Command = "./main.sh"
-	app.Spec.Image = "docker.io/alpine:3" // TODO allow passing this in
 	app.Spec.Code = []hlir.Code{
 		hlir.Code{Name: "main.sh", Source: fmt.Sprintf(`#!/bin/sh
 %s`, eval),
 		},
+	}
+
+	app.Spec.Image = "docker.io/alpine:3"
+	if opts.BuildOptions.ImageID != "" {
+		// TODO is ImageId what we want here?
+		app.Spec.Image = opts.BuildOptions.ImageID
 	}
 
 	return hlir.HLIR{

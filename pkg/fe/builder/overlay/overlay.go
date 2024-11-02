@@ -8,9 +8,10 @@ import (
 )
 
 type Options struct {
-	Branch  string
-	Eval    string
-	Verbose bool
+	BuildOptions build.Options
+	Branch       string
+	Eval         string
+	Verbose      bool
 }
 
 // This utility combines two pieces:
@@ -35,7 +36,7 @@ func OverlaySourceOntoPriorBuild(appname, sourcePath string, opts Options) (temp
 	}
 
 	if opts.Eval != "" {
-		appVersion, err = copyEvalIntoTemplate(appname, opts.Eval, templatePath, opts.Verbose)
+		appVersion, err = copyEvalIntoTemplate(appname, opts.Eval, templatePath, opts)
 		if err != nil {
 			return
 		}

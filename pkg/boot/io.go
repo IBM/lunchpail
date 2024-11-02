@@ -23,6 +23,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	if err != nil {
 		return err
 	}
+	ir.Context.Run.Bucket = client.RunContext.Bucket
 	defer client.Stop()
 
 	// either we are the first step with command line inputs (if
@@ -78,6 +79,7 @@ func fakeDispatch(ctx context.Context, backend be.Backend, run queue.RunContext,
 	if err != nil {
 		return err
 	}
+	run.Bucket = client.RunContext.Bucket
 	defer client.Stop()
 
 	return s3.QdoneClient(ctx, client.S3Client, run, opts)

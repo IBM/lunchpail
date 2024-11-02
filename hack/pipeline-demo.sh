@@ -19,7 +19,7 @@ export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
 
 stepo=./pipeline-demo
 if [ ! -e $stepo ]
-then ./lunchpail build -e 'echo "hi from step $LUNCHPAIL_STEP"; sleep 2' -o $stepo
+then ./lunchpail build --create-namespace -e 'echo "hi from step $LUNCHPAIL_STEP"; sleep 2' -o $stepo
 fi
 
 step="$stepo up --verbose=${VERBOSE:-false}"

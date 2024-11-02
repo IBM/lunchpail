@@ -155,7 +155,7 @@ func AddFromS3(ctx context.Context, run queue.RunContext, fullpath, endpoint, ac
 	err = group.Wait()
 
 	if opts.Verbose {
-		fmt.Printf("Here is what we enqueued to %s:\n", inbox)
+		fmt.Fprintf(os.Stderr, "Here is what we enqueued to %s:\n", inbox)
 	}
 	for o := range queueClient.ListObjects(dstBucket, inbox, true) {
 		fmt.Println(o.Key)

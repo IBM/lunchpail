@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -19,7 +20,7 @@ func deleteNamespace(ctx context.Context, namespace string) error {
 	if err := api.Delete(ctx, namespace, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
-	fmt.Printf("namespace \"%s\" deleted\n", namespace)
+	fmt.Fprintf(os.Stderr, "namespace \"%s\" deleted\n", namespace)
 	return nil
 }
 

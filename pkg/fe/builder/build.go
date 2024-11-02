@@ -50,7 +50,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	buildName := buildNameFrom(sourcePath)
 
 	// Third, overlay source (if given)
-	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{Branch: opts.Branch, Eval: opts.Eval, Verbose: verbose})
+	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{BuildOptions: opts.BuildOptions, Branch: opts.Branch, Eval: opts.Eval, Verbose: verbose})
 	if err != nil {
 		return err
 	}

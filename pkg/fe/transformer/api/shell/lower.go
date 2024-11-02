@@ -3,6 +3,7 @@ package shell
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -34,6 +35,9 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 	if component.InstanceName == "" {
 		component.InstanceName = ctx.Run.RunName
 	}
+	if ctx.Run.Step > 0 {
+		component.InstanceName += "-" + strconv.Itoa(ctx.Run.Step)
+	}
 
 	if app.Spec.Env == nil {
 		app.Spec.Env = hlir.Env{}
@@ -48,7 +52,7 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 		if needs.Requirements != "" {
 			req = "--requirements " + base64.StdEncoding.EncodeToString([]byte(needs.Requirements))
 			if opts.Log.Verbose {
-				fmt.Printf("Setting requirements for needs \n")
+				fmt.Fprintln(os.Stderr, "Setting requirements for needs")
 			}
 		}
 
