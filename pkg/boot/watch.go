@@ -16,15 +16,16 @@ type WatchOptions struct {
 	Verbose bool
 }
 
-func watchLogs(ctx context.Context, backend be.Backend, ir llir.LLIR, opts WatchOptions) {
+func watchLogs(ctx context.Context, backend be.Backend, ir llir.LLIR, logsDone chan<- error, opts WatchOptions) {
 	components := lunchpail.AllUserComponents
 	if opts.Verbose && os.Getenv("CI") != "" {
 		components = lunchpail.AllComponents
 	}
 
-	err := observe.Logs(ctx, ir.RunName(), backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components, Writer: os.Stderr})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	select {
+	case <-ctx.Done():
+	default:
+		logsDone <- observe.Logs(ctx, ir.RunName(), backend, observe.LogsOptions{Follow: true, Verbose: opts.Verbose, Components: components, Writer: os.Stderr})
 	}
 }
 

@@ -75,7 +75,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		return fmt.Errorf("please provide input files on the command line")
 	}
 
-	alldone := make(chan struct{}) // is the job submission complete?
+	submissionComplete := make(chan struct{}) // is the job submission complete?
 	cancellable, cancel := context.WithCancel(ctx)
 
 	// Respond to SIGINT by cancelling our context. This will help
@@ -106,7 +106,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 				// handler, the process will die. We need to wait for
 				// the process group reaping to finish up. Sigh, why
 				// is this so complicated in Golang?
-				<-alldone
+				<-submissionComplete
 
 				return
 			}
@@ -151,11 +151,14 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 				cancel()
 			}
 		}()
-	} else if opts.Watch {
+	}
+
+	logsDone := make(chan error)
+	if opts.Watch {
 		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
 			<-isRunning4
-			go watchLogs(cancellable, backend, ir, WatchOptions{Verbose: verbose})
+			go watchLogs(cancellable, backend, ir, logsDone, WatchOptions{Verbose: verbose})
 			go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
 		}()
 	}
@@ -178,13 +181,13 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	defer cancel()
 	errorFromUp := backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
 
-	if needsCatAndRedirect {
-		<-redirectDone
-	}
-
 	/* TODO defer func() {
 		err := backend.Down(cancellable, ir, opts.BuildOptions)
 	}()*/
+
+	if needsCatAndRedirect {
+		<-redirectDone
+	}
 
 	var errorFromAllDone error
 	if ir.Context.Run.Step == 0 {
@@ -193,8 +196,13 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 
 	// Note the use of `select` to implement a non-blocking send
 	select {
-	case alldone <- struct{}{}:
+	case submissionComplete <- struct{}{}:
 	default:
+	}
+
+	if opts.Watch {
+		cancel() // causes log streamer to stop
+		<-logsDone
 	}
 
 	switch {
