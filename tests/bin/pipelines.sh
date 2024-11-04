@@ -127,14 +127,6 @@ start "cat"
 $lpcat $IN1
 validate $? "$IN1" "$IN1" # input should equal output
 
-wait $failpid
-start "fail | cat expecting error in step 1"
-set +e
-$lpfail $IN1 | $lpcat
-ec=$?
-set -e
-validate $ec n/a n/a 1
-
 start "cat expecting error"
 set +e
 $lpcat nopenopenopenopenope

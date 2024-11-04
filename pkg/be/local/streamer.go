@@ -87,6 +87,12 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 
 	// TODO fsnotify/fsnotify doesn't seem to work on macos
 	for {
+		select {
+		case <-s.Context.Done():
+			return nil
+		default:
+		}
+
 		fs, err := os.ReadDir(logdir)
 		if err != nil {
 			return err
@@ -99,7 +105,7 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 				if !alreadyWatching || !exists {
 					watching[file] = true
 					group.Go(func() error {
-						return tailf(filepath.Join(logdir, file), opts)
+						return s.tailf(filepath.Join(logdir, file), opts)
 					})
 				}
 			}
@@ -137,13 +143,13 @@ func (s localStreamer) ComponentLogs(c lunchpail.Component, opts streamer.LogOpt
 	default:
 		// TODO allow caller to select stderr versus stdout
 		group, _ := errgroup.WithContext(s.Context)
-		group.Go(func() error { return tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".out"), opts) })
-		group.Go(func() error { return tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".err"), opts) })
+		group.Go(func() error { return s.tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".out"), opts) })
+		group.Go(func() error { return s.tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".err"), opts) })
 		return group.Wait()
 	}
 }
 
-func tailfChan(outfile string, opts streamer.LogOptions) (*tail.Tail, error) {
+func (s localStreamer) tailfChan(outfile string, opts streamer.LogOptions) (*tail.Tail, error) {
 	Logger := tail.DiscardingLogger
 	if opts.Verbose {
 		Logger = log.New(os.Stderr, "", log.LstdFlags)
@@ -152,8 +158,8 @@ func tailfChan(outfile string, opts streamer.LogOptions) (*tail.Tail, error) {
 	return tail.TailFile(outfile, tail.Config{Follow: opts.Follow, ReOpen: opts.Follow, Logger: Logger})
 }
 
-func tailf(outfile string, opts streamer.LogOptions) error {
-	c, err := tailfChan(outfile, opts)
+func (s localStreamer) tailf(outfile string, opts streamer.LogOptions) error {
+	c, err := s.tailfChan(outfile, opts)
 	if err != nil {
 		return err
 	}
@@ -162,6 +168,17 @@ func tailf(outfile string, opts streamer.LogOptions) error {
 	if w == nil {
 		w = os.Stdout
 	}
+
+	go func() {
+		for {
+			select {
+			case <-s.Context.Done():
+				c.Stop()
+				return
+			}
+		}
+	}()
+
 	for line := range c.Lines {
 		prefix := ""
 		if opts.LinePrefix != nil {
