@@ -2,7 +2,6 @@ package builder
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -66,7 +65,6 @@ func gobuild(dir, name, targetOs, targetArch string) error {
 
 // Emit application binary for the given os and arch
 func emit(dir, name, targetOs, targetArch string) error {
-	fmt.Fprintln(os.Stderr, "Generating application binary "+targetOs+" "+targetArch)
 	if err := goget(dir); err != nil {
 		return err
 	}

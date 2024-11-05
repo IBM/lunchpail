@@ -16,7 +16,10 @@ func handleHelmIgnore(templatePath string, verbose bool) error {
 			return fmt.Errorf(".helmignore should be a file, not a directory")
 		}
 
-		fmt.Fprintf(os.Stderr, "Including application helmignore\n")
+		if verbose {
+			fmt.Fprintf(os.Stderr, "Including application helmignore\n")
+		}
+
 		templateHelmignore := filepath.Join(templatePath, ".helmignore")
 		if err := util.AppendFile(templateHelmignore, appHelmignore); err != nil {
 			return err
