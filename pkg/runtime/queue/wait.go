@@ -118,6 +118,8 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 
 	go func() {
 		defer func() {
+			mu.Lock()
+			defer mu.Unlock()
 			dead = true
 			close(c)
 			close(e)
