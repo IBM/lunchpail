@@ -49,6 +49,8 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	// Second, pick a name for the resulting build. TODO: allow command line override?
 	buildName := buildNameFrom(sourcePath)
 
+	fmt.Fprintf(os.Stderr, "Building %s\n", buildName)
+
 	// Third, overlay source (if given)
 	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{BuildOptions: opts.BuildOptions, Branch: opts.Branch, Eval: opts.Eval, Verbose: verbose})
 	if err != nil {
