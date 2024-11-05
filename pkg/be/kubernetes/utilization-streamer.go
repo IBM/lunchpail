@@ -25,7 +25,8 @@ func (streamer Streamer) execIntoPod(pod *v1.Pod, component lunchpail.Component,
 
 	mem := `$(cat /sys/fs/cgroup/memory/memory.usage_in_bytes 2> /dev/null || cat /sys/fs/cgroup/memory.current) $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes 2> /dev/null || cat /sys/fs/cgroup/memory.max)`
 
-	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=` + sleepNanos + `;b=$(cat $f);sleep ` + sleep + `;e=$(cat $f);else f=cpu.stat;s=` + sleepMicros + `;b=$(cat $f|head -1|cut -d" " -f2);sleep ` + sleep + `;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%.2f %d %s\n" $(echo "($e-$b)/($s)*100"|bc -l) ` + mem + `; done`}
+	// cpu utilization is ($e-$b)/($s)*100
+	cmd := []string{"/bin/sh", "-c", `while true; do cd /sys/fs/cgroup;f=cpu/cpuacct.usage;if [ -f $f ]; then s=` + sleepNanos + `;b=$(cat $f);sleep ` + sleep + `;e=$(cat $f);else f=cpu.stat;s=` + sleepMicros + `;b=$(cat $f|head -1|cut -d" " -f2);sleep ` + sleep + `;e=$(cat $f|head -1|cut -d" " -f2);fi;printf "%d %d %d %d %s\n" $e $b $s ` + mem + `; done`}
 
 	clientset, kubeConfig, err := Client()
 	if err != nil {
@@ -36,13 +37,8 @@ func (streamer Streamer) execIntoPod(pod *v1.Pod, component lunchpail.Component,
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod.Name).
 		Namespace(pod.Namespace).SubResource("exec")
 
-	container := "app"
-	if component == lunchpail.DispatcherComponent {
-		container = "main"
-	}
-
 	option := &v1.PodExecOptions{
-		Container: container,
+		Container: "main",
 		Command:   cmd,
 		Stdin:     false,
 		Stdout:    true,
@@ -80,12 +76,16 @@ func (streamer Streamer) execIntoPod(pod *v1.Pod, component lunchpail.Component,
 				fields := strings.Fields(line)
 
 				if len(fields) >= 2 {
-					if util, err := strconv.ParseFloat(fields[0], 32); err == nil {
-						changed = true
-						worker.CpuUtil = util
+					if e, err := strconv.ParseInt(fields[0], 10, 64); err == nil {
+						if b, err := strconv.ParseInt(fields[1], 10, 64); err == nil {
+							if s, err := strconv.ParseInt(fields[2], 10, 64); err == nil {
+								changed = true
+								worker.CpuUtil = float64(e-b) / float64(s) * 100
+							}
+						}
 					}
 
-					if util, err := strconv.ParseInt(fields[1], 10, 64); err == nil {
+					if util, err := strconv.ParseInt(fields[3], 10, 64); err == nil {
 						changed = true
 						worker.MemoryBytes = uint64(util)
 					}
