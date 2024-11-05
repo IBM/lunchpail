@@ -24,21 +24,6 @@ type LogLine struct {
 	Message   string
 }
 
-// Stream logs from a given Component to the given channel
-func (streamer Streamer) podLogs(podName string, component lunchpail.Component, onlyInfo, follow bool, c chan events.Message) error {
-	clientset, _, err := Client()
-	if err != nil {
-		return err
-	}
-
-	// TODO leak?
-	go func() error {
-		return streamLogUpdatesForPod(streamer.Context, podName, streamer.backend.namespace, component, onlyInfo, follow, clientset, c)
-	}()
-
-	return nil
-}
-
 // TODO port this to use client-go
 func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts streamer.LogOptions) error {
 	containers := "main"
@@ -57,30 +42,31 @@ func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts strea
 		fmt.Fprintf(os.Stderr, "Tracking logs via cmdline=%s\n", cmdline)
 	}
 
-	cmd := exec.Command("/bin/sh", "-c", cmdline)
-	cmd.Stdout = os.Stdout
-	if opts.Writer != nil {
-		cmd.Stdout = opts.Writer
+	for {
+		cmd := exec.Command("/bin/sh", "-c", cmdline)
+		cmd.Stdout = os.Stdout
+		if opts.Writer != nil {
+			cmd.Stdout = opts.Writer
+		}
+
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err == nil {
+			break
+		} else {
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Error tracking component logs %v: %v\n", component, err)
+			}
+			select {
+			case <-streamer.Context.Done():
+				return nil
+			default:
+				time.Sleep(1 * time.Second)
+			}
+		}
+
+		break
 	}
-
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func streamLogUpdatesForWorker(ctx context.Context, podName, namespace string, c chan events.Message) error {
-	clientset, _, err := Client()
-	if err != nil {
-		return err
-	}
-
-	// TODO leak?
-	go func() error {
-		return streamLogUpdatesForPod(ctx, podName, namespace, lunchpail.WorkersComponent, false, true, clientset, c)
-	}()
 
 	return nil
 }
