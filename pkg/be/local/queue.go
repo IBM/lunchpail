@@ -3,7 +3,9 @@ package local
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
+	"time"
 
 	"lunchpail.io/pkg/be/local/files"
 	"lunchpail.io/pkg/ir/llir"
@@ -54,9 +56,15 @@ func restoreContext(run queue.RunContext) (llir.Context, error) {
 		return spec, err
 	}
 
-	b, err := os.ReadFile(f)
-	if err != nil {
-		return spec, err
+	var b []byte
+	for {
+		if b, err = os.ReadFile(f); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return spec, err
+			}
+			time.Sleep(1 * time.Second)
+		}
+		break
 	}
 
 	if err := json.Unmarshal(b, &spec); err != nil {
