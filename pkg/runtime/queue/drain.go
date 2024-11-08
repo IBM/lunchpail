@@ -6,17 +6,18 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
 
 // Drain the output tasks, allowing graceful termination
-func Drain(ctx context.Context, backend be.Backend, run queue.RunContext) error {
-	c, err := NewS3ClientForRun(ctx, backend, run.RunName)
+func Drain(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
+	c, err := NewS3ClientForRun(ctx, backend, run.RunName, opts)
 	if err != nil {
 		return err
 	}
 	defer c.Stop()
-	run.Bucket = c.Paths.Bucket // TODO
+	run.Bucket = c.RunContext.Bucket // TODO
 
 	outbox := run.AsFile(queue.AssignedAndFinished)
 

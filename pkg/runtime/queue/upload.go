@@ -11,17 +11,18 @@ import (
 	"time"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 	"lunchpail.io/pkg/runtime/queue/upload"
 )
 
-func UploadFiles(ctx context.Context, backend be.Backend, run queue.RunContext, specs []upload.Upload) error {
-	s3, err := NewS3ClientForRun(ctx, backend, run.RunName)
+func UploadFiles(ctx context.Context, backend be.Backend, run queue.RunContext, specs []upload.Upload, opts build.LogOptions) error {
+	s3, err := NewS3ClientForRun(ctx, backend, run.RunName, opts)
 	if err != nil {
 		return err
 	}
 	defer s3.Stop()
-	run.Bucket = s3.Paths.Bucket // TODO
+	run.Bucket = s3.RunContext.Bucket // TODO
 
 	for _, spec := range specs {
 		fmt.Fprintf(os.Stderr, "Preparing upload with mkdirp on s3 bucket=%s\n", spec.Bucket)

@@ -5,11 +5,12 @@ import (
 	"path/filepath"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
 
-func Qcat(ctx context.Context, backend be.Backend, run queue.RunContext, path string) error {
-	c, err := NewS3ClientForRun(ctx, backend, run.RunName)
+func Qcat(ctx context.Context, backend be.Backend, run queue.RunContext, path string, opts build.LogOptions) error {
+	c, err := NewS3ClientForRun(ctx, backend, run.RunName, opts)
 	if err != nil {
 		return err
 	}

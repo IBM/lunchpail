@@ -19,7 +19,7 @@ import (
 
 // Behave like `cat inputs | ... > outputs`
 func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, ir.Context.Run.RunName)
+	client, err := s3.NewS3ClientForRun(ctx, backend, ir.Context.Run.RunName, opts)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 
 // For Step > 0, we will need to simulate that a dispatch is done
 func fakeDispatch(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName)
+	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName, opts)
 	if err != nil {
 		return err
 	}

@@ -41,7 +41,7 @@ func Cat() *cobra.Command {
 			return err
 		}
 
-		return queue.Qcat(ctx, backend, run, args[0])
+		return queue.Qcat(ctx, backend, run, args[0], *opts.Log)
 	}
 
 	return cmd

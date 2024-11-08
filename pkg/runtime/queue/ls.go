@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
 
-func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path string) (<-chan string, <-chan error, error) {
-	c, err := NewS3ClientForRun(ctx, backend, run.RunName)
+func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path string, opts build.LogOptions) (<-chan string, <-chan error, error) {
+	c, err := NewS3ClientForRun(ctx, backend, run.RunName, opts)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -35,23 +35,48 @@ func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts strea
 	}
 
 	selector := "app.kubernetes.io/component=" + string(component) + runSelector
-	cmdline := "kubectl logs -n " + streamer.backend.namespace + " -l " + selector + " --tail=" + strconv.Itoa(opts.Tail) + " " + followFlag + " -c " + containers + " --max-log-requests=99 | grep -v 'workerpool worker'"
-
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Tracking logs of component=%s\n", component)
-		fmt.Fprintf(os.Stderr, "Tracking logs via cmdline=%s\n", cmdline)
-	}
+	cmdline := "kubectl logs -n " + streamer.backend.namespace + " -l " + selector + " --tail=" + strconv.Itoa(opts.Tail) + " " + followFlag + " -c " + containers + " --max-log-requests=99"
 
 	for {
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Starting log tracking via cmdline=%s\n", cmdline)
+		}
+
 		cmd := exec.Command("/bin/sh", "-c", cmdline)
 		cmd.Stdout = os.Stdout
 		if opts.Writer != nil {
 			cmd.Stdout = opts.Writer
 		}
 
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		if err == nil {
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			return err
+		}
+
+		if err := cmd.Start(); err != nil {
+			if !strings.Contains(err.Error(), "signal:") {
+				fmt.Fprintf(os.Stderr, "Error tracking component logs %v: %v\n", component, err)
+				return err
+			} else {
+				// swallow signal: interrupt/killed
+				return nil
+			}
+		}
+
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Now tracking component logs for %v\n", component)
+		}
+
+		// Filter out not found error messages. We will retry.
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if !strings.Contains(line, "No resources found") && !strings.Contains(line, "waiting to start") {
+				fmt.Fprintln(os.Stderr, line)
+			}
+		}
+
+		if err := cmd.Wait(); err == nil {
 			break
 		} else {
 			if opts.Verbose {
@@ -61,11 +86,10 @@ func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts strea
 			case <-streamer.Context.Done():
 				return nil
 			default:
-				time.Sleep(1 * time.Second)
+				time.Sleep(500 * time.Millisecond)
+				continue
 			}
 		}
-
-		break
 	}
 
 	return nil

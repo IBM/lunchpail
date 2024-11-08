@@ -10,6 +10,7 @@ import (
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/be/runs/util"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
 
@@ -68,7 +69,7 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 }
 
 // Client for a given run in the given backend
-func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) (S3ClientStop, error) {
+func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string, opts build.LogOptions) (S3ClientStop, error) {
 	if runname == "" {
 		run, err := util.Singleton(ctx, backend)
 		if err != nil {
@@ -77,7 +78,7 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string) 
 		runname = run.Name
 	}
 
-	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, queue.RunContext{RunName: runname})
+	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, queue.RunContext{RunName: runname}, opts)
 	if err != nil {
 		return S3ClientStop{}, err
 	}
