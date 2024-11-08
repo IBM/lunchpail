@@ -64,6 +64,7 @@ func Ls() *cobra.Command {
 
 		for {
 			select {
+			case <-ctx.Done():
 			case err := <-errors:
 				return err
 			case file := <-files:

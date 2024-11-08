@@ -184,7 +184,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 
 	//inject executable into s3
 	if opts.Executable != "" {
-		if err := s3.UploadFiles(ctx, backend, ir.Context.Run, []upload.Upload{upload.Upload{Path: q.Executable, Bucket: ir.Context.Run.Bucket}}, *opts.BuildOptions.Log); err != nil {
+		if err := s3.UploadFiles(ctx, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}

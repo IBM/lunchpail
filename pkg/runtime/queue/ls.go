@@ -32,6 +32,8 @@ func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path stri
 		prefix = wildcard.AsFile(queue.FinishedWithSucceeded)
 	case "failed":
 		prefix = wildcard.AsFile(queue.FinishedWithFailed)
+	case "blobs":
+		prefix = wildcard.AsFile(queue.Blobs)
 	default:
 		prefix = wildcard.ListenPrefix()
 	}
@@ -46,7 +48,10 @@ func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path stri
 			if o.Err != nil {
 				errors <- o.Err
 			} else {
-				files <- strings.Replace(o.Key, prefix+"/", "", 1)
+				f := strings.Replace(o.Key, prefix+"/", "", 1)
+				if f != "" {
+					files <- f
+				}
 			}
 		}
 	}()
