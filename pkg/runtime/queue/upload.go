@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,53 +24,75 @@ func UploadFiles(ctx context.Context, backend be.Backend, run queue.RunContext, 
 	run.Bucket = s3.RunContext.Bucket // TODO
 
 	for _, spec := range specs {
-		fmt.Fprintf(os.Stderr, "Preparing upload with mkdirp on s3 bucket=%s\n", spec.Bucket)
-		if err := s3.Mkdirp(spec.Bucket); err != nil {
+		bucket := spec.Bucket
+		if bucket == "" {
+			bucket = run.Bucket
+		}
+
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Preparing upload with mkdirp on s3 bucket=%s\n", bucket)
+		}
+		if err := s3.Mkdirp(bucket); err != nil {
 			return err
 		}
 
-		fmt.Fprintf(os.Stderr, "Uploading files from local path=%s to s3 bucket=%s\n", spec.Path, spec.Bucket)
-		info, err := os.Stat(spec.Path)
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Uploading files from local path=%s to s3 bucket=%s targetDir='%s'\n", spec.LocalPath, bucket, spec.TargetDir)
+		}
+		info, err := os.Stat(spec.LocalPath)
 		if err != nil {
 			return err
 		}
 
 		switch mode := info.Mode(); {
 		case mode.IsDir():
-			if err := s3.copyInDir(spec); err != nil {
+			if err := s3.copyInDir(bucket, spec, opts); err != nil {
 				return err
 			}
 		case mode.IsRegular():
-			if err := s3.copyInFile(spec.Path, spec); err != nil {
+			if err := s3.copyInFile(bucket, spec.LocalPath, spec, opts); err != nil {
 				return err
 			}
 		default:
-			log.Printf("Skipping upload of filepath %s\n", spec.Path)
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Skipping upload of filepath %s\n", spec.LocalPath)
+			}
 		}
 	}
 
 	return nil
 }
 
-func (s3 S3Client) copyInDir(spec upload.Upload) error {
-	return filepath.WalkDir(spec.Path, func(path string, dir fs.DirEntry, err error) error {
+func (s3 S3Client) copyInDir(bucket string, spec upload.Upload, opts build.LogOptions) error {
+	return filepath.WalkDir(spec.LocalPath, func(path string, dir fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		} else if !dir.IsDir() {
-			return s3.copyInFile(path, spec)
+			return s3.copyInFile(bucket, path, spec, opts)
 		}
 		return nil
 	})
 }
 
-func (s3 S3Client) copyInFile(path string, spec upload.Upload) error {
+func (s3 S3Client) copyInFile(bucket, localPath string, spec upload.Upload, opts build.LogOptions) error {
 	for i := range 10 {
-		dst := strings.Replace(path, spec.Path+"/", "", 1)
-		fmt.Fprintf(os.Stderr, "Uploading %s to s3 %s\n", path, dst)
-		if err := s3.Upload(spec.Bucket, path, dst); err == nil {
+		var dst string
+		switch spec.TargetDir {
+		case "":
+			dst = strings.Replace(localPath, spec.LocalPath+"/", "", 1)
+		default:
+			dst = filepath.Join(spec.TargetDir, filepath.Base(localPath))
+		}
+
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Uploading %s to s3 %s\n", localPath, dst)
+		}
+		if err := s3.Upload(bucket, localPath, dst); err == nil {
 			break
 		} else {
-			fmt.Fprintf(os.Stderr, "Retrying upload iter=%d path=%s\n%v\n", i, path, err)
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "Retrying upload iter=%d path=%s\n%v\n", i, localPath, err)
+			}
 			time.Sleep(1 * time.Second)
 		}
 	}

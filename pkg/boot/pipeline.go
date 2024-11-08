@@ -29,7 +29,6 @@ func handlePipelineStdin() (llir.Context, error) {
 		}
 
 		if stdinContext.Queue.Endpoint != "" {
-			// context.Run.RunName = fmt.Sprintf("%s-%d", context.Run.RunName, context.Run.Step)
 			context = stdinContext
 		}
 	}

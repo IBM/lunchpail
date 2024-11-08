@@ -1,6 +1,7 @@
 package upload
 
 type Upload struct {
-	Path   string
-	Bucket string
+	LocalPath string
+	TargetDir string
+	Bucket    string
 }

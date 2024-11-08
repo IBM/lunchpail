@@ -17,5 +17,5 @@ const (
 	DispatcherDoneMarker       = "lunchpail/run/{{.RunName}}/queue/step/{{.Step}}/marker/dispatcherdone"
 	WorkerAliveMarker          = "lunchpail/run/{{.RunName}}/queue/step/{{.Step}}/marker/alive/pool/{{.PoolName}}/worker/{{.WorkerName}}"
 	WorkerDeadMarker           = "lunchpail/run/{{.RunName}}/queue/step/{{.Step}}/marker/dead/pool/{{.PoolName}}/worker/{{.WorkerName}}"
-	Executable                 = "lunchpail/run/{{.RunName}}/data/{{.Executable}}"
+	Blobs                      = "lunchpail/run/{{.RunName}}/blobs"
 )
