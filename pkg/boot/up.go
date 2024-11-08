@@ -127,17 +127,20 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	// We need to chain the isRunning channel to our 0-2 consumers
 	// below. This is because golang channels are not multicast.
 	isRunning := make(chan llir.Context) // is the job ready for business?
-	isRunning4 := make(chan llir.Context)
+	isRunning5 := make(chan llir.Context)
 	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0
 	go func() {
 		ctx := <-isRunning
-		isRunning4 <- ctx
-		isRunning4 <- ctx
+		isRunning5 <- ctx
+		isRunning5 <- ctx
+		if opts.Executable != "" {
+			isRunning5 <- ctx
+		}
 		if needsCatAndRedirect {
-			isRunning4 <- ctx
+			isRunning5 <- ctx
 		}
 		if opts.Watch {
-			isRunning4 <- ctx
+			isRunning5 <- ctx
 		}
 	}()
 
@@ -147,7 +150,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		// Behave like `cat inputs | ... > outputs`
 		go func() {
 			// wait for the run to be ready for us to enqueue
-			<-isRunning4
+			<-isRunning5
 
 			defer func() { redirectDone <- struct{}{} }()
 			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log); err != nil {
@@ -161,21 +164,21 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	if opts.Watch {
 		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
-			<-isRunning4
+			<-isRunning5
 			go watchLogs(cancellable, backend, ir, logsDone, WatchOptions{Verbose: verbose})
 			go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
 		}()
 	}
 
 	go func() {
-		if err := handlePipelineStdout(<-isRunning4); err != nil {
+		if err := handlePipelineStdout(<-isRunning5); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}()
 
 	var errorFromTask error
 	go func() {
-		<-isRunning4
+		<-isRunning5
 		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log); err != nil {
 			errorFromTask = err
 			// fail fast? cancel()
@@ -184,9 +187,14 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 
 	//inject executable into s3
 	if opts.Executable != "" {
-		if err := s3.UploadFiles(ctx, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
+		go func() {
+			// wait for the run to be ready for us to enqueue
+			<-isRunning5
+
+			if err := s3.UploadFiles(ctx, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
+		}()
 	}
 
 	defer cancel()
