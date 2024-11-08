@@ -13,7 +13,7 @@ import (
 )
 
 func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName)
+	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName, opts)
 	if err != nil {
 		return err
 	}

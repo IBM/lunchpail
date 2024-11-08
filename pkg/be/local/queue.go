@@ -8,18 +8,19 @@ import (
 	"time"
 
 	"lunchpail.io/pkg/be/local/files"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/ir/queue"
 )
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
-func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
-	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.Queue(ctx, run)
+func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext, opts build.LogOptions) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
+	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.queue(ctx, run)
 	stop = func() {}
 	return
 }
 
-func (backend Backend) Queue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
+func (backend Backend) queue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
 	spec, rerr := restoreContext(run)
 	if rerr != nil {
 		err = rerr

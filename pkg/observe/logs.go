@@ -35,6 +35,10 @@ func Logs(ctx context.Context, runnameIn string, backend be.Backend, opts LogsOp
 
 	useComponentPrefix := len(opts.Components) > 1
 
+	if opts.Tail == 0 {
+		opts.Tail = -1
+	}
+
 	group, _ := errgroup.WithContext(ctx)
 	s := backend.Streamer(ctx, queue.RunContext{RunName: runname})
 	for _, component := range opts.Components {

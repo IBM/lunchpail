@@ -57,7 +57,7 @@ func Ls() *cobra.Command {
 			return err
 		}
 
-		files, errors, err := queue.Ls(ctx, backend, runContext, path)
+		files, errors, err := queue.Ls(ctx, backend, runContext, path, *opts.Log)
 		if err != nil {
 			return err
 		}

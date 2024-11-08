@@ -12,12 +12,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"lunchpail.io/pkg/be/kubernetes/names"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
-func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
-	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.Queue(ctx, run)
+func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext, opts build.LogOptions) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
+	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.queue(ctx, run)
 	if err != nil {
 		return
 	}
@@ -36,7 +37,10 @@ func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext) (e
 			err = perr
 			return
 		}
-		fmt.Fprintf(os.Stderr, "Opening port forward to pod=%s\n", podName)
+
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Opening port forward to pod=%s args=%v\n", podName, os.Args)
+		}
 
 		var localPort int
 		for {
@@ -45,7 +49,7 @@ func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext) (e
 				continue
 			}
 
-			if s, perr := backend.portForward(ctx, podName, localPort, podPort); perr != nil {
+			if s, perr := backend.portForward(ctx, podName, localPort, podPort, opts); perr != nil {
 				if strings.Contains(perr.Error(), "already in use") {
 					// Oops, someone else grabbed the port. Try again.
 					continue
@@ -60,7 +64,10 @@ func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext) (e
 
 		oendpoint := endpoint
 		endpoint = fmt.Sprintf("http://localhost:%d", localPort)
-		fmt.Fprintf(os.Stderr, "Port forwarding with endpoint=%s -> %s\n", oendpoint, endpoint)
+
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "Port forwarding with endpoint=%s -> %s\n", oendpoint, endpoint)
+		}
 	}
 
 	return
@@ -80,7 +87,7 @@ func portFromEndpoint(endpoint string) (int, error) {
 	return port, nil
 }
 
-func (backend Backend) Queue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
+func (backend Backend) queue(ctx context.Context, run queue.RunContext) (endpoint, accessKeyID, secretAccessKey, bucket string, err error) {
 	endpoint = os.Getenv("lunchpail_queue_endpoint")
 	accessKeyID = os.Getenv("lunchpail_queue_accessKeyID")
 	secretAccessKey = os.Getenv("lunchpail_queue_secretAccessKey")
