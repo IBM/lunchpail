@@ -58,18 +58,19 @@ func restoreContext(run queue.RunContext) (llir.Context, error) {
 	}
 
 	var b []byte
-	for {
+	for len(b) == 0 {
 		if b, err = os.ReadFile(f); err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
 				return spec, err
 			}
-			time.Sleep(1 * time.Second)
+			time.Sleep(500 * time.Millisecond)
 		}
-		break
 	}
 
-	if err := json.Unmarshal(b, &spec); err != nil {
-		return spec, err
+	if len(b) > 0 {
+		if err := json.Unmarshal(b, &spec); err != nil {
+			return spec, err
+		}
 	}
 
 	return spec, nil
