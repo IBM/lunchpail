@@ -47,14 +47,23 @@ func RunsDir() (string, error) {
 	return filepath.Join(dir, "runs"), nil
 }
 
-func runDir(run queue.RunContext) (string, error) {
+func StepsDir(run queue.RunContext) (string, error) {
 	dir, err := RunsDir()
 	if err != nil {
 		return "", err
 	}
 
+	return filepath.Join(dir, run.RunName, "step"), nil
+}
+
+func runDir(run queue.RunContext) (string, error) {
+	dir, err := StepsDir(run)
+	if err != nil {
+		return "", err
+	}
+
 	//strings.Replace(runname, build.Name()+"-", "", 1),
-	return filepath.Join(dir, run.RunName, "step", fmt.Sprintf("%d", run.Step)), nil
+	return filepath.Join(dir, fmt.Sprintf("%d", run.Step)), nil
 }
 
 func LogDir(run queue.RunContext, mkdir bool) (string, error) {

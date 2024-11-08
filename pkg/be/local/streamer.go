@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -81,7 +82,42 @@ func (s localStreamer) Utilization(c chan utilization.Model, intervalSeconds int
 	}
 }
 
-func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptions) error {
+func ScanLogFiles(run queue.RunContext) ([]string, error) {
+	dir, err := files.StepsDir(run)
+	if err != nil {
+		return nil, err
+	}
+
+	steps, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	logfiles := []string{}
+	for _, s := range steps {
+		step, err := strconv.Atoi(s.Name())
+		if err != nil {
+			return nil, err
+		}
+		logdir, err := files.LogDir(run.ForStep(step), false)
+		if err != nil {
+			return nil, err
+		}
+
+		fs, err := os.ReadDir(logdir)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, f := range fs {
+			logfiles = append(logfiles, filepath.Join(logdir, f.Name()))
+		}
+	}
+
+	return logfiles, nil
+}
+
+func (s localStreamer) watchForWorkerPools(opts streamer.LogOptions) error {
 	watching := make(map[string]bool)
 	group, _ := errgroup.WithContext(s.Context)
 
@@ -93,19 +129,18 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 		default:
 		}
 
-		fs, err := os.ReadDir(logdir)
+		fs, err := ScanLogFiles(s.run)
 		if err != nil {
 			return err
 		}
 
-		for _, f := range fs {
-			file := f.Name()
-			if strings.HasPrefix(file, lunchpail.ComponentShortName(lunchpail.WorkersComponent)) {
+		for _, file := range fs {
+			if strings.HasPrefix(filepath.Base(file), lunchpail.ComponentShortName(lunchpail.WorkersComponent)) {
 				alreadyWatching, exists := watching[file]
 				if !alreadyWatching || !exists {
 					watching[file] = true
 					group.Go(func() error {
-						return s.tailf(filepath.Join(logdir, file), opts)
+						return s.tailf(file, opts)
 					})
 				}
 			}
@@ -131,16 +166,16 @@ func (s localStreamer) watchForWorkerPools(logdir string, opts streamer.LogOptio
 
 // Stream logs from a given Component to os.Stdout
 func (s localStreamer) ComponentLogs(c lunchpail.Component, opts streamer.LogOptions) error {
-	logdir, err := files.LogDir(s.run, true)
-	if err != nil {
-		return err
-	}
-
 	switch c {
 	case lunchpail.WorkersComponent:
-		return s.watchForWorkerPools(logdir, opts)
+		return s.watchForWorkerPools(opts)
 
 	default:
+		logdir, err := files.LogDir(s.run, true)
+		if err != nil {
+			return err
+		}
+
 		// TODO allow caller to select stderr versus stdout
 		group, _ := errgroup.WithContext(s.Context)
 		group.Go(func() error { return s.tailf(filepath.Join(logdir, files.LogFileForComponent(c)+".out"), opts) })
