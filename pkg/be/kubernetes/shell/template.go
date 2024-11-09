@@ -88,7 +88,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 	}
 
 	if len(c.Application.Spec.Env) > 0 {
-		if c.C() == lunchpail.MinioComponent {
+		if c.C() == lunchpail.MinioComponent && c.Application.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] == "" {
 			// we'll need a bit of extra time to download
 			// files before minio server terminates
 			c.Application.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = "5"
