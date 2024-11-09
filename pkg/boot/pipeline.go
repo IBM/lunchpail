@@ -33,7 +33,6 @@ func handlePipelineStdin() (llir.Context, error) {
 		}
 	}
 
-	context.Run = context.Run.AsFinalStep(util.StdoutIsTty())
 	return context, nil
 }
 
@@ -56,4 +55,8 @@ func handlePipelineStdout(context llir.Context) error {
 
 	return nil
 
+}
+
+func isFinalStep(context llir.Context) bool {
+	return util.StdoutIsTty()
 }
