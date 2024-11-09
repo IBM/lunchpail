@@ -76,12 +76,11 @@ func Server(ctx context.Context, port int, run queue.RunContext) error {
 		if err := waitForKillFile(c, run); err != nil {
 			return err
 		}
-		fmt.Fprintf(os.Stderr, "Got kill file\n")
+		fmt.Fprintf(os.Stderr, "Minio got kill file. About to self-destruct...\n")
 		gotKillFile = true
 
-		fmt.Fprintf(os.Stderr, "About to self-destruct...\n")
 		util.SleepBeforeExit()
-		fmt.Fprintf(os.Stderr, "Initiating self-destruct\n")
+		fmt.Fprintf(os.Stderr, "Minio initiating self-destruct\n")
 
 		if err := cmd.Process.Kill(); err != nil {
 			return err
