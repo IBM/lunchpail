@@ -22,8 +22,8 @@ if [ ! -e $stepo ]
 then ./lunchpail build --create-namespace -e 'echo "hi from step $LUNCHPAIL_STEP"; sleep 2' -o $stepo
 fi
 
-step="$stepo up --verbose=${VERBOSE:-false}"
+step="$stepo up --verbose=${VERBOSE:-false} --workers 3"
 
 echo "Launching pipeline"
-$step <(echo 1) <(echo 2) <(echo 3) <(echo 4) <(echo 5) <(echo 6) <(echo 7) <(echo 8) <(echo 9) <(echo 10) \
+$step <(echo in1) <(echo in2) <(echo in3) <(echo in4) <(echo in5) <(echo in6) <(echo in7) <(echo in8) <(echo in9) <(echo in10) <(echo in11) <(echo in12) <(echo in13) <(echo in14) <(echo in15) <(echo in16) \
     | $step | $step | $step | $step | $step | $step | $step

@@ -38,6 +38,7 @@ type Options struct {
 	Profile                string   `yaml:"profile,omitempty"`
 	ImageID                string   `yaml:"imageID,omitempty"`
 	CreateNamespace        bool     `yaml:"createNamespace,omitempty"`
+	Workers                int      `yaml:",omitempty"`
 }
 
 //go:embed buildOptions.json

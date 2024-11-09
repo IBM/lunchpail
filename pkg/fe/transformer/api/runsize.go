@@ -67,5 +67,10 @@ func WorkerpoolSizing(pool hlir.WorkerPool, app hlir.Application, opts build.Opt
 		sizing.Workers = pool.Spec.Workers.Count
 	}
 
+	// We also allow for a command-line override.
+	if opts.Workers != 0 {
+		sizing.Workers = opts.Workers
+	}
+
 	return sizing
 }
