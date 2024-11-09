@@ -19,11 +19,11 @@ export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
 
 stepo=./pipeline-demo
 if [ ! -e $stepo ]
-then ./lunchpail build --create-namespace -e 'echo "hi from step $LUNCHPAIL_STEP"; sleep 2' -o $stepo
+then ./lunchpail build --create-namespace -e 'out=$(printf "%s.w%d" $(cat $1) $JOB_COMPLETION_INDEX); echo $out 1>&2; echo $out > $2; sleep 2' -o $stepo
 fi
 
 step="$stepo up --verbose=${VERBOSE:-false}"
 
 echo "Launching pipeline"
-$step <(echo 1) <(echo 2) <(echo 3) <(echo 4) <(echo 5) <(echo 6) <(echo 7) <(echo 8) <(echo 9) <(echo 10) \
+$step <(echo in1) <(echo in2) <(echo in3) <(echo in4) <(echo in5) <(echo in6) <(echo in7) <(echo in8) <(echo in9) <(echo in10) \
     | $step | $step | $step | $step | $step | $step | $step

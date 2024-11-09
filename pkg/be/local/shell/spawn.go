@@ -17,7 +17,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir string, opts build.LogOptions) error {
+func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir string, completionIndex int, opts build.LogOptions) error {
 	pidfile, err := files.Pidfile(ir.Context.Run, c.InstanceName, c.C(), true)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 		cmd.Stderr = errfile
 	}
 
-	if env, err := addEnv(c, ir); err != nil {
+	if env, err := addEnv(c, ir, completionIndex); err != nil {
 		return err
 	} else {
 		cmd.Env = env
@@ -85,7 +85,7 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 	return nil
 }
 
-func addEnv(c llir.ShellComponent, ir llir.LLIR) ([]string, error) {
+func addEnv(c llir.ShellComponent, ir llir.LLIR, completionIndex int) ([]string, error) {
 	var err error
 	var absPathToThisExe string
 	absPathToThisExe, err = filepath.Abs(os.Args[0])
@@ -100,6 +100,7 @@ func addEnv(c llir.ShellComponent, ir llir.LLIR) ([]string, error) {
 		"LUNCHPAIL_COMPONENT=" + string(c.C()),
 		"LUNCHPAIL_EXE=" + absPathToThisExe,
 		"LUNCHPAIL_POD_NAME=" + c.InstanceName,
+		"JOB_COMPLETION_INDEX=" + strconv.Itoa(completionIndex),
 		"LUNCHPAIL_VENV_CACHEDIR=" + os.Getenv("LUNCHPAIL_VENV_CACHEDIR"),
 		"TEST_QUEUE_ENDPOINT=" + ir.Context.Queue.Endpoint,
 		"LUNCHPAIL_TARGET=local",

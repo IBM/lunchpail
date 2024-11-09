@@ -15,7 +15,7 @@ func (backend Backend) spawn(ctx context.Context, c llir.Component, ir llir.LLIR
 		if cc.RunAsJob {
 			return shell.SpawnJob(ctx, cc, ir, logdir, opts)
 		} else {
-			return shell.Spawn(ctx, cc, ir, logdir, opts)
+			return shell.Spawn(ctx, cc, ir, logdir, 0, opts)
 		}
 	}
 

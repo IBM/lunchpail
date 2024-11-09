@@ -10,7 +10,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Values.lunchpail.name }}
     app.kubernetes.io/managed-by: lunchpail.io
 spec:
+  completionMode: Indexed
   parallelism: {{ .Values.workers.count }}
+  completions: 99999999
   # ttlSecondsAfterFinished: 10000
   backoffLimit: 6
   template:

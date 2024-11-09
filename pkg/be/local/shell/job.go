@@ -20,7 +20,7 @@ func SpawnJob(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir s
 
 	for workerIdx := range c.Sizing.Workers {
 		group.Go(func() error {
-			return Spawn(jobCtx, c.WithInstanceNameSuffix(fmt.Sprintf("-w%d", workerIdx)), ir, logdir, opts)
+			return Spawn(jobCtx, c.WithInstanceNameSuffix(fmt.Sprintf("-w%d", workerIdx)), ir, logdir, workerIdx, opts)
 		})
 	}
 

@@ -27,6 +27,7 @@ func SleepBeforeExit() error {
 	if duration, err := SleepyTime("LUNCHPAIL_SLEEP_BEFORE_EXIT", 0); err != nil {
 		return err
 	} else if duration > 0 {
+		fmt.Fprintf(os.Stderr, "Sleeping before exit for %f seconds\n", duration.Seconds())
 		time.Sleep(duration)
 	}
 	return nil
