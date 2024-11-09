@@ -33,6 +33,7 @@ func AddBuildOptions(cmd *cobra.Command) (*build.Options, error) {
 	//TODO: make public image as default
 	cmd.Flags().StringVar(&options.ImageID, "image-id", options.ImageID, "Identifier of a catalog or custom image to be used for instance creation")
 	cmd.Flags().BoolVarP(&options.CreateNamespace, "create-namespace", "N", options.CreateNamespace, "Create a new namespace, if needed")
+	cmd.Flags().IntVarP(&options.Workers, "workers", "W", options.Workers, "Number of workers in the initial worker pool")
 
 	AddTargetOptionsTo(cmd, &options)
 	AddLogOptionsTo(cmd, &options)
