@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -76,10 +77,12 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 
 		select {
 		case err := <-errs:
-			if opts.LogOptions.Verbose {
-				fmt.Fprintln(os.Stderr, err)
+			if err != nil && !errors.Is(err, s3.ListenNotSupportedError) {
+				if opts.LogOptions.Verbose {
+					fmt.Fprintln(os.Stderr, err)
+				}
+				sleepNextTime = true
 			}
-			sleepNextTime = true
 
 		case task := <-tasks:
 			if task != "" {

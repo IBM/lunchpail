@@ -2,6 +2,7 @@ package builtins
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -57,7 +58,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 		case err := <-outboxErrs:
 			if err == nil || strings.Contains(err.Error(), "EOF") {
 				done = true
-			} else {
+			} else if !errors.Is(err, s3.ListenNotSupportedError) {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		case object := <-outboxObjects:

@@ -2,6 +2,8 @@ package boot
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"strings"
 
 	"lunchpail.io/pkg/be"
@@ -22,21 +24,12 @@ func waitForAllDone(ctx context.Context, backend be.Backend, run queue.RunContex
 	run.Bucket = client.RunContext.Bucket
 	defer client.Stop()
 
-	alldone := run.AsFile(queue.AllDoneMarker)
-	objc, errc := client.Listen(run.Bucket, alldone, "", false)
-
-	for {
-		select {
-		case <-objc:
-			return nil
-		case <-ctx.Done():
-			return nil
-		case err := <-errc:
-			if err == nil || strings.Contains(err.Error(), "EOF") || strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "Connection closed") {
-				return nil
-			} else {
-				return err
-			}
-		}
+	if err := client.WaitTillExists(run.Bucket, run.AsFile(queue.AllDoneMarker)); err != nil {
+		return err
 	}
+
+	if opts.Verbose {
+		fmt.Fprintln(os.Stderr, "Got all done. Cleaning up", run.Step)
+	}
+	return nil
 }

@@ -2,6 +2,7 @@ package boot
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -35,7 +36,7 @@ func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunC
 		case err := <-errc:
 			if err == nil || strings.Contains(err.Error(), "EOF") || strings.Contains(err.Error(), "connection refused") {
 				done = true
-			} else {
+			} else if !errors.Is(err, s3.ListenNotSupportedError) {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		case object := <-objc:

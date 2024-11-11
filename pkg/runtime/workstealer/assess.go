@@ -208,9 +208,7 @@ func (c client) rebalance(m queuestreamer.Step) bool {
 func (c client) touchKillFiles(m queuestreamer.Step) {
 	for _, worker := range m.LiveWorkers {
 		if !worker.KillfilePresent {
-			if c.LogOptions.Verbose {
-				fmt.Fprintf(os.Stderr, "Touching kill file for step=%d pool=%s worker=%s\n", m.Index, worker.Pool, worker.Name)
-			}
+			fmt.Fprintf(os.Stderr, "Touching kill file for step=%d pool=%s worker=%s\n", m.Index, worker.Pool, worker.Name)
 			if err := c.touchKillFile(m.Index, worker); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}

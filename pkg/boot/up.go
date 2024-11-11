@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 
 	"lunchpail.io/pkg/be"
 	"lunchpail.io/pkg/build"
@@ -95,6 +96,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		// Wait for a SIGINT
 		for {
 			select {
+			case <-cancellable.Done():
 			case <-sigint:
 				gotSigInt = true
 
@@ -127,20 +129,38 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	// We need to chain the isRunning channel to our 0-2 consumers
 	// below. This is because golang channels are not multicast.
 	isRunning := make(chan llir.Context) // is the job ready for business?
-	isRunning5 := make(chan llir.Context)
+	isRunning6 := make(chan llir.Context)
 	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0
 	go func() {
 		ctx := <-isRunning
-		isRunning5 <- ctx
-		isRunning5 <- ctx
+		isRunning6 <- ctx
+		isRunning6 <- ctx
+		isRunning6 <- ctx
 		if opts.Executable != "" {
-			isRunning5 <- ctx
+			isRunning6 <- ctx
 		}
 		if needsCatAndRedirect {
-			isRunning5 <- ctx
+			isRunning6 <- ctx
 		}
 		if opts.Watch {
-			isRunning5 <- ctx
+			isRunning6 <- ctx
+		}
+	}()
+
+	alldone := make(chan struct{})
+	var errorFromAllDone error
+	go func() {
+		ctx := <-isRunning6
+		if ctx.Run.Step == 0 || isFinalStep(ctx) {
+			errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, *opts.BuildOptions.Log)
+			if errorFromAllDone != nil && strings.Contains(errorFromAllDone.Error(), "connection refused") {
+				// Then Minio went away on its own. That's probably ok.
+				errorFromAllDone = nil
+			}
+			alldone <- struct{}{}
+			cancel()
+		} else {
+			alldone <- struct{}{}
 		}
 	}()
 
@@ -150,7 +170,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		// Behave like `cat inputs | ... > outputs`
 		go func() {
 			// wait for the run to be ready for us to enqueue
-			<-isRunning5
+			<-isRunning6
 
 			defer func() { redirectDone <- struct{}{} }()
 			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log); err != nil {
@@ -164,21 +184,21 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	if opts.Watch {
 		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
-			<-isRunning5
+			<-isRunning6
 			go watchLogs(cancellable, backend, ir, logsDone, WatchOptions{Verbose: verbose})
 			go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
 		}()
 	}
 
 	go func() {
-		if err := handlePipelineStdout(<-isRunning5); err != nil {
+		if err := handlePipelineStdout(<-isRunning6); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}()
 
 	var errorFromTask error
 	go func() {
-		<-isRunning5
+		<-isRunning6
 		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log); err != nil {
 			errorFromTask = err
 			// fail fast? cancel()
@@ -189,9 +209,9 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	if opts.Executable != "" {
 		go func() {
 			// wait for the run to be ready for us to enqueue
-			<-isRunning5
+			<-isRunning6
 
-			if err := s3.UploadFiles(ctx, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
+			if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		}()
@@ -204,13 +224,10 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		err := backend.Down(cancellable, ir, opts.BuildOptions)
 	}()*/
 
+	<-alldone
+
 	if needsCatAndRedirect {
 		<-redirectDone
-	}
-
-	var errorFromAllDone error
-	if ir.Context.Run.Step == 0 {
-		errorFromAllDone = waitForAllDone(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log)
 	}
 
 	// Note the use of `select` to implement a non-blocking send

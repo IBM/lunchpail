@@ -76,6 +76,12 @@ func (s3 S3Client) copyInDir(bucket string, spec upload.Upload, opts build.LogOp
 
 func (s3 S3Client) copyInFile(bucket, localPath string, spec upload.Upload, opts build.LogOptions) error {
 	for i := range 10 {
+		select {
+		case <-s3.context.Done():
+			return nil
+		default:
+		}
+
 		var dst string
 		switch spec.TargetDir {
 		case "":
