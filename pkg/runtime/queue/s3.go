@@ -254,6 +254,11 @@ func (s3 S3Client) BucketExists(bucket string) (bool, error) {
 	return yup, nil
 }
 
+func (s3 S3Client) isBucketAlreadyExistsError(bucket string, err error) bool {
+	return strings.Contains(err.Error(), "Your previous request to create the named bucket succeeded and you already own it") || // Minio
+		strings.Contains(err.Error(), "Container "+bucket+" exists") // IBM Cloud Object Storage
+}
+
 func (s3 S3Client) Mkdirp(bucket string) error {
 	exists, err := s3.BucketExists(bucket)
 	if err != nil {
@@ -262,7 +267,7 @@ func (s3 S3Client) Mkdirp(bucket string) error {
 
 	if !exists {
 		if err := s3.client.MakeBucket(s3.context, bucket, minio.MakeBucketOptions{}); err != nil {
-			if !strings.Contains(err.Error(), "Your previous request to create the named bucket succeeded and you already own it") {
+			if !s3.isBucketAlreadyExistsError(bucket, err) {
 				// bucket already exists error
 				return err
 			}

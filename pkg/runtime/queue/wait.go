@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,17 +33,23 @@ func (s3 S3Client) waitForBucket(bucket string) error {
 }
 
 func (s3 S3Client) WaitTillExists(bucket, object string) error {
+	if err := s3.Mkdirp(bucket); err != nil {
+		return err
+	}
+
 	objs, errs := s3.Listen(bucket, object, "", false)
 	for {
 		select {
-		case err := <-errs:
-			fmt.Fprintf(os.Stderr, "s3.WaitTillExists falling back on polling due to listen error: %v\n", err)
+		case <-errs:
+			// fmt.Fprintf(os.Stderr, "s3.WaitTillExists falling back on polling due to listen error: %v\n", err)
 			return s3.waitTillExistsViaPolling(bucket, object, false)
 		case <-objs:
 			return nil
 		}
 	}
 }
+
+var ListenNotSupportedError = errors.New("Push notifications not supported")
 
 func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) (<-chan string, <-chan error) {
 	c := make(chan string)
@@ -51,7 +58,9 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 	watcherIsAlive := false
 	greported := make(map[string]bool)
 	reportCreate := func(key string, reported map[string]bool) {
-		if !reported[key] && !greported[key] {
+		if greported[key] {
+			reported[key] = true
+		} else if !reported[key] {
 			reported[key] = true
 			c <- key
 		}
@@ -75,6 +84,8 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 					return
 				} else if o.Err != nil {
 					e <- o.Err
+					dead = true
+					return
 				} else {
 					reportCreate(o.Key, myreported)
 				}
@@ -110,21 +121,26 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 
 			interval := 5 * time.Second
 			if !watcherIsAlive {
-				interval = 500 * time.Millisecond
+				interval = 1 * time.Second
 			}
 			time.Sleep(interval)
 		}
 	}()
 
 	go func() {
+		listenNotSupported := false
 		defer func() {
-			mu.Lock()
-			defer mu.Unlock()
-			dead = true
-			close(c)
-			close(e)
+			if !listenNotSupported {
+				mu.Lock()
+				defer mu.Unlock()
+				dead = true
+				close(c)
+				close(e)
+			}
 		}()
-		already := false
+
+		// Have we already done the post-first-listen poll?
+		alreadyPolled := false
 
 		events := []string{"s3:ObjectCreated:*"}
 		if includeDeletions {
@@ -133,13 +149,19 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 
 		for n := range s3.client.ListenBucketNotification(s3.context, bucket, prefix, suffix, events) {
 			if n.Err != nil {
+				if strings.HasPrefix(n.Err.Error(), "invalid character") || strings.HasPrefix(n.Err.Error(), "The request signature we calculated") {
+					// then the s3 server does not support push notifications
+					listenNotSupported = true
+					e <- ListenNotSupportedError
+					break
+				}
 				e <- n.Err
 				continue
 			}
 			watcherIsAlive = true
 
-			if !already {
-				already = true
+			if !alreadyPolled {
+				alreadyPolled = true
 				once()
 			}
 			mu.Lock()
@@ -152,9 +174,6 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 			}
 			mu.Unlock()
 		}
-
-		// in case the Listen itself fails, avoid once() sending on a closed channel
-		watcherIsAlive = true
 	}()
 
 	return c, e
@@ -211,20 +230,23 @@ func (c S3Client) waitTillExistsViaPolling(bucket, prefix string, verbose bool) 
 	task := filepath.Base(prefix)
 
 	for {
-		doneTasks, err := c.Lsf(bucket, prefix)
-		if err != nil {
-			return err
+		select {
+		case <-c.context.Done():
+			return nil
+		default:
 		}
 
-		if len(doneTasks) > 0 {
-			break
-		} else {
-			if verbose {
-				fmt.Fprintf(os.Stderr, "Still waiting for task completion %s. Here is what is done so far: %v\n", task, doneTasks)
+		for o := range c.ListObjects(bucket, prefix, false) {
+			if o.Err != nil {
+				return o.Err
 			}
-			time.Sleep(3 * time.Second)
-		}
-	}
 
-	return nil
+			return nil
+		}
+
+		if verbose {
+			fmt.Fprintf(os.Stderr, "Still waiting for %s\n", task)
+		}
+		time.Sleep(3 * time.Second)
+	}
 }

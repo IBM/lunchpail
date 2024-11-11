@@ -2,6 +2,7 @@ package queuestreamer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -48,7 +49,7 @@ func StreamModel(ctx context.Context, s3 s3.S3Client, run queue.RunContext, mode
 }
 
 func isFatal(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "unexpected EOF")
+	return err != nil && (strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "unexpected EOF"))
 }
 
 func once(ctx context.Context, c client, modelChan chan Model, doneChan chan struct{}, opts StreamOptions) error {
@@ -80,10 +81,12 @@ func once(ctx context.Context, c client, modelChan chan Model, doneChan chan str
 				return err
 			}
 
-			fmt.Fprintf(os.Stderr, "Queue streamer got push notification error: %v\n", err)
+			if err != nil && !errors.Is(err, s3.ListenNotSupportedError) {
+				fmt.Fprintf(os.Stderr, "Queue streamer got push notification error: %v\n", err)
 
-			// sleep for a bit
-			time.Sleep(time.Duration(opts.PollingInterval) * time.Second)
+				// sleep for a bit
+				time.Sleep(time.Duration(opts.PollingInterval) * time.Second)
+			}
 
 		case obj := <-objects:
 			if c.LogOptions.Verbose {
@@ -96,9 +99,9 @@ func once(ctx context.Context, c client, modelChan chan Model, doneChan chan str
 				}
 				return nil
 			}
-		}
 
-		// fetch and parse model
-		modelChan <- c.fetchModel(opts.AnyStep)
+			// fetch and parse model
+			modelChan <- c.fetchModel(opts.AnyStep)
+		}
 	}
 }

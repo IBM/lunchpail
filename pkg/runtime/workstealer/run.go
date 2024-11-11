@@ -105,9 +105,7 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 	// Drop a final breadcrumb indicating we are ready to tear
 	// down all associated resources
 	if opts.SelfDestruct {
-		if opts.Verbose {
-			fmt.Fprintf(os.Stderr, "Instructing the run to self-destruct bucket=%s file=%s\n", c.RunContext.Bucket, c.RunContext.AsFile(queue.AllDoneMarker))
-		}
+		fmt.Fprintf(os.Stderr, "Instructing the run to self-destruct bucket=%s file=%s\n", c.RunContext.Bucket, c.RunContext.AsFile(queue.AllDoneMarker))
 		if err := s3.Touch(c.RunContext.Bucket, c.RunContext.AsFile(queue.AllDoneMarker)); err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to touch AllDone file\n%v\n", err)
 		}

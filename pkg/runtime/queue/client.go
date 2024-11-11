@@ -19,6 +19,8 @@ type S3Client struct {
 	client   *minio.Client
 	endpoint string
 	Paths    filepaths
+	ak       string
+	sk       string
 }
 
 type S3ClientStop struct {
@@ -65,7 +67,7 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 		return S3Client{}, err
 	}
 
-	return S3Client{ctx, client, opts.Endpoint, paths}, nil
+	return S3Client{ctx, client, opts.Endpoint, paths, opts.AccessKeyID, opts.SecretAccessKey}, nil
 }
 
 // Client for a given run in the given backend
