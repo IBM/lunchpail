@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"lunchpail.io/pkg/be"
@@ -35,8 +36,10 @@ func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path stri
 	case "blobs":
 		prefix = wildcard.AsFile(queue.Blobs)
 	default:
-		prefix = wildcard.ListenPrefix()
+		prefix = wildcard.ListenPrefixForAnyStep(true)
 	}
+
+	nonqueue := regexp.MustCompile("dead|succeeded|dispatcherdone|alive|killfile")
 
 	files := make(chan string)
 	errors := make(chan error)
@@ -49,7 +52,8 @@ func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path stri
 				errors <- o.Err
 			} else {
 				f := strings.Replace(o.Key, prefix+"/", "", 1)
-				if f != "" {
+				if f != "" && path != "" || !nonqueue.MatchString(f) {
+					// this means: we want the default (path=="") behavior to match only queue-related objects
 					files <- f
 				}
 			}
