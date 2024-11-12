@@ -224,10 +224,16 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		err := backend.Down(cancellable, ir, opts.BuildOptions)
 	}()*/
 
-	<-alldone
+	select {
+	case <-cancellable.Done():
+	case <-alldone:
+	}
 
 	if needsCatAndRedirect {
-		<-redirectDone
+		select {
+		case <-cancellable.Done():
+		case <-redirectDone:
+		}
 	}
 
 	// Note the use of `select` to implement a non-blocking send
