@@ -70,6 +70,11 @@ func (streamer Streamer) ComponentLogs(component lunchpail.Component, opts strea
 		// Filter out not found error messages. We will retry.
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
+			select {
+			case <-streamer.Context.Done():
+				return nil
+			default:
+			}
 			line := scanner.Text()
 			if !strings.Contains(line, "No resources found") && !strings.Contains(line, "waiting to start") {
 				fmt.Fprintln(os.Stderr, line)
