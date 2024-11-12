@@ -33,11 +33,6 @@ func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
 	if err != nil {
 		return err
 	}
-	if pipelineContext.Run.Step > 0 {
-		o := opts.BuildOptions
-		o.CreateNamespace = false
-		opts.BuildOptions = o
-	}
 
 	ir, err := fe.PrepareForRun(pipelineContext, fe.PrepareOptions{NoDispatchers: pipelineContext.Run.Step > 0 || len(opts.Inputs) > 0}, opts.BuildOptions)
 	if err != nil {
@@ -51,11 +46,6 @@ func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOption
 	pipelineContext, err := handlePipelineStdin()
 	if err != nil {
 		return err
-	}
-	if pipelineContext.Run.Step > 0 {
-		o := opts.BuildOptions
-		o.CreateNamespace = false
-		opts.BuildOptions = o
 	}
 
 	llir, err := fe.PrepareHLIRForRun(ir, pipelineContext, fe.PrepareOptions{NoDispatchers: pipelineContext.Run.Step > 0 || len(opts.Inputs) > 0}, opts.BuildOptions)
