@@ -24,7 +24,7 @@ func stream(ctx context.Context, runnameIn string, backend be.Backend, opts Opti
 		fmt.Fprintln(os.Stderr, "Tracking run", runname)
 	}
 
-	client, err := s3.NewS3ClientForRun(ctx, backend, queue.RunContext{RunName: runname, Step: opts.Step}, opts.LogOptions)
+	client, err := s3.NewS3ClientForRun(ctx, backend, queue.RunContext{RunName: runname, Step: opts.Step}, opts.Rclone, opts.LogOptions)
 	if err != nil {
 		return client.RunContext, nil, nil, nil, err
 	}

@@ -26,12 +26,6 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 		}
 	}
 
-	// This is where component logs will go
-	logdir, err := files.LogDir(ir.Context.Run, true)
-	if err != nil {
-		return err
-	}
-
 	// Write a pid file to indicate the pid of this process
 	if pidfile, err := files.PidfileForMain(ir.Context.Run); err != nil {
 		return err
@@ -47,7 +41,7 @@ func (backend Backend) Up(octx context.Context, ir llir.LLIR, opts llir.Options,
 	// Launch each of the components
 	group, ctx := errgroup.WithContext(octx)
 	for _, c := range ir.Components {
-		group.Go(func() error { return backend.spawn(ctx, c, ir, logdir, *opts.Log) })
+		group.Go(func() error { return backend.spawn(ctx, c, ir, *opts.Log) })
 	}
 
 	// Indicate that we are off to the races

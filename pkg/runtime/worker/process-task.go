@@ -18,6 +18,7 @@ import (
 
 	"lunchpail.io/pkg/ir/queue"
 	s3 "lunchpail.io/pkg/runtime/queue"
+	"lunchpail.io/pkg/util"
 )
 
 type taskProcessor struct {
@@ -148,10 +149,13 @@ func (p taskProcessor) process(task string) error {
 	handlercmd.Stdin = stdin
 	handlercmd.Stderr = io.MultiWriter(os.Stderr, stderrWriter)
 	handlercmd.Stdout = io.MultiWriter(os.Stdout, stdoutWriter)
+	TaskStartTime := time.Now()
+	if p.opts.LogOptions.Verbose {
+		fmt.Fprintf(os.Stderr, "METRICS: Took %s for worker to get to starting task\n", util.RelTime(p.opts.WorkerStartTime, TaskStartTime))
+	}
 	if err := handlercmd.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "Handler launch failed:", err)
 	}
-
 	// Clean things up
 	p.handleExitCode(taskContext, handlercmd.ProcessState.ExitCode())
 

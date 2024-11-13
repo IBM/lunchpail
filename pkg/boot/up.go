@@ -6,10 +6,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
+	"time"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/target"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/ir/hlir"
@@ -29,6 +32,7 @@ type UpOptions struct {
 	Executable   string
 	NoRedirect   bool
 	RedirectTo   string
+	UpStartTime  time.Time
 }
 
 func Up(ctx context.Context, backend be.Backend, opts UpOptions) (llir.Context, error) {
@@ -62,7 +66,7 @@ func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOption
 
 func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOptions) error {
 	if opts.DryRun {
-		out, err := backend.DryRun(ir, opts.BuildOptions)
+		out, err := backend.DryRun(ir, llir.Options{Options: opts.BuildOptions})
 		if err != nil {
 			return err
 		}
@@ -97,7 +101,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 				// Now cancel the context
 				cancel()
 
-				if err := backend.Down(ctx, ir, opts.BuildOptions); err != nil {
+				if err := backend.Down(ctx, ir, llir.Options{Options: opts.BuildOptions}); err != nil {
 					fmt.Fprintln(os.Stderr, "Error bringing down run", err)
 				}
 
@@ -151,7 +155,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		case <-cancellable.Done():
 		case ctx := <-isRunning6:
 			if ctx.Run.Step == 0 || isFinalStep(ctx) {
-				errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, *opts.BuildOptions.Log)
+				errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, opts.BuildOptions.Queue, *opts.BuildOptions.Log)
 				if errorFromAllDone != nil && strings.Contains(errorFromAllDone.Error(), "connection refused") {
 					// Then Minio went away on its own. That's probably ok.
 					errorFromAllDone = nil
@@ -174,7 +178,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			}
 
 			defer func() { redirectDone <- struct{}{} }()
-			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, alldone, opts.NoRedirect, opts.RedirectTo, *opts.BuildOptions.Log); err != nil {
+			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, alldone, opts.NoRedirect, opts.RedirectTo, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
 				errorFromIo = err
 				cancel()
 			}
@@ -215,7 +219,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		case <-cancellable.Done():
 		case <-isRunning6:
 		}
-		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log); err != nil {
+		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
 			errorFromTask = err
 			// fail fast? cancel()
 		}
@@ -229,15 +233,32 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			case <-cancellable.Done():
 			case <-isRunning6:
 			}
-
-			if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
-				fmt.Fprintln(os.Stderr, err)
+			if opts.BuildOptions.Target.Platform == target.IBMCloud {
+				//rebuilding self to upload linux-amd64 executable
+				s3UploadStartTime := time.Now()
+				cmd := exec.Command("/bin/sh", "-c", opts.Executable+" build -A -o "+opts.Executable)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+				buildEndTime := time.Now()
+				fmt.Fprintf(os.Stderr, "METRICS: Took %s for building executable for platform\n", util.RelTime(s3UploadStartTime, buildEndTime))
+				if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable + "-linux-amd64", TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+				s3UploadEndTime := time.Now()
+				fmt.Fprintf(os.Stderr, "METRICS: Took %s for uploading binary to S3\n", util.RelTime(buildEndTime, s3UploadEndTime))
+			} else {
+				if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
 			}
 		}()
 	}
 
 	defer cancel()
-	errorFromUp := backend.Up(cancellable, ir, opts.BuildOptions, isRunning)
+	errorFromUp := backend.Up(cancellable, ir, llir.Options{Options: opts.BuildOptions, UpStartTime: opts.UpStartTime}, isRunning)
 
 	/* TODO defer func() {
 		err := backend.Down(cancellable, ir, opts.BuildOptions)

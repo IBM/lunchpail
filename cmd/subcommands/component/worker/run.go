@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -64,6 +65,7 @@ func Run() *cobra.Command {
 			PollingInterval:   pollingInterval,
 			LogOptions:        *logOpts,
 			RunContext:        run.ForStep(step).ForPool(poolName).ForWorker(workerName),
+			WorkerStartTime:   time.Now(),
 		})
 	}
 

@@ -17,4 +17,5 @@ func init() {
 	cmd.AddCommand(component.Minio())
 	cmd.AddCommand(component.Worker())
 	cmd.AddCommand(component.WorkStealer())
+	cmd.AddCommand(component.RunLocally())
 }
