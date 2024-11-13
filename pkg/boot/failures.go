@@ -13,8 +13,8 @@ import (
 	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run, opts)
+func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunContext, que queue.Spec, opts build.LogOptions) error {
+	client, err := s3.NewS3ClientForRun(ctx, backend, run, que, opts)
 	if err != nil {
 		return err
 	}
