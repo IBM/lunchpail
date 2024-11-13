@@ -14,7 +14,7 @@ import (
 )
 
 // Queue properties for a given run, plus ensure access to the endpoint from this client
-func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext, opts build.LogOptions) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
+func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext, rclone string, opts build.LogOptions) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error) {
 	endpoint, accessKeyID, secretAccessKey, bucket, err = backend.queue(ctx, run)
 	stop = func() {}
 	return

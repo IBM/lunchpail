@@ -24,6 +24,9 @@ type Options struct {
 
 	// Step
 	Step int
+
+	//rclone path
+	Rclone string
 }
 
 func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {

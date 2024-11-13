@@ -12,8 +12,8 @@ import (
 	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func waitForAllDone(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run, opts)
+func waitForAllDone(ctx context.Context, backend be.Backend, run queue.RunContext, rclone string, opts build.LogOptions) error {
+	client, err := s3.NewS3ClientForRun(ctx, backend, run, rclone, opts)
 	if err != nil {
 		if strings.Contains(err.Error(), "Connection closed") {
 			// already gone
