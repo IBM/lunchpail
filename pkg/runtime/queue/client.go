@@ -70,8 +70,8 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 }
 
 // Client for a given run in the given backend
-func NewS3ClientForRun(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) (S3ClientStop, error) {
-	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, run, opts)
+func NewS3ClientForRun(ctx context.Context, backend be.Backend, run queue.RunContext, queue queue.Spec, opts build.LogOptions) (S3ClientStop, error) {
+	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, run, queue, opts)
 	if err != nil {
 		return S3ClientStop{}, err
 	}

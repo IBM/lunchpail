@@ -9,8 +9,8 @@ import (
 	"lunchpail.io/pkg/ir/queue"
 )
 
-func Qcat(ctx context.Context, backend be.Backend, run queue.RunContext, path string, opts build.LogOptions) error {
-	c, err := NewS3ClientForRun(ctx, backend, run, opts)
+func Qcat(ctx context.Context, backend be.Backend, run queue.RunContext, path string, que queue.Spec, opts build.LogOptions) error {
+	c, err := NewS3ClientForRun(ctx, backend, run, que, opts)
 	if err != nil {
 		return err
 	}

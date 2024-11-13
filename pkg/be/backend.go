@@ -34,7 +34,7 @@ type Backend interface {
 	InstanceCount(ctx context.Context, c lunchpail.Component, run queue.RunContext) (int, error)
 
 	// Queue properties for a given run, plus ensure access to the endpoint from this client
-	AccessQueue(ctx context.Context, run queue.RunContext, opts build.LogOptions) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error)
+	AccessQueue(ctx context.Context, run queue.RunContext, queue queue.Spec, opts build.LogOptions) (endpoint, accessKeyID, secretAccessKey, bucket string, stop func(), err error)
 
 	// Return a streamer
 	Streamer(ctx context.Context, run queue.RunContext) streamer.Streamer

@@ -9,6 +9,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
+
+	"lunchpail.io/pkg/util"
 )
 
 func requirementsInstall(ctx context.Context, version, requirements string, verbose bool) (string, error) {
@@ -85,10 +88,19 @@ func requirementsInstall(ctx context.Context, version, requirements string, verb
 		version = "3"
 	}
 
-	cmdline := fmt.Sprintf(`python%s -m venv %s
+	apt := ""
+	if _, err := exec.LookPath("apt"); err == nil {
+		apt = fmt.Sprintf(`apt install -y python%s-venv python%s-distutils`, version, version)
+	}
+
+	cmdline := fmt.Sprintf(`%s
+python%s -m venv %s
 source %s/bin/activate
 if ! which pip%s > /dev/null; then python%s -m pip install pip %s; fi
-pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, version, verboseFlag, version, nocache, quiet, reqmtsFile.Name(), verboseFlag)
+s=%s
+pip%s install %s %s -r %s %s 1>&2
+e=%s
+echo \"METRICS: Took $(($e-$s)) seconds for pip installs\"`, apt, version, venvPath, venvPath, version, version, verboseFlag, "$(date +%s)", version, nocache, quiet, reqmtsFile.Name(), verboseFlag, "$(date +%s)")
 
 	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdline)
 	cmd.Dir = filepath.Dir(venvPath)
@@ -109,6 +121,7 @@ pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, versio
 		}
 	}()
 
+	t1s := time.Now()
 	if err := cmd.Run(); err != nil {
 		// Clean up the venv cache directory, since we failed at populating it
 		if err := os.RemoveAll(venvPath); err != nil {
@@ -118,6 +131,10 @@ pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, versio
 		return path, err
 	}
 	installSuccessful = true
+	t1e := time.Now()
+	if verbose {
+		fmt.Fprintf(os.Stderr, "METRICS: Took %s for pip installs\n", util.RelTime(t1s, t1e))
+	}
 
 	return path, nil
 }

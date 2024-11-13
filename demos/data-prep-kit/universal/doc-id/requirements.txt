@@ -1,2 +1,2 @@
 pyarrow<17
-setuptools
+setuptools ; platform_system == 'Darwin'
