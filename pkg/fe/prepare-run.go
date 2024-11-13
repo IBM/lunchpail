@@ -93,7 +93,7 @@ func PrepareHLIRForRun(ir hlir.HLIR, ctx llir.Context, popts PrepareOptions, opt
 		}
 	}
 
-	if ctx.Queue.Endpoint == "" {
+	if opts.Queue != "" || ctx.Queue.Endpoint == "" {
 		spec, err := q.ParseFlag(opts.Queue, ctx.Run.RunName)
 		if err != nil {
 			return llir.LLIR{}, err

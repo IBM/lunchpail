@@ -12,7 +12,7 @@ import (
 // Indicate dispatching is done, with given client
 func QdoneClient(ctx context.Context, c S3Client, run queue.RunContext, opts build.LogOptions) (err error) {
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Done with dispatching\n")
+		fmt.Fprintf(os.Stderr, "Done with dispatching step=%d\n", run.Step)
 	}
 
 	if err := c.Mkdirp(run.Bucket); err != nil {

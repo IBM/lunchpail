@@ -19,6 +19,10 @@ func Run() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
+	var step int
+	cmd.Flags().IntVar(&step, "step", step, "Which step are we part of")
+	cmd.MarkFlagRequired("step")
+
 	var poolName string
 	cmd.Flags().StringVar(&poolName, "pool", "", "Which worker pool are we part of")
 	cmd.MarkFlagRequired("pool")
@@ -51,7 +55,7 @@ func Run() *cobra.Command {
 			StartupDelay:      startupDelay,
 			PollingInterval:   pollingInterval,
 			LogOptions:        *logOpts,
-			RunContext:        run.ForPool(poolName).ForWorker(workerName),
+			RunContext:        run.ForStep(step).ForPool(poolName).ForWorker(workerName),
 		})
 	}
 

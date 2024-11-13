@@ -17,7 +17,11 @@ import (
 
 func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, folderFor func(object string) string, opts build.LogOptions) error {
 	outbox := run.AsFile(queue.AssignedAndFinished)
-	outboxObjects, outboxErrs := client.Listen(client.Paths.Bucket, outbox, "", false)
+	outboxObjects, outboxErrs := client.Listen(run.Bucket, outbox, "", false)
+
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "Redirect listening on bucket=%s path=%s\n", run.Bucket, outbox)
+	}
 
 	group, _ := errgroup.WithContext(ctx)
 	done := false
@@ -32,7 +36,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 			if opts.Verbose {
 				fmt.Fprintf(os.Stderr, "Downloading output %s to %s\n", object, dst)
 			}
-			if err := client.Download(client.Paths.Bucket, object, dst); err != nil {
+			if err := client.Download(run.Bucket, object, dst); err != nil {
 				if opts.Verbose {
 					fmt.Fprintf(os.Stderr, "Error downloading output %s\n%v\n", object, err)
 				}

@@ -14,10 +14,15 @@ import (
 func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.WorkerPool, opts build.Options) (llir.Component, error) {
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
+	poolName := pool.Metadata.Name
+	if ctx.Run.Step > 0 {
+		poolName = fmt.Sprintf("%s-%d", poolName, ctx.Run.Step)
+	}
+
 	spec.RunAsJob = true
 	spec.Sizing = api.WorkerpoolSizing(pool, app, opts)
-	spec.GroupName = pool.Metadata.Name
-	spec.InstanceName = fmt.Sprintf("%s-%s", pool.Metadata.Name, ctx.Run.RunName)
+	spec.GroupName = poolName
+	spec.InstanceName = fmt.Sprintf("%s-%s", poolName, ctx.Run.RunName)
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
 	if err != nil {
@@ -27,8 +32,9 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 		app.Spec.Env = make(map[string]string)
 	}
 
-	queueArgs := fmt.Sprintf("--pool %s --worker $LUNCHPAIL_POD_NAME --verbose=%v --debug=%v ",
-		pool.Metadata.Name,
+	queueArgs := fmt.Sprintf("--step %d --pool %s --worker $LUNCHPAIL_POD_NAME --verbose=%v --debug=%v ",
+		ctx.Run.Step,
+		poolName,
 		opts.Log.Verbose,
 		opts.Log.Debug,
 	)

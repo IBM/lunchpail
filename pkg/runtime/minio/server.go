@@ -97,7 +97,7 @@ func Server(ctx context.Context, port int, run queue.RunContext) error {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "Exiting\n")
+	fmt.Fprintf(os.Stderr, "Minio Exiting\n")
 	return nil
 }
 

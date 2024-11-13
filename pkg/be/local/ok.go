@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"lunchpail.io/pkg/be/local/shell"
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/llir"
 )
 
 // Is the backend ready for `up`?
-func (backend Backend) Ok(ctx context.Context, initOk bool) error {
+func (backend Backend) Ok(ctx context.Context, initOk bool, opts build.Options) error {
 	return nil
 }
 

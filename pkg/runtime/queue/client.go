@@ -71,18 +71,28 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 }
 
 // Client for a given run in the given backend
-func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string, opts build.LogOptions) (S3ClientStop, error) {
-	if runname == "" {
-		run, err := util.Singleton(ctx, backend)
+func NewS3ClientForRun(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) (S3ClientStop, error) {
+	if run.RunName == "" {
+		r, err := util.Singleton(ctx, backend)
 		if err != nil {
 			return S3ClientStop{}, err
 		}
-		runname = run.Name
+		run = queue.RunContext{RunName: r.Name}
 	}
 
-	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, queue.RunContext{RunName: runname}, opts)
+	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, run, opts)
 	if err != nil {
 		return S3ClientStop{}, err
+	}
+
+	// We might be on the client, and so need to replace a docker host ip with localhost
+	if os.Getenv("LUNCHPAIL_RUN") == "" && strings.Contains(endpoint, "http://host.docker.internal") || strings.Contains(endpoint, "http://172.17.0.1") {
+		words := strings.Split(endpoint, ":")
+		port := "9000"
+		if len(words) == 3 {
+			port = words[2]
+		}
+		endpoint = "http://localhost:" + port
 	}
 
 	c, err := NewS3ClientFromOptions(ctx, S3ClientOptions{Endpoint: endpoint, AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey})
@@ -96,5 +106,6 @@ func NewS3ClientForRun(ctx context.Context, backend be.Backend, runname string, 
 		c.Paths = paths
 	}
 
-	return S3ClientStop{c, queue.RunContext{RunName: runname, Bucket: c.Paths.Bucket}, stop}, nil
+	run.Bucket = c.Paths.Bucket
+	return S3ClientStop{c, run, stop}, nil
 }

@@ -13,7 +13,7 @@ import (
 )
 
 func waitForAllDone(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName, opts)
+	client, err := s3.NewS3ClientForRun(ctx, backend, run, opts)
 	if err != nil {
 		if strings.Contains(err.Error(), "Connection closed") {
 			// already gone
@@ -21,15 +21,14 @@ func waitForAllDone(ctx context.Context, backend be.Backend, run queue.RunContex
 		}
 		return err
 	}
-	run.Bucket = client.RunContext.Bucket
 	defer client.Stop()
 
-	if err := client.WaitTillExists(run.Bucket, run.AsFile(queue.AllDoneMarker)); err != nil {
+	if err := client.WaitTillExists(client.RunContext.Bucket, client.RunContext.AsFile(queue.AllDoneMarker)); err != nil {
 		return err
 	}
 
 	if opts.Verbose {
-		fmt.Fprintln(os.Stderr, "Got all done. Cleaning up", run.Step)
+		fmt.Fprintln(os.Stderr, "Got all done. Cleaning up", client.RunContext.Step)
 	}
 	return nil
 }

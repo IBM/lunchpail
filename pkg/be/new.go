@@ -32,7 +32,7 @@ func NewInitOk(ctx context.Context, initOk bool, opts build.Options) (Backend, e
 		return nil, err
 	}
 
-	if err := be.Ok(ctx, initOk); err != nil {
+	if err := be.Ok(ctx, initOk, opts); err != nil {
 		return nil, err
 	}
 

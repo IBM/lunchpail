@@ -17,6 +17,10 @@ func PreStop() *cobra.Command {
 		Long:  "Mark this worker as dead",
 	}
 
+	var step int
+	cmd.Flags().IntVar(&step, "step", step, "Which step are we part of")
+	cmd.MarkFlagRequired("step")
+
 	var poolName string
 	cmd.Flags().StringVar(&poolName, "pool", "", "Which worker pool are we part of")
 	cmd.MarkFlagRequired("pool")
@@ -35,7 +39,7 @@ func PreStop() *cobra.Command {
 
 		return worker.PreStop(context.Background(), worker.Options{
 			LogOptions: *logOpts,
-			RunContext: run.ForPool(poolName).ForWorker(workerName),
+			RunContext: run.ForStep(step).ForPool(poolName).ForWorker(workerName),
 		})
 	}
 

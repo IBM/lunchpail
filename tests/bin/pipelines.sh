@@ -6,7 +6,7 @@ SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 TOP="$SCRIPTDIR"/../..
 
 lp=/tmp/lunchpail
-if [ -z "$LUNCHPAIL_BUILD_NOT_NEEDED" ]
+if [ ! -e $lp ]
 then "$TOP"/hack/setup/cli.sh $lp
 fi
 
@@ -19,6 +19,16 @@ export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
 
 if [[ -n "$CI" ]]
 then VERBOSE="--verbose"
+fi
+
+if [[ $(uname) = Linux ]]
+then
+    cat <<EOF > /tmp/kindhack.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  apiServerAddress: "0.0.0.0"
+EOF
 fi
 
 function actual {
@@ -80,6 +90,11 @@ function validate {
     # the return 0 (we don't need to validate the output files,
     # i.e. the validations just after this)
     if [[ $expected_ec != 0 ]]
+    then return 0
+    fi
+
+    # No expected output to validate
+    if [[ -z "$2" ]]
     then return 0
     fi
 
@@ -215,6 +230,11 @@ validate $? $(add 10 "$IN1") "$IN1"
 start "add1b | add1b | add1b | add1b | add1b | add1b | add1b | add1b | add1b | add1b"
 $lpadd1b $IN1 | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b | $lpadd1b
 validate $? $(add 10 "$IN1") "$IN1"
+
+# test the pipeline-demo script
+start "pipeline-demo"
+"$TOP"/hack/pipeline-demo.sh
+validate $?
 
 echo
 echo "✅ PASS all pipeline tests have passed!"
