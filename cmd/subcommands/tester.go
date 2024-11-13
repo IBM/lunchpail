@@ -4,6 +4,7 @@ package subcommands
 
 import (
 	"context"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -38,7 +39,7 @@ func init() {
 				return err
 			}
 
-			return boot.Tester{Quiet: quiet, Backend: backend, Options: *buildOpts}.RunAll(ctx)
+			return boot.Tester{Quiet: quiet, Backend: backend, Options: *buildOpts, Executable: os.Args[0]}.RunAll(ctx)
 		}
 
 		rootCmd.AddCommand(cmd)

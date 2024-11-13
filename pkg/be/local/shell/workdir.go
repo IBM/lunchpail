@@ -34,11 +34,17 @@ func PrepareWorkdirForComponent(c llir.ShellComponent, opts build.LogOptions) (s
 			fmt.Fprintf(os.Stderr, "Component %v saving code %s (%d bytes)\n", c.C(), code.Name, len(code.Source))
 		}
 		if err := saveCodeToWorkdir(workdir, code); err != nil {
+			if opts.Verbose {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
+			}
 			return "", "", err
 		}
 	}
 
 	if err := writeBlobsToWorkdir(c, workdir, opts); err != nil {
+		if opts.Verbose {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+		}
 		return "", "", err
 	}
 
