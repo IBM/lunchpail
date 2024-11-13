@@ -19,11 +19,10 @@ import (
 
 // Behave like `cat inputs | ... > outputs`
 func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, ir.Context.Run.RunName, opts)
+	client, err := s3.NewS3ClientForRun(ctx, backend, ir.Context.Run, opts)
 	if err != nil {
 		return err
 	}
-	ir.Context.Run.Bucket = client.RunContext.Bucket
 	defer client.Stop()
 
 	// either we are the first step with command line inputs (if
@@ -34,15 +33,15 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 		if opts.Verbose {
 			fmt.Fprintf(os.Stderr, "Using 'cat' to inject %s\n", english.Plural(len(inputs), "input file", ""))
 		}
-		if err := builtins.Cat(ctx, client.S3Client, ir.Context.Run, inputs, opts); err != nil {
+		if err := builtins.Cat(ctx, client.S3Client, client.RunContext, inputs, opts); err != nil {
 			return err
 		}
-	} else if ir.Context.Run.Step > 0 {
+	} else if client.RunContext.Step > 0 {
 		// simulate a "dispatch done"
 		if opts.Verbose {
-			fmt.Fprintln(os.Stderr, "up is simulating a dispatcher done event", os.Args)
+			fmt.Fprintln(os.Stderr, "up is simulating a dispatcher done event", client.RunContext.Step, os.Args)
 		}
-		if err := s3.QdoneClient(ctx, client.S3Client, ir.Context.Run, opts); err != nil {
+		if err := s3.QdoneClient(ctx, client.S3Client, client.RunContext, opts); err != nil {
 			return err
 		}
 	}
@@ -65,7 +64,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 		if opts.Verbose {
 			fmt.Fprintln(os.Stderr, "up is redirecting output files", os.Args)
 		}
-		if err := builtins.RedirectTo(ctx, client.S3Client, ir.Context.Run, folderFor, opts); err != nil {
+		if err := builtins.RedirectTo(ctx, client.S3Client, client.RunContext, folderFor, opts); err != nil {
 			return err
 		}
 	}
@@ -75,7 +74,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 
 // For Step > 0, we will need to simulate that a dispatch is done
 func fakeDispatch(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName, opts)
+	client, err := s3.NewS3ClientForRun(ctx, backend, run, opts)
 	if err != nil {
 		return err
 	}

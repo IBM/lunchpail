@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/bep/debounce"
@@ -73,10 +74,14 @@ func Run(ctx context.Context, run queue.RunContext, opts Options) error {
 	// There is no need to respond to every single update, as long
 	// as we respond to updates eventually... This will reduce
 	// chatter to S3.
-	debounced := debounce.New(100 * time.Millisecond)
+	debounced := debounce.New(200 * time.Millisecond)
 
+	var mu sync.Mutex
 	for model := range modelChan {
 		debounced(func() {
+			mu.Lock()
+			defer mu.Unlock()
+
 			if readyToBye(model) {
 				fmt.Fprintln(os.Stderr, "All work for this run has been completed, all workers have terminated")
 				// notify the streamer we are done

@@ -16,7 +16,7 @@ import (
 )
 
 func UploadFiles(ctx context.Context, backend be.Backend, run queue.RunContext, specs []upload.Upload, opts build.LogOptions) error {
-	s3, err := NewS3ClientForRun(ctx, backend, run.RunName, opts)
+	s3, err := NewS3ClientForRun(ctx, backend, run, opts)
 	if err != nil {
 		return err
 	}

@@ -27,7 +27,7 @@ func Cat(ctx context.Context, client s3.S3Client, run queue.RunContext, inputs [
 }
 
 func CatClient(ctx context.Context, backend be.Backend, run queue.RunContext, inputs []string, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName, opts)
+	client, err := s3.NewS3ClientForRun(ctx, backend, run, opts)
 	if err != nil {
 		return err
 	}

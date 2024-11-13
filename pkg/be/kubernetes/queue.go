@@ -23,6 +23,9 @@ func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext, op
 		return
 	}
 
+	// we may override this below, if we open a portforward
+	stop = func() {}
+
 	if strings.Contains(endpoint, "cluster.local") {
 		// Then the queue is running inside the cluster. We
 		// will need to open a port forward.

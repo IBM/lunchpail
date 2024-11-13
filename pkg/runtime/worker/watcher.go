@@ -16,7 +16,9 @@ import (
 
 func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts Options) error {
 	if opts.LogOptions.Verbose {
-		defer func() { fmt.Fprintln(os.Stderr, "Worker exiting") }()
+		defer func() {
+			fmt.Fprintf(os.Stderr, "Worker exiting step=%d pool=%s worker=%s\n", opts.RunContext.Step, opts.RunContext.PoolName, opts.RunContext.WorkerName)
+		}()
 	}
 
 	if err := client.Mkdirp(opts.RunContext.Bucket); err != nil {
@@ -54,7 +56,7 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 	go func() {
 		client.WaitTillExists(opts.RunContext.Bucket, killFile)
 		if opts.LogOptions.Verbose {
-			fmt.Fprintln(os.Stderr, "Worker got kill file. Cleaning up...")
+			fmt.Fprintf(os.Stderr, "Worker got kill file step=%d pool=%s worker=%s. Cleaning up...", opts.RunContext.Step, opts.RunContext.PoolName, opts.RunContext.WorkerName)
 		}
 		cancel()
 	}()

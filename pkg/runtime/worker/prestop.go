@@ -26,7 +26,7 @@ func PreStop(ctx context.Context, opts Options) error {
 	}
 
 	if opts.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "This worker is shutting down pool=%s worker=%s\n", opts.RunContext.PoolName, opts.RunContext.WorkerName)
+		fmt.Fprintf(os.Stderr, "This worker is shutting down step=%d pool=%s worker=%s\n", opts.RunContext.Step, opts.RunContext.PoolName, opts.RunContext.WorkerName)
 	}
 
 	return nil

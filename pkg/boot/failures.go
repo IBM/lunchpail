@@ -14,11 +14,11 @@ import (
 )
 
 func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	client, err := s3.NewS3ClientForRun(ctx, backend, run.RunName, opts)
+	client, err := s3.NewS3ClientForRun(ctx, backend, run, opts)
 	if err != nil {
 		return err
 	}
-	run.Bucket = client.RunContext.Bucket
+	run = client.RunContext
 	defer client.Stop()
 
 	if err := client.Mkdirp(run.Bucket); err != nil {

@@ -11,7 +11,7 @@ import (
 )
 
 func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path string, opts build.LogOptions) (<-chan string, <-chan error, error) {
-	c, err := NewS3ClientForRun(ctx, backend, run.RunName, opts)
+	c, err := NewS3ClientForRun(ctx, backend, run, opts)
 	if err != nil {
 		return nil, nil, err
 	}

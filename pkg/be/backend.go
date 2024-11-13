@@ -13,7 +13,7 @@ import (
 
 type Backend interface {
 	// Is the backend ready for `up`?
-	Ok(ctx context.Context, initOk bool) error
+	Ok(ctx context.Context, initOk bool, opts build.Options) error
 
 	// Bring up the linked application
 	Up(ctx context.Context, linked llir.LLIR, opts llir.Options, isRunning chan llir.Context) error
