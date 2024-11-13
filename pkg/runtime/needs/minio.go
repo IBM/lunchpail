@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
+// Find and install (if needed) the minio executable
+// @return the directory enclosing the minio executable
 func InstallMinio(ctx context.Context, version string, opts Options) (string, error) {
 	// We may have installed minio in a special place. Before we
 	// can call LookPath, make sure that special place is on PATH.
@@ -23,7 +26,8 @@ func InstallMinio(ctx context.Context, version string, opts Options) (string, er
 		os.Setenv("PATH", os.Getenv("PATH")+":"+dir)
 	}
 
-	if _, err := exec.LookPath("minio"); err != nil {
+	path, err := exec.LookPath("minio")
+	if err != nil {
 		if errors.Is(err, exec.ErrNotFound) {
 			if opts.Verbose {
 				fmt.Fprintln(os.Stderr, "needs minio installing minio")
@@ -32,8 +36,9 @@ func InstallMinio(ctx context.Context, version string, opts Options) (string, er
 		}
 		return "", err
 	}
+
 	if opts.Verbose {
-		fmt.Fprintln(os.Stderr, "needs minio found minio")
+		fmt.Fprintln(os.Stderr, "needs minio found minio", path)
 	}
-	return dir, nil
+	return filepath.Dir(path), nil
 }
