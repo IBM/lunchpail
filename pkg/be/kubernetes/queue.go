@@ -11,7 +11,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"lunchpail.io/pkg/be/kubernetes/names"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
@@ -104,7 +103,23 @@ func (backend Backend) queue(ctx context.Context, run queue.RunContext) (endpoin
 			return
 		}
 
-		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, names.Queue(run), metav1.GetOptions{})
+		jobs, jerr := c.BatchV1().Jobs(backend.namespace).List(ctx, metav1.ListOptions{
+			LabelSelector: "app.kubernetes.io/instance=" + run.RunName,
+		})
+		if jerr != nil {
+			err = jerr
+			return
+		} else if len(jobs.Items) == 0 {
+			err = fmt.Errorf("Could not find run resources")
+			return
+		}
+		queueResource, ok := jobs.Items[0].Labels["lunchpail.io/queue"]
+		if !ok {
+			err = fmt.Errorf("Could not find queue hash")
+			return
+		}
+
+		secret, cerr := c.CoreV1().Secrets(backend.namespace).Get(ctx, queueResource, metav1.GetOptions{})
 		if cerr != nil {
 			err = cerr
 			return

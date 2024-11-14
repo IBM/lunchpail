@@ -56,6 +56,11 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		groupName = c.InstanceName
 	}
 
+	queueResource, err := names.Queue(ir.Context)
+	if err != nil {
+		return "", err
+	}
+
 	// values for this component
 	myValues := []string{
 		fmt.Sprintf("lunchpail.step=%d", ir.Context.Run.Step),
@@ -73,6 +78,7 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"taskqueue.bucket=" + ir.Queue().Bucket,
+		"taskqueue.secret=" + queueResource,
 		"volumes=" + volumes,
 		"volumeMounts=" + volumeMounts,
 		"initContainers=" + initContainers,
