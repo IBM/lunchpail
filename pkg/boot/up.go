@@ -122,35 +122,41 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	isRunning6 := make(chan llir.Context)
 	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0
 	go func() {
-		ctx := <-isRunning
-		isRunning6 <- ctx
-		isRunning6 <- ctx
-		isRunning6 <- ctx
-		if opts.Executable != "" {
+		select {
+		case <-cancellable.Done():
+		case ctx := <-isRunning:
 			isRunning6 <- ctx
-		}
-		if needsCatAndRedirect {
 			isRunning6 <- ctx
-		}
-		if opts.Watch {
 			isRunning6 <- ctx
+			if opts.Executable != "" {
+				isRunning6 <- ctx
+			}
+			if needsCatAndRedirect {
+				isRunning6 <- ctx
+			}
+			if opts.Watch {
+				isRunning6 <- ctx
+			}
 		}
 	}()
 
 	alldone := make(chan struct{})
 	var errorFromAllDone error
 	go func() {
-		ctx := <-isRunning6
-		if ctx.Run.Step == 0 || isFinalStep(ctx) {
-			errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, *opts.BuildOptions.Log)
-			if errorFromAllDone != nil && strings.Contains(errorFromAllDone.Error(), "connection refused") {
-				// Then Minio went away on its own. That's probably ok.
-				errorFromAllDone = nil
+		select {
+		case <-cancellable.Done():
+		case ctx := <-isRunning6:
+			if ctx.Run.Step == 0 || isFinalStep(ctx) {
+				errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, *opts.BuildOptions.Log)
+				if errorFromAllDone != nil && strings.Contains(errorFromAllDone.Error(), "connection refused") {
+					// Then Minio went away on its own. That's probably ok.
+					errorFromAllDone = nil
+				}
+				alldone <- struct{}{}
+				cancel()
+			} else {
+				alldone <- struct{}{}
 			}
-			alldone <- struct{}{}
-			cancel()
-		} else {
-			alldone <- struct{}{}
 		}
 	}()
 
@@ -160,7 +166,10 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		// Behave like `cat inputs | ... > outputs`
 		go func() {
 			// wait for the run to be ready for us to enqueue
-			<-isRunning6
+			select {
+			case <-cancellable.Done():
+			case <-isRunning6:
+			}
 
 			defer func() { redirectDone <- struct{}{} }()
 			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log); err != nil {
@@ -174,21 +183,31 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	if opts.Watch {
 		verbose := opts.BuildOptions.Log.Verbose
 		go func() {
-			<-isRunning6
+			select {
+			case <-cancellable.Done():
+			case <-isRunning6:
+			}
 			go watchLogs(cancellable, backend, ir, logsDone, WatchOptions{Verbose: verbose})
 			go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
 		}()
 	}
 
 	go func() {
-		if err := handlePipelineStdout(<-isRunning6); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+		select {
+		case <-cancellable.Done():
+		case ctx := <-isRunning6:
+			if err := handlePipelineStdout(ctx); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
 		}
 	}()
 
 	var errorFromTask error
 	go func() {
-		<-isRunning6
+		select {
+		case <-cancellable.Done():
+		case <-isRunning6:
+		}
 		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log); err != nil {
 			errorFromTask = err
 			// fail fast? cancel()
@@ -199,7 +218,10 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	if opts.Executable != "" {
 		go func() {
 			// wait for the run to be ready for us to enqueue
-			<-isRunning6
+			select {
+			case <-cancellable.Done():
+			case <-isRunning6:
+			}
 
 			if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -213,6 +235,16 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	/* TODO defer func() {
 		err := backend.Down(cancellable, ir, opts.BuildOptions)
 	}()*/
+
+	if errorFromUp != nil {
+		// Oops, something failed in the up portion, i.e. before the job even started
+		// Note the use of `select` to implement a non-blocking send
+		select {
+		case submissionComplete <- struct{}{}:
+		default:
+		}
+		return errorFromUp
+	}
 
 	select {
 	case <-cancellable.Done():
