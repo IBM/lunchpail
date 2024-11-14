@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"lunchpail.io/pkg/ir/llir"
 )
@@ -16,8 +15,6 @@ func QueueHash(ctx llir.Context) (string, error) {
 	} else if _, err := hash.Write(b); err != nil {
 		return "", err
 	}
-
-	fmt.Fprintln(os.Stderr, "!!!!!!!!!!!!!!!!!!!!", ctx.Run.Step, ctx.Queue, fmt.Sprintf("%x", hash.Sum(nil)))
 
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
