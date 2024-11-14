@@ -9,7 +9,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/runs/util"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/queue"
 )
@@ -72,14 +71,6 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 
 // Client for a given run in the given backend
 func NewS3ClientForRun(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) (S3ClientStop, error) {
-	if run.RunName == "" {
-		r, err := util.Singleton(ctx, backend)
-		if err != nil {
-			return S3ClientStop{}, err
-		}
-		run = queue.RunContext{RunName: r.Name}
-	}
-
 	endpoint, accessKeyId, secretAccessKey, bucket, stop, err := backend.AccessQueue(ctx, run, opts)
 	if err != nil {
 		return S3ClientStop{}, err
