@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	rcloneConfig "github.com/rclone/rclone/fs/config"
@@ -34,6 +35,14 @@ func SpecFromRcloneRemoteName(remoteName, bucket, runname string, internalS3Port
 		return false, queue.Spec{}, fmt.Errorf("Rclone config '%s' has invalid endpoint value: '%s'", remoteName, maybe)
 	} else {
 		spec.Endpoint = s
+		words := strings.Split(spec.Endpoint, ":")
+		if len(words) == 3 {
+			p, err := strconv.Atoi(words[2])
+			if err != nil {
+				return false, queue.Spec{}, err
+			}
+			spec.Port = p
+		}
 		if !isInternalS3(s) {
 			spec.Auto = false
 		}

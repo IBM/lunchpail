@@ -55,9 +55,14 @@ type envFrom struct {
 }
 
 func datasets(app hlir.Application, context llir.Context) ([]volume, []volumeMount, []envFrom, []initContainer, []map[string]string, error) {
+	queueEnv, err := envForQueue(context)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
+
 	volumes := []volume{}
 	volumeMounts := []volumeMount{}
-	envFroms := []envFrom{envForQueue(context)}
+	envFroms := []envFrom{queueEnv}
 	secrets := []map[string]string{}
 	initContainers := []initContainer{}
 
@@ -140,11 +145,16 @@ func datasetsB64(app hlir.Application, context llir.Context) (string, string, st
 }
 
 // Inject queue secrets
-func envForQueue(context llir.Context) envFrom {
+func envForQueue(context llir.Context) (envFrom, error) {
+	queueResource, err := names.Queue(context)
+	if err != nil {
+		return envFrom{}, err
+	}
+
 	return envFrom{
 		Prefix:    "lunchpail_queue_",
-		SecretRef: secretRef{names.Queue(context.Run)},
-	}
+		SecretRef: secretRef{queueResource},
+	}, nil
 }
 
 func updateTestQueueEndpoint(s string, queue queue.Spec) string {

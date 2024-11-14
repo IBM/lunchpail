@@ -1,9 +1,6 @@
 package llir
 
-import (
-	"lunchpail.io/pkg/ir/queue"
-	"lunchpail.io/pkg/lunchpail"
-)
+import "lunchpail.io/pkg/lunchpail"
 
 // One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 type Component interface {
@@ -12,11 +9,6 @@ type Component interface {
 	Workers() int
 
 	SetWorkers(w int) Component
-}
-
-type Context struct {
-	Run   queue.RunContext
-	Queue queue.Spec
 }
 
 type LLIR struct {
@@ -41,12 +33,4 @@ func (ir LLIR) HasDispatcher() bool {
 	}
 
 	return false
-}
-
-func (ir LLIR) RunName() string {
-	return ir.Context.Run.RunName
-}
-
-func (ir LLIR) Queue() queue.Spec {
-	return ir.Context.Queue
 }

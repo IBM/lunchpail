@@ -9,6 +9,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.lunchpail.instanceName }}
     app.kubernetes.io/instance: {{ .Values.lunchpail.name }}
     app.kubernetes.io/managed-by: lunchpail.io
+    lunchpail.io/queue: {{ .Values.taskqueue.secret }}
 spec:
   parallelism: {{ .Values.workers.count }}
   ttlSecondsAfterFinished: 1800 # the pods will go away 30 minutes after completion
