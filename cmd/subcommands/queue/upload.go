@@ -40,7 +40,7 @@ func Upload() *cobra.Command {
 
 		run := runOpts.Run
 		if run == "" {
-			rrun, err := util.Singleton(ctx, backend)
+			rrun, err := util.Latest(ctx, backend)
 			if err != nil {
 				return err
 			}

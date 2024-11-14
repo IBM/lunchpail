@@ -82,11 +82,11 @@ func toBuildOpts(opts DownOptions) build.Options {
 
 func Down(ctx context.Context, runname string, backend be.Backend, opts DownOptions) error {
 	if runname == "" {
-		singletonRun, err := util.SingletonP(ctx, backend, true) // true: include Done runs
+		latestRun, err := util.LatestP(ctx, backend, true) // true: include Done runs
 		if err != nil {
 			return err
 		}
-		runname = singletonRun.Name
+		runname = latestRun.Name
 	}
 
 	context := llir.Context{Run: queue.RunContext{RunName: runname}}
