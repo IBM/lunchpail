@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: lunchpail.io
 spec:
   parallelism: {{ .Values.workers.count }}
-  # ttlSecondsAfterFinished: 10000
+  ttlSecondsAfterFinished: 1800 # the pods will go away 30 minutes after completion
   backoffLimit: 6
   template:
     metadata:
