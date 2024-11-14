@@ -4,8 +4,8 @@ package runs
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -55,12 +55,12 @@ func Instances() *cobra.Command {
 			ctx := context.Background()
 			runname := runOpts.Run
 			if runname == "" {
-				if r, err := util.Singleton(ctx, backend); err != nil {
+				if r, err := util.Latest(ctx, backend); err != nil {
 					if wait {
 						waitItOut(*component, -1, err)
 						continue
 					}
-					if strings.Contains(err.Error(), "No runs found") {
+					if errors.Is(err, util.NoRunsFoundError) {
 						fmt.Println("0")
 						return nil
 					}
