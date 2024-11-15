@@ -19,7 +19,7 @@ export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
 
 stepo=./pipeline-demo
 if [ ! -e $stepo ]
-then $lp build --create-namespace -e 'echo "hi from step $LUNCHPAIL_STEP"; sleep 2' -o $stepo
+then $lp build --create-namespace -c 'echo "hi from step $LUNCHPAIL_STEP"; sleep 2' -o $stepo
 fi
 
 export RCLONE_CONFIG=$(mktemp)

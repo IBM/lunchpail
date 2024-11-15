@@ -30,8 +30,8 @@ func stageLunchpailItself() (string, error) {
 func Build(ctx context.Context, sourcePath string, opts Options) error {
 	verbose := opts.BuildOptions.Log.Verbose
 
-	if sourcePath != "" && opts.Eval != "" {
-		return fmt.Errorf("Both a source path and --eval options were provided. Choose one or the other.")
+	if sourcePath != "" && opts.Command != "" {
+		return fmt.Errorf("Both a source path and --command options were provided. Choose one or the other.")
 	}
 
 	if f, err := os.Stat(opts.Name); err == nil && f.IsDir() {
@@ -52,7 +52,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	fmt.Fprintf(os.Stderr, "Building %s\n", buildName)
 
 	// Third, overlay source (if given)
-	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{BuildOptions: opts.BuildOptions, Branch: opts.Branch, Eval: opts.Eval, Verbose: verbose})
+	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{BuildOptions: opts.BuildOptions, Branch: opts.Branch, Command: opts.Command, Verbose: verbose})
 	if err != nil {
 		return err
 	}

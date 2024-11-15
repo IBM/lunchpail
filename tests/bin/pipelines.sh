@@ -115,20 +115,20 @@ function validate {
 
 # build a fail app
 fail=$(mktemp)
-$lp build --create-namespace -e 'exit 1' -o $fail &
+$lp build --create-namespace -c 'exit 1' -o $fail &
 failpid=$!
 
-# build an add1 using `build -e/--eval`; printf because `echo -n` is not universally supported
+# build an add1 using `build -c/--command`; printf because `echo -n` is not universally supported
 add1b=$(mktemp)
-$lp build --create-namespace -e 'printf "%d" $((1+$(cat $1))) > $2' -o $add1b &
+$lp build --create-namespace -c 'printf "%d" $((1+$(cat $1))) > $2' -o $add1b &
 
 # ibid, for stdio calling convention; we need the extra 'read v' because dash does not support </dev/stdin
 add1c=$(mktemp)
-$lp build --create-namespace -C stdio -e 'read v; printf "%d" $((v+1))' -o $add1c &
+$lp build --create-namespace -C stdio -c 'read v; printf "%d" $((v+1))' -o $add1c &
 
 # ibid, for python with stdio calling convention
 add1d=$(mktemp)
-$lp build --create-namespace -C stdio -e 'python3 -c "import sys; sys.stdout.write(str(1+int(sys.stdin.read())))"' --image-id docker.io/python:3.12 -o $add1d &
+$lp build --create-namespace -C stdio -c 'python3 -c "import sys; sys.stdout.write(str(1+int(sys.stdin.read())))"' --image-id docker.io/python:3.12 -o $add1d &
 
 lpfail="$fail up $VERBOSE -t $LUNCHPAIL_TARGET"
 lpcat="$lp cat $VERBOSE -t $LUNCHPAIL_TARGET -n $LUNCHPAIL_NAME --create-namespace"
