@@ -35,6 +35,8 @@ func AddBuildOptions(cmd *cobra.Command) (*build.Options, error) {
 	cmd.Flags().BoolVarP(&options.CreateNamespace, "create-namespace", "N", options.CreateNamespace, "Create a new namespace, if needed")
 	cmd.Flags().IntVarP(&options.Workers, "workers", "W", options.Workers, "Number of workers in the initial worker pool")
 
+	cmd.Flags().StringToStringVarP(&options.Env, "env", "e", options.Env, "Set environment variables")
+
 	AddTargetOptionsTo(cmd, &options)
 	AddLogOptionsTo(cmd, &options)
 	return &options, nil

@@ -120,11 +120,11 @@ failpid=$!
 
 # build an add1 using `build -c/--command`; printf because `echo -n` is not universally supported
 add1b=$(mktemp)
-$lp build --create-namespace -c 'printf "%d" $((1+$(cat $1))) > $2' -o $add1b &
+$lp build --create-namespace --env incr=1 -c 'printf "%d" $(($incr+$(cat $1))) > $2' -o $add1b &
 
 # ibid, for stdio calling convention; we need the extra 'read v' because dash does not support </dev/stdin
 add1c=$(mktemp)
-$lp build --create-namespace -C stdio -c 'read v; printf "%d" $((v+1))' -o $add1c &
+$lp build --create-namespace -C stdio --env incr=0 --env incr=1 -c 'read v; printf "%d" $((v+$incr))' -o $add1c &
 
 # ibid, for python with stdio calling convention
 add1d=$(mktemp)
