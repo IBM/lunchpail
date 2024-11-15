@@ -42,6 +42,11 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 	if app.Spec.Env == nil {
 		app.Spec.Env = hlir.Env{}
 	}
+	if opts.Env != nil {
+		for k, v := range opts.Env {
+			app.Spec.Env[k] = v
+		}
+	}
 	app.Spec.Env["LUNCHPAIL_RUN_NAME"] = ctx.Run.RunName
 	app.Spec.Env["LUNCHPAIL_STEP"] = strconv.Itoa(ctx.Run.Step)
 	app.Spec.Env["LUNCHPAIL_QUEUE_BUCKET"] = ctx.Queue.Bucket

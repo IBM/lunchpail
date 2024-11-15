@@ -23,6 +23,7 @@ type LogOptions struct {
 type Options struct {
 	Target *TargetOptions
 	Log    *LogOptions
+	Env    map[string]string `yaml:",omitempty"`
 
 	hlir.CallingConvention `yaml:"callingConvention,omitempty"`
 	ImagePullSecret        string   `yaml:"imagePullSecret,omitempty"`
