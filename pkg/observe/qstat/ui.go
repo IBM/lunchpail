@@ -21,6 +21,9 @@ type Options struct {
 
 	// Debounce output with this granularity in milliseconds
 	Debounce int
+
+	// Step
+	Step int
 }
 
 func UI(ctx context.Context, runnameIn string, backend be.Backend, opts Options) error {

@@ -224,7 +224,7 @@ func dispatcherDone(model queuestreamer.Model, step queuestreamer.Step) bool {
 // Is everything well and done: dispatcher, workers, us?
 func readyToBye(model queuestreamer.Model) bool {
 	for _, m := range model.Steps {
-		if !(dispatcherDone(model, m) && m.IsAllWorkDone() && m.AreAllWorkersQuiesced() && m.IsAllOutputConsumed()) {
+		if !(dispatcherDone(model, m) && m.IsAllWorkDone(model) && m.AreAllWorkersQuiesced() && m.IsAllOutputConsumed()) {
 			return false
 		}
 	}
@@ -236,7 +236,7 @@ func (c client) assess(model queuestreamer.Model, m queuestreamer.Step) {
 	if !c.rebalance(m) {
 		c.assignNewTasks(m)
 
-		if m.IsAllWorkDone() {
+		if m.IsAllWorkDone(model) {
 			// If the dispatcher is done and there are no more outstanding tasks,
 			// then touch kill files in the worker inboxes.
 			c.touchKillFiles(m)

@@ -7,3 +7,5 @@ expected=("Processing 6 task.1.txt" "Task completed task.1.txt" "Task completed 
 expectTaskFailure=64
 
 NUM_DESIRED_OUTPUTS=3
+
+inputapp='$testapp sweep 1 10 1 --interval 1 --wait'

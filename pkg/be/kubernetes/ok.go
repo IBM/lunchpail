@@ -40,6 +40,9 @@ func (backend Backend) ok(ctx context.Context, initOk bool, opts build.Options) 
 	if err != nil {
 		if clientcmd.IsEmptyConfig(err) && initOk {
 			if ok, buildImages := userIsOkWithInit(); ok {
+				if opts.Log.Verbose {
+					fmt.Fprintln(os.Stderr, "Intializing local Kubernetes cluster", os.Args)
+				}
 				return initialize.Local(ctx, initialize.InitLocalOptions{BuildImages: buildImages, Verbose: opts.Log.Verbose})
 			}
 			return err

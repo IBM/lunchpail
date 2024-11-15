@@ -30,6 +30,13 @@ func (ir LLIR) HasDispatcher() bool {
 		if c.C() == lunchpail.DispatcherComponent {
 			return true
 		}
+
+		switch cc := c.(type) {
+		case ShellComponent:
+			if cc.Application.Spec.IsDispatcher {
+				return true
+			}
+		}
 	}
 
 	return false

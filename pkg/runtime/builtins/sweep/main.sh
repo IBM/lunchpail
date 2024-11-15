@@ -5,6 +5,8 @@ set -e
 
 echo "Started TaskDispatcher min=$__LUNCHPAIL_SWEEP_MIN max=$__LUNCHPAIL_SWEEP_MAX step=$__LUNCHPAIL_SWEEP_STEP"
 
+trap "$LUNCHPAIL_EXE queue done" EXIT
+
 # test injected values from -f values.yaml
 # taskprefix2 can be used to test that e.g. numerical values are processed correctly
 if [ -n "$taskprefix" ]
@@ -32,7 +34,6 @@ do
     task=/tmp/${taskprefix}.${idx}.txt
     idx=$((idx + 1))
 
-    echo "Injecting task=$task parameter_value=${parameter_value}"
     echo -n ${parameter_value} > $task
 
     if [ -n "$__LUNCHPAIL_WAIT" ]
@@ -50,6 +51,8 @@ do
     # If we were asked to wait, then `queue add file` will exit with the
     # exit code of the underlying worker. Here, we intentionally
     # ignore any errors from the task.
-    $LUNCHPAIL_EXE queue add file $task $waitflag $verboseflag $debugflag
+    $LUNCHPAIL_EXE queue add file $task $waitflag $verboseflag $debugflag --next
     rm -f "$task"
 done
+
+$LUNCHPAIL_EXE queue done

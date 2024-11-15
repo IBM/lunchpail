@@ -21,6 +21,10 @@ TOP="$SCRIPTDIR"/../..
 # On ctrl+c, kill the subprocesses that may have launched
 trap "pkill -P $$" SIGINT SIGTERM
 
+if [[ ${LUNCHPAIL_TARGET:-kubernetes} = kubernetes ]]
+then /tmp/lunchpail dev init local --build-images --verbose
+fi
+
 #
 # Iterate over the tests/* directory
 #
