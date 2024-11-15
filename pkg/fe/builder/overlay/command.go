@@ -10,10 +10,10 @@ import (
 	"lunchpail.io/pkg/ir/hlir"
 )
 
-// Support for build --eval
-func copyEvalIntoTemplate(appname, eval, templatePath string, opts Options) (appVersion string, err error) {
+// Support for build --command
+func copyCommandIntoTemplate(appname, command, templatePath string, opts Options) (appVersion string, err error) {
 	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "Copying eval into %s\n", appdir(templatePath))
+		fmt.Fprintf(os.Stderr, "Copying command into %s\n", appdir(templatePath))
 	}
 
 	err = os.MkdirAll(appdir(templatePath), 0755)
@@ -21,20 +21,20 @@ func copyEvalIntoTemplate(appname, eval, templatePath string, opts Options) (app
 		return
 	}
 
-	app := evalApp(eval, opts)
+	app := commandApp(command, opts)
 
 	err = writeAppToTemplateDir(app, appdir(templatePath), opts.Verbose)
 
 	return
 }
 
-func evalApp(eval string, opts Options) hlir.HLIR {
-	app := hlir.NewApplication("eval")
+func commandApp(command string, opts Options) hlir.HLIR {
+	app := hlir.NewApplication("command")
 	app.Spec.Role = "worker"
 	app.Spec.Command = "./main.sh"
 	app.Spec.Code = []hlir.Code{
 		hlir.Code{Name: "main.sh", Source: fmt.Sprintf(`#!/bin/sh
-%s`, eval),
+%s`, command),
 		},
 	}
 

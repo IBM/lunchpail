@@ -9,5 +9,5 @@ type Options struct {
 	BuildOptions build.Options
 
 	// Run the given command line
-	Eval string
+	Command string
 }
