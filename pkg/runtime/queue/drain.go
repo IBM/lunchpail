@@ -2,6 +2,8 @@ package queue
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"golang.org/x/sync/errgroup"
 
@@ -27,6 +29,9 @@ func Drain(ctx context.Context, backend be.Backend, run queue.RunContext, opts b
 			return o.Err
 		}
 
+		if opts.Verbose {
+			fmt.Fprintln(os.Stderr, "Draining", o.Key)
+		}
 		group.Go(func() error { return c.Rm(run.Bucket, o.Key) })
 	}
 

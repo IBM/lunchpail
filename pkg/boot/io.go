@@ -18,7 +18,7 @@ import (
 )
 
 // Behave like `cat inputs | ... > outputs`
-func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, opts build.LogOptions) error {
+func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, noRedirect bool, opts build.LogOptions) error {
 	client, err := s3.NewS3ClientForRun(ctx, backend, ir.Context.Run, opts)
 	if err != nil {
 		return err
@@ -28,7 +28,8 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	// either we are the first step with command line inputs (if
 	// so, "cat" them into the queue), or we are a subsequent step
 	// (in which case we need to simulate a "dispatch done")
-	if len(inputs) > 0 {
+	switch {
+	case len(inputs) > 0:
 		// "cat" the inputs into the queue
 		if opts.Verbose {
 			fmt.Fprintf(os.Stderr, "Using 'cat' to inject %s\n", english.Plural(len(inputs), "input file", ""))
@@ -36,7 +37,20 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 		if err := builtins.Cat(ctx, client.S3Client, client.RunContext, inputs, opts); err != nil {
 			return err
 		}
-	} else if client.RunContext.Step > 0 {
+	case ir.HasDispatcher():
+		if opts.Verbose {
+			fmt.Fprintln(os.Stderr, "Triggering dispatcher")
+		}
+		if err := client.S3Client.AddValues(ctx, client.RunContext, []string{"start"}, opts); err != nil {
+			if opts.Verbose {
+				fmt.Fprintln(os.Stderr, "Error triggering dispatcher", err)
+			}
+			return err
+		}
+		if opts.Verbose {
+			fmt.Fprintln(os.Stderr, "Done triggering dispatcher")
+		}
+	case client.RunContext.Step > 0:
 		// simulate a "dispatch done"
 		if opts.Verbose {
 			fmt.Fprintln(os.Stderr, "up is simulating a dispatcher done event", client.RunContext.Step, os.Args)
@@ -49,7 +63,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	// TODO: backend.Wait(ir)? which would be a no-op for local
 
 	// If we aren't piped into anything, then copy out the outbox files
-	if isFinalStep(ir.Context) {
+	if isFinalStep(ir.Context) && !noRedirect {
 		// We try to place the output files in the same
 		// directory as the respective input files. TODO: this
 		// may be a fool's errand, e.g. what if a single input

@@ -1,9 +1,0 @@
-apiVersion: lunchpail.io/v1alpha1
-kind: ParameterSweep
-metadata:
-  name: test7-security-context
-spec:
-  min: 1
-  max: {{ .Values.nTasks | default 10 }}
-  step: 1
-  interval: {{ .Values.every | default 5 }}

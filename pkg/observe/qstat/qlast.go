@@ -11,10 +11,11 @@ import (
 )
 
 type QlastOptions struct {
+	Step int
 }
 
 func Qlast(ctx context.Context, marker, opt string, backend be.Backend, opts QlastOptions) (string, error) {
-	run, modelChan, doneChan, _, err := stream(ctx, "", backend, Options{})
+	run, modelChan, doneChan, _, err := stream(ctx, "", backend, Options{Step: opts.Step})
 	if err != nil {
 		return "", err
 	}
@@ -22,6 +23,10 @@ func Qlast(ctx context.Context, marker, opt string, backend be.Backend, opts Qla
 
 	var lastmodel queuestreamer.Step
 	for model := range modelChan {
+		if len(model.Steps) <= run.Step {
+			// no model for desired step
+			return "0", nil
+		}
 		lastmodel = model.Steps[run.Step]
 		break
 	}

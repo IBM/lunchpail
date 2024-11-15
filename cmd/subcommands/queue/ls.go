@@ -31,6 +31,9 @@ func Ls() *cobra.Command {
 	runOpts := options.AddRunOptions(cmd)
 	options.AddTargetOptionsTo(cmd, &opts)
 
+	var step int
+	cmd.Flags().IntVar(&step, "step", step, "Which step are we part of")
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		path := ""
 		if len(args) == 1 {
@@ -57,7 +60,7 @@ func Ls() *cobra.Command {
 			return err
 		}
 
-		files, errors, err := queue.Ls(ctx, backend, runContext, path, *opts.Log)
+		files, errors, err := queue.Ls(ctx, backend, runContext.ForStep(step), path, *opts.Log)
 		if err != nil {
 			return err
 		}

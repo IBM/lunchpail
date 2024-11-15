@@ -28,6 +28,9 @@ func Drain() *cobra.Command {
 	runOpts := options.AddRunOptions(cmd)
 	options.AddTargetOptionsTo(cmd, &opts)
 
+	var step int
+	cmd.Flags().IntVar(&step, "step", step, "Which step are we part of")
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		backend, err := be.New(ctx, opts)
@@ -40,7 +43,7 @@ func Drain() *cobra.Command {
 			return err
 		}
 
-		return queue.Drain(ctx, backend, run, *opts.Log)
+		return queue.Drain(ctx, backend, run.ForStep(step), *opts.Log)
 	}
 
 	return cmd

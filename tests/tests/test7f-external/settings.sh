@@ -1,6 +1,6 @@
 api=workqueue
 app=https://github.com/IBM/lunchpail-demo.git
-branch=v0.3.1
+branch=v0.4.0
 deployname=lunchpail-demo
 
 # /queue/0,1 <-- 2 workers
@@ -9,3 +9,6 @@ deployname=lunchpail-demo
 # "tasky" and 3333 come from a values override in the workdispatcher.yaml
 
 expected=('Processing tasky3333.1.txt' 'Processing tasky3333.3.txt' 'Processing tasky3333.5.txt' 'Processing tasky3333.2.txt' 'Processing tasky3333.4.txt' 'Processing tasky3333.6.txt')
+NUM_DESIRED_OUTPUTS=11
+
+inputapp='$testapp sweep 1 10 1 --interval 1 -e taskprefix=tasky -e taskprefix2=3333'

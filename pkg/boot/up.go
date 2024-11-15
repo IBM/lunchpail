@@ -26,6 +26,7 @@ type UpOptions struct {
 	Watch        bool
 	BuildOptions build.Options
 	Executable   string
+	NoRedirect   bool
 }
 
 func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
@@ -66,7 +67,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		return nil
 	}
 
-	if !ir.HasDispatcher() && len(opts.Inputs) == 0 && ir.Context.Run.Step == 0 {
+	if ir.Context.Run.Step == 0 && !ir.HasDispatcher() && len(opts.Inputs) == 0 {
 		return fmt.Errorf("please provide input files on the command line")
 	}
 
@@ -120,7 +121,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 	// below. This is because golang channels are not multicast.
 	isRunning := make(chan llir.Context) // is the job ready for business?
 	isRunning6 := make(chan llir.Context)
-	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0
+	needsCatAndRedirect := len(opts.Inputs) > 0 || ir.Context.Run.Step > 0 || ir.HasDispatcher()
 	go func() {
 		select {
 		case <-cancellable.Done():
@@ -172,7 +173,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			}
 
 			defer func() { redirectDone <- struct{}{} }()
-			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, *opts.BuildOptions.Log); err != nil {
+			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, opts.NoRedirect, *opts.BuildOptions.Log); err != nil {
 				errorFromIo = err
 				cancel()
 			}

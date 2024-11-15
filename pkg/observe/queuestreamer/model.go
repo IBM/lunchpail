@@ -79,9 +79,23 @@ func (step Step) nTasksRemaining() int {
 	return step.nUnassignedTasks() + step.nAssignedTasks() + step.nProcessingTasks()
 }
 
-// Have we consumed all work that is ever going to be produced?
-func (step Step) IsAllWorkDone() bool {
+// Have we consumed all work that has yet been produced?
+func (step Step) doneSoFar() bool {
 	return step.DispatcherDone && step.nFinishedTasks() > 0 && step.nTasksRemaining() == 0
+}
+
+func (model Model) allPriorStepsFullyDone(step Step) bool {
+	for idx := range step.Index {
+		if !model.Steps[idx].doneSoFar() {
+			return false
+		}
+	}
+	return true
+}
+
+// Have we consumed all work that is ever going to be produced?
+func (step Step) IsAllWorkDone(model Model) bool {
+	return step.doneSoFar() && model.allPriorStepsFullyDone(step)
 }
 
 // No live workers, some dead workers, and all dead workers have kill
@@ -94,7 +108,7 @@ func (step Step) AreAllWorkersQuiesced() bool {
 
 // Has some output been produced?
 func (step Step) hasSomeOutputBeenProduced() bool {
-	return len(step.SuccessfulTasks)+len(step.FailedTasks) > 0
+	return step.nFinishedTasks() > 0
 }
 
 func (step Step) IsAllOutputConsumed() bool {

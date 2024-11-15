@@ -27,6 +27,9 @@ func Last() *cobra.Command {
 
 	options.AddTargetOptionsTo(cmd, &opts)
 
+	var step int
+	cmd.Flags().IntVar(&step, "step", step, "Which step are we part of")
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		marker := args[0]
 		extra := ""
@@ -40,7 +43,7 @@ func Last() *cobra.Command {
 			return err
 		}
 
-		val, err := qstat.Qlast(ctx, marker, extra, backend, qstat.QlastOptions{})
+		val, err := qstat.Qlast(ctx, marker, extra, backend, qstat.QlastOptions{Step: step})
 		if err != nil {
 			return err
 		}

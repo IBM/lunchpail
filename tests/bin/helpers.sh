@@ -45,7 +45,7 @@ function waitForIt {
     local dashc_workers="-c workers"
 
     # don't track dispatcher logs if we are dispatching via the command line
-    if [[ -n "$up_args" ]]
+    if [[ -n "$up_args" ]] || [[ -n "$inputapp" ]]
     then dashc_dispatcher=""
     fi
 
@@ -90,21 +90,26 @@ function waitForIt {
     if [[ "$api" != "workqueue" ]] || [[ ${NUM_DESIRED_OUTPUTS:-1} = 0 ]]
     then echo "✅ PASS run api=$api test=$name"
     else
+        step=0
+        if [[ -n "$inputapp" ]]
+        then step=1
+        fi
+        
         while true
         do
             echo "$(tput setaf 2)🧪 Checking output files test=$name run=$run_name namespace=$ns num_desired_outputs=${NUM_DESIRED_OUTPUTS:-1}$(tput sgr0)" 1>&2
-            nOutputs=$($testapp queue ls --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode | wc -l | xargs)
+            nOutputs=$($testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode | wc -l | xargs)
 
             if [[ $nOutputs -ge ${NUM_DESIRED_OUTPUTS:-1} ]]
             then break
             fi
 
             echo "$(tput setaf 2)🧪 Still waiting test=$name for expectedNumOutputs=${NUM_DESIRED_OUTPUTS:-1} actualNumOutputs=$nOutputs$(tput sgr0)"
-            echo "Current output files: $($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)"
+            echo "Current output files: $($testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)"
             sleep 1
         done
             echo "✅ PASS run api=$api test=$name nOutputs=$nOutputs"
-            outputs=$($testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)
+            outputs=$($testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)
             echo "Outputs: $outputs"
             for output in $outputs
             do
@@ -114,17 +119,17 @@ function waitForIt {
                 if [ -n "$expectTaskFailure" ]
                 then ofile="failed"
                 fi
-                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} $ofile | grep -Fq "$(basename $output)"
+                while ! $testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} $ofile | grep -Fq "$(basename $output)"
                 do echo "Still waiting for $ofile test=$name output=$(basename $output)" && sleep 1
                 done
                 echo "✅ PASS got expected $ofile file test=$name output=$(basename $output)"
 
-                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stdout | grep -Fq "$(basename $output)"
+                while ! $testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} stdout | grep -Fq "$(basename $output)"
                 do echo "Still waiting for stdout test=$name output=$output" && sleep 1
                 done
                 echo "✅ PASS got stdout file test=$name output=$output"
 
-                while ! $testapp queue ls --target ${LUNCHPAIL_TARGET:-kubernetes} stderr | grep -Fq "$(basename $output)"
+                while ! $testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} stderr | grep -Fq "$(basename $output)"
                 do echo "Still waiting for stderr test=$name output=$output" && sleep 1
                 done
                 echo "✅ PASS got stderr file test=$name output=$output"
@@ -149,13 +154,10 @@ function waitForEveryoneToDie {
         # workstealer should not auto-self-destruct since we have not drained the output
         waitForNInstances 1 $run_name workstealer
 
-        # drain the output
-        $testapp queue drain --target ${LUNCHPAIL_TARGET:-kubernetes} --run $run_name
-
         # now the workstealer should self-destruct
-        waitForNInstances 0 $run_name workstealer
+        waitForNInstances 0 $run_name workstealer drain
     else
-        waitForNInstances 0 $run_name workstealer
+        waitForNInstances 0 $run_name workstealer drain
     fi
 
     waitForNInstances 0 $run_name minio
@@ -165,9 +167,23 @@ function waitForNInstances {
     local N=$1
     local run_name=$2
     local component=$3
+    local drain=$4
     echo "Checking that N=$N $component are running for run=$run_name"
     while true
     do
+        if [[ -n "$drain" ]]
+        then
+            # drain the output
+            step=0
+            if [[ -n "$inputapp" ]]
+            then step=1
+            fi
+            echo "Draining outbox"
+            set +e
+            env LUNCHPAIL_WAIT=false $testapp queue drain --target ${LUNCHPAIL_TARGET:-kubernetes} --run $run_name --step $step
+            set -e
+        fi
+
         nRunning=$($testapp status instances --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} --component $component -n $ns)
         if [[ $nRunning == $N ]]
         then echo "✅ PASS test=$name n=$N $component remain running" && break
@@ -190,13 +206,18 @@ function waitForUnassignedAndOutbox {
 
     if ! [[ $expectedUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: expectedUnassignedTasks not a number: '$expectedUnassignedTasks'"; fi
     if ! [[ $expectedNumInOutbox =~ ^[0-9]+$ ]]; then echo "error: expectedNumInOutbox not a number: '$expectedNumInOutbox'"; fi
+
+    step=0
+    if [[ -n "$inputapp" ]]
+    then step=1
+    fi
     
     runNum=1
     while true
     do
         echo
         echo "Run #${runNum}: here's expected unassigned tasks=${expectedUnassignedTasks}"
-        actualUnassignedTasks=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} unassigned)
+        actualUnassignedTasks=$($testapp queue last --step $step --target ${LUNCHPAIL_TARGET:-kubernetes} unassigned)
 
         if ! [[ $actualUnassignedTasks =~ ^[0-9]+$ ]]; then echo "error: actualUnassignedTasks not a number: '$actualUnassignedTasks'"; fi
 
@@ -217,8 +238,8 @@ function waitForUnassignedAndOutbox {
     do
         echo
         echo "Run #${runIter}: here's the expected num in Outboxes=${expectedNumInOutbox}"
-        numQueues=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} workers)
-        actualNumInOutbox=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} success)
+        numQueues=$($testapp queue last --step $step --target ${LUNCHPAIL_TARGET:-kubernetes} workers)
+        actualNumInOutbox=$($testapp queue last --step $step --target ${LUNCHPAIL_TARGET:-kubernetes} success)
 
         if [[ -z "$waitForMix" ]]
         then
@@ -229,7 +250,7 @@ function waitForUnassignedAndOutbox {
             # Wait for a mix of values (multi-pool tests). The "mix" is
             # one per worker, and we want the total to be what we
             # expect, and that each worker contributes at least one
-            gotMix=$($testapp queue last --target ${LUNCHPAIL_TARGET:-kubernetes} worker.success)
+            gotMix=$($testapp queue last --step $step --target ${LUNCHPAIL_TARGET:-kubernetes} worker.success)
             gotMixFrom=0
             gotMixTotal=0
             for actual in $gotMix

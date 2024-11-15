@@ -43,6 +43,9 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", watchFlag, "After deployment, watch for status updates")
 	cmd.Flags().BoolVarP(&createCluster, "create-cluster", "I", false, "Create a new (local) Kubernetes cluster, if needed")
 
+	var noRedirect bool
+	cmd.Flags().BoolVar(&noRedirect, "no-redirect", false, "Never download output to client")
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		overrideValues, err := cmd.Flags().GetStringSlice("set")
 		if err != nil {
@@ -65,7 +68,7 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args, Executable: os.Args[0]})
+		return boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args, Executable: os.Args[0], NoRedirect: noRedirect})
 	}
 
 	return cmd

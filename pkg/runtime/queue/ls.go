@@ -35,6 +35,8 @@ func Ls(ctx context.Context, backend be.Backend, run queue.RunContext, path stri
 		prefix = wildcard.AsFile(queue.FinishedWithFailed)
 	case "blobs":
 		prefix = wildcard.AsFile(queue.Blobs)
+	case "meta":
+		prefix = wildcard.AsFile(queue.Meta)
 	default:
 		prefix = wildcard.ListenPrefixForAnyStep(true)
 	}

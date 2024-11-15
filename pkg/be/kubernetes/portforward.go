@@ -26,7 +26,7 @@ func retryOnError(ctx context.Context, err error) bool {
 	default:
 	}
 
-	if strings.Contains(err.Error(), "connection refused") {
+	if os.Getenv("LUNCHPAIL_WAIT") != "false" && strings.Contains(err.Error(), "connection refused") {
 		time.Sleep(2 * time.Second)
 		return true
 	}
@@ -40,8 +40,10 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 		return func() {}, err
 	}
 
-	if err := waitForPodRunning(ctx, c, backend.namespace, podName, 30*time.Second); err != nil {
-		return func() {}, err
+	if os.Getenv("LUNCHPAIL_WAIT") != "false" {
+		if err := waitForPodRunning(ctx, c, backend.namespace, podName, 30*time.Second); err != nil {
+			return func() {}, err
+		}
 	}
 
 	// stopCh control the port forwarding lifecycle. When it gets closed the
@@ -49,6 +51,8 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 	stopCh := make(chan struct{}, 1)
 	// readyCh communicate when the port forward is ready to get traffic
 	readyCh := make(chan struct{})
+	// errorCh to communicate port forwarding errors
+	errorCh := make(chan error)
 
 	// we will set this below when a successfully launched
 	// portforwarder exits normally
@@ -78,6 +82,7 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 		for !done {
 			select {
 			case <-ctx.Done():
+				readyCh <- struct{}{}
 				return nil
 			default:
 			}
@@ -89,6 +94,7 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 			transport, upgrader, err := spdy.RoundTripperFor(restConfig)
 			if err != nil {
 				if !retryOnError(ctx, err) {
+					errorCh <- err
 					return err
 				}
 				continue
@@ -106,6 +112,7 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 			fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", localPort, podPort)}, stopCh, readyCh, stdout, stderr)
 			if err != nil {
 				if !retryOnError(ctx, err) {
+					errorCh <- err
 					return err
 				}
 				continue
@@ -113,6 +120,7 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 
 			if err := fw.ForwardPorts(); err != nil {
 				if !retryOnError(ctx, err) {
+					errorCh <- err
 					return err
 				}
 				continue
@@ -128,7 +136,12 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 	}()
 
 	// wait for it to be ready
-	<-readyCh
+	select {
+	case <-ctx.Done():
+	case <-readyCh:
+	case err := <-errorCh:
+		return nil, err
+	}
 
 	stop := func() {
 		// hmm... for kubernetes backends, this can result in a panic: close on closed channel

@@ -5,6 +5,7 @@ package runs
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/spf13/cobra"
 
@@ -56,6 +57,8 @@ func ui(runs []runs.Run, name, latest bool) error {
 	if len(runs) == 0 {
 		return nil
 	}
+
+	sort.Slice(runs, func(i, j int) bool { return runs[i].CreationTimestamp.After(runs[j].CreationTimestamp) })
 
 	if latest {
 		runs = runs[:1]

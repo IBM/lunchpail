@@ -28,6 +28,9 @@ func File() *cobra.Command {
 	runOpts := options.AddRunOptions(cmd)
 	logOpts := options.AddLogOptions(cmd)
 
+	var next bool
+	cmd.Flags().BoolVar(&next, "next", false, "Inject tasks into the next step")
+
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if !opts.Wait && ignoreWorkerErrors {
 			return fmt.Errorf("Invalid combination of options, not --wait and --ignore-worker-errors")
@@ -40,7 +43,11 @@ func File() *cobra.Command {
 			return err
 		}
 
-		exitcode, err := queue.Add(context.Background(), run, args[0], opts)
+		step := run.Step
+		if next {
+			step++
+		}
+		exitcode, err := queue.Add(context.Background(), run.ForStep(step), args[0], opts)
 
 		switch {
 		case err != nil:

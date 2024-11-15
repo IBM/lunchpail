@@ -167,3 +167,20 @@ func AddFromS3(ctx context.Context, run queue.RunContext, fullpath, endpoint, ac
 
 	return nil
 }
+
+func (c S3Client) AddValues(ctx context.Context, run queue.RunContext, values []string, opts build.LogOptions) (err error) {
+	err = c.Mkdirp(run.Bucket)
+	if err != nil {
+		return
+	}
+
+	inbox := run.AsFile(queue.Unassigned)
+	for i, value := range values {
+		err = c.Mark(run.Bucket, filepath.Join(inbox, fmt.Sprintf("task.%d.txt", i)), value)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}

@@ -5,3 +5,5 @@ api=workqueue
 
 expected=("Processing 6 task.1.txt" "Processing 6 task.3.txt" "Processing 6 task.5.txt" "Processing 6 task.2.txt" "Processing 6 task.4.txt" "Processing 6 task.6.txt")
 NUM_DESIRED_OUTPUTS=6
+
+inputapp='$testapp sweep 1 10 1 --interval 1'

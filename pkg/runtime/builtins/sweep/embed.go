@@ -1,4 +1,4 @@
-package parametersweep
+package sweep
 
 import (
 	_ "embed"

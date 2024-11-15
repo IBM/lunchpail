@@ -106,12 +106,7 @@ func PrepareHLIRForRun(ir hlir.HLIR, ctx llir.Context, popts PrepareOptions, opt
 	}
 
 	if popts.NoDispatchers {
-		if ir.HasDispatchers() {
-			if opts.Log.Verbose {
-				fmt.Fprintln(os.Stderr, "Removing application-provided dispatchers in favor of command line inputs")
-			}
-			ir = ir.RemoveDispatchers()
-		}
+		ir = ir.RemoveDispatchers()
 	}
 
 	// Finally we can transform the HLIR to the low-level
