@@ -3,10 +3,9 @@ package hlir
 import "slices"
 
 type HLIR struct {
-	Applications     []Application
-	ProcessS3Objects []ProcessS3Objects
-	WorkerPools      []WorkerPool
-	Others           []UnknownResource
+	Applications []Application
+	WorkerPools  []WorkerPool
+	Others       []UnknownResource
 }
 
 func (model HLIR) GetApplicationByRole(role Role) (Application, bool) {
@@ -16,10 +15,4 @@ func (model HLIR) GetApplicationByRole(role Role) (Application, bool) {
 	}
 
 	return model.Applications[idx], true
-}
-
-func (ir HLIR) RemoveDispatchers() HLIR {
-	ir.ProcessS3Objects = []ProcessS3Objects{}
-
-	return ir
 }

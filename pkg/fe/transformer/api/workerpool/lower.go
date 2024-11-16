@@ -14,6 +14,11 @@ import (
 func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.WorkerPool, opts build.Options) (llir.Component, error) {
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
+	// maybe at some point... we would need to update at least be/local.watchForWorkerPools also to watch for dispatchers?
+	//	if app.Spec.IsDispatcher {
+	//		spec.Component = lunchpail.DispatcherComponent
+	//	}
+
 	poolName := pool.Metadata.Name
 	if ctx.Run.Step > 0 {
 		poolName = fmt.Sprintf("%s-%d", poolName, ctx.Run.Step)

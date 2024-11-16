@@ -47,15 +47,6 @@ func Parse(yamls string) (hlir.HLIR, error) {
 				model.Applications = append(model.Applications, application.WithDefaults(r))
 			}
 
-		case "ProcessS3Objects":
-			var r hlir.ProcessS3Objects
-			if err := yaml.Unmarshal(bytes, &r); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: skipping yaml with invalid ProcessS3Objects resource %v", err)
-				continue
-			} else {
-				model.ProcessS3Objects = append(model.ProcessS3Objects, r)
-			}
-
 		case "WorkerPool":
 			var r hlir.WorkerPool
 			if err := yaml.Unmarshal(bytes, &r); err != nil {

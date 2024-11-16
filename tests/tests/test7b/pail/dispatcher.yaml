@@ -1,9 +1,0 @@
-apiVersion: lunchpail.io/v1alpha1
-kind: ProcessS3Objects
-metadata:
-  name: test7b-workdispatcher
-spec:
-  rclone:
-    remoteName: rcloneremotetest # see preinit.sh
-  path: test7b/test7b
-  repeat: 2

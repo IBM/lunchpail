@@ -1,1 +1,0 @@
-../test7/preinit.sh
