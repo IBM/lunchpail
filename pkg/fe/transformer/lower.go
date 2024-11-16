@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api/dispatch"
 	"lunchpail.io/pkg/fe/transformer/api/minio"
 	"lunchpail.io/pkg/fe/transformer/api/workerpool"
 	"lunchpail.io/pkg/ir/hlir"
@@ -28,11 +27,6 @@ func Lower(buildName string, model hlir.HLIR, ctx llir.Context, opts build.Optio
 		return llir.LLIR{}, err
 	}
 
-	dispatchers, err := dispatch.Lower(buildName, ctx, model, opts)
-	if err != nil {
-		return llir.LLIR{}, err
-	}
-
 	pools, err := workerpool.LowerAll(buildName, ctx, model, opts)
 	if err != nil {
 		return llir.LLIR{}, err
@@ -44,7 +38,7 @@ func Lower(buildName string, model hlir.HLIR, ctx llir.Context, opts build.Optio
 	}
 	ir.AppProvidedKubernetesResources = appProvidedKubernetes
 
-	ir.Components = slices.Concat(ir.Components, apps, dispatchers, pools)
+	ir.Components = slices.Concat(ir.Components, apps, pools)
 
 	return ir, nil
 }

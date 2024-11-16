@@ -15,9 +15,7 @@ import (
 	"lunchpail.io/pkg/ir/queue"
 )
 
-type PrepareOptions struct {
-	NoDispatchers bool
-}
+type PrepareOptions struct{}
 
 // Return the low-level intermediate representation (LLIR) for a run
 // of this application. If runname is "", one will be generated.
@@ -103,10 +101,6 @@ func PrepareHLIRForRun(ir hlir.HLIR, ctx llir.Context, popts PrepareOptions, opt
 		r := ctx.Run
 		r.Bucket = ctx.Queue.Bucket
 		ctx.Run = r
-	}
-
-	if popts.NoDispatchers {
-		ir = ir.RemoveDispatchers()
 	}
 
 	// Finally we can transform the HLIR to the low-level

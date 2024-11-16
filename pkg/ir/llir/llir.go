@@ -27,10 +27,6 @@ type LLIR struct {
 
 func (ir LLIR) HasDispatcher() bool {
 	for _, c := range ir.Components {
-		if c.C() == lunchpail.DispatcherComponent {
-			return true
-		}
-
 		switch cc := c.(type) {
 		case ShellComponent:
 			if cc.Application.Spec.IsDispatcher {
