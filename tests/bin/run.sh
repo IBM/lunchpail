@@ -90,26 +90,8 @@ then
     then "$1"/preinit.sh
     fi
 
-    if [[ -n "$expectBuildFailure" ]]
-    then
-        set +e
-        out=$("$SCRIPTDIR"/up.sh $testname 2>&1)
-        if [[ $? = 0 ]]
-        then echo "Expected build failure, but build succeeded" 1>&2 && exit 1
-        else
-            echo "Got expected build failure"
-            for e in "${expected[@]}"; do
-                if [[ ! "$out" =~ $e ]]
-                then echo "Missing expected build failure output from out=$out" && exit 1
-                fi
-            done
-            echo "Got all expected build failure outputs"
-            exit 0
-        fi
-    else
-        "$SCRIPTDIR"/up.sh $testname &
-        # "$testapp" logs -c workstealer -t $LUNCHPAIL_TARGET -f &
-    fi
+    "$SCRIPTDIR"/up.sh $testname &
+    # "$testapp" logs -c workstealer -t $LUNCHPAIL_TARGET -f &
 
     if [[ -e "$1"/init.sh ]]; then
         TEST_NAME=$testname "$1"/init.sh $namespace

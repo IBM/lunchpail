@@ -1,8 +1,8 @@
 package hlir
 
-type Role string
+type role string
 
 const (
-	WorkerRole             Role = "worker"
-	DispatchViaDropBoxRole      = "dispatch-via-dropbox"
+	workerRole  role = "worker"
+	supportRole      = "support"
 )

@@ -5,8 +5,7 @@ import (
 )
 
 func Add1App() hlir.HLIR {
-	app := hlir.NewApplication("add1")
-	app.Spec.Role = "worker"
+	app := hlir.NewWorkerApplication("add1")
 	app.Spec.Command = "./main.sh"
 	app.Spec.Image = "docker.io/alpine:3"
 	app.Spec.Code = []hlir.Code{

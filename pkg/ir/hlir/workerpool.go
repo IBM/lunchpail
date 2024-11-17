@@ -11,11 +11,6 @@ type WorkerPool struct {
 			Count int
 			Size  TShirtSize
 		}
-		Target struct {
-			Kubernetes struct {
-				Context string
-			}
-		}
 	}
 }
 
