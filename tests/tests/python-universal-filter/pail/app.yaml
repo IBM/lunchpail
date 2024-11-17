@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: filter
 spec:
-  role: worker
   image: docker.io/python:3.12
   command: python3 ./main.py
   needs:

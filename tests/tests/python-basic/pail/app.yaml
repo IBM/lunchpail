@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: python-basic
 spec:
-  role: worker
   image: docker.io/python:3.12
   code:
     - name: main.py

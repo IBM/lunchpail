@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: {{ .Values.partOf | default "test7f-by-role-autorun-autodispatcher" }}
 spec:
-  role: worker
   code:
     - name: literal.sh
       source: |

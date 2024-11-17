@@ -3,7 +3,6 @@ kind: Application
 metadata:
   name: test7d
 spec:
-  role: worker
   code:
     - name: literal.sh
       source: |
