@@ -4,7 +4,6 @@ kind: Application
 metadata:
   name: test7h
 spec:
-  role: worker
   code:
     - name: literal.sh
       source: |
