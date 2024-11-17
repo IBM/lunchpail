@@ -12,7 +12,7 @@ import (
 func LowerAll(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.Component, error) {
 	components := []llir.Component{}
 
-	app, found := model.GetApplicationByRole(hlir.WorkerRole)
+	app, found := model.GetWorkerApplication()
 	if !found {
 		return components, fmt.Errorf("No Application with role Worker found")
 	}

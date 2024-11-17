@@ -24,14 +24,12 @@ func lowerApplications(buildName string, ctx llir.Context, model hlir.HLIR, opts
 	}
 
 	// Then, for every non-Worker, we lower it as a "shell"
-	for _, app := range model.Applications {
-		if app.Spec.Role != hlir.WorkerRole {
-			c, err := shell.Lower(buildName, ctx, app, opts)
-			if err != nil {
-				return nil, err
-			}
-			components = append(components, c)
+	for app := range model.SupportApplications() {
+		c, err := shell.Lower(buildName, ctx, app, opts)
+		if err != nil {
+			return nil, err
 		}
+		components = append(components, c)
 	}
 
 	return components, nil

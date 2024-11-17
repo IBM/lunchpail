@@ -16,15 +16,7 @@ import (
 )
 
 func Lower(buildName string, ctx llir.Context, app hlir.Application, opts build.Options) (llir.Component, error) {
-	var component lunchpail.Component
-	switch app.Spec.Role {
-	case "worker":
-		component = lunchpail.WorkersComponent
-	default:
-		component = lunchpail.DispatcherComponent
-	}
-
-	return LowerAsComponent(buildName, ctx, app, llir.ShellComponent{Component: component}, opts)
+	return LowerAsComponent(buildName, ctx, app, llir.ShellComponent{Component: lunchpail.WorkersComponent}, opts)
 }
 
 func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, component llir.ShellComponent, opts build.Options) (llir.Component, error) {

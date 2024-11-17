@@ -8,8 +8,7 @@ import (
 )
 
 func App(min, max, step, intervalSeconds int, wait bool, opts build.Options) hlir.HLIR {
-	app := hlir.NewApplication("sweep")
-	app.Spec.Role = "worker"
+	app := hlir.NewWorkerApplication("sweep")
 	app.Spec.IsDispatcher = true
 	app.Spec.Command = "./main.sh"
 	app.Spec.Image = "docker.io/alpine:3"

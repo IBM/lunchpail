@@ -29,8 +29,7 @@ func copyCommandIntoTemplate(appname, command, templatePath string, opts Options
 }
 
 func commandApp(command string, opts Options) hlir.HLIR {
-	app := hlir.NewApplication("command")
-	app.Spec.Role = "worker"
+	app := hlir.NewWorkerApplication("command")
 	app.Spec.Command = "./main.sh"
 	app.Spec.Code = []hlir.Code{
 		hlir.Code{Name: "main.sh", Source: fmt.Sprintf(`#!/bin/sh

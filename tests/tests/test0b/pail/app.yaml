@@ -1,8 +1,0 @@
-apiVersion: lunchpail.io/v1alpha1
-kind: Application
-metadata:
-  name: test0b
-spec:
-  image: ubuntu
-  repo: https://github.com/does/not/exist/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx # expect failure
-  command: python3 main.py
