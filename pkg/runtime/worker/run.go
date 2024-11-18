@@ -17,7 +17,7 @@ func printenv() {
 
 func Run(ctx context.Context, handler []string, opts Options) error {
 	if opts.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Worker starting up run=%s step=%d pool=%s worker=%s\n", opts.RunContext.RunName, opts.RunContext.Step, opts.RunContext.PoolName, opts.RunContext.WorkerName)
+		fmt.Fprintf(os.Stderr, "Worker starting up run=%s pack=%d step=%d pool=%s worker=%s\n", opts.RunContext.RunName, opts.Pack, opts.RunContext.Step, opts.RunContext.PoolName, opts.RunContext.WorkerName)
 		printenv()
 	}
 

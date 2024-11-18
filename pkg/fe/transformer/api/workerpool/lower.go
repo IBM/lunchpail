@@ -53,8 +53,9 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 	}
 
 	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop %s" EXIT
-$LUNCHPAIL_EXE component worker run --delay %d --calling-convention %v %s -- %s`,
+$LUNCHPAIL_EXE component worker run --pack %d --delay %d --calling-convention %v %s -- %s`,
 		queueArgs,
+		opts.Pack,
 		startupDelay,
 		callingConvention,
 		queueArgs,

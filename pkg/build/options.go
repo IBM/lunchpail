@@ -40,6 +40,9 @@ type Options struct {
 	ImageID                string   `yaml:"imageID,omitempty"`
 	CreateNamespace        bool     `yaml:"createNamespace,omitempty"`
 	Workers                int      `yaml:",omitempty"`
+
+	// Run k concurrent tasks; if k=0 and machine has N cores, then k=N
+	Pack int `yaml:",omitempty"`
 }
 
 //go:embed buildOptions.json
