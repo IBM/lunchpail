@@ -24,6 +24,7 @@ type taskProcessor struct {
 	handler           []string
 	localdir          string
 	opts              Options
+	lockfile          string
 	backgroundS3Tasks *errgroup.Group
 }
 
@@ -93,6 +94,11 @@ func (p taskProcessor) process(task string) error {
 				return p.client.Rm(taskContext.Bucket, inprogress)
 			})
 		}()
+		handlerArgs = append(handlerArgs, "")
+		handlerArgs = append(handlerArgs, "")
+		handlerArgs = append(handlerArgs, "")
+		handlerArgs = append(handlerArgs, p.lockfile) // argv[4] is the lockfile
+
 	default:
 		// TODO: support multiple outputs from the handler. #398
 		localoutbox := filepath.Join(p.localdir, "outbox")
@@ -104,6 +110,7 @@ func (p taskProcessor) process(task string) error {
 		handlerArgs = append(handlerArgs, localprocessing)                                            // argv[1] is input filepath
 		handlerArgs = append(handlerArgs, filepath.Join(localoutbox, filepath.Base(localprocessing))) // argv[2] is suggested output filepath
 		handlerArgs = append(handlerArgs, localoutbox)                                                // argv[3] is output directory if the handler wants to choose its own file names or output multiple files
+		handlerArgs = append(handlerArgs, p.lockfile)                                                 // argv[4] is the lockfile
 		// Note: we will RemoveAll(localoutbox) in handleOutbox
 
 		defer func() { p.handleOutbox(taskContext, inprogress, localoutbox, doneMovingToProcessing) }()

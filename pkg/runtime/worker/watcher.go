@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -22,6 +23,13 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 		}()
 	}
 
+	// In case workers need to coordinate, we offer them a lock file that they can fcntl.Lock
+	lockfile, err := ioutil.TempFile("", "lunchpail-lock")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(lockfile.Name())
+
 	if err := client.Mkdirp(opts.RunContext.Bucket); err != nil {
 		return err
 	}
@@ -30,8 +38,7 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 	if opts.LogOptions.Debug {
 		fmt.Fprintf(os.Stderr, "Touching alive file bucket=%s path=%s\n", opts.RunContext.Bucket, alive)
 	}
-	err := client.Touch(opts.RunContext.Bucket, alive)
-	if err != nil {
+	if err := client.Touch(opts.RunContext.Bucket, alive); err != nil {
 		return err
 	}
 
@@ -73,7 +80,7 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 	}
 
 	backgroundS3Tasks, _ := errgroup.WithContext(ctx)
-	p := taskProcessor{ctx, client, handler, localdir, opts, backgroundS3Tasks}
+	p := taskProcessor{ctx, client, handler, localdir, opts, lockfile.Name(), backgroundS3Tasks}
 
 	sleepNextTime := false
 	tasks, errs := client.Listen(opts.RunContext.Bucket, inboxPrefix, "", false)
