@@ -27,12 +27,17 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 	done := false
 
 	downloadNow := func(object string) {
-		dstFolder := folderFor(filepath.Base(object))
-
-		ext := filepath.Ext(object)
-		withoutExt := object[0 : len(object)-len(ext)]
-		dst := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".output"+ext)
 		group.Go(func() error {
+			dstFolder := folderFor(filepath.Base(object))
+			dst := filepath.Join(dstFolder, filepath.Base(object))
+			if _, err := os.Stat(dst); err == nil {
+				// Then a file with this name already exists. Refuse to overwrite (TODO: allow user to specify they want us to overwrite input files?)
+				ext := filepath.Ext(object)
+				withoutExt := object[0 : len(object)-len(ext)]
+				dst2 := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".output"+ext)
+				fmt.Fprintf(os.Stderr, "Refusing to overwrite existing file %s. Using %s instead.", dst, dst2)
+				dst = dst2
+			}
 			if opts.Verbose {
 				fmt.Fprintf(os.Stderr, "Downloading output %s to %s\n", object, dst)
 			}

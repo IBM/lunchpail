@@ -25,4 +25,4 @@ function validate {
     rm -f "$actual"
 }
 
-validate task.1.output.txt "$DATA"/expected/test1.parquet.gz
+validate task.1.txt "$DATA"/expected/test1.parquet.gz

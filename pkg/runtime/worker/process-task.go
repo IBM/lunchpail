@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -39,18 +39,9 @@ func (p taskProcessor) process(task string) error {
 	in := taskContext.AsFile(queue.AssignedAndPending)
 	inprogress := taskContext.AsFile(queue.AssignedAndProcessing)
 
-	// TODO: support multiple outputs from the handler. #398
-	localoutbox := filepath.Join(p.localdir, "outbox", task)
-	err := os.MkdirAll(filepath.Dir(localoutbox), os.ModePerm)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Internal Error creating local outbox:", err)
-		return nil
-	}
-
 	// Download task
 	localprocessing := filepath.Join(p.localdir, task)
-	err = p.client.Download(taskContext.Bucket, in, localprocessing)
-	if err != nil {
+	if err := p.client.Download(taskContext.Bucket, in, localprocessing); err != nil {
 		if !strings.Contains(err.Error(), "key does not exist") {
 			// we ignore "key does not exist" errors, as these result from the work
 			// we thought we were assigned having been stolen by the workstealer
@@ -82,16 +73,15 @@ func (p taskProcessor) process(task string) error {
 	defer stderrWriter.Close()
 
 	// Here is where we invoke the underlying task handler
-	handlercmd := exec.CommandContext(p.ctx, p.handler[0], slices.Concat(p.handler[1:], []string{localprocessing, localoutbox})...)
-	handlercmd.Stderr = io.MultiWriter(os.Stderr, stderrWriter)
-	handlercmd.Stdout = io.MultiWriter(os.Stdout, stdoutWriter)
+	var stdin io.Reader
+	handlerArgs := p.handler[1:]
 	switch p.opts.CallingConvention {
 	case "stdio":
-		if stdin, err := os.Open(localprocessing); err != nil {
+		var err error
+		stdin, err = os.Open(localprocessing)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Internal Error setting up stdin: %v\n", err)
 			return nil
-		} else {
-			handlercmd.Stdin = stdin
 		}
 		p.backgroundS3Tasks.Go(func() error {
 			defer stdoutReader.Close()
@@ -104,10 +94,26 @@ func (p taskProcessor) process(task string) error {
 			})
 		}()
 	default:
+		// TODO: support multiple outputs from the handler. #398
+		localoutbox := filepath.Join(p.localdir, "outbox")
+		err := os.MkdirAll(localoutbox, os.ModePerm)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Internal Error creating local outbox:", err)
+			return nil
+		}
+		handlerArgs = append(handlerArgs, localprocessing)                                            // argv[1] is input filepath
+		handlerArgs = append(handlerArgs, filepath.Join(localoutbox, filepath.Base(localprocessing))) // argv[2] is suggested output filepath
+		handlerArgs = append(handlerArgs, localoutbox)                                                // argv[3] is output directory if the handler wants to choose its own file names or output multiple files
+		// Note: we will RemoveAll(localoutbox) in handleOutbox
+
 		defer func() { p.handleOutbox(taskContext, inprogress, localoutbox, doneMovingToProcessing) }()
 	}
-	err = handlercmd.Run()
-	if err != nil {
+
+	handlercmd := exec.CommandContext(p.ctx, p.handler[0], handlerArgs...)
+	handlercmd.Stdin = stdin
+	handlercmd.Stderr = io.MultiWriter(os.Stderr, stderrWriter)
+	handlercmd.Stdout = io.MultiWriter(os.Stdout, stdoutWriter)
+	if err := handlercmd.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "Handler launch failed:", err)
 	}
 
@@ -158,21 +164,37 @@ func (p taskProcessor) handleExitCode(taskContext queue.RunContext, exitCode int
 
 // Upload output from task processing
 func (p taskProcessor) handleOutbox(taskContext queue.RunContext, inprogress, localoutbox string, doneMovingToProcessing chan struct{}) {
-	out := taskContext.AsFile(queue.AssignedAndFinished)
+	outputFiles, err := os.ReadDir(localoutbox)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Listing output files", err)
+	}
 
-	if _, err := os.Stat(localoutbox); err == nil {
-		if p.opts.LogOptions.Verbose {
-			fmt.Fprintf(os.Stderr, "Uploading worker-produced outbox file %s->%s\n", localoutbox, out)
+	if len(outputFiles) > 0 {
+		var uploadCount atomic.Uint32
+		for _, outputFile := range outputFiles {
+			p.backgroundS3Tasks.Go(func() error {
+				defer func() {
+					uploadCount.Add(1)
+					if uploadCount.Load() == uint32(len(outputFiles)) {
+						// Then we have uploaded all files. Remove the local directory.
+						defer os.Remove(localoutbox)
+					}
+				}()
+
+				out := taskContext.ForTask(outputFile.Name()).AsFile(queue.AssignedAndFinished)
+				if p.opts.LogOptions.Verbose {
+					fmt.Fprintf(os.Stderr, "Uploading worker-produced outbox file %s->%s\n", outputFile.Name(), out)
+				}
+				return p.client.Upload(taskContext.Bucket, filepath.Join(localoutbox, outputFile.Name()), out)
+			})
 		}
-		p.backgroundS3Tasks.Go(func() error {
-			defer os.Remove(localoutbox)
-			return p.client.Upload(taskContext.Bucket, localoutbox, out)
-		})
 		p.backgroundS3Tasks.Go(func() error {
 			<-doneMovingToProcessing
 			return p.client.Rm(taskContext.Bucket, inprogress)
 		})
 	} else {
+		out := taskContext.AsFile(queue.AssignedAndFinished)
+
 		if p.opts.LogOptions.Verbose {
 			fmt.Fprintf(os.Stderr, "Moving input to outbox file %s->%s\n", inprogress, out)
 		}

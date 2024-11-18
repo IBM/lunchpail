@@ -16,6 +16,7 @@ require (
 	github.com/rclone/rclone v1.68.1
 	github.com/shirou/gopsutil/v4 v4.24.9
 	github.com/spf13/cobra v1.8.1
+	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/sync v0.8.0
 	golang.org/x/term v0.25.0
 	gopkg.in/yaml.v3 v3.0.1

@@ -12,5 +12,5 @@ __pycache__
 .cache
 
 # up copyout test leftovers
-task.*.output.txt
+task.*.txt
 tmp.output.*

@@ -11,9 +11,10 @@
 ################################################################################
 
 import sys
-from os import getenv
+from os import getenv, path
 import pyarrow.parquet as pq
 import hashlib
+from pathlib import Path
 
 import enum
 import time
@@ -174,7 +175,9 @@ except Exception as e:
     exit(1)
 print(f"Done Reading in parquet file {sys.argv[1]}")
 
-out, metadata = transform(table)
-print(f"Done with nfiles={metadata['nfiles']} nrows={metadata['nrows']}. Writing output to {sys.argv[2]}")
-pq.write_table(out[0], sys.argv[2])
-
+outs, metadata = transform(table)
+print(f"Done with nfiles={metadata['nfiles']} nrows={metadata['nrows']}. Writing output to directory {sys.argv[3]}")
+idx=0
+for out in outs:
+    pq.write_table(out, path.join(sys.argv[3], Path(sys.argv[1]).stem)+"_"+str(idx)+".parquet")
+    idx = idx + 1
