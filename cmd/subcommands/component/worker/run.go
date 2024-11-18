@@ -19,6 +19,9 @@ func Run() *cobra.Command {
 		Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	}
 
+	pack := 0
+	cmd.Flags().IntVar(&pack, "pack", pack, "Run k concurrent tasks; if k=0 and machine has N cores, then k=N")
+
 	var step int
 	cmd.Flags().IntVar(&step, "step", step, "Which step are we part of")
 	cmd.MarkFlagRequired("step")
@@ -51,6 +54,7 @@ func Run() *cobra.Command {
 		}
 
 		return worker.Run(context.Background(), args, worker.Options{
+			Pack:              pack,
 			CallingConvention: ccOpts.CallingConvention,
 			StartupDelay:      startupDelay,
 			PollingInterval:   pollingInterval,

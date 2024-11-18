@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -49,7 +50,12 @@ func startWatch(ctx context.Context, handler []string, client s3.S3Client, opts 
 	// i.e. concurrent processing of tasks in a single Lunchpail
 	// worker (see #25)
 	group, gctx := errgroup.WithContext(ctx)
-	group.SetLimit(1)
+	pack := opts.Pack
+	if pack == 0 {
+		// see cmd/main.go on how this will be responsive to cgroup limits
+		pack = runtime.GOMAXPROCS(0)
+	}
+	group.SetLimit(pack)
 
 	// Wait for a kill file and then cancel the watcher (that runs in the for{} loop below)
 	cancellable, cancel := context.WithCancel(gctx)

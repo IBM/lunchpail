@@ -37,6 +37,8 @@ func AddBuildOptions(cmd *cobra.Command) (*build.Options, error) {
 
 	cmd.Flags().StringToStringVarP(&options.Env, "env", "e", options.Env, "Set environment variables")
 
+	cmd.Flags().IntVar(&options.Pack, "pack", options.Pack, "Run k concurrent tasks; if k=0 and machine has N cores, then k=N")
+
 	AddTargetOptionsTo(cmd, &options)
 	AddLogOptionsTo(cmd, &options)
 	return &options, nil
