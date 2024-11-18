@@ -15,6 +15,7 @@ import os
 from os import getenv
 import pyarrow.parquet as pq
 import hashlib
+import fcntl
 
 import enum
 import io
@@ -127,9 +128,17 @@ pipeline_options = PipelineOptions(
     do_table_structure=do_table_structure,
     do_ocr=do_ocr,
 )
-_converter = DocumentConverter(
-    artifacts_path=artifacts_path, pipeline_options=pipeline_options
-)
+with open(sys.argv[4], "a") as file:
+    # Acquire exclusive lock on the file
+    fcntl.flock(file.fileno(), fcntl.LOCK_EX)
+
+    # re: the protecting lock see https://github.com/JaidedAI/EasyOCR/issues/1335
+    _converter = DocumentConverter(
+        artifacts_path=artifacts_path, pipeline_options=pipeline_options
+    )
+
+    # Release the lock
+    fcntl.flock(file.fileno(), fcntl.LOCK_UN)
 
 def _update_metrics(num_pages: int, elapse_time: float):
     # This is implemented in the ray version
