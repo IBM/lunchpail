@@ -25,5 +25,5 @@ function validate {
     rm -f "$actual"
 }
 
-validate task.1.output.txt "$DATA"/expected/lang=en/pq01.parquet.gz
-validate task.2.output.txt "$DATA"/expected/lang=en/pq02.parquet.gz
+validate task.1.txt "$DATA"/expected/lang=en/pq01.parquet.gz
+validate task.2.txt "$DATA"/expected/lang=en/pq02.parquet.gz

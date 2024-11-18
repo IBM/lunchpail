@@ -11,8 +11,9 @@
 ################################################################################
 
 import sys
-from os import getenv
+import os
 import pyarrow.parquet as pq
+from pathlib import Path
 
 from argparse import ArgumentParser, Namespace
 from typing import Any
@@ -57,9 +58,13 @@ Two flavours of splitting are supported - based on the amount of documents and b
 """
 Initialize based on the dictionary of configuration information.
 """
-max_rows_per_table = getenv(max_rows_per_table_key, 0)
-max_bytes_per_table = MB * getenv(max_mbytes_per_table_key, 0.05)
-disk_memory = getenv(size_type_key, size_type_default)
+max_rows_per_table = 0
+if max_rows_per_table_key in os.environ:
+    max_rows_per_table = int(os.getenv(max_rows_per_table_key, "0"))
+max_bytes_per_table = 0
+if max_mbytes_per_table_key in os.environ:
+    max_bytes_per_table = MB * float(os.getenv(max_mbytes_per_table_key, "0.05"))
+disk_memory = os.getenv(size_type_key, size_type_default)
 if size_type_default in disk_memory:
     max_bytes_per_table *= LOCAL_TO_DISK
 
@@ -152,7 +157,11 @@ except Exception as e:
     exit(1)
 print(f"Done Reading in parquet file {sys.argv[1]}")
 
-transform(table)
-out, metadata = flush()
-print(f"Done. Writing output to {sys.argv[2]}")
-pq.write_table(out[0], sys.argv[2])
+outs1, metadata = transform(table)
+outs2, metadata = flush()
+outs = outs1 + outs2
+print(f"Done. For input {os.path.basename(sys.argv[1])}, writing {len(outs)} output files to directory {sys.argv[3]}")
+idx=0
+for out in outs:
+    pq.write_table(out, os.path.join(sys.argv[3], Path(sys.argv[1]).stem)+"_"+str(idx)+".parquet")
+    idx = idx + 1

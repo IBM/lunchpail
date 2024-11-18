@@ -15,6 +15,7 @@ import sys
 from os import getenv
 from argparse import ArgumentParser, Namespace
 from typing import Any
+from pathlib import Path
 
 import pyarrow.parquet as pq
 import numpy as np
@@ -291,4 +292,4 @@ print(f"input table has {table.num_rows} rows and {table.num_columns} columns")
 table_list, metadata = transform(table, sys.argv[1])
 print(f"\noutput table has {table_list[0].num_rows} rows and {table_list[0].num_columns} columns")
 print(f"output metadata : {metadata}")
-pq.write_table(table_list[0], sys.argv[2])
+pq.write_table(table_list[0], os.path.join(sys.argv[3], Path(sys.argv[1]).stem)+".parquet")
