@@ -51,30 +51,8 @@ function waitForIt {
 
     echo "$(tput setaf 2)🧪 Checking job output app=$appname$(tput sgr0)" 1>&2
     for done in "${dones[@]}"; do
-        idx=0
         while true; do
-            if [[ -n $DEBUG ]] || (( $idx > 10 ))
-            then set -x
-            fi
             $testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns $dashc_workers $dashc_dispatcher | grep -E "$done" && break || echo "$(tput setaf 5)🧪 Still waiting for output $done test=$name...$(tput sgr0)"
-            if [[ -n $DEBUG ]] || (( $idx > 10 ))
-            then set +x
-            fi
-
-            if [[ -n $DEBUG ]] || (( $idx > 10 )); then
-                # if we can't find $done in the logs after a few
-                # iterations, start printing out raw logs to help with
-                # debugging
-                if (( $idx < 12 ))
-                then TAIL=1000
-                else TAIL=10
-                fi
-                ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns $dashc_workers --tail=$TAIL || exit 0)
-                if [[ -z "$up_args" ]]
-                then ($testapp logs --verbose=$LP_VERBOSE --target ${LUNCHPAIL_TARGET:-kubernetes} -n $ns $dashc_dispatcher --tail=$TAIL || exit 0)
-                fi
-            fi
-            idx=$((idx + 1))
             sleep 4
         done
     done
