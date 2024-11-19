@@ -129,6 +129,10 @@ func (streamer Streamer) utilizationUpdateFromPod(pod *v1.Pod, what watch.EventT
 	switch componentName {
 	case string(lunchpail.DispatcherComponent):
 		component = lunchpail.DispatcherComponent
+	case string(lunchpail.MinioComponent):
+		component = lunchpail.MinioComponent
+	case string(lunchpail.WorkStealerComponent):
+		component = lunchpail.WorkStealerComponent
 	case string(lunchpail.WorkersComponent):
 		component = lunchpail.WorkersComponent
 	}
