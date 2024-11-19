@@ -19,7 +19,7 @@ type Spec struct {
 	Description              string                   `yaml:"description,omitempty"`
 	SupportsGpu              bool                     `yaml:"supportsGpu,omitempty"`
 	Expose                   []string                 `yaml:"expose,omitempty"`
-	MinSize                  TShirtSize               `yaml:"minSize,omitempty"`
+	MinMemory                string                   `yaml:"minMemory,omitempty"`
 	Tags                     []string                 `yaml:"tags,omitempty"`
 	Command                  string                   `yaml:"command,omitempty"`
 	Image                    string                   `yaml:"image,omitempty"`

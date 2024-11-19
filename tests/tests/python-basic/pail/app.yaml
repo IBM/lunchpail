@@ -28,7 +28,6 @@ spec:
         print(f"Done with {os.path.basename(input)}")
 
   command: python3 ./main.py
-  minSize: auto
 
   datasets:
     - name: test

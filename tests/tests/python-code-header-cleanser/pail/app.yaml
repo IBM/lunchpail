@@ -5,7 +5,7 @@ metadata:
 spec:
   image: docker.io/python:3.12
   command: python3 ./main.py
-  minSize: sm
+  minSize: 4Gi
   needs:
     - name: python
       version: latest

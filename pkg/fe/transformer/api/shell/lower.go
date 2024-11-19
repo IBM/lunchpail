@@ -7,9 +7,10 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/dustin/go-humanize"
+
 	"lunchpail.io/pkg/build"
 	q "lunchpail.io/pkg/fe/linker/queue"
-	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
 	"lunchpail.io/pkg/lunchpail"
@@ -21,8 +22,12 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, opts build.
 
 func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, component llir.ShellComponent, opts build.Options) (llir.Component, error) {
 	component.Application = app
-	if component.Sizing.Workers == 0 {
-		component.Sizing = api.ApplicationSizing(app, opts)
+	if app.Spec.MinMemory != "" {
+		appBytes, err := humanize.ParseBytes(app.Spec.MinMemory)
+		if err != nil {
+			return component, err
+		}
+		component.MinMemoryBytes = max(component.MinMemoryBytes, appBytes)
 	}
 	if component.InstanceName == "" {
 		component.InstanceName = ctx.Run.RunName

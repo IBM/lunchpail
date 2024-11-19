@@ -8,8 +8,8 @@ type WorkerPool struct {
 		StartupDelay string `yaml:"startupDelay,omitempty"`
 		Env          Env    `yaml:"env,omitempty"`
 		Workers      struct {
-			Count int
-			Size  TShirtSize
+			Count     int
+			MinMemory string `yaml:"minMemory,omitempty"`
 		}
 	}
 }

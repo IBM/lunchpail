@@ -24,7 +24,6 @@ spec:
         echo "Done with $(basename $in)"
 
   command: ./main.sh
-  minSize: auto
   securityContext:
     runAsUser: 2000 # lunchpail, same as is specified Dockerfile
     runAsGroup: 0 # root, ibid

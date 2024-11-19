@@ -26,7 +26,6 @@ spec:
         echo "Done with $(basename $in)"
 
   command: ./main.sh
-  minSize: auto
 
   datasets:
     - name: test
