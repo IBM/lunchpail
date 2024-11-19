@@ -20,7 +20,9 @@ func isCompatibleImage(image string) bool {
 func IsCompatible(c llir.ShellComponent) error {
 	switch {
 	case c.Application.Spec.Image != "" && !isCompatibleImage(c.Application.Spec.Image):
-		return fmt.Errorf("Unable to target the local backend because a component '%s' needs to run in a container: %s", c.C(), c.Application.Spec.Image)
+		if slices.IndexFunc(c.Application.Spec.Needs, func(need hlir.Needs) bool { return need.Requirements != "" }) < 0 {
+			return fmt.Errorf("Unable to target the local backend because a component '%s' needs to run in a container: %s", c.C(), c.Application.Spec.Image)
+		}
 
 	case c.Application.Spec.SecurityContext.RunAsUser != 0 ||
 		c.Application.Spec.SecurityContext.RunAsGroup != 0 ||

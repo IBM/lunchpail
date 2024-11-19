@@ -5,6 +5,9 @@ metadata:
 spec:
   image: docker.io/python:3.12
   command: python3 ./main.py
+  minSize: sm
+  env:
+    USE_NNPACK: '0' # otherwise torch fails with "Could not initialize NNPACK! Reason: Unsupported hardware" on ARM (lack of AVX instructions)
   needs:
     - name: python
       version: latest
