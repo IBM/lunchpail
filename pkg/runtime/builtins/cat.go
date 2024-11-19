@@ -47,6 +47,5 @@ mv $1 $2`},
 
 	return hlir.HLIR{
 		Applications: []hlir.Application{app},
-		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("p1", 1)},
 	}
 }
