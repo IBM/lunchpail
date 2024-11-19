@@ -20,8 +20,11 @@ type ShellComponent struct {
 	// Identifies the group this component is part of, e.g. the original name of the workerpool (i.e. without run id, component, ...)
 	GroupName string
 
+	// Initial number of workers to use
+	InitialWorkers int
+
 	// Sizing of this instance
-	Sizing RunSizeConfig
+	MinMemoryBytes uint64
 }
 
 // part of llir.Component interface
@@ -31,11 +34,11 @@ func (c ShellComponent) C() lunchpail.Component {
 
 // part of llir.Component interface
 func (c ShellComponent) Workers() int {
-	return c.Sizing.Workers
+	return c.InitialWorkers
 }
 
 func (c ShellComponent) SetWorkers(w int) Component {
-	c.Sizing.Workers = w
+	c.InitialWorkers = w
 	return c // FIXME
 }
 

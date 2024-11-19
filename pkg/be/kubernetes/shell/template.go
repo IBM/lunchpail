@@ -71,10 +71,9 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"command=" + updateTestQueueEndpoint(c.Application.Spec.Command, ir.Queue()),
 		fmt.Sprintf("lunchpail.runAsJob=%v", c.RunAsJob),
 		"lunchpail.terminationGracePeriodSeconds=" + strconv.Itoa(terminationGracePeriodSeconds),
-		"workers.count=" + strconv.Itoa(c.Sizing.Workers),
-		"workers.cpu=" + c.Sizing.Cpu,
-		"workers.memory=" + c.Sizing.Memory,
-		"workers.gpu=" + strconv.Itoa(c.Sizing.Gpu),
+		"workers.count=" + strconv.Itoa(c.InitialWorkers),
+		"workers.cpu=auto",
+		// "workers.gpu=" + strconv.Itoa(c.Sizing.Gpu),
 		"securityContext=" + securityContext,
 		"containerSecurityContext=" + containerSecurityContext,
 		"taskqueue.bucket=" + ir.Queue().Bucket,
@@ -86,6 +85,12 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 		"workdir.cm.data=" + workdirCmData,
 		"workdir.cm.mount_path=" + workdirCmMountPath,
 		"workdir.cm.blob_path=" + blobCmMountPath,
+	}
+
+	if c.MinMemoryBytes > 0 {
+		myValues = append(myValues, "workers.memory="+strconv.FormatUint(c.MinMemoryBytes, 10))
+	} else {
+		myValues = append(myValues, "workers.memory=auto")
 	}
 
 	if len(secrets) > 0 {

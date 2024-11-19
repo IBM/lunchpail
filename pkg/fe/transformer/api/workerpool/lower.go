@@ -3,8 +3,9 @@ package workerpool
 import (
 	"fmt"
 
+	"github.com/dustin/go-humanize"
+
 	"lunchpail.io/pkg/build"
-	"lunchpail.io/pkg/fe/transformer/api"
 	"lunchpail.io/pkg/fe/transformer/api/shell"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/llir"
@@ -25,7 +26,21 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 	}
 
 	spec.RunAsJob = true
-	spec.Sizing = api.WorkerpoolSizing(pool, app, opts)
+
+	if pool.Spec.Workers.MinMemory != "" {
+		if bytes, err := humanize.ParseBytes(pool.Spec.Workers.MinMemory); err != nil {
+			return spec, err
+		} else {
+			spec.MinMemoryBytes = bytes
+		}
+	}
+
+	if pool.Spec.Workers.Count != 0 {
+		spec.InitialWorkers = pool.Spec.Workers.Count
+	} else {
+		spec.InitialWorkers = 1
+	}
+
 	spec.GroupName = poolName
 	spec.InstanceName = fmt.Sprintf("%s-%s", poolName, ctx.Run.RunName)
 
