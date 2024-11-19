@@ -45,6 +45,5 @@ func App(min, max, step, intervalSeconds int, wait bool, opts build.Options) hli
 
 	return hlir.HLIR{
 		Applications: []hlir.Application{app},
-		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("p1", 1)},
 	}
 }

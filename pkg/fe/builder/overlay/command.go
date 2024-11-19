@@ -22,8 +22,7 @@ func copyCommandIntoTemplate(appname, command, templatePath string, opts Options
 	}
 
 	app := commandApp(command, opts)
-
-	err = writeAppToTemplateDir(app, appdir(templatePath), opts.Verbose)
+	err = writeCommandAppToTemplateDir(app, appdir(templatePath), opts.Verbose)
 
 	return
 }
@@ -45,11 +44,10 @@ func commandApp(command string, opts Options) hlir.HLIR {
 
 	return hlir.HLIR{
 		Applications: []hlir.Application{app},
-		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("p1", opts.BuildOptions.Workers)},
 	}
 }
 
-func writeAppToTemplateDir(ir hlir.HLIR, dir string, verbose bool) error {
+func writeCommandAppToTemplateDir(ir hlir.HLIR, dir string, verbose bool) error {
 	appdir := filepath.Join(dir, "applications")
 	if err := os.MkdirAll(appdir, 0755); err != nil {
 		return err
@@ -61,21 +59,6 @@ func writeAppToTemplateDir(ir hlir.HLIR, dir string, verbose bool) error {
 		}
 
 		if err := os.WriteFile(filepath.Join(appdir, app.Metadata.Name+".yaml"), yaml, 0644); err != nil {
-			return err
-		}
-	}
-
-	pooldir := filepath.Join(dir, "workerpools")
-	if err := os.MkdirAll(pooldir, 0755); err != nil {
-		return err
-	}
-	for _, pool := range ir.WorkerPools {
-		yaml, err := yaml.Marshal(pool)
-		if err != nil {
-			return err
-		}
-
-		if err := os.WriteFile(filepath.Join(pooldir, pool.Metadata.Name+".yaml"), yaml, 0644); err != nil {
 			return err
 		}
 	}

@@ -17,6 +17,11 @@ func LowerAll(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Op
 		return components, fmt.Errorf("No Application with role Worker found")
 	}
 
+	if len(model.WorkerPools) == 0 && opts.Workers != -1 {
+		// Then add a workerpool
+		model.WorkerPools = append(model.WorkerPools, hlir.NewPool("p1", opts.Workers))
+	}
+
 	for _, pool := range model.WorkerPools {
 		if component, err := Lower(buildName, ctx, app, pool, opts); err != nil {
 			return components, err

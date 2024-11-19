@@ -15,6 +15,5 @@ printf '%d' $((1+$(cat $1))) > $2`},
 
 	return hlir.HLIR{
 		Applications: []hlir.Application{app},
-		WorkerPools:  []hlir.WorkerPool{hlir.NewPool("add1", 1)},
 	}
 }
