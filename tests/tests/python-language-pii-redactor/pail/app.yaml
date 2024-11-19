@@ -3,7 +3,7 @@ kind: Application
 metadata:
   name: pii_redactor
 spec:
-  image: docker.io/python:3.10
+  image: docker.io/python:3.12
   command: python3 ./main.py
   minSize: md
   needs:
