@@ -26,48 +26,46 @@ import zipfile
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import filetype
 import pandas as pd
 import pyarrow as pa
-from docling.datamodel.base_models import DocumentStream
-from docling.datamodel.document import ConvertedDocument, DocumentConversionInput
-from docling.document_converter import DocumentConverter
-from docling.pipeline.standard_model_pipeline import PipelineOptions
+import numpy as np
+#from data_processing.transform import AbstractBinaryTransform, TransformConfiguration
+#from data_processing.utils import TransformUtils, get_logger, str2bool
+#from data_processing.utils.cli_utils import CLIArgumentProvider
+#from data_processing.utils.multilock import MultiLock
+from docling.backend.docling_parse_backend import DoclingParseDocumentBackend
+from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
+from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend
+from docling.datamodel.base_models import DocumentStream, MimeTypeToFormat
+from docling.datamodel.pipeline_options import (
+    EasyOcrOptions,
+    OcrOptions,
+    PdfPipelineOptions,
+    TesseractCliOcrOptions,
+    TesseractOcrOptions,
+)
+from docling.document_converter import DocumentConverter, InputFormat, PdfFormatOption
+from docling.models.base_ocr_model import OcrOptions
 
+
+#logger = get_logger(__name__)
+# logger = get_logger(__name__, level="DEBUG")
 
 shortname = "pdf2parquet"
 cli_prefix = f"{shortname}_"
+pdf2parquet_batch_size_key = f"batch_size"
 pdf2parquet_artifacts_path_key = f"artifacts_path"
 pdf2parquet_contents_type_key = f"contents_type"
 pdf2parquet_do_table_structure_key = f"do_table_structure"
 pdf2parquet_do_ocr_key = f"do_ocr"
+pdf2parquet_ocr_engine_key = f"ocr_engine"
+pdf2parquet_bitmap_area_threshold_key = f"bitmap_area_threshold"
+pdf2parquet_pdf_backend_key = f"pdf_backend"
 pdf2parquet_double_precision_key = f"double_precision"
 
-
-class pdf2parquet_contents_types(str, enum.Enum):
-    MARKDOWN = "text/markdown"
-    JSON = "application/json"
-
-    def __str__(self):
-        return str(self.value)
-
-
-pdf2parquet_contents_type_default = pdf2parquet_contents_types.MARKDOWN
-pdf2parquet_do_table_structure_default = True
-pdf2parquet_do_ocr_default = True
-pdf2parquet_double_precision_default = 8
-
-pdf2parquet_artifacts_path_cli_param = f"{cli_prefix}{pdf2parquet_artifacts_path_key}"
-pdf2parquet_contents_type_cli_param = f"{cli_prefix}{pdf2parquet_contents_type_key}"
-pdf2parquet_do_table_structure_cli_param = (
-    f"{cli_prefix}{pdf2parquet_do_table_structure_key}"
-)
-pdf2parquet_do_ocr_cli_param = f"{cli_prefix}{pdf2parquet_do_ocr_key}"
-pdf2parquet_double_precision_cli_param = (
-    f"{cli_prefix}{pdf2parquet_double_precision_key}"
-)
 
 def get_file(path: str) -> tuple[bytes, int]:
     """
@@ -100,13 +98,68 @@ def str_to_hash(val: str) -> str:
     :return: hash value
     """
     return hashlib.sha256(val.encode("utf-8")).hexdigest()
-    
+
+class pdf2parquet_contents_types(str, enum.Enum):
+    MARKDOWN = "text/markdown"
+    TEXT = "text/plain"
+    JSON = "application/json"
+
+    def __str__(self):
+        return str(self.value)
+
+
+class pdf2parquet_pdf_backend(str, enum.Enum):
+    PYPDFIUM2 = "pypdfium2"
+    DLPARSE_V1 = "dlparse_v1"
+    DLPARSE_V2 = "dlparse_v2"
+
+    def __str__(self):
+        return str(self.value)
+
+
+class pdf2parquet_ocr_engine(str, enum.Enum):
+    EASYOCR = "easyocr"
+    TESSERACT_CLI = "tesseract_cli"
+    TESSERACT = "tesseract"
+
+    def __str__(self):
+        return str(self.value)
+
+
+pdf2parquet_batch_size_default = -1
+pdf2parquet_contents_type_default = pdf2parquet_contents_types.MARKDOWN
+pdf2parquet_do_table_structure_default = True
+pdf2parquet_do_ocr_default = True
+pdf2parquet_bitmap_area_threshold_default = 0.05
+pdf2parquet_ocr_engine_default = pdf2parquet_ocr_engine.EASYOCR
+pdf2parquet_pdf_backend_default = pdf2parquet_pdf_backend.DLPARSE_V2
+pdf2parquet_double_precision_default = 8
+
+pdf2parquet_batch_size_cli_param = f"{cli_prefix}{pdf2parquet_batch_size_key}"
+pdf2parquet_artifacts_path_cli_param = f"{cli_prefix}{pdf2parquet_artifacts_path_key}"
+pdf2parquet_contents_type_cli_param = f"{cli_prefix}{pdf2parquet_contents_type_key}"
+pdf2parquet_do_table_structure_cli_param = (
+    f"{cli_prefix}{pdf2parquet_do_table_structure_key}"
+)
+pdf2parquet_do_ocr_cli_param = f"{cli_prefix}{pdf2parquet_do_ocr_key}"
+pdf2parquet_bitmap_area_threshold__cli_param = (
+    f"{cli_prefix}{pdf2parquet_bitmap_area_threshold_key}"
+)
+pdf2parquet_ocr_engine_cli_param = f"{cli_prefix}{pdf2parquet_ocr_engine_key}"
+pdf2parquet_pdf_backend_cli_param = f"{cli_prefix}{pdf2parquet_pdf_backend_key}"
+pdf2parquet_double_precision_cli_param = (
+    f"{cli_prefix}{pdf2parquet_double_precision_key}"
+)
+
+
 """
 Initialize based on the dictionary of configuration information.
 This is generally called with configuration parsed from the CLI arguments defined
 by the companion runtime, LangSelectorTransformRuntime.  If running inside the RayMutatingDriver,
 these will be provided by that class with help from the RayMutatingDriver.
 """
+
+batch_size = getenv(pdf2parquet_batch_size_key, pdf2parquet_batch_size_default)
 artifacts_path = getenv(pdf2parquet_artifacts_path_key, None)
 if artifacts_path is not None:
     artifacts_path = Path(artifacts_path)
@@ -119,30 +172,72 @@ do_table_structure = getenv(
     pdf2parquet_do_table_structure_key, pdf2parquet_do_table_structure_default
 )
 do_ocr = getenv(pdf2parquet_do_ocr_key, pdf2parquet_do_ocr_default)
+ocr_engine_name = getenv(
+    pdf2parquet_ocr_engine_key, pdf2parquet_ocr_engine_default
+)
+if not isinstance(ocr_engine_name, pdf2parquet_ocr_engine):
+    ocr_engine_name = pdf2parquet_ocr_engine[ocr_engine_name]
+bitmap_area_threshold = getenv(
+    pdf2parquet_bitmap_area_threshold_key,
+    pdf2parquet_bitmap_area_threshold_default,
+)
+pdf_backend_name = getenv(
+    pdf2parquet_pdf_backend_key, pdf2parquet_pdf_backend_default
+)
+if not isinstance(pdf_backend_name, pdf2parquet_pdf_backend):
+    pdf_backend_name = pdf2parquet_pdf_backend[pdf_backend_name]
 double_precision = getenv(
     pdf2parquet_double_precision_key, pdf2parquet_double_precision_default
 )
 
-print("Initializing models", file=sys.stderr)
-pipeline_options = PipelineOptions(
+def _get_ocr_engine(engine_name: pdf2parquet_ocr_engine) -> OcrOptions:
+    if engine_name == pdf2parquet_ocr_engine.EASYOCR:
+        return EasyOcrOptions()
+    elif engine_name == pdf2parquet_ocr_engine.TESSERACT_CLI:
+        return TesseractCliOcrOptions()
+    elif engine_name == pdf2parquet_ocr_engine.TESSERACT:
+        return TesseractOcrOptions()
+
+    raise RuntimeError(f"Unknown OCR engine `{engine_name}`")
+
+def _get_pdf_backend(backend_name: pdf2parquet_pdf_backend):
+    if backend_name == pdf2parquet_pdf_backend.DLPARSE_V1:
+        return DoclingParseDocumentBackend
+    elif backend_name == pdf2parquet_pdf_backend.DLPARSE_V2:
+        return DoclingParseV2DocumentBackend
+    elif backend_name == pdf2parquet_pdf_backend.PYPDFIUM2:
+        return PyPdfiumDocumentBackend
+
+    raise RuntimeError(f"Unknown PDF backend `{backend_name}`")
+
+print("Initializing models")
+pipeline_options = PdfPipelineOptions(
+    artifacts_path=artifacts_path,
     do_table_structure=do_table_structure,
     do_ocr=do_ocr,
+    ocr_options=_get_ocr_engine(ocr_engine_name),
 )
+pipeline_options.ocr_options.bitmap_area_threshold = bitmap_area_threshold
+
 with open(sys.argv[4], "a") as file:
-    # Acquire exclusive lock on the file
-    fcntl.flock(file.fileno(), fcntl.LOCK_EX)
+    try:
+        # Acquire exclusive lock on the file
+        fcntl.flock(file.fileno(), fcntl.LOCK_EX)
 
-    # re: the protecting lock see https://github.com/JaidedAI/EasyOCR/issues/1335
-    _converter = DocumentConverter(
-        artifacts_path=artifacts_path, pipeline_options=pipeline_options
-    )
+        _converter = DocumentConverter(
+            format_options={
+                InputFormat.PDF: PdfFormatOption(
+                    pipeline_options=pipeline_options,
+                    backend=_get_pdf_backend(pdf_backend_name),
+                )
+            }
+        )
+        _converter.initialize_pipeline(InputFormat.PDF)
+    finally:
+        # Release the lock
+        fcntl.flock(file.fileno(), fcntl.LOCK_UN)
 
-    # Release the lock
-    fcntl.flock(file.fileno(), fcntl.LOCK_UN)
-
-def _update_metrics(num_pages: int, elapse_time: float):
-    # This is implemented in the ray version
-    pass
+buffer = []
 
 def _convert_pdf2parquet(
     doc_filename: str, ext: str, content_bytes: bytes
@@ -150,28 +245,26 @@ def _convert_pdf2parquet(
     # Convert PDF to Markdown
     start_time = time.time()
     buf = io.BytesIO(content_bytes)
-    input_docs = DocumentStream(filename=doc_filename, stream=buf)
-    input = DocumentConversionInput.from_streams([input_docs])
+    input_doc = DocumentStream(name=doc_filename, stream=buf)
 
-    converted_docs = _converter.convert(input)
-    doc: ConvertedDocument = next(converted_docs, None)
-    if doc is None or doc.output is None:
-        raise RuntimeError("Failed in converting.")
+    conv_res = _converter.convert(input_doc)
+    doc = conv_res.document
     elapse_time = time.time() - start_time
 
     if contents_type == pdf2parquet_contents_types.MARKDOWN:
-        content_string = doc.render_as_markdown()
+        content_string = doc.export_to_markdown()
+    elif contents_type == pdf2parquet_contents_types.TEXT:
+        content_string = doc.export_to_text()
     elif contents_type == pdf2parquet_contents_types.JSON:
         content_string = pd.io.json.ujson_dumps(
-            doc.render_as_dict(), double_precision=double_precision
+            doc.export_to_dict(), double_precision=double_precision
         )
     else:
         raise RuntimeError(f"Uknown contents_type {contents_type}.")
     num_pages = len(doc.pages)
-    num_tables = len(doc.output.tables) if doc.output.tables is not None else 0
-    num_doc_elements = len(doc.output.main_text) if doc.output.main_text is not None else 0
-
-    _update_metrics(num_pages=num_pages, elapse_time=elapse_time)
+    num_tables = len(doc.tables)
+    num_doc_elements = len(doc.texts)
+    document_hash = str(doc.origin.binary_hash)  # we turn the uint64 hash into str, because it is easier to handle for pyarrow
 
     file_data = {
         "filename": os.path.basename(doc_filename),
@@ -180,6 +273,7 @@ def _convert_pdf2parquet(
         "num_tables": num_tables,
         "num_doc_elements": num_doc_elements,
         # commented out for tests "document_id": str(uuid.uuid4()),
+        "document_hash": document_hash,
         "ext": ext,
         "hash": str_to_hash(content_string),
         "size": len(content_string),
@@ -199,18 +293,21 @@ def transform_binary(
     for each PDF file detected in the archive.
     """
 
-    data = []
+    global buffer
+    data = [*buffer]
     success_doc_id = []
     failed_doc_id = []
     skipped_doc_id = []
     number_of_rows = 0
 
     try:
+        # TODO: Docling has an inner-function with a stronger type checking.
+        # Once it is exposed as public, we can use it here as well.
         root_kind = filetype.guess(byte_array)
 
-        # Process single PDF documents
-        if root_kind is not None and root_kind.mime == "application/pdf":
-            print(f"Detected root file {file_name=} as PDF.", file=sys.stderr)
+        # Process single documents
+        if root_kind is not None and root_kind.mime in MimeTypeToFormat:
+            print(f"Detected root file {file_name=} as {root_kind.mime}.")
 
             try:
                 root_ext = root_kind.extension
@@ -228,16 +325,14 @@ def transform_binary(
 
             except Exception as e:
                 failed_doc_id.append(file_name)
-                print(
-                    f"Exception {str(e)} processing file {archive_doc_filename}, skipping",
-                    file=sys.stderr
+                logger.warning(
+                    f"Exception {str(e)} processing file {file_name}, skipping"
                 )
 
-        # Process ZIP archive of PDF documents
+        # Process ZIP archive of documents
         elif root_kind is not None and root_kind.mime == "application/zip":
             print(
-                f"Detected root file {file_name=} as ZIP. Iterating through the archive content.",
-                file=sys.stderr
+                f"Detected root file {file_name=} as ZIP. Iterating through the archive content."
             )
 
             with zipfile.ZipFile(io.BytesIO(byte_array)) as opened_zip:
@@ -245,7 +340,7 @@ def transform_binary(
 
                 for archive_doc_filename in zip_namelist:
 
-                    print("Processing " f"{archive_doc_filename=} ", file=sys.stderr)
+                    print("Processing " f"{archive_doc_filename=} ")
 
                     with opened_zip.open(archive_doc_filename) as file:
                         try:
@@ -254,10 +349,9 @@ def transform_binary(
 
                             # Detect file type
                             kind = filetype.guess(content_bytes)
-                            if kind is None or kind.mime != "application/pdf":
+                            if kind is None or kind.mime not in MimeTypeToFormat:
                                 print(
-                                    f"File {archive_doc_filename=} is not detected as PDF but {kind=}. Skipping.",
-                                    file=sys.stderr
+                                    f"File {archive_doc_filename=} is not detected as valid format {kind=}. Skipping."
                                 )
                                 skipped_doc_id.append(archive_doc_filename)
                                 continue
@@ -279,30 +373,64 @@ def transform_binary(
 
                         except Exception as e:
                             failed_doc_id.append(archive_doc_filename)
-                            print(
-                                f"Exception {str(e)} processing file {archive_doc_filename}, skipping",
-                                file=sys.stderr
+                            logger.warning(
+                                f"Exception {str(e)} processing file {archive_doc_filename}, skipping"
                             )
 
         else:
-            print(
-                f"File {file_name=} is not detected as PDF nor as ZIP but {kind=}. Skipping.",
-                file=sys.stderr
+            logger.warning(
+                f"File {file_name=} is not detected as a supported type nor as ZIP but {kind=}. Skipping."
             )
 
-        table = pa.Table.from_pylist(data)
+
         metadata = {
-            "nrows": len(table),
+            "nrows": number_of_rows,
             "nsuccess": len(success_doc_id),
             "nfail": len(failed_doc_id),
             "nskip": len(skipped_doc_id),
         }
-        return [table], metadata
+
+        batch_results = []
+        buffer = []
+        if batch_size <= 0:
+            # we do a single batch
+            table = pa.Table.from_pylist(data)
+            batch_results.append(table)
+        else:
+            # we create result files containing batch_size rows/documents
+            num_left = len(data)
+            start_row = 0
+            while num_left >= batch_size:
+                table = pa.Table.from_pylist(data[start_row:batch_size])
+                batch_results.append(table)
+
+                start_row += batch_size
+                num_left = num_left - batch_size
+
+            if num_left >= 0:
+                buffer = data[start_row:]
+
+        return batch_results, metadata
     except Exception as e:
-        print(f"Fatal error with file {file_name=}. No results produced.", file=sys.stderr)
+        logger.error(f"Fatal error with file {file_name=}. No results produced.")
         raise
 
+def flush_binary() -> tuple[list[tuple[bytes, str]], dict[str, Any]]:
+    global buffer
+    result = []
+    if len(buffer) > 0:
+        print(f"flushing buffered table with {len(buffer)} rows.")
+        table = pa.Table.from_pylist(buffer)
+        result.append(table)
+        buffer = None
+    else:
+        print(f"Empty buffer. nothing to flush.")
+    return result, {}
+
+
 byte_array, _ = get_file(sys.argv[1])
-out, metadata = transform_binary(sys.argv[1], byte_array)
+out1, metadata = transform_binary(sys.argv[1], byte_array)
+out2, metadata2 = flush_binary()
+out = out1 + out2
 print(f"Done with nrows={metadata['nrows']} nsuccess={metadata['nsuccess']} nfail={metadata['nfail']} nskip={metadata['nskip']}. Writing output to {sys.argv[2]}")
 pq.write_table(out[0], sys.argv[2])
