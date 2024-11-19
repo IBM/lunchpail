@@ -121,5 +121,7 @@ then
     then
         echo "Cleaning up Python venv $CACHEDIR"
         rm -rf "$CACHEDIR"
+
+        pip3 cache purge
     fi
 fi
