@@ -63,10 +63,15 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 		return "", err
 	}
 
+	noCache := ""
+	if os.Getenv("LUNCHPAIL_NO_CACHE") == "true" {
+		noCache = "--no-cache-dir"
+	}
+
 	cmds := fmt.Sprintf(`python3 -m venv %s
 source %s/bin/activate
 if ! which pip3; then python3 -m pip install pip %s; fi
-pip3 install -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, reqmtsFile.Name(), verboseFlag)
+pip3 install %s -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, noCache, reqmtsFile.Name(), verboseFlag)
 
 	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
 	cmd.Dir = filepath.Dir(venvPath)

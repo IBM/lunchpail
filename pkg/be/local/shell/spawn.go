@@ -106,6 +106,10 @@ func addEnv(c llir.ShellComponent, ir llir.LLIR) ([]string, error) {
 		"PYTHONUNBUFFERED=1",
 	}
 
+	if os.Getenv("CI") != "" || os.Getenv("LUNCHPAIL_NO_CACHE") != "" {
+		env = append(env, "LUNCHPAIL_NO_CACHE=true")
+	}
+
 	env, err = addAppEnv(env, c)
 	if err != nil {
 		return env, err

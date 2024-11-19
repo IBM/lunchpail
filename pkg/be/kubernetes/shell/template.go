@@ -100,6 +100,9 @@ func Template(ir llir.LLIR, c llir.ShellComponent, namespace string, opts common
 			c.Application.Spec.Env["LUNCHPAIL_SLEEP_BEFORE_EXIT"] = "5"
 		}
 
+		// no point in caching pips inside a pod
+		c.Application.Spec.Env["LUNCHPAIL_NO_CACHE"] = "true"
+
 		if env, err := util.ToJsonEnvB64(c.Application.Spec.Env); err != nil {
 			return "", err
 		} else {
