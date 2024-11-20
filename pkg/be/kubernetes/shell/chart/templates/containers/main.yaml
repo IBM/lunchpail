@@ -13,6 +13,8 @@
     - name: DEBUG
       value: "true"
     {{- end }}
+    - name: LUNCHPAIL_NO_CACHE
+      value: "true"
     - name: LUNCHPAIL_POD_NAME
       valueFrom:
         fieldRef:

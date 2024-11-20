@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 )
 
 func requirementsInstall(ctx context.Context, requirements string, verbose bool) (string, error) {
@@ -42,6 +43,16 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 		return "", err
 	}
 
+	lockfile, err := os.OpenFile(filepath.Join(venvPath, "lock.txt"), os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return "", err
+	}
+	defer lockfile.Close()
+	err = syscall.Flock(int(lockfile.Fd()), syscall.LOCK_EX)
+	if err != nil {
+		return "", err
+	}
+
 	// PATH to our venv/bin
 	path := filepath.Join(venvPath, "bin")
 
@@ -63,10 +74,20 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 		return "", err
 	}
 
+	nocache := ""
+	if os.Getenv("LUNCHPAIL_NO_CACHE") != "" {
+		nocache = "--no-cache-dir"
+	}
+
+	quiet := "-q"
+	if verbose {
+		quiet = ""
+	}
+
 	cmds := fmt.Sprintf(`python3 -m venv %s
 source %s/bin/activate
 if ! which pip3; then python3 -m pip install pip %s; fi
-pip3 install -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, reqmtsFile.Name(), verboseFlag)
+pip3 install %s %s -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, nocache, quiet, reqmtsFile.Name(), verboseFlag)
 
 	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
 	cmd.Dir = filepath.Dir(venvPath)

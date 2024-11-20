@@ -27,7 +27,7 @@ func Local(ctx context.Context, opts InitLocalOptions) error {
 		if err := getKind(); err != nil {
 			return err
 		}
-		return createKindCluster()
+		return createKindCluster(opts)
 	})
 
 	errs.Go(func() error {

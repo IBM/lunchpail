@@ -52,10 +52,14 @@ func getKind() error {
 	return nil
 }
 
-func createKindCluster() error {
+func createKindCluster(opts InitLocalOptions) error {
 	cmd := exec.Command("sh", "-c", "kind get clusters | grep -q "+lunchpail.LocalClusterName)
 	if err := cmd.Run(); err != nil {
 		args := []string{"create", "cluster", "--wait", "10m", "--name", lunchpail.LocalClusterName}
+
+		if !opts.Verbose {
+			args = append(args, "-q")
+		}
 
 		// allows selectively hacking kind cluster config
 		if _, err := os.Stat("/tmp/kindhack.yaml"); err == nil {

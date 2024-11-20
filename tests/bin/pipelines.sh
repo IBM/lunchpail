@@ -17,9 +17,7 @@ trap "rm -f $IN1 $fail $add1b $add1c $add1d" EXIT
 export LUNCHPAIL_NAME="pipeline-test"
 export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
 
-if [[ -n "$CI" ]]
-then VERBOSE="--verbose"
-fi
+VERBOSE="--verbose=${VERBOSE:-false}"
 
 if [[ $(uname) = Linux ]]
 then

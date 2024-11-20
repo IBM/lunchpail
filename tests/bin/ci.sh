@@ -21,8 +21,10 @@ TOP="$SCRIPTDIR"/../..
 # On ctrl+c, kill the subprocesses that may have launched
 trap "pkill -P $$" SIGINT SIGTERM
 
+echo "Starting CI tests with VERBOSE=${VERBOSE:=false}"
+
 if [[ ${LUNCHPAIL_TARGET:-kubernetes} = kubernetes ]]
-then /tmp/lunchpail dev init local --build-images --verbose
+then /tmp/lunchpail dev init local --build-images --verbose=${VERBOSE:=false}
 fi
 
 #
