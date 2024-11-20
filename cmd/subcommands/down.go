@@ -16,7 +16,6 @@ import (
 func newDownCmd() *cobra.Command {
 	var deleteNamespaceFlag bool
 	var deleteAllRunsFlag bool
-	var apiKey string
 	var deleteCloudResourcesFlag bool
 
 	var cmd = &cobra.Command{
@@ -26,15 +25,15 @@ func newDownCmd() *cobra.Command {
 		Long:    "Undeploy a run",
 	}
 
-	cmd.Flags().BoolVarP(&deleteNamespaceFlag, "delete-namespace", "N", false, "Also delete namespace (only for empty namespaces)")
-	cmd.Flags().BoolVarP(&deleteAllRunsFlag, "all", "A", false, "Delete all runs in the given namespace")
-	cmd.Flags().StringVarP(&apiKey, "api-key", "a", "", "IBM Cloud api key")
-	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
-
 	opts, err := options.RestoreBuildOptions()
 	if err != nil {
 		panic(err)
 	}
+
+	cmd.Flags().BoolVarP(&deleteNamespaceFlag, "delete-namespace", "N", false, "Also delete namespace (only for empty namespaces)")
+	cmd.Flags().BoolVarP(&deleteAllRunsFlag, "all", "A", false, "Delete all runs in the given namespace")
+	cmd.Flags().StringVarP(&opts.ApiKey, "api-key", "a", "", "IBM Cloud api key")
+	cmd.Flags().BoolVarP(&deleteCloudResourcesFlag, "delete-cloud-resources", "D", false, "Delete all associated cloud resources and the virtual instance. If not enabled, the instance will only be stopped")
 
 	options.AddTargetOptionsTo(cmd, &opts)
 	options.AddLogOptionsTo(cmd, &opts)
@@ -49,7 +48,7 @@ func newDownCmd() *cobra.Command {
 		return boot.DownList(ctx, args, backend, boot.DownOptions{
 			Namespace: opts.Target.Namespace, Verbose: opts.Log.Verbose, DeleteNamespace: deleteNamespaceFlag,
 			DeleteAll: deleteAllRunsFlag,
-			ApiKey:    apiKey, DeleteCloudResources: deleteCloudResourcesFlag})
+			ApiKey:    opts.ApiKey, DeleteCloudResources: deleteCloudResourcesFlag})
 	}
 
 	return cmd
