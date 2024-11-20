@@ -20,14 +20,14 @@ then
     # could validate the output files there rather than in the queue
     eval $inputapp $QUEUE --create-cluster --target=${LUNCHPAIL_TARGET:-kubernetes} \
         | $testapp up \
-                   -v \
+                   --verbose=${VERBOSE:-false} \
                    $up_args \
                    --no-redirect \
                    --create-cluster \
                    --target=${LUNCHPAIL_TARGET:-kubernetes}
 else
     eval $testapp up \
-         -v \
+         --verbose=${VERBOSE:-false} \
          $up_args \
          $QUEUE \
          --create-cluster \

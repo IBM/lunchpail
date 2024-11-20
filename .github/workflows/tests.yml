@@ -62,6 +62,7 @@ jobs:
     - name: Run Test with args ${{ matrix.ARGS }}
       env:
         TERM: xterm-256color
+        VERBOSE: false
         LUNCHPAIL_TARGET: ${{ matrix.LUNCHPAIL_TARGET }}
         LUNCHPAIL_BUILD_NOT_NEEDED: true # we did this in the "Build Lunchpail CLI" step above
       run: bash -c "${{matrix.SCRIPT}} ${{matrix.ARGS }}"

@@ -36,7 +36,7 @@ repo_secret="" # e.g. user:pat@https://github.mycompany.com
 # intentionally setting some critical values at build time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
-/tmp/lunchpail build -v \
+/tmp/lunchpail build --verbose=${VERBOSE:-false} \
                -o $testapp.tmp \
                $branch \
                $repo_secret \

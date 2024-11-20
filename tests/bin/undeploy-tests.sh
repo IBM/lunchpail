@@ -23,12 +23,12 @@ echo "$(tput setaf 2)Uninstalling test Runs for testdir=$1 appname=$appname$(tpu
 if [[ -d "$TOP"/builds/test ]]
 then
     if [[ -n "$appname" ]] && [[ -f "$TOP"/builds/test/"$appname"/test ]]
-    then "$TOP"/builds/test/"$appname"/test down --target=${LUNCHPAIL_TARGET:-kubernetes} -v
+    then "$TOP"/builds/test/"$appname"/test down --target=${LUNCHPAIL_TARGET:-kubernetes} --verbose=${VERBOSE:=false}
     else
         for dir in $(ls -t "$TOP"/builds/test)
         do
             if [ -f "$TOP"/builds/test/"$dir"/test ]
-            then "$TOP"/builds/test/"$dir"/test down --target=${LUNCHPAIL_TARGET:-kubernetes} -v &
+            then "$TOP"/builds/test/"$dir"/test down --target=${LUNCHPAIL_TARGET:-kubernetes} --verbose=${VERBOSE:=false} &
             fi
         done
 
