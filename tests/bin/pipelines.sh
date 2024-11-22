@@ -33,7 +33,7 @@ function actual {
     local b=$(basename "$1")
     local ext=${b##*.}
     local bb=${b%%.*}
-    local f="$bb".output.$ext
+    local f="$bb".v1.$ext
 
     if [[ -f "$(dirname "$1")/$f" ]]
     then echo "$(dirname "$1")/$f"

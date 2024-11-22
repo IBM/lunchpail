@@ -5,13 +5,13 @@ DATA="$TEST_PATH"/pail/test-data
 for i in "$DATA"/input/*
 do
     b=$(basename $i)
-    if [[ "$b" =~ "output" ]]
+    if [[ "$b" =~ ".v1." ]]
     then continue
     fi
 
     ext=${b##*.}
     bb=${b%%.*}
-    actual="$(dirname $i)"/"$bb".output.$ext
+    actual="$(dirname $i)"/"$bb".v1.$ext
     expected="$DATA"/expected/$bb.parquet.gz
 
     while true

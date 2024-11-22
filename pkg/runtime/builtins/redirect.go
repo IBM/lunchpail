@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"golang.org/x/sync/errgroup"
@@ -30,12 +31,17 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 		group.Go(func() error {
 			dstFolder := folderFor(filepath.Base(object))
 			dst := filepath.Join(dstFolder, filepath.Base(object))
-			if _, err := os.Stat(dst); err == nil {
+			idx := 0
+			for {
+				if _, err := os.Stat(dst); err != nil {
+					break
+				}
 				// Then a file with this name already exists. Refuse to overwrite (TODO: allow user to specify they want us to overwrite input files?)
+				idx++
 				ext := filepath.Ext(object)
 				withoutExt := object[0 : len(object)-len(ext)]
-				dst2 := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".output"+ext)
-				fmt.Fprintf(os.Stderr, "Refusing to overwrite existing file %s. Using %s instead.", dst, dst2)
+				dst2 := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".v"+strconv.Itoa(idx)+ext)
+				fmt.Fprintf(os.Stderr, "Refusing to overwrite existing file %s. Using %s instead.\n", filepath.Base(dst), filepath.Base(dst2))
 				dst = dst2
 			}
 			if opts.Verbose {
