@@ -158,7 +158,7 @@ function waitForNInstances {
             fi
             echo "Draining outbox"
             set +e
-            env LUNCHPAIL_WAIT=false $testapp queue drain --target ${LUNCHPAIL_TARGET:-kubernetes} --run $run_name --step $step
+            env LUNCHPAIL_WAIT=false $testapp queue drain --target ${LUNCHPAIL_TARGET:-kubernetes} --run $run_name --step $step 2>&1 | grep -v "connection refused"
             set -e
         fi
 

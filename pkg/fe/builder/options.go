@@ -1,13 +1,13 @@
 package builder
 
-import "lunchpail.io/pkg/build"
+import "lunchpail.io/pkg/fe/builder/overlay"
 
 type Options struct {
-	Name         string
-	Branch       string
-	AllPlatforms bool
-	BuildOptions build.Options
+	Name           string
+	AllPlatforms   bool
+	OverlayOptions overlay.Options
+}
 
-	// Run the given command line
-	Command string
+func (opts Options) Verbose() bool {
+	return opts.OverlayOptions.Verbose()
 }
