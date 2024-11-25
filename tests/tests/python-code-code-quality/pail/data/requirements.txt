@@ -1,6 +1,5 @@
 bs4==0.0.2
 transformers==4.38.2
 
-# we can probably update to 18+, but we will have to re-generate expected output as pyarrow 18 seems to have resulted in a binary format change
-pyarrow<18
+pyarrow
 

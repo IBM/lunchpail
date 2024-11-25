@@ -46,6 +46,8 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 		switch {
 		case d.IsDir():
 			// skip directories
+		case filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".parquet":
+			// skip data files
 		default:
 			b, err := os.ReadFile(path)
 			if err != nil {
@@ -58,7 +60,7 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 					return err
 				}
 			case "requirements.txt":
-				spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "", Requirements: string(b)})
+				spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: string(b)})
 			default:
 				spec.Code = append(spec.Code, hlir.Code{Name: d.Name(), Source: string(b)})
 			}
@@ -66,10 +68,10 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 			switch d.Name() {
 			case "main.sh":
 				spec.Command = "./main.sh"
+				spec.Image = "docker.io/alpine:3"
 			case "main.py":
 				spec.Command = "python3 main.py"
-			case "main.js":
-				spec.Command = "node main.js"
+				spec.Image = "docker.io/python:3.12"
 			}
 		}
 
