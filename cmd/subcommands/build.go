@@ -10,11 +10,13 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/fe/builder"
+	"lunchpail.io/pkg/fe/builder/overlay"
 )
 
 func newBuildCmd() *cobra.Command {
 	var outputFlag string
 	var branchFlag string
+	var sourceIsYaml bool
 	var allFlag bool
 
 	cmd := &cobra.Command{
@@ -31,6 +33,7 @@ func newBuildCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&branchFlag, "branch", "b", branchFlag, "Git branch to pull from")
+	cmd.Flags().BoolVarP(&sourceIsYaml, "yaml", "y", sourceIsYaml, "The source directory contains high-level IR YAML")
 	cmd.Flags().BoolVarP(&allFlag, "all-platforms", "A", allFlag, "Generate binaries for all supported platform/arch combinations")
 
 	var command string
@@ -63,10 +66,13 @@ func newBuildCmd() *cobra.Command {
 
 		return builder.Build(context.Background(), sourcePath, builder.Options{
 			Name:         outputFlag,
-			Branch:       branchFlag,
-			Command:      command,
 			AllPlatforms: allFlag,
-			BuildOptions: *buildOptions,
+			OverlayOptions: overlay.Options{
+				Branch:       branchFlag,
+				Command:      command,
+				SourceIsYaml: sourceIsYaml,
+				BuildOptions: *buildOptions,
+			},
 		})
 	}
 

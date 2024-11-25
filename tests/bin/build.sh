@@ -31,15 +31,16 @@ if [ -z "$LUNCHPAIL_BUILD_NOT_NEEDED" ]
 then "$TOP"/hack/setup/cli.sh /tmp/lunchpail
 fi
 
-repo_secret="" # e.g. user:pat@https://github.mycompany.com
+# by default, interpret source as HLIR
+if [[ "$source_from" = "" ]]; then source_from="--yaml"; fi
 
 # intentionally setting some critical values at build time to the
 # final value, and some critical values to bogus values that are then
 # overridden by final values at shrinkwrap time
 /tmp/lunchpail build --verbose=${VERBOSE:-false} \
                -o $testapp.tmp \
+               $source_from \
                $branch \
-               $repo_secret \
                $2
 
 

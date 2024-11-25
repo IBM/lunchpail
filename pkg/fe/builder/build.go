@@ -28,9 +28,7 @@ func stageLunchpailItself() (string, error) {
 }
 
 func Build(ctx context.Context, sourcePath string, opts Options) error {
-	verbose := opts.BuildOptions.Log.Verbose
-
-	if sourcePath != "" && opts.Command != "" {
+	if sourcePath != "" && opts.OverlayOptions.Command != "" {
 		return fmt.Errorf("Both a source path and --command options were provided. Choose one or the other.")
 	}
 
@@ -42,7 +40,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	lunchpailStageDir, err := stageLunchpailItself()
 	if err != nil {
 		return err
-	} else if verbose {
+	} else if opts.Verbose() {
 		fmt.Fprintf(os.Stderr, "Stage directory: %s\n", lunchpailStageDir)
 	}
 
@@ -52,7 +50,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	fmt.Fprintf(os.Stderr, "Building %s\n", buildName)
 
 	// Third, overlay source (if given)
-	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, overlay.Options{BuildOptions: opts.BuildOptions, Branch: opts.Branch, Command: opts.Command, Verbose: verbose})
+	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, opts.OverlayOptions)
 	if err != nil {
 		return err
 	}
@@ -60,12 +58,12 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	// Fourth, copy that overlay into the lunchpail stage (TODO:
 	// why do we need two stages? cannot overlay.Overlay... copy
 	// directly into the lunchpail stage??)
-	if err := build.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, verbose); err != nil {
+	if err := build.MoveAppTemplateIntoLunchpailStage(lunchpailStageDir, appTemplatePath, opts.Verbose()); err != nil {
 		return err
 	}
 
 	// Fifth, tell the build about itself (its name, version)
-	if err := build.DropBreadcrumbs(buildName, appVersion, opts.BuildOptions, lunchpailStageDir); err != nil {
+	if err := build.DropBreadcrumbs(buildName, appVersion, opts.OverlayOptions.BuildOptions, lunchpailStageDir); err != nil {
 		return err
 	}
 

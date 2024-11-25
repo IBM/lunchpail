@@ -114,3 +114,7 @@ func (cliOpts Options) overlay(builtOpts Options) Options {
 
 	return cliOpts
 }
+
+func (opts Options) Verbose() bool {
+	return opts.Log.Verbose
+}

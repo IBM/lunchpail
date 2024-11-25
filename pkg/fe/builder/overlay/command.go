@@ -11,28 +11,23 @@ import (
 )
 
 // Support for build --command
-func copyCommandIntoTemplate(appname, command, templatePath string, opts Options) (appVersion string, err error) {
-	if opts.Verbose {
+func copyCommandIntoTemplate(templatePath string, opts Options) (err error) {
+	if opts.Verbose() {
 		fmt.Fprintf(os.Stderr, "Copying command into %s\n", appdir(templatePath))
 	}
 
-	err = os.MkdirAll(appdir(templatePath), 0755)
-	if err != nil {
-		return
-	}
-
-	app := commandApp(command, opts)
-	err = writeCommandAppToTemplateDir(app, appdir(templatePath), opts.Verbose)
+	app := commandApp(opts)
+	err = writeCommandAppToTemplateDir(app, appdir(templatePath), opts.Verbose())
 
 	return
 }
 
-func commandApp(command string, opts Options) hlir.HLIR {
+func commandApp(opts Options) hlir.HLIR {
 	app := hlir.NewWorkerApplication("command")
 	app.Spec.Command = "./main.sh"
 	app.Spec.Code = []hlir.Code{
 		hlir.Code{Name: "main.sh", Source: fmt.Sprintf(`#!/bin/sh
-%s`, command),
+%s`, opts.Command),
 		},
 	}
 
