@@ -96,7 +96,16 @@ pip3 install %s %s -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, nocache, qui
 		cmd.Stdout = os.Stderr
 	}
 	cmd.Stderr = os.Stderr
-	return path, cmd.Run()
+
+	if err := cmd.Run(); err != nil {
+		// Clean up the venv cache directory, since we failed at populating it
+		if err := os.RemoveAll(venvPath); err != nil {
+			fmt.Fprintln(os.Stderr, "Unable to clean up venv cache directory after pip install failure", err)
+		}
+		return path, err
+	}
+
+	return path, nil
 }
 
 func getSHA256Sum(requirements []byte) (string, error) {
