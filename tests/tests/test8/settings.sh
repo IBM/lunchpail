@@ -1,6 +1,6 @@
 api=workqueue
 app=https://github.com/IBM/lunchpail-openroad-max-utilization.git
-branch=v0.4.0
+branch=v0.5.0
 deployname=lunchpail-openroad-max-utilization
 
 # don't inspect output for validity
