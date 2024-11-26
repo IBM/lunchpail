@@ -12,4 +12,7 @@ taskqueue=rclone://rcloneremotetest/test7f
 expected=(0 11 defaultjaasqueue)
 handler=waitForUnassignedAndOutbox
 
+# the default is --yaml. we don't want that
+source_from=" "
+
 inputapp='$testapp sweep 1 10 1 --interval 1 -e taskprefix=tasky -e taskprefix2=3333'
