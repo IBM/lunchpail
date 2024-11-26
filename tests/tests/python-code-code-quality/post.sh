@@ -25,5 +25,5 @@ function validate {
     rm -f "$actual"
 }
 
-validate task.1.parquet "$DATA"/expected/sample1.parquet.gz
-validate task.2.parquet "$DATA"/expected/sample2.parquet.gz
+validate task.1.parquet "$DATA"/expected/sample_1.parquet.gz
+validate task.2.parquet "$DATA"/expected/sample_2.parquet.gz

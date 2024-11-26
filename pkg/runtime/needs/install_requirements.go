@@ -92,6 +92,7 @@ pip3 install %s %s -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, nocache, qui
 	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
 	cmd.Dir = filepath.Dir(venvPath)
 	if verbose {
+		// Stderr so as not to collide with lunchpail pipeline stdout
 		cmd.Stdout = os.Stderr
 	}
 	cmd.Stderr = os.Stderr
