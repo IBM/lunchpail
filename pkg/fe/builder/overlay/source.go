@@ -46,7 +46,7 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 		switch {
 		case d.IsDir():
 			// skip directories
-		case filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".parquet":
+		case filepath.Ext(path) == ".html" || filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".zip" || filepath.Ext(path) == ".parquet":
 			// skip data files
 		default:
 			b, err := os.ReadFile(path)
