@@ -188,8 +188,13 @@ func (s3 S3Client) Rm(bucket, filePath string) error {
 }
 
 func (s3 S3Client) Mark(bucket, filePath, marker string) error {
-	_, err := s3.client.PutObject(s3.context, bucket, filePath, strings.NewReader(marker), int64(len(marker)), minio.PutObjectOptions{})
-	return err
+	for {
+		if _, err := s3.client.PutObject(s3.context, bucket, filePath, strings.NewReader(marker), int64(len(marker)), minio.PutObjectOptions{}); err == nil {
+			return nil
+		} else if !s3.retryOnError(err) {
+			return err
+		}
+	}
 }
 
 func (s3 S3Client) StreamingUpload(bucket, filePath string, reader io.Reader) error {
