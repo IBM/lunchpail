@@ -11,7 +11,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func pipe(mkpipe func() (io.ReadCloser, error), out io.Writer, teefile string, c llir.Component) (chan struct{}, error) {
+func pipe(mkpipe func() (io.ReadCloser, error), out io.Writer, teefile string, c llir.ShellComponent) (chan struct{}, error) {
 	p, err := mkpipe()
 	if err != nil {
 		return nil, err

@@ -1,16 +1,5 @@
 package llir
 
-import "lunchpail.io/pkg/lunchpail"
-
-// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
-type Component interface {
-	C() lunchpail.Component
-
-	Workers() int
-
-	SetWorkers(w int) Component
-}
-
 type LLIR struct {
 	AppName string
 
@@ -22,16 +11,13 @@ type LLIR struct {
 	AppProvidedKubernetesResources string
 
 	// One Component per WorkerPool, one for WorkerStealer, etc.
-	Components []Component
+	Components []ShellComponent
 }
 
 func (ir LLIR) HasDispatcher() bool {
 	for _, c := range ir.Components {
-		switch cc := c.(type) {
-		case ShellComponent:
-			if cc.Application.Spec.IsDispatcher {
-				return true
-			}
+		if c.Application.Spec.IsDispatcher {
+			return true
 		}
 	}
 

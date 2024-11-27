@@ -7,10 +7,10 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(buildName string, ctx llir.Context, opts build.Options) (llir.Component, error) {
+func Lower(buildName string, ctx llir.Context, opts build.Options) (llir.ShellComponent, error) {
 	app, err := transpile(ctx, *opts.Log)
 	if err != nil {
-		return nil, err
+		return llir.ShellComponent{}, err
 	}
 
 	return shell.LowerAsComponent(

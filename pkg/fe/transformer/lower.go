@@ -14,12 +14,10 @@ import (
 func Lower(buildName string, model hlir.HLIR, ctx llir.Context, opts build.Options) (llir.LLIR, error) {
 	ir := llir.LLIR{AppName: buildName, Context: ctx}
 
-	minio, err := minio.Lower(buildName, ctx, model, opts)
-	if err != nil {
+	if minio, minioOk, err := minio.Lower(buildName, ctx, model, opts); err != nil {
 		return llir.LLIR{}, err
-	}
-	if minio != nil {
-		ir.Components = slices.Concat([]llir.Component{minio})
+	} else if minioOk {
+		ir.Components = slices.Concat([]llir.ShellComponent{minio})
 	}
 
 	apps, err := lowerApplications(buildName, ctx, model, opts)

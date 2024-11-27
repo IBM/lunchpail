@@ -51,7 +51,7 @@ func (i *intCounter) inc() {
 	i.lock.Unlock()
 }
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.Component, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.ShellComponent, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{

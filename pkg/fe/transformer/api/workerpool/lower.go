@@ -12,7 +12,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.WorkerPool, opts build.Options) (llir.Component, error) {
+func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.WorkerPool, opts build.Options) (llir.ShellComponent, error) {
 	spec := llir.ShellComponent{Component: lunchpail.WorkersComponent}
 
 	// maybe at some point... we would need to update at least be/local.watchForWorkerPools also to watch for dispatchers?
@@ -46,7 +46,7 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 
 	startupDelay, err := parseHumanTime(pool.Spec.StartupDelay)
 	if err != nil {
-		return nil, err
+		return llir.ShellComponent{}, err
 	}
 	if app.Spec.Env == nil {
 		app.Spec.Env = make(map[string]string)

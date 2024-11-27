@@ -21,13 +21,8 @@ func (backend Backend) IsCompatible(ir llir.LLIR) error {
 	}
 
 	for _, c := range ir.Components {
-		switch cc := c.(type) {
-		case llir.ShellComponent:
-			if err := shell.IsCompatible(cc); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("Unable to target a non-shell component '%v' to the local backend", c.C())
+		if err := shell.IsCompatible(c); err != nil {
+			return err
 		}
 	}
 
