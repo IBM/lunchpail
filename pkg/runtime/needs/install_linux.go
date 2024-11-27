@@ -2,6 +2,7 @@ package needs
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,7 +31,7 @@ func installMinio(ctx context.Context, version string, verbose bool) (string, er
 	cmd := exec.CommandContext(ctx, "wget", "https://dl.min.io/server/minio/release/linux-amd64/minio")
 	cmd.Dir = dir
 	if verbose {
-		cmd.Stdout = os.Stdout
+		cmd.Stdout = os.Stderr
 	}
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -45,47 +46,41 @@ func installMinio(ctx context.Context, version string, verbose bool) (string, er
 }
 
 func installPython(ctx context.Context, version string, verbose bool) (string, error) {
-	/*
-			if verbose {
-			fmt.Fprintf(os.Stdout, "Installing %s release of python \n", version)
+	if version == "" || version == "latest" {
+		version = "3"
+	}
+
+	if verbose {
+		fmt.Fprintf(os.Stderr, "Checking for existence of python%s\n", version)
+	}
+
+	if _, err := exec.LookPath("python" + version); err != nil {
+		fmt.Fprintf(os.Stderr, "Installing python%s\n", version)
+
+		var cmdline string
+		sudo := "sudo"
+		if _, err := exec.LookPath("sudo"); err != nil {
+			sudo = ""
+		}
+		if _, err := exec.LookPath("apt"); err == nil {
+			cmdline = fmt.Sprintf("%s add-apt-repository -y ppa:deadsnakes/ppa && %s apt update && %s apt install -y python%s python%s-venv python%s-distutils && curl -sS https://bootstrap.pypa.io/get-pip.py | python%s && which python%s", sudo, sudo, sudo, version, version, version, version, version)
 		}
 
-			dir, err := bindir()
-			if err != nil {
-				return err
-			}
-
-			if err := os.MkdirAll(dir, 0755); err != nil {
-				return err
-			}
-
-			//Todo: versions other than latest
-			cmd := exec.Command("wget", "https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tgz")
-			cmd.Dir = dir
+		if cmdline != "" {
 			if verbose {
-				cmd.Stdout = os.Stdout
+				fmt.Fprintf(os.Stderr, "Installing python%s via command line %s\n", version, cmdline)
 			}
+			cmd := exec.CommandContext(ctx, "/bin/sh", "-c", cmdline)
+			cmd.Stdout = os.Stderr // Stderr so as not to collide with `lunchpail needs` stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
-				return err
+				return "", err
 			}
-
-			cmd = exec.Command("tar", "xf", "Python-3.12.7.tgz")
-			cmd.Dir = dir
-			if verbose {
-				cmd.Stdout = os.Stdout
-			}
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				return err
-			}
-
-			if err := setenv(dir); err != nil { //setting $PATH
-				return err
-			}
-
-			os.Chmod(filepath.Join(dir, "python"), 0755)
-	*/
+			fmt.Fprintf(os.Stderr, "Successfully installed python%s\n", version)
+		} else {
+			return "", fmt.Errorf("Unable to install required python version %s", version)
+		}
+	}
 
 	return "", nil
 }

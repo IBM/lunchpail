@@ -5,22 +5,21 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
 	"lunchpail.io/pkg/ir/hlir"
 )
 
+// Formulate an HLIR for the source in the given `sourcePath` and write it out to the `templatePath`
 func copySourceIntoTemplate(appname, sourcePath, templatePath string, opts Options) (appVersion string, err error) {
 	if opts.Verbose() {
 		fmt.Fprintln(os.Stderr, "Copying application source into", appdir(templatePath))
 	}
 
-	appVersion, err = addHLIRFromSource(appname, sourcePath, templatePath, opts)
-	return
-}
-
-func addHLIRFromSource(appname, sourcePath, templatePath string, opts Options) (string, error) {
 	appVersion, app, err := applicationFromSource(appname, sourcePath, templatePath, opts)
 	if err != nil {
 		return "", err
@@ -38,22 +37,47 @@ func addHLIRFromSource(appname, sourcePath, templatePath string, opts Options) (
 	return appVersion, nil
 }
 
+// Formulate an HLIR for the source in the given `sourcePath`
 func applicationFromSource(appname, sourcePath, templatePath string, opts Options) (appVersion string, app hlir.Application, err error) {
 	app = hlir.NewWorkerApplication(appname)
 	spec := &app.Spec
 
-	filepath.WalkDir(sourcePath, func(path string, d fs.DirEntry, err error) error {
+	maybeImage := ""
+	maybeCommand := ""
+
+	// While walking the directory structure, these are the noteworthy subdirectories
+	srcPrefix := filepath.Join(sourcePath, "src")
+
+	err = filepath.WalkDir(sourcePath, func(path string, d fs.DirEntry, err error) error {
 		switch {
 		case d.IsDir():
-			// skip directories
-		case filepath.Ext(path) == ".html" || filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".zip" || filepath.Ext(path) == ".parquet":
-			// skip data files
+			// skip directories, except to remember which "mode" we are in
+		case filepath.Ext(path) == ".pdf" || filepath.Ext(path) == ".html" || filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".zip" || filepath.Ext(path) == ".parquet":
+			// skip data files; TODO add support for .ignore
+		case path[len(path)-1] == '~':
+			// skip emacs temporary files
 		default:
 			b, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
 
+			if strings.HasPrefix(path, srcPrefix) {
+				// Handle src/ artifacts
+				spec.Code = append(spec.Code, hlir.Code{Name: d.Name(), Source: string(b)})
+
+				switch d.Name() {
+				case "main.sh":
+					maybeCommand = "./main.sh"
+					maybeImage = "docker.io/alpine:3"
+				case "main.py":
+					maybeCommand = "python3 main.py"
+					maybeImage = "docker.io/python:3.12"
+				}
+				return nil
+			}
+
+			// Handle non-src artifacts
 			switch d.Name() {
 			case "version", "version.txt":
 				if appVersion, err = handleVersionFile(path); err != nil {
@@ -61,22 +85,44 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 				}
 			case "requirements.txt":
 				spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: string(b)})
+			case "memory", "memory.txt":
+				spec.MinMemory = string(b)
+			case "image":
+				spec.Image = string(b)
+			case "command":
+				spec.Command = string(b)
+			case "env.yaml":
+				err := yaml.Unmarshal(b, &spec.Env)
+				if err != nil {
+					return fmt.Errorf("Error parsing env.yaml: %v", err)
+				}
 			default:
-				spec.Code = append(spec.Code, hlir.Code{Name: d.Name(), Source: string(b)})
-			}
-
-			switch d.Name() {
-			case "main.sh":
-				spec.Command = "./main.sh"
-				spec.Image = "docker.io/alpine:3"
-			case "main.py":
-				spec.Command = "python3 main.py"
-				spec.Image = "docker.io/python:3.12"
+				if opts.Verbose() {
+					fmt.Fprintln(os.Stderr, "Skipping application artifact", strings.Replace(path, sourcePath, "", 1))
+				}
 			}
 		}
 
 		return nil
 	})
+
+	if spec.Command == "" && maybeCommand != "" {
+		spec.Command = maybeCommand
+	}
+	if spec.Image == "" && maybeImage != "" {
+		spec.Image = maybeImage
+	}
+
+	pyNeedsIdx := slices.IndexFunc(spec.Needs, func(n hlir.Needs) bool { return n.Name == "python" && n.Version == "latest" })
+	if pyNeedsIdx >= 0 && strings.HasPrefix(spec.Command, "python3") {
+		version := regexp.MustCompile("\\d.\\d+").FindString(spec.Command)
+		if version != "" {
+			if opts.Verbose() {
+				fmt.Fprintln(os.Stderr, "Using Python version", version)
+			}
+			spec.Needs[pyNeedsIdx].Version = version
+		}
+	}
 
 	return
 }
