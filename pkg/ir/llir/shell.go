@@ -5,6 +5,7 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
+// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
 type ShellComponent struct {
 	hlir.Application
 
@@ -37,7 +38,7 @@ func (c ShellComponent) Workers() int {
 	return c.InitialWorkers
 }
 
-func (c ShellComponent) SetWorkers(w int) Component {
+func (c ShellComponent) SetWorkers(w int) ShellComponent {
 	c.InitialWorkers = w
 	return c // FIXME
 }

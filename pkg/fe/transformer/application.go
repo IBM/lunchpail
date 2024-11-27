@@ -9,8 +9,8 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.Application
-func lowerApplications(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.Component, error) {
-	components := []llir.Component{}
+func lowerApplications(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.ShellComponent, error) {
+	components := []llir.ShellComponent{}
 
 	if ctx.Run.Step == 0 && workstealer.IsNeeded(model) {
 		// Note, the actual worker resources will be dealt

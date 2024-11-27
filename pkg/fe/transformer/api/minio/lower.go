@@ -8,14 +8,14 @@ import (
 	"lunchpail.io/pkg/lunchpail"
 )
 
-func Lower(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) (llir.Component, error) {
+func Lower(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) (llir.ShellComponent, bool, error) {
 	if !ctx.Queue.Auto {
-		return nil, nil
+		return llir.ShellComponent{}, false, nil
 	}
 
 	app, err := transpile(ctx)
 	if err != nil {
-		return nil, err
+		return llir.ShellComponent{}, false, err
 	}
 
 	component, err := shell.LowerAsComponent(
@@ -26,5 +26,5 @@ func Lower(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Optio
 		opts,
 	)
 
-	return component, err
+	return component, err == nil, err
 }

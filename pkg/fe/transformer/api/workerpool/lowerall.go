@@ -9,8 +9,8 @@ import (
 )
 
 // HLIR -> LLIR for []hlir.WorkerPool
-func LowerAll(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.Component, error) {
-	components := []llir.Component{}
+func LowerAll(buildName string, ctx llir.Context, model hlir.HLIR, opts build.Options) ([]llir.ShellComponent, error) {
+	components := []llir.ShellComponent{}
 
 	app, found := model.GetWorkerApplication()
 	if !found {
