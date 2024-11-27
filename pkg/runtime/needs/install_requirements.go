@@ -11,8 +11,7 @@ import (
 	"syscall"
 )
 
-func requirementsInstall(ctx context.Context, requirements string, verbose bool) (string, error) {
-	var cmd *exec.Cmd
+func requirementsInstall(ctx context.Context, version, requirements string, verbose bool) (string, error) {
 	var verboseFlag string
 	var reqmtsByte []byte
 	var reqmtsFile *os.File
@@ -84,17 +83,18 @@ func requirementsInstall(ctx context.Context, requirements string, verbose bool)
 		quiet = ""
 	}
 
-	cmds := fmt.Sprintf(`python3 -m venv %s
-source %s/bin/activate
-if ! which pip3; then python3 -m pip install pip %s; fi
-pip3 install %s %s -r %s %s 1>&2`, venvPath, venvPath, verboseFlag, nocache, quiet, reqmtsFile.Name(), verboseFlag)
-
-	cmd = exec.CommandContext(ctx, "/bin/bash", "-c", cmds)
-	cmd.Dir = filepath.Dir(venvPath)
-	if verbose {
-		// Stderr so as not to collide with lunchpail pipeline stdout
-		cmd.Stdout = os.Stderr
+	if version == "" || version == "latest" {
+		version = "3"
 	}
+
+	cmdline := fmt.Sprintf(`python%s -m venv %s
+source %s/bin/activate
+if ! which pip%s; then python%s -m pip install pip %s; fi
+pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, version, verboseFlag, version, nocache, quiet, reqmtsFile.Name(), verboseFlag)
+
+	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdline)
+	cmd.Dir = filepath.Dir(venvPath)
+	cmd.Stdout = os.Stderr // Stderr so as not to collide with `lunchpail needs` stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {

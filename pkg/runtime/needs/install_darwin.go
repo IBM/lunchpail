@@ -35,15 +35,19 @@ func installPython(ctx context.Context, version string, verbose bool) (string, e
 		return "", err
 	}
 
-	return "", brewInstall(ctx, "python3", version, verbose) //Todo: versions other than latest
+	python := "python@" + version
+	if version == "" || version == "latest" {
+		python = "python3"
+	}
+	return "", brewInstall(ctx, python, version, verbose) //Todo: versions other than latest
 }
 
 func brewInstall(ctx context.Context, pkg string, version string, verbose bool) error {
 	var cmd *exec.Cmd
 	if verbose {
-		fmt.Fprintf(os.Stdout, "Installing %s release of %s \n", version, pkg)
+		fmt.Fprintf(os.Stderr, "Installing %s release of %s \n", version, pkg)
 		cmd = exec.CommandContext(ctx, "brew", "install", "--verbose", "--debug", pkg)
-		cmd.Stdout = os.Stdout
+		cmd.Stdout = os.Stderr // Stderr so as not to collide with `lunchpail needs` stdout
 	} else {
 		cmd = exec.Command("brew", "install", pkg)
 	}

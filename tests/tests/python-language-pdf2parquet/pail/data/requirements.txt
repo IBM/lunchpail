@@ -1,8 +1,0 @@
-docling-core==2.3.0
-docling-ibm-models==2.0.3
-deepsearch-glm==0.26.1
-docling==2.3.1
-filetype >=1.2.0, <2.0.0
-
-# we can probably update to 18+, but we will have to re-generate expected output as pyarrow 18 seems to have resulted in a binary format change
-pyarrow<18
