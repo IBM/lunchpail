@@ -89,7 +89,7 @@ func requirementsInstall(ctx context.Context, version, requirements string, verb
 
 	cmdline := fmt.Sprintf(`python%s -m venv %s
 source %s/bin/activate
-if ! which pip%s; then python%s -m pip install pip %s; fi
+if ! which pip%s > /dev/null; then python%s -m pip install pip %s; fi
 pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, version, verboseFlag, version, nocache, quiet, reqmtsFile.Name(), verboseFlag)
 
 	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdline)
