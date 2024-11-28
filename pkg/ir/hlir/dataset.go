@@ -19,13 +19,15 @@ type S3 struct {
 	CopyIn  `yaml:"copyIn,omitempty"`
 }
 
+type Blob struct {
+	Content  string
+	Encoding string
+}
+
 type Dataset struct {
 	Name      string
 	MountPath string `yaml:"mountPath,omitempty"`
-	Blob      struct {
-		Content  string
-		Encoding string
-	}
+	Blob
 	S3  S3 `yaml:"s3,omitempty"`
 	Nfs struct {
 		Server string

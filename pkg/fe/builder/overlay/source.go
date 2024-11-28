@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/fs"
 	"os"
@@ -53,17 +54,19 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 	maybeImage := ""
 	maybeCommand := ""
 
-	// While walking the directory structure, these are the noteworthy subdirectories
+	// Handle src/ artifacts
 	srcPrefix := filepath.Join(sourcePath, "src")
-
-	err = filepath.WalkDir(sourcePath, func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			// skip directories, except to remember which "mode" we are in
-			return nil
+	if _, err = os.Stat(srcPrefix); err == nil {
+		if opts.Verbose() {
+			fmt.Fprintln(os.Stderr, "Scanning for source files", srcPrefix)
 		}
+		err = filepath.WalkDir(srcPrefix, func(path string, d fs.DirEntry, err error) error {
+			if d.IsDir() {
+				return nil
+			} else if opts.Verbose() {
+				fmt.Fprintln(os.Stderr, "Incorporating source file", path)
+			}
 
-		if strings.HasPrefix(path, srcPrefix) {
-			// Handle src/ artifacts
 			source, err := readString(path)
 			if err != nil {
 				return err
@@ -79,52 +82,70 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 				maybeImage = "docker.io/python:3.12"
 			}
 			return nil
-		}
+		})
+	}
 
-		// Handle non-src artifacts
-		switch d.Name() {
-		case "version", "version.txt":
-			if appVersion, err = handleVersionFile(path); err != nil {
-				return err
-			}
-		case "requirements.txt":
-			req, err := readString(path)
-			if err != nil {
-				return err
-			}
-			spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: req})
-		case "memory", "memory.txt":
-			mem, err := readString(path)
-			if err != nil {
-				return err
-			}
-			spec.MinMemory = mem
-		case "image":
-			image, err := readString(path)
-			if err != nil {
-				return err
-			}
-			spec.Image = image
-		case "command":
-			command, err := readString(path)
-			if err != nil {
-				return err
-			}
-			spec.Command = command
-		case "env.yaml":
-			if b, err := os.ReadFile(path); err != nil {
-				return err
-			} else if err := yaml.Unmarshal(b, &spec.Env); err != nil {
-				return fmt.Errorf("Error parsing env.yaml: %v", err)
-			}
-		default:
-			if opts.Verbose() {
-				fmt.Fprintln(os.Stderr, "Skipping application artifact", strings.Replace(path, sourcePath, "", 1))
+	// Handle blob/ artifacts
+	if err = addBlobs(spec, filepath.Join(sourcePath, "blobs/base64"), "application/base64", opts); err != nil {
+		return
+	}
+	if err = addBlobs(spec, filepath.Join(sourcePath, "blobs/plain"), "", opts); err != nil {
+		return
+	}
+
+	// Handle top-level metadata files
+	var topLevelFiles []fs.DirEntry
+	if topLevelFiles, err = os.ReadDir(sourcePath); err == nil {
+		for _, d := range topLevelFiles {
+			path := filepath.Join(sourcePath, d.Name())
+			switch d.Name() {
+			case "version", "version.txt":
+				if appVersion, err = handleVersionFile(path); err != nil {
+					return
+				}
+			case "requirements.txt":
+				if req, rerr := readString(path); rerr != nil {
+					err = rerr
+					return
+				} else {
+					spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: req})
+				}
+			case "memory", "memory.txt":
+				if mem, rerr := readString(path); rerr != nil {
+					err = rerr
+					return
+				} else {
+					spec.MinMemory = mem
+				}
+			case "image":
+				if image, rerr := readString(path); rerr != nil {
+					err = rerr
+					return
+				} else {
+					spec.Image = image
+				}
+			case "command":
+				if command, rerr := readString(path); rerr != nil {
+					err = rerr
+					return
+				} else {
+					spec.Command = command
+				}
+			case "env.yaml":
+				if b, rerr := os.ReadFile(path); rerr != nil {
+					err = rerr
+					return
+				} else if rerr := yaml.Unmarshal(b, &spec.Env); rerr != nil {
+					err = fmt.Errorf("Error parsing env.yaml: %v", rerr)
+					return
+				}
+			default:
+				if opts.Verbose() {
+					fmt.Fprintln(os.Stderr, "Skipping application artifact", strings.Replace(path, sourcePath, "", 1))
+				}
 			}
 		}
-
-		return nil
-	})
+	}
 
 	if spec.Command == "" && maybeCommand != "" {
 		spec.Command = maybeCommand
@@ -145,4 +166,45 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 	}
 
 	return
+}
+
+func addBlobs(spec *hlir.Spec, blobsPrefix, encoding string, opts Options) error {
+	if _, err := os.Stat(blobsPrefix); err != nil {
+		// no such blobs
+		return nil
+	}
+
+	if opts.Verbose() {
+		fmt.Fprintln(os.Stderr, "Scanning for blob artifacts", blobsPrefix)
+	}
+
+	return filepath.WalkDir(blobsPrefix, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		name, err := filepath.Rel(blobsPrefix, path)
+		if err != nil {
+			return err
+		}
+
+		if encoding == "application/base64" {
+			dst := make([]byte, base64.StdEncoding.EncodedLen(len(content)))
+			base64.StdEncoding.Encode(dst, content)
+			content = dst
+		}
+
+		if opts.Verbose() {
+			fmt.Fprintf(os.Stderr, "Incorporating blob artifact %s with encoding='%s'\n", name, encoding)
+		}
+
+		spec.Datasets = append(spec.Datasets, hlir.Dataset{Name: name, Blob: hlir.Blob{Encoding: encoding, Content: string(content)}})
+
+		return nil
+	})
 }
