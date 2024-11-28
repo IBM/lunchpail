@@ -78,10 +78,8 @@ func requirementsInstall(ctx context.Context, version, requirements string, verb
 		nocache = "--no-cache-dir"
 	}
 
-	quiet := "-q"
-	if verbose {
-		quiet = ""
-	}
+	quiet := ""
+	//quiet := "-q"
 
 	if version == "" || version == "latest" {
 		version = "3"
