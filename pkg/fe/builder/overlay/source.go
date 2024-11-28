@@ -37,6 +37,14 @@ func copySourceIntoTemplate(appname, sourcePath, templatePath string, opts Optio
 	return appVersion, nil
 }
 
+func readString(path string) (string, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(b)), nil
+}
+
 // Formulate an HLIR for the source in the given `sourcePath`
 func applicationFromSource(appname, sourcePath, templatePath string, opts Options) (appVersion string, app hlir.Application, err error) {
 	app = hlir.NewWorkerApplication(appname)
@@ -57,14 +65,13 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 		case path[len(path)-1] == '~':
 			// skip emacs temporary files
 		default:
-			b, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-
 			if strings.HasPrefix(path, srcPrefix) {
 				// Handle src/ artifacts
-				spec.Code = append(spec.Code, hlir.Code{Name: d.Name(), Source: string(b)})
+				source, err := readString(path)
+				if err != nil {
+					return err
+				}
+				spec.Code = append(spec.Code, hlir.Code{Name: d.Name(), Source: source})
 
 				switch d.Name() {
 				case "main.sh":
@@ -84,16 +91,33 @@ func applicationFromSource(appname, sourcePath, templatePath string, opts Option
 					return err
 				}
 			case "requirements.txt":
-				spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: string(b)})
-			case "memory", "memory.txt":
-				spec.MinMemory = string(b)
-			case "image":
-				spec.Image = string(b)
-			case "command":
-				spec.Command = string(b)
-			case "env.yaml":
-				err := yaml.Unmarshal(b, &spec.Env)
+				req, err := readString(path)
 				if err != nil {
+					return err
+				}
+				spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: req})
+			case "memory", "memory.txt":
+				mem, err := readString(path)
+				if err != nil {
+					return err
+				}
+				spec.MinMemory = mem
+			case "image":
+				image, err := readString(path)
+				if err != nil {
+					return err
+				}
+				spec.Image = image
+			case "command":
+				command, err := readString(path)
+				if err != nil {
+					return err
+				}
+				spec.Command = command
+			case "env.yaml":
+				if b, err := os.ReadFile(path); err != nil {
+					return err
+				} else if err := yaml.Unmarshal(b, &spec.Env); err != nil {
 					return fmt.Errorf("Error parsing env.yaml: %v", err)
 				}
 			default:
