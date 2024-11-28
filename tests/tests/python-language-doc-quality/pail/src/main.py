@@ -54,7 +54,7 @@ files_to_use_internal_key = f"{cli_prefix}files_to_use"
 text_lang = getenv(text_lang_key, default_text_lang)
 doc_content_column = getenv(doc_content_column_key, default_doc_content_column)
 
-bad_word_filepath = getenv(bad_word_filepath_key, os.path.join("data/ldnoobw", text_lang))
+bad_word_filepath = getenv(bad_word_filepath_key, os.path.join("ldnoobw", text_lang))
 if bad_word_filepath is not None:
     if os.path.exists(bad_word_filepath):
         print(f"Load badwords found locally from {bad_word_filepath}", file=sys.stderr)
