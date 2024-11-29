@@ -37,7 +37,7 @@ func OverlaySourceOntoPriorBuild(appname, sourcePath string, opts Options) (temp
 
 	case sourcePath != "":
 		// 2c) source in the directory, no HLIR yaml given
-		appVersion, err = copySourceIntoTemplate(appname, sourcePath, templatePath, opts)
+		appVersion, err = copyFilesystemIntoTemplate(appname, sourcePath, templatePath, opts)
 	}
 
 	return
