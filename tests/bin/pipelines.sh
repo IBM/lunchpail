@@ -231,7 +231,7 @@ validate $? $(add 10 "$IN1") "$IN1"
 
 # test the pipeline-demo script
 start "pipeline-demo"
-"$TOP"/hack/pipeline-demo.sh
+"$TOP"/demos/pipelines/run.sh
 validate $?
 
 echo
