@@ -40,6 +40,9 @@ func Run() *cobra.Command {
 	var startupDelay int
 	cmd.Flags().IntVar(&startupDelay, "delay", 0, "Delay (in seconds) before engaging in any work")
 
+	var gunzip bool
+	cmd.Flags().BoolVarP(&gunzip, "gunzip", "z", gunzip, "Gunzip inputs before passing them to the worker logic")
+
 	ccOpts := options.AddCallingConventionOptions(cmd)
 	logOpts := options.AddLogOptions(cmd)
 
@@ -55,6 +58,7 @@ func Run() *cobra.Command {
 
 		return worker.Run(context.Background(), args, worker.Options{
 			Pack:              pack,
+			Gunzip:            gunzip,
 			CallingConvention: ccOpts.CallingConvention,
 			StartupDelay:      startupDelay,
 			PollingInterval:   pollingInterval,

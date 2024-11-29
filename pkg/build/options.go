@@ -43,6 +43,9 @@ type Options struct {
 
 	// Run k concurrent tasks; if k=0 and machine has N cores, then k=N
 	Pack int `yaml:",omitempty"`
+
+	// Gunzip inputs before passing them to the worker logic
+	Gunzip bool `yaml:",omitempty"`
 }
 
 //go:embed buildOptions.json
