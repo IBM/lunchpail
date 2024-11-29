@@ -1,9 +1,11 @@
 package worker
 
 import (
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,7 +35,10 @@ type taskProcessor struct {
 func (p taskProcessor) process(task string) error {
 	task = filepath.Base(task)
 	if p.opts.LogOptions.Verbose {
-		fmt.Fprintf(os.Stderr, "Worker starting task %s\n", task)
+		fmt.Fprintln(os.Stderr, "Worker starting task", task)
+		if p.opts.Gunzip {
+			fmt.Fprintln(os.Stderr, "Uncompressing input before passing it to worker logic")
+		}
 	}
 
 	taskContext := p.opts.RunContext.ForTask(task)
@@ -78,12 +83,23 @@ func (p taskProcessor) process(task string) error {
 	handlerArgs := p.handler[1:]
 	switch p.opts.CallingConvention {
 	case "stdio":
-		var err error
-		stdin, err = os.Open(localprocessing)
+		inReader, err := os.Open(localprocessing)
+		defer inReader.Close()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Internal Error setting up stdin: %v\n", err)
 			return nil
 		}
+		if p.opts.Gunzip {
+			gzipReader, err := gzip.NewReader(stdin)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to gunzip input, passing through original input: %v\n", err)
+			}
+			defer gzipReader.Close()
+			stdin = gzipReader
+		} else {
+			stdin = inReader
+		}
+
 		p.backgroundS3Tasks.Go(func() error {
 			defer stdoutReader.Close()
 			return p.client.StreamingUpload(taskContext.Bucket, taskContext.AsFile(queue.AssignedAndFinished), stdoutReader)
@@ -100,12 +116,24 @@ func (p taskProcessor) process(task string) error {
 		handlerArgs = append(handlerArgs, p.lockfile) // argv[4] is the lockfile
 
 	default:
-		// TODO: support multiple outputs from the handler. #398
 		localoutbox := filepath.Join(p.localdir, "outbox")
 		err := os.MkdirAll(localoutbox, os.ModePerm)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Internal Error creating local outbox:", err)
 			return nil
+		}
+		if p.opts.Gunzip {
+			if gunzipped, err := gunzip(localprocessing); err != nil {
+				errmsg := err.Error()
+				if strings.Contains(errmsg, "unexpected EOF") {
+					// This means the file wasn't gzipped. No need to relay the internal details of that to the user.
+					errmsg = ""
+				}
+				fmt.Fprintln(os.Stderr, "Unable to uncompress input file, treating it as uncompressed", errmsg)
+			} else {
+				localprocessing = gunzipped
+				defer os.Remove(localprocessing) // again (see above for the first such call), because we now have two temp files to remove
+			}
 		}
 		handlerArgs = append(handlerArgs, localprocessing)                                            // argv[1] is input filepath
 		handlerArgs = append(handlerArgs, filepath.Join(localoutbox, filepath.Base(localprocessing))) // argv[2] is suggested output filepath
@@ -210,4 +238,47 @@ func (p taskProcessor) handleOutbox(taskContext queue.RunContext, inprogress, lo
 			return p.client.Moveto(taskContext.Bucket, inprogress, out)
 		})
 	}
+}
+
+func gunzip(filename string) (string, error) {
+	// Open the gzip file
+	gzipFile, err := os.Open(filename)
+	if err != nil {
+		return "", err
+	}
+	defer gzipFile.Close()
+
+	// Create a gzip reader
+	gzipReader, err := gzip.NewReader(gzipFile)
+	if err != nil {
+		return "", err
+	}
+	defer gzipReader.Close()
+
+	var ofile string
+	extension := filepath.Ext(filename)
+	if extension == ".gz" {
+		ofile = strings.TrimSuffix(filename, extension)
+	} else {
+		tmp, err := ioutil.TempFile("", filepath.Base(filename))
+		if err != nil {
+			return "", err
+		}
+		ofile = tmp.Name()
+	}
+
+	// Create the output file
+	outFile, err := os.Create(ofile)
+	if err != nil {
+		return "", err
+	}
+	defer outFile.Close()
+
+	// Copy the decompressed data to the output file
+	_, err = io.Copy(outFile, gzipReader)
+	if err != nil {
+		return "", err
+	}
+
+	return ofile, nil
 }

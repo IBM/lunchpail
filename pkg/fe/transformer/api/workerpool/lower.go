@@ -52,7 +52,7 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 		app.Spec.Env = make(map[string]string)
 	}
 
-	queueArgs := fmt.Sprintf("--step %d --pool %s --worker $LUNCHPAIL_POD_NAME --verbose=%v --debug=%v ",
+	queueArgs := fmt.Sprintf("--step %d --pool %s --worker $LUNCHPAIL_POD_NAME --verbose=%v --debug=%v",
 		ctx.Run.Step,
 		poolName,
 		opts.Log.Verbose,
@@ -68,9 +68,10 @@ func Lower(buildName string, ctx llir.Context, app hlir.Application, pool hlir.W
 	}
 
 	app.Spec.Command = fmt.Sprintf(`trap "$LUNCHPAIL_EXE component worker prestop %s" EXIT
-$LUNCHPAIL_EXE component worker run --pack %d --delay %d --calling-convention %v %s -- %s`,
+$LUNCHPAIL_EXE component worker run --pack %d --gunzip=%v --delay %d --calling-convention %v %s -- %s`,
 		queueArgs,
 		opts.Pack,
+		opts.Gunzip,
 		startupDelay,
 		callingConvention,
 		queueArgs,

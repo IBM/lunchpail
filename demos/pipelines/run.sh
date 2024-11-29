@@ -3,16 +3,16 @@
 set -eo pipefail
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
-TOP="$SCRIPTDIR"/..
+TOP="$SCRIPTDIR"/../..
 
 lp=/tmp/lunchpail
 if [ ! -e $lp ]
 then "$TOP"/hack/setup/cli.sh $lp
 fi
 
-IN1=$(mktemp)
-echo "1" > $IN1
-trap "rm -f $IN1 $fail $add1b $add1c $add1d" EXIT
+INGZIP=$(mktemp)
+echo "1" | gzip > $INGZIP
+trap "rm -f $INGZIP" EXIT
 
 export LUNCHPAIL_NAME="pipeline-demo"
 export LUNCHPAIL_TARGET=${LUNCHPAIL_TARGET:-local}
@@ -84,5 +84,5 @@ else stepk="$stepl" # if we are not intentionally testing kubernetes, then use l
 fi
 
 echo "Launching pipeline"
-$stepl <(echo in1) <(echo in2) <(echo in3) <(echo in4) <(echo in5) <(echo in6) <(echo in7) <(echo in8) <(echo in9) <(echo in10) <(echo in11) <(echo in12) <(echo in13) <(echo in14) <(echo in15) <(echo in16) \
+$stepl --gunzip $INGZIP <(echo in2) <(echo in3) <(echo in4) <(echo in5) <(echo in6) <(echo in7) <(echo in8) <(echo in9) <(echo in10) <(echo in11) <(echo in12) <(echo in13) <(echo in14) <(echo in15) <(echo in16) \
     | $stepk | $stepl | $stepk | $stepl | $stepl | $stepl | $stepl
