@@ -2,7 +2,7 @@
 
 DATA="$TEST_PATH"/pail/test-data
 
-actual=task.1.txt # pkg/boot/up.go currently downloads named pipes (see up_args in settings.sh) to cwd
+actual=1.parquet
 expected="$DATA"/xs/1.expected.parquet.gz
 
 while true

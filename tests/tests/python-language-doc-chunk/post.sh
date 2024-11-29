@@ -4,8 +4,8 @@ DATA="$TEST_PATH"/pail/test-data
 
 for i in $(seq 1 1)
 do
-    actual=task.${i}_0.parquet # pkg/boot/up.go currently downloads named pipes (see up_args in settings.sh) to cwd
-    expected="$DATA"/expected/test$i.parquet.gz
+    actual=test${i}_0.parquet
+    expected="$DATA"/expected/test${i}_0.parquet.gz
 
     while true
     do

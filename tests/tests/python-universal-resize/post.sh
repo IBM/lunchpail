@@ -29,9 +29,9 @@ function validate {
     rm -f "$actual"
 }
 
-validate task.1_0.parquet "$DATA"/expected/task.1_0.parquet.gz
-validate task.1_1.parquet "$DATA"/expected/task.1_1.parquet.gz
-validate task.2_0.parquet "$DATA"/expected/task.2_0.parquet.gz
-validate task.2_1.parquet "$DATA"/expected/task.2_1.parquet.gz
-validate task.3_0.parquet "$DATA"/expected/task.3_0.parquet.gz
-validate task.3_1.parquet "$DATA"/expected/task.3_1.parquet.gz
+validate test1_0.parquet "$DATA"/expected/test1_0.parquet.gz
+validate test1_1.parquet "$DATA"/expected/test1_1.parquet.gz
+validate test2_0.parquet "$DATA"/expected/test2_0.parquet.gz
+validate test2_1.parquet "$DATA"/expected/test2_1.parquet.gz
+validate test3_0.parquet "$DATA"/expected/test3_0.parquet.gz
+validate test3_1.parquet "$DATA"/expected/test3_1.parquet.gz

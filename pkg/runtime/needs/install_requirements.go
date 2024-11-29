@@ -95,13 +95,29 @@ pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, versio
 	cmd.Stdout = os.Stderr // Stderr so as not to collide with `lunchpail needs` stdout
 	cmd.Stderr = os.Stderr
 
+	alreadyCleanedUp := false
+	installSuccessful := false
+	go func() {
+		select {
+		case <-ctx.Done():
+			if !installSuccessful && !alreadyCleanedUp {
+				if err := os.RemoveAll(venvPath); err != nil {
+					fmt.Fprintln(os.Stderr, "Unable to clean up venv cache directory after pip install failure", err)
+				}
+				alreadyCleanedUp = true
+			}
+		}
+	}()
+
 	if err := cmd.Run(); err != nil {
 		// Clean up the venv cache directory, since we failed at populating it
 		if err := os.RemoveAll(venvPath); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to clean up venv cache directory after pip install failure", err)
 		}
+		alreadyCleanedUp = true
 		return path, err
 	}
+	installSuccessful = true
 
 	return path, nil
 }
