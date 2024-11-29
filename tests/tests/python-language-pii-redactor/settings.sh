@@ -6,4 +6,4 @@ NUM_DESIRED_OUTPUTS=0
 # the default is --yaml. we don't want that
 source_from=" "
 
-up_args='<(gunzip -c "$TEST_PATH"/pail/test-data/xs/1.parquet.gz)'
+up_args='--gunzip "$TEST_PATH"/pail/test-data/xs/1.parquet.gz'
