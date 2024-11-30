@@ -11,7 +11,7 @@ do
 
     ext=${b##*.}
     bb=${b%%.*}
-    actual="$(dirname $i)"/"$bb".output.$ext
+    actual=$bb.parquet
     expected="$DATA"/expected/$bb.parquet.gz
 
     while true
