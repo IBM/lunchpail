@@ -15,7 +15,7 @@ type StageOptions struct {
 }
 
 // return (templatePath, error)
-func StageForBuilder(appname string, opts StageOptions) (string, error) {
+func StageForBuilder(opts StageOptions) (string, error) {
 	// TODO overlay on kube/common?
 	templatePath, err := ioutil.TempDir("", "lunchpail")
 	if err != nil {
@@ -34,8 +34,7 @@ func StageForBuilder(appname string, opts StageOptions) (string, error) {
 
 // return (templatePath, error)
 func StageForRun(opts StageOptions) (string, error) {
-	appname := Name()
-	templatePath, err := StageForBuilder(appname, opts)
+	templatePath, err := StageForBuilder(opts)
 
 	// TODO we could parallelize these two, but the overhead is probably not worth it
 	if err := emitPlaceholderChartYaml(templatePath); err != nil {

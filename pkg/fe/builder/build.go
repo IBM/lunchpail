@@ -50,7 +50,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	fmt.Fprintf(os.Stderr, "Building %s\n", buildName)
 
 	// Third, overlay source (if given)
-	appTemplatePath, appVersion, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, opts.OverlayOptions)
+	appTemplatePath, appVersion, hasTestData, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, opts.OverlayOptions)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	}
 
 	// Fifth, tell the build about itself (its name, version)
-	if err := build.DropBreadcrumbs(buildName, appVersion, opts.OverlayOptions.BuildOptions, lunchpailStageDir); err != nil {
+	if err := build.DropBreadcrumbs(buildName, appVersion, hasTestData, opts.OverlayOptions.BuildOptions, lunchpailStageDir); err != nil {
 		return err
 	}
 
