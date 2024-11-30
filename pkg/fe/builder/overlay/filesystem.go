@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -192,6 +193,19 @@ func (b filesystemBuilder) addMetadata(spec *hlir.Spec, sourcePath string) (appV
 					return
 				} else {
 					spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: req})
+				}
+			case "requirements_linux_ci.txt":
+				if os.Getenv("CI") != "" && runtime.GOOS == "linux" {
+					if req, rerr := b.readString(path); rerr != nil {
+						err = rerr
+						return
+					} else {
+						if needsIdx := slices.IndexFunc(spec.Needs, func(needs hlir.Needs) bool { return needs.Name == "python" }); needsIdx >= 0 {
+							// splice out prior requirements.txt Needs
+							spec.Needs = append(spec.Needs[:needsIdx], spec.Needs[needsIdx+1:]...)
+						}
+						spec.Needs = append(spec.Needs, hlir.Needs{Name: "python", Version: "latest", Requirements: req})
+					}
 				}
 			case "memory", "memory.txt":
 				if mem, rerr := b.readString(path); rerr != nil {
