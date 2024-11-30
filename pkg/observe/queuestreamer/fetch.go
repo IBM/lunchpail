@@ -6,8 +6,6 @@ import (
 	"os"
 	"slices"
 	"strconv"
-
-	"lunchpail.io/pkg/ir/queue"
 )
 
 // We want to identify four classes of changes:
@@ -214,12 +212,6 @@ func (c client) fetchModel(anyStep bool) Model {
 	var m Model
 
 	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.ListenPrefixForAnyStep(anyStep), true) {
-		if c.LogOptions.Debug {
-			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
-		}
-		m.update(o.Key, c.pathPatterns)
-	}
-	for o := range c.s3.ListObjects(c.RunContext.Bucket, c.RunContext.AsFile(queue.AssignedAndFinished), true) {
 		if c.LogOptions.Debug {
 			fmt.Fprintf(os.Stderr, "Updating model for: %s\n", o.Key)
 		}
