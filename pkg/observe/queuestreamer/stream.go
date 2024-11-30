@@ -93,15 +93,15 @@ func once(ctx context.Context, c client, modelChan chan Model, doneChan chan str
 				fmt.Fprintf(os.Stderr, "Queue streamer got push notification object=%s\n", obj)
 			}
 
+			// fetch and parse model
+			modelChan <- c.fetchModel(opts.AnyStep)
+
 			if obj == allDoneMarker {
 				if c.LogOptions.Verbose {
 					fmt.Fprintln(os.Stderr, "Queue streamer got all done")
 				}
 				return nil
 			}
-
-			// fetch and parse model
-			modelChan <- c.fetchModel(opts.AnyStep)
 		}
 	}
 }

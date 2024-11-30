@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/ir/hlir"
 )
 
 // This utility combines two pieces:
@@ -13,11 +14,11 @@ import (
 // Note: we may have been given no source artifacts, if the user has
 // asked to re-build, only changing or adding --set values but not
 // changing/adding source
-func OverlaySourceOntoPriorBuild(appname, sourcePath string, opts Options) (templatePath string, appVersion string, err error) {
+func OverlaySourceOntoPriorBuild(appname, sourcePath string, opts Options) (templatePath string, appVersion string, testData hlir.TestData, err error) {
 	appVersion = build.AppVersion()
 
 	// 1) stage what was previously built to a local directory, via build.StageAppTemplate()
-	if templatePath, err = build.StageForBuilder(appname, build.StageOptions{Verbose: opts.Verbose()}); err != nil {
+	if templatePath, err = build.StageForBuilder(build.StageOptions{Verbose: opts.Verbose()}); err != nil {
 		return
 	}
 
@@ -37,7 +38,7 @@ func OverlaySourceOntoPriorBuild(appname, sourcePath string, opts Options) (temp
 
 	case sourcePath != "":
 		// 2c) source in the directory, no HLIR yaml given
-		appVersion, err = copyFilesystemIntoTemplate(appname, sourcePath, templatePath, opts)
+		appVersion, testData, err = copyFilesystemIntoTemplate(appname, sourcePath, templatePath, opts)
 	}
 
 	return

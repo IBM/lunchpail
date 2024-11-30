@@ -12,6 +12,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/hlir"
 )
 
@@ -22,26 +23,29 @@ type filesystemBuilder struct {
 
 // Formulate an HLIR for the source in the given `sourcePath`
 // filesystem and write it out to the `templatePath`
-func copyFilesystemIntoTemplate(appname, sourcePath, templatePath string, opts Options) (appVersion string, err error) {
+func copyFilesystemIntoTemplate(appname, sourcePath, templatePath string, opts Options) (appVersion string, testData hlir.TestData, err error) {
 	if opts.Verbose() {
 		fmt.Fprintln(os.Stderr, "Copying application source into", appdir(templatePath))
 	}
 
-	appVersion, app, err := filesystemBuilder{appname, opts.Verbose()}.scan(sourcePath)
+	var app hlir.Application
+	appVersion, app, err = filesystemBuilder{appname, opts.Verbose()}.scan(sourcePath, templatePath)
 	if err != nil {
-		return "", err
+		return
 	}
 
-	b, err := yaml.Marshal(app)
+	var b []byte
+	b, err = yaml.Marshal(app)
 	if err != nil {
-		return "", err
+		return
 	}
 
-	if err := os.WriteFile(filepath.Join(appdir(templatePath), "app.yaml"), b, 0644); err != nil {
-		return "", err
+	if err = os.WriteFile(filepath.Join(appdir(templatePath), "app.yaml"), b, 0644); err != nil {
+		return
 	}
 
-	return appVersion, nil
+	testData = app.Spec.TestData
+	return
 }
 
 func (_ filesystemBuilder) readString(path string) (string, error) {
@@ -53,7 +57,7 @@ func (_ filesystemBuilder) readString(path string) (string, error) {
 }
 
 // Formulate an HLIR for the source in the given `sourcePath`
-func (b filesystemBuilder) scan(sourcePath string) (appVersion string, app hlir.Application, err error) {
+func (b filesystemBuilder) scan(sourcePath, templatePath string) (appVersion string, app hlir.Application, err error) {
 	app = hlir.NewWorkerApplication(b.appname)
 	spec := &app.Spec
 
@@ -72,6 +76,11 @@ func (b filesystemBuilder) scan(sourcePath string) (appVersion string, app hlir.
 		return
 	}
 	if err = b.addBlobs(spec, filepath.Join(sourcePath, "blobs/plain"), ""); err != nil {
+		return
+	}
+
+	// Handle test-data/ artifacts
+	if err = b.addTestData(spec, sourcePath, templatePath); err != nil {
 		return
 	}
 
@@ -222,6 +231,46 @@ func (b filesystemBuilder) addMetadata(spec *hlir.Spec, sourcePath string) (appV
 	}
 
 	return
+}
+
+func (b filesystemBuilder) addTestData(spec *hlir.Spec, sourcePath, templatePath string) error {
+	templateTestDataDir := build.TestDataDirFor(templatePath)
+	templateTestDataDirForInput := build.TestDataDirForInput(templatePath)
+	templateTestDataDirForExpected := build.TestDataDirForExpected(templatePath)
+
+	testDataDir := filepath.Join(sourcePath, "test-data")
+	inputDir := filepath.Join(testDataDir, filepath.Base(templateTestDataDirForInput))
+	expectedDir := filepath.Join(testDataDir, filepath.Base(templateTestDataDirForExpected))
+
+	if d, err := os.Stat(testDataDir); err == nil && d.IsDir() {
+		if err := os.CopyFS(templateTestDataDir, os.DirFS(testDataDir)); err != nil {
+			return err
+		}
+	}
+
+	if inputs, err := os.ReadDir(inputDir); err == nil {
+		for _, input := range inputs {
+			if !input.IsDir() {
+				test := hlir.TestDatum{Name: input.Name(), Input: input.Name()}
+
+				output := filepath.Join(expectedDir, input.Name())
+				if _, err := os.Stat(output); err != nil {
+					// Then the application does not provided expected output
+					fmt.Fprintln(os.Stderr, "Warning: expected output not provided for", input.Name())
+				} else {
+					test.Expected = input.Name()
+				}
+
+				spec.TestData = append(spec.TestData, test)
+			}
+		}
+	}
+
+	if b.verbose && len(spec.TestData) > 0 {
+		fmt.Fprintf(os.Stderr, "Application provided %d test inputs\n", len(spec.TestData))
+	}
+
+	return nil
 }
 
 // If we now know the specific python version needed (e.g. because of

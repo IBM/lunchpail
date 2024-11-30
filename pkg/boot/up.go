@@ -27,6 +27,7 @@ type UpOptions struct {
 	BuildOptions build.Options
 	Executable   string
 	NoRedirect   bool
+	RedirectTo   string
 }
 
 func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
@@ -153,11 +154,9 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 					// Then Minio went away on its own. That's probably ok.
 					errorFromAllDone = nil
 				}
-				alldone <- struct{}{}
-				cancel()
-			} else {
-				alldone <- struct{}{}
 			}
+			alldone <- struct{}{} // once for here
+			alldone <- struct{}{} // once for redirect
 		}
 	}()
 
@@ -173,7 +172,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			}
 
 			defer func() { redirectDone <- struct{}{} }()
-			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, opts.NoRedirect, *opts.BuildOptions.Log); err != nil {
+			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, alldone, opts.NoRedirect, opts.RedirectTo, *opts.BuildOptions.Log); err != nil {
 				errorFromIo = err
 				cancel()
 			}

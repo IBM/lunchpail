@@ -30,6 +30,7 @@ type Spec struct {
 	Needs                    []Needs                  `yaml:"needs,omitempty"`
 	IsDispatcher             bool                     `yaml:"isDispatcher,omitempty"`
 	CallingConvention        `yaml:"callingConvention,omitempty"`
+	TestData                 `yaml:"testData,omitempty"`
 }
 
 type Application struct {

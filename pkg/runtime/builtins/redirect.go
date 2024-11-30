@@ -15,7 +15,7 @@ import (
 	s3 "lunchpail.io/pkg/runtime/queue"
 )
 
-func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, folderFor func(object string) string, opts build.LogOptions) error {
+func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, folderFor func(object string) string, alldone <-chan struct{}, opts build.LogOptions) error {
 	outbox := run.AsFile(queue.AssignedAndFinished)
 	outboxObjects, outboxErrs := client.Listen(run.Bucket, outbox, "", false)
 
@@ -35,7 +35,7 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 				ext := filepath.Ext(object)
 				withoutExt := object[0 : len(object)-len(ext)]
 				dst2 := filepath.Join(dstFolder, strings.Replace(withoutExt, outbox+"/", "", 1)+".output"+ext)
-				fmt.Fprintf(os.Stderr, "Refusing to overwrite existing file %s. Using %s instead.", dst, dst2)
+				fmt.Fprintf(os.Stderr, "Refusing to overwrite existing file %s. Using %s instead.\n", dst, dst2)
 				dst = dst2
 			}
 			if opts.Verbose {
@@ -63,6 +63,8 @@ func RedirectTo(ctx context.Context, client s3.S3Client, run queue.RunContext, f
 	for !done {
 		select {
 		case <-ctx.Done():
+			done = true
+		case <-alldone:
 			done = true
 		case err := <-outboxErrs:
 			if err == nil || strings.Contains(err.Error(), "EOF") {

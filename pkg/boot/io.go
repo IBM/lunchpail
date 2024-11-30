@@ -18,7 +18,7 @@ import (
 )
 
 // Behave like `cat inputs | ... > outputs`
-func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, noRedirect bool, opts build.LogOptions) error {
+func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir llir.LLIR, alldone <-chan struct{}, noRedirect bool, redirectTo string, opts build.LogOptions) error {
 	client, err := s3.NewS3ClientForRun(ctx, backend, ir.Context.Run, opts)
 	if err != nil {
 		return err
@@ -69,6 +69,10 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 		// may be a fool's errand, e.g. what if a single input
 		// results in two outputs?
 		folderFor := func(output string) string {
+			if redirectTo != "" {
+				// We were asked to redirect to a particular directory
+				return redirectTo
+			}
 			inIdx := slices.IndexFunc(inputs, func(in string) bool { return filepath.Base(in) == output })
 			if inIdx >= 0 {
 				return filepath.Dir(inputs[inIdx])
@@ -78,7 +82,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 		if opts.Verbose {
 			fmt.Fprintln(os.Stderr, "up is redirecting output files", os.Args)
 		}
-		if err := builtins.RedirectTo(ctx, client.S3Client, client.RunContext, folderFor, opts); err != nil {
+		if err := builtins.RedirectTo(ctx, client.S3Client, client.RunContext, folderFor, alldone, opts); err != nil {
 			return err
 		}
 	}

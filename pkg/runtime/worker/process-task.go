@@ -116,7 +116,7 @@ func (p taskProcessor) process(task string) error {
 		handlerArgs = append(handlerArgs, p.lockfile) // argv[4] is the lockfile
 
 	default:
-		localoutbox := filepath.Join(p.localdir, "outbox")
+		localoutbox := filepath.Join(p.localdir, "outbox", strings.Replace(task, "/", "_", -1))
 		err := os.MkdirAll(localoutbox, os.ModePerm)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Internal Error creating local outbox:", err)
@@ -141,7 +141,7 @@ func (p taskProcessor) process(task string) error {
 		handlerArgs = append(handlerArgs, p.lockfile)                                                 // argv[4] is the lockfile
 		// Note: we will RemoveAll(localoutbox) in handleOutbox
 
-		defer func() { p.handleOutbox(taskContext, inprogress, localoutbox, doneMovingToProcessing) }()
+		defer p.handleOutbox(taskContext, inprogress, localoutbox, doneMovingToProcessing)
 	}
 
 	handlercmd := exec.CommandContext(p.ctx, p.handler[0], handlerArgs...)
