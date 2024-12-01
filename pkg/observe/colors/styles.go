@@ -23,21 +23,34 @@ var Red = lipgloss.NewStyle().Foreground(redColor)
 var Gray = lipgloss.NewStyle().Foreground(grayColor)
 var Cyan = lipgloss.NewStyle().Foreground(cyanColor)
 
+var BlueBackground = lipgloss.NewStyle().Background(blueColor).Foreground(blackColor).Padding(0, 1)
+var LightBlueBackground = lipgloss.NewStyle().Background(lightblueColor).Foreground(blackColor).Padding(0, 1)
+var LightBrownBackground = lipgloss.NewStyle().Background(lightbrownColor).Foreground(blackColor).Padding(0, 1)
+var GrayBackground = lipgloss.NewStyle().Background(grayColor).Foreground(blackColor).Padding(0, 1)
+var RedBackground = lipgloss.NewStyle().Background(redColor).Foreground(blackColor).Padding(0, 1)
+var Spectrum = []lipgloss.Style{
+	BlueBackground,
+	LightBlueBackground,
+	LightBrownBackground,
+	GrayBackground,
+	RedBackground,
+}
+
 // https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
 var DispatcherMessageStyle = lipgloss.NewStyle().Foreground(blueColor)
-var DispatcherComponentStyle = lipgloss.NewStyle().Background(blueColor).Foreground(blackColor).Padding(0, 1)
+var DispatcherComponentStyle = BlueBackground
 
 var WorkersMessageStyle = lipgloss.NewStyle().Foreground(lightblueColor)
-var WorkersComponentStyle = lipgloss.NewStyle().Background(lightblueColor).Foreground(blackColor).Padding(0, 1)
+var WorkersComponentStyle = LightBlueBackground
 
 var WorkStealerMessageStyle = lipgloss.NewStyle().Foreground(lightbrownColor).Faint(true)
-var WorkStealerComponentStyle = lipgloss.NewStyle().Background(lightbrownColor).Foreground(blackColor).Padding(0, 1)
+var WorkStealerComponentStyle = LightBrownBackground
 
 var MinioComponentStyle = lipgloss.NewStyle().Background(lightyellowColor).Foreground(blackColor).Padding(0, 1)
 
-var ClusterComponentStyle = lipgloss.NewStyle().Background(grayColor).Foreground(blackColor).Padding(0, 1)
+var ClusterComponentStyle = GrayBackground
 var OtherComponentStyle = lipgloss.NewStyle().Padding(0, 1)
-var ErrorComponentStyle = lipgloss.NewStyle().Background(redColor).Foreground(blackColor).Padding(0, 1)
+var ErrorComponentStyle = RedBackground
 
 func ComponentStyle(c lunchpail.Component) lipgloss.Style {
 	switch c {

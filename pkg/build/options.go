@@ -46,6 +46,9 @@ type Options struct {
 
 	// Gunzip inputs before passing them to the worker logic
 	Gunzip bool `yaml:",omitempty"`
+
+	// Clean up any caches prior to exiting
+	AutoClean bool `yaml:"autoClean,omitempty"`
 }
 
 //go:embed buildOptions.json

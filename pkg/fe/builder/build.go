@@ -9,6 +9,7 @@ import (
 
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe/builder/overlay"
+	"lunchpail.io/pkg/observe/colors"
 	"lunchpail.io/pkg/util"
 )
 
@@ -47,7 +48,7 @@ func Build(ctx context.Context, sourcePath string, opts Options) error {
 	// Second, pick a name for the resulting build. TODO: allow command line override?
 	buildName := buildNameFrom(sourcePath)
 
-	fmt.Fprintf(os.Stderr, "Building %s\n", buildName)
+	fmt.Fprintf(os.Stderr, "%s Building...\n", colors.Yellow.Render(buildName))
 
 	// Third, overlay source (if given)
 	appTemplatePath, appVersion, hasTestData, err := overlay.OverlaySourceOntoPriorBuild(buildName, sourcePath, opts.OverlayOptions)

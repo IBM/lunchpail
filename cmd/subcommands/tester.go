@@ -9,7 +9,6 @@ import (
 
 	"lunchpail.io/cmd/options"
 	"lunchpail.io/pkg/be"
-	"lunchpail.io/pkg/be/target"
 	"lunchpail.io/pkg/boot"
 	"lunchpail.io/pkg/build"
 )
@@ -27,16 +26,19 @@ func init() {
 			panic(err)
 		}
 
+		quiet := false
+		cmd.Flags().BoolVarP(&quiet, "quiet", "q", quiet, "Do not show stdout of application being tested")
+
 		cmd.RunE = func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			buildOpts.Target.Platform = target.Local
-			backend, err := be.New(ctx, *buildOpts)
+			buildOpts.CreateNamespace = true
+			backend, err := be.NewInitOk(ctx, true, *buildOpts)
 			if err != nil {
 				return err
 			}
 
-			return boot.Tester{Backend: backend, Options: *buildOpts}.RunAll(ctx)
+			return boot.Tester{Quiet: quiet, Backend: backend, Options: *buildOpts}.RunAll(ctx)
 		}
 
 		rootCmd.AddCommand(cmd)

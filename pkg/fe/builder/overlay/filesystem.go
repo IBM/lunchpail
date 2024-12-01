@@ -9,12 +9,15 @@ import (
 	"regexp"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 
+	"github.com/dustin/go-humanize/english"
 	"gopkg.in/yaml.v3"
 
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/hlir"
+	"lunchpail.io/pkg/observe/colors"
 )
 
 type filesystemBuilder struct {
@@ -269,10 +272,32 @@ func (b filesystemBuilder) addTestData(spec *hlir.Spec, sourcePath, templatePath
 
 				output := filepath.Join(expectedDir, input.Name())
 				if _, err := os.Stat(output); err != nil {
-					// Then the application does not provided expected output
-					fmt.Fprintln(os.Stderr, "Warning: expected output not provided for", input.Name())
+					// Hmm, check if it exists with a .gz extension
+					output = filepath.Join(expectedDir, input.Name()+".gz")
+					if _, err := os.Stat(output); err != nil {
+						// Hmm, check if it exists with _0, _1, ... extensions
+						idx := strings.Index(input.Name(), ".")
+						if idx >= 0 {
+							outputNum := 0
+							for {
+								output = filepath.Join(expectedDir, input.Name()[:idx]+"_"+strconv.Itoa(outputNum)+input.Name()[idx:])
+								if _, err := os.Stat(output); err != nil {
+									break
+								}
+								test.Expected = append(test.Expected, filepath.Base(output))
+								outputNum++
+							}
+						}
+					} else {
+						test.Expected = []string{filepath.Base(output)}
+					}
 				} else {
-					test.Expected = input.Name()
+					test.Expected = []string{filepath.Base(output)}
+				}
+
+				if len(test.Expected) == 0 {
+					// Then the application does not provided expected output
+					fmt.Fprintf(os.Stderr, "%s Warning: expected output not provided for %s\n", colors.Yellow.Render(b.appname), input.Name())
 				}
 
 				spec.TestData = append(spec.TestData, test)
@@ -280,8 +305,8 @@ func (b filesystemBuilder) addTestData(spec *hlir.Spec, sourcePath, templatePath
 		}
 	}
 
-	if b.verbose && len(spec.TestData) > 0 {
-		fmt.Fprintf(os.Stderr, "Application provided %d test inputs\n", len(spec.TestData))
+	if len(spec.TestData) > 0 {
+		fmt.Fprintf(os.Stderr, "%s Application provided %s\n", colors.Yellow.Render(b.appname), english.Plural(len(spec.TestData), "test input", ""))
 	}
 
 	return nil

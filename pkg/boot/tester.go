@@ -20,6 +20,7 @@ import (
 )
 
 type Tester struct {
+	Quiet bool
 	be.Backend
 	build.Options
 }
@@ -48,7 +49,10 @@ func (t Tester) prepareInputs(testData hlir.TestData, stageDir string) (inputs [
 	expectedDir := build.TestDataDirForExpected(stageDir)
 	for _, test := range testData {
 		inputs = append(inputs, filepath.Join(inputDir, test.Input))
-		outputs = append(outputs, filepath.Join(expectedDir, test.Expected))
+
+		for _, expected := range test.Expected {
+			outputs = append(outputs, filepath.Join(expectedDir, expected))
+		}
 	}
 
 	if t.Options.Verbose() {
@@ -59,7 +63,7 @@ func (t Tester) prepareInputs(testData hlir.TestData, stageDir string) (inputs [
 }
 
 func (t Tester) Run(ctx context.Context, inputs []string, expected []string) error {
-	fmt.Fprintf(os.Stderr, "Scheduling %s for %s\n", english.Plural(len(inputs), "test", ""), build.Name())
+	fmt.Fprintf(os.Stderr, "Testing %s\n", english.Plural(len(inputs), "input", ""))
 
 	if slices.IndexFunc(inputs, func(input string) bool { return filepath.Ext(input) == ".gz" }) >= 0 {
 		t.Options.Gunzip = true
@@ -73,7 +77,9 @@ func (t Tester) Run(ctx context.Context, inputs []string, expected []string) err
 		defer os.RemoveAll(redirectTo)
 	}
 
-	if err := Up(ctx, t.Backend, UpOptions{Inputs: inputs, BuildOptions: t.Options, RedirectTo: redirectTo}); err != nil {
+	if runContext, err := Up(ctx, t.Backend, UpOptions{Inputs: inputs, BuildOptions: t.Options, RedirectTo: redirectTo, Watch: !t.Quiet}); err != nil {
+		return err
+	} else if err := Down(ctx, runContext.Run.RunName, t.Backend, DownOptions{Namespace: t.Options.Target.Namespace, Verbose: t.Options.Verbose()}); err != nil {
 		return err
 	}
 
@@ -105,8 +111,8 @@ func (t Tester) validate(inputs []string, expecteds []string, redirectTo string)
 	}
 
 	found := 0
-	for idx, expected := range expecteds {
-		expectedFileName := filepath.Base(inputs[idx])
+	for _, expected := range expecteds {
+		expectedFileName := filepath.Base(expected)
 
 		// TODO O(N^2)
 		for _, actual := range actuals {
@@ -128,7 +134,7 @@ func (t Tester) validate(inputs []string, expecteds []string, redirectTo string)
 				if ok, err := t.equal(matchesWithGunzip, expectedBytes, actualBytes); err != nil {
 					return err
 				} else if !ok {
-					return fmt.Errorf("actual!=expected for %s", filepath.Base(inputs[idx]))
+					return fmt.Errorf("actual!=expected for %s", expectedFileName)
 				}
 			}
 		}
