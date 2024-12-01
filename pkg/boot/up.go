@@ -24,24 +24,26 @@ type UpOptions struct {
 	Inputs       []string
 	DryRun       bool
 	Watch        bool
+	WatchUtil    bool
 	BuildOptions build.Options
 	Executable   string
 	NoRedirect   bool
 	RedirectTo   string
 }
 
-func Up(ctx context.Context, backend be.Backend, opts UpOptions) error {
+func Up(ctx context.Context, backend be.Backend, opts UpOptions) (llir.Context, error) {
 	pipelineContext, err := handlePipelineStdin()
 	if err != nil {
-		return err
+		return llir.Context{}, err
 	}
 
 	ir, err := fe.PrepareForRun(pipelineContext, fe.PrepareOptions{}, opts.BuildOptions)
 	if err != nil {
-		return err
+		return llir.Context{}, err
 	}
 
-	return upLLIR(ctx, backend, ir, opts)
+	err = upLLIR(ctx, backend, ir, opts)
+	return ir.Context, err
 }
 
 func UpHLIR(ctx context.Context, backend be.Backend, ir hlir.HLIR, opts UpOptions) error {
@@ -111,7 +113,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		}
 	}()
 
-	if opts.Watch && !util.StdoutIsTty() {
+	if opts.Watch && opts.RedirectTo == "" && !util.StdoutIsTty() {
 		// if stdout is not a tty, then we can't support
 		// watch, no matter what the user asked for
 		fmt.Fprintf(os.Stderr, "Warning: disabling watch mode because stdout is not a tty\n")
@@ -188,7 +190,10 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			case <-isRunning6:
 			}
 			go watchLogs(cancellable, backend, ir, logsDone, WatchOptions{Verbose: verbose})
-			go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
+
+			if opts.WatchUtil {
+				go watchUtilization(cancellable, backend, ir, WatchOptions{Verbose: verbose})
+			}
 		}()
 	}
 
@@ -196,8 +201,10 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		select {
 		case <-cancellable.Done():
 		case ctx := <-isRunning6:
-			if err := handlePipelineStdout(ctx); err != nil {
-				fmt.Fprintln(os.Stderr, err)
+			if opts.RedirectTo == "" {
+				if err := handlePipelineStdout(ctx); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
 			}
 		}
 	}()

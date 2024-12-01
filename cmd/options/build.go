@@ -39,6 +39,7 @@ func AddBuildOptions(cmd *cobra.Command) (*build.Options, error) {
 
 	cmd.Flags().IntVar(&options.Pack, "pack", options.Pack, "Run k concurrent tasks; if k=0 and machine has N cores, then k=N")
 	cmd.Flags().BoolVarP(&options.Gunzip, "gunzip", "z", options.Gunzip, "Gunzip inputs before passing them to the worker logic")
+	cmd.Flags().BoolVar(&options.AutoClean, "auto-clean", options.AutoClean, "Clean up any caches prior to exiting")
 
 	AddTargetOptionsTo(cmd, &options)
 	AddLogOptionsTo(cmd, &options)

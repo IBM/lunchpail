@@ -48,6 +48,11 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 	app.Spec.Env["LUNCHPAIL_STEP"] = strconv.Itoa(ctx.Run.Step)
 	app.Spec.Env["LUNCHPAIL_QUEUE_BUCKET"] = ctx.Queue.Bucket
 
+	clean := ""
+	if opts.AutoClean {
+		clean = `trap "echo 'Cleaning up venv $(dirname $venvBin)'; rm -rf $(dirname $venvBin)" EXIT`
+	}
+
 	for _, needs := range app.Spec.Needs {
 		var req string
 
@@ -59,8 +64,10 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 		}
 
 		component.Spec.Command = fmt.Sprintf(`set -e
-PATH=$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v):$PATH
-%s`, needs.Name, needs.Version, req, opts.Log.Verbose, component.Spec.Command)
+venvBin="$($LUNCHPAIL_EXE needs %s %s %s --verbose=%v)"
+PATH="$venvBin":$PATH
+%s
+%s`, needs.Name, needs.Version, req, opts.Log.Verbose, clean, component.Spec.Command)
 	}
 
 	for _, dataset := range app.Spec.Datasets {

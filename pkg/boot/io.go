@@ -63,7 +63,7 @@ func catAndRedirect(ctx context.Context, inputs []string, backend be.Backend, ir
 	// TODO: backend.Wait(ir)? which would be a no-op for local
 
 	// If we aren't piped into anything, then copy out the outbox files
-	if isFinalStep(ir.Context) && !noRedirect {
+	if redirectTo != "" || isFinalStep(ir.Context) && !noRedirect {
 		// We try to place the output files in the same
 		// directory as the respective input files. TODO: this
 		// may be a fool's errand, e.g. what if a single input

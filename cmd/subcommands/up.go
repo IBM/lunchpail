@@ -68,7 +68,8 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		return boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, Inputs: args, Executable: os.Args[0], NoRedirect: noRedirect})
+		_, err = boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, WatchUtil: watchFlag, Inputs: args, Executable: os.Args[0], NoRedirect: noRedirect})
+		return err
 	}
 
 	return cmd
