@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,11 +17,9 @@ import (
 	"github.com/elotl/cloud-init/config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/sync/errgroup"
+	q "lunchpail.io/pkg/ir/queue"
 
-	"lunchpail.io/pkg/be/kubernetes"
-	"lunchpail.io/pkg/be/kubernetes/common"
 	"lunchpail.io/pkg/ir/llir"
-	"lunchpail.io/pkg/lunchpail"
 	"lunchpail.io/pkg/util"
 )
 
@@ -51,7 +49,7 @@ func (i *intCounter) inc() {
 	i.lock.Unlock()
 }
 
-func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.ShellComponent, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options) (*vpcv1.Instance, error) {
+func createInstance(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, vpcID string, keyID string, zone string, profile string, subnetID string, secGroupID string, imageID string, namespace string, copts llir.Options, cc *config.CloudConfig) (*vpcv1.Instance, error) {
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name: &name,
 		Subnet: &vpcv1.SubnetIdentityByID{
@@ -60,29 +58,6 @@ func createInstance(vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, c llir.S
 		SecurityGroups: []vpcv1.SecurityGroupIdentityIntf{&vpcv1.SecurityGroupIdentityByID{
 			ID: &secGroupID,
 		}},
-	}
-
-	// TODO pass through actual Cli Options?
-	opts := common.Options{Options: copts}
-
-	appYamlString, err := kubernetes.MarshalComponentAsStandalone(ir, c, namespace, opts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshall yaml: %v", err)
-	}
-	cc := &config.CloudConfig{
-		WriteFiles: []config.File{
-			{
-				Path:               "/app.yaml",
-				Content:            appYamlString,
-				Owner:              "root:root",
-				RawFilePermissions: "0644",
-			}},
-		RunCmd: []string{"sleep 10", //Minimum of 10 seconds needed for cluster to be able to run `apply`
-			"while ! kind get clusters | grep lunchpail; do sleep 2; done",
-			"echo 'Kind cluster is ready'",
-			"env HOME=/root kubectl create ns " + namespace,
-			"n=0; until [ $n -ge 60 ]; do env HOME=/root kubectl get serviceaccount default -o name -n " + namespace + " && break; n=$((n + 1)); sleep 1; done",
-			"env HOME=/root kubectl create -f /app.yaml -n " + namespace},
 	}
 
 	instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
@@ -273,104 +248,137 @@ func createVPC(vpcService *vpcv1.VpcV1, name string, appName string, resourceGro
 	return *vpc.ID, nil
 }
 
-func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options) error {
+func createImage(vpcService *vpcv1.VpcV1, name string, resourceGroupID string, vmID string) (string, error) {
+	options := &vpcv1.CreateImageOptions{
+		ImagePrototype: &vpcv1.ImagePrototype{
+			Name: &name,
+			ResourceGroup: &vpcv1.ResourceGroupIdentity{
+				ID: &resourceGroupID,
+			},
+			SourceVolume: &vpcv1.VolumeIdentityByID{
+				ID: &vmID,
+			},
+		},
+	}
+	image, response, err := vpcService.CreateImage(options)
+	if err != nil {
+		return "", fmt.Errorf("failed to create an Image: %v and the response is: %s", err, response)
+	}
+	return *image.ID, nil
+}
+
+func createResources(ctx context.Context, vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, keyType string, publicKey string, zone string, profile string, imageID string, namespace string, opts llir.Options) (string, error) {
+	var instanceID string
 	t1s := time.Now()
 	vpcID, err := createVPC(vpcService, name, ir.AppName, resourceGroupID)
 	if err != nil {
-		return err
+		return "", err
 	}
 	t1e := time.Now()
 
 	t2s := t1e
 	keyID, err := createSSHKey(vpcService, name, resourceGroupID, keyType, publicKey)
 	if err != nil {
-		return err
+		return "", err
 	}
 	t2e := time.Now()
 
 	t3s := t2e
 	subnetID, err := createSubnet(vpcService, name, resourceGroupID, vpcID, zone)
 	if err != nil {
-		return err
+		return "", err
 	}
 	t3e := time.Now()
 
 	t4s := t3e
 	secGroupID, err := createSecurityGroup(vpcService, name, resourceGroupID, vpcID)
 	if err != nil {
-		return err
+		return "", err
 	}
 	t4e := time.Now()
 
 	t5s := t4e
 	if err = createSecurityGroupRule(vpcService, secGroupID); err != nil {
-		return err
+		return "", err
 	}
 	t5e := time.Now()
 
-	group, _ := errgroup.WithContext(ctx)
 	t6s := time.Now()
-	// One Component for WorkStealer, one for Dispatcher, and each per WorkerPool
-	poolCount := intCounter{}
+	if err = createVMForComponents(ctx, vpcService, name, ir, resourceGroupID, zone, profile, imageID, namespace, vpcID, keyID, subnetID, secGroupID, opts); err != nil {
+		return "", err
+	}
+	t6e := time.Now()
+
+	if opts.Log.Verbose {
+		fmt.Fprintf(os.Stderr, "Setup done %s\n", util.RelTime(t1s, t6e))
+		fmt.Fprintf(os.Stderr, "  - VPC %s\n", util.RelTime(t1s, t1e))
+		fmt.Fprintf(os.Stderr, "  - SSH %s\n", util.RelTime(t2s, t2e))
+		fmt.Fprintf(os.Stderr, "  - Subnet %s\n", util.RelTime(t3s, t3e))
+		fmt.Fprintf(os.Stderr, "  - SecurityGroup %s\n", util.RelTime(t4s, t4e))
+		fmt.Fprintf(os.Stderr, "  - SecurityGroupRule %s\n", util.RelTime(t5s, t5e))
+		fmt.Fprintf(os.Stderr, "  - VMs %s\n", util.RelTime(t6s, t6e))
+	}
+	return instanceID, nil
+}
+
+func createVMForComponents(ctx context.Context, vpcService *vpcv1.VpcV1, name string, ir llir.LLIR, resourceGroupID string, zone string, profile string, imageID string, namespace string, vpcID string, keyID string, subnetID string, secGroupID string, opts llir.Options) error {
+	group, _ := errgroup.WithContext(ctx)
+	var verboseFlag string
+
 	for _, c := range ir.Components {
 		instanceName := name + "-" + string(c.C())
+		if opts.Log.Verbose {
+			fmt.Fprintf(os.Stderr, "Creating VM %s\n", instanceName)
+		}
+
+		componentB64, err := util.ToJsonB64(c)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+			return err
+		}
+
+		llirB64, err := util.ToJsonB64(ir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+			return err
+		}
+
+		if opts.Log.Verbose {
+			verboseFlag = "--verbose"
+		}
+
+		cc := &config.CloudConfig{
+			RunCmd: []string{"curl https://dl.min.io/client/mc/release/linux-amd64/mc --create-dirs -o /minio-binaries/mc",
+				"chmod +x /minio-binaries/mc",
+				"export PATH=$PATH:/minio-binaries/",
+				"mc alias set myminio " + ir.Context.Queue.Endpoint + " " + ir.Context.Queue.AccessKey + " " + ir.Context.Queue.SecretKey, // setting mc config
+				"apt-get install jq -y",
+				"exec=$(mc stat myminio/" + ir.Context.Queue.Bucket + "/" + ir.Context.Run.AsFile(q.Blobs) + "/ --json | jq -r '.name')",
+				"mc get myminio/" + ir.Context.Queue.Bucket + "/" + ir.Context.Run.AsFile(q.Blobs) + "/$exec /lunchpail", //use mc client to download binary
+				"chmod +x /lunchpail",
+				"env HOME=/root /lunchpail component run-locally --component " + string(componentB64) + " --llir " + string(llirB64) + " " + verboseFlag},
+		}
+
+		//TODO: Compute number of VSIs to be provisioned and job parallelism for each VSI based on number of workers and workerpools
 		group.Go(func() error {
-			if c.C() == lunchpail.DispatcherComponent || c.C() == lunchpail.WorkStealerComponent {
-				instance, err := createInstance(vpcService, instanceName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts)
-				if err != nil {
-					return err
-				}
+			instance, err := createInstance(vpcService, instanceName, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts, cc)
+			if err != nil {
+				return err
+			}
 
-				//TODO VSI instances other than jumpbox or main pod should not have floatingIP. Remove below after testing
-				floatingIPID, err := createFloatingIP(vpcService, instanceName, resourceGroupID, zone)
-				if err != nil {
-					return err
-				}
+			floatingIPID, err := createFloatingIP(vpcService, instanceName, resourceGroupID, zone)
+			if err != nil {
+				return err
+			}
 
-				options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
-					ID:                 &floatingIPID,
-					InstanceID:         instance.ID,
-					NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
-				}
-				_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
-				if err != nil {
-					return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
-				}
-			} else if c.C() == lunchpail.WorkersComponent {
-				poolCount.inc()
-				workerCount := c.Workers()
-				poolName := instanceName + strconv.Itoa(poolCount.counter) //multiple worker pools, maybe
-
-				//Compute number of VSIs to be provisioned and job parallelism for each VSI
-				parallelism, numInstances, err := computeParallelismAndInstanceCount(vpcService, profile, int32(workerCount))
-				if err != nil {
-					return fmt.Errorf("failed to compute number of instances and job parallelism: %v", err)
-				}
-
-				for i := 0; i < numInstances; i++ {
-					workerName := poolName + "-" + strconv.Itoa(i) //multiple worker instances
-					c = c.SetWorkers(int(parallelism[i]))
-					instance, err := createInstance(vpcService, workerName, ir, c, resourceGroupID, vpcID, keyID, zone, profile, subnetID, secGroupID, imageID, namespace, opts)
-					if err != nil {
-						return err
-					}
-
-					floatingIPID, err := createFloatingIP(vpcService, workerName, resourceGroupID, zone)
-					if err != nil {
-						return err
-					}
-
-					options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
-						ID:                 &floatingIPID,
-						InstanceID:         instance.ID,
-						NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
-					}
-					_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
-					if err != nil {
-						return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
-					}
-				}
-
+			options := &vpcv1.AddInstanceNetworkInterfaceFloatingIPOptions{
+				ID:                 &floatingIPID,
+				InstanceID:         instance.ID,
+				NetworkInterfaceID: instance.PrimaryNetworkInterface.ID,
+			}
+			_, response, err := vpcService.AddInstanceNetworkInterfaceFloatingIP(options)
+			if err != nil {
+				return fmt.Errorf("failed to add floating IP to network interface: %v and the response is: %s", err, response)
 			}
 			return nil
 		})
@@ -378,18 +386,8 @@ func createAndInitVM(ctx context.Context, vpcService *vpcv1.VpcV1, name string, 
 	if err := group.Wait(); err != nil {
 		return err
 	}
-	t6e := time.Now()
-
-	fmt.Printf("Setup done %s\n", util.RelTime(t1s, t6e))
-	fmt.Printf("  - VPC %s\n", util.RelTime(t1s, t1e))
-	fmt.Printf("  - SSH %s\n", util.RelTime(t2s, t2e))
-	fmt.Printf("  - Subnet %s\n", util.RelTime(t3s, t3e))
-	fmt.Printf("  - SecurityGroup %s\n", util.RelTime(t4s, t4e))
-	fmt.Printf("  - SecurityGroupRule %s\n", util.RelTime(t5s, t5e))
-	fmt.Printf("  - VMs %s\n", util.RelTime(t6s, t6e))
 	return nil
 }
-
 func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir.LLIR, action Action) error {
 	runname := ir.RunName()
 
@@ -406,7 +404,7 @@ func (backend Backend) SetAction(ctx context.Context, opts llir.Options, ir llir
 			}
 			zone = randomZone
 		}
-		if err := createAndInitVM(ctx, backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts); err != nil {
+		if _, err := createResources(ctx, backend.vpcService, runname, ir, backend.config.ResourceGroup.GUID, backend.sshKeyType, backend.sshPublicKey, zone, opts.Profile, opts.ImageID, backend.namespace, opts); err != nil {
 			return err
 		}
 	}
