@@ -7,5 +7,5 @@ type Backend struct {
 	config       ibmConfig
 	vpcService   *vpcv1.VpcV1
 	sshKeyType   string
-	sshPublicKey string
+	sshPublicKey []string
 }

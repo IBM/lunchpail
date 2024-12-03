@@ -43,7 +43,7 @@ func Drain() *cobra.Command {
 			return err
 		}
 
-		return queue.Drain(ctx, backend, run.ForStep(step), *opts.Log)
+		return queue.Drain(ctx, backend, run.ForStep(step), opts.Queue, *opts.Log)
 	}
 
 	return cmd

@@ -60,7 +60,7 @@ func Ls() *cobra.Command {
 			return err
 		}
 
-		files, errors, err := queue.Ls(ctx, backend, runContext.ForStep(step), path, *opts.Log)
+		files, errors, err := queue.Ls(ctx, backend, runContext.ForStep(step), path, opts.Queue, *opts.Log)
 		if err != nil {
 			return err
 		}

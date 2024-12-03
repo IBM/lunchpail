@@ -6,10 +6,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 
 	"lunchpail.io/pkg/be"
+	"lunchpail.io/pkg/be/target"
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/fe"
 	"lunchpail.io/pkg/ir/hlir"
@@ -151,7 +153,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		case <-cancellable.Done():
 		case ctx := <-isRunning6:
 			if ctx.Run.Step == 0 || isFinalStep(ctx) {
-				errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, *opts.BuildOptions.Log)
+				errorFromAllDone = waitForAllDone(cancellable, backend, ctx.Run, opts.BuildOptions.Queue, *opts.BuildOptions.Log)
 				if errorFromAllDone != nil && strings.Contains(errorFromAllDone.Error(), "connection refused") {
 					// Then Minio went away on its own. That's probably ok.
 					errorFromAllDone = nil
@@ -174,7 +176,7 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			}
 
 			defer func() { redirectDone <- struct{}{} }()
-			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, alldone, opts.NoRedirect, opts.RedirectTo, *opts.BuildOptions.Log); err != nil {
+			if err := catAndRedirect(cancellable, opts.Inputs, backend, ir, alldone, opts.NoRedirect, opts.RedirectTo, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
 				errorFromIo = err
 				cancel()
 			}
@@ -215,13 +217,14 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 		case <-cancellable.Done():
 		case <-isRunning6:
 		}
-		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, *opts.BuildOptions.Log); err != nil {
+		if err := lookForTaskFailures(cancellable, backend, ir.Context.Run, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
 			errorFromTask = err
 			// fail fast? cancel()
 		}
 	}()
 
 	//inject executable into s3
+	fmt.Fprintln(os.Stderr, "opts.Executable "+opts.Executable)
 	if opts.Executable != "" {
 		go func() {
 			// wait for the run to be ready for us to enqueue
@@ -230,10 +233,32 @@ func upLLIR(ctx context.Context, backend be.Backend, ir llir.LLIR, opts UpOption
 			case <-isRunning6:
 			}
 
-			if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, *opts.BuildOptions.Log); err != nil {
-				fmt.Fprintln(os.Stderr, err)
+			if opts.BuildOptions.Target.Platform == target.IBMCloud {
+				//rebuilding self to upload linux-amd64 executable
+				cmd := exec.Command("/bin/sh", "-c", opts.Executable+" build -A -o "+opts.Executable)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err := cmd.Run(); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+				if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable + "-linux-amd64", TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+			} else {
+				if err := s3.UploadFiles(cancellable, backend, ir.Context.Run, []upload.Upload{upload.Upload{LocalPath: opts.Executable, TargetDir: ir.Context.Run.AsFile(q.Blobs)}}, opts.BuildOptions.Queue, *opts.BuildOptions.Log); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
 			}
 		}()
+
+		/* 		if opts.BuildOptions.Target.Platform == target.IBMCloud {
+			//use the uploaded executable  to create an IBM Cloud custom image for VPC using a VSI boot volume
+			imageID, err := backend.CreateImage(cancellable, ir, opts.BuildOptions, true) // destroys resources after image creation TODO: reuse resources on Up
+			if err != nil {
+				return err
+			}
+			opts.BuildOptions.ImageID = imageID
+		} */
 	}
 
 	defer cancel()

@@ -11,6 +11,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"golang.org/x/crypto/ssh"
 	"lunchpail.io/pkg/build"
+	"lunchpail.io/pkg/compilation"
 )
 
 type resourceGroup struct {
@@ -75,26 +76,26 @@ func getRandomizedZone(config ibmConfig, vpcService *vpcv1.VpcV1) (string, error
 
 // Retrieve public key from user's ssh dir, if exists
 // Looks for two ssh key types: “rsa” and “ed25519" (ibmcloud supported)
-func loadPublicKey(config ibmConfig, aopts build.Options) (string, string, error) {
+func loadPublicKey(config ibmConfig, aopts compilation.Options) (string, []string, error) {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		return "", "", err
+		return "", []string{}, err
 	}
 
 	var bytes []byte
-	if aopts.PublicSSHKey != "" {
+	if len(aopts.PublicSSHKey) != 0 {
 		return aopts.SSHKeyType, aopts.PublicSSHKey, nil
 	} else if bytes, err = os.ReadFile(filepath.Join(homedir, ".ssh", "id_rsa.pub")); err == nil && bytes != nil {
 		pKeyComps := strings.Split(string(bytes), " ")
 		if len(pKeyComps) >= 2 && strings.Trim(pKeyComps[0], " ") == ssh.KeyAlgoRSA {
-			return "rsa", string(bytes), nil
+			return "rsa", []string{string(bytes)}, nil
 		}
 	} else if bytes, err = os.ReadFile(filepath.Join(homedir, ".ssh", "id_ed25519.pub")); err == nil && bytes != nil {
 		pKeyComps := strings.Split(string(bytes), " ")
 		if len(pKeyComps) >= 2 && strings.Trim(pKeyComps[0], " ") == ssh.KeyAlgoED25519 {
-			return "ed25519", string(bytes), nil
+			return "ed25519", []string{string(bytes)}, nil
 		}
 	}
 
-	return "", "", nil
+	return "", []string{}, nil
 }
