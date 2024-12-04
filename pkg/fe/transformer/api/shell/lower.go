@@ -49,9 +49,9 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 	app.Spec.Env["LUNCHPAIL_QUEUE_BUCKET"] = ctx.Queue.Bucket
 
 	clean := ""
-	if opts.AutoClean {
-		clean = `trap "echo 'Cleaning up venv $(dirname $venvBin)'; rm -rf $(dirname $venvBin)" EXIT`
-	}
+	//if opts.AutoClean {
+	//clean = `trap "echo 'Cleaning up venv $(dirname $venvBin)'; rm -rf $(dirname $venvBin)" EXIT`
+	//}
 
 	for _, needs := range app.Spec.Needs {
 		var req string
