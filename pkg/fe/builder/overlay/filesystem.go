@@ -163,7 +163,7 @@ func (b filesystemBuilder) addCode(spec *hlir.Spec, sourcePath string) (err erro
 				maybeImage = "docker.io/alpine:3"
 			case "main.py":
 				maybeCommand = "python3 main.py"
-				maybeImage = "docker.io/python:3.12"
+				maybeImage = "docker.io/python:3.12-slim"
 			}
 			return nil
 		})

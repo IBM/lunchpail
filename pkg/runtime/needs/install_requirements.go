@@ -86,11 +86,11 @@ func requirementsInstall(ctx context.Context, version, requirements string, verb
 	}
 
 	cmdline := fmt.Sprintf(`python%s -m venv %s
-source %s/bin/activate
+. %s/bin/activate
 if ! which pip%s > /dev/null; then python%s -m pip install pip %s; fi
 pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, version, verboseFlag, version, nocache, quiet, reqmtsFile.Name(), verboseFlag)
 
-	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdline)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", cmdline)
 	cmd.Dir = filepath.Dir(venvPath)
 	cmd.Stdout = os.Stderr // Stderr so as not to collide with `lunchpail needs` stdout
 	cmd.Stderr = os.Stderr
