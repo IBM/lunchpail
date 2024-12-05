@@ -1,1 +1,1 @@
-docker.io/python:3.11
+docker.io/python:3.11-slim

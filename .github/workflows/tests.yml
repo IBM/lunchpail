@@ -49,6 +49,8 @@ jobs:
         key: ${{ runner.os }}-minio
     - name: Build Lunchpail CLI
       run: ./hack/setup/cli.sh /tmp/lunchpail
+    - name: Hack apt
+      run: sudo apt install -y libmagic1
 
     # we will also be testing installing kind, so we don't want to do
     # this as part of the github action workflow
