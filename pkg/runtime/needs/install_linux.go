@@ -63,7 +63,7 @@ func installPython(ctx context.Context, version string, verbose bool) (string, e
 			sudo = ""
 		}
 		if _, err := exec.LookPath("apt"); err == nil {
-			cmdline = fmt.Sprintf("%s add-apt-repository -y ppa:deadsnakes/ppa && %s apt update && %s apt install -y python%s python%s-venv python%s-distutils && curl -sS https://bootstrap.pypa.io/get-pip.py | python%s && which python%s", sudo, sudo, sudo, version, version, version, version, version)
+			cmdline = fmt.Sprintf("%s add-apt-repository -y ppa:deadsnakes/ppa && %s apt update && %s apt install -y python%s python%s-venv && curl -sS https://bootstrap.pypa.io/get-pip.py | python%s && which python%s", sudo, sudo, sudo, version, version, version, version)
 		}
 
 		if cmdline != "" {
