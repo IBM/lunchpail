@@ -47,7 +47,7 @@ func Upload() *cobra.Command {
 			run = rrun.Name
 		}
 
-		return queue.UploadFiles(ctx, backend, q.RunContext{RunName: run}, []upload.Upload{upload.Upload{LocalPath: args[0], Bucket: args[1]}}, *opts.Log)
+		return queue.UploadFiles(ctx, backend, q.RunContext{RunName: run}, []upload.Upload{upload.Upload{LocalPath: args[0], Bucket: args[1]}}, opts.Queue, *opts.Log)
 	}
 
 	return cmd

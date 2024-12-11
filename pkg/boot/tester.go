@@ -23,6 +23,7 @@ type Tester struct {
 	Quiet bool
 	be.Backend
 	build.Options
+	Executable string
 }
 
 func (t Tester) RunAll(ctx context.Context) error {
@@ -77,7 +78,7 @@ func (t Tester) Run(ctx context.Context, inputs []string, expected []string) err
 		defer os.RemoveAll(redirectTo)
 	}
 
-	if runContext, err := Up(ctx, t.Backend, UpOptions{Inputs: inputs, BuildOptions: t.Options, RedirectTo: redirectTo, Watch: !t.Quiet}); err != nil {
+	if runContext, err := Up(ctx, t.Backend, UpOptions{Inputs: inputs, BuildOptions: t.Options, RedirectTo: redirectTo, Watch: !t.Quiet, Executable: t.Executable}); err != nil {
 		return err
 	} else if err := Down(ctx, runContext.Run.RunName, t.Backend, DownOptions{Namespace: t.Options.Target.Namespace, Verbose: t.Options.Verbose()}); err != nil {
 		return err

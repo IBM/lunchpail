@@ -85,10 +85,16 @@ func requirementsInstall(ctx context.Context, version, requirements string, verb
 		version = "3"
 	}
 
-	cmdline := fmt.Sprintf(`python%s -m venv %s
+	apt := ""
+	if _, err := exec.LookPath("apt"); err == nil {
+		apt = fmt.Sprintf(`apt install -y python%s-venv python%s-distutils`, version, version)
+	}
+
+	cmdline := fmt.Sprintf(`%s
+python%s -m venv %s
 source %s/bin/activate
 if ! which pip%s > /dev/null; then python%s -m pip install pip %s; fi
-pip%s install %s %s -r %s %s 1>&2`, version, venvPath, venvPath, version, version, verboseFlag, version, nocache, quiet, reqmtsFile.Name(), verboseFlag)
+pip%s install %s %s -r %s %s 1>&2`, apt, version, venvPath, venvPath, version, version, verboseFlag, version, nocache, quiet, reqmtsFile.Name(), verboseFlag)
 
 	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdline)
 	cmd.Dir = filepath.Dir(venvPath)

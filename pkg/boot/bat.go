@@ -27,6 +27,7 @@ type BuildAndTester struct {
 	Concurrency int
 	be.Backend
 	build.Options
+	Executable string
 }
 
 // Run build&test for all applications in all of the given `dirs`
