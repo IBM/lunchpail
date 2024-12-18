@@ -2,48 +2,40 @@
 
 # Lunchpail
 
-<a href="https://github.com/IBM/lunchpail/releases"><img src="https://img.shields.io/github/release/IBM/lunchpail.svg" alt="Latest Release"></a>
-[![CI Tests](https://github.com/IBM/lunchpail/actions/workflows/tests.yml/badge.svg)](https://github.com/IBM/lunchpail/actions/workflows/tests.yml)
-
 Lunchpail compiles your job code into an all-in-one executable. Others
-download that binary, and `up` it to run your code in the Cloud or an
-existing Kubernetes cluster.
-
-> [!IMPORTANT]
-> Bear with us as we finish up the initial polishing passes. Please chip in if you can!
-
-<table>
-    <tr>
-        <td><img src="docs/demos/demo1.gif" width="203"><br><a href="docs/demos/#openroad-demo"><tt>openroad up</tt></a></td>
-        <td><img src="docs/demos/status0.png" width="230"><br><a href="docs/demos/#lunchpail-demo"><tt>demo up</tt></a></td>
-        <td><img src="docs/demos/status1.png" width="230"><br>Commercial application</td>
-    </tr>
-</table>
+download that binary, and `up` it to run your code locally, in a
+Kubernetes cluster, or on run-and-done virtual machines in the Cloud.
 
 ## Getting Started
 
-### Lunchpail Architecture
+> We will soon be publishing prebuilt executables. Bear with us.
 
-Lunchpail is a compiler that generates all-in-one "black box" binaries
-that know how to start a run, provision Cloud resources, auto-correct
-for load imbalances and node failures, and to monitor and visualize
-runs. [Learn more](./docs/architecture/README.md)
+First, clone this repository. From there, you can build the main
+`lunchpail` binary. Using `lunchpail build` , you can then build
+separate binaries, one for each of your applications. You will find a
+collection of demo applications in the [demos/](./demos) directory of
+this repository.
 
-### Pre-built Demos
+After cloning this repo to build `lunchpail`. Lunchpail is written in
+Go. If you don't yet have `go` installed, you can do so on MacOS via
+`brew install go`, or consult the [Go installation
+docs](https://go.dev/doc/install). Then:
 
-We have used Lunchpail to build binaries of several demo
-applications. [Try a demo](./docs/demos/README.md)
+```shell
+./hack/setup/cli.sh
+```
 
+This will generate a `./lunchpail` binary. Next, to build one of the demo applications:
 
-### Create Your Own Downloadable Binaries
+```shell
+./lunchpail build -o cq ./demos/data-prep-kit/code/code-quality
+```
 
-Point to your source code, and Lunchpail can compile a set of platform
-binaries that shrink-wrap how to run your jobs.  [Learn
-more](./docs/build/README.md)
+Next, you can run `cq` against its test inputs on your laptop via:
 
+```shell
+./cq test -t local
+```
 
-### Contribute
-
-Lunchpail is open source and contributions are welcome. Want to create
-a backend for your Cloud? Want to optimize the runtime?  [Learn
-more](./docs/contribute/README.md)
+If you want to run it against your current Kubernetes context, change
+`-t local` to `-t kubernetes`.
