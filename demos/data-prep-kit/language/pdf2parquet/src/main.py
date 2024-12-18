@@ -32,10 +32,7 @@ import filetype
 import pandas as pd
 import pyarrow as pa
 import numpy as np
-#from data_processing.transform import AbstractBinaryTransform, TransformConfiguration
-#from data_processing.utils import TransformUtils, get_logger, str2bool
-#from data_processing.utils.cli_utils import CLIArgumentProvider
-#from data_processing.utils.multilock import MultiLock
+
 from docling.backend.docling_parse_backend import DoclingParseDocumentBackend
 from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
 from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend
@@ -49,10 +46,6 @@ from docling.datamodel.pipeline_options import (
 )
 from docling.document_converter import DocumentConverter, InputFormat, PdfFormatOption
 from docling.models.base_ocr_model import OcrOptions
-
-
-#logger = get_logger(__name__)
-# logger = get_logger(__name__, level="DEBUG")
 
 shortname = "pdf2parquet"
 cli_prefix = f"{shortname}_"
