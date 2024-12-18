@@ -1,5 +1,12 @@
 package llir
 
-import "lunchpail.io/pkg/build"
+import (
+	"time"
 
-type Options = build.Options
+	"lunchpail.io/pkg/build"
+)
+
+type Options struct {
+	build.Options
+	UpStartTime time.Time
+}

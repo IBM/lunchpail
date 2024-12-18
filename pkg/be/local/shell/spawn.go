@@ -17,7 +17,7 @@ import (
 	"lunchpail.io/pkg/ir/llir"
 )
 
-func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir string, opts build.LogOptions) error {
+func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, opts build.LogOptions) error {
 	pidfile, err := files.Pidfile(ir.Context.Run, c.InstanceName, c.C(), true)
 	if err != nil {
 		return err
@@ -28,6 +28,12 @@ func Spawn(ctx context.Context, c llir.ShellComponent, ir llir.LLIR, logdir stri
 		return err
 	}
 	defer os.RemoveAll(workdir)
+
+	// This is where component logs will go
+	logdir, err := files.LogDir(ir.Context.Run, true)
+	if err != nil {
+		return err
+	}
 
 	// tee command output to the logdir
 	instance := strings.Replace(strings.Replace(c.InstanceName, ir.RunName(), "", 1), "--", "-", 1)

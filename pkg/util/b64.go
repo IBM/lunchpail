@@ -2,12 +2,14 @@ package util
 
 import (
 	"bytes"
+	"compress/gzip"
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"strconv"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 func ToArray(A []int) string {
@@ -49,6 +51,24 @@ func ToJsonB64(something any) (string, error) {
 		return "", err
 	}
 	return toB64(b), nil
+}
+
+func ToJsonGzipB64(something any) (string, error) {
+	b, err := json.Marshal(something)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	writer := gzip.NewWriter(&buf)
+	if _, err := writer.Write(b); err != nil {
+		return "", err
+	}
+	if err = writer.Close(); err != nil {
+		return "", err
+	}
+
+	return toB64(buf.Bytes()), nil
 }
 
 type EnvEntry struct {

@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"time"
+
 	"lunchpail.io/pkg/build"
 	"lunchpail.io/pkg/ir/hlir"
 	"lunchpail.io/pkg/ir/queue"
@@ -18,4 +20,5 @@ type Options struct {
 	StartupDelay    int
 	PollingInterval int
 	build.LogOptions
+	WorkerStartTime time.Time
 }

@@ -13,8 +13,8 @@ import (
 )
 
 // Drain the output tasks, allowing graceful termination
-func Drain(ctx context.Context, backend be.Backend, run queue.RunContext, opts build.LogOptions) error {
-	c, err := NewS3ClientForRun(ctx, backend, run, opts)
+func Drain(ctx context.Context, backend be.Backend, run queue.RunContext, rclone string, opts build.LogOptions) error {
+	c, err := NewS3ClientForRun(ctx, backend, run, rclone, opts)
 	if err != nil {
 		return err
 	}

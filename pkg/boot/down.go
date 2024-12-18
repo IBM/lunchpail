@@ -97,7 +97,7 @@ func Down(ctx context.Context, runname string, backend be.Backend, opts DownOpti
 		return err
 	}
 
-	if err := backend.Down(ctx, ir, copts); err != nil {
+	if err := backend.Down(ctx, ir, llir.Options{Options: copts}); err != nil {
 		return err
 	}
 

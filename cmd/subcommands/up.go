@@ -4,7 +4,9 @@ package subcommands
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -68,7 +70,12 @@ func newUpCmd() *cobra.Command {
 			return err
 		}
 
-		_, err = boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, WatchUtil: watchFlag, Inputs: args, Executable: os.Args[0], NoRedirect: noRedirect})
+		upStartTime := time.Now()
+		_, err = boot.Up(ctx, backend, boot.UpOptions{BuildOptions: *buildOpts, DryRun: dryrunFlag, Watch: watchFlag, WatchUtil: watchFlag, Inputs: args, Executable: os.Args[0], NoRedirect: noRedirect, UpStartTime: time.Now()})
+		upEndTime := time.Now()
+		if buildOpts.Verbose() {
+			fmt.Fprintf(os.Stderr, "METRICS: Took %s for running app e2e\n", util.RelTime(upStartTime, upEndTime))
+		}
 		return err
 	}
 
