@@ -19,12 +19,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Any
 
 import pyarrow as pa
-#from data_processing.utils import (
-#    LOCAL_TO_DISK,
-#    MB,
-#    CLIArgumentProvider,
-#    UnrecoverableException
-#)
+
 LOCAL_TO_DISK = 2
 KB = 1024
 MB = 1024 * KB

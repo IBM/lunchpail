@@ -6,7 +6,6 @@ https://github.com/sahajsoft/pii-detection-and-anonymizer/blob/main/src/recogniz
 from typing import List, Optional, Set, Tuple
 
 import logging
-#from data_processing.utils import get_logger
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from presidio_analyzer import AnalysisExplanation, EntityRecognizer, RecognizerResult
