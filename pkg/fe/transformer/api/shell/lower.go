@@ -50,7 +50,10 @@ func LowerAsComponent(buildName string, ctx llir.Context, app hlir.Application, 
 
 	clean := ""
 	if opts.AutoClean {
-		clean = `trap "echo 'Cleaning up venv $(dirname $venvBin)'; rm -rf $(dirname $venvBin)" EXIT`
+		// We try to be cautious here, given the rm -rf. Only
+		// do so if we find the requirements.txt that is
+		// stashed by needs/install_requirements.
+		clean = `trap "if [[ -n "$venvBin" ]] && [[ -f "$venvBin/../requirements.txt" ]]; then echo 'Cleaning up venv $(dirname $venvBin)'; rm -rf $(dirname $venvBin); fi" EXIT`
 	}
 
 	for _, needs := range app.Spec.Needs {
