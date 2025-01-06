@@ -1,5 +1,5 @@
 # download go modules
-FROM docker.io/golang:1.23.3-alpine as base
+FROM docker.io/golang:1.23.4-alpine as base
 LABEL lunchpail=temp
 WORKDIR /init
 
