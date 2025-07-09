@@ -88,9 +88,13 @@ func requirementsInstall(ctx context.Context, version, requirements string, verb
 		version = "3"
 	}
 
+	sudo := "sudo"
+	if _, err := exec.LookPath("sudo"); err != nil {
+		sudo = ""
+	}
 	apt := ""
 	if _, err := exec.LookPath("apt"); err == nil {
-		apt = fmt.Sprintf(`apt install -y python%s-venv python%s-distutils`, version, version)
+		apt = fmt.Sprintf(`%s apt install -y python%s-venv python%s-distutils`, sudo, version, version)
 	}
 
 	cmdline := fmt.Sprintf(`%s

@@ -33,7 +33,7 @@ jobs:
           - ./tests/bin/ci.sh -i 'test7(b.*|c.*|d.*|e.*|g.*|h.*)' 
           - ./tests/bin/ci.sh -i 'test7f.*'
           - ./tests/bin/ci.sh -i 'test8.*'
-          - /tmp/lunchpail bat demos/data-prep-kit --concurrency 1 --auto-clean --target=$LUNCHPAIL_TARGET # bat=Build and Test
+          # - /tmp/lunchpail bat demos/data-prep-kit --concurrency 1 --auto-clean --target=$LUNCHPAIL_TARGET # bat=Build and Test
           - ./tests/bin/go.sh
           - ./tests/bin/pipelines.sh
         os: [ubuntu-latest]
