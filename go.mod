@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/uuid v1.6.0
-	github.com/hairyhenderson/go-which v0.2.0
+	github.com/hairyhenderson/go-which v0.2.2
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/minio/minio-go/v7 v7.0.83
 	github.com/mittwald/go-helm-client v0.12.16
