@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
     find . -name '*.tar.gz' -exec rm {} \; && \
     chmod a+rX /tmp/lunchpail
 
-FROM docker.io/alpine:3
+FROM docker.io/alpine:20250108
 LABEL lunchpail=final org.opencontainers.image.source="https://github.com/IBM/lunchpail"
 
 RUN adduser -u 2000 lunchpail -G root --disabled-password && echo "lunchpail:lunchpail" | chpasswd && chmod -R g=u /home/lunchpail
