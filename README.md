@@ -8,9 +8,7 @@ Lunchpail compiles your job code into an all-in-one executable. Others
 download that binary, and `up` it to run your code locally, in a
 Kubernetes cluster, or on run-and-done virtual machines in the Cloud.
 
-[Keynote](https://ibm.box.com/shared/static/w35xyqqvnr9yslklr844ps5l7zarezq3.key)
-[PPT](https://ibm.box.com/s/qurnem2syqkm903iiuvol1o73h4ejy3r)
-[PDF](https://ibm.box.com/s/3v6nxl3oit52o7lt53ia44woph2gsd7q)
+[Talk](https://ibm.box.com/v/lunchpail-slides) **|** [Paper](https://ibm.box.com/v/lunchpail-paper)
 
 ## Getting Started
 
