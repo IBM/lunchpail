@@ -1,6 +1,6 @@
 module lunchpail.io
 
-go 1.23.4
+go 1.25.0
 
 require (
 	github.com/IBM/go-sdk-core/v5 v5.20.1
@@ -17,7 +17,7 @@ require (
 	github.com/shirou/gopsutil/v4 v4.25.6
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/automaxprocs v1.6.0
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.20.0
 	golang.org/x/term v0.30.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.32.0
