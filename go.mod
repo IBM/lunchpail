@@ -1,6 +1,6 @@
 module lunchpail.io
 
-go 1.23.4
+go 1.24.0
 
 require (
 	github.com/IBM/go-sdk-core/v5 v5.20.1
@@ -14,7 +14,7 @@ require (
 	github.com/mittwald/go-helm-client v0.12.16
 	github.com/nxadm/tail v1.4.11
 	github.com/rclone/rclone v1.68.2
-	github.com/shirou/gopsutil/v4 v4.25.6
+	github.com/shirou/gopsutil/v4 v4.26.6
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/sync v0.12.0
@@ -35,7 +35,7 @@ require (
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/coreos/yaml v0.0.0-20141224210557-6b16a5714269 // indirect
-	github.com/ebitengine/purego v0.8.4 // indirect
+	github.com/ebitengine/purego v0.10.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
@@ -181,8 +181,8 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/tklauser/go-sysconf v0.3.14 // indirect
-	github.com/tklauser/numcpus v0.9.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.16 // indirect
+	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
@@ -195,7 +195,7 @@ require (
 	golang.org/x/crypto v0.36.0
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250106144421-5f5ef82da422 // indirect
