@@ -1,9 +1,9 @@
 module lunchpail.io
 
-go 1.23.4
+go 1.25.0
 
 require (
-	github.com/IBM/go-sdk-core/v5 v5.20.1
+	github.com/IBM/go-sdk-core/v5 v5.23.2
 	github.com/bep/debounce v1.2.1
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/dustin/go-humanize v1.0.1
@@ -17,8 +17,8 @@ require (
 	github.com/shirou/gopsutil/v4 v4.25.6
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/automaxprocs v1.6.0
-	golang.org/x/sync v0.12.0
-	golang.org/x/term v0.30.0
+	golang.org/x/sync v0.22.0
+	golang.org/x/term v0.45.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.32.0
 	k8s.io/apimachinery v0.32.0
@@ -38,22 +38,24 @@ require (
 	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
-	github.com/go-openapi/errors v0.22.0 // indirect
-	github.com/go-openapi/strfmt v0.23.0 // indirect
+	github.com/go-openapi/errors v0.22.8 // indirect
+	github.com/go-openapi/strfmt v0.27.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.26.0 // indirect
+	github.com/go-playground/validator/v10 v10.30.3 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
-	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/minio/crc64nvme v1.0.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
+	github.com/oklog/ulid/v2 v2.1.2 // indirect
 	github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c // indirect
 	github.com/pkg/xattr v0.4.10 // indirect
 	github.com/redis/go-redis/v9 v9.6.1 // indirect
@@ -62,9 +64,11 @@ require (
 	github.com/unknwon/goconfig v1.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	go.mongodb.org/mongo-driver v1.17.2 // indirect
+	go.mongodb.org/mongo-driver v1.17.9 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	golang.org/x/tools v0.27.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.3 // indirect
+	golang.org/x/tools v0.47.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241104194629-dd2ea8efbc28 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
@@ -73,7 +77,7 @@ require (
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
-	github.com/IBM/vpc-go-sdk v0.69.1
+	github.com/IBM/vpc-go-sdk v0.91.0
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.1 // indirect
@@ -192,11 +196,11 @@ require (
 	go.opentelemetry.io/otel v1.33.0 // indirect
 	go.opentelemetry.io/otel/metric v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.33.0 // indirect
-	golang.org/x/crypto v0.36.0
-	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/crypto v0.54.0
+	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250106144421-5f5ef82da422 // indirect
 	google.golang.org/grpc v1.69.2 // indirect
@@ -218,5 +222,5 @@ require (
 	sigs.k8s.io/kustomize/api v0.18.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.18.1 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.5.0 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
