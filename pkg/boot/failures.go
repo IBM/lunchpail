@@ -68,7 +68,7 @@ func lookForTaskFailures(ctx context.Context, backend be.Backend, run queue.RunC
 			if errorContent == "" {
 				errorContent = "A task completed with no error output, but a non-zero exit code"
 			}
-			return fmt.Errorf("\033[0;31m" + errorContent + "\033[0m\n")
+			return fmt.Errorf("%s", "\033[0;31m"+errorContent+"\033[0m\n")
 		}
 	}
 
