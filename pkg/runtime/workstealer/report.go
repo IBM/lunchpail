@@ -42,7 +42,7 @@ func (c client) report(m queuestreamer.Step) error {
 	writer.Flush()
 
 	// for now, also log to stdout
-	fmt.Printf(b.String())
+	fmt.Print(b.String())
 
 	// and write to the log file
 	/*if err := os.MkdirAll(logDir, 0700); err != nil {
