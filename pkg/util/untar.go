@@ -3,6 +3,7 @@ package util
 import (
 	"archive/tar"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -41,6 +42,12 @@ func Untar(dst string, r io.Reader) error {
 		// the target location where the dir/file should be created
 		dstName := header.Name
 		target := filepath.Join(dst, dstName)
+
+		// guard against "Zip Slip": reject entries that would escape dst,
+		// e.g. via a name containing ".." or an absolute path
+		if !strings.HasPrefix(target, filepath.Clean(dst)+string(os.PathSeparator)) && target != filepath.Clean(dst) {
+			return fmt.Errorf("illegal archive entry escapes destination: %q", header.Name)
+		}
 
 		// the following switch could also be done using fi.Mode(), not sure if there
 		// a benefit of using one vs. the other.
