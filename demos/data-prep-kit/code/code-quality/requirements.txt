@@ -1,5 +1,5 @@
 bs4==0.0.2
-transformers==4.38.2
+transformers==5.10.0
 
 pyarrow
 
