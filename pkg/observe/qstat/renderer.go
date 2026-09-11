@@ -78,7 +78,7 @@ func (r *renderer) render(t *table.Table) {
 		for range r.prevNumRows + 1 {
 			reset += "\033[2K\r\033[1F" // 2K clears line; \r returns to beginning of line (maybe not needed); and 1F returns to previous line
 		}
-		fmt.Printf(reset)
+		fmt.Print(reset)
 	}
 	s := t.Render()
 	r.prevNumRows = strings.Count(s, "\n")
