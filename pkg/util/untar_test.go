@@ -57,6 +57,25 @@ func TestUntarRejectsPathTraversal(t *testing.T) {
 	}
 }
 
+func TestUntarRejectsSiblingWithSharedPrefix(t *testing.T) {
+	dst := filepath.Join(t.TempDir(), "out")
+	if err := os.MkdirAll(dst, 0755); err != nil {
+		t.Fatal(err)
+	}
+	// an entry name that, when joined naively, produces a sibling
+	// directory sharing dst's literal string prefix (e.g. "out" vs
+	// "outside") rather than a true subdirectory of dst
+	archive := makeTarGz(t, map[string]string{"../outside/evil.txt": "pwned"})
+
+	if err := Untar(dst, archive); err == nil {
+		t.Fatal("expected Untar to reject an entry escaping into a sibling directory, got nil error")
+	}
+
+	if _, err := os.Stat(filepath.Join(filepath.Dir(dst), "outside")); err == nil {
+		t.Fatal("archive entry escaped into a sibling directory")
+	}
+}
+
 func TestUntarExtractsNormalEntries(t *testing.T) {
 	dst := t.TempDir()
 	archive := makeTarGz(t, map[string]string{"sub/file.txt": "hello"})

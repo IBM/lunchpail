@@ -45,7 +45,7 @@ func Untar(dst string, r io.Reader) error {
 
 		// guard against "Zip Slip": reject entries that would escape dst,
 		// e.g. via a name containing ".." or an absolute path
-		if !strings.HasPrefix(target, filepath.Clean(dst)+string(os.PathSeparator)) && target != filepath.Clean(dst) {
+		if !strings.HasPrefix(target+string(os.PathSeparator), filepath.Clean(dst)+string(os.PathSeparator)) {
 			return fmt.Errorf("illegal archive entry escapes destination: %q", header.Name)
 		}
 
