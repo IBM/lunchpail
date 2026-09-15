@@ -14,7 +14,7 @@ require (
 	github.com/mittwald/go-helm-client v0.12.16
 	github.com/nxadm/tail v1.4.11
 	github.com/rclone/rclone v1.75.1
-	github.com/shirou/gopsutil/v4 v4.26.6
+	github.com/shirou/gopsutil/v4 v4.26.8
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/sync v0.22.0
@@ -38,7 +38,7 @@ require (
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.6.0 // indirect
 	github.com/coreos/yaml v0.0.0-20141224210557-6b16a5714269 // indirect
-	github.com/ebitengine/purego v0.10.1 // indirect
+	github.com/ebitengine/purego v0.10.2 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
