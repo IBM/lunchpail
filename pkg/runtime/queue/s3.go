@@ -279,8 +279,13 @@ func (s3 *S3Client) retryOnError(err error) bool {
 	return true
 }
 
-// maximum number of consecutive transient-error retries before giving up
-const maxRetries = 60
+// maximum number of consecutive transient-error retries before giving
+// up. We have observed a fresh kubernetes cluster's queue pod
+// (port-forward + image pull + minio startup) taking over a minute to
+// become reachable, so this needs to comfortably cover a slow cold
+// start while still failing well before a CI job timeout (30m) when
+// the queue is gone for good.
+const maxRetries = 300
 
 // This will wait for the s3 server to be reachable, but will not wait
 // for the bucket to exist
