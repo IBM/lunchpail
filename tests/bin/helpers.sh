@@ -89,28 +89,42 @@ function waitForIt {
             echo "✅ PASS run api=$api test=$name nOutputs=$nOutputs"
             outputs=$($testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} exitcode)
             echo "Outputs: $outputs"
-            for output in $outputs
+
+            # Note: these validations race against run teardown: once
+            # all outputs have been consumed, the workstealer touches
+            # the alldone marker and minio self-destructs shortly
+            # after. Validate each marker category once for all
+            # outputs (rather than per-output), and bound the wait,
+            # so that we either finish or fail -- rather than hang.
+            local ofile="succeeded"
+            if [ -n "$expectTaskFailure" ]
+            then ofile="failed"
+            fi
+
+            for marker in $ofile stdout stderr
             do
-                echo "Checking output=$output"
-
-                local ofile="succeeded"
-                if [ -n "$expectTaskFailure" ]
-                then ofile="failed"
-                fi
-                while ! $testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} $ofile | grep -Fq "$(basename $output)"
-                do echo "Still waiting for $ofile test=$name output=$(basename $output)" && sleep 1
+                # 120s: generous enough for slow CI machines, short enough to fail within the job timeout
+                local retries=120
+                while true
+                do
+                    local listing="$($testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} $marker 2>/dev/null)"
+                    local missing=0
+                    for output in $outputs
+                    do
+                        if ! echo "$listing" | grep -Fq "$(basename $output)"
+                        then missing=1 && break
+                        fi
+                    done
+                    if [[ $missing = 0 ]]
+                    then break
+                    fi
+                    if [[ $retries -le 0 ]]
+                    then echo "❌ FAIL timed out waiting for $marker files test=$name" && return 1
+                    fi
+                    echo "Still waiting for $marker files test=$name (retries left=$retries)" && sleep 1
+                    retries=$((retries-1))
                 done
-                echo "✅ PASS got expected $ofile file test=$name output=$(basename $output)"
-
-                while ! $testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} stdout | grep -Fq "$(basename $output)"
-                do echo "Still waiting for stdout test=$name output=$output" && sleep 1
-                done
-                echo "✅ PASS got stdout file test=$name output=$output"
-
-                while ! $testapp queue ls --step $step --run $run_name --target ${LUNCHPAIL_TARGET:-kubernetes} stderr | grep -Fq "$(basename $output)"
-                do echo "Still waiting for stderr test=$name output=$output" && sleep 1
-                done
-                echo "✅ PASS got stderr file test=$name output=$output"
+                echo "✅ PASS got expected $marker files test=$name"
             done
     fi
 

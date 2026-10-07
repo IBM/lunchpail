@@ -2,10 +2,14 @@
 
 set -eo pipefail
 
-# Allows us to capture workstealer info before it auto-terminates
-export LUNCHPAIL_SLEEP_BEFORE_EXIT=10
+# Allows us to capture workstealer info before it auto-terminates.
+# Note: helpers.sh validates queue markers (succeeded/stdout/stderr)
+# after the run's outputs have been consumed, which is what triggers
+# the alldone teardown -- so this grace period must cover that
+# validation window.
+export LUNCHPAIL_SLEEP_BEFORE_EXIT=45
 if [[ ${LUNCHPAIL_TARGET:-kubernetes} = kubernetes ]]
-then export LUNCHPAIL_SLEEP_BEFORE_EXIT=30 # kubernetes validators are a bit slower due to the need to open a port-forward to minio
+then export LUNCHPAIL_SLEEP_BEFORE_EXIT=90 # kubernetes validators are a bit slower due to the need to open a port-forward to minio
 fi
 
 if [[ -n "$taskqueue" ]]
