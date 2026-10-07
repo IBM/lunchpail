@@ -255,10 +255,12 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 
 // Helps with situations where the s3 server is still coming up
 func (s3 S3Client) retryOnError(err error) bool {
-	if !(strings.Contains(err.Error(), "connection refused") ||
-		strings.Contains(err.Error(), "Server not initialized yet") ||
-		strings.Contains(err.Error(), "i/o timeout") ||
-		strings.Contains(err.Error(), "We encountered an internal error")) { // i.e. InternalError; e.g. we have observed minio transiently failing server-side copies with mkdir races
+	msg := strings.ToLower(err.Error())
+	if !(strings.Contains(msg, "connection refused") ||
+		strings.Contains(msg, "connection closed by") || // transient while the port-forward/pod is coming up; e.g. "Connection closed by foreign host ... Retry again."
+		strings.Contains(msg, "server not initialized yet") ||
+		strings.Contains(msg, "i/o timeout") ||
+		strings.Contains(msg, "we encountered an internal error")) { // i.e. InternalError; e.g. we have observed minio transiently failing server-side copies with mkdir races
 		return false
 	}
 
