@@ -20,6 +20,13 @@ type S3Client struct {
 	Paths    filepaths
 	ak       string
 	sk       string
+
+	// number of consecutive transient-error retries performed so far
+	// (see retryOnError); reset is not needed, as clients are
+	// typically short-lived and 60 consecutive retries is enough to
+	// cover a slow-starting queue while still failing loudly if the
+	// queue is gone for good
+	retries int
 }
 
 type S3ClientStop struct {
@@ -66,7 +73,7 @@ func NewS3ClientFromOptions(ctx context.Context, opts S3ClientOptions) (S3Client
 		return S3Client{}, err
 	}
 
-	return S3Client{ctx, client, opts.Endpoint, paths, opts.AccessKeyID, opts.SecretAccessKey}, nil
+	return S3Client{ctx, client, opts.Endpoint, paths, opts.AccessKeyID, opts.SecretAccessKey, 0}, nil
 }
 
 // Client for a given run in the given backend

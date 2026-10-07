@@ -253,8 +253,14 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 	return nil
 }
 
-// Helps with situations where the s3 server is still coming up
+// Helps with situations where the s3 server is still coming up.
+// Retries are bounded so that a persistent failure (e.g. the queue
+// pod died) surfaces as an error rather than hanging silently.
 func (s3 S3Client) retryOnError(err error) bool {
+	if s3.retries >= maxRetries {
+		return false
+	}
+
 	msg := strings.ToLower(err.Error())
 	if !(strings.Contains(msg, "connection refused") ||
 		strings.Contains(msg, "connection closed by") || // transient while the port-forward/pod is coming up; e.g. "Connection closed by foreign host ... Retry again."
@@ -264,9 +270,13 @@ func (s3 S3Client) retryOnError(err error) bool {
 		return false
 	}
 
+	s3.retries++
 	time.Sleep(1 * time.Second)
 	return true
 }
+
+// maximum number of consecutive transient-error retries before giving up
+const maxRetries = 60
 
 // This will wait for the s3 server to be reachable, but will not wait
 // for the bucket to exist
