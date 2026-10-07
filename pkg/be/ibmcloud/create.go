@@ -353,7 +353,8 @@ func createVMForComponents(ctx context.Context, vpcService *vpcv1.VpcV1, name st
 				//"echo \"METRICS: Took $(($s-" + strconv.FormatInt(provTime.Unix(), 10) + ")) seconds for booting up VM from provision start time\"",
 				"echo \"METRICS: Took $(($s-" + strconv.FormatInt(opts.UpStartTime.Unix(), 10) + ")) seconds for booting up VM from client Up time\"",
 				"apt-get install curl jq -y",
-				"curl https://dl.min.io/client/mc/release/linux-amd64/mc --create-dirs -o /minio-binaries/mc",
+				// dl.min.io no longer hosts community downloads (410); mc release binaries are still published on GitHub
+				"curl -L https://github.com/minio/mc/releases/download/RELEASE.2025-08-13T08-35-41Z/mc.linux-amd64.RELEASE.2025-08-13T08-35-41Z --create-dirs -o /minio-binaries/mc",
 				"chmod +x /minio-binaries/mc",
 				"export PATH=$PATH:/minio-binaries/:/usr/bin/python3",
 				"mc alias set myminio " + ir.Context.Queue.Endpoint + " " + ir.Context.Queue.AccessKey + " " + ir.Context.Queue.SecretKey,

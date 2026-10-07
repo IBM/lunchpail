@@ -27,9 +27,18 @@ func installMinio(ctx context.Context, version string, verbose bool) (string, er
 		return "", err
 	}
 
-	//Todo: versions other than latest
-	cmd := exec.CommandContext(ctx, "wget", "https://dl.min.io/server/minio/release/linux-amd64/minio")
+	// MinIO stopped publishing community binaries on dl.min.io (the URLs now
+	// return 410 Gone), but the Go module proxy still serves the upstream
+	// source, so we install from there.
+	// Todo: versions other than latest
+	minioVersion := "RELEASE.2025-10-15T17-29-55Z"
+	if version != "" && version != "latest" {
+		minioVersion = version
+	}
+
+	cmd := exec.CommandContext(ctx, "go", "install", fmt.Sprintf("github.com/minio/minio@%s", minioVersion))
 	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "GOBIN="+dir)
 	if verbose {
 		cmd.Stdout = os.Stderr
 	}
