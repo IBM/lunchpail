@@ -51,8 +51,7 @@ func Server(ctx context.Context, port int, run queue.RunContext) error {
 	}
 
 	fmt.Fprintf(os.Stderr, "Launching Minio server with minio=%s bucket=%s run=%s\n", minio, run.Bucket, run.RunName)
-	// NOT CommandContext, as group.Wait() below will otherwise kill the minio server
-	cmd := exec.CommandContext(ctx, "minio", "server", datadir, "--address", fmt.Sprintf(":%d", port))
+	cmd := exec.CommandContext(ctx, minio, "server", datadir, "--address", fmt.Sprintf(":%d", port))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = slices.Concat(os.Environ(), []string{
@@ -63,9 +62,30 @@ func Server(ctx context.Context, port int, run queue.RunContext) error {
 		return err
 	}
 
+	// Reap the minio server process exactly once, and make its exit
+	// observable, so that a server that dies before the queue is
+	// ready surfaces as an immediate, explanatory error rather than
+	// as s3 clients blindly retrying a dead endpoint.
+	childExit := make(chan error, 1)
+	go func() { childExit <- cmd.Wait() }()
+
 	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s\n", run.Bucket)
-	if err := c.Mkdirp(run.Bucket); err != nil {
-		return err
+	// Note: we must watch for the minio server's exit while waiting
+	// for the bucket, as Mkdirp will otherwise retry a dead endpoint
+	// for as long as the s3 client's retry budget allows.
+	mkdirpDone := make(chan error, 1)
+	go func() { mkdirpDone <- c.Mkdirp(run.Bucket) }()
+	select {
+	case err := <-mkdirpDone:
+		if err != nil {
+			return err
+		}
+	case werr := <-childExit:
+		// the minio server died before the queue was ready
+		if werr != nil {
+			return fmt.Errorf("Minio server exited during startup: %w", werr)
+		}
+		return fmt.Errorf("Minio server exited during startup")
 	}
 	fmt.Fprintf(os.Stderr, "Ensuring bucket exists bucket=%s <-- READY!\n", run.Bucket)
 
@@ -88,7 +108,7 @@ func Server(ctx context.Context, port int, run queue.RunContext) error {
 		return nil
 	})
 
-	if err := cmd.Wait(); err != nil {
+	if err := <-childExit; err != nil {
 		// Below, we intentionally kill the minio
 		// server; make sure we don't report that as
 		// an unintended error
