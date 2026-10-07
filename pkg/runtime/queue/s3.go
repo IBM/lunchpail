@@ -58,8 +58,15 @@ func (s3 S3Client) Copyto(sourceBucket, source, destBucket, dest string) error {
 		Object: dest,
 	}
 
-	_, err := s3.client.CopyObject(s3.context, dst, src)
-	return err
+	for {
+		_, err := s3.client.CopyObject(s3.context, dst, src)
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (origin S3Client) CopyToRemote(remote S3Client, sourceBucket, source, destBucket, dest string) error {
@@ -162,7 +169,15 @@ func (s3 S3Client) DownloadFolder(bucket, source, destination string) error {
 }
 
 func (s3 S3Client) Download(bucket, source, destination string) error {
-	return s3.client.FGetObject(s3.context, bucket, source, destination, minio.GetObjectOptions{})
+	for {
+		err := s3.client.FGetObject(s3.context, bucket, source, destination, minio.GetObjectOptions{})
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (s3 S3Client) Touch(bucket, filePath string) error {
@@ -184,7 +199,15 @@ func (s3 S3Client) TouchP(bucket, filePath string, retry bool) error {
 }
 
 func (s3 S3Client) Rm(bucket, filePath string) error {
-	return s3.client.RemoveObject(s3.context, bucket, filePath, minio.RemoveObjectOptions{})
+	for {
+		err := s3.client.RemoveObject(s3.context, bucket, filePath, minio.RemoveObjectOptions{})
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (s3 S3Client) Mark(bucket, filePath, marker string) error {
@@ -234,7 +257,8 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 func (s3 S3Client) retryOnError(err error) bool {
 	if !(strings.Contains(err.Error(), "connection refused") ||
 		strings.Contains(err.Error(), "Server not initialized yet") ||
-		strings.Contains(err.Error(), "i/o timeout")) {
+		strings.Contains(err.Error(), "i/o timeout") ||
+		strings.Contains(err.Error(), "We encountered an internal error")) { // i.e. InternalError; e.g. we have observed minio transiently failing server-side copies with mkdir races
 		return false
 	}
 
