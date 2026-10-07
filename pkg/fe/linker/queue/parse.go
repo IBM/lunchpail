@@ -9,11 +9,12 @@ import (
 
 func ParseFlag(flag, runname string) (queue.Spec, error) {
 	// Assign a port for the internal S3 (TODO: we only need to do
-	// this if this run will be using an internal S3). We use the
-	// range of "ephemeral"
-	// ports. https://en.wikipedia.org/wiki/Ephemeral_bbport
-	portMin := 49152
-	portMax := 65535
+	// this if this run will be using an internal S3). We avoid the
+	// ephemeral port range (49152-65535 on macOS, 32768-60999 on
+	// Linux), so that an unrelated outgoing connection can't steal
+	// the port out from under the minio server as it starts up.
+	portMin := 20000
+	portMax := 25000
 	internalS3Port := rand.Intn(portMax-portMin+1) + portMin
 
 	isRclone, spec, err := parseFlagAsRclone(flag, runname, internalS3Port)

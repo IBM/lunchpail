@@ -44,12 +44,13 @@ func (backend Backend) AccessQueue(ctx context.Context, run queue.RunContext, qu
 			fmt.Fprintf(os.Stderr, "Opening port forward to pod=%s args=%v\n", podName, os.Args)
 		}
 
+		// We pick a local port outside the privileged range and
+		// outside the ephemeral range (which the OS may hand to any
+		// outgoing connection, stealing the port out from under the
+		// forward).
 		var localPort int
 		for {
-			localPort = rand.Intn(65535) + 1
-			if localPort < 1024 {
-				continue
-			}
+			localPort = rand.Intn(25000-20000+1) + 20000
 
 			if s, perr := backend.portForward(ctx, podName, localPort, podPort, opts); perr != nil {
 				if strings.Contains(perr.Error(), "already in use") {
