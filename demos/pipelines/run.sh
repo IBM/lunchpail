@@ -32,9 +32,10 @@ export MINIO_ROOT_USER=lunchpail
 export MINIO_ROOT_PASSWORD=lunchpail
 
 MINIO_PORT=57331
-minio server --address :$MINIO_PORT $MINIO_DATA_DIR 2>&1 | grep -v 'Exiting on signal:' &
+# Note: no pipe here; `$!` must be minio's pid so the trap can kill it
+minio server --address :$MINIO_PORT $MINIO_DATA_DIR > /dev/null 2>&1 &
 MINIO_PID=$!
-trap "kill $MINIO_PID; rm -f $RCLONE_CONFIG; rm -rf $MINIO_DATA_DIR" EXIT
+trap "kill $MINIO_PID 2>/dev/null; wait $MINIO_PID 2>/dev/null; rm -f $RCLONE_CONFIG; rm -rf $MINIO_DATA_DIR" EXIT
 
 if [[ $(uname) = Darwin ]]
 then HOST_IP=host.docker.internal
