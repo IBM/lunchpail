@@ -256,7 +256,11 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 // Helps with situations where the s3 server is still coming up.
 // Retries are bounded so that a persistent failure (e.g. the queue
 // pod died) surfaces as an error rather than hanging silently.
-func (s3 S3Client) retryOnError(err error) bool {
+// NOTE: pointer receiver, so that the retries counter actually
+// accumulates across iterations of the caller's retry loop; a value
+// receiver would increment a copy on every call, making the bound a
+// no-op.
+func (s3 *S3Client) retryOnError(err error) bool {
 	if s3.retries >= maxRetries {
 		return false
 	}
