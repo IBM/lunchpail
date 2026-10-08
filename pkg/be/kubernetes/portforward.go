@@ -52,7 +52,7 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 	// readyCh communicate when the port forward is ready to get traffic
 	readyCh := make(chan struct{})
 	// errorCh to communicate port forwarding errors
-	errorCh := make(chan error)
+	errorCh := make(chan error, 1)
 
 	// we will set this below when a successfully launched
 	// portforwarder exits normally
@@ -79,10 +79,27 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 		// portforward.go:413] "Unhandled Error" err="an error occurred forwarding
 		runtime.ErrorHandlers = []runtime.ErrorHandler{}
 
+		// whether we have already signaled readiness on readyCh
+		// (which the caller consumes exactly once)
+		readyOnce := false
+		signalReady := func() {
+			if !readyOnce {
+				readyOnce = true
+				readyCh <- struct{}{}
+			}
+		}
+
+		// number of consecutive mid-life forward failures; the
+		// forward is recreated after each, but we give up (and stop
+		// leaking a local listener that clients would retry against
+		// for their entire retry budget) after too many in a row
+		consecutiveFailures := 0
+		const maxConsecutiveFailures = 150 // ~5m at 2s per recreate
+
 		for !done {
 			select {
 			case <-ctx.Done():
-				readyCh <- struct{}{}
+				signalReady()
 				return nil
 			default:
 			}
@@ -109,20 +126,59 @@ func (backend Backend) portForward(ctx context.Context, podName string, localPor
 
 			dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
 
-			fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", localPort, podPort)}, stopCh, readyCh, stdout, stderr)
+			// per-forward readiness, buffered so that a recreated
+			// forward's readiness signal can never block the loop
+			fwReady := make(chan struct{}, 1)
+			fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", localPort, podPort)}, stopCh, fwReady, stdout, stderr)
 			if err != nil {
 				if !retryOnError(ctx, err) {
+					signalReady()
 					errorCh <- err
 					return err
 				}
 				continue
 			}
 
-			if err := fw.ForwardPorts(); err != nil {
+			fwErr := make(chan error, 1)
+			go func() { fwErr <- fw.ForwardPorts() }()
+
+			// wait for this forward to be ready before handing
+			// traffic to it
+			select {
+			case <-fwReady:
+			case err := <-fwErr:
+				// the forward failed before becoming ready
+				// (e.g. the pod is not running yet)
 				if !retryOnError(ctx, err) {
+					signalReady()
 					errorCh <- err
 					return err
 				}
+				continue
+			case <-stopCh:
+				return nil
+			}
+
+			signalReady()
+			consecutiveFailures = 0
+
+			// the forward is up; wait for it to end
+			if err := <-fwErr; err != nil && ctx.Err() == nil {
+				// The forward died mid-life (e.g. the tunnel
+				// dropped while the target service was still
+				// starting). Recreate it: clients retrying
+				// against the local listener would otherwise
+				// see a dead port until their retry budget is
+				// exhausted.
+				consecutiveFailures++
+				if consecutiveFailures > maxConsecutiveFailures {
+					errorCh <- err
+					return err
+				}
+				if opts.Verbose {
+					fmt.Fprintf(os.Stderr, "Portforward died (%v); recreating (attempt %d)\n", err, consecutiveFailures)
+				}
+				time.Sleep(2 * time.Second)
 				continue
 			}
 

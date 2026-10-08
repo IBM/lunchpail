@@ -27,7 +27,10 @@ func installMinio(ctx context.Context, version string, verbose bool) (string, er
 		return "", err
 	}
 
-	return "", brewInstall(ctx, "minio/stable/minio", version, verbose) //Todo: versions other than latest
+	// The minio/stable tap (and dl.min.io, which it downloads from) no longer
+	// hosts community binaries; homebrew-core still bottles minio.
+	// Todo: versions other than latest
+	return "", brewInstall(ctx, "minio", version, verbose)
 }
 
 func installPython(ctx context.Context, version string, verbose bool) (string, error) {

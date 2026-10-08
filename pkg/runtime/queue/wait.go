@@ -83,8 +83,14 @@ func (s3 S3Client) Listen(bucket, prefix, suffix string, includeDeletions bool) 
 				if dead {
 					return
 				} else if o.Err != nil {
+					// A transient listing error (e.g. minio
+					// occasionally 500s) must not kill the
+					// watcher: report it and let the next poll
+					// retry. Killing the watcher here would
+					// silently freeze every model derived from
+					// this Listen (e.g. the workstealer would
+					// never touch kill files).
 					e <- o.Err
-					dead = true
 					return
 				} else {
 					reportCreate(o.Key, myreported)

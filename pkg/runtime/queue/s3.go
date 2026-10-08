@@ -58,8 +58,15 @@ func (s3 S3Client) Copyto(sourceBucket, source, destBucket, dest string) error {
 		Object: dest,
 	}
 
-	_, err := s3.client.CopyObject(s3.context, dst, src)
-	return err
+	for {
+		_, err := s3.client.CopyObject(s3.context, dst, src)
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (origin S3Client) CopyToRemote(remote S3Client, sourceBucket, source, destBucket, dest string) error {
@@ -162,7 +169,15 @@ func (s3 S3Client) DownloadFolder(bucket, source, destination string) error {
 }
 
 func (s3 S3Client) Download(bucket, source, destination string) error {
-	return s3.client.FGetObject(s3.context, bucket, source, destination, minio.GetObjectOptions{})
+	for {
+		err := s3.client.FGetObject(s3.context, bucket, source, destination, minio.GetObjectOptions{})
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (s3 S3Client) Touch(bucket, filePath string) error {
@@ -184,7 +199,15 @@ func (s3 S3Client) TouchP(bucket, filePath string, retry bool) error {
 }
 
 func (s3 S3Client) Rm(bucket, filePath string) error {
-	return s3.client.RemoveObject(s3.context, bucket, filePath, minio.RemoveObjectOptions{})
+	for {
+		err := s3.client.RemoveObject(s3.context, bucket, filePath, minio.RemoveObjectOptions{})
+		if err != nil && !s3.retryOnError(err) {
+			return err
+		} else if err == nil {
+			break
+		}
+	}
+	return nil
 }
 
 func (s3 S3Client) Mark(bucket, filePath, marker string) error {
@@ -230,17 +253,39 @@ func (s3 S3Client) Cat(bucket, filePath string) error {
 	return nil
 }
 
-// Helps with situations where the s3 server is still coming up
-func (s3 S3Client) retryOnError(err error) bool {
-	if !(strings.Contains(err.Error(), "connection refused") ||
-		strings.Contains(err.Error(), "Server not initialized yet") ||
-		strings.Contains(err.Error(), "i/o timeout")) {
+// Helps with situations where the s3 server is still coming up.
+// Retries are bounded so that a persistent failure (e.g. the queue
+// pod died) surfaces as an error rather than hanging silently.
+// NOTE: pointer receiver, so that the retries counter actually
+// accumulates across iterations of the caller's retry loop; a value
+// receiver would increment a copy on every call, making the bound a
+// no-op.
+func (s3 *S3Client) retryOnError(err error) bool {
+	if s3.retries >= maxRetries {
 		return false
 	}
 
+	msg := strings.ToLower(err.Error())
+	if !(strings.Contains(msg, "connection refused") ||
+		strings.Contains(msg, "connection closed by") || // transient while the port-forward/pod is coming up; e.g. "Connection closed by foreign host ... Retry again."
+		strings.Contains(msg, "server not initialized yet") ||
+		strings.Contains(msg, "i/o timeout") ||
+		strings.Contains(msg, "we encountered an internal error")) { // i.e. InternalError; e.g. we have observed minio transiently failing server-side copies with mkdir races
+		return false
+	}
+
+	s3.retries++
 	time.Sleep(1 * time.Second)
 	return true
 }
+
+// maximum number of consecutive transient-error retries before giving
+// up. We have observed a fresh kubernetes cluster's queue pod
+// (port-forward + image pull + minio startup) taking over a minute to
+// become reachable, so this needs to comfortably cover a slow cold
+// start while still failing well before a CI job timeout (30m) when
+// the queue is gone for good.
+const maxRetries = 300
 
 // This will wait for the s3 server to be reachable, but will not wait
 // for the bucket to exist
