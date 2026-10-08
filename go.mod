@@ -6,7 +6,7 @@ require (
 	github.com/IBM/go-sdk-core/v5 v5.23.1
 	github.com/bep/debounce v1.2.1
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/dustin/go-humanize v1.0.1
+	github.com/dustin/go-humanize v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/hairyhenderson/go-which v0.2.3
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
